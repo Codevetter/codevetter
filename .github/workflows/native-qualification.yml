@@ -102,6 +102,15 @@ jobs:
           pnpm test:native-package
           pnpm test:native-release
 
+      - name: Preserve native tool logs
+        if: always()
+        shell: bash
+        run: |
+          mkdir -p artifacts/native-tool-logs
+          find "$HOME/Library/Developer/XcodeBuildMCP" \
+            -path '*/logs/*' -type f \
+            -exec cp {} artifacts/native-tool-logs/ \;
+
       - name: Upload unsigned qualification evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
@@ -110,6 +119,7 @@ jobs:
           path: |
             artifacts/native-package-ci
             artifacts/native-owner-review-ci
+            artifacts/native-tool-logs
             artifacts/native-build/DerivedData/Build/Products/Release/CodeVetter.app.dSYM
           if-no-files-found: warn
           retention-days: 7
