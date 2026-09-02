@@ -1,0 +1,48 @@
+{
+  "schema_version": "codevetter.native-repository-query-worker-benchmark/v1",
+  "recorded_at": "2026-09-01T17:30:11Z",
+  "binary_profile": "release",
+  "surface": "native-persistent-read-only-query-worker",
+  "repository": {
+    "label": "indexed incumbent CodeVetter checkout",
+    "graph_indexed": true,
+    "history_indexed": true,
+    "graph_nodes": 115884,
+    "graph_edges": 193399,
+    "stale_relative_to_live_checkout": true
+  },
+  "measurements": {
+    "process_start_and_graph_prepare_ms": 2490.4,
+    "first_graph_after_prepare_ms": 51.63,
+    "graph": {
+      "wall_ms": [50.27, 48.98, 48.09, 50.5, 51.18, 52.26, 50.94],
+      "median_ms": 50.5
+    },
+    "history": {
+      "wall_ms": [41.14, 36.76, 36.55, 35.4, 33.77],
+      "median_ms": 36.55
+    },
+    "worker_rss_kib": 248192,
+    "worker_rss_mib": 242.4
+  },
+  "comparison": {
+    "independent_process_graph_median_ms": 2170,
+    "independent_process_history_median_ms": 820,
+    "graph_latency_reduction_percent": 97.7,
+    "history_latency_reduction_percent": 95.5
+  },
+  "method": "One Release worker over bounded JSON lines: prepare graph once, issue one first graph query, then seven graph and five history queries sequentially. Wall time uses Node performance.now; RSS uses ps after both domains. Process startup is included only in preparation.",
+  "interpretation": "The native app prepares the one-snapshot search projection quietly when a retained Repo Unpack snapshot opens. Intentional queries then reuse the canonical Rust snapshot and index while rechecking live Git freshness and the latest stored snapshot identity.",
+  "lifecycle": {
+    "maximum_cached_graph_snapshots": 1,
+    "cancellation": "Task cancellation terminates the scoped worker and rejects partial receipts; the next request starts a clean worker.",
+    "fallback": "An older or test-only CLI that lacks the worker uses the exact supervised one-shot query command.",
+    "shutdown": "Closing stdin or terminating the native parent stops the worker."
+  },
+  "limitations": [
+    "This is one local Apple-silicon Mac and one large indexed repository, not a cross-machine distribution.",
+    "The 2.49 s graph preparation remains observable if the user submits before background preparation completes.",
+    "The retained 242.4 MiB worker RSS is a measured speed-memory tradeoff and must remain visible in future runtime qualification.",
+    "The indexed snapshots were stale and every receipt disclosed that state."
+  ]
+}
