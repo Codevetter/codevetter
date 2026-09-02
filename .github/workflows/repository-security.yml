@@ -111,7 +111,7 @@ jobs:
           bans_status=$?
           set -e
           if [ "$policy_status" -eq 0 ] && [ ! -s artifacts/tooling/cargo-deny.sarif ]; then
-            printf '%s\n' '{"$schema":"https://json.schemastore.org/sarif-2.1.0.json","version":"2.1.0","runs":[{"tool":{"driver":{"name":"cargo-deny","version":"0.20.2","rules":[]}},"results":[]}]}' > artifacts/tooling/cargo-deny.sarif
+            printf '%s\n' '{"version":"2.1.0","runs":[{"tool":{"driver":{"name":"cargo-deny","version":"0.20.2","rules":[]}},"results":[]}]}' > artifacts/tooling/cargo-deny.sarif
           fi
           if jq empty artifacts/tooling/cargo-deny.sarif; then
             echo "sarif_valid=true" >> "$GITHUB_OUTPUT"
