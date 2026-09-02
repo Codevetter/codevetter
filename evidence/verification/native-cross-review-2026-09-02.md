@@ -10,6 +10,10 @@ read-only MCP. Agreement remains review coverage and never executable proof.
 ## Contract evidence
 
 - `codevetter.cross-review/v1` binds both passes to the same immutable target.
+- A separate SHA-256 coordinator policy binding covers the repository, exact
+  range, task, and original runtime context. A second SHA-256 identity covers
+  the ordered unit plan while deliberately excluding executor-specific unit
+  fingerprints. Any mismatch fails before a composite is persisted.
 - Codex receives the original repository/task/runtime context, never Claude
   output.
 - Reconciliation keys only on exact path, positive line, and source anchor.
@@ -42,10 +46,30 @@ read-only MCP. Agreement remains review coverage and never executable proof.
 - Hosted XCUITest includes the strategy picker but remains pending on the next
   isolated macOS run.
 
+## Provider smoke
+
+One isolated current-binary smoke used the public `ts-sql-injection` synthetic
+case with a clean temporary Git repository and separate temporary app data.
+Claude and Codex both independently source-qualified the labeled injection at
+line 13. The final receipt was `needs_attention`, carried policy binding
+`4f8414c0ce6a19cd56ae15a0730087b047edf1ee69a6606b2982b77c95bb6fb3`, and
+unit-plan identity
+`a797e10aa0307e225585939f472eb94860f50e0d85376957a4102fa0e9f86fc5`.
+
+Claude completed in 64,891 ms with three qualified findings. Codex completed in
+47,315 ms with one. Sequential cross-review completed in 112,209 ms and
+reconciled one corroborated labeled issue plus one Claude-only missing-module
+finding. Under the benchmark's strict one-label accounting, this single case is
+100% recall and 50% precision for the composite, versus 100%/33% for Claude and
+100%/100% for Codex. Provider usage was not reported, so cost is unavailable.
+The source-only fixture had no executable correctness or performance target;
+the overall receipt preserved those limitations rather than converting review
+agreement into a pass.
+
 ## Open measurement gate
 
-No provider-backed caught-bug corpus run was performed because authenticated
-Claude and Codex execution is not available in the protected workflow. Recall,
-false-positive burden, end-to-end latency, and observed usage/cost therefore
-remain unmeasured. Cross-review stays optional and cannot become the default on
-this evidence alone.
+A full provider-backed caught-bug corpus run has not been performed. The one
+smoke above proves orchestration and illustrates the tradeoff, but cannot
+establish a recall lift or stable false-positive rate. End-to-end corpus
+latency and observed usage/cost therefore remain unmeasured. Cross-review stays
+optional and cannot become the default on this evidence alone.
