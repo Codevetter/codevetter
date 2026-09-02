@@ -64,6 +64,23 @@ fn review_cancellation(repo_path: &str) -> Arc<AtomicBool> {
         .unwrap_or_else(|| Arc::new(AtomicBool::new(false)))
 }
 
+fn mark_review_cancellations(active: &std::collections::HashMap<String, Arc<AtomicBool>>) -> usize {
+    for cancellation in active.values() {
+        cancellation.store(true, Ordering::SeqCst);
+    }
+    active.len()
+}
+
+/// Signal every review owned by this process so CLI shutdown can wait for the
+/// normal process-group cleanup path instead of orphaning an agent executor.
+pub fn cancel_all_cli_reviews() -> usize {
+    let active = ACTIVE_REVIEW_CANCELLATIONS
+        .get_or_init(|| Mutex::new(std::collections::HashMap::new()))
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
+    mark_review_cancellations(&active)
+}
+
 #[tauri::command]
 pub async fn cancel_cli_review(repo_path: String) -> Result<Value, String> {
     let key = std::fs::canonicalize(&repo_path)
@@ -4167,6 +4184,20 @@ mod tests {
             review_executor_failure_detail(b"You've hit your individual spend limit\n", b"",),
             "You've hit your individual spend limit"
         );
+    }
+
+    #[test]
+    fn process_shutdown_marks_every_owned_review_for_cancellation() {
+        let first = Arc::new(AtomicBool::new(false));
+        let second = Arc::new(AtomicBool::new(false));
+        let active = std::collections::HashMap::from([
+            ("first".to_string(), Arc::clone(&first)),
+            ("second".to_string(), Arc::clone(&second)),
+        ]);
+
+        assert_eq!(mark_review_cancellations(&active), 2);
+        assert!(first.load(Ordering::SeqCst));
+        assert!(second.load(Ordering::SeqCst));
     }
 
     #[cfg(unix)]

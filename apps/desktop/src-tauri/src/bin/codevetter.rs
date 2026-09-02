@@ -52,6 +52,8 @@ use codevetter_desktop::commands::repo_query::{
     RepositoryHistorySelectorKind, RepositoryQueryDomain, RepositoryQueryInput,
     RepositoryQueryMode, RepositoryQueryReceipt,
 };
+#[cfg(unix)]
+use codevetter_desktop::commands::review::cancel_all_cli_reviews;
 use codevetter_desktop::commands::rubric_settings::{
     active_rubric_prompt, read_rubric_settings, select_rubric_pack, upsert_rubric_pack,
     RubricPackInput, RubricSettingsReceipt,
@@ -542,9 +544,60 @@ enum CliCommand {
     Version,
 }
 
+#[cfg(unix)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum CliShutdownSignal {
+    Interrupt,
+    Terminate,
+}
+
+#[cfg(unix)]
+impl CliShutdownSignal {
+    const fn exit_code(self) -> i32 {
+        match self {
+            Self::Interrupt => 130,
+            Self::Terminate => 143,
+        }
+    }
+}
+
+#[cfg(unix)]
+async fn run_until_shutdown() -> Result<i32, String> {
+    use tokio::signal::unix::{signal, SignalKind};
+
+    let mut interrupt = signal(SignalKind::interrupt())
+        .map_err(|error| format!("register SIGINT handler: {error}"))?;
+    let mut terminate = signal(SignalKind::terminate())
+        .map_err(|error| format!("register SIGTERM handler: {error}"))?;
+    let mut command = Box::pin(run());
+    let shutdown = async {
+        tokio::select! {
+            _ = interrupt.recv() => CliShutdownSignal::Interrupt,
+            _ = terminate.recv() => CliShutdownSignal::Terminate,
+        }
+    };
+
+    tokio::select! {
+        result = &mut command => result,
+        signal = shutdown => {
+            if cancel_all_cli_reviews() > 0 {
+                // The review future owns the agent process group. Wait for its
+                // normal cancellation branch to kill and reap that group before
+                // exiting the CLI parent, otherwise the executor is orphaned.
+                let _ = command.await;
+            }
+            Ok(signal.exit_code())
+        }
+    }
+}
+
 #[tokio::main]
 async fn main() {
-    let code = match run().await {
+    #[cfg(unix)]
+    let result = run_until_shutdown().await;
+    #[cfg(not(unix))]
+    let result = run().await;
+    let code = match result {
         Ok(code) => code,
         Err(error) => {
             eprintln!("codevetter: {error}");
