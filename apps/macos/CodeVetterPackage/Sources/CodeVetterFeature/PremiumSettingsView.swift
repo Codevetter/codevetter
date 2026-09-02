@@ -171,6 +171,7 @@ struct PremiumSettingsView: View {
               }
               .padding(.horizontal, 12)
               .frame(height: 36)
+              .contentShape(Rectangle())
               .background(
                 model.settingsSection == section ? EvidenceStyle.amber.opacity(0.09) : Color.clear,
                 in: RoundedRectangle(cornerRadius: 9)
@@ -186,6 +187,7 @@ struct PremiumSettingsView: View {
             .accessibilityIdentifier("settings-section-\(section.rawValue)")
             .accessibilityValue(model.settingsSection == section ? "Selected" : "")
             .accessibilityAddTraits(model.settingsSection == section ? .isSelected : [])
+            .accessibilityRemoveTraits(model.settingsSection == section ? [] : .isSelected)
           }
         }
         .padding(10)
