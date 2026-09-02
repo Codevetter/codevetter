@@ -1,6 +1,12 @@
 name: Native macOS qualification
 
 on:
+  workflow_call:
+    inputs:
+      run_interaction:
+        description: "Run XCUITest on the isolated hosted desktop"
+        required: true
+        type: boolean
   workflow_dispatch:
     inputs:
       run_interaction:

@@ -274,6 +274,11 @@ input; ordinary pushes and pull requests do not start this workflow. This is
 the preferred way to qualify XCUITest without borrowing the operator's active
 desktop.
 
+Before the workflow exists on the default branch, dispatch the branch through
+the already-registered `ci.yml` workflow with `native_qualification=true` and
+set `native_interaction=true` when the isolated runner should execute XCUITest.
+Both inputs default to false, so ordinary CI dispatches remain native-quiet.
+
 The XcodeBuildMCP CLI and MCP server use the same tool implementations and the
 same project-local defaults. If a current Codex session started before the MCP
 registration, the pinned CLI is the supported in-session path; later sessions

@@ -4,6 +4,17 @@ on:
     branches: [main]
   pull_request:
   workflow_dispatch:
+    inputs:
+      native_qualification:
+        description: "Run isolated native macOS qualification"
+        required: true
+        default: false
+        type: boolean
+      native_interaction:
+        description: "Include XCUITest on the isolated hosted desktop"
+        required: true
+        default: false
+        type: boolean
 permissions: {}
 
 concurrency:
@@ -11,6 +22,15 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  native-qualification:
+    name: Native macOS qualification
+    if: github.event_name == 'workflow_dispatch' && inputs.native_qualification
+    uses: ./.github/workflows/native-qualification.yml
+    with:
+      run_interaction: ${{ inputs.native_interaction }}
+    permissions:
+      contents: read
+
   lint-and-typecheck:
     name: Lint, test, and build
     runs-on: ubuntu-latest
