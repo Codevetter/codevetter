@@ -1,0 +1,8 @@
+[
+  {
+    "name": "Complete lazy JavaScript distribution (raw)",
+    "path": "out/assets/*.js",
+    "limit": "1800 kB",
+    "brotli": false
+  }
+]
