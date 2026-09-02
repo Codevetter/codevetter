@@ -1,0 +1,93 @@
+{
+  "schema_version": "codevetter.cross-review-benchmark-summary/v1",
+  "recorded_at": "2026-09-02T15:17:50.495Z",
+  "source": {
+    "runner_revision": "017985904f89ebcb4c73fe00147e0bb4fde53def",
+    "engine_revision": "f812ba1c8d5d349bc9a38e2ebde9f03d54509444",
+    "binary_sha256": "113e0a3fa419a4487af0cec8515d9f0fc9534d906c9f0f5b6ea127cd03e518e0",
+    "corpus": "benchmarks/public-catch-rate",
+    "cases": 27,
+    "expected_labels": 29,
+    "task": "Review this exact change for correctness, security, reliability, and maintainability defects."
+  },
+  "scoring": {
+    "status": "human_reviewed",
+    "deterministic_proposal": "same source path, label line within five lines, and narrow defect-type keywords",
+    "human_correction": {
+      "case_id": "py-path-traversal",
+      "reviewer": "codex",
+      "finding": "Untrusted report name permits arbitrary local file disclosure",
+      "reason": "The core claim and source identify the labeled traversal defect even though the narrow mapper keyword was absent."
+    },
+    "confirmed_single_reviewer_miss": {
+      "case_id": "ts-dead-code",
+      "reviewer": "codex",
+      "label": "unused-helper-function",
+      "severity": "low"
+    }
+  },
+  "reviewers": {
+    "claude": {
+      "caught": 29,
+      "expected": 29,
+      "findings": 134,
+      "strict_precision": 0.21641791044776118,
+      "recall": 1.0,
+      "f1": 0.35582822085889565,
+      "total_duration_ms": 2387162,
+      "mean_duration_ms": 88413,
+      "usage_available_cases": 0
+    },
+    "codex": {
+      "caught": 28,
+      "expected": 29,
+      "findings": 46,
+      "strict_precision": 0.6086956521739131,
+      "recall": 0.9655172413793104,
+      "f1": 0.7466666666666666,
+      "total_duration_ms": 2675832,
+      "mean_duration_ms": 99105,
+      "usage_available_cases": 0
+    },
+    "cross": {
+      "caught": 29,
+      "expected": 29,
+      "findings": 99,
+      "strict_precision": 0.29292929292929293,
+      "recall": 1.0,
+      "f1": 0.45312500000000006,
+      "total_duration_ms": 5063091,
+      "mean_duration_ms": 187522,
+      "usage_available_cases": 0,
+      "finding_classes": {
+        "corroborated": 16,
+        "claude_only": 63,
+        "codex_only": 1,
+        "conflicting": 19,
+        "rejected": 0,
+        "stale": 0,
+        "unresolved": 0
+      }
+    }
+  },
+  "execution": {
+    "completed_cases": 27,
+    "scored_incomplete_receipts": 0,
+    "transient_incomplete_attempts": 1,
+    "retry_case": "py-insecure-deserialization",
+    "raw_artifact_bytes_approximate": 1153434,
+    "temporary_repositories_retained": false
+  },
+  "decision": {
+    "default_strategy": "claude_unchanged_for_compatibility",
+    "efficiency_candidate": "codex",
+    "cross_review": "optional_high_recall",
+    "reason": "Cross-review recovered one low-severity label over Codex but added 53 findings and about 88 seconds per case."
+  },
+  "limitations": [
+    "The corpus is synthetic and single-file; it does not establish real-repository or real-PR quality.",
+    "Strict defect-only precision penalizes process findings and plausible additional defects outside the narrow ground truth.",
+    "Provider usage was absent from every pass summary, so observed cost is unavailable.",
+    "Reviewer agreement is review coverage and never executable proof."
+  ]
+}
