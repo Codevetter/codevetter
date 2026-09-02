@@ -1,0 +1,59 @@
+{
+  "$schema": "fleet.design-review.v1",
+  "version": 1,
+  "project": "codevetter",
+  "target": "five-surface desktop shell and Performance workbench",
+  "mode": "preserve",
+  "register": "product",
+  "context": {
+    "product": "PRODUCT.md",
+    "design": "DESIGN.md"
+  },
+  "direction": {
+    "references": [],
+    "probes": [],
+    "selected": "existing-design",
+    "approval": "not-required",
+    "before": "artifacts/design/product-surfaces-before-1440.jpg"
+  },
+  "evidence": {
+    "screenshots": [
+      {
+        "width": 390,
+        "path": "artifacts/design/product-surfaces-after-390.jpg"
+      },
+      {
+        "width": 768,
+        "path": "artifacts/design/product-surfaces-after-768.jpg"
+      },
+      {
+        "width": 1440,
+        "path": "artifacts/design/product-surfaces-after-1440.jpg"
+      }
+    ],
+    "projectCheck": {
+      "command": "pnpm lint; desktop tsc --noEmit; focused unit/Rust tests; vite build; bundle, complexity, cycles, duplication, dependency, docs, OpenSpec, diff, and in-app browser checks",
+      "status": "pass"
+    },
+    "critique": {
+      "score": 35,
+      "maximum": 40
+    },
+    "audit": {
+      "score": 19,
+      "maximum": 20
+    },
+    "unresolved": {
+      "p0": 0,
+      "p1": 0
+    },
+    "detector": {
+      "posture": "advisory",
+      "findings": []
+    }
+  },
+  "ownerFeedback": {
+    "decision": "pending",
+    "note": "Owner approved implementation; final rendered-surface feedback remains pending."
+  }
+}
