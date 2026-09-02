@@ -34,13 +34,21 @@
     "ccusage"
   ],
   "ignoreBinaries": [
+    "actionlint",
+    "cargo-deny",
+    "ditto",
     "du",
     "go",
+    "gitleaks",
     "lipo",
     "lsof",
     "netstat",
+    "osascript",
+    "plutil",
     "ps",
     "rustc",
+    "sips",
+    "spctl",
     "swift",
     "tauri",
     "xcode-select"
