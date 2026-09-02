@@ -71,7 +71,7 @@ reachability and upstream/remediation review.
 
 ## Docs-site transitive remediation — 2026-09-02
 
-The docs-site lockfile now overrides twelve fixable transitive packages to
+The docs-site lockfile now overrides thirteen fixable transitive packages to
 patched releases while retaining Blume 1.5.3 as the single direct dependency.
 The production audit moved from 18 high, 9 moderate, and 1 low advisory to 2
 high advisories, with no critical, moderate, or low advisories remaining.
@@ -91,3 +91,33 @@ Validation after the lockfile update:
 - `node scripts/check-docs.mjs` validated all 86 Markdown files;
 - Biome accepted the docs-site package manifest;
 - the repository contains no `.icns`, `.jxl`, `.heif`, or `.heic` docs input.
+
+## Complete four-ecosystem rerun — 2026-09-02
+
+The scanner initially emitted seven Rust findings while also reporting that it
+could not load the SwiftURL database. The wrapper previously treated every
+exit code `1` as a complete findings run. It now detects extraction/database
+errors, marks any emitted artifact incomplete, and exits `2`. The separate
+refresh workflow now seeds npm, crates.io, Go, and SwiftURL snapshots.
+
+After seeding SwiftURL and pinning `path-to-regexp` 6.1.0 to 6.3.0, an offline
+rerun at revision `57c2363444bc9c2bd2adf959399217e2723ca2d6` completed in
+11.588 seconds. Its SARIF digest is
+`307dcf556d664716a5f712b4701f69f6fe4621fcffc26dc3ea6722354e1c8dfc`.
+It contains 20 result instances across 19 unique primary advisory IDs:
+
+- 2 unpatched `image-size` advisories, contained to repository-controlled docs
+  build inputs as described above;
+- 11 unmaintained GTK3 advisory IDs (12 result instances because `glib` is
+  reached twice), absent from the Apple target graph and retained only by the
+  Tauri Linux dependency graph;
+- 1 unmaintained `proc-macro-error` advisory in the same GTK3 graph; and
+- 5 unmaintained `unic-*` advisories reached through
+  `urlpattern -> tauri-utils` on the Tauri Apple build/runtime graph.
+
+These residual unmaintained-package notices have no listed fixed version. They
+remain visible and do not become an allowlist. The macOS-native application
+does not consume the Tauri/GTK/urlpattern graph, but Tauri remains operational
+until the separate owner-approved retirement gate; therefore the five
+cross-platform `unic-*` notices remain accepted, tracked migration risk rather
+than being suppressed.

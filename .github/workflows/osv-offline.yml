@@ -76,8 +76,15 @@ jobs:
         id: scan
         continue-on-error: true
         env:
+          CODEVETTER_OSV_NETWORK_ISOLATION: linux-network-namespace
           XDG_CACHE_HOME: ${{ runner.temp }}/osv-db
-        run: node scripts/run-osv-offline.mjs
+        run: |
+          sudo unshare --net -- \
+            env \
+              CODEVETTER_OSV_NETWORK_ISOLATION="$CODEVETTER_OSV_NETWORK_ISOLATION" \
+              PATH="$PATH" \
+              XDG_CACHE_HOME="$XDG_CACHE_HOME" \
+              "$(command -v node)" scripts/run-osv-offline.mjs
       - name: Upload scan evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4

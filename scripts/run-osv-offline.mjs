@@ -115,6 +115,7 @@ export function runOfflineScan({
   outputDir = DEFAULT_OUTPUT_DIR,
   databaseRoot = defaultDatabaseRoot(),
   scanner = 'osv-scanner',
+  networkIsolation = process.env.CODEVETTER_OSV_NETWORK_ISOLATION ?? 'scanner-offline-mode',
 } = {}) {
   const versionResult = spawnSync(scanner, ['--version'], { encoding: 'utf8' });
   if (versionResult.status !== 0) {
@@ -160,7 +161,7 @@ export function runOfflineScan({
       recursive: true,
     },
     execution: {
-      network: 'disabled',
+      network: networkIsolation,
       vulnerability_source: 'preseeded-local-databases',
       started_at: startedAt.toISOString(),
       finished_at: finishedAt.toISOString(),
