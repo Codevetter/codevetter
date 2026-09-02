@@ -4344,5 +4344,5 @@ fn render_human_performance(receipt: &PerformanceRunReceipt) -> String {
 }
 
 #[cfg(test)]
-#[path = "codevetter_tests.rs"]
+#[path = "../codevetter_cli_tests.rs"]
 mod tests;
