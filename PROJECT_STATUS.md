@@ -91,7 +91,9 @@ Internal (fleet):
   not invoke Tauri, and the Rubrics surface remains a visible retry path.
   Isolated frontend and Rust tests pass; installed WebView-to-native
   qualification remains an explicit upgrade gate.
-  The quiet lane passes 80 Swift tests and a Debug macOS build. A read-only
+  The isolated hosted lane passes 81 Swift tests, all nine XCUITests, Debug and
+  coverage-free Release macOS builds, and unsigned preview packaging without
+  using the operator's desktop. A read-only
   current-package receipt binds the exact
   `qualification-5r7JG4` candidate and measures a 62.4% smaller app bundle and
   92.4% smaller host executable than
@@ -120,6 +122,23 @@ Internal (fleet):
   washed-out disabled amber action with a high-contrast green `Selected`
   receipt in both appearances; only available packs retain the amber action.
   This evidence is ready for owner review but does not infer visual acceptance.
+
+- **2026-09-02 — Native hosted qualification (unreleased source):** GitHub
+  Actions run 33609288529 passed at exact source commit `824a9e8b`. The existing
+  Linux product lane remained green, while the isolated arm64 `xcode-27` lane
+  passed 81 Swift tests, all nine XCUITests, Debug and coverage-free Release
+  builds, the 33-state owner packet, ad-hoc ZIP/DMG packaging, and read-only
+  release inspection. Hosted large-receipt render p95s were 96.536 ms Repo
+  Unpack, 105.896 ms Usage, 121.065 ms Performance, 55.087 ms Testing, and
+  64.132 ms Runs, all below the unchanged 150 ms gate. The exact package and
+  evidence identities are recorded in
+  `evidence/verification/native-hosted-qualification-2026-09-02.md`. The
+  hosted images are internally manifest-bound but not byte-identical to the
+  earlier local packet, so owner visual acceptance remains explicit. The
+  candidate correctly remains `shipping_ready: false`: production identifier
+  transfer, Developer ID signing, Library Validation, updater inputs,
+  notarization/Gatekeeper, installed upgrade/rollback, exact-package runtime
+  evidence, and the Tauri retirement decision remain open.
 
 - **2026-09-02 — Native release preflight (unreleased source):** a read-only
   `codevetter.native-release-readiness/v1` inspector now binds the exact staged

@@ -161,6 +161,14 @@ active desktop. The earlier 80,116 KiB candidate remains the five-launch
 Performance-workspace evidence at 117,424 KiB median settled RSS; the current
 package-only check does not silently inherit a new launch or memory claim.
 
+The first complete isolated hosted run is recorded in
+[Native hosted qualification](../../evidence/verification/native-hosted-qualification-2026-09-02.md).
+At commit `824a9e8b`, it passed 81 Swift tests, all nine XCUITests, Debug and
+coverage-free Release builds, the 33-state packet, package qualification, and
+the read-only readiness inspector on GitHub's arm64 runner. Its ZIP, DMG, app,
+companions, dSYM, metrics, and hashes are bound in that receipt. It does not
+inherit the older package's launch or settled-memory result.
+
 ### Release optimization boundary
 
 The exact current package uses Rust fat LTO with one codegen unit while
@@ -278,6 +286,14 @@ Before the workflow exists on the default branch, dispatch the branch through
 the already-registered `ci.yml` workflow with `native_qualification=true` and
 set `native_interaction=true` when the isolated runner should execute XCUITest.
 Both inputs default to false, so ordinary CI dispatches remain native-quiet.
+
+The first complete hosted receipt is
+[run 33609288529](https://github.com/Codevetter/codevetter/actions/runs/33609288529)
+at source commit `824a9e8b`. It passed the quiet lane, all nine opt-in
+XCUITests, the Release build, unsigned preview packaging, and the fail-closed
+readiness inspection without using the operator's desktop. The artifact is
+retained for seven days; durable results and hashes live in
+[the checked evidence](../../evidence/verification/native-hosted-qualification-2026-09-02.md).
 
 The XcodeBuildMCP CLI and MCP server use the same tool implementations and the
 same project-local defaults. If a current Codex session started before the MCP

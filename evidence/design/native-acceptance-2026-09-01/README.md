@@ -130,17 +130,25 @@ selected workspace label visible while retaining quiet icon-only destinations;
 the Testing and Performance dark/light rerenders fit without clipping or content
 movement. Owner acceptance remains a separate gate.
 
-The latest `pnpm test:native:background` qualification passed 80 Swift package
-tests in 22.4 seconds and compiled the macOS Debug application in 2.5 seconds. During
-the visual rerun, the cancellation fixture reproduced a shell that could defer
+The complete isolated hosted qualification passed 81 Swift package tests in
+26.294 seconds, compiled Debug and coverage-free Release applications, and
+passed all nine XCUITests in 113.009 seconds. During the earlier visual rerun,
+the cancellation fixture reproduced a shell that could defer
 SIGTERM while blocked on stdin. The worker now closes stdin, allows a bounded
 200 ms graceful exit, and force-terminates only its owned read-only process if
-needed; the full lane passed and no fixture worker remained. Foreground
-XCUITest remains a separate owner-approved desktop-control lane.
+needed; the full lane passed and no fixture worker remained. The interaction
+lane ran on GitHub's isolated hosted desktop, not the operator's active Mac.
+Its exact results are recorded in the
+[hosted qualification receipt](../../verification/native-hosted-qualification-2026-09-02.md).
 
 `owner-review-manifest.json` records the exact pixel dimensions and SHA-256 of
 all 33 current-tree renders so the packet can be reviewed without confusing an
 older state for the accepted candidate.
+
+The hosted runner also produced a complete 33-state packet, but its PNG bytes
+are not identical to this committed local packet because the rendering
+environments differ. Each packet is internally manifest-bound; neither is
+treated as a cross-host pixel oracle. Owner acceptance remains separate.
 
 The shared Fleet design validator currently requires 390, 768, and 1440
 viewport receipts for every surface. CodeVetter's native window has a 980-point

@@ -50,6 +50,12 @@ Steps, in order (a failure stops the job):
 | `repository-security.yml` | push to `main`/PR/manual | actionlint + ShellCheck, Biome SARIF, cargo-deny Rust policy, full-history Gitleaks, and zizmor code-scanning uploads | [../knowledge/tooling-decisions.md](../knowledge/tooling-decisions.md) |
 | `osv-offline.yml` | manual | explicit OSV database refresh followed by a separate offline lockfile scan and evidence upload | [../knowledge/tooling-secrets-and-supply-chain.md](../knowledge/tooling-secrets-and-supply-chain.md) |
 
+The first complete hosted native qualification passed at commit `824a9e8b`:
+81 Swift tests, nine XCUITests, Debug and coverage-free Release builds, the
+33-state owner packet, unsigned ZIP/DMG packaging, and read-only readiness
+inspection. The exact run, hashes, metrics, and remaining production gates are
+recorded in [the hosted qualification receipt](../../evidence/verification/native-hosted-qualification-2026-09-02.md).
+
 `repository-security.yml` uses no application dependency. Gitleaks, actionlint,
 ShellCheck, and cargo-deny are checksum-pinned binaries; every third-party
 action is pinned to a commit; and job permissions are declared narrowly.
