@@ -55,10 +55,7 @@ test('appcast attributes are decoded exactly once', () => {
   const input = fixture();
   const receipt = evaluateNativeAppcast({
     ...input,
-    xml: input.xml.replace(
-      `/${input.archiveName}\"`,
-      `/${input.archiveName}?label=a&amp;quot;b\"`
-    ),
+    xml: input.xml.replace(`/${input.archiveName}"`, `/${input.archiveName}?label=a&amp;quot;b"`),
   });
 
   assert.equal(receipt.qualified, true);
