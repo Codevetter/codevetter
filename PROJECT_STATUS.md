@@ -68,11 +68,12 @@ Internal (fleet):
   explicit usage/raw-candidate availability limits; repository-scoped MCP can
   inspect the same receipt but cannot execute or cancel it. The 35-state native
   packet includes dark/light cross-review evidence. Provider-backed caught-bug
-  smoke on `ts-sql-injection` independently caught the labeled issue in both
-  passes and bound the shared policy/unit plan, but the composite's strict
-  one-case precision was 50% and usage was unavailable. Full-corpus recall,
-  false-positive, latency, and observed-cost comparison remains open, so
-  cross-review is optional and is not the default.
+  27-case provider-backed corpus run found 29/29 labels with Claude, 28/29 with
+  Codex, and 29/29 with the union. Cross-review recovered one low-severity
+  unused-helper label over Codex, but emitted 99 findings versus 46 and took
+  187.5 seconds per case versus 99.1 seconds; usage/cost remained unavailable.
+  Cross-review is therefore qualified as an optional high-recall strategy and
+  is not the default.
 
 - **2026-09-02 — Native owner-quality refinement (unreleased source):** the
   Evidence Workbench preserves a true-black canvas and chrome while restoring

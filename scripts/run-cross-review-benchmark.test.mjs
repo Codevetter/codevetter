@@ -21,6 +21,11 @@ const label = {
 
 test('cross-review benchmark arguments reject ambiguous bounds', () => {
   assert.equal(parseArguments(['--', '--limit', '2']).limit, 2);
+  assert.equal(parseArguments(['--rescore']).rescore, true);
+  assert.equal(
+    parseArguments(['--resume', 'artifacts/run']).resumeDirectory.endsWith('/artifacts/run'),
+    true
+  );
   assert.throws(() => parseArguments(['--limit', '0']), /positive integer/);
   assert.throws(() => parseArguments(['--case']), /Unknown or incomplete/);
 });
@@ -44,6 +49,18 @@ test('finding mapping requires path, nearby line, and defect semantics', () => {
   assert.deepEqual(
     matchFinding({ filePath: '../source.ts', line: 14, title: 'SQL injection' }, label),
     []
+  );
+  assert.deepEqual(
+    matchFinding(
+      { filePath: 'source.py', line: 8, title: 'Passwords are stored with unsalted MD5' },
+      {
+        source_file: 'source.py',
+        ground_truth: [
+          { id: 'weak-password-hash', type: 'weak_crypto', location: { lines: [7, 7] } },
+        ],
+      }
+    ),
+    ['weak-password-hash']
   );
 });
 

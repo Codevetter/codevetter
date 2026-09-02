@@ -25,6 +25,10 @@ npm run bench:curation -- benchmarks/agent-prs/cases
 # after adding at least one benchmarks/agent-prs/cases/*.json file
 npm run bench:catch-rate -- benchmarks/agent-prs/cases --reviewer=codevetter
 npm run test:benchmark
+# Provider-backed independent Claude/Codex comparison (writes ignored artifacts)
+pnpm bench:cross-review
+# Resume or deterministically rescore a checkpoint without repeating completed calls
+pnpm bench:cross-review -- --resume artifacts/cross-review-benchmark/<run> --rescore
 ```
 
 Fixture contract:
@@ -111,3 +115,21 @@ defect-only ground truth. With redundants collapsed, precision would be
 
 These are synthetic single-file cases — the planned real agent-PR case
 curation still stands before external head-to-head claims.
+
+## Results — independent cross-review (2026-09-02)
+
+The real `codevetter check --agent cross` path ran all 27 public cases with one
+generic task and fresh isolated repositories. Human review corrected one narrow
+keyword-mapper miss; the exact summary and limitations are recorded in the
+[cross-review evidence](../../evidence/verification/native-cross-review-2026-09-02.md).
+
+| Strategy | Catch rate | Findings | Strict precision | F1 | Mean review time |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Claude | 29/29 | 134 | 0.216 | 0.356 | 88.4 s |
+| Codex | 28/29 | 46 | 0.609 | 0.747 | 99.1 s |
+| Claude + Codex | 29/29 | 99 | 0.293 | 0.453 | 187.5 s |
+
+The union recovered one low-severity dead-code label over Codex but more than
+doubled its finding burden. Cross-review therefore remains an explicit
+high-recall option, not the default. Usage/cost was unavailable from both local
+executors, and synthetic single-file results do not establish real-PR quality.

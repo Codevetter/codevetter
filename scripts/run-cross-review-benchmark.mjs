@@ -31,7 +31,7 @@ const typeKeywords = {
   path_traversal: ['path traversal', 'directory traversal', '../', 'normaliz'],
   ssrf: ['ssrf', 'server-side request forgery', 'internal network', 'metadata'],
   insecure_deserialization: ['deserializ', 'pickle', 'unpickl', 'yaml.load'],
-  weak_hash: ['md5', 'sha1', 'sha-1', 'weak hash'],
+  weak_crypto: ['md5', 'sha1', 'sha-1', 'weak hash'],
   insecure_random: ['random', 'prng', 'securerandom', 'predictable'],
   race_condition: ['race', 'concurrent', 'mutex', 'atomic', 'lock'],
   nil_dereference: ['nil pointer', 'nil deref', 'null pointer', 'nil check'],
@@ -56,6 +56,8 @@ export function parseArguments(argv) {
     caseIDs: [],
     limit: undefined,
     outRoot: join(repositoryRoot, 'artifacts/cross-review-benchmark'),
+    rescore: false,
+    resumeDirectory: undefined,
     timeoutMS: 300_000,
   };
   const readers = {
@@ -74,6 +76,9 @@ export function parseArguments(argv) {
     '--out-root': (value) => {
       options.outRoot = resolve(value);
     },
+    '--resume': (value) => {
+      options.resumeDirectory = resolve(value);
+    },
     '--timeout-ms': (value) => {
       options.timeoutMS = Number(value);
     },
@@ -81,6 +86,10 @@ export function parseArguments(argv) {
   for (let index = 0; index < argv.length; index += 1) {
     const argument = argv[index];
     if (argument === '--') continue;
+    if (argument === '--rescore') {
+      options.rescore = true;
+      continue;
+    }
     const reader = readers[argument];
     const next = argv[index + 1];
     if (!reader || next === undefined)
@@ -175,6 +184,19 @@ export function aggregateScores(cases, reviewer) {
     precision,
     f1: recall + precision === 0 ? 0 : (2 * recall * precision) / (recall + precision),
     mean_duration_ms: cases.length === 0 ? 0 : Math.round(totals.duration_ms / cases.length),
+  };
+}
+
+export function scoreReceipt(receipt, label) {
+  const crossReview = receipt.stages?.review?.evidence?.cross_review;
+  if (crossReview?.status !== 'completed') {
+    throw new Error(`case ${label.id} did not complete both passes`);
+  }
+  const passes = Object.fromEntries(crossReview.passes.map((pass) => [pass.reviewer, pass]));
+  return {
+    claude: scoreFindings(passes.claude?.qualified_findings ?? [], label),
+    codex: scoreFindings(passes.codex?.qualified_findings ?? [], label),
+    cross: scoreFindings(crossReview.findings ?? [], label),
   };
 }
 
@@ -274,15 +296,19 @@ async function runCase({ binary, caseDirectory, label, outputDirectory, timeoutM
       );
     }
     const crossReview = receipt.stages?.review?.evidence?.cross_review;
+    const receiptName =
+      crossReview?.status === 'completed'
+        ? `${label.id}.json`
+        : `${label.id}.incomplete-${randomUUID()}.json`;
+    writeFileSync(
+      join(outputDirectory, 'receipts', receiptName),
+      `${JSON.stringify(receipt, null, 2)}\n`
+    );
     if (crossReview?.status !== 'completed') {
       throw new Error(`case ${label.id} did not complete both passes`);
     }
     const passes = Object.fromEntries(crossReview.passes.map((pass) => [pass.reviewer, pass]));
-    const reviewers = {
-      claude: scoreFindings(passes.claude?.qualified_findings ?? [], label),
-      codex: scoreFindings(passes.codex?.qualified_findings ?? [], label),
-      cross: scoreFindings(crossReview.findings ?? [], label),
-    };
+    const reviewers = scoreReceipt(receipt, label);
     const entry = {
       case_id: label.id,
       exit_code: result.code,
@@ -302,14 +328,24 @@ async function runCase({ binary, caseDirectory, label, outputDirectory, timeoutM
       },
       reviewers,
     };
-    writeFileSync(
-      join(outputDirectory, 'receipts', `${label.id}.json`),
-      `${JSON.stringify(receipt, null, 2)}\n`
-    );
     return entry;
   } finally {
     rmSync(workRoot, { recursive: true, force: true });
   }
+}
+
+function loadCases({ partialPath, rescore, casesRoot, outputDirectory }) {
+  let cases = existsSync(partialPath) ? JSON.parse(readFileSync(partialPath, 'utf8')) : [];
+  if (!rescore) return cases;
+  cases = cases.map((entry) => {
+    const label = JSON.parse(readFileSync(join(casesRoot, entry.case_id, 'label.json'), 'utf8'));
+    const receipt = JSON.parse(
+      readFileSync(join(outputDirectory, 'receipts', `${entry.case_id}.json`), 'utf8')
+    );
+    return { ...entry, reviewers: scoreReceipt(receipt, label) };
+  });
+  writeFileSync(partialPath, `${JSON.stringify(cases, null, 2)}\n`);
+  return cases;
 }
 
 export async function main(argv = process.argv.slice(2)) {
@@ -333,22 +369,46 @@ export async function main(argv = process.argv.slice(2)) {
     .toISOString()
     .replaceAll(':', '-')
     .replace(/\.\d{3}Z$/, 'Z');
-  const outputDirectory = join(options.outRoot, runID);
+  const outputDirectory = options.resumeDirectory ?? join(options.outRoot, runID);
   mkdirSync(join(outputDirectory, 'receipts'), { recursive: true });
-  const cases = [];
+  const partialPath = join(outputDirectory, 'partial.json');
+  const cases = loadCases({
+    partialPath,
+    rescore: options.rescore,
+    casesRoot: options.casesRoot,
+    outputDirectory,
+  });
+  const completedCaseIDs = new Set(cases.map((entry) => entry.case_id));
+  const sourceRevision = (
+    await run('git', ['rev-parse', 'HEAD'], { cwd: repositoryRoot, timeoutMS: 30_000 })
+  ).stdout.trim();
   for (const [index, caseID] of caseIDs.entries()) {
+    if (completedCaseIDs.has(caseID)) {
+      console.log(`[cross-benchmark] ${index + 1}/${caseIDs.length} ${caseID} (preserved)`);
+      continue;
+    }
     console.log(`[cross-benchmark] ${index + 1}/${caseIDs.length} ${caseID}`);
     const caseDirectory = join(options.casesRoot, caseID);
     const label = JSON.parse(readFileSync(join(caseDirectory, 'label.json'), 'utf8'));
-    const entry = await runCase({
-      binary: options.binary,
-      caseDirectory,
-      label,
-      outputDirectory,
-      timeoutMS: options.timeoutMS,
-    });
+    let entry;
+    let lastError;
+    for (let attempt = 1; attempt <= 2 && !entry; attempt += 1) {
+      try {
+        entry = await runCase({
+          binary: options.binary,
+          caseDirectory,
+          label,
+          outputDirectory,
+          timeoutMS: options.timeoutMS,
+        });
+      } catch (error) {
+        lastError = error;
+        console.warn(`[cross-benchmark] ${caseID} attempt ${attempt}/2: ${error.message}`);
+      }
+    }
+    if (!entry) throw lastError;
     cases.push(entry);
-    writeFileSync(join(outputDirectory, 'partial.json'), `${JSON.stringify(cases, null, 2)}\n`);
+    writeFileSync(partialPath, `${JSON.stringify(cases, null, 2)}\n`);
     console.log(
       `[cross-benchmark] ${caseID}: claude ${entry.reviewers.claude.caught}/${entry.reviewers.claude.expected}, codex ${entry.reviewers.codex.caught}/${entry.reviewers.codex.expected}, cross ${entry.reviewers.cross.caught}/${entry.reviewers.cross.expected}`
     );
@@ -358,9 +418,7 @@ export async function main(argv = process.argv.slice(2)) {
     schema_version: 'codevetter.cross-review-benchmark/v1',
     recorded_at: new Date().toISOString(),
     source: {
-      repository_revision: (
-        await run('git', ['rev-parse', 'HEAD'], { cwd: repositoryRoot, timeoutMS: 30_000 })
-      ).stdout.trim(),
+      repository_revision: sourceRevision,
       binary_path: options.binary,
       binary_sha256: sha256File(options.binary),
       benchmark: 'benchmarks/public-catch-rate',

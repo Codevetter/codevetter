@@ -43,8 +43,10 @@ read-only MCP. Agreement remains review coverage and never executable proof.
   and dark/light evidence rendering.
 - The 35-state owner packet includes `review-cross-review.png` and
   `review-cross-review-light.png`, with manifest-bound hashes and dimensions.
-- Hosted XCUITest includes the strategy picker but remains pending on the next
-  isolated macOS run.
+- Hosted XCUITest includes the strategy picker. The first isolated run exposed
+  an unreliable segmented-control `isSelected` assertion after the strategy
+  contract had already updated; the test now waits on the resulting contract
+  text and remains pending on the final-head draft-PR run.
 
 ## Provider smoke
 
@@ -66,10 +68,42 @@ The source-only fixture had no executable correctness or performance target;
 the overall receipt preserved those limitations rather than converting review
 agreement into a pass.
 
-## Open measurement gate
+## Provider-backed corpus comparison
 
-A full provider-backed caught-bug corpus run has not been performed. The one
-smoke above proves orchestration and illustrates the tradeoff, but cannot
-establish a recall lift or stable false-positive rate. End-to-end corpus
-latency and observed usage/cost therefore remain unmeasured. Cross-review stays
-optional and cannot become the default on this evidence alone.
+The full 27-case public caught-bug corpus ran through the real `--agent cross`
+path. Every case used a fresh temporary Git repository, separate app data, the
+same generic task, and the exact `HEAD^..HEAD` change. Claude and Codex received
+the original context independently. Temporary repositories were removed after
+their canonical receipt was saved; the ignored raw run is 1.1 MiB.
+
+| Strategy | Labels caught | Findings | Strict precision | F1 | Mean review time |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Claude | 29/29 (100%) | 134 | 21.6% | 35.6% | 88.4 s |
+| Codex | 28/29 (96.6%) | 46 | 60.9% | 74.7% | 99.1 s |
+| Claude + Codex | 29/29 (100%) | 99 | 29.3% | 45.3% | 187.5 s |
+
+The deterministic mapper initially proposed two Codex misses. Human review
+confirmed that `py-path-traversal` was caught by the finding “Untrusted report
+name permits arbitrary local file disclosure”; its wording omitted the
+mapper's narrow keyword despite matching the source and core claim. The one
+confirmed Codex miss was the low-severity unused helper in `ts-dead-code`.
+Claude and the union caught it. Thus cross-review adds one of 29 labels over
+Codex, but adds 53 findings and about 88 seconds per case. All findings beyond
+the unique labeled defects count against strict defect-only precision,
+including process findings and additional plausible defects not represented in
+the intentionally narrow ground truth.
+
+One `py-insecure-deserialization` attempt returned an incomplete two-pass
+receipt and was not scored. A fresh isolated retry completed; the runner now
+retains incomplete receipts, checkpoints after every case, retries once, and
+can resume or rescore without repeating completed provider calls. Provider
+usage was absent in all 54 completed pass summaries, so observed cost remains
+unavailable. The committed summary is
+[`cross-review-benchmark-2026-09-02.json`](./cross-review-benchmark-2026-09-02.json).
+
+Decision: preserve the existing Claude single-review default for compatibility;
+the corpus identifies Codex as the stronger efficiency candidate for a separate
+default-policy decision. Keep cross-review optional when an operator explicitly
+values maximum recall over latency and review burden. This corpus does not
+justify automatic dual review, and agreement still does not replace executable
+correctness or performance evidence.

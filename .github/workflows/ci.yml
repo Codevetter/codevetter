@@ -29,10 +29,12 @@ concurrency:
 jobs:
   native-qualification:
     name: Native macOS qualification
-    if: github.event_name == 'workflow_dispatch' && inputs.native_qualification
+    if: >-
+      github.event_name == 'pull_request' ||
+      (github.event_name == 'workflow_dispatch' && inputs.native_qualification)
     uses: ./.github/workflows/native-qualification.yml
     with:
-      run_interaction: ${{ inputs.native_interaction }}
+      run_interaction: ${{ github.event_name == 'pull_request' || inputs.native_interaction }}
     permissions:
       contents: read
 
