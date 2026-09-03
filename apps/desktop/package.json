@@ -13,6 +13,8 @@
     "prepare:cli-sidecar:release": "node scripts/prepare-cli-sidecar.mjs --release",
     "prepare:ccusage-sidecar": "node scripts/prepare-ccusage-sidecar.mjs",
     "test:ccusage-sidecar": "node --test scripts/prepare-ccusage-sidecar.test.mjs",
+    "prepare:collector-sidecars": "node scripts/prepare-collector-sidecars.mjs",
+    "test:collector-sidecars": "node --test scripts/prepare-collector-sidecars.test.mjs",
     "qualify:cli": "node scripts/verify-cli-release.mjs",
     "test:cli-qualification": "node --test scripts/verify-cli-release.test.mjs",
     "prepare:agent-island": "node scripts/prepare-agent-island.mjs",

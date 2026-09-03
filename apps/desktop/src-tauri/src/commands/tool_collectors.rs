@@ -18,6 +18,9 @@ use tokio::process::Command;
 
 use super::trex_preview::{resolve_scope_change, TrexSourceReceipt};
 
+mod cargo_audit;
+mod cargo_llvm_cov;
+
 const GITLEAKS_VERSION: &str = "8.30.1";
 const DEFAULT_TIMEOUT: Duration = Duration::from_secs(120);
 const MAX_STDOUT_BYTES: usize = 256 * 1024;
@@ -105,6 +108,9 @@ pub struct ToolCollectionInput {
     pub repo_path: PathBuf,
     pub change: String,
     pub collectors: Vec<CollectorKind>,
+    pub rust_manifest: Option<PathBuf>,
+    pub rust_test: Option<String>,
+    pub advisory_db: Option<PathBuf>,
 }
 
 #[derive(Debug, Clone, Default)]
@@ -172,7 +178,27 @@ async fn collect_tool_evidence_with_paths(
             (CollectorKind::Gitleaks, Some(binary)) => {
                 run_gitleaks(binary, &repo, &source, started).await
             }
-            (_, Some(binary)) => preflight_only(kind, binary, started).await,
+            (CollectorKind::CargoAudit, Some(binary)) => {
+                cargo_audit::run(
+                    binary,
+                    &repo,
+                    input.rust_manifest.as_deref(),
+                    input.advisory_db.as_deref(),
+                    started,
+                )
+                .await
+            }
+            (CollectorKind::CargoLlvmCov, Some(binary)) => {
+                cargo_llvm_cov::run(
+                    binary,
+                    &repo,
+                    &source,
+                    input.rust_manifest.as_deref(),
+                    input.rust_test.as_deref(),
+                    started,
+                )
+                .await
+            }
             (_, None) => unavailable(
                 kind,
                 started,
@@ -243,10 +269,13 @@ async fn run_gitleaks(
     let execution =
         execute_bounded(command, DEFAULT_TIMEOUT, MAX_REPORT_BYTES, MAX_STDERR_BYTES).await;
     let result = match execution {
-        Err(error) => error_result(CollectorKind::Gitleaks, started, error),
-        Ok(output) if !matches!(output.code, 0 | 1) => error_result(
+        Err(error) => {
+            error_result_with_tool(CollectorKind::Gitleaks, started, identity.clone(), error)
+        }
+        Ok(output) if !matches!(output.code, 0 | 1) => error_result_with_tool(
             CollectorKind::Gitleaks,
             started,
+            identity.clone(),
             format!(
                 "gitleaks exited with {}: {}",
                 output.code,
@@ -279,32 +308,10 @@ async fn run_gitleaks(
                     limitations: Vec::new(),
                 }
             }
-            Err(error) => error_result(CollectorKind::Gitleaks, started, error),
+            Err(error) => error_result_with_tool(CollectorKind::Gitleaks, started, identity, error),
         },
     };
     result
-}
-
-async fn preflight_only(
-    kind: CollectorKind,
-    binary: &ProductBinary,
-    started: Instant,
-) -> CollectorResult {
-    match tool_identity(kind, binary).await {
-        Ok(identity) => CollectorResult {
-            collector: kind,
-            status: CollectorStatus::Unavailable,
-            duration_ms: elapsed_ms(started),
-            tool: Some(identity),
-            finding_count: 0,
-            evidence: json!({"preflight": "binary identity verified"}),
-            limitations: vec![format!(
-                "{} execution remains claim-closed until its offline data/toolchain prerequisite is packaged and qualified",
-                kind.binary_name()
-            )],
-        },
-        Err(error) => error_result(kind, started, error),
-    }
 }
 
 async fn tool_identity(
@@ -314,13 +321,14 @@ async fn tool_identity(
     if !binary.path.is_file() {
         return Err(format!("{} binary is missing", kind.binary_name()));
     }
-    let argument = match kind {
-        CollectorKind::Gitleaks => "version",
-        CollectorKind::CargoAudit | CollectorKind::CargoLlvmCov => "--version",
+    let arguments: &[&str] = match kind {
+        CollectorKind::Gitleaks => &["version"],
+        CollectorKind::CargoAudit => &["--version"],
+        CollectorKind::CargoLlvmCov => &["llvm-cov", "--version"],
     };
     let mut command = Command::new(&binary.path);
     command
-        .arg(argument)
+        .args(arguments)
         .env_clear()
         .env("PATH", "/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin")
         .env("NO_COLOR", "1")
@@ -387,15 +395,98 @@ struct ProcessOutput {
     stderr: Vec<u8>,
 }
 
+struct ProcessGroupGuard {
+    #[cfg(unix)]
+    pid: Option<i32>,
+}
+
+impl ProcessGroupGuard {
+    fn new(pid: Option<u32>) -> Result<Self, String> {
+        #[cfg(not(unix))]
+        {
+            let _ = pid;
+            return Ok(Self {});
+        }
+        #[cfg(unix)]
+        {
+            let pid =
+                pid.ok_or_else(|| "collector process identity was unavailable".to_string())? as i32;
+            let set_result = unsafe { libc::setpgid(pid, pid) };
+            if set_result == -1 {
+                let error = std::io::Error::last_os_error();
+                if !matches!(error.raw_os_error(), Some(libc::EACCES) | Some(libc::ESRCH)) {
+                    return Err(format!("establish collector process group: {error}"));
+                }
+            }
+            let group = unsafe { libc::getpgid(pid) };
+            if group == -1 && std::io::Error::last_os_error().raw_os_error() == Some(libc::ESRCH) {
+                return Ok(Self { pid: None });
+            }
+            if group != pid {
+                return Err("collector process group could not be verified".into());
+            }
+            Ok(Self { pid: Some(pid) })
+        }
+    }
+
+    fn kill(&mut self) -> Result<(), String> {
+        #[cfg(unix)]
+        if let Some(pid) = self.pid.take() {
+            let group = unsafe { libc::getpgid(pid) };
+            if group != -1 && group != pid {
+                return Err("collector process group identity changed before cleanup".into());
+            }
+            let result = unsafe { libc::kill(-pid, libc::SIGKILL) };
+            if result == -1 {
+                let error = std::io::Error::last_os_error();
+                if error.raw_os_error() != Some(libc::ESRCH) {
+                    return Err(format!("terminate collector process group: {error}"));
+                }
+            }
+        }
+        Ok(())
+    }
+
+    fn disarm(&mut self) {
+        #[cfg(unix)]
+        {
+            self.pid = None;
+        }
+    }
+}
+
+impl Drop for ProcessGroupGuard {
+    fn drop(&mut self) {
+        let _ = self.kill();
+    }
+}
+
 async fn execute_bounded(
     mut command: Command,
     timeout: Duration,
     stdout_limit: usize,
     stderr_limit: usize,
 ) -> Result<ProcessOutput, String> {
+    #[cfg(unix)]
+    unsafe {
+        command.pre_exec(|| {
+            if libc::setpgid(0, 0) == -1 {
+                return Err(std::io::Error::last_os_error());
+            }
+            Ok(())
+        });
+    }
     let mut child = command
         .spawn()
         .map_err(|error| format!("launch collector: {error}"))?;
+    let mut process_group = match ProcessGroupGuard::new(child.id()) {
+        Ok(group) => group,
+        Err(error) => {
+            let _ = child.kill().await;
+            let _ = child.wait().await;
+            return Err(error);
+        }
+    };
     let stdout = child
         .stdout
         .take()
@@ -416,13 +507,19 @@ async fn execute_bounded(
     let (status, stdout, stderr) = match execution {
         Ok(output) => output,
         Err(_) => {
+            let cleanup_error = process_group.kill().err();
             let _ = child.kill().await;
-            return Err(format!(
-                "collector exceeded the {} second limit",
-                timeout.as_secs()
-            ));
+            let _ = child.wait().await;
+            return Err(match cleanup_error {
+                Some(error) => format!(
+                    "collector exceeded the {} second limit; {error}",
+                    timeout.as_secs()
+                ),
+                None => format!("collector exceeded the {} second limit", timeout.as_secs()),
+            });
         }
     };
+    process_group.disarm();
     let status = status.map_err(|error| format!("wait for collector: {error}"))?;
     let (stdout, stdout_exceeded) =
         stdout.map_err(|error| format!("read collector stdout: {error}"))?;
@@ -564,6 +661,32 @@ fn normalize_relative_path(value: &str) -> Result<String, String> {
     Ok(normalized)
 }
 
+fn resolve_rust_manifest(repo: &Path, requested: Option<&Path>) -> Result<PathBuf, String> {
+    let requested = requested.ok_or_else(|| {
+        "A contained --rust-manifest Cargo.toml is required for Rust collection".to_string()
+    })?;
+    if requested.is_absolute()
+        || requested
+            .components()
+            .any(|component| matches!(component, std::path::Component::ParentDir))
+    {
+        return Err("--rust-manifest must be repository-relative and contained".into());
+    }
+    let manifest = repo.join(requested).canonicalize().map_err(|error| {
+        format!(
+            "Rust manifest {} is unavailable: {error}",
+            requested.display()
+        )
+    })?;
+    if !manifest.starts_with(repo)
+        || !manifest.is_file()
+        || manifest.file_name().and_then(|name| name.to_str()) != Some("Cargo.toml")
+    {
+        return Err("--rust-manifest must identify a contained Cargo.toml file".into());
+    }
+    Ok(manifest)
+}
+
 fn canonical_clean_repository(path: &Path) -> Result<PathBuf, String> {
     let canonical = path
         .canonicalize()
@@ -634,12 +757,26 @@ fn resolve_product_binary(variable: &str, name: &str) -> Option<ProductBinary> {
     let _ = variable;
     std::env::current_exe()
         .ok()
-        .and_then(|executable| executable.parent().map(|parent| parent.join(name)))
-        .filter(|path| path.is_file())
-        .map(|path| ProductBinary {
-            path,
+        .and_then(|executable| resolve_product_binary_from_executable(&executable, name))
+}
+
+fn resolve_product_binary_from_executable(executable: &Path, name: &str) -> Option<ProductBinary> {
+    let executable_directory = executable.parent()?;
+    let sibling = executable_directory.join(name);
+    if sibling.is_file() {
+        return Some(ProductBinary {
+            path: sibling,
             source: "application_bundle_sibling",
-        })
+        });
+    }
+    let resource = executable_directory
+        .parent()?
+        .join("Resources/collectors")
+        .join(name);
+    resource.is_file().then_some(ProductBinary {
+        path: resource,
+        source: "application_bundle_resource",
+    })
 }
 
 fn unavailable(kind: CollectorKind, started: Instant, reason: String) -> CollectorResult {
@@ -666,8 +803,45 @@ fn error_result(kind: CollectorKind, started: Instant, reason: String) -> Collec
     }
 }
 
+fn error_result_with_tool(
+    kind: CollectorKind,
+    started: Instant,
+    identity: CollectorToolIdentity,
+    reason: String,
+) -> CollectorResult {
+    let mut result = error_result(kind, started, reason);
+    result.tool = Some(identity);
+    result
+}
+
 fn safe_diagnostic(bytes: &[u8]) -> String {
-    safe_text(&String::from_utf8_lossy(bytes), 500)
+    let text = String::from_utf8_lossy(bytes);
+    let diagnostic_lines = text
+        .lines()
+        .filter(|line| {
+            let lower = line.to_ascii_lowercase();
+            lower.contains("error") || lower.contains("failed")
+        })
+        .rev()
+        .take(6)
+        .collect::<Vec<_>>();
+    if diagnostic_lines.is_empty() {
+        let normalized = safe_text(&text, bytes.len());
+        let characters = normalized.chars().count();
+        normalized
+            .chars()
+            .skip(characters.saturating_sub(500))
+            .collect()
+    } else {
+        safe_text(
+            &diagnostic_lines
+                .into_iter()
+                .rev()
+                .collect::<Vec<_>>()
+                .join(" "),
+            500,
+        )
+    }
 }
 
 fn safe_text(value: &str, limit: usize) -> String {
@@ -710,6 +884,61 @@ mod tests {
             .permissions();
         permissions.set_mode(0o755);
         std::fs::set_permissions(path, permissions).expect("fixture permissions");
+    }
+
+    #[test]
+    fn rust_manifest_must_be_a_contained_non_symlink_target() {
+        let repo = tempfile::tempdir().expect("repo");
+        let canonical_repo = repo.path().canonicalize().expect("canonical repo");
+        std::fs::write(repo.path().join("Cargo.toml"), "[workspace]\n").expect("manifest");
+        assert_eq!(
+            resolve_rust_manifest(&canonical_repo, Some(Path::new("Cargo.toml")))
+                .expect("contained manifest"),
+            repo.path()
+                .join("Cargo.toml")
+                .canonicalize()
+                .expect("canonical manifest")
+        );
+        assert!(resolve_rust_manifest(&canonical_repo, Some(Path::new("../Cargo.toml"))).is_err());
+
+        #[cfg(unix)]
+        {
+            let outside = tempfile::tempdir().expect("outside");
+            let outside_manifest = outside.path().join("Cargo.toml");
+            std::fs::write(&outside_manifest, "[workspace]\n").expect("outside manifest");
+            std::os::unix::fs::symlink(&outside_manifest, repo.path().join("linked-Cargo.toml"))
+                .expect("manifest symlink");
+            assert!(
+                resolve_rust_manifest(&canonical_repo, Some(Path::new("linked-Cargo.toml")))
+                    .is_err()
+            );
+        }
+    }
+
+    #[test]
+    fn product_binary_resolution_supports_tauri_resources_and_sibling_compatibility() {
+        let bundle = tempfile::tempdir().expect("bundle");
+        let macos = bundle.path().join("CodeVetter.app/Contents/MacOS");
+        let collectors = bundle
+            .path()
+            .join("CodeVetter.app/Contents/Resources/collectors");
+        std::fs::create_dir_all(&macos).expect("macos directory");
+        std::fs::create_dir_all(&collectors).expect("collector directory");
+        let host = macos.join("codevetter");
+        std::fs::write(&host, "host").expect("host");
+        let resource = collectors.join("gitleaks");
+        std::fs::write(&resource, "resource").expect("resource");
+        let resolved =
+            resolve_product_binary_from_executable(&host, "gitleaks").expect("resource collector");
+        assert_eq!(resolved.path, resource);
+        assert_eq!(resolved.source, "application_bundle_resource");
+
+        let sibling = macos.join("gitleaks");
+        std::fs::write(&sibling, "sibling").expect("sibling");
+        let resolved =
+            resolve_product_binary_from_executable(&host, "gitleaks").expect("sibling collector");
+        assert_eq!(resolved.path, sibling);
+        assert_eq!(resolved.source, "application_bundle_sibling");
     }
 
     fn repository() -> (TempDir, String, String) {
@@ -758,6 +987,71 @@ mod tests {
         (directory, base, head)
     }
 
+    fn rust_repository() -> (TempDir, String, String) {
+        let directory = tempfile::tempdir().expect("temp Rust repository");
+        let repo = directory.path();
+        for args in [
+            vec!["init"],
+            vec!["config", "user.email", "fixture@example.com"],
+            vec!["config", "user.name", "Fixture"],
+        ] {
+            assert!(std::process::Command::new("git")
+                .args(args)
+                .current_dir(repo)
+                .status()
+                .expect("git")
+                .success());
+        }
+        std::fs::create_dir(repo.join("src")).expect("src");
+        std::fs::write(
+            repo.join("Cargo.toml"),
+            "[package]\nname='fixture'\nversion='0.1.0'\nedition='2021'\n",
+        )
+        .expect("manifest");
+        std::fs::write(
+            repo.join("Cargo.lock"),
+            "# This file is automatically @generated by Cargo.\nversion = 3\n\n[[package]]\nname = \"fixture\"\nversion = \"0.1.0\"\n",
+        )
+        .expect("lockfile");
+        std::fs::write(
+            repo.join("src/lib.rs"),
+            "pub fn answer() -> u64 {\n    1\n}\n",
+        )
+        .expect("base source");
+        assert!(std::process::Command::new("git")
+            .args(["add", "."])
+            .current_dir(repo)
+            .status()
+            .expect("git add")
+            .success());
+        assert!(std::process::Command::new("git")
+            .args(["commit", "-m", "base"])
+            .current_dir(repo)
+            .status()
+            .expect("git commit")
+            .success());
+        let base = git_text(repo, &["rev-parse", "HEAD"]).expect("base sha");
+        std::fs::write(
+            repo.join("src/lib.rs"),
+            "pub fn answer() -> u64 {\n    2\n}\n",
+        )
+        .expect("changed source");
+        assert!(std::process::Command::new("git")
+            .args(["add", "."])
+            .current_dir(repo)
+            .status()
+            .expect("git add")
+            .success());
+        assert!(std::process::Command::new("git")
+            .args(["commit", "-m", "change"])
+            .current_dir(repo)
+            .status()
+            .expect("git commit")
+            .success());
+        let head = git_text(repo, &["rev-parse", "HEAD"]).expect("head sha");
+        (directory, base, head)
+    }
+
     #[tokio::test]
     async fn gitleaks_receipt_drops_raw_secret_fields() {
         let (repo, base, head) = repository();
@@ -780,6 +1074,9 @@ exit 1
                 repo_path: repo.path().into(),
                 change: format!("{base}..{head}"),
                 collectors: vec![CollectorKind::Gitleaks],
+                rust_manifest: None,
+                rust_test: None,
+                advisory_db: None,
             },
             ToolPaths {
                 gitleaks: Some(ProductBinary {
@@ -807,6 +1104,9 @@ exit 1
                 repo_path: repo.path().into(),
                 change: format!("{base}..{head}"),
                 collectors: vec![CollectorKind::CargoAudit, CollectorKind::CargoLlvmCov],
+                rust_manifest: None,
+                rust_test: None,
+                advisory_db: None,
             },
             ToolPaths::default(),
         )
@@ -817,6 +1117,148 @@ exit 1
             .iter()
             .all(|collector| collector.status == CollectorStatus::Unavailable));
         assert_eq!(receipt.limitations.len(), 2);
+    }
+
+    #[tokio::test]
+    async fn rust_collectors_execute_offline_and_normalize_subordinate_evidence() {
+        let (repo, base, head) = rust_repository();
+        let tools = tempfile::tempdir().expect("tool directory");
+        let database = tempfile::tempdir().expect("database");
+        std::fs::create_dir(database.path().join("crates")).expect("crates");
+        std::fs::write(
+            database.path().join("crates/fixture.toml"),
+            "id='fixture'\n",
+        )
+        .expect("advisory");
+        let audit = tools.path().join("cargo-audit");
+        executable(
+            &audit,
+            r##"#!/bin/sh
+if [ "$1" = "--version" ]; then printf 'cargo-audit 0.22.2\n'; exit 0; fi
+case " $* " in *" --no-fetch "*) ;; *) exit 9;; esac
+case " $* " in *" --json "*) ;; *) exit 9;; esac
+printf '{"vulnerabilities":{"list":[{"advisory":{"id":"RUSTSEC-2099-0001","title":"fixture issue","description":"raw advisory body"},"package":{"name":"fixture","version":"0.1.0","source":"raw source"},"versions":{"patched":[">=0.1.1"]}}]},"warnings":{"unmaintained":[],"unsound":[],"yanked":[]}}'
+exit 1
+"##,
+        );
+        let coverage = tools.path().join("cargo-llvm-cov");
+        executable(
+            &coverage,
+            r##"#!/bin/sh
+if [ "$1" = "llvm-cov" ] && [ "$2" = "--version" ]; then printf 'cargo-llvm-cov 0.9.0\n'; exit 0; fi
+case " $* " in *" --offline "*) ;; *) exit 9;; esac
+case " $* " in *" --frozen "*) ;; *) exit 9;; esac
+case " $* " in
+  *" --lcov "*" --test integration "*) printf 'SF:%s/src/lib.rs\nDA:2,0\nend_of_record\n' "$PWD" ;;
+  *" report --json "*) printf '{"data":[{"files":[{"filename":"%s/src/lib.rs","segments":[[2,5,0,true,true,false]]}]}]}' "$PWD" ;;
+  *) exit 9 ;;
+esac
+"##,
+        );
+
+        let receipt = collect_tool_evidence_with_paths(
+            ToolCollectionInput {
+                repo_path: repo.path().into(),
+                change: format!("{base}..{head}"),
+                collectors: vec![CollectorKind::CargoAudit, CollectorKind::CargoLlvmCov],
+                rust_manifest: Some("Cargo.toml".into()),
+                rust_test: Some("integration".into()),
+                advisory_db: Some(database.path().into()),
+            },
+            ToolPaths {
+                cargo_audit: Some(ProductBinary {
+                    path: audit,
+                    source: "test_fixture",
+                }),
+                cargo_llvm_cov: Some(ProductBinary {
+                    path: coverage,
+                    source: "test_fixture",
+                }),
+                ..ToolPaths::default()
+            },
+        )
+        .await
+        .expect("collector receipt");
+        assert_eq!(receipt.collectors.len(), 2);
+        assert!(receipt
+            .collectors
+            .iter()
+            .all(|collector| collector.status == CollectorStatus::Findings));
+        assert_eq!(receipt.collectors[0].finding_count, 1);
+        assert_eq!(receipt.collectors[1].finding_count, 1);
+        let serialized = serde_json::to_string(&receipt).expect("serialize");
+        assert!(!serialized.contains("raw advisory body"));
+        assert!(!serialized.contains("raw source"));
+        assert!(serialized.contains("--no-fetch"));
+        assert!(serialized.contains("--offline"));
+    }
+
+    #[cfg(unix)]
+    #[tokio::test]
+    async fn bounded_execution_kills_and_reaps_the_process_group() {
+        let fixture = tempfile::tempdir().expect("fixture");
+        let binary = fixture.path().join("spawn-child");
+        let pid_file = fixture.path().join("child.pid");
+        executable(
+            &binary,
+            "#!/bin/sh\nsleep 30 &\nprintf '%s' \"$!\" > \"$1\"\nwait\n",
+        );
+        let mut command = Command::new(&binary);
+        command
+            .arg(&pid_file)
+            .stdin(Stdio::null())
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
+            .kill_on_drop(true);
+        let error = execute_bounded(command, Duration::from_secs(2), 1024, 1024)
+            .await
+            .expect_err("timeout");
+        assert!(error.contains("exceeded"));
+        let child_pid = std::fs::read_to_string(&pid_file)
+            .expect("child pid")
+            .parse::<i32>()
+            .expect("numeric pid");
+        tokio::time::sleep(Duration::from_millis(50)).await;
+        assert_eq!(unsafe { libc::kill(child_pid, 0) }, -1);
+    }
+
+    #[cfg(unix)]
+    #[tokio::test]
+    async fn cancelling_collection_kills_the_process_group() {
+        let fixture = tempfile::tempdir().expect("fixture");
+        let binary = fixture.path().join("spawn-child");
+        let pid_file = fixture.path().join("child.pid");
+        executable(
+            &binary,
+            "#!/bin/sh\nsleep 30 &\nprintf '%s' \"$!\" > \"$1\"\nwait\n",
+        );
+        let mut command = Command::new(&binary);
+        command
+            .arg(&pid_file)
+            .stdin(Stdio::null())
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
+            .kill_on_drop(true);
+        let execution = tokio::spawn(execute_bounded(
+            command,
+            Duration::from_secs(30),
+            1024,
+            1024,
+        ));
+        for _ in 0..50 {
+            if pid_file.is_file() {
+                break;
+            }
+            tokio::time::sleep(Duration::from_millis(20)).await;
+        }
+        let child_pid = std::fs::read_to_string(&pid_file)
+            .expect("child pid")
+            .parse::<i32>()
+            .expect("numeric pid");
+        execution.abort();
+        assert!(execution.await.expect_err("cancelled task").is_cancelled());
+        tokio::time::sleep(Duration::from_millis(50)).await;
+        assert_eq!(unsafe { libc::kill(child_pid, 0) }, -1);
     }
 
     #[test]

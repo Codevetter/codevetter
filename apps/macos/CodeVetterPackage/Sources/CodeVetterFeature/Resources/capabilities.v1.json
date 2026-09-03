@@ -607,29 +607,30 @@
       },
       "underlying_tools": [
         {
-          "name": "Gitleaks",
-          "role": "Scans the selected change for secret exposure",
-          "requirement": "optional local tool"
+          "name": "Gitleaks 8.30.1",
+          "role": "Scans the selected change without retaining raw secret values",
+          "requirement": "packaged product resource"
         },
         {
-          "name": "cargo-audit",
-          "role": "Checks Rust advisories using available local data",
-          "requirement": "optional local tool"
+          "name": "cargo-audit 0.22.2",
+          "role": "Checks Cargo.lock against a pinned offline RustSec snapshot",
+          "requirement": "packaged product resource"
         },
         {
-          "name": "cargo-llvm-cov",
-          "role": "Captures Rust coverage evidence",
-          "requirement": "optional local tool"
+          "name": "cargo-llvm-cov 0.9.0",
+          "role": "Captures changed Rust line and region evidence for one explicit test target",
+          "requirement": "packaged product resource"
         }
       ],
       "data_boundary": "Explicit change range in the selected local repository; collectors receive only their declared inputs.",
       "qualification": "partial",
       "limitations": [
         "The native glossary reports declared collectors and limitations but does not execute them.",
-        "Collectors are not installed or network-enabled automatically.",
-        "Unavailable offline data keeps the claim closed."
+        "Collectors never install tools, refresh the advisory database, or enable network access during verification.",
+        "Rust coverage requires a user-selected test target and an existing llvm-tools-preview component.",
+        "The resources are qualified in the local package path; signed and notarized release-bundle proof remains pending."
       ],
-      "next_step": "Add bounded collector receipt inspection to the native UI and scoped MCP without granting either surface collector-execution authority."
+      "next_step": "Add bounded collector receipt inspection to the native UI and scoped MCP without granting either surface collector-execution authority, then repeat qualification in the signed production archive."
     },
     {
       "id": "repository.snapshot_scan",

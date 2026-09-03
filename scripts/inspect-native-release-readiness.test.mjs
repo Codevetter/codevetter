@@ -14,7 +14,20 @@ function input(overrides = {}) {
       schema_version: 'codevetter.native-package-qualification/v1',
       status: 'local_package_qualified',
       application: { path: '/fixture/CodeVetter.app', version: '1.11.0', build: '11100' },
-      sidecars: [{ name: 'codevetter' }, { name: 'codevetter-mcp' }, { name: 'ccusage' }],
+      sidecars: [
+        { name: 'codevetter', relative_path: 'Contents/MacOS/codevetter' },
+        { name: 'codevetter-mcp', relative_path: 'Contents/MacOS/codevetter-mcp' },
+        { name: 'ccusage', relative_path: 'Contents/MacOS/ccusage' },
+        {
+          name: 'cargo-audit',
+          relative_path: 'Contents/Resources/collectors/cargo-audit',
+        },
+        {
+          name: 'cargo-llvm-cov',
+          relative_path: 'Contents/Resources/collectors/cargo-llvm-cov',
+        },
+        { name: 'gitleaks', relative_path: 'Contents/Resources/collectors/gitleaks' },
+      ],
       archives: [{ sha256: 'archive-sha' }],
     },
     info: {
@@ -32,6 +45,9 @@ function input(overrides = {}) {
       teamIdentifier: 'TEAM123',
     },
     companionSignatures: [
+      { developerID: true, teamIdentifier: 'TEAM123' },
+      { developerID: true, teamIdentifier: 'TEAM123' },
+      { developerID: true, teamIdentifier: 'TEAM123' },
       { developerID: true, teamIdentifier: 'TEAM123' },
       { developerID: true, teamIdentifier: 'TEAM123' },
       { developerID: true, teamIdentifier: 'TEAM123' },
@@ -105,6 +121,9 @@ test('preview package fails closed on identity, signing, updater, and release pr
         teamIdentifier: null,
       },
       companionSignatures: [
+        { developerID: false, teamIdentifier: null },
+        { developerID: false, teamIdentifier: null },
+        { developerID: false, teamIdentifier: null },
         { developerID: false, teamIdentifier: null },
         { developerID: false, teamIdentifier: null },
         { developerID: false, teamIdentifier: null },

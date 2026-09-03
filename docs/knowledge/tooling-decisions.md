@@ -43,17 +43,16 @@ questions, not findings.
 
 | Tool | License | Surface | Category detail |
 |---|---|---|---|
-| `cargo-audit` (via `rustsec` crate) | MIT OR Apache-2.0 | In-process in `src-tauri/` | [supply chain](./tooling-secrets-and-supply-chain.md) |
-| `gitleaks` | MIT | Sidecar binary | [supply chain](./tooling-secrets-and-supply-chain.md) |
-| `cargo-llvm-cov` | MIT OR Apache-2.0 | Sidecar binary | [coverage](./tooling-coverage.md) |
-| `lcov` crate | MIT OR Apache-2.0 | In-process parser | [coverage](./tooling-coverage.md) |
+| `cargo-audit` 0.22.2 | MIT OR Apache-2.0 | Product resource, supervised by `src-tauri/` | [supply chain](./tooling-secrets-and-supply-chain.md) |
+| `gitleaks` 8.30.1 | MIT | Product resource, supervised by `src-tauri/` | [supply chain](./tooling-secrets-and-supply-chain.md) |
+| `cargo-llvm-cov` 0.9.0 | MIT OR Apache-2.0 | Product resource, supervised by `src-tauri/` | [coverage](./tooling-coverage.md) |
 | τ³-bench (tau2-bench) | MIT | Corpus under `benchmarks/` | [agent benchmarks](./tooling-agent-benchmarks.md) |
 | Terminal-Bench 4.0 (Harbor) | Apache-2.0 | Corpus under `benchmarks/` | [agent benchmarks](./tooling-agent-benchmarks.md) |
 | `libkrun` | Apache-2.0 | In-process VMM in `src-tauri/` | [sandboxing](./tooling-sandboxing.md) |
 
-These are product-lane decisions, not implementation receipts. In particular,
-Gitleaks is now **wired** for this repository's hooks and CI, while bundling it
-as a signed desktop sidecar remains **approved** work.
+These are product-lane decisions. The three collector resources now also have
+an unreleased [implementation and qualification receipt](../../evidence/verification/tool-collector-qualification-2026-09-03.md).
+A signed/notarized production archive remains a separate release gate.
 
 ## Repository and maintainer tooling
 
@@ -63,6 +62,7 @@ as a signed desktop sidecar remains **approved** work.
 | GitHub CodeQL default setup | Wired | GitHub-hosted scanning of this public repository only |
 | Biome SARIF | Wired | Local artifact generation plus code-scanning upload |
 | Gitleaks 8.30.1 | Wired | Staged-change hook, full-history local check, and checksum-pinned CI binary |
+| Product collector bundle | Qualified in unreleased source/package path | Exact Gitleaks, cargo-audit, cargo-llvm-cov, and pinned RustSec resources; no-shell bounded execution; final hosted bundle/signing gate remains |
 | zizmor 1.29 / action 0.6.2 | Wired | Offline local workflow audit plus GitHub code-scanning upload |
 | actionlint 1.7.12 + ShellCheck 0.11.0 | Wired | Workflow syntax/semantics and embedded-shell validation; checksum-pinned CI binaries and local `pnpm quality:workflows` command |
 | cargo-deny 0.20.2 | Wired | Offline Rust license, source, wildcard-requirement, and duplicate-version policy; native SARIF for actionable policy violations |

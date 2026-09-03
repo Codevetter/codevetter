@@ -100,14 +100,17 @@ partial evidence into full confidence.
 ## External collector boundary
 
 The unreleased `codevetter collect` path resolves the same exact clean Git
-change before invoking an optional local sidecar. `tool_collectors.rs` owns
-binary/config identity, no-shell supervision, output limits, normalization, and
-limitations; the external tool does not own the CodeVetter verdict. The first
-implemented adapter is Gitleaks 8.30.1 and drops raw match/secret fields before
-serialization. cargo-audit and cargo-llvm-cov remain claim-closed preflights
-until their offline database and LLVM prerequisites are packaged. The
-[qualification receipt](https://github.com/Codevetter/codevetter/blob/main/evidence/verification/tool-collector-foundation-2026-08-31.md)
-records the proven slice; issue #198 owns packaging and remaining execution.
+change before invoking explicitly selected product resources.
+`tool_collectors.rs` owns binary/config identity, no-shell supervision,
+process-tree timeouts, output limits, normalization, and limitations; external
+tools do not own the CodeVetter verdict. Gitleaks 8.30.1 drops raw match/secret
+fields, cargo-audit 0.22.2 uses a pinned local RustSec snapshot with fetching
+disabled, and cargo-llvm-cov 0.9.0 requires an explicit test target and existing
+LLVM tools before producing changed-line and changed-region evidence. Missing
+prerequisites are `unavailable`, never a pass or implicit install. The
+[qualification receipt](https://github.com/Codevetter/codevetter/blob/main/evidence/verification/tool-collector-qualification-2026-09-03.md)
+records the proven source/package slice; issue #198 owns the remaining hosted
+bundle and landing gate.
 
 ## Manifest and interruption behavior
 

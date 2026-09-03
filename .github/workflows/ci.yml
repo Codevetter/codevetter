@@ -140,6 +140,9 @@ jobs:
           pnpm run prepare:ccusage-sidecar
           CCUSAGE_TARGET="$(rustc -vV | sed -n 's/^host: //p')"
           "src-tauri/binaries/ccusage-$CCUSAGE_TARGET" --version
+      - name: Test pinned macOS collector preparation contract
+        working-directory: apps/desktop
+        run: pnpm run test:collector-sidecars
       - name: Qualify CLI artifact
         working-directory: apps/desktop
         run: |

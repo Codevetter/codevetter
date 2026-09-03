@@ -13,6 +13,10 @@ default.profraw
 apps/desktop/src-tauri/target/
 apps/desktop/src-tauri/binaries/codevetter-*
 apps/desktop/src-tauri/binaries/ccusage-*
+apps/desktop/src-tauri/resources/collectors/cargo-audit*
+apps/desktop/src-tauri/resources/collectors/cargo-llvm-cov*
+apps/desktop/src-tauri/resources/collectors/gitleaks*
+apps/desktop/src-tauri/resources/rustsec-advisory-db/snapshot/
 apps/desktop/src-tauri/sidecar/
 apps/desktop/out/
 apps/desktop/.next/

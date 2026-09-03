@@ -5,6 +5,7 @@ import { join } from 'node:path';
 import test from 'node:test';
 
 import {
+  architectureForTarget,
   assertFrameworkRPath,
   assertNoCoverageInstrumentation,
   assertPackagedCliCapabilities,
@@ -130,6 +131,9 @@ test('runtime packaging includes executable modules and excludes tests', () => {
 
 test('host and argument parsing preserve explicit operator choices', () => {
   assert.equal(hostTarget('rustc 1.90.0\nhost: aarch64-apple-darwin\n'), 'aarch64-apple-darwin');
+  assert.equal(architectureForTarget('aarch64-apple-darwin'), 'arm64');
+  assert.equal(architectureForTarget('x86_64-apple-darwin'), 'x86_64');
+  assert.throws(() => architectureForTarget('x86_64-unknown-linux-gnu'), /Unsupported/);
   const options = parseArguments([
     '--app',
     '/tmp/CodeVetter.app',
@@ -139,11 +143,14 @@ test('host and argument parsing preserve explicit operator choices', () => {
     'Developer ID Application: Example',
     '--channel',
     'production',
+    '--target',
+    'x86_64-apple-darwin',
     '--skip-sidecar-build',
   ]);
   assert.equal(options.app, '/tmp/CodeVetter.app');
   assert.equal(options.outputRoot, '/tmp/native-package');
   assert.equal(options.identity, 'Developer ID Application: Example');
   assert.equal(options.channel, 'production');
+  assert.equal(options.target, 'x86_64-apple-darwin');
   assert.equal(options.prepareSidecars, false);
 });

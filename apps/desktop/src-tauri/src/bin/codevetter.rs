@@ -126,7 +126,7 @@ Usage:
   codevetter retention (--max-age-days <n> | --max-archive-mib <n>) [--json]
   codevetter retention (--apply <plan-id> | --checkpoint [--vacuum]) [--json]
   codevetter rubrics [--select <id> | --id <id> --name <name> --focus <text> --check <text>...] [--json]
-  codevetter collect --range <base..head> --collector <name> [--collector <name> ...] [--repo <path>] [--json]
+  codevetter collect --range <base..head> --collector <name> [--collector <name> ...] [--rust-manifest <path>] [--rust-test <name>] [--advisory-db <path>] [--repo <path>] [--json]
   codevetter capabilities [--json | --schema]
   codevetter runs [--repo <path>] [--limit <n>] [--json]
   codevetter fix-packet --run-id <id> [--finding <id> ...] [--json]
@@ -159,6 +159,9 @@ Options:
   --warmups <n>             Performance warmups, 0-5 (default: 1)
   --timeout-ms <n>          Per-workload timeout, 100-120000 (default: 30000)
   --collector <name>        gitleaks, cargo-audit, or cargo-llvm-cov (repeatable)
+  --rust-manifest <path>    Repository-relative Cargo.toml for Rust collectors
+  --rust-test <name>        Exact Cargo test target for cargo-llvm-cov
+  --advisory-db <path>      Explicit pinned local RustSec database (bundle resource by default)
   --operation <name>        Performance operation: plan, diagnose, verify-paired, or inspect
   --consumer <name>         Scope consumer: testing or performance
   --flow <text>             Discover targets for one human-described flow
@@ -263,6 +266,9 @@ struct CollectArguments {
     repo_path: PathBuf,
     change: String,
     collectors: Vec<CollectorKind>,
+    rust_manifest: Option<PathBuf>,
+    rust_test: Option<String>,
+    advisory_db: Option<PathBuf>,
     output: OutputMode,
 }
 
@@ -2102,6 +2108,9 @@ async fn run_collect(arguments: CollectArguments) -> Result<i32, String> {
         repo_path: arguments.repo_path,
         change: arguments.change,
         collectors: arguments.collectors,
+        rust_manifest: arguments.rust_manifest,
+        rust_test: arguments.rust_test,
+        advisory_db: arguments.advisory_db,
     })
     .await?;
     match arguments.output {
@@ -3830,6 +3839,9 @@ fn parse_collect(
     let mut repo_path = None;
     let mut range = None;
     let mut collectors = Vec::new();
+    let mut rust_manifest = None;
+    let mut rust_test = None;
+    let mut advisory_db = None;
     let mut output = OutputMode::Human;
     while let Some(argument) = arguments.next() {
         match argument.as_str() {
@@ -3839,6 +3851,19 @@ fn parse_collect(
                 &mut arguments,
                 "--collector",
             )?)?),
+            "--rust-manifest" => {
+                rust_manifest = Some(PathBuf::from(required_value(
+                    &mut arguments,
+                    "--rust-manifest",
+                )?))
+            }
+            "--rust-test" => rust_test = Some(required_value(&mut arguments, "--rust-test")?),
+            "--advisory-db" => {
+                advisory_db = Some(PathBuf::from(required_value(
+                    &mut arguments,
+                    "--advisory-db",
+                )?))
+            }
             "--json" => output = OutputMode::Json,
             "--help" | "-h" => return Ok(CliCommand::Help),
             _ => return Err(format!("unknown collect argument `{argument}`")),
@@ -3851,6 +3876,9 @@ fn parse_collect(
         repo_path: repo_path.unwrap_or_else(|| cwd.to_path_buf()),
         change: range.ok_or_else(|| "--range is required".to_string())?,
         collectors,
+        rust_manifest,
+        rust_test,
+        advisory_db,
         output,
     }))
 }
