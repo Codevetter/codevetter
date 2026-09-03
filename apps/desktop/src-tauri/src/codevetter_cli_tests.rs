@@ -10,6 +10,13 @@ const SURFACE_PARITY_FIXTURE: &str =
 const LOCAL_CHECK_PARITY_FIXTURE: &str =
     include_str!("../tests/fixtures/surface-parity/local-check-v1.json");
 
+#[cfg(unix)]
+#[test]
+fn cli_shutdown_uses_conventional_signal_exit_codes() {
+    assert_eq!(CliShutdownSignal::Interrupt.exit_code(), 130);
+    assert_eq!(CliShutdownSignal::Terminate.exit_code(), 143);
+}
+
 fn surface_parity_fixture() -> serde_json::Value {
     serde_json::from_str(SURFACE_PARITY_FIXTURE).expect("surface parity fixture")
 }
