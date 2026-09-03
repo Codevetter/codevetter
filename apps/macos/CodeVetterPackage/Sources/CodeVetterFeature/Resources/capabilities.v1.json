@@ -912,17 +912,18 @@
       },
       "underlying_tools": [
         {
-          "name": "Apple Containerization or measured alternative",
-          "role": "Candidate containment boundary",
-          "requirement": "not selected"
+          "name": "Apple container CLI 1.3.1",
+          "role": "Selected external-prerequisite isolation backend with a CodeVetter-owned mount planner",
+          "requirement": "qualified candidate; runner not shipped"
         }
       ],
-      "data_boundary": "Not yet defined; no isolation claim is made.",
-      "qualification": "unqualified",
+      "data_boundary": "Only an app-owned immutable worktree may be mounted, using a canonical read-only source under the selected root. No runtime-isolation claim is made yet.",
+      "qualification": "partial",
       "limitations": [
-        "No production isolation backend has passed the runtime and compatibility gates."
+        "The supervised runner, exact local-image preflight, internal-network attestation, bounded output, cancellation, and real-workload regression evidence remain open.",
+        "The CLI string interface retains a final TOCTOU window and is not approved for concurrently mutable host roots."
       ],
-      "next_step": "Benchmark candidates against real CodeVetter workloads before selecting a dependency."
+      "next_step": "Complete the claim-closed runner contract and qualify it against real verification workloads before exposing this capability."
     }
   ]
 }
