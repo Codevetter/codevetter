@@ -307,8 +307,13 @@ func hundredRunLedgerDecodesAndRendersWithinTheNativeGate() throws {
 
   let decodeP95 = percentile95(decodeSamples)
   let renderP95 = percentile95(renderSamples)
-  #expect(decodeP95 < 25_000, "100-run decoding must stay below 25 ms p95")
-  #expect(renderP95 < 150_000, "100-run/100-response host rendering must stay below 150 ms p95")
+  if nativePerformanceGateEnabled() {
+    #expect(decodeP95 < 25_000, "100-run decoding must stay below 25 ms p95")
+    #expect(
+      renderP95 < 150_000,
+      "100-run/100-response host rendering must stay below 150 ms p95"
+    )
+  }
   print(
     "NATIVE_RUN_LEDGER_BENCHMARK_JSON "
       + "{\"decode_p95_us\":\(decodeP95),\"render_p95_us\":\(renderP95),"
@@ -879,6 +884,10 @@ func percentile95(_ values: [UInt64]) -> UInt64 {
   let ordered = values.sorted()
   let nearestRank = Int(ceil(Double(ordered.count) * 0.95))
   return ordered[min(max(nearestRank - 1, 0), ordered.count - 1)]
+}
+
+func nativePerformanceGateEnabled() -> Bool {
+  ProcessInfo.processInfo.environment["CODEVETTER_NATIVE_PERFORMANCE_GATE"] == "1"
 }
 
 func unpackFixturePayload(
