@@ -3511,12 +3511,12 @@ public final class CodeVetterProcessRunner: @unchecked Sendable {
   private func runReadOnly(executable: URL, arguments: [String]) async throws -> Data {
     try await withCheckedThrowingContinuation { continuation in
       let process = Process()
-      let stdout = LockedData()
-      let stderr = LockedData()
+      let stdout = LockedPipeCapture()
+      let stderr = LockedPipeCapture()
       let stdoutPipe = Pipe()
       let stderrPipe = Pipe()
-      stdoutPipe.fileHandleForReading.readabilityHandler = { stdout.append($0.availableData) }
-      stderrPipe.fileHandleForReading.readabilityHandler = { stderr.append($0.availableData) }
+      stdoutPipe.fileHandleForReading.readabilityHandler = { stdout.consume(from: $0) }
+      stderrPipe.fileHandleForReading.readabilityHandler = { stderr.consume(from: $0) }
       process.executableURL = executable
       process.arguments = arguments
       process.standardOutput = stdoutPipe
@@ -3524,15 +3524,16 @@ public final class CodeVetterProcessRunner: @unchecked Sendable {
       process.terminationHandler = { completed in
         stdoutPipe.fileHandleForReading.readabilityHandler = nil
         stderrPipe.fileHandleForReading.readabilityHandler = nil
-        stdout.append(stdoutPipe.fileHandleForReading.readDataToEndOfFile())
-        stderr.append(stderrPipe.fileHandleForReading.readDataToEndOfFile())
+        let output = stdout.finish(from: stdoutPipe.fileHandleForReading)
+        let errors = stderr.finish(from: stderrPipe.fileHandleForReading)
         guard completed.terminationStatus == 0 else {
           continuation.resume(
             throwing: VerificationRunnerError.launchFailed(
-              stderr.string.trimmingCharacters(in: .whitespacesAndNewlines)))
+              String(decoding: errors, as: UTF8.self)
+                .trimmingCharacters(in: .whitespacesAndNewlines)))
           return
         }
-        continuation.resume(returning: stdout.value)
+        continuation.resume(returning: output)
       }
       do {
         try process.run()
@@ -3549,18 +3550,13 @@ public final class CodeVetterProcessRunner: @unchecked Sendable {
     requestID: String? = nil,
     onStderrLine: (@Sendable (String) -> Void)? = nil
   ) async throws -> TrackedProcessOutput {
-    let stdout = LockedData()
-    let stderr = LockedData()
+    let stdout = LockedPipeCapture()
+    let stderr = LockedPipeCapture()
     let stdoutPipe = Pipe()
     let stderrPipe = Pipe()
-    let stderrLines = LockedLineBuffer()
-    stdoutPipe.fileHandleForReading.readabilityHandler = { stdout.append($0.availableData) }
+    stdoutPipe.fileHandleForReading.readabilityHandler = { stdout.consume(from: $0) }
     stderrPipe.fileHandleForReading.readabilityHandler = { handle in
-      let data = handle.availableData
-      stderr.append(data)
-      for line in stderrLines.append(data) {
-        onStderrLine?(line)
-      }
+      stderr.consume(from: handle, onLine: onStderrLine)
     }
 
     let process = Process()
@@ -3574,20 +3570,19 @@ public final class CodeVetterProcessRunner: @unchecked Sendable {
         process.terminationHandler = { [weak self] completed in
           stdoutPipe.fileHandleForReading.readabilityHandler = nil
           stderrPipe.fileHandleForReading.readabilityHandler = nil
-          stdout.append(stdoutPipe.fileHandleForReading.readDataToEndOfFile())
-          let trailingErrors = stderrPipe.fileHandleForReading.readDataToEndOfFile()
-          stderr.append(trailingErrors)
-          for line in stderrLines.append(trailingErrors) + stderrLines.finish() {
-            onStderrLine?(line)
-          }
+          let output = stdout.finish(from: stdoutPipe.fileHandleForReading)
+          let errors = stderr.finish(
+            from: stderrPipe.fileHandleForReading,
+            onLine: onStderrLine
+          )
           let wasCancelled = self?.clear(completed) ?? false
           if wasCancelled {
             continuation.resume(throwing: CancellationError())
           } else {
             continuation.resume(
               returning: TrackedProcessOutput(
-                stdout: stdout.value,
-                stderr: stderr.value,
+                stdout: output,
+                stderr: errors,
                 status: completed.terminationStatus
               ))
           }
@@ -3661,60 +3656,51 @@ private func decodeProgress(
   onProgress(progress)
 }
 
-private final class LockedData: @unchecked Sendable {
+private final class LockedPipeCapture: @unchecked Sendable {
   private let lock = NSLock()
   private var data = Data()
+  private var pending = Data()
+  private var finished = false
 
-  var string: String {
+  func consume(
+    from handle: FileHandle,
+    onLine: (@Sendable (String) -> Void)? = nil
+  ) {
     lock.lock()
     defer { lock.unlock() }
-    return String(data: data, encoding: .utf8) ?? ""
+    guard !finished else { return }
+    append(handle.availableData, onLine: onLine)
   }
 
-  var value: Data {
+  func finish(
+    from handle: FileHandle,
+    onLine: (@Sendable (String) -> Void)? = nil
+  ) -> Data {
     lock.lock()
     defer { lock.unlock() }
+    guard !finished else { return data }
+    append(handle.readDataToEndOfFile(), onLine: onLine)
+    if let onLine, !pending.isEmpty,
+      let line = String(data: pending, encoding: .utf8)
+    {
+      onLine(line)
+    }
+    pending.removeAll()
+    finished = true
     return data
   }
 
-  func append(_ chunk: Data) {
+  private func append(_ chunk: Data, onLine: (@Sendable (String) -> Void)?) {
     guard !chunk.isEmpty else { return }
-    lock.lock()
     data.append(chunk)
-    lock.unlock()
-  }
-}
-
-private final class LockedLineBuffer: @unchecked Sendable {
-  private let lock = NSLock()
-  private var pending = Data()
-
-  func append(_ chunk: Data) -> [String] {
-    guard !chunk.isEmpty else { return [] }
-    lock.lock()
-    defer { lock.unlock() }
+    guard let onLine else { return }
     pending.append(chunk)
-    return drainCompleteLines()
-  }
-
-  func finish() -> [String] {
-    lock.lock()
-    defer { lock.unlock() }
-    guard !pending.isEmpty else { return [] }
-    defer { pending.removeAll() }
-    guard let line = String(data: pending, encoding: .utf8) else { return [] }
-    return [line]
-  }
-
-  private func drainCompleteLines() -> [String] {
-    var lines: [String] = []
     while let newline = pending.firstIndex(of: 0x0A) {
       let line = pending[..<newline]
       if let text = String(data: line, encoding: .utf8), !text.isEmpty {
-        lines.append(text)
+        onLine(text)
       }
       pending.removeSubrange(...newline)
     }
-    return lines
   }
 }
