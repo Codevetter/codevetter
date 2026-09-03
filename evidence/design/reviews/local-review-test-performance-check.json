@@ -1,0 +1,32 @@
+{
+  "$schema": "fleet.design-review.v1",
+  "version": 1,
+  "project": "codevetter",
+  "target": "Local review, test, and performance check in Review setup",
+  "mode": "preserve",
+  "register": "product",
+  "context": { "product": "PRODUCT.md", "design": "DESIGN.md" },
+  "direction": {
+    "references": [],
+    "probes": [],
+    "selected": "existing-design",
+    "approval": "not-required",
+    "before": "artifacts/design/trex-before-1440.png"
+  },
+  "evidence": {
+    "screenshots": [
+      { "width": 390, "path": "artifacts/design/review-agent-readiness-after-390.png" },
+      { "width": 768, "path": "artifacts/design/review-agent-readiness-after-768.png" },
+      { "width": 1440, "path": "artifacts/design/review-agent-readiness-after-1440.png" }
+    ],
+    "projectCheck": { "command": "cd apps/desktop && pnpm exec tsc --noEmit", "status": "pass" },
+    "critique": { "score": 38, "maximum": 40 },
+    "audit": { "score": 18, "maximum": 20 },
+    "unresolved": { "p0": 0, "p1": 0 },
+    "detector": { "posture": "advisory", "findings": [] }
+  },
+  "ownerFeedback": {
+    "decision": "delegated",
+    "note": "Owner approved the exact bounded flow and asked for no extra feature or optimization work; the preserve-lane implementation follows the existing workbench language."
+  }
+}

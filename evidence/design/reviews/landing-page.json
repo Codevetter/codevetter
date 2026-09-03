@@ -1,0 +1,134 @@
+{
+  "$schema": "fleet.design-review.v1",
+  "version": 1,
+  "project": "codevetter",
+  "target": "CodeVetter execution-backed verification landing page",
+  "surfaceMode": "persuade",
+  "mode": "overhaul",
+  "register": "product",
+  "context": {
+    "product": "PRODUCT.md",
+    "design": "DESIGN.md"
+  },
+  "direction": {
+    "references": [
+      "CodeVetter desktop review workbench",
+      "repository-tracked verification receipts",
+      "public synthetic benchmark and scorer"
+    ],
+    "probes": [
+      {
+        "id": "initial-candidate",
+        "path": "artifacts/design/landing-audit/candidate-1440.png"
+      },
+      {
+        "id": "stable-document-render",
+        "path": "artifacts/design/landing-audit/final-1440.png"
+      },
+      {
+        "id": "product-proof-revision",
+        "path": "artifacts/design/landing-audit/final-p1-1440.png"
+      }
+    ],
+    "selected": "product-proof-revision",
+    "approval": "delegated",
+    "before": "artifacts/design/landing-audit/candidate-1440.png",
+    "library": {
+      "strategy": "upstream-first",
+      "primary": "existing-project-system",
+      "sources": [],
+      "runtime": "existing",
+      "customReplacement": {
+        "used": false,
+        "authorization": "not-required",
+        "reason": ""
+      }
+    },
+    "contract": {
+      "purpose": "CodeVetter verifies whether a coding agent completed the requested task by binding the exact change to executable checks, retained evidence, explicit limitations, and a measurable verdict.",
+      "purposeSource": "Site Health dossier, PRODUCT.md, current CLI contract, and v1.11.0 release artifacts",
+      "canonicalPurpose": "Execution-backed verification and evaluation for coding-agent changes.",
+      "purposeAlignment": "match",
+      "driftNote": "",
+      "audience": "Engineers and teams supervising, evaluating, or accepting coding-agent changes.",
+      "job": "Understand the verification boundary, inspect real product and receipt evidence, run the bundled CLI against an exact repository change, or install the current local desktop workbench.",
+      "thesis": "A review finding is a hypothesis; only task-relevant execution evidence can produce a pass, fail, or unverified verdict.",
+      "system": "A dark verification instrument using the established CodeVetter tokens, evidence typography, bounded cyan accents, exact CLI commands, real workbench capture, and responsive document flow.",
+      "signature": "The task-change-check-evidence-limit-verdict chain connects an illustrative receipt anatomy to an actual bundled CLI invocation, real tracked receipt, and current desktop workbench.",
+      "risk": "The product could be mistaken for a hosted generic AI reviewer, so the page explicitly distinguishes optional provider analysis from local execution evidence and limits every availability and benchmark claim."
+    }
+  },
+  "evidence": {
+    "screenshots": [
+      {
+        "width": 390,
+        "path": "artifacts/design/landing-audit/final-p1-390.png"
+      },
+      {
+        "width": 768,
+        "path": "artifacts/design/landing-audit/final-p1-768.png"
+      },
+      {
+        "width": 1440,
+        "path": "artifacts/design/landing-audit/final-p1-1440.png"
+      }
+    ],
+    "projectCheck": {
+      "command": "cd apps/landing-page-astro && pnpm build && node scripts/verify-agent-surfaces.mjs dist; Chromium responsive/footer/Axe acceptance against local Wrangler worker",
+      "status": "pass"
+    },
+    "critique": {
+      "score": 36,
+      "maximum": 40
+    },
+    "audit": {
+      "score": 19,
+      "maximum": 20
+    },
+    "unresolved": {
+      "p0": 0,
+      "p1": 0
+    },
+    "detector": {
+      "posture": "advisory",
+      "findings": []
+    },
+    "comprehension": {
+      "status": "pass",
+      "reviewer": "independent strict P1 source and responsive screenshot review",
+      "answers": {
+        "product": "CodeVetter is an execution-backed verification and evaluation system for coding-agent changes.",
+        "audience": "Engineers and teams that need reproducible acceptance evidence before trusting or shipping an agent result.",
+        "value": "It replaces plausible completion claims with an inspectable pass, fail, or unverified verdict.",
+        "mechanism": "It binds the requested task and exact change to repository-owned checks, evidence, provenance, and explicit limitations.",
+        "proof": "The page includes a supported v1.11 CLI invocation, a real immutable verification receipt, the current desktop workbench, and a bounded public benchmark.",
+        "nextAction": "Run the bundled verifier against a repository change or install the current Apple-silicon desktop release."
+      },
+      "purposeScore": {
+        "product": 25,
+        "audience": 15,
+        "value": 15,
+        "mechanism": 15,
+        "proof": 13,
+        "nextAction": 13,
+        "total": 96
+      },
+      "mismatches": []
+    },
+    "performance": {
+      "report": ".fleet/evidence/landing-audit/performance.html",
+      "weightedLcpMs": 514,
+      "cls": 0,
+      "tbtMs": 0
+    },
+    "visualQuality": {
+      "priority": "P1",
+      "score": 91,
+      "minimum": 90
+    }
+  },
+  "ownerFeedback": {
+    "decision": "delegated",
+    "note": "The owner delegated the Fleet landing-page overhaul and explicitly required P1 projects to meet the highest quality tier without repeated feedback loops."
+  }
+}
