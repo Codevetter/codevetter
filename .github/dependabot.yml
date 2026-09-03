@@ -29,6 +29,14 @@ updates:
       # simply detects more clones fails the gate without any code changing.
       # Upgrade it deliberately, alongside whatever threshold move it implies.
       - dependency-name: jscpd
+      # The desktop still uses Tailwind 3's PostCSS and JavaScript-config
+      # contract, while the landing workspace already uses Tailwind 4 through
+      # @tailwindcss/vite. A workspace-wide major bump changes both without
+      # performing or qualifying the desktop migration. Keep routine updates
+      # available within each current major and migrate the desktop separately.
+      - dependency-name: tailwindcss
+        update-types:
+          - version-update:semver-major
     labels:
       - dependencies
       - ccusage
