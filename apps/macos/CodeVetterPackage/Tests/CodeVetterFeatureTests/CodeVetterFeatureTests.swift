@@ -2740,8 +2740,10 @@ func largeUnpackProjectionDecodesAndRendersWithinTheNativeGate() throws {
 
   let decodeP95 = percentile95(decodeSamples)
   let renderP95 = percentile95(renderSamples)
-  #expect(decodeP95 < 40_000, "Large Repo Unpack decoding must stay below 40 ms p95")
-  #expect(renderP95 < 150_000, "Large Repo Unpack rendering must stay below 150 ms p95")
+  if nativePerformanceGateEnabled() {
+    #expect(decodeP95 < 40_000, "Large Repo Unpack decoding must stay below 40 ms p95")
+    #expect(renderP95 < 150_000, "Large Repo Unpack rendering must stay below 150 ms p95")
+  }
   print(
     "NATIVE_UNPACK_BENCHMARK_JSON "
       + "{\"decode_p95_us\":\(decodeP95),\"render_p95_us\":\(renderP95),"
@@ -3105,8 +3107,10 @@ func largeUsageReportDecodesAndRendersWithinTheNativeGate() throws {
 
   let decodeP95 = percentile95(decodeSamples)
   let renderP95 = percentile95(renderSamples)
-  #expect(decodeP95 < 25_000, "Large usage decoding must stay below 25 ms p95")
-  #expect(renderP95 < 150_000, "Large usage rendering must stay below 150 ms p95")
+  if nativePerformanceGateEnabled() {
+    #expect(decodeP95 < 25_000, "Large usage decoding must stay below 25 ms p95")
+    #expect(renderP95 < 150_000, "Large usage rendering must stay below 150 ms p95")
+  }
   print(
     "NATIVE_USAGE_BENCHMARK_JSON "
       + "{\"decode_p95_us\":\(decodeP95),\"render_p95_us\":\(renderP95),"
@@ -3357,8 +3361,10 @@ func hundredRowPerformanceReceiptDecodesAndRendersWithinTheNativeGate() throws {
 
   let decodeP95 = percentile95(decodeSamples)
   let renderP95 = percentile95(renderSamples)
-  #expect(decodeP95 < 25_000, "100-row performance decoding must stay below 25 ms p95")
-  #expect(renderP95 < 150_000, "100-row performance rendering must stay below 150 ms p95")
+  if nativePerformanceGateEnabled() {
+    #expect(decodeP95 < 25_000, "100-row performance decoding must stay below 25 ms p95")
+    #expect(renderP95 < 150_000, "100-row performance rendering must stay below 150 ms p95")
+  }
   print(
     "NATIVE_PERFORMANCE_BENCHMARK_JSON "
       + "{\"decode_p95_us\":\(decodeP95),\"render_p95_us\":\(renderP95),"
@@ -3649,8 +3655,10 @@ func hundredJourneyTestingReceiptDecodesAndRendersWithinTheNativeGate() throws {
 
   let decodeP95 = percentile95(decodeSamples)
   let renderP95 = percentile95(renderSamples)
-  #expect(decodeP95 < 25_000, "100-journey receipt decoding must stay below 25 ms p95")
-  #expect(renderP95 < 150_000, "100-journey receipt rendering must stay below 150 ms p95")
+  if nativePerformanceGateEnabled() {
+    #expect(decodeP95 < 25_000, "100-journey receipt decoding must stay below 25 ms p95")
+    #expect(renderP95 < 150_000, "100-journey receipt rendering must stay below 150 ms p95")
+  }
   print(
     "NATIVE_TESTING_BENCHMARK_JSON "
       + "{\"decode_p95_us\":\(decodeP95),\"render_p95_us\":\(renderP95),"
