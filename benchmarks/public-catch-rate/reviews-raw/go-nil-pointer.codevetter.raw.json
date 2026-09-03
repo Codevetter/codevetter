@@ -1,0 +1,142 @@
+{
+  "agent": "claude",
+  "changed_lines": 15,
+  "coordinator_used": false,
+  "diff_range": "HEAD~1..HEAD",
+  "duration_ms": 39261,
+  "evidence_candidates": [
+    {
+      "affected_files": ["source.go"],
+      "caveats": ["The user may have run verification outside indexed agent sessions."],
+      "confidence": 0.66,
+      "evidence_refs": [
+        {
+          "detail": null,
+          "kind": "history",
+          "label": "No fresh command/test/browser proof found in compact history"
+        }
+      ],
+      "id": "no-fresh-verification-evidence",
+      "kind": "not_verified",
+      "open_questions": ["What is the smallest relevant command or browser task for this diff?"],
+      "scale": "1 changed file(s)",
+      "severity_hint": "medium",
+      "suggested_checks": [
+        "Attach a fresh command, test, log, screenshot, or trace before marking the finding fixed."
+      ],
+      "why_it_matters": "A review without fresh verification evidence can only prove static plausibility, not that the change works."
+    }
+  ],
+  "evidence_procedure_steps": [
+    {
+      "action": "Choose the smallest relevant repo command or browser task, rerun it, and attach the fresh output.",
+      "artifact": "command log, test report, screenshot, trace, or QA run artifact",
+      "blocked_on": ["fresh verification artifact"],
+      "candidate_ids": ["no-fresh-verification-evidence"],
+      "gate": "No candidate is marked confirmed or fixed using stale or missing verification.",
+      "id": "rerun_relevant_verification",
+      "input": "Failed, stale, or missing command/test/browser evidence.",
+      "output": "Fresh pass/fail evidence linked to the review.",
+      "procedure": "rerun_relevant_verification",
+      "status": "blocked"
+    }
+  ],
+  "findings": [
+    {
+      "confidence": 0.99,
+      "filePath": "source.go",
+      "line": 14,
+      "severity": "high",
+      "suggestion": "Use the comma-ok map access and handle absence explicitly: `if u, ok := users[id]; ok { return u.Email }; return \"\"`. Better, change the signature to `(string, bool)` or `(string, error)` so callers can distinguish 'not found' from an empty email. Add a test calling FindUser with an absent id and run `go test`/`go vet` to attach fresh verification.",
+      "summary": "source.go:13-14 — `u := users[id]` returns nil for any absent key (Go zero value for a pointer map value), and `return u.Email` then dereferences nil, panicking with 'invalid memory address or nil pointer dereference'. The normal 'user not found' path becomes a process crash instead of a graceful empty/not-found result. FindUser has 0 callers today only because the file is newly added; its purpose is arbitrary-id lookup, so the miss path will be hit.",
+      "title": "Nil-pointer dereference in FindUser on missing id crashes the process"
+    },
+    {
+      "confidence": 0.9,
+      "filePath": "source.go",
+      "line": 9,
+      "severity": "medium",
+      "suggestion": "Add `source_test.go` asserting `FindUser` returns a zero value (not a panic) for an absent id, and run `go test ./...` / `go vet ./...`, attaching the output as the verification artifact before marking this fixed.",
+      "summary": "The change adds exported `FindUser`/`User` (source.go:4-15) with zero tests and no verification artifact; the deterministic `rerun_relevant_verification` gate is blocked on fresh evidence. The one path that crashes (missing id) is precisely the one left unproven.",
+      "title": "No test or verification for the not-found path"
+    }
+  ],
+  "findings_count": 2,
+  "qa_evidence": [],
+  "review_id": "ddcda192-e37b-4227-8b15-3cf910b1e42f",
+  "review_memory_graph": {
+    "edges": [
+      {
+        "confidence": 0.74,
+        "from": "file-source-go",
+        "kind": "has_history_context",
+        "to": "history-context"
+      },
+      {
+        "confidence": 0.68,
+        "from": "file-source-go",
+        "kind": "has_blast_radius",
+        "to": "blast-radius"
+      },
+      {
+        "confidence": 0.66,
+        "from": "file-source-go",
+        "kind": "raises_candidate",
+        "to": "candidate-no-fresh-verification-evidence"
+      },
+      {
+        "confidence": 0.86,
+        "from": "candidate-no-fresh-verification-evidence",
+        "kind": "requires_gate",
+        "to": "gate-rerun-relevant-verification"
+      }
+    ],
+    "nodes": [
+      {
+        "detail": "changed file",
+        "file_path": "source.go",
+        "id": "file-source-go",
+        "kind": "file",
+        "label": "source.go"
+      },
+      {
+        "detail": "306 chars in prompt section",
+        "file_path": null,
+        "id": "history-context",
+        "kind": "history_context",
+        "label": "Prior commits, decisions, agents, and command evidence"
+      },
+      {
+        "detail": "computed from repo relationships",
+        "file_path": null,
+        "id": "blast-radius",
+        "kind": "blast_radius",
+        "label": "Blast-radius summary"
+      },
+      {
+        "detail": "not_verified · confidence 0.66",
+        "file_path": "source.go",
+        "id": "candidate-no-fresh-verification-evidence",
+        "kind": "evidence_candidate",
+        "label": "no-fresh-verification-evidence"
+      },
+      {
+        "detail": "blocked · No candidate is marked confirmed or fixed using stale or missing verification.",
+        "file_path": null,
+        "id": "gate-rerun-relevant-verification",
+        "kind": "procedure_gate",
+        "label": "rerun_relevant_verification"
+      }
+    ],
+    "schema_version": 1,
+    "scope": "review_changed_files",
+    "truncated": false
+  },
+  "review_mode": "specialist-lite",
+  "risk_tier": "lite",
+  "score": 85.0,
+  "sensitive_paths": [],
+  "specialists": ["assumption-integrity", "product-safety", "agent-handoff"],
+  "summary": "Risk-tiered review (lite) completed.\n\nSingle new file adds FindUser, which dereferences the result of a map lookup without a comma-ok / nil check (source.go:13-14). For a map[int]*User a missing id returns nil, so u.Email panics — a guaranteed crash on any unknown id. The implicit 'lookup always hits with a non-nil pointer' assumption is unenforced and contradicted by the function's own signature and BUG comment. 0 current callers (newly added), which bounds real-world blast radius, but the defect is certain by Go semantics.\n\nSingle new file source.go defines FindUser, which dereferences the result of a map lookup without a nil check. For any id not present in the map, `users[id]` yields nil and `u.Email` panics — a confirmed crash on the ordinary 'not found' path. This is exactly the bug the file's own comment describes, and it is real per Go map semantics. Confirmed by direct code read; empirical verification (go test/vet) was not run but the panic is provable from language semantics. No other issues in the 15 changed lines.\n\nA new Go file whose exported FindUser guarantees a nil-pointer panic on any missing map key (source.go:14). The agent documented the bug in a comment (lines 10-12) but did not fix it, and shipped no test for the crashing not-found path. Blast radius is 0 callers today, but the crash is certain once the function is used. Fix is a two-line comma-ok guard plus a test; verification gate remains blocked pending a fresh `go test` run.",
+  "talk_id": "d6fd936d-b890-4025-8dbf-cab0cc7e528f"
+}
