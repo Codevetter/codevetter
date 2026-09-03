@@ -7,7 +7,12 @@ export default defineConfig({
   timeout: 30_000,
   retries: 0,
   workers: 1,
-  reporter: [['list'], ['html', { open: 'never' }]],
+  reporter: [
+    ['list'],
+    ['html', { open: 'never' }],
+    ['json', { outputFile: 'test-results/playwright.json' }],
+    ['junit', { outputFile: 'test-results/junit.xml', includeProjectInTestName: true }],
+  ],
   use: {
     baseURL: 'http://localhost:1420',
     viewport: { width: 1280, height: 800 },

@@ -7,7 +7,7 @@ import { createInterface } from 'node:readline';
 
 const PROTOCOL_VERSION = '2025-11-25';
 const MAX_STRUCTURED_RESPONSE_BYTES = 256 * 1_024;
-const EXPECTED_TOOL_COUNT = 24;
+const EXPECTED_TOOL_COUNT = 28;
 const EXPECTED_RELEASE_COUNT = 64;
 const EXPECTED_GRAPH_NODE_COUNT = 512;
 const EXPECTED_GRAPH_EDGE_COUNT = 1_024;
@@ -18,12 +18,14 @@ const options = parseOptions(process.argv.slice(2));
 const desktopRoot = resolve(import.meta.dirname, '..');
 const tauriRoot = join(desktopRoot, 'src-tauri');
 const protectedRepo = resolve(desktopRoot, '../..');
-const sidecar = join(
-  tauriRoot,
-  'target',
-  'release',
-  process.platform === 'win32' ? 'codevetter-mcp.exe' : 'codevetter-mcp'
-);
+const sidecar = process.env.CV_MCP_SIDECAR_PATH
+  ? resolve(process.env.CV_MCP_SIDECAR_PATH)
+  : join(
+      tauriRoot,
+      'target',
+      'release',
+      process.platform === 'win32' ? 'codevetter-mcp.exe' : 'codevetter-mcp'
+    );
 const fixtureDir = mkdtempSync(join(tmpdir(), 'codevetter-mcp-bench-'));
 const database = join(fixtureDir, 'codevetter.db');
 const activeSessions = new Set();

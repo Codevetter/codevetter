@@ -11,6 +11,7 @@ import Sidebar from '@/components/sidebar';
 import UpdateChecker from '@/components/update-checker';
 import { trackAppLaunch } from '@/lib/analytics';
 import { ProjectWorkspaceProvider } from '@/lib/project-workspace';
+import { migrateLegacyRubricConfig } from '@/lib/rubric-migration';
 import { getPreference, isTauriAvailable } from '@/lib/tauri-ipc';
 import { useWindowVisibilityClass } from '@/lib/use-visibility';
 
@@ -152,6 +153,12 @@ export default function App() {
   // Self-dedupes via localStorage; safe to run once per app mount.
   useEffect(() => {
     trackAppLaunch();
+  }, []);
+
+  useEffect(() => {
+    // A failed attempt leaves the sanitized WebView copy intact. Opening the
+    // incumbent Rubrics surface retries and exposes its existing sync warning.
+    void migrateLegacyRubricConfig().catch(() => undefined);
   }, []);
 
   return (

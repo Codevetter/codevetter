@@ -1,1 +1,66 @@
-{"schema_version":"codevetter.surface-parity-fixture/v1","authority":{"rust":"authoritative_resolver","cli":"supervised_projection","native":"supervised_projection","mcp":"read_only_projection","mcp_may_execute":false},"request":{"consumer":"performance","kind":"flow","value":"coupon total"},"repository":{"files":{"vitest.config.ts":"export default {};\n","src/cart/coupon.ts":"export const couponTotal = (value: number) => value;\n","src/cart/coupon.test.ts":"import { couponTotal } from './coupon';\ntest('coupon total', () => couponTotal(2));\n"}},"expected":{"schema_version":1,"status":"ready","candidate_count":1,"first_candidate":{"id":"scope-336fa25dbb5e59fc","adapter":"vitest","target":"src/cart/coupon.test.ts","confidence_milli":950,"testing_supported":true,"performance_supported":true},"limitation_contains":"Human-language scope is a deterministic local search"},"canonical_receipt":{"schema_version":1,"plan_id":"scope:surface-parity-v1","repository_revision":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","dirty":false,"kind":"flow","original_input":"coupon total","consumer":"performance","status":"ready","candidates":[{"id":"scope-336fa25dbb5e59fc","adapter":"vitest","target":"src/cart/coupon.test.ts","name":null,"reason":"Matched the described flow through local path/content evidence (score 35)","source_paths":["src/cart/coupon.test.ts","src/cart/coupon.ts"],"confidence_milli":950,"testing_supported":true,"performance_supported":true}],"uncovered_paths":[],"limitations":["Human-language scope is a deterministic local search, not model interpretation."]}}
+{
+  "schema_version": "codevetter.surface-parity-fixture/v1",
+  "authority": {
+    "rust": "authoritative_resolver",
+    "cli": "supervised_projection",
+    "native": "supervised_projection",
+    "mcp": "read_only_projection",
+    "mcp_may_execute": false
+  },
+  "request": {
+    "consumer": "performance",
+    "kind": "flow",
+    "value": "coupon total"
+  },
+  "repository": {
+    "files": {
+      "vitest.config.ts": "export default {};\n",
+      "src/cart/coupon.ts": "export const couponTotal = (value: number) => value;\n",
+      "src/cart/coupon.test.ts": "import { couponTotal } from './coupon';\ntest('coupon total', () => couponTotal(2));\n"
+    }
+  },
+  "expected": {
+    "schema_version": 1,
+    "status": "ready",
+    "candidate_count": 1,
+    "first_candidate": {
+      "id": "scope-336fa25dbb5e59fc",
+      "adapter": "vitest",
+      "target": "src/cart/coupon.test.ts",
+      "confidence_milli": 950,
+      "testing_supported": true,
+      "performance_supported": true
+    },
+    "limitation_contains": "Human-language scope is a deterministic local search"
+  },
+  "canonical_receipt": {
+    "schema_version": 1,
+    "plan_id": "scope:surface-parity-v1",
+    "repository_revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "dirty": false,
+    "kind": "flow",
+    "original_input": "coupon total",
+    "consumer": "performance",
+    "status": "ready",
+    "candidates": [
+      {
+        "id": "scope-336fa25dbb5e59fc",
+        "adapter": "vitest",
+        "target": "src/cart/coupon.test.ts",
+        "name": null,
+        "reason": "Matched the described flow through local path/content evidence (score 35)",
+        "source_paths": [
+          "src/cart/coupon.test.ts",
+          "src/cart/coupon.ts"
+        ],
+        "confidence_milli": 950,
+        "testing_supported": true,
+        "performance_supported": true
+      }
+    ],
+    "uncovered_paths": [],
+    "limitations": [
+      "Human-language scope is a deterministic local search, not model interpretation."
+    ]
+  }
+}

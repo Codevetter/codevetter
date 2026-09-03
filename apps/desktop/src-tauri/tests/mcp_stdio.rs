@@ -28,7 +28,19 @@ fn stdio_boundary_is_json_only_scoped_and_paginated() {
     let tool_definitions = tools["result"]["tools"].as_array().expect("tools");
     assert_eq!(tool_definitions.len(), 28);
     assert!(tool_definitions.iter().any(|tool| {
+        tool["name"] == "capability_catalog" && tool["inputSchema"]["additionalProperties"] == false
+    }));
+    assert!(tool_definitions.iter().any(|tool| {
+        tool["name"] == "resolve_evidence_scope"
+            && tool["inputSchema"]["additionalProperties"] == false
+    }));
+    assert!(tool_definitions.iter().any(|tool| {
         tool["name"] == "prepare_review" && tool["inputSchema"]["additionalProperties"] == false
+    }));
+    assert!(tool_definitions.iter().any(|tool| {
+        tool["name"] == "verification_get_receipt"
+            && tool["inputSchema"]["additionalProperties"] == false
+            && tool["annotations"]["readOnlyHint"] == true
     }));
     assert!(tool_definitions.iter().any(|tool| {
         tool["name"] == "history_list_landmarks"

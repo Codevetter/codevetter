@@ -4,6 +4,10 @@ updates:
     directory: /
     schedule:
       interval: weekly
+    # Let ecosystem fixes settle before routine version PRs. Dependabot
+    # security updates are explicitly not delayed by this setting.
+    cooldown:
+      default-days: 7
     groups:
       ccusage-runtime:
         patterns:
