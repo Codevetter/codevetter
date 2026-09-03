@@ -37,6 +37,9 @@ service start separately downloaded and verified the 664.3 MB default kernel.
   and `/root` failed with a read-only-filesystem error.
 - `--rm` teardown left zero containers and zero local volumes. The cached image
   and init image occupied 1.45 GB and were intentionally retained.
+- With no containers running, three two-second samples measured the external
+  service processes at 17,568 KiB resident in total and 0.0% CPU: 7,424 KiB
+  API server, 7,920 KiB core-image plugin, and 2,224 KiB network plugin.
 
 The trial network was deleted after use. No host credential, home, SSH, cloud,
 or production path was mounted or inspected.
@@ -51,10 +54,31 @@ reject sources outside the allowed root before process launch, pass the
 canonical source to the CLI, and cover symlink and time-of-check/time-of-use
 cases. The product must not treat the CLI's mount validation as containment.
 
-## Decision
+## Adapter policy and decision
 
-Keep Apple Container as the measured external-prerequisite candidate, not a
-bundled dependency. Its isolation controls and warm-start result are promising,
-but path containment must be owned by CodeVetter. Issue #197 remains open for
-the CLI-versus-Containerization-versus-libkrun architecture comparison, idle
-resource measurement, signing/notarization analysis, and an adapter design.
+Use the Apple CLI as the first external-prerequisite adapter on supported Macs.
+It already provides the measured isolation contract with a 0.61-second cached
+start and about 17.2 MiB of idle resident service memory, while adding no app
+bundle, nested-code-signing, or Rust FFI dependency. Do not bundle it or start
+its system service silently; installation remains an explicit owner action.
+
+`commands/apple_container.rs` now owns a pure mount-policy boundary. It
+canonicalizes the allowed root and source, rejects component-level escapes,
+symlink escapes, unsupported mount-string characters, and non-normalized guest
+targets, records the source filesystem identity, and revalidates identity and
+containment immediately before returning the read-only CLI argument. Five
+fixture tests cover the accepted path and each observed or anticipated failure.
+
+The CLI string interface still has an irreducible final time-of-check/time-of-use
+window after revalidation. That is acceptable only for an app-owned, immutable
+worktree whose host permissions exclude the untrusted guest before launch. If
+CodeVetter later permits concurrently mutable host roots, move to Apple's
+Containerization library with an audited descriptor-based mount path; do not
+pretend another string check removes the race. `libkrun` remains a fallback only
+if real workloads disprove the first-party CLI's performance or compatibility.
+
+This receipt qualifies the architecture and mount boundary, not a shipped
+runtime-isolation claim. A product runner still needs an exact CLI/version and
+local-image preflight, attested internal network, minimal environment,
+timeout/cancellation, bounded output, teardown, and real-workload regression
+evidence before the capability can become available.

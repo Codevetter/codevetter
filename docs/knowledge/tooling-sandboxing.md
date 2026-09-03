@@ -27,15 +27,29 @@ and memory, an internal no-DNS network, dropped capabilities, host-environment
 absence, and teardown all behaved as expected. The first image/init-image run
 took 20.56 seconds and the cached images occupied 1.45 GB.
 
-One contract failed: the CLI accepted a controlled bind source containing `..`
+One native contract failed: the CLI accepted a controlled bind source containing `..`
 when it resolved outside the intended fixture root. CodeVetter must canonicalize
 and enforce workspace containment itself; Apple Container's mount validation is
-not that policy. The [qualification receipt](https://github.com/Codevetter/codevetter/blob/main/evidence/verification/apple-container-qualification-2026-08-31.md)
-records identities, measurements, teardown, and remaining gates. Issue #197
-keeps the architecture decision open.
+not that policy. The Rust mount planner now rejects traversal, escaping
+symlinks, source replacement, mount-string injection, and malformed guest
+targets, then revalidates the source identity immediately before returning a
+read-only bind argument. The [qualification receipt](https://github.com/Codevetter/codevetter/blob/main/evidence/verification/apple-container-qualification-2026-08-31.md)
+records identities, measurements, teardown, and the remaining runner gates.
 
-If the measured contract is sound, choose between consuming Apple's
-Containerization Swift package through a sidecar and embedding `libkrun`.
+The selected first adapter is the external Apple CLI on supported Macs. It is
+already signed and measured, keeps the app bundle free of a VMM/FFI dependency,
+and does not add nested signing work. Installation and service startup remain
+explicit owner actions. A product runner must still prove exact-version and
+local-image preflight, an attested internal network, minimal environment,
+timeout/cancellation, bounded output, and cleanup before this becomes a shipped
+isolation claim.
+
+The string-based CLI retains a final TOCTOU window after source revalidation.
+That boundary is acceptable only for CodeVetter-owned immutable worktrees that
+the untrusted guest cannot mutate before launch. If concurrently mutable host
+roots become a requirement, move to Apple's Containerization Swift package and
+an audited descriptor-based mount path. Keep `libkrun` as the fallback if real
+workloads disprove the first-party path, rather than taking on FFI now.
 
 **`libkrun`** (Apache-2.0, `containers/libkrun`, 2,643★) is a small VMM
 **library** written in Rust and built on Apple's `Hypervisor.framework`. It is

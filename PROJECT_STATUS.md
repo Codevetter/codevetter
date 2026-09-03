@@ -302,15 +302,17 @@ Internal (fleet):
   yet bundled and no release claim is made; packaging and the remaining
   collectors stay tracked in issue #198.
 
-- **2026-08-31 — Apple Container trial qualified with a containment caveat:**
+- **2026-09-03 — Apple Container architecture and mount boundary qualified:**
   Installed the signed/notarized 1.3.1 CLI after owner authorization and
   exercised a 1-CPU/256-MB, internal-network, no-DNS, read-only-root sandbox on
   the supported arm64 macOS 27 host. The cached no-op run took 0.61 seconds and
-  teardown left zero containers. A controlled traversal fixture proved the CLI
-  does not enforce CodeVetter's workspace-root boundary, so any adapter must
-  canonicalize and reject out-of-root mounts itself. This is external-prerequisite
-  qualification, not a bundled dependency or architecture approval; issue #197
-  remains open.
+  teardown left zero containers; idle services held about 17.2 MiB RSS at 0.0%
+  CPU across three samples. The selected first adapter is the external CLI,
+  which adds no app-bundle or FFI dependency. A tested Rust mount planner now
+  canonicalizes and revalidates source identity and rejects traversal, symlink,
+  replacement, syntax-injection, and malformed-target cases. The supervised
+  runner, network attestation, and real-workload qualification remain
+  claim-closed; this is not yet a shipped runtime-isolation capability.
 
 - **2026-08-24 — Unified local change check (unreleased source):** the packaged
   `codevetter` CLI now accepts one clean checked-out PR head or Git range plus

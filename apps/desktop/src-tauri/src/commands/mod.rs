@@ -4,6 +4,7 @@ pub mod agent;
 pub mod agent_memories;
 pub mod agent_stream;
 pub mod agent_terminal;
+pub mod apple_container;
 pub mod audience_validation;
 pub mod blast_radius;
 pub mod business_rule_archaeology;
