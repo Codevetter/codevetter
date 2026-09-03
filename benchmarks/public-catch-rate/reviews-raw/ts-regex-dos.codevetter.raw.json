@@ -1,0 +1,142 @@
+{
+  "agent": "claude",
+  "changed_lines": 10,
+  "coordinator_used": false,
+  "diff_range": "HEAD~1..HEAD",
+  "duration_ms": 89824,
+  "evidence_candidates": [
+    {
+      "affected_files": ["source.ts"],
+      "caveats": ["The user may have run verification outside indexed agent sessions."],
+      "confidence": 0.66,
+      "evidence_refs": [
+        {
+          "detail": null,
+          "kind": "history",
+          "label": "No fresh command/test/browser proof found in compact history"
+        }
+      ],
+      "id": "no-fresh-verification-evidence",
+      "kind": "not_verified",
+      "open_questions": ["What is the smallest relevant command or browser task for this diff?"],
+      "scale": "1 changed file(s)",
+      "severity_hint": "medium",
+      "suggested_checks": [
+        "Attach a fresh command, test, log, screenshot, or trace before marking the finding fixed."
+      ],
+      "why_it_matters": "A review without fresh verification evidence can only prove static plausibility, not that the change works."
+    }
+  ],
+  "evidence_procedure_steps": [
+    {
+      "action": "Choose the smallest relevant repo command or browser task, rerun it, and attach the fresh output.",
+      "artifact": "command log, test report, screenshot, trace, or QA run artifact",
+      "blocked_on": ["fresh verification artifact"],
+      "candidate_ids": ["no-fresh-verification-evidence"],
+      "gate": "No candidate is marked confirmed or fixed using stale or missing verification.",
+      "id": "rerun_relevant_verification",
+      "input": "Failed, stale, or missing command/test/browser evidence.",
+      "output": "Fresh pass/fail evidence linked to the review.",
+      "procedure": "rerun_relevant_verification",
+      "status": "blocked"
+    }
+  ],
+  "findings": [
+    {
+      "confidence": 0.97,
+      "filePath": "source.ts",
+      "line": 3,
+      "severity": "high",
+      "suggestion": "Remove the redundant outer quantifier: /^[a-zA-Z0-9._%+-]+$/ matches the same language in linear time. Alternatively cap input length before .test(), or use a non-backtracking/RE2-style matcher. Add a test asserting isEmailLike returns quickly on a long non-matching input.",
+      "summary": "source.ts:3 defines /^([a-zA-Z0-9._%+-]+)+$/ — the nested (charclass+)+ with no delimiter causes exponential backtracking on inputs that match the class but fail the anchor (e.g. 'a'.repeat(n)+'!'). isEmailLike (source.ts:8-10) exposes this over user-supplied strings per the line-2 comment, so a single crafted string blocks the single-threaded event loop and denies service to all concurrent requests. The line-5-7 comment documents this exact bug yet the vulnerable regex is shipped as the exported implementation.",
+      "title": "ReDoS: nested quantifier in emailLikePattern blocks event loop on user input"
+    },
+    {
+      "confidence": 0.75,
+      "filePath": "source.ts",
+      "line": 2,
+      "severity": "low",
+      "suggestion": "Either fix the regex before this exported API is adopted, or adjust the comment to reflect that it is not yet in use; do not let the vulnerable version be wired up as-is.",
+      "summary": "source.ts:2 states 'This regex is used to validate user-supplied email-like strings', but the blast-radius scan shows isEmailLike (source.ts:8) has 0 callers — it is exported but unwired. The stated-intent-vs-reality gap can mislead the next agent into believing validation is live, or into wiring the exported function into a request path and inheriting the ReDoS from the same diff.",
+      "title": "Comment claims the regex 'is used' but isEmailLike has 0 callers"
+    }
+  ],
+  "findings_count": 2,
+  "qa_evidence": [],
+  "review_id": "eb5a3d8a-fae1-4a69-a88a-ae2a8fc1cd08",
+  "review_memory_graph": {
+    "edges": [
+      {
+        "confidence": 0.74,
+        "from": "file-source-ts",
+        "kind": "has_history_context",
+        "to": "history-context"
+      },
+      {
+        "confidence": 0.68,
+        "from": "file-source-ts",
+        "kind": "has_blast_radius",
+        "to": "blast-radius"
+      },
+      {
+        "confidence": 0.66,
+        "from": "file-source-ts",
+        "kind": "raises_candidate",
+        "to": "candidate-no-fresh-verification-evidence"
+      },
+      {
+        "confidence": 0.86,
+        "from": "candidate-no-fresh-verification-evidence",
+        "kind": "requires_gate",
+        "to": "gate-rerun-relevant-verification"
+      }
+    ],
+    "nodes": [
+      {
+        "detail": "changed file",
+        "file_path": "source.ts",
+        "id": "file-source-ts",
+        "kind": "file",
+        "label": "source.ts"
+      },
+      {
+        "detail": "306 chars in prompt section",
+        "file_path": null,
+        "id": "history-context",
+        "kind": "history_context",
+        "label": "Prior commits, decisions, agents, and command evidence"
+      },
+      {
+        "detail": "computed from repo relationships",
+        "file_path": null,
+        "id": "blast-radius",
+        "kind": "blast_radius",
+        "label": "Blast-radius summary"
+      },
+      {
+        "detail": "not_verified · confidence 0.66",
+        "file_path": "source.ts",
+        "id": "candidate-no-fresh-verification-evidence",
+        "kind": "evidence_candidate",
+        "label": "no-fresh-verification-evidence"
+      },
+      {
+        "detail": "blocked · No candidate is marked confirmed or fixed using stale or missing verification.",
+        "file_path": null,
+        "id": "gate-rerun-relevant-verification",
+        "kind": "procedure_gate",
+        "label": "rerun_relevant_verification"
+      }
+    ],
+    "schema_version": 1,
+    "scope": "review_changed_files",
+    "truncated": false
+  },
+  "review_mode": "assumption-first",
+  "risk_tier": "trivial",
+  "score": 88.0,
+  "sensitive_paths": [],
+  "specialists": ["assumption-integrity", "general"],
+  "summary": "Risk-tiered review (trivial) completed.\n\nNew file introduces an exported email validator whose regex /^([a-zA-Z0-9._%+-]+)+$/ is a classic catastrophic-backtracking ReDoS (nested + over the same character class). isEmailLike wraps it for user-supplied input, so a crafted long non-matching string blocks the event loop — a real DoS. The change even documents the bug in a comment yet ships the vulnerable pattern. Assumption-integrity concern: the comment claims the regex 'is used' while blast-radius shows 0 callers, a stated-intent-vs-code contradiction that could snowball if the next agent wires it up unfixed. Fix: drop the redundant outer quantifier (/^[a-zA-Z0-9._%+-]+$/) and/or length-cap input.\n\nSingle new file introducing an exported ReDoS-vulnerable regex. The nested-quantifier pattern /^([a-zA-Z0-9._%+-]+)+$/ used by isEmailLike() on user-supplied input causes exponential backtracking on crafted non-matching strings, stalling the event loop (DoS). Confirmed by static analysis; the runtime timing benchmark was blocked by the sandbox approval gate so the rerun_relevant_verification gate remains open, but the vulnerability is definitive regardless. Minimal fix is to drop the outer '+' quantifier.",
+  "talk_id": "c4ba7e3c-e2e7-49da-a8c3-b1e7f41f49e4"
+}
