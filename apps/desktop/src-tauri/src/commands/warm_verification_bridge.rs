@@ -737,6 +737,23 @@ pub async fn prepare_differential_verification(
     candidate_kind: String,
     candidate_revision: Option<String>,
 ) -> Result<DifferentialPreparedSummary, String> {
+    prepare_differential_verification_headless(
+        repo_path,
+        run_id,
+        reference_revision,
+        candidate_kind,
+        candidate_revision,
+    )
+    .await
+}
+
+pub async fn prepare_differential_verification_headless(
+    repo_path: String,
+    run_id: String,
+    reference_revision: String,
+    candidate_kind: String,
+    candidate_revision: Option<String>,
+) -> Result<DifferentialPreparedSummary, String> {
     if !valid_id(&run_id) || !valid_bounded_text(&reference_revision) {
         return Err("Differential run identity or reference is invalid".into());
     }
@@ -917,6 +934,12 @@ async fn run_differential_cli(
 pub async fn get_warm_verification_daemon_health(
     repo_path: String,
 ) -> Result<Option<WarmDaemonHealth>, String> {
+    get_warm_verification_daemon_health_headless(repo_path).await
+}
+
+pub async fn get_warm_verification_daemon_health_headless(
+    repo_path: String,
+) -> Result<Option<WarmDaemonHealth>, String> {
     let package = find_verify_package(&repo_path)?;
     let output = execute_verify(
         &package,
@@ -940,6 +963,12 @@ pub async fn get_warm_verification_daemon_health(
 
 #[tauri::command]
 pub async fn start_warm_verification_daemon(repo_path: String) -> Result<WarmDaemonHealth, String> {
+    start_warm_verification_daemon_headless(repo_path).await
+}
+
+pub async fn start_warm_verification_daemon_headless(
+    repo_path: String,
+) -> Result<WarmDaemonHealth, String> {
     let package = find_verify_package(&repo_path)?;
     let output = execute_verify(
         &package,
@@ -954,6 +983,12 @@ pub async fn start_warm_verification_daemon(repo_path: String) -> Result<WarmDae
 
 #[tauri::command]
 pub async fn stop_warm_verification_daemon(repo_path: String) -> Result<WarmStopResponse, String> {
+    stop_warm_verification_daemon_headless(repo_path).await
+}
+
+pub async fn stop_warm_verification_daemon_headless(
+    repo_path: String,
+) -> Result<WarmStopResponse, String> {
     let value = run_cli(&repo_path, &["daemon", "stop"], STOP_TIMEOUT).await?;
     let active_run_ids = response_payload(value, "shutdown_ack", "active_run_ids")?;
     let active_run_ids: Vec<String> = serde_json::from_value(active_run_ids)
@@ -967,6 +1002,15 @@ pub async fn stop_warm_verification_daemon(repo_path: String) -> Result<WarmStop
 #[tauri::command]
 pub async fn run_warm_changed_verification(
     db: State<'_, DbState>,
+    repo_path: String,
+    detailed_capture: bool,
+    run_id: String,
+) -> Result<warm_verification::StoredWarmVerificationRun, String> {
+    run_warm_changed_verification_headless(db.inner(), repo_path, detailed_capture, run_id).await
+}
+
+pub async fn run_warm_changed_verification_headless(
+    db: &DbState,
     repo_path: String,
     detailed_capture: bool,
     run_id: String,
@@ -1004,6 +1048,25 @@ pub async fn run_warm_changed_verification(
 #[tauri::command]
 pub async fn run_differential_verification(
     db: State<'_, DbState>,
+    repo_path: String,
+    run_id: String,
+    reference_revision: String,
+    candidate_kind: String,
+    candidate_revision: Option<String>,
+) -> Result<differential_verification::StoredDifferentialVerificationRun, String> {
+    run_differential_verification_headless(
+        db.inner(),
+        repo_path,
+        run_id,
+        reference_revision,
+        candidate_kind,
+        candidate_revision,
+    )
+    .await
+}
+
+pub async fn run_differential_verification_headless(
+    db: &DbState,
     repo_path: String,
     run_id: String,
     reference_revision: String,
@@ -1051,6 +1114,13 @@ pub async fn cleanup_differential_verification_artifacts(
     repo_path: String,
     dry_run: bool,
 ) -> Result<DifferentialCleanupSummary, String> {
+    cleanup_differential_verification_artifacts_headless(repo_path, dry_run).await
+}
+
+pub async fn cleanup_differential_verification_artifacts_headless(
+    repo_path: String,
+    dry_run: bool,
+) -> Result<DifferentialCleanupSummary, String> {
     let command = if dry_run {
         vec!["differential", "cleanup", "--dry-run"]
     } else {
@@ -1072,6 +1142,13 @@ pub async fn cancel_warm_verification_run(
     repo_path: String,
     run_id: String,
 ) -> Result<WarmCancelResponse, String> {
+    cancel_warm_verification_run_headless(repo_path, run_id).await
+}
+
+pub async fn cancel_warm_verification_run_headless(
+    repo_path: String,
+    run_id: String,
+) -> Result<WarmCancelResponse, String> {
     if !valid_id(&run_id) {
         return Err("Run identity is invalid".into());
     }
@@ -1084,6 +1161,13 @@ pub async fn cancel_warm_verification_run(
 
 #[tauri::command]
 pub async fn cancel_differential_verification_run(
+    repo_path: String,
+    run_id: String,
+) -> Result<WarmCancelResponse, String> {
+    cancel_differential_verification_run_headless(repo_path, run_id).await
+}
+
+pub async fn cancel_differential_verification_run_headless(
     repo_path: String,
     run_id: String,
 ) -> Result<WarmCancelResponse, String> {
@@ -1115,6 +1199,13 @@ pub async fn cleanup_warm_verification_artifacts(
     repo_path: String,
     dry_run: bool,
 ) -> Result<WarmVerificationCleanupReport, String> {
+    cleanup_warm_verification_artifacts_headless(repo_path, dry_run).await
+}
+
+pub async fn cleanup_warm_verification_artifacts_headless(
+    repo_path: String,
+    dry_run: bool,
+) -> Result<WarmVerificationCleanupReport, String> {
     let command = if dry_run {
         vec!["cleanup", "--dry-run"]
     } else {
@@ -1131,6 +1222,12 @@ pub async fn cleanup_warm_verification_artifacts(
 
 #[tauri::command]
 pub async fn get_current_warm_verification_identity(
+    repo_path: String,
+) -> Result<CurrentWarmVerificationIdentity, String> {
+    get_current_warm_verification_identity_headless(repo_path).await
+}
+
+pub async fn get_current_warm_verification_identity_headless(
     repo_path: String,
 ) -> Result<CurrentWarmVerificationIdentity, String> {
     let value = run_cli(&repo_path, &["current"], STOP_TIMEOUT).await?;

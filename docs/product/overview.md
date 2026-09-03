@@ -56,7 +56,7 @@ work, and did the affected audience succeed with it?*
 
 ## Benchmark evidence
 
-27 hand-labeled public benchmark cases (`benchmark/cases/`) covering 7
+27 hand-labeled public benchmark cases (`benchmarks/public-catch-rate/cases/`) covering 7
 languages and 15+ vulnerability types. The coordinator dedup fix
 (2026-07-11) flipped the head-to-head vs raw Claude: catch 1.000 vs 0.931,
 precision 0.433 vs 0.397, F1 0.604 vs 0.557. Real agent-PR case curation

@@ -1,0 +1,105 @@
+{
+  "schema_version": "codevetter.native-release-readiness/v1",
+  "authority": "read_only_inspection",
+  "recorded_at": "2026-09-02T06:20:29.880Z",
+  "status": "blocked",
+  "shipping_ready": false,
+  "application": {
+    "path": "/Users/sarthak/Desktop/fleet/codevetter-native/artifacts/native-package/qualification-5r7JG4/CodeVetter.app",
+    "bundle_identifier": "com.codevetter.desktop.native-preview",
+    "version": "1.11.0",
+    "build": "11100",
+    "executable": "CodeVetterNative",
+    "signing": "ad_hoc",
+    "team_identifier": null
+  },
+  "updater": {
+    "feed_url": null,
+    "public_key_configured": false
+  },
+  "checks": [
+    {
+      "id": "qualification",
+      "passed": true
+    },
+    {
+      "id": "deep_signature",
+      "passed": true
+    },
+    {
+      "id": "production_bundle",
+      "passed": false
+    },
+    {
+      "id": "host_executable",
+      "passed": true
+    },
+    {
+      "id": "version_identity",
+      "passed": true
+    },
+    {
+      "id": "packaged_companions",
+      "passed": true
+    },
+    {
+      "id": "hardened_runtime",
+      "passed": true
+    },
+    {
+      "id": "developer_id_signature",
+      "passed": false
+    },
+    {
+      "id": "consistent_developer_team",
+      "passed": false
+    },
+    {
+      "id": "library_validation",
+      "passed": false
+    },
+    {
+      "id": "execution_authority",
+      "passed": true
+    },
+    {
+      "id": "https_appcast",
+      "passed": false
+    },
+    {
+      "id": "sparkle_public_key",
+      "passed": false
+    },
+    {
+      "id": "gatekeeper",
+      "passed": false
+    },
+    {
+      "id": "notarization",
+      "passed": false
+    },
+    {
+      "id": "installed_upgrade",
+      "passed": false
+    }
+  ],
+  "gatekeeper": {
+    "accepted": false,
+    "detail": "/Users/sarthak/Desktop/fleet/codevetter-native/artifacts/native-package/qualification-5r7JG4/CodeVetter.app: rejected"
+  },
+  "blockers": [
+    "The production bundle identifier has not transferred to the native app.",
+    "The application is not signed by a Developer ID Application identity.",
+    "The host and packaged companions do not share one Developer ID team.",
+    "Library Validation is disabled in the staged application.",
+    "A production HTTPS Sparkle appcast is not configured.",
+    "A production Sparkle EdDSA public key is not configured.",
+    "Gatekeeper does not accept the staged application.",
+    "No archive-bound accepted and stapled notarization proof was supplied.",
+    "No archive-bound production-identity upgrade, relaunch, stable-data continuity, and rollback proof was supplied."
+  ],
+  "limitations": [
+    "This receipt only inspects supplied local artifacts and proof files.",
+    "It never signs, notarizes, installs, publishes, enumerates identities, or reads credentials."
+  ]
+}

@@ -14,7 +14,7 @@ function integer(value, label) {
 }
 
 function cost(value, label) {
-  if (typeof value !== 'number' || !Number.isFinite(value) || value < 0) {
+  if (!Number.isFinite(value) || value < 0) {
     throw new Error(`${label} must be a non-negative finite number`);
   }
   return value;
@@ -65,7 +65,7 @@ export function normalizeCodexBar(raw) {
 export function normalizeCodeVetter(raw) {
   const totals = normalizeBucket(raw?.totals ?? {}, 'actual.totals');
   const daily = new Map();
-  for (const bucket of raw?.daily ?? []) {
+  for (const bucket of raw.daily ?? []) {
     if (typeof bucket.date !== 'string' || daily.has(bucket.date)) {
       throw new Error(`actual daily date is missing or duplicated: ${bucket.date}`);
     }
@@ -130,7 +130,6 @@ function runOracle(codexHome, binary) {
   const result = spawnSync(binary, ['cost', '--provider', 'codex', '--json', '--refresh'], {
     encoding: 'utf8',
     env: { ...process.env, CODEX_HOME: codexHome },
-    stdio: ['ignore', 'pipe', 'pipe'],
   });
   if (result.status !== 0) {
     throw new Error(`CodexBar failed (${result.status}): ${result.stderr.trim()}`);

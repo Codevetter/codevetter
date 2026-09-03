@@ -1,0 +1,126 @@
+name: Native macOS qualification
+
+on:
+  workflow_call:
+    inputs:
+      run_interaction:
+        description: "Run XCUITest on the isolated hosted desktop"
+        required: true
+        type: boolean
+  workflow_dispatch:
+    inputs:
+      run_interaction:
+        description: "Run XCUITest on the isolated hosted desktop"
+        required: true
+        default: false
+        type: boolean
+
+permissions: {}
+
+concurrency:
+  group: native-qualification-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  qualify:
+    name: Build and qualify native preview
+    runs-on: xcode-27
+    timeout-minutes: 120
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6
+
+      - name: Setup Node
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: 22
+          package-manager-cache: false
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@4360b52568e2003a75bf9bc1d59f33a8e3fc893c # stable
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+        with:
+          no-cache: true
+
+      - name: Install locked dependencies
+        run: pnpm install --frozen-lockfile --ignore-scripts
+
+      - name: Prove desktop-control guard
+        run: pnpm test:native-runner
+
+      - name: Prepare deterministic owner-review outputs
+        shell: bash
+        run: |
+          node scripts/render-native-owner-review.mjs env \
+            --out-root artifacts/native-owner-review-ci >> "$GITHUB_ENV"
+
+      - name: Run background-safe native qualification
+        run: pnpm test:native:background
+
+      - name: Finalize deterministic owner-review packet
+        run: |
+          node scripts/render-native-owner-review.mjs finalize \
+            --out-root artifacts/native-owner-review-ci
+          pnpm test:native-review-render
+
+      - name: Run interaction qualification on isolated desktop
+        if: inputs.run_interaction
+        run: pnpm test:native:ui -- --foreground --desktop-idle
+
+      - name: Build coverage-free Release application
+        run: pnpm native:build:release
+
+      - name: Build and qualify local preview package
+        run: pnpm native:package:qualify -- --out-root artifacts/native-package-ci
+
+      - name: Inspect exact preview release boundaries
+        id: readiness
+        shell: bash
+        run: |
+          set -euo pipefail
+          QUALIFICATION="$(find artifacts/native-package-ci -name qualification.json -print -quit)"
+          test -n "$QUALIFICATION"
+          PACKAGE_DIR="$(dirname "$QUALIFICATION")"
+          node scripts/inspect-native-release-readiness.mjs \
+            --app "$PACKAGE_DIR/CodeVetter.app" \
+            --qualification "$QUALIFICATION" \
+            --out artifacts/native-package-ci/release-readiness.json
+          echo "qualification=$QUALIFICATION" >> "$GITHUB_OUTPUT"
+
+      - name: Test package and readiness inspectors
+        run: |
+          pnpm test:native-package
+          pnpm test:native-release
+
+      - name: Preserve native tool logs
+        if: always()
+        shell: bash
+        run: |
+          mkdir -p artifacts/native-tool-logs
+          find "$HOME/Library/Developer/XcodeBuildMCP" \
+            -path '*/logs/*' -type f -name '*.log' \
+            -exec cp {} artifacts/native-tool-logs/ \;
+
+      - name: Upload unsigned qualification evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: native-qualification-${{ github.run_id }}
+          path: |
+            artifacts/native-package-ci
+            artifacts/native-owner-review-ci
+            artifacts/native-tool-logs
+            artifacts/native-build/DerivedData/Build/Products/Release/CodeVetter.app.dSYM
+          if-no-files-found: warn
+          retention-days: 7
+          compression-level: 0

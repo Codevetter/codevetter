@@ -7,12 +7,14 @@ use std::path::{Path, PathBuf};
 use std::process::Stdio;
 use std::time::{Duration, Instant};
 
+use rusqlite::OptionalExtension;
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use tokio::process::Command;
 
 use crate::{db, DbState};
 
+use super::cross_review;
 use super::evidence_scope::{
     resolve_evidence_scope, EvidenceScopeCandidate, EvidenceScopeConsumer, EvidenceScopeInput,
     EvidenceScopeKind, EvidenceScopePlan,
@@ -75,10 +77,14 @@ pub struct LocalCheckStages {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct LocalCheckReceipt {
     pub schema_version: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub request_id: Option<String>,
     pub run_id: String,
     pub ran_at: String,
     pub repo_path: String,
     pub task: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub standards_pack: Option<String>,
     pub source: TrexSourceReceipt,
     pub stages: LocalCheckStages,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -90,6 +96,8 @@ pub struct LocalCheckReceipt {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct LocalCheckPreflightReceipt {
     pub schema_version: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub request_id: Option<String>,
     pub ran_at: String,
     pub repo_path: String,
     pub task: String,
@@ -113,6 +121,8 @@ pub struct LocalCheckInput {
     pub repo_path: PathBuf,
     pub change: String,
     pub task: String,
+    pub standards_pack: Option<String>,
+    pub standards_context: Option<String>,
     pub spec_paths: Vec<PathBuf>,
     pub selected_requirement_ids: Vec<String>,
     pub review_agent: String,
@@ -156,10 +166,19 @@ where
         performance_selection_limitation,
     } = prepared;
     let diff_range = format!("{}...{}", source.base_sha, source.head_sha);
-    let review_task = compose_review_task(&input.task, spec_packet.as_ref());
+    let mut review_task = compose_review_task(&input.task, spec_packet.as_ref());
+    if let Some(context) = input
+        .standards_context
+        .as_deref()
+        .map(str::trim)
+        .filter(|context| !context.is_empty())
+    {
+        review_task.push_str("\n\n");
+        review_task.push_str(context);
+    }
     let app_data_dir = default_app_data_dir()?;
-    let connection =
-        db::init_db(app_data_dir).map_err(|error| format!("open CodeVetter database: {error}"))?;
+    let connection = db::init_db(app_data_dir.clone())
+        .map_err(|error| format!("open CodeVetter database: {error}"))?;
     let db = DbState(std::sync::Arc::new(std::sync::Mutex::new(connection)));
 
     on_progress(LocalCheckProgress {
@@ -223,6 +242,7 @@ where
         &review_task,
         &input.review_agent,
         review_runtime_context,
+        |stage, state| on_progress(LocalCheckProgress { stage, state }),
     )
     .await;
     on_progress(progress_for_stage("review", &review));
@@ -273,18 +293,101 @@ where
         stage: "done",
         state: verdict_name(verdict),
     });
-    Ok(LocalCheckReceipt {
+    let receipt = LocalCheckReceipt {
         schema_version: "codevetter.local-check/v1".into(),
+        request_id: None,
         run_id: format!("local-check-{}", uuid::Uuid::new_v4()),
         ran_at: chrono::Utc::now().to_rfc3339(),
         repo_path: repo_text,
         task: input.task,
+        standards_pack: input.standards_pack,
         source,
         stages,
         spec_coverage,
         verdict,
         limitations,
+    };
+    let connection = db::init_db(app_data_dir)
+        .map_err(|error| format!("reopen CodeVetter database for run receipt: {error}"))?;
+    persist_local_check_receipt(&connection, &receipt)?;
+    Ok(receipt)
+}
+
+pub fn persist_local_check_receipt(
+    connection: &rusqlite::Connection,
+    receipt: &LocalCheckReceipt,
+) -> Result<(), String> {
+    let receipt_json = serde_json::to_string(receipt)
+        .map_err(|error| format!("serialize local check receipt for persistence: {error}"))?;
+    connection
+        .execute(
+            "INSERT OR REPLACE INTO local_check_runs(
+                run_id, schema_version, repo_path, base_sha, head_sha,
+                verdict, task, receipt_json, ran_at
+             ) VALUES(?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)",
+            rusqlite::params![
+                receipt.run_id,
+                receipt.schema_version,
+                receipt.repo_path,
+                receipt.source.base_sha,
+                receipt.source.head_sha,
+                verdict_name(receipt.verdict),
+                receipt.task,
+                receipt_json,
+                receipt.ran_at,
+            ],
+        )
+        .map_err(|error| format!("persist local check receipt: {error}"))?;
+    Ok(())
+}
+
+pub fn list_local_check_receipts(
+    connection: &rusqlite::Connection,
+    repo_path: Option<&str>,
+    limit: usize,
+) -> Result<Vec<LocalCheckReceipt>, String> {
+    let limit = limit.clamp(1, 100) as i64;
+    let sql = if repo_path.is_some() {
+        "SELECT receipt_json FROM local_check_runs
+         WHERE repo_path = ?1 ORDER BY ran_at DESC LIMIT ?2"
+    } else {
+        "SELECT receipt_json FROM local_check_runs
+         ORDER BY ran_at DESC LIMIT ?2"
+    };
+    let mut statement = connection
+        .prepare(sql)
+        .map_err(|error| format!("prepare local check history: {error}"))?;
+    let decode = |row: &rusqlite::Row<'_>| -> rusqlite::Result<String> { row.get(0) };
+    let rows = match repo_path {
+        Some(repo_path) => statement.query_map(rusqlite::params![repo_path, limit], decode),
+        None => statement.query_map(rusqlite::params![rusqlite::types::Null, limit], decode),
+    }
+    .map_err(|error| format!("read local check history: {error}"))?;
+    rows.map(|row| {
+        let json = row.map_err(|error| format!("read local check receipt row: {error}"))?;
+        serde_json::from_str(&json)
+            .map_err(|error| format!("decode stored local check receipt: {error}"))
     })
+    .collect()
+}
+
+pub fn get_local_check_receipt(
+    connection: &rusqlite::Connection,
+    repo_path: &str,
+    run_id: &str,
+) -> Result<LocalCheckReceipt, String> {
+    let receipt_json = connection
+        .query_row(
+            "SELECT receipt_json FROM local_check_runs
+             WHERE repo_path = ?1 AND run_id = ?2",
+            rusqlite::params![repo_path, run_id],
+            |row| row.get::<_, String>(0),
+        )
+        .optional()
+        .map_err(|error| format!("read local check receipt: {error}"))?
+        .ok_or_else(|| "Local-check receipt was not found in this repository scope".to_string())?;
+    serde_json::from_str(&receipt_json)
+        .map_err(|error| format!("decode stored local check receipt: {error}"))
 }
 
 pub async fn preflight_local_check(
@@ -313,6 +416,17 @@ pub async fn preflight_local_check(
         )
     });
     let mut limitations = Vec::new();
+    let missing_review_executors = if input.review_agent == "cross" {
+        cross_review::missing_executors()
+    } else {
+        Vec::new()
+    };
+    if !missing_review_executors.is_empty() {
+        limitations.push(format!(
+            "Cross-review requires both configured executors before either pass starts; missing: {}",
+            missing_review_executors.join(", ")
+        ));
+    }
     if correctness_target.is_none() {
         limitations.push(
             test_plan
@@ -344,7 +458,8 @@ pub async fn preflight_local_check(
             );
         }
     }
-    let status = if correctness_target.is_some()
+    let status = if missing_review_executors.is_empty()
+        && correctness_target.is_some()
         && spec_coverage.as_ref().is_none_or(|coverage| {
             coverage.summary.total_requirements > 0 && coverage.summary.selected_for_execution > 0
         }) {
@@ -355,6 +470,7 @@ pub async fn preflight_local_check(
 
     Ok(LocalCheckPreflightReceipt {
         schema_version: "codevetter.local-check-preflight/v1".into(),
+        request_id: None,
         ran_at: chrono::Utc::now().to_rfc3339(),
         repo_path: repo_text,
         task: input.task.clone(),
@@ -441,8 +557,11 @@ fn validate_input(input: &LocalCheckInput) -> Result<(), String> {
     if input.task.trim().is_empty() || input.task.len() > 2_000 {
         return Err("Task must contain between 1 and 2,000 characters".into());
     }
-    if !matches!(input.review_agent.as_str(), "claude" | "gemini" | "codex") {
-        return Err("Review agent must be `claude`, `gemini`, or `codex`".into());
+    if !matches!(
+        input.review_agent.as_str(),
+        "claude" | "gemini" | "codex" | "cross"
+    ) {
+        return Err("Review agent must be `claude`, `gemini`, `codex`, or `cross`".into());
     }
     if !(2..=10).contains(&input.samples) {
         return Err("Performance samples must be between 2 and 10".into());
@@ -578,15 +697,31 @@ fn git_text(repo: &Path, arguments: &[&str]) -> Result<String, String> {
         .map_err(|_| "Git returned non-UTF-8 checkout evidence".into())
 }
 
-async fn run_review_stage(
+async fn run_review_stage<F>(
     db: DbState,
     repo_path: &str,
     diff_range: &str,
     task: &str,
     agent: &str,
     runtime_context: Vec<Value>,
-) -> LocalCheckStage {
+    on_cross_progress: F,
+) -> LocalCheckStage
+where
+    F: FnMut(&'static str, &'static str),
+{
     let started = Instant::now();
+    if agent == "cross" {
+        return run_cross_review_stage(
+            db,
+            repo_path,
+            diff_range,
+            task,
+            runtime_context,
+            started,
+            on_cross_progress,
+        )
+        .await;
+    }
     match run_cli_review_core(
         db,
         repo_path.to_string(),
@@ -599,58 +734,182 @@ async fn run_review_stage(
     )
     .await
     {
-        Ok(evidence) => {
-            let readiness_complete = evidence
-                .get("review_readiness")
-                .and_then(|value| value.get("status"))
-                .and_then(Value::as_str)
-                == Some("ready")
-                && evidence.get("review_status").and_then(Value::as_str) == Some("completed");
-            let actionable = evidence
-                .get("findings")
-                .and_then(Value::as_array)
-                .is_some_and(|findings| {
-                    findings.iter().any(|finding| {
-                        matches!(
-                            finding.get("severity").and_then(Value::as_str),
-                            Some("critical" | "high")
-                        )
-                    })
-                });
-            let limitations = if readiness_complete {
-                Vec::new()
-            } else {
-                evidence
-                    .get("review_readiness")
-                    .and_then(|value| value.get("limitations"))
-                    .and_then(Value::as_array)
-                    .map(|values| {
-                        values
-                            .iter()
-                            .filter_map(Value::as_str)
-                            .map(ToOwned::to_owned)
-                            .collect::<Vec<_>>()
-                    })
-                    .filter(|values| !values.is_empty())
-                    .unwrap_or_else(|| {
-                        vec!["Review context or execution coverage was incomplete".to_string()]
-                    })
-            };
-            LocalCheckStage {
-                status: if !readiness_complete {
-                    LocalCheckStatus::NoConfidence
-                } else if actionable {
-                    LocalCheckStatus::NeedsAttention
-                } else {
-                    LocalCheckStatus::Completed
-                },
-                duration_ms: elapsed_ms(started),
-                target: None,
-                evidence,
-                limitations,
-            }
-        }
+        Ok(evidence) => review_stage_from_evidence(started, evidence),
         Err(error) => no_confidence_stage(started, None, error),
+    }
+}
+
+async fn run_cross_review_stage<F>(
+    db: DbState,
+    repo_path: &str,
+    diff_range: &str,
+    task: &str,
+    runtime_context: Vec<Value>,
+    started: Instant,
+    mut on_progress: F,
+) -> LocalCheckStage
+where
+    F: FnMut(&'static str, &'static str),
+{
+    let missing = cross_review::missing_executors();
+    if !missing.is_empty() {
+        let receipt = cross_review::incomplete_after_pass(
+            None,
+            "preflight",
+            &format!("missing configured executors: {}", missing.join(", ")),
+        );
+        return review_stage_from_evidence(started, cross_review::project_stage_evidence(receipt));
+    }
+    let policy_binding = match cross_review::coordinator_policy_binding(
+        repo_path,
+        diff_range,
+        task,
+        &runtime_context,
+    ) {
+        Ok(binding) => binding,
+        Err(error) => {
+            return review_stage_from_evidence(
+                started,
+                cross_review::project_stage_evidence(cross_review::incomplete_after_pass(
+                    None,
+                    "policy_binding",
+                    &error,
+                )),
+            );
+        }
+    };
+    let run_pass = |agent: &str, db: DbState, context: Vec<Value>| {
+        run_cli_review_core(
+            db,
+            repo_path.to_string(),
+            diff_range.to_string(),
+            "Local repository change".into(),
+            task.to_string(),
+            Some(agent.to_string()),
+            Some(context),
+            None,
+        )
+    };
+    on_progress("review_claude", "running");
+    let mut claude = match run_pass("claude", db.clone(), runtime_context.clone()).await {
+        Ok(evidence) => evidence,
+        Err(error) => {
+            on_progress("review_claude", "no_confidence");
+            let receipt = cross_review::incomplete_after_pass(None, "claude", &error);
+            return review_stage_from_evidence(
+                started,
+                cross_review::project_stage_evidence(receipt),
+            );
+        }
+    };
+    if let Err(error) = cross_review::attach_coordinator_binding(&mut claude, &policy_binding) {
+        return review_stage_from_evidence(
+            started,
+            cross_review::project_stage_evidence(cross_review::incomplete_after_pass(
+                None,
+                "claude_binding",
+                &error,
+            )),
+        );
+    }
+    on_progress("review_claude", "completed");
+    on_progress("review_codex", "running");
+    let mut codex = match run_pass("codex", db.clone(), runtime_context).await {
+        Ok(evidence) => evidence,
+        Err(error) => {
+            on_progress("review_codex", "no_confidence");
+            let receipt =
+                cross_review::incomplete_after_pass(Some(("claude", claude)), "codex", &error);
+            return review_stage_from_evidence(
+                started,
+                cross_review::project_stage_evidence(receipt),
+            );
+        }
+    };
+    if let Err(error) = cross_review::attach_coordinator_binding(&mut codex, &policy_binding) {
+        return review_stage_from_evidence(
+            started,
+            cross_review::project_stage_evidence(cross_review::incomplete_after_pass(
+                Some(("claude", claude)),
+                "codex_binding",
+                &error,
+            )),
+        );
+    }
+    on_progress("review_codex", "completed");
+    let receipt = match cross_review::reconcile_complete(claude, codex) {
+        Ok(receipt) => receipt,
+        Err(error) => {
+            return review_stage_from_evidence(
+                started,
+                cross_review::project_stage_evidence(cross_review::incomplete_after_pass(
+                    None,
+                    "reconciliation",
+                    &error,
+                )),
+            );
+        }
+    };
+    let mut evidence = cross_review::project_stage_evidence(receipt);
+    if let Err(error) =
+        cross_review::persist_composite_review(&db, repo_path, diff_range, None, &mut evidence)
+    {
+        return no_confidence_stage(
+            started,
+            None,
+            format!("Could not persist the cross-review composite: {error}"),
+        );
+    }
+    review_stage_from_evidence(started, evidence)
+}
+
+fn review_stage_from_evidence(started: Instant, evidence: Value) -> LocalCheckStage {
+    let readiness_complete = evidence
+        .pointer("/review_readiness/status")
+        .and_then(Value::as_str)
+        == Some("ready")
+        && evidence.get("review_status").and_then(Value::as_str) == Some("completed");
+    let actionable = evidence
+        .get("findings")
+        .and_then(Value::as_array)
+        .is_some_and(|findings| {
+            findings.iter().any(|finding| {
+                matches!(
+                    finding.get("severity").and_then(Value::as_str),
+                    Some("critical" | "high")
+                )
+            })
+        });
+    let limitations = if readiness_complete {
+        Vec::new()
+    } else {
+        evidence
+            .pointer("/review_readiness/limitations")
+            .and_then(Value::as_array)
+            .map(|values| {
+                values
+                    .iter()
+                    .filter_map(Value::as_str)
+                    .map(ToOwned::to_owned)
+                    .collect::<Vec<_>>()
+            })
+            .filter(|values| !values.is_empty())
+            .unwrap_or_else(|| {
+                vec!["Review context or execution coverage was incomplete".to_string()]
+            })
+    };
+    LocalCheckStage {
+        status: if !readiness_complete {
+            LocalCheckStatus::NoConfidence
+        } else if actionable {
+            LocalCheckStatus::NeedsAttention
+        } else {
+            LocalCheckStatus::Completed
+        },
+        duration_ms: elapsed_ms(started),
+        target: None,
+        evidence,
+        limitations,
     }
 }
 
@@ -804,6 +1063,24 @@ async fn run_runtime_stage(
         }
         Err(error) => no_confidence_stage(started, Some(target), error),
     }
+}
+
+pub async fn rerun_fix_correctness_target(
+    repo_path: &Path,
+    target: Option<LocalCheckTarget>,
+    timeout_ms: u64,
+) -> LocalCheckStage {
+    run_runtime_stage(
+        repo_path,
+        "run",
+        target,
+        2,
+        0,
+        timeout_ms,
+        None,
+        Some("The source verification receipt has no correctness target to recheck".into()),
+    )
+    .await
 }
 
 fn runtime_stage_status(operation: &str, evidence: &Value) -> LocalCheckStatus {
@@ -1432,5 +1709,62 @@ mod tests {
             runtime_stage_status("verify-paired-optimization", &evidence),
             LocalCheckStatus::NoConfidence
         );
+    }
+
+    #[test]
+    fn persisted_local_checks_round_trip_in_reverse_chronological_order() {
+        let connection = rusqlite::Connection::open_in_memory().expect("database");
+        crate::db::schema::run_migrations(&connection).expect("schema");
+        let receipt = |run_id: &str, repo_path: &str, ran_at: &str| LocalCheckReceipt {
+            schema_version: "codevetter.local-check/v1".into(),
+            request_id: None,
+            run_id: run_id.into(),
+            ran_at: ran_at.into(),
+            repo_path: repo_path.into(),
+            task: format!("Verify {run_id}"),
+            standards_pack: None,
+            source: TrexSourceReceipt {
+                kind: super::super::trex_preview::TrexChangeKind::Range,
+                input: "main...HEAD".into(),
+                base_sha: "a".repeat(40),
+                head_sha: "b".repeat(40),
+                commits: vec!["b".repeat(40)],
+                changed_paths: vec!["src/main.rs".into()],
+            },
+            stages: LocalCheckStages {
+                review: stage(LocalCheckStatus::Completed),
+                correctness: stage(LocalCheckStatus::Passed),
+                performance: stage(LocalCheckStatus::NoConfidence),
+                optimization: stage(LocalCheckStatus::NoConfidence),
+            },
+            spec_coverage: None,
+            verdict: LocalCheckVerdict::PassedWithLimits,
+            limitations: vec!["Fixture limitation".into()],
+        };
+        persist_local_check_receipt(
+            &connection,
+            &receipt("run-old", "/tmp/repo", "2026-08-30T00:00:00Z"),
+        )
+        .expect("old receipt");
+        persist_local_check_receipt(
+            &connection,
+            &receipt("run-new", "/tmp/repo", "2026-08-31T00:00:00Z"),
+        )
+        .expect("new receipt");
+        persist_local_check_receipt(
+            &connection,
+            &receipt("run-other", "/tmp/other", "2026-09-01T00:00:00Z"),
+        )
+        .expect("other receipt");
+
+        let rows =
+            list_local_check_receipts(&connection, Some("/tmp/repo"), 10).expect("stored history");
+        assert_eq!(
+            rows.iter()
+                .map(|row| row.run_id.as_str())
+                .collect::<Vec<_>>(),
+            vec!["run-new", "run-old"]
+        );
+        assert_eq!(rows[0].limitations, vec!["Fixture limitation"]);
     }
 }

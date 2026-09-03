@@ -2,6 +2,7 @@
 name = "codevetter-desktop"
 version = "0.1.0"
 edition = "2021"
+publish = false
 description = "CodeVetter Desktop — code review + agent management"
 default-run = "codevetter-desktop"
 
@@ -86,6 +87,12 @@ opt-level = 0
 
 [profile.test]
 debug = 1
+
+[profile.release]
+# Shipping companions favor whole-program runtime and footprint over compile
+# throughput. Keep panic unwinding for diagnosability and behavior parity.
+lto = "fat"
+codegen-units = 1
 
 [features]
 default = ["custom-protocol"]

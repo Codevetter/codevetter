@@ -80,6 +80,13 @@ describe('differential CLI contract', () => {
     assert.equal(differentialExitCode('cleanup', cleanup(true)), 0);
     assert.equal(differentialExitCode('cleanup', cleanup(false)), 3);
     assert.equal(differentialExitCode('run', prepared('ready')), 3);
+    assert.equal(
+      differentialExitCode('cleanup', {
+        type: 'error',
+        error: { code: 'cleanup_failed', message: 'Cleanup failed.', retryable: false },
+      }),
+      3
+    );
   });
 });
 

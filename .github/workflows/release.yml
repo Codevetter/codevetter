@@ -10,47 +10,51 @@ on:
         required: true
         type: string
 
-permissions:
-  contents: write
+permissions: {}
+
+concurrency:
+  group: release-${{ github.event.release.tag_name || inputs.tag || github.ref }}
+  cancel-in-progress: false
 
 jobs:
   build:
+    name: Build, sign, and upload desktop artifacts
     strategy:
       matrix:
         platform: [macos-latest]
     runs-on: ${{ matrix.platform }}
+    permissions:
+      contents: write # Upload signed artifacts and updater metadata.
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
           # On workflow_dispatch we want the commit the tag points at, not
           # the head of main — checkout the tag explicitly.
           ref: ${{ github.event.release.tag_name || inputs.tag }}
+          persist-credentials: false
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v6
+        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6
         # Don't specify version here — it reads "packageManager" from
         # package.json (pnpm@10.33.2). Specifying both causes
         # "Multiple versions of pnpm specified" error.
 
       - name: Setup Node
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with:
           node-version: 22
-          cache: pnpm
+          package-manager-cache: false
 
       - name: Setup Rust
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@4360b52568e2003a75bf9bc1d59f33a8e3fc893c # stable
         with:
           targets: aarch64-apple-darwin
 
       - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
-
-      - name: Cache Rust
-        uses: Swatinem/rust-cache@v2
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
         with:
-          workspaces: apps/desktop/src-tauri
+          no-cache: true
 
       - name: Install dependencies
         run: pnpm install --ignore-scripts
@@ -79,6 +83,10 @@ jobs:
           pnpm run test:ccusage-sidecar
           pnpm run prepare:ccusage-sidecar
 
+      - name: Test pinned macOS collector preparation contract
+        working-directory: apps/desktop
+        run: pnpm run test:collector-sidecars
+
       # Tauri merges tauri.macos.conf.json before every Cargo build, including
       # the release-only graph benchmark below. Prepare the declared native
       # helper before that first build rather than waiting for tauri-action.
@@ -102,7 +110,7 @@ jobs:
 
       - name: Build Tauri app
         id: tauri
-        uses: tauri-apps/tauri-action@v0
+        uses: tauri-apps/tauri-action@84b9d35b5fc46c1e45415bdb6144030364f7ebc5 # v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAURI_ENV_TARGET_TRIPLE: aarch64-apple-darwin
@@ -125,13 +133,21 @@ jobs:
           includeUpdaterJson: true
           updaterJsonPreferNsis: false
 
-      - name: Verify CLI and MCP sidecars in app bundle
+      - name: Verify aarch64 CLI, MCP, and collector sidecars in final app bundle
         run: |
           test -x apps/desktop/src-tauri/target/aarch64-apple-darwin/release/bundle/macos/CodeVetter.app/Contents/MacOS/codevetter
           test -x apps/desktop/src-tauri/target/aarch64-apple-darwin/release/bundle/macos/CodeVetter.app/Contents/MacOS/codevetter-mcp
           test -x apps/desktop/src-tauri/target/aarch64-apple-darwin/release/bundle/macos/CodeVetter.app/Contents/MacOS/ccusage
           EXPECTED_CCUSAGE=$(node -p "require('./apps/desktop/package.json').devDependencies.ccusage")
-          apps/desktop/src-tauri/target/aarch64-apple-darwin/release/bundle/macos/CodeVetter.app/Contents/MacOS/ccusage --version | grep "$EXPECTED_CCUSAGE"
+          test "$(apps/desktop/src-tauri/target/aarch64-apple-darwin/release/bundle/macos/CodeVetter.app/Contents/MacOS/ccusage --version)" = "ccusage $EXPECTED_CCUSAGE"
+          test -x apps/desktop/src-tauri/target/aarch64-apple-darwin/release/bundle/macos/CodeVetter.app/Contents/Resources/collectors/cargo-audit
+          test -x apps/desktop/src-tauri/target/aarch64-apple-darwin/release/bundle/macos/CodeVetter.app/Contents/Resources/collectors/cargo-llvm-cov
+          test -x apps/desktop/src-tauri/target/aarch64-apple-darwin/release/bundle/macos/CodeVetter.app/Contents/Resources/collectors/gitleaks
+          test -f apps/desktop/src-tauri/target/aarch64-apple-darwin/release/bundle/macos/CodeVetter.app/Contents/Resources/rustsec-advisory-db/snapshot/CODEVETTER_DB_IDENTITY.json
+          test -d apps/desktop/src-tauri/target/aarch64-apple-darwin/release/bundle/macos/CodeVetter.app/Contents/Resources/rustsec-advisory-db/snapshot/crates
+          test "$(apps/desktop/src-tauri/target/aarch64-apple-darwin/release/bundle/macos/CodeVetter.app/Contents/Resources/collectors/cargo-audit --version)" = 'cargo-audit 0.22.2'
+          test "$(apps/desktop/src-tauri/target/aarch64-apple-darwin/release/bundle/macos/CodeVetter.app/Contents/Resources/collectors/cargo-llvm-cov llvm-cov --version)" = 'cargo-llvm-cov 0.9.0'
+          test "$(apps/desktop/src-tauri/target/aarch64-apple-darwin/release/bundle/macos/CodeVetter.app/Contents/Resources/collectors/gitleaks version)" = '8.30.1'
           pnpm --dir apps/desktop run qualify:cli --binary \
             src-tauri/target/aarch64-apple-darwin/release/bundle/macos/CodeVetter.app/Contents/MacOS/codevetter
 

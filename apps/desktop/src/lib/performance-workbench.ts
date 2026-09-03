@@ -41,6 +41,14 @@ export interface PerformanceRunReceipt {
     owned_process_reaped: boolean;
     temporary_profiles_retained: boolean;
   };
+  resources?: {
+    sampler: string | null;
+    sample_interval_ms: number;
+    samples: number;
+    peak_rss_bytes: number | null;
+    peak_processes: number | null;
+    limitations: string[];
+  };
 }
 
 export type PerformanceBridgeFixtureKind =

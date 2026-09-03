@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>CodeVetter native owner review</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+        background: #000;
+        color: #f5f4f0;
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; background: #000; }
+      header {
+        position: sticky;
+        top: 0;
+        z-index: 2;
+        padding: 24px clamp(20px, 4vw, 56px) 18px;
+        border-bottom: 1px solid #242424;
+        background: rgb(0 0 0 / 92%);
+        backdrop-filter: blur(22px);
+      }
+      .eyebrow {
+        margin: 0 0 7px;
+        color: #d4a039;
+        font: 700 11px/1.3 ui-monospace, "SFMono-Regular", monospace;
+        letter-spacing: .15em;
+        text-transform: uppercase;
+      }
+      h1 { margin: 0; font-size: clamp(25px, 4vw, 40px); letter-spacing: -.035em; }
+      .summary { max-width: 820px; margin: 8px 0 18px; color: #aaa8a2; line-height: 1.55; }
+      .filters { display: flex; flex-wrap: wrap; gap: 8px; }
+      button {
+        appearance: none;
+        border: 1px solid #2b2b2b;
+        border-radius: 999px;
+        padding: 8px 13px;
+        background: #0b0b0b;
+        color: #aaa8a2;
+        font: inherit;
+        font-size: 13px;
+        cursor: pointer;
+      }
+      button:hover { border-color: #555; color: #fff; }
+      button[aria-pressed="true"] { border-color: #d4a039; background: #d4a039; color: #080705; }
+      button:focus-visible, a:focus-visible { outline: 3px solid #f4ad2d; outline-offset: 3px; }
+      main {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, 520px), 1fr));
+        gap: 22px;
+        padding: 28px clamp(20px, 4vw, 56px) 64px;
+      }
+      article {
+        min-width: 0;
+        overflow: hidden;
+        border: 1px solid #232323;
+        border-radius: 16px;
+        background: #080808;
+      }
+      article[hidden] { display: none; }
+      article > a { display: block; background: #020202; }
+      img { display: block; width: 100%; height: auto; }
+      .caption { display: flex; align-items: baseline; justify-content: space-between; gap: 18px; padding: 14px 16px 16px; }
+      h2 { margin: 0; font-size: 15px; letter-spacing: -.01em; }
+      code { color: #77756f; font-size: 11px; }
+      footer { padding: 0 clamp(20px, 4vw, 56px) 44px; color: #77756f; font-size: 12px; }
+    </style>
+  </head>
+  <body>
+    <header>
+      <p class="eyebrow">Evidence Bench / owner gate</p>
+      <h1>Native macOS review packet</h1>
+      <p class="summary">
+        Thirty-five deterministic current-tree renders. Select any image for its original pixels.
+        Automated inspection found no unresolved P0 or P1 visual issue; owner acceptance remains pending.
+      </p>
+      <nav class="filters" aria-label="Filter review states">
+        <button type="button" data-filter="all" aria-pressed="true">All 35</button>
+        <button type="button" data-filter="primary" aria-pressed="false">Primary</button>
+        <button type="button" data-filter="review" aria-pressed="false">Review</button>
+        <button type="button" data-filter="testing" aria-pressed="false">Testing</button>
+        <button type="button" data-filter="settings" aria-pressed="false">Settings</button>
+        <button type="button" data-filter="light" aria-pressed="false">Light mode</button>
+        <button type="button" data-filter="onboarding" aria-pressed="false">Onboarding</button>
+      </nav>
+    </header>
+    <main>
+      <article data-render="usage.png" data-groups="primary"><a href="usage.png"><img src="usage.png" alt="Usage workspace" /></a><div class="caption"><h2>Usage</h2><code>usage.png</code></div></article>
+      <article data-render="repo-unpack.png" data-groups="primary"><a href="repo-unpack.png"><img src="repo-unpack.png" alt="Repo Unpack workspace" /></a><div class="caption"><h2>Repo Unpack</h2><code>repo-unpack.png</code></div></article>
+      <article data-render="repository-query-desk.png" data-groups="primary"><a href="repository-query-desk.png"><img src="repository-query-desk.png" alt="Repository query desk" /></a><div class="caption"><h2>Repository query desk</h2><code>repository-query-desk.png</code></div></article>
+      <article data-render="repository-query-evidence-workbench.png" data-groups="primary"><a href="repository-query-evidence-workbench.png"><img src="repository-query-evidence-workbench.png" alt="Repository query evidence workbench" /></a><div class="caption"><h2>Repository evidence</h2><code>repository-query-evidence-workbench.png</code></div></article>
+      <article data-render="review-findings.png" data-groups="primary review"><a href="review-findings.png"><img src="review-findings.png" alt="Review findings in dark mode" /></a><div class="caption"><h2>Review findings</h2><code>review-findings.png</code></div></article>
+      <article data-render="review-findings-light.png" data-groups="review light"><a href="review-findings-light.png"><img src="review-findings-light.png" alt="Review findings in light mode" /></a><div class="caption"><h2>Review findings · light</h2><code>review-findings-light.png</code></div></article>
+      <article data-render="review-cross-review.png" data-groups="primary review"><a href="review-cross-review.png"><img src="review-cross-review.png" alt="Independent Claude and Codex review evidence" /></a><div class="caption"><h2>Claude + Codex review</h2><code>review-cross-review.png</code></div></article>
+      <article data-render="review-cross-review-light.png" data-groups="review light"><a href="review-cross-review-light.png"><img src="review-cross-review-light.png" alt="Independent Claude and Codex review evidence in light mode" /></a><div class="caption"><h2>Claude + Codex review · light</h2><code>review-cross-review-light.png</code></div></article>
+      <article data-render="review-proof-map.png" data-groups="review"><a href="review-proof-map.png"><img src="review-proof-map.png" alt="Review proof map" /></a><div class="caption"><h2>Review proof map</h2><code>review-proof-map.png</code></div></article>
+      <article data-render="review-intent.png" data-groups="review"><a href="review-intent.png"><img src="review-intent.png" alt="Review intent chronology" /></a><div class="caption"><h2>Review intent</h2><code>review-intent.png</code></div></article>
+      <article data-render="testing.png" data-groups="primary testing"><a href="testing.png"><img src="testing.png" alt="Testing receipt in dark mode" /></a><div class="caption"><h2>Testing</h2><code>testing.png</code></div></article>
+      <article data-render="testing-light.png" data-groups="testing light"><a href="testing-light.png"><img src="testing-light.png" alt="Testing receipt in light mode" /></a><div class="caption"><h2>Testing · light</h2><code>testing-light.png</code></div></article>
+      <article data-render="testing-warm.png" data-groups="testing"><a href="testing-warm.png"><img src="testing-warm.png" alt="Warm verification receipt" /></a><div class="caption"><h2>Warm verification</h2><code>testing-warm.png</code></div></article>
+      <article data-render="testing-differential.png" data-groups="testing"><a href="testing-differential.png"><img src="testing-differential.png" alt="Differential verification receipt" /></a><div class="caption"><h2>Differential verification</h2><code>testing-differential.png</code></div></article>
+      <article data-render="testing-scenario.png" data-groups="testing"><a href="testing-scenario.png"><img src="testing-scenario.png" alt="Scenario Foundry" /></a><div class="caption"><h2>Scenario Foundry</h2><code>testing-scenario.png</code></div></article>
+      <article data-render="testing-watcher.png" data-groups="testing"><a href="testing-watcher.png"><img src="testing-watcher.png" alt="Pull request watcher" /></a><div class="caption"><h2>PR Watcher</h2><code>testing-watcher.png</code></div></article>
+      <article data-render="qa-journey-workspace.png" data-groups="testing"><a href="qa-journey-workspace.png"><img src="qa-journey-workspace.png" alt="QA journey workspace" /></a><div class="caption"><h2>QA journey</h2><code>qa-journey-workspace.png</code></div></article>
+      <article data-render="performance.png" data-groups="primary"><a href="performance.png"><img src="performance.png" alt="Performance evidence in dark mode" /></a><div class="caption"><h2>Performance</h2><code>performance.png</code></div></article>
+      <article data-render="performance-light.png" data-groups="light"><a href="performance-light.png"><img src="performance-light.png" alt="Performance evidence in light mode" /></a><div class="caption"><h2>Performance · light</h2><code>performance-light.png</code></div></article>
+      <article data-render="runs.png" data-groups="primary"><a href="runs.png"><img src="runs.png" alt="Run ledger in dark mode" /></a><div class="caption"><h2>Runs</h2><code>runs.png</code></div></article>
+      <article data-render="runs-light.png" data-groups="light"><a href="runs-light.png"><img src="runs-light.png" alt="Run ledger in light mode" /></a><div class="caption"><h2>Runs · light</h2><code>runs-light.png</code></div></article>
+      <article data-render="capabilities-mcp.png" data-groups="primary"><a href="capabilities-mcp.png"><img src="capabilities-mcp.png" alt="Capabilities and MCP workspace" /></a><div class="caption"><h2>Capabilities / MCP</h2><code>capabilities-mcp.png</code></div></article>
+      <article data-render="settings.png" data-groups="primary settings"><a href="settings.png"><img src="settings.png" alt="Settings workspace" /></a><div class="caption"><h2>Settings</h2><code>settings.png</code></div></article>
+      <article data-render="settings-rubrics.png" data-groups="settings"><a href="settings-rubrics.png"><img src="settings-rubrics.png" alt="Rubric settings in dark mode" /></a><div class="caption"><h2>Rubrics</h2><code>settings-rubrics.png</code></div></article>
+      <article data-render="settings-rubrics-light.png" data-groups="settings light"><a href="settings-rubrics-light.png"><img src="settings-rubrics-light.png" alt="Rubric settings in light mode" /></a><div class="caption"><h2>Rubrics · light</h2><code>settings-rubrics-light.png</code></div></article>
+      <article data-render="settings-history-roots.png" data-groups="settings"><a href="settings-history-roots.png"><img src="settings-history-roots.png" alt="History roots settings in dark mode" /></a><div class="caption"><h2>History roots</h2><code>settings-history-roots.png</code></div></article>
+      <article data-render="settings-history-roots-light.png" data-groups="settings light"><a href="settings-history-roots-light.png"><img src="settings-history-roots-light.png" alt="History roots settings in light mode" /></a><div class="caption"><h2>History roots · light</h2><code>settings-history-roots-light.png</code></div></article>
+      <article data-render="settings-memories.png" data-groups="settings"><a href="settings-memories.png"><img src="settings-memories.png" alt="Memory inspector in dark mode" /></a><div class="caption"><h2>Memory inspector</h2><code>settings-memories.png</code></div></article>
+      <article data-render="settings-memories-light.png" data-groups="settings light"><a href="settings-memories-light.png"><img src="settings-memories-light.png" alt="Memory inspector in light mode" /></a><div class="caption"><h2>Memory inspector · light</h2><code>settings-memories-light.png</code></div></article>
+      <article data-render="settings-agent-island.png" data-groups="settings"><a href="settings-agent-island.png"><img src="settings-agent-island.png" alt="Agent Island settings in dark mode" /></a><div class="caption"><h2>Agent Island</h2><code>settings-agent-island.png</code></div></article>
+      <article data-render="settings-agent-island-light.png" data-groups="settings light"><a href="settings-agent-island-light.png"><img src="settings-agent-island-light.png" alt="Agent Island settings in light mode" /></a><div class="caption"><h2>Agent Island · light</h2><code>settings-agent-island-light.png</code></div></article>
+      <article data-render="settings-ops.png" data-groups="settings"><a href="settings-ops.png"><img src="settings-ops.png" alt="Operational status settings in dark mode" /></a><div class="caption"><h2>Ops status</h2><code>settings-ops.png</code></div></article>
+      <article data-render="settings-ops-light.png" data-groups="settings light"><a href="settings-ops-light.png"><img src="settings-ops-light.png" alt="Operational status settings in light mode" /></a><div class="caption"><h2>Ops status · light</h2><code>settings-ops-light.png</code></div></article>
+      <article data-render="onboarding-purpose.png" data-groups="onboarding"><a href="onboarding-purpose.png"><img src="onboarding-purpose.png" alt="Onboarding product purpose" /></a><div class="caption"><h2>Onboarding · purpose</h2><code>onboarding-purpose.png</code></div></article>
+      <article data-render="onboarding-agent.png" data-groups="onboarding"><a href="onboarding-agent.png"><img src="onboarding-agent.png" alt="Onboarding agent selection" /></a><div class="caption"><h2>Onboarding · agent</h2><code>onboarding-agent.png</code></div></article>
+    </main>
+    <footer>Exact image identities and dimensions are recorded in owner-review-manifest.json.</footer>
+    <script>
+      const buttons = [...document.querySelectorAll('[data-filter]')];
+      const cards = [...document.querySelectorAll('[data-render]')];
+      for (const button of buttons) {
+        button.addEventListener('click', () => {
+          const filter = button.dataset.filter;
+          for (const candidate of buttons) candidate.setAttribute('aria-pressed', String(candidate === button));
+          for (const card of cards) {
+            card.hidden = filter !== 'all' && !card.dataset.groups.split(' ').includes(filter);
+          }
+        });
+      }
+    </script>
+  </body>
+</html>

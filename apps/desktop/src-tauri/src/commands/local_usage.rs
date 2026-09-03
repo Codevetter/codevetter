@@ -1,6 +1,7 @@
 use crate::db::queries;
 use crate::DbState;
-use chrono::Utc;
+use chrono::{Duration as ChronoDuration, Local, NaiveDate, Utc};
+use rusqlite::Connection;
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use std::collections::BTreeSet;
@@ -120,6 +121,41 @@ pub struct LocalUsageFailure {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct DevinUsageModel {
+    pub model: String,
+    pub sessions: i64,
+    pub generated_tokens: i64,
+    pub cache_read_tokens: i64,
+    pub cost_usd: f64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct DevinUsageWindow {
+    pub window: String,
+    pub since: Option<String>,
+    pub sessions: i64,
+    pub generated_tokens: i64,
+    pub cache_read_tokens: i64,
+    pub cost_usd: f64,
+    pub models: Vec<DevinUsageModel>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct DevinUsageSummary {
+    pub status: String,
+    pub source: String,
+    pub sessions: i64,
+    pub generated_tokens: i64,
+    pub cache_read_tokens: i64,
+    pub output_tokens: i64,
+    pub cost_usd: f64,
+    pub models: Vec<DevinUsageModel>,
+    #[serde(default)]
+    pub windows: Vec<DevinUsageWindow>,
+    pub limitations: Vec<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct LocalUsageReport {
     pub status: String,
     pub stale: bool,
@@ -130,6 +166,8 @@ pub struct LocalUsageReport {
     pub monthly: Vec<LocalUsagePeriod>,
     pub sessions: Vec<LocalUsageSession>,
     pub totals: LocalUsageTotals,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub devin: Option<DevinUsageSummary>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -155,11 +193,11 @@ struct RawPeriod {
     #[serde(default)]
     agents: Vec<RawAgent>,
     #[serde(flatten)]
-    totals: RawTotals,
+    _totals: RawTotals,
     #[serde(default)]
     metadata: RawMetadata,
-    #[serde(default)]
-    model_breakdowns: Vec<RawModel>,
+    #[serde(default, rename = "modelBreakdowns")]
+    _model_breakdowns: Vec<RawModel>,
     #[serde(default, rename = "modelsUsed")]
     _models_used: Vec<String>,
     period: String,
@@ -256,10 +294,178 @@ pub async fn get_local_usage_report(
     refresh: Option<bool>,
     timezone: Option<String>,
 ) -> Result<LocalUsageReport, String> {
-    let roots = codex_roots(&db)?;
-    let timezone = normalize_timezone(timezone.as_deref());
+    let roots = {
+        let connection = db.0.lock().map_err(|error| error.to_string())?;
+        codex_roots(Some(&connection))?
+    };
+    let mut report =
+        get_local_usage_report_for_roots(roots, refresh.unwrap_or(false), timezone.as_deref())
+            .await?;
+    let connection = db.0.lock().map_err(|error| error.to_string())?;
+    report.devin = Some(project_devin_usage(&connection)?);
+    Ok(report)
+}
+
+/// Read the local usage report without requiring Tauri state.
+///
+/// Transport adapters may provide an existing CodeVetter connection so imported
+/// Codex roots remain consistent with the desktop app. Passing `None` keeps the
+/// operation read-only and falls back to environment/default roots.
+pub async fn get_headless_local_usage_report(
+    connection: Option<&Connection>,
+    refresh: bool,
+    timezone: Option<&str>,
+) -> Result<LocalUsageReport, String> {
+    let roots = codex_roots(connection)?;
+    let mut report = get_local_usage_report_for_roots(roots, refresh, timezone).await?;
+    report.devin = connection.map(project_devin_usage).transpose()?;
+    Ok(report)
+}
+
+fn project_devin_usage(connection: &Connection) -> Result<DevinUsageSummary, String> {
+    project_devin_usage_at(connection, Local::now().date_naive())
+}
+
+fn project_devin_usage_at(
+    connection: &Connection,
+    today: NaiveDate,
+) -> Result<DevinUsageSummary, String> {
+    let row = queries::get_agent_usage_breakdown(connection)
+        .map_err(|error| error.to_string())?
+        .into_iter()
+        .find(|row| row.agent_type == "devin");
+    let has_row = row.is_some();
+    let excluded_agents = [
+        "claude-code",
+        "codex",
+        "cursor",
+        "grok",
+        "google",
+        "openai",
+        "openrouter",
+    ]
+    .map(str::to_string);
+    let row = row.unwrap_or(queries::AgentUsageRow {
+        agent_type: "devin".into(),
+        sessions: 0,
+        real_input_tokens: 0,
+        cache_read_tokens: 0,
+        output_tokens: 0,
+        week_real_input_tokens: 0,
+        week_output_tokens: 0,
+        cost: 0.0,
+    });
+    let mut windows = Vec::with_capacity(4);
+    for (window, days) in [
+        ("1w", Some(7_i64)),
+        ("30d", Some(30_i64)),
+        ("90d", Some(90_i64)),
+        ("all", None),
+    ] {
+        let since = days.map(|days| {
+            (today - ChronoDuration::days(days - 1))
+                .format("%Y-%m-%d")
+                .to_string()
+        });
+        let models = project_devin_models(connection, since.as_deref(), &excluded_agents)?;
+        let (sessions, generated_tokens, cache_read_tokens, cost_usd) = match since.as_deref() {
+            Some(since) => {
+                let rows = queries::get_agent_usage_by_day_since(connection, since)
+                    .map_err(|error| error.to_string())?;
+                let (generated, cache, cost) = rows
+                    .into_iter()
+                    .filter(|row| row.agent_type == "devin")
+                    .fold((0_i64, 0_i64, 0.0_f64), |totals, row| {
+                        (
+                            totals.0.saturating_add(row.generated),
+                            totals.1.saturating_add(row.cache),
+                            totals.2 + row.cost,
+                        )
+                    });
+                let sessions =
+                    queries::get_agent_session_count_since(connection, "devin", Some(since))
+                        .map_err(|error| error.to_string())?;
+                (sessions, generated, cache, cost)
+            }
+            None => (
+                row.sessions,
+                row.real_input_tokens.saturating_add(row.output_tokens),
+                row.cache_read_tokens,
+                row.cost,
+            ),
+        };
+        windows.push(DevinUsageWindow {
+            window: window.into(),
+            since,
+            sessions,
+            generated_tokens,
+            cache_read_tokens,
+            cost_usd,
+            models,
+        });
+    }
+    let models = windows
+        .iter()
+        .find(|window| window.window == "all")
+        .map(|window| window.models.clone())
+        .unwrap_or_default();
+    let status = if has_row || !models.is_empty() {
+        "ready"
+    } else {
+        "empty"
+    };
+    Ok(DevinUsageSummary {
+        status: status.into(),
+        source: "CodeVetter SQLite · indexed Devin sessions.db".into(),
+        sessions: row.sessions,
+        generated_tokens: row.real_input_tokens.saturating_add(row.output_tokens),
+        cache_read_tokens: row.cache_read_tokens,
+        output_tokens: row.output_tokens,
+        cost_usd: row.cost,
+        models,
+        windows,
+        limitations: vec![
+            "Devin remains separate from ccusage totals.".into(),
+            "This local history is not live quota telemetry.".into(),
+        ],
+    })
+}
+
+fn project_devin_models(
+    connection: &Connection,
+    since: Option<&str>,
+    excluded_agents: &[String],
+) -> Result<Vec<DevinUsageModel>, String> {
+    queries::get_usage_by_model(
+        connection,
+        super::history::estimate_cost,
+        since,
+        None,
+        None,
+        excluded_agents,
+    )
+    .map_err(|error| error.to_string())
+    .map(|rows| {
+        rows.into_iter()
+            .map(|model| DevinUsageModel {
+                model: model.model,
+                sessions: model.sessions,
+                generated_tokens: model.generated,
+                cache_read_tokens: model.cache,
+                cost_usd: model.cost,
+            })
+            .collect()
+    })
+}
+
+async fn get_local_usage_report_for_roots(
+    roots: Vec<String>,
+    refresh: bool,
+    timezone: Option<&str>,
+) -> Result<LocalUsageReport, String> {
+    let timezone = normalize_timezone(timezone);
     let mut cache = cache().lock().await;
-    if !refresh.unwrap_or(false) {
+    if !refresh {
         if let (Some(report), Some(cached_at)) = (&cache.report, cache.cached_at) {
             if cached_at.elapsed() < CACHE_TTL && report.provenance.timezone == timezone {
                 return Ok(report.clone());
@@ -285,7 +491,7 @@ pub async fn get_local_usage_report(
     }
 }
 
-fn codex_roots(db: &State<'_, DbState>) -> Result<Vec<String>, String> {
+fn codex_roots(connection: Option<&Connection>) -> Result<Vec<String>, String> {
     let mut roots = BTreeSet::new();
     if let Ok(value) = std::env::var("CODEX_HOME") {
         roots.extend(
@@ -306,15 +512,16 @@ fn codex_roots(db: &State<'_, DbState>) -> Result<Vec<String>, String> {
             );
         }
     }
-    let conn = db.0.lock().map_err(|error| error.to_string())?;
-    if let Ok(Some(raw)) = queries::get_preference(&conn, "codex_usage_import_roots") {
-        if let Ok(imports) = serde_json::from_str::<Vec<String>>(&raw) {
-            roots.extend(
-                imports
-                    .into_iter()
-                    .map(|value| value.trim().to_string())
-                    .filter(|value| !value.is_empty() && !value.contains(',')),
-            );
+    if let Some(connection) = connection {
+        if let Ok(Some(raw)) = queries::get_preference(connection, "codex_usage_import_roots") {
+            if let Ok(imports) = serde_json::from_str::<Vec<String>>(&raw) {
+                roots.extend(
+                    imports
+                        .into_iter()
+                        .map(|value| value.trim().to_string())
+                        .filter(|value| !value.is_empty() && !value.contains(',')),
+                );
+            }
         }
     }
     Ok(roots.into_iter().collect())
@@ -577,6 +784,7 @@ fn normalize_report(
         monthly,
         sessions,
         totals,
+        devin: None,
     })
 }
 
@@ -681,6 +889,7 @@ fn unavailable_report(
         monthly: Vec::new(),
         sessions: Vec::new(),
         totals: LocalUsageTotals::default(),
+        devin: None,
     }
 }
 
@@ -803,6 +1012,68 @@ mod tests {
         assert_eq!(report.totals, LocalUsageTotals::default());
         assert!(report.daily.is_empty());
         assert!(report.provenance.pricing_complete);
+        assert!(report.devin.is_none());
+    }
+
+    #[test]
+    fn projects_devin_as_a_separate_local_source() {
+        let connection = Connection::open_in_memory().unwrap();
+        crate::db::schema::run_migrations(&connection).unwrap();
+        connection
+            .execute_batch(
+                "INSERT INTO cc_projects (id, display_name, dir_path, created_at)
+                 VALUES ('devin-project', 'Devin', '/fixture/devin', '2026-09-01T00:00:00Z');
+                 INSERT INTO cc_sessions (
+                   id, project_id, agent_type, model_used, total_input_tokens,
+                   total_output_tokens, cache_read_tokens, cache_creation_tokens,
+                   estimated_cost_usd, last_message
+                 ) VALUES (
+                   'devin-session', 'devin-project', 'devin', 'glm-5.2', 1200,
+                   300, 200, 100, 0.0042, '2026-09-01T00:00:00Z'
+                 );
+                 INSERT INTO cc_sessions (
+                   id, project_id, agent_type, model_used, total_input_tokens,
+                   total_output_tokens, cache_read_tokens, cache_creation_tokens,
+                   estimated_cost_usd, last_message
+                 ) VALUES (
+                   'devin-old', 'devin-project', 'devin', 'glm-5.2', 600,
+                   100, 50, 0, 0.0020, '2026-05-01T00:00:00Z'
+                 );
+                 INSERT INTO cc_session_days (session_id, day, msg_count) VALUES
+                   ('devin-session', '2026-09-01', 10),
+                   ('devin-old', '2026-05-01', 5);",
+            )
+            .unwrap();
+
+        let today = NaiveDate::from_ymd_opt(2026, 9, 1).unwrap();
+        let summary = project_devin_usage_at(&connection, today).unwrap();
+
+        assert_eq!(summary.status, "ready");
+        assert_eq!(summary.sessions, 2);
+        assert_eq!(summary.generated_tokens, 1850);
+        assert_eq!(summary.cache_read_tokens, 250);
+        assert_eq!(summary.output_tokens, 400);
+        assert_eq!(summary.models[0].model, "glm-5.2");
+        let week = summary
+            .windows
+            .iter()
+            .find(|window| window.window == "1w")
+            .unwrap();
+        assert_eq!(week.since.as_deref(), Some("2026-08-26"));
+        assert_eq!(week.sessions, 1);
+        assert_eq!(week.generated_tokens, 1200);
+        assert_eq!(week.cache_read_tokens, 200);
+        let all = summary
+            .windows
+            .iter()
+            .find(|window| window.window == "all")
+            .unwrap();
+        assert_eq!(all.sessions, 2);
+        assert_eq!(all.generated_tokens, summary.generated_tokens);
+        assert!(summary
+            .limitations
+            .iter()
+            .any(|limitation| limitation.contains("not live quota")));
     }
 
     #[test]

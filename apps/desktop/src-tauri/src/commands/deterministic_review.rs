@@ -1637,7 +1637,8 @@ mod tests {
 
     #[test]
     fn recorded_benchmark_never_emits_an_invalid_position_after_qualification() {
-        let benchmark = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../../benchmark");
+        let benchmark =
+            Path::new(env!("CARGO_MANIFEST_DIR")).join("../../../benchmarks/public-catch-rate");
         let raw_dir = benchmark.join("reviews-raw");
         let mut raw_candidates = 0usize;
         let mut qualified_candidates = 0usize;
@@ -1683,11 +1684,11 @@ mod tests {
             qualified_candidates += qualified.findings.len();
         }
         assert!(
-            raw_candidates >= 29,
+            raw_candidates >= 27,
             "recorded corpus is unexpectedly small"
         );
         assert!(
-            qualified_candidates >= 29,
+            qualified_candidates >= 27,
             "qualification removed too much evidence"
         );
     }

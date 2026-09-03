@@ -31,6 +31,7 @@ use crate::commands::unpack_scan::{
 use crate::commands::unpack_snapshot::build_snapshot_commit_range;
 use crate::db::queries;
 use crate::DbState;
+use serde::{Deserialize, Serialize};
 #[allow(unused_imports)]
 use serde_json::{json, Value};
 use std::collections::HashMap;
@@ -46,6 +47,53 @@ const CLIENT_ALL_FILES_LIMIT: usize = 512;
 // ─── Public types (mirrored on the TS side) ─────────────────────────────────
 
 pub use crate::commands::unpack_types::*;
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct UnpackReportSummary {
+    pub id: String,
+    pub repo_path: String,
+    pub repo_name: String,
+    pub commit_sha: Option<String>,
+    pub status: String,
+    pub error_message: Option<String>,
+    pub agent_used: Option<String>,
+    pub model_used: Option<String>,
+    pub files_scanned: i64,
+    pub files_skipped: i64,
+    pub runtime_ms: Option<i64>,
+    pub cost_usd: Option<f64>,
+    pub started_at: Option<String>,
+    pub completed_at: Option<String>,
+    pub created_at: String,
+    pub analysis_ready: bool,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct UnpackExportReceipt {
+    pub schema_version: String,
+    pub report_id: String,
+    pub format: String,
+    pub content: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct UnpackReportRecord {
+    #[serde(flatten)]
+    pub summary: UnpackReportSummary,
+    pub inventory_json: Option<String>,
+    pub report_json: Option<String>,
+    pub bytes_scanned: i64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct UnpackScanReceipt {
+    pub schema_version: String,
+    pub report_id: String,
+    pub status: String,
+    pub created_at: String,
+    pub inventory: RepoInventory,
+    pub profiles: Vec<super::unpack_scan_profile::UnpackScanProfile>,
+}
 
 // ─── Tauri commands ─────────────────────────────────────────────────────────
 
@@ -290,9 +338,17 @@ pub async fn list_repo_unpack_reports(
     limit: Option<i64>,
 ) -> Result<Value, String> {
     let conn = db.0.lock().map_err(|e| e.to_string())?;
-    let limit = limit.unwrap_or(50);
+    let rows = list_repo_unpack_reports_from_connection(&conn, repo_path.as_deref(), limit)?;
+    Ok(json!({ "reports": rows }))
+}
 
-    let rows: Vec<Value> = if let Some(path) = repo_path {
+pub fn list_repo_unpack_reports_from_connection(
+    conn: &rusqlite::Connection,
+    repo_path: Option<&str>,
+    limit: Option<i64>,
+) -> Result<Vec<UnpackReportSummary>, String> {
+    let limit = limit.unwrap_or(50).clamp(1, 100);
+    let rows = if let Some(path) = repo_path {
         let mut stmt = conn
             .prepare(
                 "SELECT id, repo_path, repo_name, commit_sha, status, error_message,
@@ -308,7 +364,8 @@ pub async fn list_repo_unpack_reports(
         let iter = stmt
             .query_map(rusqlite::params![path, limit], row_to_summary)
             .map_err(|e| e.to_string())?;
-        iter.filter_map(Result::ok).collect()
+        iter.collect::<Result<Vec<_>, _>>()
+            .map_err(|e| e.to_string())?
     } else {
         let mut stmt = conn
             .prepare(
@@ -324,16 +381,23 @@ pub async fn list_repo_unpack_reports(
         let iter = stmt
             .query_map(rusqlite::params![limit], row_to_summary)
             .map_err(|e| e.to_string())?;
-        iter.filter_map(Result::ok).collect()
+        iter.collect::<Result<Vec<_>, _>>()
+            .map_err(|e| e.to_string())?
     };
-
-    Ok(json!({ "reports": rows }))
+    Ok(rows)
 }
 
 #[tauri::command]
 pub async fn get_repo_unpack_report(db: State<'_, DbState>, id: String) -> Result<Value, String> {
     let conn = db.0.lock().map_err(|e| e.to_string())?;
+    serde_json::to_value(get_repo_unpack_report_from_connection(&conn, &id)?)
+        .map_err(|e| e.to_string())
+}
 
+pub fn get_repo_unpack_report_from_connection(
+    conn: &rusqlite::Connection,
+    id: &str,
+) -> Result<UnpackReportRecord, String> {
     let mut row = conn
         .query_row(
             "SELECT id, repo_path, repo_name, commit_sha, status, error_message,
@@ -343,39 +407,14 @@ pub async fn get_repo_unpack_report(db: State<'_, DbState>, id: String) -> Resul
              FROM repo_unpacked_reports
              WHERE id = ?1",
             rusqlite::params![id],
-            |r| {
-                Ok(json!({
-                    "id": r.get::<_, String>(0)?,
-                    "repo_path": r.get::<_, String>(1)?,
-                    "repo_name": r.get::<_, String>(2)?,
-                    "commit_sha": r.get::<_, Option<String>>(3)?,
-                    "status": r.get::<_, String>(4)?,
-                    "error_message": r.get::<_, Option<String>>(5)?,
-                    "agent_used": r.get::<_, Option<String>>(6)?,
-                    "model_used": r.get::<_, Option<String>>(7)?,
-                    "inventory_json": r.get::<_, Option<String>>(8)?,
-                    "report_json": r.get::<_, Option<String>>(9)?,
-                    "files_scanned": r.get::<_, i64>(10)?,
-                    "files_skipped": r.get::<_, i64>(11)?,
-                    "bytes_scanned": r.get::<_, i64>(12)?,
-                    "runtime_ms": r.get::<_, Option<i64>>(13)?,
-                    "cost_usd": r.get::<_, Option<f64>>(14)?,
-                    "started_at": r.get::<_, Option<String>>(15)?,
-                    "completed_at": r.get::<_, Option<String>>(16)?,
-                    "created_at": r.get::<_, String>(17)?,
-                }))
-            },
+            row_to_record,
         )
         .map_err(|e| format!("Report not found: {e}"))?;
 
-    if let Some(inv_json) = row
-        .get("inventory_json")
-        .and_then(|v| v.as_str())
-        .filter(|s| !s.is_empty())
-    {
+    if let Some(inv_json) = row.inventory_json.as_deref().filter(|s| !s.is_empty()) {
         if let Ok(inv) = serde_json::from_str::<RepoInventory>(inv_json) {
             if let Ok(trimmed) = serde_json::to_string(&trim_inventory_for_client(inv)) {
-                row["inventory_json"] = json!(trimmed);
+                row.inventory_json = Some(trimmed);
             }
         }
     }
@@ -400,6 +439,14 @@ pub async fn compare_unpack_snapshot_commits(
     })
     .await
     .map_err(|e| format!("snapshot comparison task join error: {e}"))?
+}
+
+pub fn compare_unpack_snapshot_commits_headless(
+    repo_path: &str,
+    base_commit: &str,
+    head_commit: &str,
+) -> Result<SnapshotCommitRange, String> {
+    build_snapshot_commit_range(repo_path, base_commit, head_commit, 24)
 }
 
 #[tauri::command]
@@ -438,6 +485,28 @@ pub async fn export_repo_unpack_report(
     format: String,
 ) -> Result<Value, String> {
     let conn = db.0.lock().map_err(|e| e.to_string())?;
+    serde_json::to_value(export_repo_unpack_report_from_connection(
+        &conn, &id, &format,
+    )?)
+    .map_err(|error| error.to_string())
+}
+
+pub fn export_repo_unpack_report_from_connection(
+    conn: &rusqlite::Connection,
+    id: &str,
+    format: &str,
+) -> Result<UnpackExportReceipt, String> {
+    let id = id.trim();
+    if id.is_empty() || id.len() > 128 || id.chars().any(char::is_control) {
+        return Err("report_id must contain 1-128 non-control characters".to_string());
+    }
+    let format = format.trim();
+    if !matches!(
+        format,
+        "markdown" | "html" | "repo_graph_json" | "agent_context_markdown" | "repo_memory_markdown"
+    ) {
+        return Err(format!("Unsupported Repo Unpack export format '{format}'"));
+    }
     let (repo_name, report_json, inventory_json, created_at, agent_used, model_used) = conn
         .query_row(
             "SELECT repo_name, report_json, inventory_json, created_at,
@@ -474,7 +543,7 @@ pub async fn export_repo_unpack_report(
         inventory.as_ref(),
     );
 
-    let content = match format.as_str() {
+    let content = match format {
         "html" => render_html(&repo_name, &body),
         "repo_graph_json" => {
             let Some(inventory) = inventory.as_ref() else {
@@ -506,7 +575,7 @@ pub async fn export_repo_unpack_report(
             history_files.extend(inventory.all_files.iter().take(100).cloned());
             let history_files = history_files.into_iter().take(100).collect::<Vec<_>>();
             let temporal_history = crate::commands::history_query::build_review_history_slice(
-                &conn,
+                conn,
                 &inventory.repo_path,
                 &history_files,
             )
@@ -524,10 +593,16 @@ pub async fn export_repo_unpack_report(
             };
             render_repo_memory_markdown(&repo_name, &created_at, inventory, Some(&report))
         }
-        _ => body,
+        "markdown" => body,
+        _ => unreachable!("export format is validated before rendering"),
     };
 
-    Ok(json!({ "content": content, "format": format }))
+    Ok(UnpackExportReceipt {
+        schema_version: "codevetter.unpack-export/v1".to_string(),
+        report_id: id.to_string(),
+        format: format.to_string(),
+        content,
+    })
 }
 
 // ─── Inventory builder (deterministic) ──────────────────────────────────────
@@ -857,6 +932,91 @@ pub fn build_inventory_with_progress(
         inventory,
         profile: profiler.finish(),
     })
+}
+
+/// Persist one deterministic inventory build without depending on Tauri state.
+///
+/// Tauri and the standalone CLI both call this boundary so native scan receipts
+/// retain one identity, schema, and SQLite write path. Agent synthesis remains a
+/// separate, explicitly invoked operation.
+pub fn persist_unpack_scan_snapshot_from_connection(
+    conn: &rusqlite::Connection,
+    report_id: String,
+    build: InventoryBuildResult,
+) -> Result<UnpackScanReceipt, String> {
+    let report_id = report_id.trim().to_string();
+    if report_id.is_empty() || report_id.len() > 128 || report_id.chars().any(char::is_control) {
+        return Err("report_id must contain 1-128 non-control characters".to_string());
+    }
+
+    let InventoryBuildResult {
+        inventory,
+        profile: build_profile,
+    } = build;
+    let mut persist_profiler =
+        super::unpack_scan_profile::UnpackScanProfiler::new("local_scan_persist");
+    let inventory_json = serde_json::to_string(&inventory).map_err(|error| error.to_string())?;
+    persist_profiler.step("serialize", "JSON serialize (inventory → SQLite)");
+    let created_at = chrono::Utc::now().to_rfc3339();
+
+    crate::db::with_busy_retry(
+        || {
+            conn.execute(
+                "INSERT INTO repo_unpacked_reports
+                 (id, repo_path, repo_name, commit_sha, status, inventory_json,
+                  files_scanned, files_skipped, bytes_scanned, started_at, completed_at, created_at)
+                 VALUES (?1, ?2, ?3, ?4, 'scan_only', ?5, ?6, ?7, ?8, ?9, ?9, ?9)",
+                rusqlite::params![
+                    &report_id,
+                    &inventory.repo_path,
+                    &inventory.repo_name,
+                    &inventory.commit_sha,
+                    &inventory_json,
+                    inventory.files_scanned as i64,
+                    inventory.files_skipped as i64,
+                    inventory.bytes_scanned as i64,
+                    &created_at,
+                ],
+            )
+        },
+        15,
+    )
+    .map_err(|error| error.to_string())?;
+    persist_profiler.step("db_insert", "SQLite insert");
+
+    conn.execute(
+        "UPDATE repo_projects SET last_unpack_at = ?2 WHERE repo_path = ?1",
+        rusqlite::params![&inventory.repo_path, &created_at],
+    )
+    .map_err(|error| error.to_string())?;
+    persist_profiler.step("touch_project", "Update repo project metadata");
+
+    Ok(UnpackScanReceipt {
+        schema_version: "codevetter.unpack-scan/v1".to_string(),
+        report_id,
+        status: "scan_only".to_string(),
+        created_at,
+        inventory: trim_inventory_for_client(inventory),
+        profiles: vec![build_profile, persist_profiler.finish()],
+    })
+}
+
+pub fn scan_and_persist_unpack_snapshot(
+    conn: &rusqlite::Connection,
+    repo_path: &str,
+    report_id: Option<String>,
+    progress: Option<super::unpack_scan::ScanProgressCallback>,
+) -> Result<UnpackScanReceipt, String> {
+    let repo_path = repo_path.trim();
+    if repo_path.is_empty() {
+        return Err("repo_path is required".to_string());
+    }
+    let build = build_inventory_with_progress(repo_path, progress, InventoryBuildProfile::Full)?;
+    persist_unpack_scan_snapshot_from_connection(
+        conn,
+        report_id.unwrap_or_else(|| uuid::Uuid::new_v4().to_string()),
+        build,
+    )
 }
 
 fn read_git_metadata(root: &Path) -> (Option<String>, Option<String>, Option<String>) {
@@ -1777,25 +1937,51 @@ fn mark_unpack_failed(
     }
 }
 
-fn row_to_summary(r: &rusqlite::Row<'_>) -> rusqlite::Result<Value> {
-    Ok(json!({
-        "id": r.get::<_, String>(0)?,
-        "repo_path": r.get::<_, String>(1)?,
-        "repo_name": r.get::<_, String>(2)?,
-        "commit_sha": r.get::<_, Option<String>>(3)?,
-        "status": r.get::<_, String>(4)?,
-        "error_message": r.get::<_, Option<String>>(5)?,
-        "agent_used": r.get::<_, Option<String>>(6)?,
-        "model_used": r.get::<_, Option<String>>(7)?,
-        "files_scanned": r.get::<_, i64>(8)?,
-        "files_skipped": r.get::<_, i64>(9)?,
-        "runtime_ms": r.get::<_, Option<i64>>(10)?,
-        "cost_usd": r.get::<_, Option<f64>>(11)?,
-        "started_at": r.get::<_, Option<String>>(12)?,
-        "completed_at": r.get::<_, Option<String>>(13)?,
-        "created_at": r.get::<_, String>(14)?,
-        "analysis_ready": r.get::<_, bool>(15)?,
-    }))
+fn row_to_summary(r: &rusqlite::Row<'_>) -> rusqlite::Result<UnpackReportSummary> {
+    Ok(UnpackReportSummary {
+        id: r.get(0)?,
+        repo_path: r.get(1)?,
+        repo_name: r.get(2)?,
+        commit_sha: r.get(3)?,
+        status: r.get(4)?,
+        error_message: r.get(5)?,
+        agent_used: r.get(6)?,
+        model_used: r.get(7)?,
+        files_scanned: r.get(8)?,
+        files_skipped: r.get(9)?,
+        runtime_ms: r.get(10)?,
+        cost_usd: r.get(11)?,
+        started_at: r.get(12)?,
+        completed_at: r.get(13)?,
+        created_at: r.get(14)?,
+        analysis_ready: r.get(15)?,
+    })
+}
+
+fn row_to_record(r: &rusqlite::Row<'_>) -> rusqlite::Result<UnpackReportRecord> {
+    Ok(UnpackReportRecord {
+        summary: UnpackReportSummary {
+            id: r.get(0)?,
+            repo_path: r.get(1)?,
+            repo_name: r.get(2)?,
+            commit_sha: r.get(3)?,
+            status: r.get(4)?,
+            error_message: r.get(5)?,
+            agent_used: r.get(6)?,
+            model_used: r.get(7)?,
+            files_scanned: r.get(10)?,
+            files_skipped: r.get(11)?,
+            runtime_ms: r.get(13)?,
+            cost_usd: r.get(14)?,
+            started_at: r.get(15)?,
+            completed_at: r.get(16)?,
+            created_at: r.get(17)?,
+            analysis_ready: r.get::<_, Option<String>>(9)?.is_some(),
+        },
+        inventory_json: r.get(8)?,
+        report_json: r.get(9)?,
+        bytes_scanned: r.get(12)?,
+    })
 }
 
 #[cfg(test)]

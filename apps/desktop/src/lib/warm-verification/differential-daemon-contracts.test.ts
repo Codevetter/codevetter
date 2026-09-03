@@ -143,6 +143,15 @@ describe('differential daemon wire contracts', () => {
           error_codes: [],
         },
       },
+      {
+        type: 'error',
+        error: {
+          code: 'differential_unavailable',
+          message: 'The comparison service is unavailable.',
+          remediation: 'Restart the owned verifier.',
+          retryable: true,
+        },
+      },
     ];
     responses.forEach((value) =>
       assert.equal(validateDifferentialDaemonResponseEnvelope(response(value)).ok, true)

@@ -7,6 +7,7 @@ import {
 } from '@tauri-apps/plugin-notification';
 
 import { buildActiveStandardsContext, getActiveStandardsPackId } from '@/lib/review-service';
+import type { ReviewConfig, StandardsPack } from '@/lib/review-service';
 import type { EvidenceScopeInput, EvidenceScopePlan } from '@/lib/evidence-scope';
 import type { DaemonHealth, VerifyResult } from '@/lib/warm-verification/contracts';
 import type {
@@ -962,6 +963,43 @@ export async function getStandardsPackUsage(): Promise<StandardsPackUsageRow[]> 
   return resp.usage;
 }
 
+export type RubricSettingsOperation = 'read' | 'select' | 'upsert';
+
+export interface RubricPackReceipt extends StandardsPack {
+  built_in: boolean;
+  active: boolean;
+  review_count: number;
+  total_findings: number;
+  prompt_preview: string;
+}
+
+export interface RubricSettingsReceipt {
+  schema_version: 'codevetter.rubric-settings/v1';
+  generated_at: string;
+  operation: RubricSettingsOperation;
+  active_pack_id: string | null;
+  custom_rules: string[];
+  packs: RubricPackReceipt[];
+  saved_pack_id: string | null;
+  migrated_legacy_config: boolean;
+}
+
+export async function getRubricSettings(
+  legacyConfig?: ReviewConfig | null
+): Promise<RubricSettingsReceipt> {
+  return safeInvoke<RubricSettingsReceipt>('get_rubric_settings', {
+    legacyConfig: legacyConfig ?? null,
+  });
+}
+
+export async function setActiveRubricPack(packId: string): Promise<RubricSettingsReceipt> {
+  return safeInvoke<RubricSettingsReceipt>('set_active_rubric_pack', { packId });
+}
+
+export async function saveRubricPack(pack: StandardsPack): Promise<RubricSettingsReceipt> {
+  return safeInvoke<RubricSettingsReceipt>('save_rubric_pack', { pack });
+}
+
 // ─── CLI Review ──────────────────────────────────────────────────────────────
 
 export interface CliReviewFinding {
@@ -1766,7 +1804,11 @@ export async function runCliReview(
     qaRuns?: ReviewQaRunEvidence[];
   }
 ): Promise<CliReviewResult> {
-  const standardsContext = buildActiveStandardsContext();
+  const canonicalRubrics = await getRubricSettings().catch(() => null);
+  const canonicalPack =
+    canonicalRubrics?.packs.find((pack) => pack.id === canonicalRubrics.active_pack_id) ??
+    canonicalRubrics?.packs[0];
+  const standardsContext = canonicalPack?.prompt_preview ?? buildActiveStandardsContext();
   const projectWithStandards = projectDescription.trim()
     ? `${projectDescription}\n\n${standardsContext}`
     : standardsContext;
@@ -1778,7 +1820,7 @@ export async function runCliReview(
     changeDescription,
     agent: agent ?? null,
     qaRuns: options?.qaRuns ?? null,
-    standardsPack: getActiveStandardsPackId(),
+    standardsPack: canonicalRubrics?.active_pack_id ?? getActiveStandardsPackId(),
   });
 }
 

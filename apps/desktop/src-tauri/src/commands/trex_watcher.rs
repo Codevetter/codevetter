@@ -24,7 +24,9 @@ use tauri::{AppHandle, Manager, State};
 use tokio::process::Command;
 use tokio::sync::oneshot;
 
-use crate::commands::sandbox::{run_branch_sandbox_inner, SandboxOptions, SandboxRunInput};
+use crate::commands::sandbox::{
+    run_branch_sandbox_headless, run_branch_sandbox_inner, SandboxOptions, SandboxRunInput,
+};
 use crate::DbState;
 
 const PREF_GITHUB_TOKEN: &str = "github_token";
@@ -87,6 +89,274 @@ pub struct StartTrexWatcherInput {
     pub repo_path: String,
     pub interval_secs: Option<u64>,
     pub base_branch: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TrexWatcherReceipt {
+    pub schema_version: u8,
+    pub operation: String,
+    pub watcher: Option<TrexWatcher>,
+    pub watchers: Vec<TrexWatcher>,
+    pub runs: Vec<TrexPrRun>,
+    pub inspected_prs: u32,
+    pub skipped_unchanged: u32,
+    pub message: String,
+}
+
+impl TrexWatcherReceipt {
+    fn empty(operation: &str, message: impl Into<String>) -> Self {
+        Self {
+            schema_version: 1,
+            operation: operation.to_string(),
+            watcher: None,
+            watchers: vec![],
+            runs: vec![],
+            inspected_prs: 0,
+            skipped_unchanged: 0,
+            message: message.into(),
+        }
+    }
+}
+
+// ─── Headless CLI/native bridge ─────────────────────────────────────────────
+
+pub fn enable_trex_watcher_headless(
+    db: &DbState,
+    input: StartTrexWatcherInput,
+) -> Result<TrexWatcherReceipt, String> {
+    let repo_path = canonical_repo_path(&input.repo_path)?;
+    let interval = input
+        .interval_secs
+        .unwrap_or(DEFAULT_INTERVAL_SECS)
+        .max(MIN_INTERVAL_SECS);
+    upsert_watcher_row(db, &repo_path, interval, true, input.base_branch.as_deref())?;
+    let watcher = read_watcher_row(db, &repo_path)?
+        .ok_or_else(|| "watcher row missing after upsert".to_string())?;
+    let mut receipt = TrexWatcherReceipt::empty(
+        "enable",
+        "Watcher configuration saved. The host app owns scheduling while it is open.",
+    );
+    receipt.watcher = Some(watcher);
+    Ok(receipt)
+}
+
+pub fn disable_trex_watcher_headless(
+    db: &DbState,
+    repo_path: &str,
+) -> Result<TrexWatcherReceipt, String> {
+    let repo_path = canonical_repo_path(repo_path)?;
+    let existing = read_watcher_row(db, &repo_path)?
+        .ok_or_else(|| format!("no watcher registered for {repo_path}"))?;
+    set_watcher_enabled(db, &repo_path, false)?;
+    let mut receipt = TrexWatcherReceipt::empty("disable", "Watcher scheduling disabled.");
+    receipt.watcher = Some(TrexWatcher {
+        enabled: false,
+        ..existing
+    });
+    Ok(receipt)
+}
+
+pub fn list_trex_watchers_headless(db: &DbState) -> Result<TrexWatcherReceipt, String> {
+    let watchers = list_watchers(db)?;
+    let mut receipt = TrexWatcherReceipt::empty(
+        "list",
+        format!("{} watcher configuration(s)", watchers.len()),
+    );
+    receipt.watchers = watchers;
+    Ok(receipt)
+}
+
+pub fn list_trex_pr_runs_headless(
+    db: &DbState,
+    repo_path: Option<&str>,
+    limit: u32,
+) -> Result<TrexWatcherReceipt, String> {
+    let canonical = repo_path.map(canonical_repo_path).transpose()?;
+    let runs = list_pr_runs(db, canonical.as_deref(), limit.clamp(1, 100))?;
+    let mut receipt = TrexWatcherReceipt::empty("runs", format!("{} watcher run(s)", runs.len()));
+    receipt.runs = runs;
+    Ok(receipt)
+}
+
+/// Run one complete watcher poll in the foreground. This is intentionally not
+/// a daemon: native macOS owns its app-lifetime schedule and each CLI process
+/// remains alive until every newly discovered PR run has persisted a receipt.
+pub async fn poll_trex_watcher_headless(
+    db: &DbState,
+    repo_path: &str,
+) -> Result<TrexWatcherReceipt, String> {
+    let repo_path = canonical_repo_path(repo_path)?;
+    let watcher = read_watcher_row(db, &repo_path)?
+        .ok_or_else(|| format!("no watcher registered for {repo_path}"))?;
+    set_last_polled(db, &repo_path)?;
+    let prs = match list_open_prs(&repo_path).await {
+        Ok(prs) => prs,
+        Err(error) => {
+            set_last_error(db, &repo_path, &error)?;
+            return Err(error);
+        }
+    };
+
+    let inspected_prs = prs.len().min(MAX_PRS_PER_TICK) as u32;
+    let mut skipped_unchanged = 0;
+    let mut runs = Vec::new();
+    for pr in prs.into_iter().take(MAX_PRS_PER_TICK) {
+        if !pr_head_requires_run(
+            latest_pr_run_sha(db, &repo_path, pr.number)?.as_deref(),
+            &pr.head_sha,
+        ) {
+            skipped_unchanged += 1;
+            continue;
+        }
+        let run = execute_pr_headless(db, &watcher, pr).await;
+        insert_pr_run(db, &run)?;
+        runs.push(run);
+    }
+
+    let mut receipt = TrexWatcherReceipt::empty(
+        "poll",
+        format!(
+            "Inspected {inspected_prs} open PR(s); completed {} new run(s); skipped {skipped_unchanged} unchanged.",
+            runs.len()
+        ),
+    );
+    receipt.watcher = read_watcher_row(db, &repo_path)?;
+    receipt.runs = runs;
+    receipt.inspected_prs = inspected_prs;
+    receipt.skipped_unchanged = skipped_unchanged;
+    Ok(receipt)
+}
+
+/// Explicitly rerun one currently open PR even when its head SHA already has a
+/// retained receipt. Automatic polls remain deduplicated; this separate command
+/// is the recovery boundary for infrastructure-limited attempts.
+pub async fn retry_trex_watcher_headless(
+    db: &DbState,
+    repo_path: &str,
+    pr_number: i64,
+) -> Result<TrexWatcherReceipt, String> {
+    if pr_number <= 0 {
+        return Err("watcher retry requires a positive PR number".to_string());
+    }
+    let repo_path = canonical_repo_path(repo_path)?;
+    let watcher = read_watcher_row(db, &repo_path)?
+        .ok_or_else(|| format!("no watcher registered for {repo_path}"))?;
+    set_last_polled(db, &repo_path)?;
+    let pr = list_open_prs(&repo_path)
+        .await?
+        .into_iter()
+        .find(|pr| pr.number == pr_number)
+        .ok_or_else(|| format!("PR #{pr_number} is not currently open for {repo_path}"))?;
+    let run = execute_pr_headless(db, &watcher, pr).await;
+    insert_pr_run(db, &run)?;
+
+    let mut receipt = TrexWatcherReceipt::empty(
+        "retry",
+        format!(
+            "Retried PR #{} at exact head {} and persisted one replacement attempt.",
+            run.pr_number, run.head_sha
+        ),
+    );
+    receipt.watcher = read_watcher_row(db, &repo_path)?;
+    receipt.runs = vec![run];
+    receipt.inspected_prs = 1;
+    Ok(receipt)
+}
+
+fn pr_head_requires_run(latest_persisted_sha: Option<&str>, incoming_sha: &str) -> bool {
+    latest_persisted_sha != Some(incoming_sha)
+}
+
+fn canonical_repo_path(repo_path: &str) -> Result<String, String> {
+    let path = std::fs::canonicalize(repo_path)
+        .map_err(|error| format!("repository {repo_path} is unavailable: {error}"))?;
+    if !path.join(".git").exists() {
+        return Err(format!("repository {repo_path} has no .git directory"));
+    }
+    Ok(path.to_string_lossy().into_owned())
+}
+
+async fn execute_pr_headless(db: &DbState, watcher: &TrexWatcher, pr: OpenPr) -> TrexPrRun {
+    let token = resolve_github_token(db).await;
+    let remote = remote_owner_repo(&watcher.repo_path).await.ok();
+    if let (Some(token), Some((owner, repo))) = (token.as_deref(), remote.as_ref()) {
+        let _ = post_status(
+            token,
+            owner,
+            repo,
+            &pr.head_sha,
+            "pending",
+            "T-Rex sandbox running…",
+            None,
+        )
+        .await;
+    }
+
+    let started = std::time::Instant::now();
+    let result = match materialize_pr_head(&watcher.repo_path, pr.number, &pr.head_sha).await {
+        Ok(()) => {
+            run_branch_sandbox_headless(
+                db,
+                SandboxRunInput {
+                    repo_path: watcher.repo_path.clone(),
+                    branch: pr.head_sha.clone(),
+                    base_branch: watcher.base_branch.clone(),
+                    review_id: None,
+                    options: SandboxOptions::default(),
+                },
+            )
+            .await
+        }
+        Err(error) => Err(format!(
+            "PR #{} head {} could not be materialized: {error}",
+            pr.number, pr.head_sha
+        )),
+    };
+    let duration_ms = started.elapsed().as_millis() as i64;
+    let (verdict, confidence, summary) = match result {
+        Ok(result) => (result.verdict, result.confidence, result.summary),
+        Err(error) => (
+            "BLOCK".to_string(),
+            0.0,
+            format!("T-Rex sandbox failed to run: {error}"),
+        ),
+    };
+    let (status_state, status_error) = match (token.as_deref(), remote.as_ref()) {
+        (Some(token), Some((owner, repo))) => {
+            let state = verdict_to_gh_state(&verdict);
+            match post_status(
+                token,
+                owner,
+                repo,
+                &pr.head_sha,
+                state,
+                &truncate_for_status(&summary),
+                None,
+            )
+            .await
+            {
+                Ok(()) => (Some(state.to_string()), None),
+                Err(error) => (None, Some(error)),
+            }
+        }
+        _ => (
+            None,
+            Some("missing github_token or remote — status not posted".to_string()),
+        ),
+    };
+    TrexPrRun {
+        id: uuid::Uuid::new_v4().to_string(),
+        repo_path: watcher.repo_path.clone(),
+        pr_number: pr.number,
+        head_sha: pr.head_sha,
+        verdict,
+        confidence,
+        summary,
+        status_state,
+        status_error,
+        duration_ms,
+        ran_at: chrono::Utc::now().to_rfc3339(),
+    }
 }
 
 // ─── Tauri commands ─────────────────────────────────────────────────────────
@@ -271,8 +541,6 @@ async fn tick_once(
     for pr in prs.into_iter().take(MAX_PRS_PER_TICK) {
         let pr_number = pr.number;
         let head_sha = pr.head_sha;
-        let head_ref = pr.head_ref.clone();
-
         // Skip if a previous tick already kicked this PR and it's still running.
         if let Ok(mut s) = in_flight.lock() {
             if s.contains(&pr_number) {
@@ -298,7 +566,7 @@ async fn tick_once(
         let in_flight_c = in_flight.clone();
 
         runtime_spawn(async move {
-            let token = read_github_token(&db_c);
+            let token = resolve_github_token(&db_c).await;
             let remote = remote_owner_repo(&repo_path_c).await.ok();
             if let (Some(tok), Some((owner, repo))) = (token.as_deref(), remote.as_ref()) {
                 let _ = post_status(
@@ -314,14 +582,21 @@ async fn tick_once(
             }
 
             let started = std::time::Instant::now();
-            let input = SandboxRunInput {
-                repo_path: repo_path_c.clone(),
-                branch: head_ref,
-                base_branch: base_c,
-                review_id: None,
-                options: SandboxOptions::default(),
+            let run = match materialize_pr_head(&repo_path_c, pr_number, &head_sha).await {
+                Ok(()) => {
+                    let input = SandboxRunInput {
+                        repo_path: repo_path_c.clone(),
+                        branch: head_sha.clone(),
+                        base_branch: base_c,
+                        review_id: None,
+                        options: SandboxOptions::default(),
+                    };
+                    run_branch_sandbox_inner(app_c.clone(), &db_c, input).await
+                }
+                Err(error) => Err(format!(
+                    "PR #{pr_number} head {head_sha} could not be materialized: {error}"
+                )),
             };
-            let run = run_branch_sandbox_inner(app_c.clone(), &db_c, input).await;
             let duration_ms = started.elapsed().as_millis() as i64;
 
             let (verdict, confidence, summary, error) = match &run {
@@ -379,7 +654,6 @@ async fn tick_once(
 
 struct OpenPr {
     number: i64,
-    head_ref: String,
     head_sha: String,
 }
 
@@ -391,7 +665,7 @@ async fn list_open_prs(repo_path: &str) -> Result<Vec<OpenPr>, String> {
             "--state",
             "open",
             "--json",
-            "number,headRefName,headRefOid",
+            "number,headRefOid",
             "--limit",
             "30",
         ])
@@ -411,25 +685,73 @@ async fn list_open_prs(repo_path: &str) -> Result<Vec<OpenPr>, String> {
     let mut out = Vec::with_capacity(arr.len());
     for item in arr {
         let number = item.get("number").and_then(|x| x.as_i64()).unwrap_or(0);
-        let head_ref = item
-            .get("headRefName")
-            .and_then(|x| x.as_str())
-            .unwrap_or("")
-            .to_string();
         let head_sha = item
             .get("headRefOid")
             .and_then(|x| x.as_str())
             .unwrap_or("")
             .to_string();
-        if number > 0 && !head_ref.is_empty() && !head_sha.is_empty() {
-            out.push(OpenPr {
-                number,
-                head_ref,
-                head_sha,
-            });
+        if number > 0 && is_full_git_sha(&head_sha) {
+            out.push(OpenPr { number, head_sha });
         }
     }
     Ok(out)
+}
+
+fn is_full_git_sha(value: &str) -> bool {
+    value.len() == 40 && value.bytes().all(|byte| byte.is_ascii_hexdigit())
+}
+
+/// Make GitHub's immutable PR head commit available to the local object database
+/// without changing the user's branch, index, working tree, or durable refs.
+async fn materialize_pr_head(
+    repo_path: &str,
+    pr_number: i64,
+    head_sha: &str,
+) -> Result<(), String> {
+    if pr_number <= 0 || !is_full_git_sha(head_sha) {
+        return Err("GitHub returned an invalid pull-request identity".to_string());
+    }
+    if git_commit_exists(repo_path, head_sha).await? {
+        return Ok(());
+    }
+
+    let pull_ref = format!("+refs/pull/{pr_number}/head");
+    let output = Command::new("git")
+        .args([
+            "fetch",
+            "--no-tags",
+            "--no-write-fetch-head",
+            "origin",
+            &pull_ref,
+        ])
+        .current_dir(repo_path)
+        .output()
+        .await
+        .map_err(|error| format!("git fetch {pull_ref}: {error}"))?;
+    if !output.status.success() {
+        return Err(format!(
+            "git fetch {pull_ref} failed: {}",
+            String::from_utf8_lossy(&output.stderr).trim()
+        ));
+    }
+    if git_commit_exists(repo_path, head_sha).await? {
+        Ok(())
+    } else {
+        Err(format!(
+            "fetched PR #{pr_number}, but GitHub's declared head {head_sha} is unavailable"
+        ))
+    }
+}
+
+async fn git_commit_exists(repo_path: &str, head_sha: &str) -> Result<bool, String> {
+    let commit = format!("{head_sha}^{{commit}}");
+    let output = Command::new("git")
+        .args(["cat-file", "-e", &commit])
+        .current_dir(repo_path)
+        .output()
+        .await
+        .map_err(|error| format!("git cat-file {head_sha}: {error}"))?;
+    Ok(output.status.success())
 }
 
 async fn remote_owner_repo(repo_path: &str) -> Result<(String, String), String> {
@@ -583,6 +905,16 @@ fn set_last_polled(db: &DbState, repo_path: &str) -> Result<(), String> {
     Ok(())
 }
 
+fn set_last_error(db: &DbState, repo_path: &str, error: &str) -> Result<(), String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    conn.execute(
+        "UPDATE trex_watchers SET last_error = ?1 WHERE repo_path = ?2",
+        params![error, repo_path],
+    )
+    .map_err(|e| e.to_string())?;
+    Ok(())
+}
+
 fn read_watcher_row(db: &DbState, repo_path: &str) -> Result<Option<TrexWatcher>, String> {
     let conn = db.0.lock().map_err(|e| e.to_string())?;
     let result = conn.query_row(
@@ -719,6 +1051,33 @@ fn list_pr_runs(
     Ok(rows)
 }
 
+async fn resolve_github_token(db: &DbState) -> Option<String> {
+    let saved = read_github_token(db);
+    let gh_env = std::env::var("GH_TOKEN").ok();
+    let github_env = std::env::var("GITHUB_TOKEN").ok();
+    if let Some(token) = first_non_empty_token([saved, gh_env, github_env]) {
+        return Some(token);
+    }
+
+    let output = Command::new("gh")
+        .args(["auth", "token"])
+        .output()
+        .await
+        .ok()?;
+    output
+        .status
+        .success()
+        .then(|| String::from_utf8_lossy(&output.stdout).trim().to_string())
+        .filter(|token| !token.is_empty())
+}
+
+fn first_non_empty_token(candidates: impl IntoIterator<Item = Option<String>>) -> Option<String> {
+    candidates
+        .into_iter()
+        .flatten()
+        .find(|candidate| !candidate.trim().is_empty())
+}
+
 fn read_github_token(db: &DbState) -> Option<String> {
     let conn = db.0.lock().ok()?;
     read_pref(&conn, PREF_GITHUB_TOKEN)
@@ -738,6 +1097,38 @@ fn read_pref(conn: &Connection, key: &str) -> Option<String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::path::Path;
+
+    fn test_db() -> DbState {
+        let connection = Connection::open_in_memory().expect("open test database");
+        connection
+            .execute_batch(
+                "CREATE TABLE trex_watchers (
+                    repo_path TEXT PRIMARY KEY,
+                    interval_secs INTEGER NOT NULL,
+                    enabled INTEGER NOT NULL DEFAULT 1,
+                    base_branch TEXT,
+                    last_polled_at TEXT,
+                    last_error TEXT,
+                    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+                 );
+                 CREATE TABLE trex_pr_runs (
+                    id TEXT PRIMARY KEY,
+                    repo_path TEXT NOT NULL,
+                    pr_number INTEGER NOT NULL,
+                    head_sha TEXT NOT NULL,
+                    verdict TEXT NOT NULL,
+                    confidence REAL NOT NULL,
+                    summary TEXT NOT NULL,
+                    status_state TEXT,
+                    status_error TEXT,
+                    duration_ms INTEGER NOT NULL DEFAULT 0,
+                    ran_at TEXT NOT NULL DEFAULT (datetime('now'))
+                 );",
+            )
+            .expect("create watcher schema");
+        DbState(Arc::new(Mutex::new(connection)))
+    }
 
     #[test]
     fn owner_repo_from_https() {
@@ -784,5 +1175,186 @@ mod tests {
         let out = truncate_for_status(&s);
         assert_eq!(out.chars().count(), 138); // 137 + '…'
         assert!(out.ends_with('…'));
+    }
+
+    #[test]
+    fn headless_configuration_is_persisted_and_disable_is_explicit() {
+        let repository = tempfile::tempdir().expect("temporary repository");
+        std::fs::create_dir(repository.path().join(".git")).expect("fake git directory");
+        let db = test_db();
+
+        let enabled = enable_trex_watcher_headless(
+            &db,
+            StartTrexWatcherInput {
+                repo_path: repository.path().to_string_lossy().into_owned(),
+                interval_secs: Some(10),
+                base_branch: Some("main".to_string()),
+            },
+        )
+        .expect("enable watcher");
+        let watcher = enabled.watcher.expect("watcher receipt");
+        assert!(watcher.enabled);
+        assert_eq!(watcher.interval_secs, MIN_INTERVAL_SECS);
+        assert_eq!(watcher.base_branch.as_deref(), Some("main"));
+
+        let listed = list_trex_watchers_headless(&db).expect("list watchers");
+        assert_eq!(listed.watchers.len(), 1);
+        assert_eq!(listed.schema_version, 1);
+
+        let disabled =
+            disable_trex_watcher_headless(&db, &watcher.repo_path).expect("disable watcher");
+        assert_eq!(disabled.operation, "disable");
+        assert!(!disabled.watcher.expect("disabled watcher").enabled);
+    }
+
+    #[test]
+    fn watcher_runs_new_and_updated_pr_heads_but_skips_unchanged_heads() {
+        assert!(pr_head_requires_run(None, "new-head"));
+        assert!(pr_head_requires_run(Some("previous-head"), "updated-head"));
+        assert!(!pr_head_requires_run(Some("same-head"), "same-head"));
+    }
+
+    #[test]
+    fn watcher_accepts_only_exact_git_commit_identities() {
+        assert!(is_full_git_sha("0123456789abcdef0123456789abcdef01234567"));
+        assert!(is_full_git_sha("ABCDEF0123456789ABCDEF0123456789ABCDEF01"));
+        assert!(!is_full_git_sha("main"));
+        assert!(!is_full_git_sha("0123456789abcdef0123456789abcdef0123456"));
+        assert!(!is_full_git_sha(
+            "../../0123456789abcdef0123456789abcdef0123"
+        ));
+    }
+
+    #[test]
+    fn watcher_token_resolution_ignores_empty_candidates() {
+        assert_eq!(
+            first_non_empty_token([
+                None,
+                Some("  ".to_string()),
+                Some("gho_fixture".to_string()),
+            ]),
+            Some("gho_fixture".to_string())
+        );
+        assert_eq!(first_non_empty_token([None, Some(String::new())]), None);
+    }
+
+    #[tokio::test]
+    async fn watcher_materializes_an_exact_pr_head_without_changing_the_checkout() {
+        let remote = tempfile::tempdir().expect("bare remote");
+        run_git(remote.path(), &["init", "--bare"]);
+
+        let seed = tempfile::tempdir().expect("seed repository");
+        run_git(seed.path(), &["init"]);
+        run_git(seed.path(), &["config", "user.name", "CodeVetter Test"]);
+        run_git(
+            seed.path(),
+            &["config", "user.email", "codevetter@example.test"],
+        );
+        std::fs::write(seed.path().join("fixture.txt"), "main\n").expect("main fixture");
+        run_git(seed.path(), &["add", "fixture.txt"]);
+        run_git(seed.path(), &["commit", "-m", "main"]);
+        run_git(seed.path(), &["branch", "-M", "main"]);
+        run_git(
+            seed.path(),
+            &["remote", "add", "origin", &remote.path().to_string_lossy()],
+        );
+        run_git(seed.path(), &["push", "origin", "main"]);
+        run_git(remote.path(), &["symbolic-ref", "HEAD", "refs/heads/main"]);
+
+        std::fs::write(seed.path().join("fixture.txt"), "pull request\n").expect("PR fixture");
+        run_git(seed.path(), &["commit", "-am", "pull request"]);
+        let head_sha = git_stdout(seed.path(), &["rev-parse", "HEAD"]);
+        run_git(seed.path(), &["push", "origin", "HEAD:refs/pull/7/head"]);
+
+        let checkout_parent = tempfile::tempdir().expect("checkout parent");
+        let checkout = checkout_parent.path().join("checkout");
+        let remote_url = format!("file://{}", remote.path().display());
+        run_git(
+            checkout_parent.path(),
+            &[
+                "clone",
+                "--branch",
+                "main",
+                "--single-branch",
+                &remote_url,
+                &checkout.to_string_lossy(),
+            ],
+        );
+        let before_head = git_stdout(&checkout, &["rev-parse", "HEAD"]);
+        assert!(!git_commit_exists(&checkout.to_string_lossy(), &head_sha)
+            .await
+            .expect("inspect missing PR head"));
+
+        materialize_pr_head(&checkout.to_string_lossy(), 7, &head_sha)
+            .await
+            .expect("materialize exact PR head");
+
+        assert!(git_commit_exists(&checkout.to_string_lossy(), &head_sha)
+            .await
+            .expect("inspect fetched PR head"));
+        assert_eq!(git_stdout(&checkout, &["rev-parse", "HEAD"]), before_head);
+        assert!(git_stdout(&checkout, &["status", "--porcelain"]).is_empty());
+        assert!(!checkout.join(".git").join("FETCH_HEAD").exists());
+    }
+
+    fn run_git(cwd: &Path, args: &[&str]) {
+        let output = std::process::Command::new("git")
+            .args(args)
+            .current_dir(cwd)
+            .output()
+            .expect("run git command");
+        assert!(
+            output.status.success(),
+            "git {} failed: {}",
+            args.join(" "),
+            String::from_utf8_lossy(&output.stderr)
+        );
+    }
+
+    fn git_stdout(cwd: &Path, args: &[&str]) -> String {
+        let output = std::process::Command::new("git")
+            .args(args)
+            .current_dir(cwd)
+            .output()
+            .expect("run git command");
+        assert!(
+            output.status.success(),
+            "git {} failed: {}",
+            args.join(" "),
+            String::from_utf8_lossy(&output.stderr)
+        );
+        String::from_utf8_lossy(&output.stdout).trim().to_string()
+    }
+
+    #[test]
+    fn headless_run_listing_is_bounded_and_repo_scoped() {
+        let repository = tempfile::tempdir().expect("temporary repository");
+        std::fs::create_dir(repository.path().join(".git")).expect("fake git directory");
+        let repo_path = canonical_repo_path(&repository.path().to_string_lossy())
+            .expect("canonical repository");
+        let db = test_db();
+        for index in 0..3 {
+            insert_pr_run(
+                &db,
+                &TrexPrRun {
+                    id: format!("run-{index}"),
+                    repo_path: repo_path.clone(),
+                    pr_number: 42,
+                    head_sha: format!("sha-{index}"),
+                    verdict: "APPROVE".to_string(),
+                    confidence: 1.0,
+                    summary: "qualified".to_string(),
+                    status_state: Some("success".to_string()),
+                    status_error: None,
+                    duration_ms: 10,
+                    ran_at: format!("2026-09-01T00:00:0{index}Z"),
+                },
+            )
+            .expect("insert run");
+        }
+        let receipt =
+            list_trex_pr_runs_headless(&db, Some(&repo_path), 2).expect("list bounded runs");
+        assert_eq!(receipt.runs.len(), 2);
+        assert!(receipt.runs.iter().all(|run| run.repo_path == repo_path));
     }
 }
