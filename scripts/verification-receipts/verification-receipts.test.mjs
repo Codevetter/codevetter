@@ -314,6 +314,135 @@ test('pre-test Vault failures become no-confidence operational evidence', () => 
   assert.ok(bundle.limitations.some((item) => item.includes('before Playwright')));
 });
 
+test('Playwright JSON and JUnit XML reports preserve tests, retries, and failures', async (context) => {
+  const root = await temporaryDirectory(context);
+  await writeJson(join(root, 'package.json'), { name: 'external-test-fixture' });
+  await mkdir(join(root, 'artifacts'));
+  await writeJson(join(root, 'artifacts/playwright.json'), {
+    config: { version: '1.58.2' },
+    suites: [
+      {
+        title: 'checkout',
+        specs: [
+          {
+            title: 'submits order',
+            file: 'tests/checkout.spec.ts',
+            tests: [
+              {
+                projectName: 'chromium',
+                results: [
+                  { status: 'failed', duration: 20, error: { message: 'first failure' } },
+                  { status: 'passed', duration: 15 },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    ],
+    stats: { startTime: '2026-08-31T00:00:00.000Z', duration: 35 },
+  });
+  const playwright = await loadReceipt(root, 'artifacts/playwright.json');
+  assert.equal(playwright.sourceFormat, 'playwright-json');
+  assert.equal(playwright.receipt.outcome.passed, 1);
+  assert.equal(playwright.receipt.safety.retries, 1);
+  assert.equal(playwright.receipt.attempts[0].failure_signature.includes('first failure'), false);
+  assertValidReceipt(playwright.receipt);
+
+  await writeFile(
+    join(root, 'artifacts/junit.xml'),
+    '<?xml version="1.0"?><testsuites><testsuite name="unit" time="0.2"><testcase classname="cart" name="adds item" file="tests/cart.test.ts" time="0.05"/><testcase classname="cart" name="removes item" file="tests/cart.test.ts" time="0.1"><failure message="expected one"/></testcase><testcase classname="cart" name="loads item" file="tests/cart.test.ts" time="0.05"><error message="fixture threw"/></testcase></testsuite></testsuites>'
+  );
+  const junit = await loadReceipt(root, 'artifacts/junit.xml');
+  assert.equal(junit.sourceFormat, 'junit-xml');
+  assert.equal(junit.receipt.outcome.passed, 1);
+  assert.equal(junit.receipt.outcome.failed, 2);
+  assert.equal(junit.receipt.outcome.operational_failures, 0);
+  assertValidReceipt(junit.receipt);
+});
+
+test('LCOV and Cobertura reports expose aggregate producer observations without a verdict upgrade', async (context) => {
+  const root = await temporaryDirectory(context);
+  await writeJson(join(root, 'package.json'), { name: 'coverage-fixture' });
+  await mkdir(join(root, 'coverage'));
+  await writeFile(
+    join(root, 'coverage/lcov.info'),
+    'TN:\nSF:src/cart.ts\nFN:1,add\nFNDA:2,add\nFNF:1\nFNH:1\nDA:1,2\nDA:2,0\nLF:2\nLH:1\nBRDA:1,0,0,1\nBRF:1\nBRH:1\nend_of_record\n'
+  );
+  const lcov = await loadReceipt(root, 'coverage/lcov.info');
+  assert.equal(lcov.sourceFormat, 'lcov');
+  assert.equal(
+    lcov.receipt.producer_observations.find((entry) => entry.metric === 'coverage.lines.hit').value,
+    1
+  );
+  assert.equal(ingest(lcov.receipt).verdict.overall, 'no_confidence');
+
+  await writeFile(
+    join(root, 'coverage/cobertura.xml'),
+    '<?xml version="1.0"?><!DOCTYPE coverage SYSTEM "http://cobertura.sourceforge.net/xml/coverage-04.dtd"><coverage version="1" timestamp="1788134400000" lines-valid="10" lines-covered="8" branches-valid="4" branches-covered="2"><packages/></coverage>'
+  );
+  const cobertura = await loadReceipt(root, 'coverage/cobertura.xml');
+  assert.equal(cobertura.sourceFormat, 'cobertura-xml');
+  assert.equal(cobertura.receipt.captured_at, '2026-08-31T00:00:00.000Z');
+  assert.equal(
+    cobertura.receipt.producer_observations.find(
+      (entry) => entry.metric === 'coverage.branches.hit'
+    ).value,
+    2
+  );
+  assertValidReceipt(cobertura.receipt);
+});
+
+test('Lighthouse and Chrome trace artifacts remain observational and source-attributed', async (context) => {
+  const root = await temporaryDirectory(context);
+  await writeJson(join(root, 'package.json'), { name: 'performance-fixture' });
+  await mkdir(join(root, 'artifacts'));
+  await writeJson(join(root, 'artifacts/lighthouse.json'), {
+    lighthouseVersion: '13.0.1',
+    fetchTime: '2026-08-31T00:00:00.000Z',
+    configSettings: { formFactor: 'desktop' },
+    categories: { performance: { score: 0.91 } },
+    audits: {
+      'largest-contentful-paint': { numericValue: 900, numericUnit: 'millisecond' },
+      'cumulative-layout-shift': { numericValue: 0.02, numericUnit: 'unitless' },
+    },
+  });
+  const lighthouse = await loadReceipt(root, 'artifacts/lighthouse.json');
+  assert.equal(lighthouse.sourceFormat, 'lighthouse-json');
+  assert.equal(
+    lighthouse.receipt.producer_observations.find(
+      (entry) => entry.metric === 'lighthouse.performance.score'
+    ).value,
+    0.91
+  );
+  assert.equal(ingest(lighthouse.receipt).observed.producer_observations.length, 3);
+
+  await writeJson(join(root, 'artifacts/trace.json'), {
+    traceEvents: [
+      { name: 'navigationStart', ts: 1_000, dur: 0 },
+      { name: 'task', ts: 2_000, dur: 4_000 },
+    ],
+  });
+  const trace = await loadReceipt(root, 'artifacts/trace.json');
+  assert.equal(trace.sourceFormat, 'chrome-trace-json');
+  assert.equal(
+    trace.receipt.producer_observations.find((entry) => entry.metric === 'chrome_trace.duration')
+      .value,
+    5
+  );
+  assertValidReceipt(trace.receipt);
+});
+
+test('XML artifacts reject entity declarations before parser execution', async (context) => {
+  const root = await temporaryDirectory(context);
+  await writeJson(join(root, 'package.json'), { name: 'xml-fixture' });
+  await writeFile(
+    join(root, 'report.xml'),
+    '<!DOCTYPE testsuite [<!ENTITY xxe SYSTEM "file:///etc/passwd">]><testsuite><testcase name="&xxe;"/></testsuite>'
+  );
+  await assert.rejects(loadReceipt(root, 'report.xml'), /unsupported document type or entity/);
+});
+
 function ingest(
   receipt,
   sourcePath = 'receipt.json',

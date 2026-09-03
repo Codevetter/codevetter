@@ -46,6 +46,7 @@ export function ingestReceiptDocument(receipt, { sourcePath, sourceSha256 }) {
       outcome: receipt.outcome,
       metrics: receipt.metrics,
       safety: receipt.safety,
+      producer_observations: receipt.producer_observations ?? [],
     },
     verdict,
     budget_results: budgetResults,
