@@ -7,7 +7,6 @@ import { fileURLToPath } from 'node:url';
 
 const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const master = join(repositoryRoot, 'assets/brand/codevetter-mark.svg');
-const glyph = join(repositoryRoot, 'assets/brand/codevetter-glyph.svg');
 const iosMaster = join(repositoryRoot, 'assets/brand/codevetter-ios-app-icon.svg');
 const desktopIcons = join(repositoryRoot, 'apps/desktop/src-tauri/icons');
 const nativeIcons = join(
@@ -24,21 +23,18 @@ for (const mirror of [
   copyFileSync(master, mirror);
 }
 
-for (const directory of [desktopIcons, nativeIcons]) {
-  for (const name of readdirSync(directory)) {
-    if (!name.endsWith('.png')) continue;
-    const target = join(directory, name);
-    renderPng(master, target, pngWidth(target));
-  }
+for (const [name, size] of [
+  ['32x32.png', 32],
+  ['128x128.png', 128],
+  ['128x128@2x.png', 256],
+]) {
+  renderPng(master, join(desktopIcons, name), size);
 }
 
-for (const target of pngPaths(join(desktopIcons, 'android'))) {
-  const source = target.includes('_foreground') ? glyph : master;
-  renderPng(source, target, pngWidth(target));
-}
-
-for (const target of pngPaths(join(desktopIcons, 'ios'))) {
-  renderPng(iosMaster, target, pngWidth(target));
+for (const name of readdirSync(nativeIcons)) {
+  if (!name.endsWith('.png')) continue;
+  const target = join(nativeIcons, name);
+  renderPng(master, target, pngWidth(target));
 }
 
 renderPng(iosMaster, join(landingPublic, 'apple-touch-icon.png'), 180);
@@ -98,14 +94,6 @@ function renderPng(source, target, size) {
     '--out',
     target,
   ]);
-}
-
-function pngPaths(directory) {
-  return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
-    const path = join(directory, entry.name);
-    if (entry.isDirectory()) return pngPaths(path);
-    return entry.name.endsWith('.png') ? [path] : [];
-  });
 }
 
 function pngWidth(path) {
