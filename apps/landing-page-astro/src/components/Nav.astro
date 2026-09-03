@@ -1,6 +1,4 @@
 ---
-import Icon from './Icon.astro';
-
 const links = [
   { href: '/#features', label: 'Contract' },
   { href: '/#how', label: 'How it works' },
@@ -13,10 +11,7 @@ const links = [
 <header class="fixed top-6 inset-x-0 z-50 flex justify-center px-6 pointer-events-none">
   <div class="corner-frame flex items-center justify-between w-full max-w-5xl h-14 px-5 border border-[--color-line] bg-[--color-bg]/75 backdrop-blur-xl shadow-2xl pointer-events-auto">
     <a href="/" class="flex items-center gap-2.5 group">
-      <div class="relative">
-        <Icon name="shield-check" class="w-5 h-5 text-[--color-accent]" width={20} height={20} strokeWidth={1.5} />
-        <span class="absolute -inset-1 rounded-full bg-[--color-accent]/20 blur-md opacity-60 group-hover:opacity-100 transition-opacity" />
-      </div>
+      <img src="/icon.svg" alt="" aria-hidden="true" class="h-7 w-7" width="28" height="28" />
       <span class="font-mono text-[13px] tracking-[0.2em] uppercase font-semibold text-white">
         CodeVetter
       </span>

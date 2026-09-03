@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 
+import { BrandMark } from '@/components/brand-mark';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import type { PrerequisiteStatus } from '@/lib/tauri-ipc';
@@ -113,9 +114,7 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
           {/* ── Step 1: Welcome ─────────────────────────────────────── */}
           {step === 'welcome' && (
             <div className="flex flex-col items-center text-center gap-6">
-              <div className="h-16 w-16 rounded-2xl bg-amber-500/10 flex items-center justify-center">
-                <span className="text-3xl text-amber-400">{'\u25C8'}</span>
-              </div>
+              <BrandMark className="h-16 w-16" />
               <div>
                 <h1 className="text-xl font-bold text-slate-100">CodeVetter</h1>
                 <p className="mt-1 text-sm font-medium text-amber-400/80">

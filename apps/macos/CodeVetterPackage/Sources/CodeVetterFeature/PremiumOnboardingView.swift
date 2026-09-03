@@ -23,13 +23,7 @@ struct PremiumOnboardingView: View {
   private var header: some View {
     HStack(spacing: 18) {
       HStack(spacing: 10) {
-        ZStack {
-          RoundedRectangle(cornerRadius: 9).fill(EvidenceStyle.amber)
-          Image(systemName: "checkmark.shield.fill")
-            .font(.system(size: 15, weight: .bold))
-            .foregroundStyle(EvidenceStyle.ink)
-        }
-        .frame(width: 36, height: 36)
+        CodeVetterBrandMark(size: 36)
         VStack(alignment: .leading, spacing: 2) {
           Text("CODEVETTER")
             .font(.system(size: 9, weight: .bold, design: .monospaced))

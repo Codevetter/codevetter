@@ -1,1 +1,37 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" fill="#0e0f13" rx="100"/><path fill="#d4a039" d="M256 80 L420 256 L256 432 L92 256 Z" opacity=".9"/><path fill="#0e0f13" d="M256 140 L360 256 L256 372 L152 256 Z"/><path fill="#d4a039" d="M256 200 L300 256 L256 312 L212 256 Z" opacity=".6"/></svg>
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+THESIS: Preserve the familiar CodeVetter brackets and verdict while removing the old gradient and glow.
+OWN-WORLD: True-black squircle, warm amber code-scope brackets, evidence-white verdict, and no ornament.
+STORY: The brackets bound the code under review; the central stroke records its verified outcome.
+FIRST VIEWPORT: One centered familiar mark with generous optical padding, legible from 16 to 1024 pixels.
+FORM: Owner-selected Original, Restrained evolution from the round-two identity comparison.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-labelledby="title description">
+  <title id="title">CodeVetter</title>
+  <desc id="description">Amber code-scope brackets surround a white verdict on black.</desc>
+  <rect x="64" y="64" width="896" height="896" rx="224" fill="#050506"/>
+  <path
+    d="M 358 314 L 224 512 L 358 710"
+    fill="none"
+    stroke="#f3ad3d"
+    stroke-width="72"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+  <path
+    d="M 666 314 L 800 512 L 666 710"
+    fill="none"
+    stroke="#f3ad3d"
+    stroke-width="72"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+  <path
+    d="M 362 414 L 500 654 L 674 338"
+    fill="none"
+    stroke="#f4f4f5"
+    stroke-width="96"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+</svg>

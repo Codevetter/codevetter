@@ -11,14 +11,7 @@ public struct EvidenceSidebarView: View {
   public var body: some View {
     VStack(alignment: .leading, spacing: 0) {
       HStack(spacing: 10) {
-        ZStack {
-          RoundedRectangle(cornerRadius: 8)
-            .fill(EvidenceStyle.amber.gradient)
-          Image(systemName: "checkmark.shield.fill")
-            .font(.system(size: 15, weight: .semibold))
-            .foregroundStyle(.black.opacity(0.82))
-        }
-        .frame(width: 30, height: 30)
+        CodeVetterBrandMark(size: 30)
         VStack(alignment: .leading, spacing: 1) {
           Text("CodeVetter").font(.system(size: 14, weight: .semibold))
           Text("Evidence Workbench")

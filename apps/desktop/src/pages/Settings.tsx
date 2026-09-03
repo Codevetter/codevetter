@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
+import { BrandMark } from '@/components/brand-mark';
 import McpHistoryPanel from '@/components/settings/McpHistoryPanel';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -823,9 +824,7 @@ export default function Settings() {
         <div className="rounded-xl border border-[var(--cv-line)] bg-[var(--cv-surface)] p-6">
           {/* App identity */}
           <div className="flex items-center gap-4 pb-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-500/10">
-              <span className="text-2xl font-bold text-amber-400">C</span>
-            </div>
+            <BrandMark className="h-12 w-12" />
             <div>
               <h3 className="text-lg font-semibold text-slate-100">CodeVetter</h3>
               <p className="text-sm text-slate-500">

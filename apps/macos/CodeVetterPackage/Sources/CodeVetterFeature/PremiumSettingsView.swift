@@ -1364,13 +1364,7 @@ struct PremiumSettingsView: View {
   private var aboutPanel: some View {
     VStack(alignment: .leading, spacing: 14) {
       HStack(alignment: .center, spacing: 16) {
-        ZStack {
-          RoundedRectangle(cornerRadius: 14).fill(EvidenceStyle.amber)
-          Image(systemName: "checkmark.shield.fill")
-            .font(.system(size: 24, weight: .semibold))
-            .foregroundStyle(EvidenceStyle.ink)
-        }
-        .frame(width: 58, height: 58)
+        CodeVetterBrandMark(size: 58)
         VStack(alignment: .leading, spacing: 4) {
           Text("CodeVetter").font(.system(size: 20, weight: .semibold))
           Text("Execution-backed verification for coding agents")
