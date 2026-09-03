@@ -26,8 +26,8 @@ export default {
     fileName: 'artifacts/tooling/stryker/accounting-mutation-report.json',
   },
   thresholds: {
-    high: 80,
-    low: 60,
-    break: 80,
+    high: 90,
+    low: 80,
+    break: 90,
   },
 };
