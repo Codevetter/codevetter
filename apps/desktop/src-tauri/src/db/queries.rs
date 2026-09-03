@@ -3107,6 +3107,17 @@ pub fn get_agent_usage_by_day(
     let since = (Local::now().date_naive() - Duration::days(days.max(1) - 1))
         .format("%Y-%m-%d")
         .to_string();
+    get_agent_usage_by_day_since(conn, &since)
+}
+
+/// Per-day, per-agent usage at or after an explicit local-calendar date.
+///
+/// The explicit boundary keeps UI/CLI projections and deterministic tests on
+/// the same attribution contract without depending on the process clock.
+pub fn get_agent_usage_by_day_since(
+    conn: &Connection,
+    since: &str,
+) -> Result<Vec<AgentDayUsage>, rusqlite::Error> {
     let mut stmt = conn.prepare(
         "WITH session_total AS (
              SELECT session_id, SUM(msg_count) AS total_n
@@ -3159,6 +3170,31 @@ pub fn get_agent_usage_by_day(
         })?
         .collect::<Result<Vec<_>, _>>()?;
     Ok(rows)
+}
+
+/// Count distinct sessions with attributed activity at or after `since`.
+/// `None` returns the exact all-time session count, including legacy sessions
+/// that do not have per-day attribution rows.
+pub fn get_agent_session_count_since(
+    conn: &Connection,
+    agent_type: &str,
+    since: Option<&str>,
+) -> Result<i64, rusqlite::Error> {
+    match since {
+        Some(since) => conn.query_row(
+            "SELECT COUNT(DISTINCT s.id)
+             FROM cc_sessions s
+             JOIN cc_session_days d ON d.session_id = s.id
+             WHERE s.agent_type = ?1 AND d.day >= ?2",
+            params![agent_type, since],
+            |row| row.get(0),
+        ),
+        None => conn.query_row(
+            "SELECT COUNT(*) FROM cc_sessions WHERE agent_type = ?1",
+            params![agent_type],
+            |row| row.get(0),
+        ),
+    }
 }
 
 /// One model's token usage within one session (row shape for
@@ -3686,11 +3722,13 @@ mod tests {
             disposition: "accepted".into(),
         };
         assert_eq!(
-            append_codex_usage_observations(&conn, "s", &[observation.clone()]).unwrap(),
+            append_codex_usage_observations(&conn, "s", std::slice::from_ref(&observation))
+                .unwrap(),
             1
         );
         assert_eq!(
-            append_codex_usage_observations(&conn, "s", &[observation.clone()]).unwrap(),
+            append_codex_usage_observations(&conn, "s", std::slice::from_ref(&observation))
+                .unwrap(),
             0
         );
         reconcile_codex_usage_totals(&conn, "s").expect("reconcile");
@@ -3777,7 +3815,7 @@ mod tests {
             commit_codex_usage_batch(
                 &conn,
                 &source,
-                &[observation.clone()],
+                std::slice::from_ref(&observation),
                 Some(&checkpoint),
                 &coverage,
             )
@@ -3881,8 +3919,14 @@ mod tests {
             observation_watermark: source.last_observed_at.clone(),
         };
         assert_eq!(
-            commit_codex_usage_batch(&conn, &source, &[observation.clone()], None, &coverage)
-                .expect("first commit"),
+            commit_codex_usage_batch(
+                &conn,
+                &source,
+                std::slice::from_ref(&observation),
+                None,
+                &coverage,
+            )
+            .expect("first commit"),
             1
         );
         assert_eq!(

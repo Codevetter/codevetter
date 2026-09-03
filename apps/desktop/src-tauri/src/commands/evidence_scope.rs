@@ -38,7 +38,7 @@ pub enum EvidenceScopeConsumer {
     Performance,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct EvidenceScopeInput {
     pub repo_path: String,
     pub kind: EvidenceScopeKind,
@@ -657,20 +657,24 @@ mod tests {
     use super::*;
     use std::process::Command as StdCommand;
 
+    const SURFACE_PARITY_FIXTURE: &str =
+        include_str!("../../tests/fixtures/surface-parity/evidence-scope-v1.json");
+
+    fn surface_parity_fixture() -> serde_json::Value {
+        serde_json::from_str(SURFACE_PARITY_FIXTURE).expect("surface parity fixture")
+    }
+
     fn fixture_repository() -> tempfile::TempDir {
+        let fixture = surface_parity_fixture();
         let repo = tempfile::tempdir().unwrap();
-        std::fs::create_dir_all(repo.path().join("src/cart")).unwrap();
-        std::fs::write(repo.path().join("vitest.config.ts"), "export default {};\n").unwrap();
-        std::fs::write(
-            repo.path().join("src/cart/coupon.ts"),
-            "export const couponTotal = (value: number) => value;\n",
-        )
-        .unwrap();
-        std::fs::write(
-            repo.path().join("src/cart/coupon.test.ts"),
-            "import { couponTotal } from './coupon';\ntest('coupon total', () => couponTotal(2));\n",
-        )
-        .unwrap();
+        for (relative_path, content) in fixture["repository"]["files"]
+            .as_object()
+            .expect("fixture files")
+        {
+            let path = repo.path().join(relative_path);
+            std::fs::create_dir_all(path.parent().expect("fixture file parent")).unwrap();
+            std::fs::write(path, content.as_str().expect("fixture file content")).unwrap();
+        }
         for args in [
             vec!["init", "-q"],
             vec!["add", "."],
@@ -810,6 +814,62 @@ mod tests {
         .unwrap();
         assert_eq!(portfolio.candidates.len(), 1);
         assert!(portfolio.limitations[0].contains("bounded"));
+    }
+
+    #[tokio::test]
+    async fn authoritative_resolver_matches_the_shared_surface_parity_fixture() {
+        let fixture = surface_parity_fixture();
+        let request = &fixture["request"];
+        let expected = &fixture["expected"];
+        let repo = fixture_repository();
+        let plan = resolve(EvidenceScopeInput {
+            repo_path: repo.path().to_string_lossy().into_owned(),
+            kind: serde_json::from_value(request["kind"].clone()).expect("fixture kind"),
+            value: request["value"].as_str().map(str::to_string),
+            consumer: serde_json::from_value(request["consumer"].clone())
+                .expect("fixture consumer"),
+        })
+        .await
+        .expect("surface parity plan");
+
+        assert_eq!(plan.schema_version, expected["schema_version"]);
+        assert_eq!(plan.status, expected["status"]);
+        assert_eq!(plan.candidates.len(), expected["candidate_count"]);
+        let candidate = plan.candidates.first().expect("fixture candidate");
+        let expected_candidate = &expected["first_candidate"];
+        assert_eq!(candidate.id, expected_candidate["id"]);
+        assert_eq!(candidate.adapter, expected_candidate["adapter"]);
+        assert_eq!(candidate.target, expected_candidate["target"]);
+        assert_eq!(
+            candidate.confidence_milli,
+            expected_candidate["confidence_milli"]
+        );
+        assert_eq!(
+            candidate.testing_supported,
+            expected_candidate["testing_supported"]
+        );
+        assert_eq!(
+            candidate.performance_supported,
+            expected_candidate["performance_supported"]
+        );
+        assert!(plan
+            .limitations
+            .iter()
+            .any(|limitation| limitation.contains(
+                expected["limitation_contains"]
+                    .as_str()
+                    .expect("fixture limitation")
+            )));
+
+        let canonical: EvidenceScopePlan =
+            serde_json::from_value(fixture["canonical_receipt"].clone())
+                .expect("canonical fixture receipt");
+        assert_eq!(canonical.schema_version, plan.schema_version);
+        assert_eq!(canonical.kind, plan.kind);
+        assert_eq!(canonical.consumer, plan.consumer);
+        assert_eq!(canonical.status, plan.status);
+        assert_eq!(canonical.candidates[0].id, candidate.id);
+        assert_eq!(canonical.candidates[0].target, candidate.target);
     }
 
     #[tokio::test]

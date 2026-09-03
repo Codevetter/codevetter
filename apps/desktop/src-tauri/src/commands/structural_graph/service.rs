@@ -7,8 +7,9 @@ use super::{
         StructuralGraphMetadata,
     },
     storage::{
-        list_snapshot_summaries, load_latest_snapshot, load_snapshot_by_id,
-        StructuralGraphStoredSummary,
+        list_snapshot_summaries, load_edges_by_ids, load_interactive_snapshot_by_id,
+        load_latest_snapshot, load_latest_snapshot_summary, load_search_snapshot_by_id,
+        load_snapshot_by_id, load_traversal_edges_by_snapshot_id, StructuralGraphStoredSummary,
     },
     types::StructuralGraphSnapshot,
 };
@@ -76,6 +77,40 @@ impl<'a> StructuralGraphReadService<'a> {
             .ok_or_else(|| "Canonical structural graph snapshot is unavailable".to_string())
     }
 
+    pub fn search_snapshot_by_id(
+        &self,
+        snapshot_id: &str,
+    ) -> Result<StructuralGraphSnapshot, String> {
+        load_search_snapshot_by_id(self.connection, &self.repo_path, snapshot_id)
+            .map_err(|error| error.to_string())?
+            .ok_or_else(|| "Canonical structural graph snapshot is unavailable".to_string())
+    }
+
+    pub fn interactive_snapshot_by_id(
+        &self,
+        snapshot_id: &str,
+    ) -> Result<StructuralGraphSnapshot, String> {
+        load_interactive_snapshot_by_id(self.connection, &self.repo_path, snapshot_id)
+            .map_err(|error| error.to_string())?
+            .ok_or_else(|| "Canonical structural graph snapshot is unavailable".to_string())
+    }
+
+    pub fn traversal_edges_by_snapshot_id(
+        &self,
+        snapshot_id: &str,
+    ) -> Result<Vec<super::types::StructuralGraphEdge>, String> {
+        load_traversal_edges_by_snapshot_id(self.connection, snapshot_id)
+            .map_err(|error| error.to_string())
+    }
+
+    pub fn edges_by_ids(
+        &self,
+        snapshot_id: &str,
+        edge_ids: &[String],
+    ) -> Result<Vec<super::types::StructuralGraphEdge>, String> {
+        load_edges_by_ids(self.connection, snapshot_id, edge_ids).map_err(|error| error.to_string())
+    }
+
     pub fn status(&self) -> Result<StructuralGraphReadStatus, String> {
         self.status_with_current_head(self.current_head.clone())
     }
@@ -84,7 +119,7 @@ impl<'a> StructuralGraphReadService<'a> {
         &self,
         current_head: Option<String>,
     ) -> Result<StructuralGraphReadStatus, String> {
-        let snapshot = load_latest_snapshot(self.connection, &self.repo_path)
+        let snapshot = load_latest_snapshot_summary(self.connection, &self.repo_path)
             .map_err(|error| error.to_string())?;
         Ok(match snapshot {
             Some(snapshot) => StructuralGraphReadStatus {
@@ -94,12 +129,12 @@ impl<'a> StructuralGraphReadService<'a> {
                 indexed_head: snapshot.repo_head.clone(),
                 snapshot_id: Some(snapshot.id.clone()),
                 schema_version: Some(snapshot.schema_version),
-                engine_id: Some(snapshot.engine.id.clone()),
-                engine_version: Some(snapshot.engine.version.clone()),
+                engine_id: Some(snapshot.engine_id.clone()),
+                engine_version: Some(snapshot.engine_version.clone()),
                 created_at: Some(snapshot.created_at.clone()),
                 indexed_files: snapshot.coverage.indexed_files,
-                node_count: snapshot.nodes.len(),
-                edge_count: snapshot.edges.len(),
+                node_count: snapshot.node_count,
+                edge_count: snapshot.edge_count,
                 truncated: snapshot.truncated,
             },
             None => StructuralGraphReadStatus {
@@ -118,6 +153,10 @@ impl<'a> StructuralGraphReadService<'a> {
                 truncated: false,
             },
         })
+    }
+
+    pub fn current_head(&self) -> Option<String> {
+        self.current_head.clone()
     }
 
     pub fn metadata(&self) -> Result<StructuralGraphMetadata, String> {
@@ -172,6 +211,12 @@ impl<'a> StructuralGraphReadService<'a> {
         limit: usize,
     ) -> Result<GraphSearchResult, String> {
         self.search_page(text, filter, limit, None)
+    }
+
+    pub fn prepare_search_index(&self) -> Result<(), String> {
+        let snapshot = self.snapshot()?;
+        query::prepare_search_index(&snapshot);
+        Ok(())
     }
 
     pub fn search_page(
@@ -270,7 +315,8 @@ mod tests {
     use crate::commands::structural_graph::{
         storage::persist_snapshot,
         types::{
-            StructuralGraphCoverage, StructuralGraphEngineInfo, StructuralGraphSnapshot,
+            GraphOrigin, GraphTrust, StructuralGraphCoverage, StructuralGraphEdge,
+            StructuralGraphEngineInfo, StructuralGraphNode, StructuralGraphSnapshot,
             STRUCTURAL_GRAPH_SCHEMA_VERSION,
         },
     };
@@ -296,8 +342,30 @@ mod tests {
             ignore_fingerprint: None,
             coverage: StructuralGraphCoverage::default(),
             files: Vec::new(),
-            nodes: Vec::new(),
-            edges: Vec::new(),
+            nodes: vec![StructuralGraphNode {
+                id: "node:verify".to_string(),
+                kind: "function".to_string(),
+                label: "verify_change".to_string(),
+                qualified_name: Some("verification::verify_change".to_string()),
+                path: Some("src/verify.rs".to_string()),
+                detail: Some("Canonical verification entrypoint".to_string()),
+                language: Some("rust".to_string()),
+                community_id: None,
+                trust: GraphTrust::Extracted,
+                origin: GraphOrigin::Syntax,
+                sources: Vec::new(),
+            }],
+            edges: vec![StructuralGraphEdge {
+                id: "edge:self".to_string(),
+                from: "node:verify".to_string(),
+                to: "node:verify".to_string(),
+                kind: "references".to_string(),
+                evidence: "fixture".to_string(),
+                trust: GraphTrust::Extracted,
+                origin: GraphOrigin::Resolution,
+                sources: Vec::new(),
+                candidates: Vec::new(),
+            }],
             metrics: Vec::new(),
             clone_groups: Vec::new(),
             communities: Vec::new(),
@@ -315,7 +383,29 @@ mod tests {
             "snapshot"
         );
         let overview = service.overview(10).expect("overview");
-        assert_eq!(overview.nodes.len(), 0);
+        assert_eq!(overview.nodes.len(), 1);
         assert_eq!(overview.context.freshness.stale, Some(false));
+        let search_snapshot = service
+            .search_snapshot_by_id("snapshot")
+            .expect("search projection");
+        assert_eq!(search_snapshot.nodes.len(), 1);
+        assert!(search_snapshot.edges.is_empty());
+        let interactive_snapshot = service
+            .interactive_snapshot_by_id("snapshot")
+            .expect("interactive projection");
+        assert_eq!(interactive_snapshot.nodes.len(), 1);
+        assert_eq!(interactive_snapshot.edges.len(), 1);
+        assert!(interactive_snapshot.metrics.is_empty());
+        assert!(interactive_snapshot.files.is_empty());
+        let traversal_edges = service
+            .traversal_edges_by_snapshot_id("snapshot")
+            .expect("compact traversal edges");
+        assert_eq!(traversal_edges.len(), 1);
+        assert!(traversal_edges[0].evidence.is_empty());
+        let hydrated_edges = service
+            .edges_by_ids("snapshot", &["edge:self".to_string()])
+            .expect("bounded hydrated edges");
+        assert_eq!(hydrated_edges[0].evidence, "fixture");
+        assert_eq!(service.snapshot_by_id("snapshot").unwrap().edges.len(), 1);
     }
 }

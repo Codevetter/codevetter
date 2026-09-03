@@ -117,6 +117,8 @@ async fn run_check(arguments: CheckArguments) -> Result<i32, String> {
         repo_path: arguments.repo_path,
         change: arguments.change,
         task: arguments.task,
+        standards_pack: None,
+        standards_context: None,
         spec_paths: arguments.spec_paths,
         selected_requirement_ids: arguments.selected_requirement_ids,
         review_agent: arguments.review_agent,
@@ -182,6 +184,8 @@ async fn run_trex(arguments: TrexArguments) -> Result<i32, String> {
             change_kind: arguments.change_kind,
             change: arguments.change,
             preview_url: arguments.preview_url,
+            target_route: None,
+            target_goal: None,
         },
         &db,
         app_data_dir,
@@ -681,6 +685,7 @@ mod tests {
             routes: vec![TrexPreviewRoute {
                 route: "/".into(),
                 reason: "Required root smoke".into(),
+                goal: None,
             }],
             journeys: vec![SyntheticQaRunResult {
                 loop_id: "generic-page-smoke".into(),
@@ -719,10 +724,12 @@ mod tests {
         };
         LocalCheckReceipt {
             schema_version: "codevetter.local-check/v1".into(),
+            request_id: None,
             run_id: "local-check-fixture".into(),
             ran_at: "2026-08-24T00:00:00Z".into(),
             repo_path: "/tmp/widget".into(),
             task: "Preserve behavior".into(),
+            standards_pack: Some("product-safety".into()),
             source: TrexSourceReceipt {
                 kind: TrexChangeKind::Range,
                 input: "main...HEAD".into(),
@@ -1012,6 +1019,7 @@ mod tests {
 
         let preflight = LocalCheckPreflightReceipt {
             schema_version: "codevetter.local-check-preflight/v1".into(),
+            request_id: None,
             ran_at: "2026-08-29T00:00:00Z".into(),
             repo_path: passed.repo_path.clone(),
             task: passed.task.clone(),

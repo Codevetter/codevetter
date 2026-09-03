@@ -4,7 +4,7 @@ use crate::commands::dora;
 use crate::commands::intel;
 use crate::commands::unpack;
 use crate::commands::unpack_scan::{emit_unpack_scan_progress, ScanProgress, ScanProgressCallback};
-use crate::commands::unpack_scan_profile::{emit_unpack_scan_profile, UnpackScanProfiler};
+use crate::commands::unpack_scan_profile::emit_unpack_scan_profile;
 use crate::DbState;
 use serde::{Deserialize, Serialize};
 use std::process::Command as StdCommand;
@@ -74,15 +74,6 @@ fn display_name_from_path(repo_path: &str) -> String {
         .and_then(|s| s.to_str())
         .unwrap_or("repo")
         .to_string()
-}
-
-fn touch_unpack_at(conn: &rusqlite::Connection, repo_path: &str, at: &str) -> Result<(), String> {
-    conn.execute(
-        "UPDATE repo_projects SET last_unpack_at = ?2 WHERE repo_path = ?1",
-        rusqlite::params![repo_path, at],
-    )
-    .map_err(|e| e.to_string())?;
-    Ok(())
 }
 
 fn touch_intel_at(conn: &rusqlite::Connection, repo_path: &str, at: &str) -> Result<(), String> {
@@ -312,57 +303,37 @@ pub async fn save_unpack_scan_snapshot(
     .await
     .map_err(|e| format!("inventory scan task join error: {e}"))??;
 
-    let inventory = build.inventory;
-    emit_unpack_scan_profile(&app, &report_id, &inventory.repo_path, &build.profile);
-
-    let mut persist_profiler = UnpackScanProfiler::new("local_scan_persist");
+    let repo_path = build.inventory.repo_path.clone();
+    let files_scanned = build.inventory.files_scanned;
+    let needs_enrichment = unpack::inventory_needs_enrichment(&build.inventory);
+    emit_unpack_scan_profile(&app, &report_id, &repo_path, &build.profile);
 
     emit_unpack_scan_progress(
         &app,
         &report_id,
-        &inventory.repo_path,
-        &format!("Saved snapshot · {} files scanned", inventory.files_scanned),
-        inventory.files_scanned,
+        &repo_path,
+        &format!("Saving snapshot · {files_scanned} files scanned"),
+        files_scanned,
     );
 
-    let inventory_json = serde_json::to_string(&inventory).map_err(|e| e.to_string())?;
-    persist_profiler.step("serialize", "JSON serialize (inventory → SQLite)");
-    let now = chrono::Utc::now().to_rfc3339();
-
     let conn = conn_lock(&db)?;
+    let receipt =
+        unpack::persist_unpack_scan_snapshot_from_connection(&conn, report_id.clone(), build)?;
+    drop(conn);
+    for profile in &receipt.profiles {
+        if profile.stage == "local_scan_persist" {
+            emit_unpack_scan_profile(&app, &report_id, &repo_path, profile);
+        }
+    }
+    emit_unpack_scan_progress(
+        &app,
+        &report_id,
+        &repo_path,
+        &format!("Saved snapshot · {files_scanned} files scanned"),
+        files_scanned,
+    );
 
-    crate::db::with_busy_retry(
-        || {
-            conn.execute(
-                "INSERT INTO repo_unpacked_reports
-                 (id, repo_path, repo_name, commit_sha, status, inventory_json,
-                  files_scanned, files_skipped, bytes_scanned, started_at, completed_at, created_at)
-                 VALUES (?1, ?2, ?3, ?4, 'scan_only', ?5, ?6, ?7, ?8, ?9, ?9, ?9)",
-                rusqlite::params![
-                    report_id,
-                    inventory.repo_path,
-                    inventory.repo_name,
-                    inventory.commit_sha,
-                    inventory_json,
-                    inventory.files_scanned as i64,
-                    inventory.files_skipped as i64,
-                    inventory.bytes_scanned as i64,
-                    now,
-                ],
-            )
-        },
-        15,
-    )
-    .map_err(|e| e.to_string())?;
-    persist_profiler.step("db_insert", "SQLite insert");
-
-    touch_unpack_at(&conn, &inventory.repo_path, &now)?;
-    persist_profiler.step("touch_project", "Update repo project metadata");
-
-    let persist_profile = persist_profiler.finish();
-    emit_unpack_scan_profile(&app, &report_id, &inventory.repo_path, &persist_profile);
-
-    if unpack::inventory_needs_enrichment(&inventory) {
+    if needs_enrichment {
         let db_arc = db.0.clone();
         let app_bg = app.clone();
         let report_id_bg = report_id.clone();
@@ -375,13 +346,7 @@ pub async fn save_unpack_scan_snapshot(
         });
     }
 
-    Ok(serde_json::json!({
-        "report_id": report_id,
-        "status": "scan_only",
-        "inventory": unpack::trim_inventory_for_client(inventory),
-        "created_at": now,
-        "profiles": [build.profile, persist_profile],
-    }))
+    serde_json::to_value(receipt).map_err(|error| error.to_string())
 }
 
 fn truncate_scan_path(path: &str) -> String {

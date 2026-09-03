@@ -10,6 +10,19 @@ use rmcp::{ClientHandler, ServiceExt};
 use rusqlite::params;
 use std::{fs, process::Command};
 
+const SURFACE_PARITY_FIXTURE: &str =
+    include_str!("../../../tests/fixtures/surface-parity/evidence-scope-v1.json");
+const LOCAL_CHECK_PARITY_FIXTURE: &str =
+    include_str!("../../../tests/fixtures/surface-parity/local-check-v1.json");
+
+fn surface_parity_fixture() -> Value {
+    serde_json::from_str(SURFACE_PARITY_FIXTURE).expect("surface parity fixture")
+}
+
+fn local_check_parity_fixture() -> Value {
+    serde_json::from_str(LOCAL_CHECK_PARITY_FIXTURE).expect("local-check parity fixture")
+}
+
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn timed_out_sql_workers_release_all_query_capacity() {
     let semaphore = Arc::new(Semaphore::new(4));
@@ -59,6 +72,9 @@ async fn timed_out_sql_workers_release_all_query_capacity() {
 
 #[test]
 fn every_tool_is_explicitly_read_only_and_schema_bounded() {
+    let fixture = surface_parity_fixture();
+    assert_eq!(fixture["authority"]["mcp"], "read_only_projection");
+    assert_eq!(fixture["authority"]["mcp_may_execute"], false);
     let tools = tool_definitions();
     assert_eq!(
         tools
@@ -66,6 +82,7 @@ fn every_tool_is_explicitly_read_only_and_schema_bounded() {
             .map(|tool| tool.name.as_ref())
             .collect::<Vec<_>>(),
         vec![
+            "capability_catalog",
             "graph_query",
             "graph_get_node",
             "graph_get_neighbors",
@@ -82,6 +99,9 @@ fn every_tool_is_explicitly_read_only_and_schema_bounded() {
             "history_compare",
             "history_get_evidence",
             "prepare_review",
+            "resolve_evidence_scope",
+            "qa_workspace_inspect",
+            "verification_get_receipt",
             "review_list_manifests",
             "archaeology_list_rules",
             "archaeology_list_domains",
@@ -147,13 +167,28 @@ impl ClientHandler for TestClient {}
 #[tokio::test]
 async fn protocol_lifecycle_is_scoped_structured_and_live_revocable() {
     let fixture = tempfile::tempdir().expect("fixture");
+    let surface_fixture = surface_parity_fixture();
+    let local_check_fixture = local_check_parity_fixture();
     let repo = fixture.path().join("repo");
     fs::create_dir(&repo).expect("repo");
     git(&repo, &["init"]);
     git(&repo, &["config", "user.email", "fixture@codevetter.local"]);
     git(&repo, &["config", "user.name", "CodeVetter Fixture"]);
     fs::write(repo.join("main.rs"), "fn main() {}\n").expect("source");
-    git(&repo, &["add", "main.rs"]);
+    for (relative_path, content) in surface_fixture["repository"]["files"]
+        .as_object()
+        .expect("surface parity files")
+    {
+        let path = repo.join(relative_path);
+        fs::create_dir_all(path.parent().expect("surface fixture parent"))
+            .expect("surface fixture directory");
+        fs::write(
+            path,
+            content.as_str().expect("surface fixture file content"),
+        )
+        .expect("surface fixture file");
+    }
+    git(&repo, &["add", "."]);
     git(&repo, &["commit", "-m", "fixture release"]);
     git(&repo, &["tag", "v1.0.0"]);
     let head = git_output(&repo, &["rev-parse", "HEAD"]);
@@ -221,6 +256,33 @@ async fn protocol_lifecycle_is_scoped_structured_and_live_revocable() {
             params![repo_path, repo_id, "2026-01-01T00:00:00Z"],
         )
         .expect("scope");
+    let mut canonical_local_check = local_check_fixture["canonical_receipt"].clone();
+    canonical_local_check["repo_path"] = Value::String(repo_path.clone());
+    connection
+        .execute(
+            "INSERT INTO local_check_runs (
+                    run_id, schema_version, repo_path, base_sha, head_sha,
+                    verdict, task, receipt_json, ran_at
+                 ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)",
+            params![
+                canonical_local_check["run_id"].as_str().expect("run id"),
+                canonical_local_check["schema_version"]
+                    .as_str()
+                    .expect("receipt schema"),
+                repo_path,
+                canonical_local_check["source"]["base_sha"]
+                    .as_str()
+                    .expect("base sha"),
+                canonical_local_check["source"]["head_sha"]
+                    .as_str()
+                    .expect("head sha"),
+                canonical_local_check["verdict"].as_str().expect("verdict"),
+                canonical_local_check["task"].as_str().expect("task"),
+                serde_json::to_string(&canonical_local_check).expect("receipt JSON"),
+                canonical_local_check["ran_at"].as_str().expect("run time"),
+            ],
+        )
+        .expect("local-check parity receipt");
     persist_snapshot(
         &connection,
         &StructuralGraphSnapshot {
@@ -265,7 +327,7 @@ async fn protocol_lifecycle_is_scoped_structured_and_live_revocable() {
     });
     let client = TestClient.serve(client_transport).await.expect("client");
     let tools = client.list_tools(None).await.expect("tools");
-    assert_eq!(tools.tools.len(), 24);
+    assert_eq!(tools.tools.len(), 28);
     assert!(tools.tools.iter().all(|tool| tool.output_schema.is_some()));
     let templates = client
         .list_resource_templates(None)
@@ -389,6 +451,110 @@ async fn protocol_lifecycle_is_scoped_structured_and_live_revocable() {
     );
     assert_eq!(prepared["data"]["data"]["source"]["head_sha"], head);
     assert!(prepared.to_string().find(&repo_path).is_none());
+    let performance_scope = client
+        .call_tool(
+            CallToolRequestParams::new("resolve_evidence_scope").with_arguments(
+                json!({"consumer": "performance", "scope_kind": "codebase"})
+                    .as_object()
+                    .expect("arguments")
+                    .clone(),
+            ),
+        )
+        .await
+        .expect("performance scope")
+        .structured_content
+        .expect("performance scope structured");
+    assert_eq!(performance_scope["data"]["data"]["schema_version"], 1);
+    assert_eq!(performance_scope["data"]["data"]["consumer"], "performance");
+    assert_eq!(performance_scope["data"]["data"]["kind"], "codebase");
+    assert!(performance_scope.to_string().find(&repo_path).is_none());
+    let request = &surface_fixture["request"];
+    let expected = &surface_fixture["expected"];
+    let parity_scope = client
+        .call_tool(
+            CallToolRequestParams::new("resolve_evidence_scope").with_arguments(
+                json!({
+                    "consumer": request["consumer"],
+                    "scope_kind": request["kind"],
+                    "scope_value": request["value"]
+                })
+                .as_object()
+                .expect("surface parity arguments")
+                .clone(),
+            ),
+        )
+        .await
+        .expect("surface parity MCP scope")
+        .structured_content
+        .expect("surface parity MCP structured content");
+    let parity_plan = &parity_scope["data"]["data"];
+    assert_eq!(parity_plan["schema_version"], expected["schema_version"]);
+    assert_eq!(parity_plan["status"], expected["status"]);
+    assert_eq!(
+        parity_plan["candidates"].as_array().map(Vec::len),
+        expected["candidate_count"]
+            .as_u64()
+            .map(|count| count as usize)
+    );
+    assert_eq!(
+        parity_plan["candidates"][0]["id"],
+        expected["first_candidate"]["id"]
+    );
+    assert_eq!(
+        parity_plan["candidates"][0]["target"],
+        expected["first_candidate"]["target"]
+    );
+    assert!(parity_scope.to_string().find(&repo_path).is_none());
+    let local_expected = &local_check_fixture["expected"];
+    let parity_receipt = client
+        .call_tool(
+            CallToolRequestParams::new("verification_get_receipt").with_arguments(
+                json!({"run_id": local_expected["run_id"]})
+                    .as_object()
+                    .expect("receipt parity arguments")
+                    .clone(),
+            ),
+        )
+        .await
+        .expect("surface parity MCP receipt")
+        .structured_content
+        .expect("surface parity MCP receipt content");
+    let receipt_projection = &parity_receipt["data"]["data"];
+    assert_eq!(
+        receipt_projection["schema_version"],
+        local_expected["mcp_projection_schema"]
+    );
+    assert_eq!(receipt_projection["authority"], "read_only_projection");
+    assert_eq!(
+        receipt_projection["receipt"]["schema_version"],
+        local_expected["receipt_schema"]
+    );
+    assert_eq!(
+        receipt_projection["receipt"]["request_id"],
+        local_expected["request_id"]
+    );
+    assert_eq!(
+        receipt_projection["receipt"]["verdict"],
+        local_expected["verdict"]
+    );
+    assert_eq!(
+        receipt_projection["receipt"]["stages"]["performance"]["status"],
+        local_expected["performance_status"]
+    );
+    assert_eq!(
+        receipt_projection["receipt"]["stages"]["review"]["evidence"]["cross_review"]["strategy"],
+        "claude_then_codex_independent"
+    );
+    assert_eq!(
+        receipt_projection["receipt"]["stages"]["review"]["evidence"]["cross_review"]["passes"][1]
+            ["reviewer"],
+        "codex"
+    );
+    assert!(receipt_projection["receipt"]["limitations"]
+        .as_array()
+        .is_some_and(|limitations| limitations.contains(&local_expected["limitation"])));
+    assert!(receipt_projection["receipt"].get("repo_path").is_none());
+    assert!(parity_receipt.to_string().find(&repo_path).is_none());
     let first_page = client
         .call_tool(
             CallToolRequestParams::new("history_list_releases")
@@ -696,6 +862,50 @@ fn request_validation_rejects_unknown_and_out_of_bounds_arguments() {
         .expect("arguments")
         .clone();
     assert!(validate_tool_arguments("prepare_review", &arguments).is_err());
+
+    arguments = json!({
+        "consumer": "performance",
+        "scope_kind": "change",
+        "scope_value": "main...HEAD"
+    })
+    .as_object()
+    .expect("arguments")
+    .clone();
+    assert!(validate_tool_arguments("resolve_evidence_scope", &arguments).is_ok());
+
+    arguments = json!({"consumer": "testing", "scope_kind": "codebase"})
+        .as_object()
+        .expect("arguments")
+        .clone();
+    assert!(validate_tool_arguments("resolve_evidence_scope", &arguments).is_ok());
+
+    arguments = json!({"consumer": "performance", "scope_kind": "flow"})
+        .as_object()
+        .expect("arguments")
+        .clone();
+    assert!(validate_tool_arguments("resolve_evidence_scope", &arguments).is_err());
+
+    arguments = json!({
+        "consumer": "performance",
+        "scope_kind": "codebase",
+        "scope_value": "must-not-be-present"
+    })
+    .as_object()
+    .expect("arguments")
+    .clone();
+    assert!(validate_tool_arguments("resolve_evidence_scope", &arguments).is_err());
+
+    arguments = json!({"run_id": "local-check-surface-parity"})
+        .as_object()
+        .expect("arguments")
+        .clone();
+    assert!(validate_tool_arguments("verification_get_receipt", &arguments).is_ok());
+
+    arguments = json!({"run_id": "../foreign receipt"})
+        .as_object()
+        .expect("arguments")
+        .clone();
+    assert!(validate_tool_arguments("verification_get_receipt", &arguments).is_err());
 }
 
 #[test]
