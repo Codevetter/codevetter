@@ -81,10 +81,11 @@ export function nativeCheckCommands({ mode }, environment = process.env) {
       arguments: [
         'swift-package',
         'test',
-        '--package-path',
-        'apps/macos/CodeVetterPackage',
-        '--parallel',
-        'false',
+        '--json',
+        JSON.stringify({
+          packagePath: 'apps/macos/CodeVetterPackage',
+          parallel: false,
+        }),
       ],
     },
     {
