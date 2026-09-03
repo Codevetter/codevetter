@@ -26,7 +26,20 @@ decay — re-check before acting on anything here. Items the research could not
 confirm are marked UNVERIFIED on the detail pages and should be treated as open
 questions, not findings.
 
-## Adopt
+## Status vocabulary
+
+- **Approved** — qualified for a bounded lane, but not executable there yet.
+- **Trialled** — exercised against this repository with measured output, but not
+  part of a maintained path.
+- **Wired** — invoked by a tracked local command, hook, workflow, or product
+  adapter.
+- **Configured** — registered with a maintainer client, but not yet callable
+  because authentication, product authorization, or a client restart is pending.
+- **Rejected** — disqualified for the named lane. Rejection in the private
+  customer-code product lane does not automatically reject a public-repository
+  maintainer aid.
+
+## Product adoption
 
 | Tool | License | Surface | Category detail |
 |---|---|---|---|
@@ -38,10 +51,67 @@ questions, not findings.
 | Terminal-Bench 4.0 (Harbor) | Apache-2.0 | Corpus under `benchmarks/` | [agent benchmarks](./tooling-agent-benchmarks.md) |
 | `libkrun` | Apache-2.0 | In-process VMM in `src-tauri/` | [sandboxing](./tooling-sandboxing.md) |
 
-`cargo-audit` is the highest-leverage item: the `rustsec` crate runs inside the
-existing Rust backend with no new process boundary, no sidecar to codesign, and
-no subprocess. Its SARIF 2.1.0 output is real but undocumented in the README and
-absent from the changelog — pin `>= 0.22.0` and trust the source, not the docs.
+These are product-lane decisions, not implementation receipts. In particular,
+Gitleaks is now **wired** for this repository's hooks and CI, while bundling it
+as a signed desktop sidecar remains **approved** work.
+
+## Repository and maintainer tooling
+
+| Tool | Status | Bounded use |
+|---|---|---|
+| DeepWiki MCP | Wired | Maintainer questions about this public repository; a new Codex session is required after MCP configuration changes |
+| GitHub CodeQL default setup | Wired | GitHub-hosted scanning of this public repository only |
+| Biome SARIF | Wired | Local artifact generation plus code-scanning upload |
+| Gitleaks 8.30.1 | Wired | Staged-change hook, full-history local check, and checksum-pinned CI binary |
+| zizmor 1.29 / action 0.6.2 | Wired | Offline local workflow audit plus GitHub code-scanning upload |
+| actionlint 1.7.12 + ShellCheck 0.11.0 | Wired | Workflow syntax/semantics and embedded-shell validation; checksum-pinned CI binaries and local `pnpm quality:workflows` command |
+| cargo-deny 0.20.2 | Wired | Offline Rust license, source, wildcard-requirement, and duplicate-version policy; native SARIF for actionable policy violations |
+| ast-grep 0.45.2 | Trialled, not wired | Structural locations were correct, but native `--format sarif` emits an invalid root format version; no missing-rule case justifies a converter yet |
+| Trivy 0.74.0 config scan | Trialled, not wired | Embedded checks found no supported first-party IaC surface; the unbounded scan targeted a dependency Dockerfile and the bounded scan misclassified a JSON fixture |
+| OSV-Scanner 2.5.1 | Repository runner wired | `pnpm quality:vulnerabilities` produces offline SARIF plus a database-identity receipt; the 35-package baseline and remediation are tracked in issue #195 |
+| StrykerJS 10.0.0 | Bounded local command wired | Accounting oracle: 218 mutants, 185 killed, 33 survived, 84.86% score; `pnpm quality:mutation:accounting`, tracked in issue #196 |
+| Schemathesis 4.25.2 | Rejected for current surface | CLI availability verified, but CodeVetter has no OpenAPI/Swagger contract or HTTP server to exercise |
+| Apple `container` CLI | Approved for measured trial | Host qualifies (arm64, macOS 27), but the signed admin-installed system service is absent; tracked in issue #197 |
+| Lighthouse CI 0.15.1 | Trialled, rejected as a repo dependency | Three local landing-page runs passed the proposed category/Core Web Vitals gates, but the package introduced three high advisories including unpatched `extract-zip` traversal; raw Lighthouse JSON ingestion remains supported |
+| Size Limit 13.0.3 | Wired, additive | Caps the complete emitted desktop JS distribution after the existing Tauri-aware entry/Home and per-chunk budget gate; it does not replace those product-specific calculations |
+| `fast-xml-parser` 5.11.1 | Wired | Closed JUnit and Cobertura XML ingestion with DTD/entity rejection before parsing |
+| `@friedemannsommer/lcov-parser` 8.0.0 | Wired | Local LCOV ingestion without bundling the GPL Perl `lcov` tools |
+| Playwright built-in JSON/JUnit reporters + c8 LCOV/Cobertura reporters | Wired and dogfooded | `pnpm verification:dogfood` runs the active suites, emits all four upstream formats, ingests them, and keeps unproven verdict dimensions at `no_confidence` |
+| Chrome DevTools MCP 1.8.0 | Wired | Pinned maintainer MCP for traces and browser diagnostics; isolated/headless profile, telemetry and CrUX lookup disabled, response headers redacted |
+| Playwright MCP 0.0.79 | Wired | Pinned isolated/headless maintainer browser with service workers blocked and a bounded local/codevetter.com origin allowlist |
+| GitHub MCP Server 1.11.0 | Wired and verified | Checksum-verified official Darwin arm64 binary registered as local stdio with `repos`, `issues`, `pull_requests`, `actions`, and `code_security`; strict read-only mode and narrow browser OAuth scopes (`read:org`, `security_events`) replace the earlier PAT-dependent remote registration, with live repository, PR, Actions, issue, and CodeQL reads verified |
+| CodeVetter packaged graph/history MCP | Wired and verified | Enabled for the canonical checkout through the product-generated opaque repository scope; current history and tree-sitter structural indexes returned bounded `history_search` and `graph_query` results, with operational access metadata recorded locally |
+
+These tools subsidize discovery and evidence collection. CodeVetter still owns
+receipt qualification, taxonomy, budgets, and the final measurable verdict.
+The maintainer client also registers CodeVetter's repository-scoped runtime MCP
+as `codevetter-runtime-exec` and its non-executing receipt MCP as
+`codevetter-verification`; the names preserve the execution boundary. The
+product-generated packaged sidecar is registered separately as
+`codevetter-history`. Newly added registrations appear as callable client tools
+in the next Codex session, so the packaged sidecar was also protocol-smoked
+directly in this session. GitHub's browser OAuth is complete, and its token
+remains in the server process rather than Codex configuration. Future repository
+scopes must still be enabled in CodeVetter and copied from its opaque generated
+configuration rather than synthesizing database arguments.
+
+The first CodeQL run also exposed a cleartext localStorage API-key field. Source
+tracing showed that the old browser gateway execution path had already been
+removed and only its non-functional Settings panel remained. The remediation
+removes that panel and allowlist-migrates the shared record to rubric fields
+instead of adding a credential dependency to preserve dead behavior; issue
+#194 remains open until pushed CodeQL evidence confirms the alert is closed.
+
+The OSV baseline changes the order of operations for repository dependency work:
+fix or classify the measured lockfile baseline before adding another scanner.
+The tracked [baseline evidence](https://github.com/Codevetter/codevetter/blob/main/evidence/security/osv-baseline-2026-08-31.md)
+records 52 advisory/package matches and the exact database hashes; generated
+SARIF and receipts remain ignored scratch.
+`cargo-audit` remains the highest-leverage product embedding candidate because
+the `rustsec` crate runs inside the existing Rust backend with no process
+boundary or sidecar to codesign. Its SARIF 2.1.0 output is real but undocumented
+in the README and absent from the changelog — pin `>= 0.22.0` and trust the
+source, not the docs.
 
 ## Reject
 
@@ -54,13 +124,14 @@ absent from the changelog — pin `>= 0.22.0` and trust the source, not the docs
 | npm / pnpm audit | No offline mode; npm's fallback path uploads the full dependency tree plus machine metadata |
 | `lcov` / `genhtml` Perl tooling | GPL-2.0 — do not bundle (the *format* is unencumbered) |
 | Meta OpenApps | CC-BY-NC-4.0, commercial use prohibited |
-| DeepWiki | Hosted; private repos need a paid Devin account — see [documentation tooling](./tooling-documentation.md) |
-| CodeQL | License forbids use on non-open-source codebases without paid GHAS — see [sandboxing](./tooling-sandboxing.md) |
+| DeepWiki as product/docs authority | Hosted; private repos need a paid Devin account — see [documentation tooling](./tooling-documentation.md) |
+| CodeQL on customer repositories | License forbids use on non-open-source codebases without paid GHAS — see [sandboxing](./tooling-sandboxing.md) |
 | Firecracker, gVisor | Linux-kernel only; no macOS host mode exists |
 | Docker Desktop | Proprietary GUI app, license-gated at 250 employees / $10M revenue |
 | WorkArena, WebVoyager | Require live third-party websites or hosted SaaS |
 | detect-secrets | Dormant since 2024; no SARIF |
 | Nosey Parker | Archived 2026-04-24, superseded by Titus |
+| Lighthouse CI as a repository dependency | Current 0.15.1 dependency graph fails the repository's high-severity audit, including unpatched `extract-zip` traversal; do not hide the same package behind an untracked `dlx` invocation |
 
 ## Adopt only with explicit configuration
 

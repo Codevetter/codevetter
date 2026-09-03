@@ -65,8 +65,10 @@ repairs run as idempotent migrations guarded by feature flags. The groups:
 
 ## What is not persisted
 
-- **LLM API keys** — stored in user settings via Tauri preferences, not in
-  SQLite review tables.
+- **Direct LLM API keys** — not persisted by the active review/standards
+configuration. Legacy provider fields are allowlist-scrubbed from localStorage
+on the next read; installed agent CLI credentials remain external to
+CodeVetter.
 - **Raw CLI agent transcripts** — read from disk on demand; only parsed
   summaries land in SQLite.
 - **Structural graph for unopened repos** — built on demand and persisted per

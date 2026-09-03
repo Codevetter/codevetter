@@ -1,18 +1,23 @@
 ---
-title: Documentation tooling — the DeepWiki decision
-description: Why DeepWiki is not adopted for CodeVetter's documentation, and what would fit if auto-generated architecture docs are wanted.
+title: Documentation tooling — the DeepWiki boundary
+description: Where DeepWiki helps CodeVetter maintainers, where it is rejected, and what would fit for generated architecture docs.
 sidebar:
   order: 14
 ---
 
-# Documentation tooling — the DeepWiki decision
+# Documentation tooling — the DeepWiki boundary
 
 Verified **2026-08-30**. See [tooling-decisions.md](./tooling-decisions.md) for
 the cross-category summary.
 
-**Verdict: reject** DeepWiki as a documentation pipeline dependency. The only
-form that composes with the existing stack is a passive outbound link (a README
-or landing badge to `deepwiki.com/Codevetter/codevetter`), not an integration.
+**Verdict: wired as a maintainer query aid; rejected as a documentation pipeline
+or product dependency.** The public DeepWiki MCP endpoint is configured in the
+owner's Codex environment for questions about this public repository. It is
+not tracked repository configuration, does not ingest customer repositories,
+and does not replace committed documentation or executable proof.
+
+Codex discovers MCP servers at session startup. After adding or changing the
+DeepWiki entry, start a new session before claiming the tools are callable.
 
 ## Why
 
@@ -41,8 +46,8 @@ not the hosted product.
 
 ### It fails on process grounds independently of privacy
 
-Even setting privacy aside, DeepWiki conflicts with this repo's own documented
-rules:
+Promoting its generated pages to product documentation would still conflict
+with this repo's own documented rules:
 
 - **"Markdown under `docs/` is the source of truth."** A hosted generated wiki
   is a second, non-authoritative home for the same facts.
@@ -57,8 +62,8 @@ assessed DeepWiki in **April 2026** and reached the same conclusion. That
 document sat in a top-level `research/` directory that nothing linked to, so the
 finding was effectively lost and the question got asked again.
 
-The August 2026 re-check confirmed the April verdict still holds, and that the
-three self-hosted alternatives it named remain active:
+The August 2026 re-check confirmed the product/docs boundary still holds, and
+that the three self-hosted alternatives it named remain active:
 
 | Project | Stars | License | Last push |
 |---|---|---|---|

@@ -960,28 +960,30 @@ func supervisedRunnerStreamsStructuredProgressAndCancelsWithoutAReceipt() async 
   try script.write(to: executable, atomically: true, encoding: .utf8)
   try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: executable.path)
 
-  let observed = LockedProgress()
-  let result = try await CodeVetterProcessRunner(executableURL: executable).run(
-    VerificationRequest(
-      requestID: requestID,
-      repositoryPath: "/fixture/repo",
-      change: "main...HEAD",
-      task: "Prove output"
-    ),
-    preflight: false,
-    onProgress: { observed.append($0) }
-  )
-  #expect(result.processStatus == 0)
-  #expect(
-    observed.values == [
-      VerificationProgress(
-        schemaVersion: "codevetter.progress/v2",
+  for _ in 0..<20 {
+    let observed = LockedProgress()
+    let result = try await CodeVetterProcessRunner(executableURL: executable).run(
+      VerificationRequest(
         requestID: requestID,
-        sequence: 0,
-        stage: "correctness",
-        state: "running"
-      )
-    ])
+        repositoryPath: "/fixture/repo",
+        change: "main...HEAD",
+        task: "Prove output"
+      ),
+      preflight: false,
+      onProgress: { observed.append($0) }
+    )
+    #expect(result.processStatus == 0)
+    #expect(
+      observed.values == [
+        VerificationProgress(
+          schemaVersion: "codevetter.progress/v2",
+          requestID: requestID,
+          sequence: 0,
+          stage: "correctness",
+          state: "running"
+        )
+      ])
+  }
 
   let sleeper = fixtureDirectory.appending(path: "codevetter-sleeper")
   try "#!/bin/sh\nexec sleep 30\n".write(to: sleeper, atomically: true, encoding: .utf8)

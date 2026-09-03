@@ -34,7 +34,7 @@ Do not duplicate this matrix elsewhere — link here.
 | Desktop Rust backend | `apps/desktop/src-tauri/src/` | `ci.yml` MCP tests; `release.yml` Tauri build | Sarthak |
 | Local SQLite | `rusqlite` in Rust backend (no server) | Local only; `observability.rs` aggregates locally | Sarthak |
 | MCP sidecar | `apps/desktop/src-tauri/src/bin/codevetter-mcp.rs` | `ci.yml` MCP protocol + stdio lifecycle tests; `mcp/sanitize.rs` redaction | Sarthak |
-| Benchmark | `benchmark/` + `scripts/run-catch-rate-benchmark.mjs` | `pnpm test:benchmark`; public cases committed | Sarthak |
+| Benchmark | `benchmarks/public-catch-rate/` + `scripts/run-catch-rate-benchmark.mjs` | `pnpm test:benchmark`; public cases committed | Sarthak |
 | Release pipeline | `auto-release.yml` → `release.yml` → GitHub Releases | Release assets + `latest.json` manifest | Sarthak |
 | Auto-updater | `@tauri-apps/plugin-updater` consuming `latest.json` | `scripts/verify-release-manifest.mjs` validates linkage | Sarthak |
 | Docs | `docs/` + `docs-site/` (Blume) | `docs.yml` link + structure validation | Sarthak |

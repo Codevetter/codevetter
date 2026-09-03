@@ -7,7 +7,7 @@ sidebar:
 
 # Sandboxed execution and static analysis
 
-Verified **2026-08-30**. See [tooling-decisions.md](./tooling-decisions.md) for
+Verified **2026-08-31**. See [tooling-decisions.md](./tooling-decisions.md) for
 the cross-category summary.
 
 Sandboxed execution is the mechanism CodeVetter's verdicts rest on: if the
@@ -15,7 +15,27 @@ isolation is not reproducible, the evidence is not either. This page covers
 isolation on Apple Silicon, the determinism controls that make runs comparable,
 and static analyzers that emit SARIF.
 
-## Recommended: `libkrun`, with a VZ upgrade path
+## Recommended sequence: prove the contract with Apple `container`, then embed
+
+On a supported host, qualify the official Apple `container` CLI first. It gives
+the team a maintained, OCI-compatible lightweight-VM implementation with which
+to measure containment, mount policy, networking, resource bounds, startup,
+and teardown before accepting an in-process VMM dependency. The signed 1.3.1
+package is now qualified on the Apple Silicon macOS 27 trial host. A cached
+no-op container started in 0.61 seconds; read-only root/workspace, bounded CPU
+and memory, an internal no-DNS network, dropped capabilities, host-environment
+absence, and teardown all behaved as expected. The first image/init-image run
+took 20.56 seconds and the cached images occupied 1.45 GB.
+
+One contract failed: the CLI accepted a controlled bind source containing `..`
+when it resolved outside the intended fixture root. CodeVetter must canonicalize
+and enforce workspace containment itself; Apple Container's mount validation is
+not that policy. The [qualification receipt](https://github.com/Codevetter/codevetter/blob/main/evidence/verification/apple-container-qualification-2026-08-31.md)
+records identities, measurements, teardown, and remaining gates. Issue #197
+keeps the architecture decision open.
+
+If the measured contract is sound, choose between consuming Apple's
+Containerization Swift package through a sidecar and embedding `libkrun`.
 
 **`libkrun`** (Apache-2.0, `containers/libkrun`, 2,643★) is a small VMM
 **library** written in Rust and built on Apple's `Hypervisor.framework`. It is
@@ -24,10 +44,11 @@ backend via its C API, boots a minimal Linux microVM per verification run, and
 tears it down after. That matches the local-first, no-server constraint without
 requiring the user to install and license a GUI application.
 
-**`apple/containerization`** (Apache-2.0, Swift, 8.9k★) is the follow-on once a
-Swift sidecar is acceptable. It claims **sub-second** boot and is the only
-option here with **native VM state save/restore** — the actual warm-start
-mechanism. It requires **macOS 26** and Apple Silicon.
+**`apple/containerization`** (Apache-2.0, Swift, 8.9k★) is the library beneath
+that first-party CLI and is the follow-on once a Swift sidecar is acceptable.
+It claims **sub-second** boot and is the only option here with **native VM state
+save/restore** — the actual warm-start mechanism. It requires **macOS 26** and
+Apple Silicon.
 
 **Colima + Lima** (MIT / Apache-2.0) is the pragmatic fallback for pre-macOS-26
 or Intel machines: a one-time Homebrew install rather than a bundled component.
@@ -37,7 +58,8 @@ or Intel machines: a one-time Homebrew install rather than a bundled component.
 | Option | License | Daemon? | Bundleable? | macOS ARM? |
 |---|---|---|---|---|
 | **libkrun** | Apache-2.0 | No — in-process C API | Yes, as a Rust dependency | Yes, explicit HVF backend |
-| **apple/containerization** | Apache-2.0 | No (the `container` CLI wrapping it does) | Via a Swift sidecar | Apple Silicon, **macOS 26 only** |
+| Apple `container` CLI | Apache-2.0 | Yes, system service | External prerequisite | Apple Silicon, macOS 26+ |
+| **apple/containerization** | Apache-2.0 | No at library level | Via a Swift sidecar | Apple Silicon, macOS 26+ |
 | **Colima + Lima** | MIT / Apache-2.0 | CLI-managed VM, no GUI daemon | Prerequisite only | Yes (`vz` driver, default since Lima v1.0) |
 | **Podman** | Apache-2.0 | `podman machine` VM | Prerequisite only | Yes |
 | **Docker Desktop** | Engine Apache-2.0; **Desktop app proprietary** | Yes, GUI app + background VM | No | Yes, but license-gated |
@@ -99,13 +121,13 @@ give you this.
 
 | Tool | License | Offline | Native SARIF | Verdict |
 |---|---|---|---|---|
-| **Biome** | Apache-2.0 | Yes | Present, fidelity **UNVERIFIED** | **Check first** — already the repo's linter |
-| **ast-grep** | MIT | Yes | Present, fidelity **UNVERIFIED** | Rust-native, good stack fit |
+| **Biome** | Apache-2.0 | Yes | Verified SARIF 2.1.0 | **Wired** for repository evidence |
+| **ast-grep** | MIT | Yes | Envelope invalid in 0.45.2 | Structural matching is sound, but do not upload its native SARIF |
 | **Ruff** | MIT | Yes | Yes (`--output-format=sarif`) | Python scope only |
 | **Semgrep** | CLI is LGPL-2.1 | Yes | Yes | Engine fine; **rules are the problem** |
 | **Clippy** | Apache-2.0 | Yes | **No** | Needs `clippy-sarif` converter |
 | **ESLint** | MIT | Yes | No | Third-party formatter |
-| **CodeQL** | Custom | Yes | Yes | 🚫 **Legally disqualified** |
+| **CodeQL** | Custom | Yes | Yes | Repository-only; 🚫 customer-code product use |
 
 ### 🚫 CodeQL is a hard blocker for this product
 
@@ -130,9 +152,12 @@ Running Semgrep against a user's own code is internal use and fine.
 area** — that needs counsel before shipping, and is not cleared by the engine's
 LGPL alone.
 
-**Lowest-friction path: verify Biome's own SARIF fidelity first.** The repo
-already runs Biome for `pnpm lint`, so if its SARIF output is adequate, no
-second linter is needed at all.
+Biome's SARIF path is now verified and wired for the public repository, so no
+second generic linter is justified without a missing-rule case. A focused
+ast-grep 0.45.2 trial found correct structural locations but an invalid SARIF
+root: `version` contains the tool version rather than `2.1.0`, and `$schema` is
+absent. The [tracked receipt](https://github.com/Codevetter/codevetter/blob/main/evidence/security/ast-grep-sarif-qualification-2026-08-31.md)
+keeps this a measured rejection instead of an assumed capability.
 
 ## Observability — do not add a dependency
 
@@ -162,7 +187,5 @@ Flagged UNVERIFIED and worth closing before committing engineering time:
   before relying on it.
 - **`libkrun` cold-boot time on Apple Silicon.** "Smallest possible boot time"
   is a stated design goal; no published benchmark was found.
-- **Biome and ast-grep SARIF fidelity.** Both have SARIF code in-repo; neither
-  was validated against real output.
 - **Podman's default macOS backend** (applehv vs libkrun vs QEMU) and its exact
   network/CPU/memory flags.
