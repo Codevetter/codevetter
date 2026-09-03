@@ -1456,9 +1456,10 @@ mod tests {
         dispositions: Vec<String>,
     }
 
-    type CodexChunkSummary = (i64, i64, i64, Vec<(String, String, Option<String>)>);
-
-    fn parse_codex_chunks(raw: &str, boundaries: usize) -> CodexChunkSummary {
+    fn parse_codex_chunks(
+        raw: &str,
+        boundaries: usize,
+    ) -> (i64, i64, i64, Vec<(String, String, Option<String>)>) {
         let lines = raw.lines().collect::<Vec<_>>();
         let mut state = None;
         let mut input = 0;
