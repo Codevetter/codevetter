@@ -685,6 +685,7 @@ mod tests {
             routes: vec![TrexPreviewRoute {
                 route: "/".into(),
                 reason: "Required root smoke".into(),
+                goal: None,
             }],
             journeys: vec![SyntheticQaRunResult {
                 loop_id: "generic-page-smoke".into(),
@@ -723,10 +724,12 @@ mod tests {
         };
         LocalCheckReceipt {
             schema_version: "codevetter.local-check/v1".into(),
+            request_id: None,
             run_id: "local-check-fixture".into(),
             ran_at: "2026-08-24T00:00:00Z".into(),
             repo_path: "/tmp/widget".into(),
             task: "Preserve behavior".into(),
+            standards_pack: Some("product-safety".into()),
             source: TrexSourceReceipt {
                 kind: TrexChangeKind::Range,
                 input: "main...HEAD".into(),
@@ -1016,6 +1019,7 @@ mod tests {
 
         let preflight = LocalCheckPreflightReceipt {
             schema_version: "codevetter.local-check-preflight/v1".into(),
+            request_id: None,
             ran_at: "2026-08-29T00:00:00Z".into(),
             repo_path: passed.repo_path.clone(),
             task: passed.task.clone(),
