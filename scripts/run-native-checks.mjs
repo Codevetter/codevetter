@@ -7,6 +7,13 @@ import { spawnSync } from 'node:child_process';
 
 export const XCODEBUILDMCP = 'xcodebuildmcp@2.7.0';
 const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+const nativePerformanceGateTests = [
+  'hundredRunLedgerDecodesAndRendersWithinTheNativeGate',
+  'largeUnpackProjectionDecodesAndRendersWithinTheNativeGate',
+  'largeUsageReportDecodesAndRendersWithinTheNativeGate',
+  'hundredRowPerformanceReceiptDecodesAndRendersWithinTheNativeGate',
+  'hundredJourneyTestingReceiptDecodesAndRendersWithinTheNativeGate',
+];
 
 export function nativeCheckCachePath(root = repositoryRoot) {
   return resolve(root, 'artifacts/native-checks/xcodebuildmcp-npm-cache');
@@ -73,20 +80,33 @@ export function nativeReleaseBuildSettings(environment = process.env) {
 export function nativeCheckCommands({ mode }, environment = process.env) {
   const background = [
     {
-      label: 'Swift package behavior and offscreen render gates',
+      label: 'Swift package behavior',
       backgroundSafe: true,
-      // Render/latency gates measure one shared Mac. Parallel Swift Testing
-      // workers compete for AppKit and process pipes, turning machine load into
-      // false regressions; serialize the package gate for reproducible bounds.
       arguments: [
         'swift-package',
         'test',
-        '--package-path',
-        'apps/macos/CodeVetterPackage',
-        '--parallel',
-        'false',
+        '--json',
+        JSON.stringify({
+          packagePath: 'apps/macos/CodeVetterPackage',
+          parallel: false,
+        }),
       ],
     },
+    ...nativePerformanceGateTests.map((filter) => ({
+      label: `Isolated native performance gate: ${filter}`,
+      backgroundSafe: true,
+      environment: { CODEVETTER_NATIVE_PERFORMANCE_GATE: '1' },
+      arguments: [
+        'swift-package',
+        'test',
+        '--json',
+        JSON.stringify({
+          packagePath: 'apps/macos/CodeVetterPackage',
+          parallel: false,
+          filter,
+        }),
+      ],
+    })),
     {
       label: 'Native macOS application compile',
       backgroundSafe: true,
@@ -180,7 +200,10 @@ export function runNativeChecks(options, spawn = spawnSync) {
     const { executable, arguments: arguments_ } = nativeCheckInvocation(command);
     const result = spawn(executable, arguments_, {
       cwd: repositoryRoot,
-      env: nativeCheckEnvironment(process.env, cache),
+      env: {
+        ...nativeCheckEnvironment(process.env, cache),
+        ...command.environment,
+      },
       stdio: 'inherit',
     });
     if (result.error) throw result.error;
