@@ -534,13 +534,7 @@ private struct PremiumTopBar: View {
   var body: some View {
     HStack(spacing: 16) {
       HStack(spacing: 10) {
-        ZStack {
-          RoundedRectangle(cornerRadius: 9).fill(EvidenceStyle.amber)
-          Image(systemName: "checkmark.shield.fill")
-            .font(.system(size: 15, weight: .bold))
-            .foregroundStyle(EvidenceStyle.ink)
-        }
-        .frame(width: 34, height: 34)
+        CodeVetterBrandMark(size: 34)
         Text("CODEVETTER")
           .font(.system(size: 11, weight: .bold))
           .tracking(1.35)

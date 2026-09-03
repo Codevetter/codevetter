@@ -169,6 +169,24 @@ headings feel deliberate, while body copy stays readable at workbench density.
 **The Evidence Type Rule.** Monospace signals data a user may compare, copy, or
 feed to another tool; prose and actions stay in the system sans.
 
+## Brand Mark
+
+The CodeVetter mark preserves its familiar code-scope brackets and central
+verdict stroke, redrawn as a restrained native instrument. Amber brackets bound
+the change under review; the evidence-white stroke records its verified
+outcome. Semantic verification and security icons remain separate and may
+continue to use platform symbols.
+
+- Use the true-black squircle for application icons and identity lockups.
+- Preserve generous optical padding and rounded stroke terminals from 16px to
+  1024px; do not add gradients, glow, or extra status colors.
+- Use `assets/brand/codevetter-mark.svg` as the canonical source and regenerate
+  platform mirrors with `pnpm brand:generate`.
+- Use `codevetter-glyph.svg` only where the surrounding platform supplies the
+  background; use the opaque iOS master for platform icons that reject alpha.
+- The amber brackets and white verdict must remain distinguishable without
+  relying on shadows or fine border detail.
+
 ## Layout
 
 The desktop shell has a persistent top navigation and repository sidebar, with

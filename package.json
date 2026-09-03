@@ -6,6 +6,7 @@
     "apps/*"
   ],
   "scripts": {
+    "brand:generate": "node scripts/generate-brand-assets.mjs",
     "bench:public": "node scripts/run-public-benchmark.mjs",
     "bench:cross-review": "node scripts/run-cross-review-benchmark.mjs",
     "bench:catch-rate": "node scripts/run-catch-rate-benchmark.mjs",
