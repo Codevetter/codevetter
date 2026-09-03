@@ -1,0 +1,40 @@
+{
+  "schema_version": "codevetter.native-performance-benchmark/v2",
+  "recorded_at": "2026-09-02",
+  "target": "aarch64-apple-darwin",
+  "command": "env npm_config_cache=artifacts/native-checks/xcodebuildmcp-npm-cache npx -y xcodebuildmcp@2.7.0 swift-package test --package-path apps/macos/CodeVetterPackage --filter hundredRowPerformanceReceiptDecodesAndRendersWithinTheNativeGate --parallel false",
+  "dataset": {
+    "observed_rows": 100,
+    "inferred_rows": 1,
+    "unverified_rows": 1,
+    "viewport": "980x640"
+  },
+  "measurement": {
+    "independent_gate_runs": 3,
+    "swift_decode": {
+      "warmups_per_run": 10,
+      "samples_per_run": 100,
+      "p95_us_runs": [1502, 1792, 1551],
+      "median_p95_us": 1551,
+      "worst_p95_us": 1792,
+      "gate_us": 25000
+    },
+    "swift_host_render": {
+      "warmups_per_run": 3,
+      "samples_per_run": 20,
+      "p95_us_runs": [41867, 46009, 35226],
+      "median_p95_us": 41867,
+      "worst_p95_us": 46009,
+      "gate_us": 150000
+    }
+  },
+  "qualification": {
+    "swift_focused_gate": "three focused runs passed, 0 failed, 0 skipped",
+    "historical_macos_ui_test": "8 passed, 0 failed, 0 skipped; not rerun during the 2026-09-02 background refresh",
+    "historical_dark_setup": "artifacts/design/native-performance-dark.jpeg",
+    "historical_light_setup": "artifacts/design/native-performance-light.jpeg",
+    "historical_dark_receipt": "artifacts/design/native-performance-receipt-dark.png",
+    "headless_plan": "Both admitted exit 0 and blocked exit 2 branches observed"
+  },
+  "claim_boundary": "Measures three independent repetitions of canonical performance JSON decoding and fresh NSHostingView creation, lazy visible-row layout, and display for one 100-row diagnosis. Conservative qualification uses the worst run-level p95. It excludes CLI startup, Node and repository workload execution, active-run CPU and memory, window-server frame pacing, and interactive scrolling."
+}

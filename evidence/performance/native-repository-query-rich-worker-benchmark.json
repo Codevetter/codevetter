@@ -1,0 +1,74 @@
+{
+  "schema_version": "codevetter.native-repository-query-rich-worker-benchmark/v1",
+  "recorded_at": "2026-09-01T18:15:44.601Z",
+  "binary_profile": "release",
+  "surface": "native-persistent-read-only-query-worker",
+  "repository": {
+    "label": "indexed incumbent CodeVetter checkout",
+    "graph_indexed": true,
+    "history_indexed": true,
+    "graph_nodes": 115884,
+    "graph_edges": 193399,
+    "stale_relative_to_live_checkout": true
+  },
+  "measurements": {
+    "process_start_and_search_prepare_ms": 2454.8,
+    "first_traversal_upgrade_ms": 987.44,
+    "graph_search": {
+      "wall_ms": [36.99, 36.25, 36.0, 34.81, 36.07],
+      "median_ms": 36.07
+    },
+    "graph_explain": {
+      "wall_ms": [35.43, 35.5, 35.15, 34.05, 34.41],
+      "median_ms": 35.15
+    },
+    "graph_impact": {
+      "wall_ms": [115.49, 116.54, 116.55, 119.41, 117.56],
+      "median_ms": 116.55
+    },
+    "graph_path": {
+      "wall_ms": [70.21, 68.08, 68.04, 69.54, 68.38],
+      "median_ms": 68.38
+    },
+    "history_search": {
+      "wall_ms": [36.96, 32.46, 32.37, 31.55, 32.72],
+      "median_ms": 32.46
+    },
+    "history_trace": {
+      "wall_ms": [33.76, 32.21, 31.54, 32.35, 31.68],
+      "median_ms": 32.21
+    },
+    "search_only_worker_rss_kib": 248416,
+    "search_only_worker_rss_mib": 242.6,
+    "rich_worker_rss_kib": 315008,
+    "rich_worker_rss_mib": 307.6
+  },
+  "qualified_result": {
+    "impact_affected_nodes": 1,
+    "path_hops": 1,
+    "history_trace_episodes": 0
+  },
+  "comparison": {
+    "independent_process_graph_search_median_ms": 2170,
+    "independent_process_history_search_median_ms": 820,
+    "warm_graph_search_latency_reduction_percent": 98.3,
+    "warm_history_search_latency_reduction_percent": 96.0,
+    "rejected_full_interactive_snapshot_rss_mib": 511.9,
+    "final_rich_worker_rss_reduction_percent": 39.9
+  },
+  "method": "One exact-tree Release worker over bounded JSON lines: prepare the search projection once; issue five sequential samples per graph search, explain, outgoing impact, directed path, history search, and causal trace; read RSS after search preparation and again after compact traversal upgrade. The selected graph result contained one outgoing affected node and a one-hop path. RSS uses ps; wall time uses Node performance.now.",
+  "interpretation": "The native app retains a search-only canonical node projection for routine retrieval. The first rich graph operation upgrades that same snapshot in place with compact traversal edges; only bounded result edges are then hydrated with full evidence and source anchors. Ranking and traversal remain Rust-owned and shared with MCP.",
+  "lifecycle": {
+    "maximum_cached_graph_snapshots": 1,
+    "cancellation": "Task cancellation terminates the scoped worker and rejects partial receipts; the next request starts a clean worker.",
+    "fallback": "A CLI without persistent transport uses the exact supervised one-shot query command; canonical errors never trigger a weaker fallback.",
+    "shutdown": "Closing stdin or terminating the native parent stops the worker."
+  },
+  "limitations": [
+    "This is one local Apple-silicon Mac and one large indexed repository, not a cross-machine distribution.",
+    "The 2.45 s search preparation and 0.99 s first traversal upgrade remain observable if background preparation has not completed.",
+    "The rich worker retained 307.6 MiB after traversal; this measured speed-memory tradeoff must remain visible in runtime qualification.",
+    "The causal selector was valid but returned no indexed episodes in this repository snapshot, so latency and empty-state decoding are proven but a populated live trace is not.",
+    "The indexed snapshots were stale and every receipt disclosed that state."
+  ]
+}

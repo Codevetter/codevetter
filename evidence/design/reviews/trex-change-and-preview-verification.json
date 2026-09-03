@@ -1,0 +1,59 @@
+{
+  "$schema": "fleet.design-review.v1",
+  "version": 1,
+  "project": "codevetter",
+  "target": "T-Rex change and preview verification",
+  "mode": "preserve",
+  "register": "product",
+  "context": {
+    "product": "PRODUCT.md",
+    "design": "DESIGN.md"
+  },
+  "direction": {
+    "references": [],
+    "probes": [],
+    "selected": "existing-design",
+    "approval": "not-required",
+    "before": "artifacts/design/trex-before-1440.png"
+  },
+  "evidence": {
+    "screenshots": [
+      {
+        "width": 390,
+        "path": "artifacts/design/trex-after-390.png"
+      },
+      {
+        "width": 768,
+        "path": "artifacts/design/trex-after-768.png"
+      },
+      {
+        "width": 1440,
+        "path": "artifacts/design/trex-after-1440.png"
+      }
+    ],
+    "projectCheck": {
+      "command": "cd apps/desktop && pnpm exec tsc --noEmit",
+      "status": "pass"
+    },
+    "critique": {
+      "score": 37,
+      "maximum": 40
+    },
+    "audit": {
+      "score": 19,
+      "maximum": 20
+    },
+    "unresolved": {
+      "p0": 0,
+      "p1": 0
+    },
+    "detector": {
+      "posture": "advisory",
+      "findings": []
+    }
+  },
+  "ownerFeedback": {
+    "decision": "delegated",
+    "note": "Owner authorized the bounded preserve-lane implementation with 'go for it'; the incumbent CodeVetter workbench language remains authoritative."
+  }
+}

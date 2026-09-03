@@ -1,0 +1,64 @@
+{
+  "schema_version": "codevetter.native-package-footprint/v1",
+  "recorded_at": "2026-09-02T06:20:30Z",
+  "status": "qualified_with_bounded_claims",
+  "source": {
+    "base_sha": "b34ce70edbcfab8cd9463be87b7453de7e623ed3",
+    "branch": "feat/native-macos-evidence-workbench",
+    "working_tree": "includes the uncommitted native migration",
+    "platform": "darwin",
+    "architecture": "arm64",
+    "macos": "27.0"
+  },
+  "method": {
+    "measurement": "Read-only du -sk bundle measurement and stat executable measurement on exact local Release app bundles.",
+    "foreground_app_launches": 0,
+    "installed_application_touched": false
+  },
+  "applications": {
+    "native": {
+      "bundle_identifier": "com.codevetter.desktop.native-preview",
+      "version": "1.11.0",
+      "build": "11100",
+      "bundle_path": "artifacts/native-package/qualification-5r7JG4/CodeVetter.app",
+      "package_receipt": "artifacts/native-package/qualification-5r7JG4/qualification.json",
+      "bundle_kib": 62060,
+      "host_executable": "CodeVetterNative",
+      "host_executable_bytes": 5667872,
+      "host_executable_sha256": "95c81746c4ceac17b731867ab8f02c057875cc8ef9f098904ee7cfd689f56c8c"
+    },
+    "tauri": {
+      "bundle_identifier": "com.codevetter.desktop",
+      "version": "1.11.0",
+      "build": "1.11.0",
+      "bundle_path": "apps/desktop/src-tauri/target/release/bundle/macos/CodeVetter.app",
+      "bundle_kib": 165144,
+      "host_executable": "codevetter-desktop",
+      "host_executable_bytes": 74639312,
+      "host_executable_sha256": "6e010b2b1b759a892c8c34ae04a6a2ea243b9b6455ec290ba570e88508bdccff"
+    }
+  },
+  "metrics": {
+    "bundle_kib": {
+      "native": 62060,
+      "tauri": 165144,
+      "native_to_tauri_ratio": 0.376,
+      "native_reduction_percent": 62.421,
+      "classification": "improved"
+    },
+    "host_executable_bytes": {
+      "native": 5667872,
+      "tauri": 74639312,
+      "native_to_tauri_ratio": 0.076,
+      "native_reduction_percent": 92.406,
+      "classification": "improved"
+    }
+  },
+  "claim": "The exact current native Release candidate has a 62.4% smaller app bundle and a 92.4% smaller host executable than the retained Tauri Release bundle.",
+  "limitations": [
+    "This receipt measures package and host-executable footprint only.",
+    "It does not refresh startup, responsiveness, settled RSS, workload execution, scrolling, energy, or long-session behavior.",
+    "The existing native-tauri launch and settled-RSS comparison remains historical evidence for its recorded qualified build.",
+    "Refreshing launch or settled-RSS evidence requires foreground application automation and explicit owner approval."
+  ]
+}

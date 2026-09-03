@@ -1,0 +1,88 @@
+{
+  "schema_version": "codevetter.native-release-optimization/v1",
+  "recorded_at": "2026-09-02T06:20:11.066Z",
+  "status": "qualified_with_bounded_claims",
+  "source": {
+    "base_sha": "b34ce70edbcfab8cd9463be87b7453de7e623ed3",
+    "branch": "feat/native-macos-evidence-workbench",
+    "working_tree": "includes the uncommitted native migration",
+    "platform": "arm64-apple-macosx27.0.0"
+  },
+  "change": {
+    "rust_release": {
+      "lto": "fat",
+      "codegen_units": 1,
+      "panic": "unwind"
+    },
+    "native_release": {
+      "coverage_instrumentation": false,
+      "dead_code_stripping": true,
+      "deployment_postprocessing": true,
+      "debug_symbols": "adjacent dSYM"
+    }
+  },
+  "baseline": {
+    "candidate": "qualification-60JfB0",
+    "bundle_kib": 90732,
+    "host_bytes": 24691040,
+    "cli_bytes": 51339024,
+    "mcp_bytes": 10356416,
+    "zip_bytes": 21468174,
+    "dmg_bytes": 25649028
+  },
+  "optimized": {
+    "candidate": "qualification-5r7JG4",
+    "bundle_kib": 62060,
+    "host_bytes": 5667872,
+    "host_sha256": "95c81746c4ceac17b731867ab8f02c057875cc8ef9f098904ee7cfd689f56c8c",
+    "cli_bytes": 43853088,
+    "cli_sha256": "8aa8b3670fddfb2ca91b2c8669b7468187becdbad8fe310b7f1b95f6b4434879",
+    "mcp_bytes": 7506752,
+    "mcp_sha256": "0f000679f481ae313f77fdead93ae79cb00e43f75389f5f221b92c4ca517aee1",
+    "zip_bytes": 17427235,
+    "zip_sha256": "d5dc651c85ac064b932e233bb96d11e18e3f332a8c30693cae1866e7548f98ea",
+    "dmg_bytes": 20034510,
+    "dmg_sha256": "63f5ad84ce3239b4b9c45ac67ceef6a6c677c498bcbf0c7223bf07f79584fb8a",
+    "coverage_segments": 0,
+    "adjacent_dsym_kib": 34144
+  },
+  "improvement_percent": {
+    "bundle": 31.601,
+    "host": 77.045,
+    "cli": 14.581,
+    "mcp": 27.516,
+    "zip": 18.823,
+    "dmg": 21.890
+  },
+  "retained_tauri_comparison_percent": {
+    "bundle_reduction": 62.421,
+    "host_reduction": 92.406
+  },
+  "packaged_mcp_qualification": {
+    "protocol": "2025-11-25",
+    "startup_recorded": 50,
+    "workload_rounds": 200,
+    "cold_initialize_p95_ms": 8.524,
+    "mixed_concurrency_4_p95_ms": 24.828,
+    "idle_rss_mib": 30.109,
+    "second_half_rss_growth_mib": 2.641,
+    "tool_count": 28,
+    "strict_schemas": true,
+    "read_only_annotations": true,
+    "tcp_listeners": 0,
+    "budgets_applied": true,
+    "passed": true
+  },
+  "tradeoffs": {
+    "native_clean_release_build_seconds": 34.0,
+    "rust_cli_release_link_seconds": 200,
+    "rust_mcp_release_link_seconds": 159,
+    "decision": "Keep the optimization because shipping footprint and fully sampled MCP qualification improve materially while runtime budgets and panic semantics remain intact."
+  },
+  "limitations": [
+    "The optimization receipt measures package footprint and the packaged MCP workload only.",
+    "It does not refresh foreground native launch, current-package settled RSS, scrolling, energy, or long-session behavior.",
+    "Fat LTO materially increases Release link time but does not affect Debug or test profiles.",
+    "Production must archive the matching dSYM separately from end-user ZIP and DMG artifacts."
+  ]
+}
