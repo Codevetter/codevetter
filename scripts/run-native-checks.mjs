@@ -102,6 +102,7 @@ export function nativeCheckCommands({ mode }, environment = process.env) {
         '--json',
         JSON.stringify({
           packagePath: 'apps/macos/CodeVetterPackage',
+          configuration: 'Release',
           parallel: false,
           filter,
         }),

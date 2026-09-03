@@ -30,6 +30,11 @@ test('native automation defaults to the non-activating background lane', () => {
     parallel: false,
   });
   const performanceCommands = commands.slice(1, 6);
+  assert.ok(
+    performanceCommands.every(
+      (command) => JSON.parse(command.arguments[3]).configuration === 'Release'
+    )
+  );
   assert.deepEqual(
     performanceCommands.map((command) => JSON.parse(command.arguments[3]).filter),
     [
