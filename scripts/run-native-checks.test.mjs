@@ -18,7 +18,7 @@ test('native automation defaults to the non-activating background lane', () => {
     desktopIdleApproved: false,
   });
   const commands = nativeCheckCommands(parsed);
-  assert.equal(commands.length, 2);
+  assert.equal(commands.length, 7);
   assert.ok(commands.every((command) => command.backgroundSafe));
   assert.ok(
     commands.every(
@@ -29,6 +29,22 @@ test('native automation defaults to the non-activating background lane', () => {
     packagePath: 'apps/macos/CodeVetterPackage',
     parallel: false,
   });
+  const performanceCommands = commands.slice(1, 6);
+  assert.deepEqual(
+    performanceCommands.map((command) => JSON.parse(command.arguments[3]).filter),
+    [
+      'hundredRunLedgerDecodesAndRendersWithinTheNativeGate',
+      'largeUnpackProjectionDecodesAndRendersWithinTheNativeGate',
+      'largeUsageReportDecodesAndRendersWithinTheNativeGate',
+      'hundredRowPerformanceReceiptDecodesAndRendersWithinTheNativeGate',
+      'hundredJourneyTestingReceiptDecodesAndRendersWithinTheNativeGate',
+    ]
+  );
+  assert.ok(
+    performanceCommands.every(
+      (command) => command.environment.CODEVETTER_NATIVE_PERFORMANCE_GATE === '1'
+    )
+  );
 });
 
 test('UI automation fails closed without explicit foreground approval', () => {
@@ -118,7 +134,7 @@ test('full qualification keeps background checks before the foreground lane', ()
   );
   assert.deepEqual(
     commands.map((command) => command.backgroundSafe),
-    [true, true, false]
+    [true, true, true, true, true, true, true, false]
   );
 });
 
