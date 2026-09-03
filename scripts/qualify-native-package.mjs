@@ -5,6 +5,7 @@ import { createHash } from 'node:crypto';
 import {
   chmodSync,
   copyFileSync,
+  cpSync,
   existsSync,
   mkdirSync,
   mkdtempSync,
@@ -13,7 +14,7 @@ import {
   statSync,
   writeFileSync,
 } from 'node:fs';
-import { basename, dirname, join, resolve } from 'node:path';
+import { basename, dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -77,6 +78,12 @@ export function hostTarget(rustVersionText) {
   return target;
 }
 
+export function architectureForTarget(target) {
+  if (target === 'aarch64-apple-darwin') return 'arm64';
+  if (target === 'x86_64-apple-darwin') return 'x86_64';
+  throw new Error(`Unsupported native package target: ${target}`);
+}
+
 export function assertFrameworkRPath(loadCommands) {
   if (!loadCommands.includes('@executable_path/../Frameworks')) {
     throw new Error('The native executable cannot resolve bundled frameworks through @rpath');
@@ -116,6 +123,7 @@ export function parseArguments(argv) {
     identity: '-',
     channel: 'preview',
     prepareSidecars: true,
+    target: null,
   };
   for (let index = 0; index < argv.length; index += 1) {
     const argument = argv[index];
@@ -127,6 +135,8 @@ export function parseArguments(argv) {
       options.identity = requiredValue(argv, ++index, argument);
     } else if (argument === '--channel') {
       options.channel = requiredValue(argv, ++index, argument);
+    } else if (argument === '--target') {
+      options.target = requiredValue(argv, ++index, argument);
     } else if (argument === '--skip-sidecar-build') options.prepareSidecars = false;
     else throw new Error(`Unknown argument: ${argument}`);
   }
@@ -149,8 +159,16 @@ export function qualifyNativePackage(options = parseArguments(process.argv.slice
   assertFrameworkRPath(hostLoadCommands);
   assertNoCoverageInstrumentation(hostLoadCommands);
 
-  if (options.prepareSidecars) prepareSidecars();
-  const target = hostTarget(run('rustc', ['-vV']));
+  const target = options.target ?? hostTarget(run('rustc', ['-vV']));
+  const architecture = architectureForTarget(target);
+  const appArchitectures = run('lipo', [
+    '-archs',
+    join(sourceApp, 'Contents/MacOS', sourceInfo.CFBundleExecutable),
+  ]).split(/\s+/);
+  if (!appArchitectures.includes(architecture)) {
+    throw new Error(`Native application does not contain the requested ${architecture} target`);
+  }
+  if (options.prepareSidecars) prepareSidecars(target);
   const runDirectory = mkdtempSync(join(ensureDirectory(options.outputRoot), 'qualification-'));
   const stagedApp = join(runDirectory, 'CodeVetter.app');
   // `ditto` preserves relative framework symlinks and extended attributes.
@@ -159,18 +177,29 @@ export function qualifyNativePackage(options = parseArguments(process.argv.slice
   run('ditto', [sourceApp, stagedApp]);
 
   const executableDirectory = join(stagedApp, 'Contents/MacOS');
-  const sidecars = [
-    ['codevetter', `codevetter-${target}`],
-    ['codevetter-mcp', `codevetter-mcp-${target}`],
-    ['ccusage', `ccusage-${target}`],
-  ].map(([destinationName, preparedName]) => {
-    const source = join(repositoryRoot, 'apps/desktop/src-tauri/binaries', preparedName);
+  const executableSidecars = [
+    ['codevetter', join('binaries', `codevetter-${target}`)],
+    ['codevetter-mcp', join('binaries', `codevetter-mcp-${target}`)],
+    ['ccusage', join('binaries', `ccusage-${target}`)],
+  ].map(([destinationName, preparedPath]) => {
+    const source = join(repositoryRoot, 'apps/desktop/src-tauri', preparedPath);
     const destination = join(executableDirectory, destinationName);
     assertFile(source);
     copyFileSync(source, destination);
     chmodSync(destination, 0o755);
     return destination;
   });
+  const collectorDirectory = join(stagedApp, 'Contents/Resources/collectors');
+  mkdirSync(collectorDirectory, { recursive: true });
+  const collectorSidecars = ['gitleaks', 'cargo-audit', 'cargo-llvm-cov'].map((name) => {
+    const source = join(repositoryRoot, 'apps/desktop/src-tauri/resources/collectors', name);
+    const destination = join(collectorDirectory, name);
+    assertFile(source);
+    copyFileSync(source, destination);
+    chmodSync(destination, 0o755);
+    return destination;
+  });
+  const sidecars = [...executableSidecars, ...collectorSidecars];
 
   const runtimeSource = join(repositoryRoot, 'scripts/runtime-failure-capsule');
   const runtimeDestination = join(stagedApp, 'Contents/Resources/runtime-failure-capsule');
@@ -179,6 +208,15 @@ export function qualifyNativePackage(options = parseArguments(process.argv.slice
   for (const name of packagedRuntimeFiles) {
     copyFileSync(join(runtimeSource, name), join(runtimeDestination, name));
   }
+  const advisoryDatabaseSource = join(
+    repositoryRoot,
+    'apps/desktop/src-tauri/resources/rustsec-advisory-db/snapshot'
+  );
+  const advisoryDatabaseDestination = join(
+    stagedApp,
+    'Contents/Resources/rustsec-advisory-db/snapshot'
+  );
+  cpSync(advisoryDatabaseSource, advisoryDatabaseDestination, { recursive: true });
 
   signSparkle(stagedApp, options.identity);
   for (const executable of sidecars) sign(executable, options.identity);
@@ -195,14 +233,25 @@ export function qualifyNativePackage(options = parseArguments(process.argv.slice
     cli: { exit_code: 0, output: cliHelp.trim().slice(0, 500) },
     mcp: capture(sidecars[1], ['--help']),
     ccusage: capture(sidecars[2], ['--version']),
+    gitleaks: capture(sidecars[3], ['version']),
+    cargo_audit: capture(sidecars[4], ['--version']),
+    cargo_llvm_cov: capture(sidecars[5], ['llvm-cov', '--version']),
     runtime: capture(process.execPath, [join(runtimeDestination, 'cli.mjs'), '--help']),
   };
   if (!smoke.ccusage.output.includes('20.0.20')) {
     throw new Error(`Unexpected bundled ccusage version: ${smoke.ccusage.output}`);
   }
+  if (!smoke.gitleaks.output.includes('8.30.1')) {
+    throw new Error(`Unexpected bundled gitleaks version: ${smoke.gitleaks.output}`);
+  }
+  if (!smoke.cargo_audit.output.includes('0.22.2')) {
+    throw new Error(`Unexpected bundled cargo-audit version: ${smoke.cargo_audit.output}`);
+  }
+  if (!smoke.cargo_llvm_cov.output.includes('0.9.0')) {
+    throw new Error(`Unexpected bundled cargo-llvm-cov version: ${smoke.cargo_llvm_cov.output}`);
+  }
 
   const version = stagedInfo.CFBundleShortVersionString;
-  const architecture = target.startsWith('aarch64') ? 'arm64' : 'x86_64';
   const archiveStem = `CodeVetter-${version}-${architecture}`;
   const zipPath = join(runDirectory, `${archiveStem}.zip`);
   const dmgPath = join(runDirectory, `${archiveStem}.dmg`);
@@ -247,7 +296,10 @@ export function qualifyNativePackage(options = parseArguments(process.argv.slice
         isHTTPSURL(stagedInfo.SUFeedURL) &&
         isCanonicalEdDSAPublicKey(stagedInfo.SUPublicEDKey),
     },
-    sidecars: sidecars.map((path) => artifact(path)),
+    sidecars: sidecars.map((path) => ({
+      ...artifact(path),
+      relative_path: relative(stagedApp, path),
+    })),
     runtime_files: packagedRuntimeFiles,
     smoke,
     archives: [artifact(zipPath), artifact(dmgPath)],
@@ -298,13 +350,17 @@ function isCanonicalEdDSAPublicKey(value) {
   return decoded.length === 32 && decoded.toString('base64') === value;
 }
 
-function prepareSidecars() {
+function prepareSidecars(target) {
   for (const [script, args] of [
     ['apps/desktop/scripts/prepare-cli-sidecar.mjs', ['--release']],
     ['apps/desktop/scripts/prepare-mcp-sidecar.mjs', ['--release']],
     ['apps/desktop/scripts/prepare-ccusage-sidecar.mjs', []],
+    ['apps/desktop/scripts/prepare-collector-sidecars.mjs', []],
   ]) {
-    run(process.execPath, [join(repositoryRoot, script), ...args], { stdio: 'inherit' });
+    run(process.execPath, [join(repositoryRoot, script), ...args], {
+      stdio: 'inherit',
+      env: { ...process.env, TAURI_ENV_TARGET_TRIPLE: target },
+    });
   }
 }
 
@@ -397,6 +453,7 @@ function run(command, args, options = {}) {
     cwd: repositoryRoot,
     encoding: 'utf8',
     stdio: options.stdio ?? ['ignore', 'pipe', 'pipe'],
+    env: options.env ?? process.env,
   });
 }
 

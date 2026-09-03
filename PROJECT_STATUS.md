@@ -290,17 +290,23 @@ Internal (fleet):
   results with local access-audit rows. No product release or deployment is
   claimed; work is tracked in issue #200.
 
-- **2026-08-31 — Bounded external collector foundation (unreleased source):**
+- **2026-09-03 — Bounded product collectors qualified (unreleased source):**
   Added `codevetter collect` and a shared Rust `codevetter.tool-collection/v1`
-  receipt for one exact clean checked-out Git range. The first adapter executes
-  an exact Gitleaks 8.30.1 bundle sibling or explicit debug/test override without a
-  shell, with a minimal environment, timeout, bounded output, binary/config
-  identity, repository-relative normalization, and raw secret fields removed
-  before serialization. cargo-audit and cargo-llvm-cov currently return
-  explicit `unavailable` evidence after optional exact-version preflight; they
-  do not install tools, fetch advisory data, or claim coverage. No sidecar is
-  yet bundled and no release claim is made; packaging and the remaining
-  collectors stay tracked in issue #198.
+  receipt for one exact clean checked-out Git range. Gitleaks 8.30.1,
+  cargo-audit 0.22.2 with a pinned offline RustSec snapshot, and cargo-llvm-cov
+  0.9.0 with an explicit Cargo test target now execute as no-shell, bounded,
+  exact-version product resources. Normalization removes raw secret and
+  advisory bodies; Rust coverage reports changed executable lines and bounded
+  changed regions, treating eligible files missing from LCOV as uncovered.
+  Product-path qualification completed all three adapters, including
+  process-tree timeout cleanup and private coverage-target removal. Preparation
+  verifies publisher archive and license digests for both macOS architectures,
+  caps downloads, and cross-checks the bundled RustSec tree identity in Node
+  and Rust. Release CI checks exact final-bundle resource paths and version
+  output. No signed/notarized release or
+  shipment is claimed; the hosted package gate and landing remain in issue
+  #198 and the
+  [qualification receipt](evidence/verification/tool-collector-qualification-2026-09-03.md).
 
 - **2026-09-03 — Apple Container architecture and mount boundary qualified:**
   Installed the signed/notarized 1.3.1 CLI after owner authorization and

@@ -40,8 +40,17 @@ export function evaluateNativeReleaseReadiness(input) {
   const archiveHashes = new Set(archives.map((archive) => archive.sha256));
   const appVersion = input.info.CFBundleShortVersionString;
   const appBuild = input.info.CFBundleVersion;
-  const requiredCompanions = ['ccusage', 'codevetter', 'codevetter-mcp'];
-  const packagedCompanions = (qualification.sidecars ?? []).map((sidecar) => sidecar.name).sort();
+  const requiredCompanions = [
+    'cargo-audit:Contents/Resources/collectors/cargo-audit',
+    'cargo-llvm-cov:Contents/Resources/collectors/cargo-llvm-cov',
+    'ccusage:Contents/MacOS/ccusage',
+    'codevetter:Contents/MacOS/codevetter',
+    'codevetter-mcp:Contents/MacOS/codevetter-mcp',
+    'gitleaks:Contents/Resources/collectors/gitleaks',
+  ].sort();
+  const packagedCompanions = (qualification.sidecars ?? [])
+    .map((sidecar) => `${sidecar.name}:${sidecar.relative_path}`)
+    .sort();
   const teamIdentifiers = [input.signature, ...input.companionSignatures]
     .map((signature) => signature.teamIdentifier)
     .filter(Boolean);
@@ -173,7 +182,7 @@ export function inspectNativeReleaseReadiness(options = parseArguments(process.a
   const info = readPlist(join(appPath, 'Contents/Info.plist'), repositoryRoot);
   const signature = inspectSignature(appPath);
   const companionSignatures = (qualification.sidecars ?? []).map((sidecar) =>
-    inspectSignature(join(appPath, 'Contents/MacOS', sidecar.name))
+    inspectSignature(join(appPath, sidecar.relative_path))
   );
   const receipt = evaluateNativeReleaseReadiness({
     appPath,
@@ -266,7 +275,7 @@ function blockerFor(id) {
     host_executable: 'The native host executable collides with or differs from CodeVetterNative.',
     version_identity: 'The app and package qualification version/build identities differ.',
     packaged_companions:
-      'The package does not contain exactly codevetter, codevetter-mcp, and ccusage.',
+      'The package does not contain the exact executable and collector resource layout.',
     hardened_runtime: 'Hardened Runtime is not enabled in the staged application signature.',
     developer_id_signature: 'The application is not signed by a Developer ID Application identity.',
     consistent_developer_team:

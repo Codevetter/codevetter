@@ -22,11 +22,14 @@ provider APIs unless told not to.
 
 ## Recommended
 
-### `cargo-audit` — embed in the Rust backend
+### `cargo-audit` — package under the Rust backend
 
 Dual **MIT OR Apache-2.0**. The highest-leverage item in this category because
-the underlying `rustsec` crate is a **library**: it runs in-process in
-`src-tauri/` with no sidecar binary to codesign and notarize, and no subprocess.
+the official CLI can consume a pinned local advisory snapshot with fetching
+disabled. The underlying `rustsec` crate remains a viable future in-process
+path, but the first product slice deliberately uses the exact official CLI so
+all three commodity collectors share one supervised process contract and the
+scanner can be replaced without adding a production Rust dependency.
 
 - **SARIF 2.1.0 output exists but is undocumented.** It is absent from the
   README and the CHANGELOG stops before it landed (~Sept 2025). Verified in
@@ -54,7 +57,7 @@ the bans lane separately. The qualified baseline has clean licenses and sources
 plus 14 non-blocking duplicate-version warnings. Exact artifact identities and
 limitations are in the [tracked evidence](https://github.com/Codevetter/codevetter/blob/main/evidence/security/cargo-deny-baseline-2026-08-31.md).
 
-### `gitleaks` — repository gate plus an unreleased product collector foundation
+### `gitleaks` and `cargo-audit` — repository gate plus product collectors
 
 **MIT**, and the core scanner's license is unchanged. Fully offline: no DB, no
 network, rules embedded or from `.gitleaks.toml`. Emits SARIF. Static Go binary,
@@ -79,20 +82,27 @@ commercially relicensed action:
 
 `.gitleaksignore` contains four exact historical fingerprints. It does not
 allowlist whole paths or rules, so later findings in those files remain visible.
-The unreleased Rust backend and `codevetter collect` CLI now add a bounded,
-versioned `codevetter.tool-collection/v1` foundation. It resolves one clean
-checked-out Git range, accepts only an exact 8.30.1 bundle sibling or explicit
-debug/test override, records the binary SHA-256 and configuration identity,
-invokes without a shell under time/output/environment bounds, and normalizes
-only rule and repository-relative location metadata. Raw `Secret` and `Match`
-fields are dropped before serialization, and the JSON report remains in a
-bounded process pipe instead of a temporary file. Missing cargo-audit and cargo-llvm-cov
-prerequisites remain explicit `unavailable` evidence.
+The unreleased Rust backend and `codevetter collect` CLI expose the bounded,
+versioned `codevetter.tool-collection/v1` contract. It resolves one clean
+checked-out Git range, accepts only exact application resources or explicit
+debug/test overrides, records binary/config/database identities, and invokes
+without a shell under time, output, environment, and process-tree bounds. Raw
+Gitleaks `Secret` and `Match` values are not representable in the normalized
+receipt.
 
-This source wiring is not evidence that any sidecar has shipped. No Gitleaks
-binary is yet declared in Tauri resources or qualified inside a signed app
-bundle, and cargo-audit/coverage execution remains unimplemented under issue
-#198.
+cargo-audit 0.22.2 receives the exact Cargo.lock and a pinned local RustSec
+snapshot. Verification always supplies `--no-fetch`, clears the environment,
+sets `CARGO_NET_OFFLINE=true`, and persists only bounded advisory/package
+identity and remediation versions—not raw advisory descriptions or package
+source strings. Preparation verifies official archive and license digests for
+both macOS targets, enforces a 128 MiB download ceiling, and validates the
+normalized RustSec tree hash before replacing the prepared resource. Tauri
+declares all three collector executables plus the advisory snapshot as
+resources, and release qualification checks exact versions and paths in the
+final app. These are unreleased package receipts, not evidence that a signed or
+notarized collector bundle has shipped. See the
+[qualification receipt](../../evidence/verification/tool-collector-qualification-2026-09-03.md)
+and issue #198.
 
 ### `osv-scanner` — offline repository runner wired, remediation required
 

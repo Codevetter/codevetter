@@ -56,6 +56,16 @@ releases since 0.8.5 carry GitHub artifact attestations verifiable with
 - `cargo llvm-cov nextest` is first-class, but **nextest does not support
   doctests** — run those separately and merge.
 
+The unreleased product adapter now pins 0.9.0 as a Tauri resource and requires
+one explicit Cargo test target. It preflights the existing toolchain without
+installing components, runs offline/frozen into a private temporary target,
+intersects LCOV with executable lines added by the exact Git change, and treats
+an eligible changed file absent from LCOV as uncovered. A second report-only
+pass keeps bounded LLVM regions for changed paths; raw project-wide JSON is
+hashed but not persisted. Its real CodeVetter qualification completed in 82.4
+seconds with a 15.1 MiB raw region report and cleaned the private target. See
+the [collector qualification](../../evidence/verification/tool-collector-qualification-2026-09-03.md).
+
 **`cargo-tarpaulin` is a viable cross-check, and the "Linux x86_64 only" belief
 about it is out of date.** Its LLVM engine is the default on macOS and Windows,
 and 0.37.2 ships `aarch64-apple-darwin` and `universal-apple-darwin` binaries.

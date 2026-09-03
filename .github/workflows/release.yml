@@ -83,6 +83,10 @@ jobs:
           pnpm run test:ccusage-sidecar
           pnpm run prepare:ccusage-sidecar
 
+      - name: Test pinned macOS collector preparation contract
+        working-directory: apps/desktop
+        run: pnpm run test:collector-sidecars
+
       # Tauri merges tauri.macos.conf.json before every Cargo build, including
       # the release-only graph benchmark below. Prepare the declared native
       # helper before that first build rather than waiting for tauri-action.
@@ -129,13 +133,21 @@ jobs:
           includeUpdaterJson: true
           updaterJsonPreferNsis: false
 
-      - name: Verify CLI and MCP sidecars in app bundle
+      - name: Verify aarch64 CLI, MCP, and collector sidecars in final app bundle
         run: |
           test -x apps/desktop/src-tauri/target/aarch64-apple-darwin/release/bundle/macos/CodeVetter.app/Contents/MacOS/codevetter
           test -x apps/desktop/src-tauri/target/aarch64-apple-darwin/release/bundle/macos/CodeVetter.app/Contents/MacOS/codevetter-mcp
           test -x apps/desktop/src-tauri/target/aarch64-apple-darwin/release/bundle/macos/CodeVetter.app/Contents/MacOS/ccusage
           EXPECTED_CCUSAGE=$(node -p "require('./apps/desktop/package.json').devDependencies.ccusage")
-          apps/desktop/src-tauri/target/aarch64-apple-darwin/release/bundle/macos/CodeVetter.app/Contents/MacOS/ccusage --version | grep "$EXPECTED_CCUSAGE"
+          test "$(apps/desktop/src-tauri/target/aarch64-apple-darwin/release/bundle/macos/CodeVetter.app/Contents/MacOS/ccusage --version)" = "ccusage $EXPECTED_CCUSAGE"
+          test -x apps/desktop/src-tauri/target/aarch64-apple-darwin/release/bundle/macos/CodeVetter.app/Contents/Resources/collectors/cargo-audit
+          test -x apps/desktop/src-tauri/target/aarch64-apple-darwin/release/bundle/macos/CodeVetter.app/Contents/Resources/collectors/cargo-llvm-cov
+          test -x apps/desktop/src-tauri/target/aarch64-apple-darwin/release/bundle/macos/CodeVetter.app/Contents/Resources/collectors/gitleaks
+          test -f apps/desktop/src-tauri/target/aarch64-apple-darwin/release/bundle/macos/CodeVetter.app/Contents/Resources/rustsec-advisory-db/snapshot/CODEVETTER_DB_IDENTITY.json
+          test -d apps/desktop/src-tauri/target/aarch64-apple-darwin/release/bundle/macos/CodeVetter.app/Contents/Resources/rustsec-advisory-db/snapshot/crates
+          test "$(apps/desktop/src-tauri/target/aarch64-apple-darwin/release/bundle/macos/CodeVetter.app/Contents/Resources/collectors/cargo-audit --version)" = 'cargo-audit 0.22.2'
+          test "$(apps/desktop/src-tauri/target/aarch64-apple-darwin/release/bundle/macos/CodeVetter.app/Contents/Resources/collectors/cargo-llvm-cov llvm-cov --version)" = 'cargo-llvm-cov 0.9.0'
+          test "$(apps/desktop/src-tauri/target/aarch64-apple-darwin/release/bundle/macos/CodeVetter.app/Contents/Resources/collectors/gitleaks version)" = '8.30.1'
           pnpm --dir apps/desktop run qualify:cli --binary \
             src-tauri/target/aarch64-apple-darwin/release/bundle/macos/CodeVetter.app/Contents/MacOS/codevetter
 

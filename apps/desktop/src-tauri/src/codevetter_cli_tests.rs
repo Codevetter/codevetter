@@ -1828,6 +1828,12 @@ fn collect_parser_requires_a_range_and_explicit_supported_collectors() {
             "gitleaks".into(),
             "--collector".into(),
             "cargo-audit".into(),
+            "--rust-manifest".into(),
+            "crates/widget/Cargo.toml".into(),
+            "--rust-test".into(),
+            "integration".into(),
+            "--advisory-db".into(),
+            "/tmp/rustsec-db".into(),
             "--json".into(),
         ],
         cwd,
@@ -1840,6 +1846,15 @@ fn collect_parser_requires_a_range_and_explicit_supported_collectors() {
     assert_eq!(
         arguments.collectors,
         vec![CollectorKind::Gitleaks, CollectorKind::CargoAudit]
+    );
+    assert_eq!(
+        arguments.rust_manifest,
+        Some(PathBuf::from("crates/widget/Cargo.toml"))
+    );
+    assert_eq!(arguments.rust_test.as_deref(), Some("integration"));
+    assert_eq!(
+        arguments.advisory_db,
+        Some(PathBuf::from("/tmp/rustsec-db"))
     );
     assert_eq!(arguments.output, OutputMode::Json);
 
