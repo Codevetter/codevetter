@@ -25,7 +25,10 @@ test('native automation defaults to the non-activating background lane', () => {
       (command) => !command.arguments.includes('test') || command.arguments[0] === 'swift-package'
     )
   );
-  assert.deepEqual(commands[0].arguments.slice(-2), ['--parallel', 'false']);
+  assert.deepEqual(JSON.parse(commands[0].arguments[3]), {
+    packagePath: 'apps/macos/CodeVetterPackage',
+    parallel: false,
+  });
 });
 
 test('UI automation fails closed without explicit foreground approval', () => {
