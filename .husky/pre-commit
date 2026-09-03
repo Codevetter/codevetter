@@ -1,1 +1,7 @@
-npx lint-staged
+pnpm exec lint-staged
+
+if command -v gitleaks >/dev/null 2>&1; then
+  pnpm run quality:secrets:staged
+else
+  echo "gitleaks is not installed; repository security CI will enforce the history scan" >&2
+fi

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
-// Convert raw CodeVetter pipeline output (benchmark/reviews-raw/<id>.codevetter.raw.json,
+// Convert raw CodeVetter pipeline output (benchmarks/public-catch-rate/reviews-raw/<id>.codevetter.raw.json,
 // produced by the diag_benchmark_generate_codevetter_reviews harness) into the
-// scorer's reviewer format at benchmark/reviews/<id>.codevetter.json.
+// scorer's reviewer format at benchmarks/public-catch-rate/reviews/<id>.codevetter.json.
 //
 // Ground-truth matching here is a mechanical PROPOSAL (line overlap + keyword
 // correspondence); every proposed file is meant to be hand-checked before

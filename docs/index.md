@@ -38,6 +38,10 @@ is only the presentation and search layer.
 - [history-evidence-import.md](./architecture/history-evidence-import.md) — importing provider-side outcomes.
 - [native-agent-island.md](./architecture/native-agent-island.md) — supervised Swift status, speech, and provider-action boundary.
 - [verification-workbench.md](./architecture/verification-workbench.md) — additive evidence identities, retention, managed-run, intent, and performance records.
+- [native-migration-matrix.md](./architecture/native-migration-matrix.md) —
+  no-regression map from every retained Tauri surface to the native macOS app.
+- [native-rust-boundary.md](./architecture/native-rust-boundary.md) — measured
+  hybrid ownership split between in-process reads and supervised execution.
 
 ### Decisions
 
@@ -50,6 +54,8 @@ is only the presentation and search layer.
 - [setup.md](./development/setup.md) — prerequisites, install, run.
 - [testing.md](./development/testing.md) — the four test surfaces.
 - [performance.md](./development/performance.md) — perf harness and baselines.
+- [native-macos.md](./development/native-macos.md) — native Evidence Workbench
+  toolchain, ownership, and qualification boundaries.
 - [benchmark.md](./development/benchmark.md) — catch-rate benchmark.
 - [agent-task-corpus.md](./development/agent-task-corpus.md) — immutable
   coding-agent task packages and fail-closed readiness.
@@ -81,6 +87,21 @@ is only the presentation and search layer.
 - [competitive-landscape.md](./knowledge/competitive-landscape.md) — AI code review competitive landscape.
 - [performance-lab-publication.md](./knowledge/performance-lab-publication.md) —
   published optimization experiments, external PRs, and evidence boundaries.
+- [tooling-decisions.md](./knowledge/tooling-decisions.md) — what CodeVetter
+  embeds instead of building, what it refuses, and why. Hub for the five
+  evaluations below.
+- [tooling-secrets-and-supply-chain.md](./knowledge/tooling-secrets-and-supply-chain.md)
+  — secret scanners and dependency/vulnerability scanners.
+- [tooling-coverage.md](./knowledge/tooling-coverage.md) — coverage collection
+  across Rust/TS/Python, the LCOV transport decision, diff-coverage traps.
+- [tooling-agent-benchmarks.md](./knowledge/tooling-agent-benchmarks.md) —
+  public agent benchmark corpora, graded on determinism and licensing.
+- [tooling-documentation.md](./knowledge/tooling-documentation.md) — the
+  DeepWiki reject and what would fit instead.
+- [tooling-sandboxing.md](./knowledge/tooling-sandboxing.md) — isolation for
+  running untrusted agent code, determinism controls, SARIF analyzers.
+- [codebase-context-tools-landscape.md](./knowledge/codebase-context-tools-landscape.md)
+  — April 2026 survey of codebase indexing and context tooling.
 
 ### Learnings
 

@@ -106,8 +106,10 @@ apps/
   desktop/             Tauri 2 + React 19 + Vite desktop app — the core product
   landing-page-astro/  Astro marketing site (static export, deployed to Cloudflare Pages — codevetter.com)
 docs/                  Canonical knowledge system — see docs/index.md
-benchmark/             Public catch-rate benchmark cases + harness
-openspec/              Spec-driven workflow (specs + changes/archive)
+docs-site/             Blume presentation layer for docs/ (generated output is gitignored)
+benchmarks/            Evaluation corpora (public catch-rate, agent PRs, runtime challenges)
+evidence/              Committed run evidence (design, performance, reviews)
+scripts/               Benchmark + corpus + deploy + doc-validation scripts
 ```
 
 > The legacy Next.js `apps/landing-page/` was removed on 2026-07-03. The

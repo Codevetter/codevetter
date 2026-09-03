@@ -11,7 +11,7 @@
 
 use std::time::Duration;
 
-use rusqlite::params;
+use rusqlite::{params, Connection};
 use serde::{Deserialize, Serialize};
 use tauri::State;
 
@@ -91,10 +91,15 @@ pub struct SendNotificationInput {
 
 #[tauri::command]
 pub async fn get_billing_config(db: State<'_, DbState>) -> Result<BillingConfig, String> {
-    Ok(BillingConfig {
-        anthropic_configured: read_pref(&db, PREF_ANTHROPIC_ADMIN).is_some(),
-        openai_configured: read_pref(&db, PREF_OPENAI_ADMIN).is_some(),
-    })
+    let conn = db.0.lock().map_err(|error| error.to_string())?;
+    Ok(billing_config_from_connection(&conn))
+}
+
+pub fn billing_config_from_connection(conn: &Connection) -> BillingConfig {
+    BillingConfig {
+        anthropic_configured: read_pref_from_connection(conn, PREF_ANTHROPIC_ADMIN).is_some(),
+        openai_configured: read_pref_from_connection(conn, PREF_OPENAI_ADMIN).is_some(),
+    }
 }
 
 #[tauri::command]
@@ -361,8 +366,15 @@ pub async fn get_agent_observability(
     db: State<'_, DbState>,
     window_days: Option<u32>,
 ) -> Result<AgentObservability, String> {
+    let conn = db.0.lock().map_err(|error| error.to_string())?;
+    Ok(agent_observability_from_connection(&conn, window_days))
+}
+
+pub fn agent_observability_from_connection(
+    conn: &Connection,
+    window_days: Option<u32>,
+) -> AgentObservability {
     let window = window_days.unwrap_or(30);
-    let conn = db.0.lock().map_err(|e| e.to_string())?;
     let mut rows: Vec<TaskTypeStats> = Vec::new();
 
     // ── Reviews (status, duration from started_at→completed_at).
@@ -504,26 +516,32 @@ pub async fn get_agent_observability(
         }
     }
 
-    Ok(AgentObservability {
+    AgentObservability {
         rows,
         window_days: window,
-    })
+    }
 }
 
 // ─── Webhook notifications ──────────────────────────────────────────────────
 
 #[tauri::command]
 pub async fn get_webhook_config(db: State<'_, DbState>) -> Result<WebhookConfig, String> {
-    let url = read_pref(&db, PREF_NOTIF_WEBHOOK);
-    let flavor = read_pref(&db, PREF_NOTIF_FLAVOR).unwrap_or_else(|| "slack".to_string());
-    Ok(WebhookConfig {
+    let conn = db.0.lock().map_err(|error| error.to_string())?;
+    Ok(webhook_config_from_connection(&conn))
+}
+
+pub fn webhook_config_from_connection(conn: &Connection) -> WebhookConfig {
+    let url = read_pref_from_connection(conn, PREF_NOTIF_WEBHOOK);
+    let flavor =
+        read_pref_from_connection(conn, PREF_NOTIF_FLAVOR).unwrap_or_else(|| "slack".to_string());
+    WebhookConfig {
         configured: url.is_some(),
         url_preview: url.as_ref().map(|u| {
             let head: String = u.chars().take(40).collect();
             format!("{head}…")
         }),
         flavor,
-    })
+    }
 }
 
 #[tauri::command]
@@ -636,6 +654,10 @@ fn severity_color(sev: &str) -> i64 {
 
 fn read_pref(db: &State<'_, DbState>, key: &str) -> Option<String> {
     let conn = db.0.lock().ok()?;
+    read_pref_from_connection(&conn, key)
+}
+
+fn read_pref_from_connection(conn: &Connection, key: &str) -> Option<String> {
     conn.query_row(
         "SELECT value FROM preferences WHERE key = ?1",
         params![key],

@@ -14,7 +14,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const ROOT = process.cwd();
-const CASES_DIR = path.join(ROOT, 'benchmark/cases');
+const CASES_DIR = path.join(ROOT, 'benchmarks/public-catch-rate/cases');
 const LANDING_PUBLIC = path.join(ROOT, 'apps/landing-page-astro/public');
 const LANDING_DATA = path.join(ROOT, 'apps/landing-page-astro/src/data');
 

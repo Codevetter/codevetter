@@ -1,8 +1,8 @@
 #!/usr/bin/env node
-// Public benchmark scorer for benchmark/cases/*.
+// Public benchmark scorer for benchmarks/public-catch-rate/cases/*.
 //
 // Validates every hand-labeled case and, when reviewer output files are
-// present in benchmark/reviews/<case-id>.json, computes catch-rate, precision,
+// present in benchmarks/public-catch-rate/reviews/<case-id>.json, computes catch-rate, precision,
 // F1, false-positive, redundant-match, and per-severity metrics.
 //
 // Usage:
@@ -14,8 +14,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-const CASES_DIR = path.resolve(process.cwd(), 'benchmark/cases');
-const REVIEWS_DIR = path.resolve(process.cwd(), 'benchmark/reviews');
+const CASES_DIR = path.resolve(process.cwd(), 'benchmarks/public-catch-rate/cases');
+const REVIEWS_DIR = path.resolve(process.cwd(), 'benchmarks/public-catch-rate/reviews');
 
 const SEVERITY_RANK = { low: 1, medium: 2, high: 3, critical: 4 };
 
@@ -320,7 +320,7 @@ function main() {
     process.exit(1);
   }
   if (!cases.length) {
-    console.error('No benchmark cases found under benchmark/cases');
+    console.error('No benchmark cases found under benchmarks/public-catch-rate/cases');
     process.exit(1);
   }
   const reviews = loadReviews(args.reviewer);

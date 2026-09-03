@@ -5,7 +5,7 @@ import Footer from '@/components/Footer.astro';
 import dataset from '@/../public/benchmark/codevetter-benchmark-v1.json';
 import results from '@/data/benchmark-results.json';
 
-// Real numbers, sourced from benchmark/cases + benchmark/reviews scored by
+// Real numbers, sourced from benchmarks/public-catch-rate/cases + .../reviews scored by
 // scripts/run-public-benchmark.mjs. Regenerate with `node /tmp/gen-benchmark.mjs`
 // (or the committed generator) after any case/review change.
 const cv = results.codevetter;
@@ -185,7 +185,7 @@ const datasetJsonLd = {
 
       <h2 class="mt-12 text-xl font-semibold text-white">Methodology</h2>
       <ol class="mt-3 list-decimal space-y-2 pl-5 text-sm text-[--color-text-dim] marker:text-[--color-accent]">
-        <li>Each case lives in <code class="text-[--color-text]">benchmark/cases/&lt;id&gt;/</code> with a <code class="text-[--color-text]">source.&lt;ext&gt;</code> and a hand-written <code class="text-[--color-text]">label.json</code> ground truth (type, severity, line range, description).</li>
+        <li>Each case lives in <code class="text-[--color-text]">benchmarks/public-catch-rate/cases/&lt;id&gt;/</code> with a <code class="text-[--color-text]">source.&lt;ext&gt;</code> and a hand-written <code class="text-[--color-text]">label.json</code> ground truth (type, severity, line range, description).</li>
         <li>A reviewer's output is normalized into <code class="text-[--color-text]">reviews/&lt;case-id&gt;.&lt;reviewer&gt;.json</code> with a <code class="text-[--color-text]">matched_ground_truth</code> array per finding.</li>
         <li>The scorer (<code class="text-[--color-text]">scripts/run-public-benchmark.mjs</code>) computes catch rate, precision, F1, false positives, and redundant matches.</li>
         <li><strong class="text-white">Catch rate</strong> = matched ground-truth issues ÷ total expected. <strong class="text-white">Precision</strong> = matched ÷ (matched + false positives + redundant). <strong class="text-white">F1</strong> = harmonic mean.</li>

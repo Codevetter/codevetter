@@ -47,6 +47,25 @@ pub struct SessionRetentionPlan {
     pub created_at: String,
 }
 
+pub const SESSION_RETENTION_SCHEMA_VERSION: &str = "codevetter.session-retention/v1";
+
+#[derive(Debug, Clone, Copy, Deserialize, Serialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum SessionRetentionOperation {
+    Plan,
+    Apply,
+    Checkpoint,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SessionRetentionReceipt {
+    pub schema_version: String,
+    pub generated_at: String,
+    pub operation: SessionRetentionOperation,
+    pub plan: Option<SessionRetentionPlan>,
+    pub result: Option<Value>,
+}
+
 #[derive(Debug, Clone)]
 struct SessionArchiveStat {
     session_id: String,
@@ -62,9 +81,7 @@ pub async fn plan_session_retention(
 ) -> Result<SessionRetentionPlan, String> {
     validate_policy(&policy)?;
     let conn = db.0.lock().map_err(|error| error.to_string())?;
-    let plan = build_plan(&conn, policy)?;
-    persist_plan(&conn, &plan)?;
-    Ok(plan)
+    plan_session_retention_with_connection(&conn, policy)
 }
 
 #[tauri::command]
@@ -74,7 +91,7 @@ pub async fn apply_session_retention(
 ) -> Result<Value, String> {
     let plan_id = bounded_id(&plan_id, "plan id")?;
     let mut conn = db.0.lock().map_err(|error| error.to_string())?;
-    apply_plan(&mut conn, &plan_id)
+    apply_session_retention_with_connection(&mut conn, &plan_id)
 }
 
 #[tauri::command]
@@ -127,9 +144,35 @@ pub async fn compact_session_archive(
     vacuum: Option<bool>,
 ) -> Result<Value, String> {
     let conn = db.0.lock().map_err(|error| error.to_string())?;
+    compact_session_archive_with_connection(&conn, vacuum.unwrap_or(false))
+}
+
+pub fn plan_session_retention_with_connection(
+    connection: &Connection,
+    policy: SessionRetentionPolicy,
+) -> Result<SessionRetentionPlan, String> {
+    validate_policy(&policy)?;
+    let plan = build_plan(connection, policy)?;
+    persist_plan(connection, &plan)?;
+    Ok(plan)
+}
+
+pub fn apply_session_retention_with_connection(
+    connection: &mut Connection,
+    plan_id: &str,
+) -> Result<Value, String> {
+    let plan_id = bounded_id(plan_id, "plan id")?;
+    apply_plan(connection, &plan_id)
+}
+
+pub fn compact_session_archive_with_connection(
+    connection: &Connection,
+    vacuum: bool,
+) -> Result<Value, String> {
+    let conn = connection;
     conn.execute_batch("PRAGMA wal_checkpoint(TRUNCATE);")
         .map_err(|error| error.to_string())?;
-    if vacuum.unwrap_or(false) {
+    if vacuum {
         conn.execute_batch("VACUUM;")
             .map_err(|error| error.to_string())?;
     }
@@ -152,7 +195,7 @@ pub async fn compact_session_archive(
             params![
                 event_id,
                 run_id,
-                json!({ "vacuum": vacuum.unwrap_or(false) }).to_string(),
+                json!({ "vacuum": vacuum }).to_string(),
                 created_at
             ],
         )
@@ -161,9 +204,49 @@ pub async fn compact_session_archive(
 
     Ok(json!({
         "checkpointed": true,
-        "vacuumed": vacuum.unwrap_or(false),
+        "vacuumed": vacuum,
         "createdAt": created_at,
     }))
+}
+
+pub fn run_session_retention_operation(
+    connection: &mut Connection,
+    operation: SessionRetentionOperation,
+    policy: Option<SessionRetentionPolicy>,
+    plan_id: Option<&str>,
+    vacuum: bool,
+) -> Result<SessionRetentionReceipt, String> {
+    let (plan, result) = match operation {
+        SessionRetentionOperation::Plan => {
+            let policy =
+                policy.ok_or_else(|| "Retention planning requires a policy".to_string())?;
+            (
+                Some(plan_session_retention_with_connection(connection, policy)?),
+                None,
+            )
+        }
+        SessionRetentionOperation::Apply => {
+            let plan_id =
+                plan_id.ok_or_else(|| "Retention apply requires a plan id".to_string())?;
+            (
+                None,
+                Some(apply_session_retention_with_connection(
+                    connection, plan_id,
+                )?),
+            )
+        }
+        SessionRetentionOperation::Checkpoint => (
+            None,
+            Some(compact_session_archive_with_connection(connection, vacuum)?),
+        ),
+    };
+    Ok(SessionRetentionReceipt {
+        schema_version: SESSION_RETENTION_SCHEMA_VERSION.to_string(),
+        generated_at: Utc::now().to_rfc3339(),
+        operation,
+        plan,
+        result,
+    })
 }
 
 fn validate_policy(policy: &SessionRetentionPolicy) -> Result<(), String> {
@@ -725,5 +808,28 @@ mod tests {
         .expect("plan");
         assert_eq!(plan.candidates.len(), 1);
         assert_eq!(plan.candidate_rows, 1_003);
+    }
+
+    #[test]
+    fn shared_operation_receipt_preserves_preview_without_touching_source_sessions() {
+        let mut conn = fixture();
+        let receipt = run_session_retention_operation(
+            &mut conn,
+            SessionRetentionOperation::Plan,
+            Some(SessionRetentionPolicy {
+                max_age_days: Some(30),
+                max_archive_bytes: None,
+            }),
+            None,
+            false,
+        )
+        .expect("receipt");
+        assert_eq!(receipt.schema_version, SESSION_RETENTION_SCHEMA_VERSION);
+        assert_eq!(receipt.operation, SessionRetentionOperation::Plan);
+        assert_eq!(receipt.plan.as_ref().expect("plan").candidate_rows, 3);
+        let source_sessions: i64 = conn
+            .query_row("SELECT COUNT(*) FROM cc_sessions", [], |row| row.get(0))
+            .expect("session count");
+        assert_eq!(source_sessions, 4);
     }
 }

@@ -54,6 +54,10 @@ pub struct TrexPreviewRunInput {
     pub change_kind: TrexChangeKind,
     pub change: String,
     pub preview_url: String,
+    #[serde(default)]
+    pub target_route: Option<String>,
+    #[serde(default)]
+    pub target_goal: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
@@ -87,6 +91,8 @@ pub struct TrexPreviewIdentity {
 pub struct TrexPreviewRoute {
     pub route: String,
     pub reason: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub goal: Option<String>,
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
@@ -174,7 +180,12 @@ pub async fn execute_trex_preview(
         }
         TrexChangeKind::Range => resolve_range(&input.repo_path, input.change.trim()).await?,
     };
-    let (routes, mut limitations) = derive_routes(&source.changed_paths);
+    let (mut routes, mut limitations) = derive_routes(&source.changed_paths);
+    apply_selected_target(
+        &mut routes,
+        input.target_route.as_deref(),
+        input.target_goal.as_deref(),
+    )?;
     let preview = probe_preview_identity(&preview_url, &source.head_sha).await?;
     let run_id = format!("trex-preview-{}", uuid::Uuid::new_v4());
     let artifact_dir = app_data_dir.join("synthetic-qa").join(&run_id);
@@ -265,10 +276,12 @@ async fn run_preview_journeys(
             preview_url.to_string(),
             Some("generic-page-smoke".into()),
             Some("playwright_builtin".into()),
-            Some(format!(
-                "T-Rex change-preview smoke selected from {}",
-                selected.reason
-            )),
+            Some(selected.goal.clone().unwrap_or_else(|| {
+                format!(
+                    "T-Rex change-preview smoke selected from {}",
+                    selected.reason
+                )
+            })),
             None,
             Some("none".into()),
             None,
@@ -356,18 +369,16 @@ async fn run_preview_journeys(
                         .join(route_artifact_name(&selected.route))
                         .join("failure.jpg");
                     if std::fs::create_dir_all(screenshot.parent().unwrap_or(artifact_dir)).is_ok()
-                    {
-                        if browser
+                        && browser
                             .snapshot(SnapshotOpts {
                                 screenshot_path: Some(&screenshot),
                                 max_elements: 0,
                             })
                             .await
                             .is_ok()
-                        {
-                            screenshot_path = Some(screenshot.to_string_lossy().into_owned());
-                            artifacts.push(screenshot.to_string_lossy().into_owned());
-                        }
+                    {
+                        screenshot_path = Some(screenshot.to_string_lossy().into_owned());
+                        artifacts.push(screenshot.to_string_lossy().into_owned());
                     }
                 }
                 let duration_ms = started.elapsed().as_millis() as u64;
@@ -376,10 +387,12 @@ async fn run_preview_journeys(
                 journeys.push(SyntheticQaRunResult {
                     loop_id: "generic-page-smoke".into(),
                     route: selected.route.clone(),
-                    goal: format!(
-                        "T-Rex change-preview smoke selected from {}",
-                        selected.reason
-                    ),
+                    goal: selected.goal.clone().unwrap_or_else(|| {
+                        format!(
+                            "T-Rex change-preview smoke selected from {}",
+                            selected.reason
+                        )
+                    }),
                     pass,
                     notes: if pass {
                         format!(
@@ -745,6 +758,7 @@ fn derive_routes(changed_paths: &[String]) -> (Vec<TrexPreviewRoute>, Vec<String
     let mut routes = vec![TrexPreviewRoute {
         route: "/".into(),
         reason: "Required root smoke".into(),
+        goal: None,
     }];
     let mut seen = BTreeSet::from(["/".to_string()]);
     let mut limitations = Vec::new();
@@ -755,6 +769,7 @@ fn derive_routes(changed_paths: &[String]) -> (Vec<TrexPreviewRoute>, Vec<String
                     routes.push(TrexPreviewRoute {
                         route,
                         reason: format!("Derived from {changed_path}"),
+                        goal: None,
                     });
                 }
             }
@@ -773,6 +788,37 @@ fn derive_routes(changed_paths: &[String]) -> (Vec<TrexPreviewRoute>, Vec<String
     }
     limitations.truncate(MAX_LIMITATIONS);
     (routes, limitations)
+}
+
+fn apply_selected_target(
+    routes: &mut Vec<TrexPreviewRoute>,
+    route: Option<&str>,
+    goal: Option<&str>,
+) -> Result<(), String> {
+    let Some(route) = route.map(str::trim).filter(|route| !route.is_empty()) else {
+        return Ok(());
+    };
+    if !route.starts_with('/') || route.starts_with("//") || route.chars().count() > 240 {
+        return Err("target_route must be a bounded browser path beginning with /".into());
+    }
+    let goal = goal.map(str::trim).filter(|goal| !goal.is_empty());
+    if goal.is_some_and(|goal| goal.chars().count() > 500) {
+        return Err("target_goal must be at most 500 characters".into());
+    }
+    routes.retain(|candidate| candidate.route != route);
+    let selected = TrexPreviewRoute {
+        route: route.to_string(),
+        reason: "Selected QA workflow target".into(),
+        goal: goal.map(ToOwned::to_owned),
+    };
+    let index = usize::from(
+        routes
+            .first()
+            .is_some_and(|candidate| candidate.route == "/"),
+    );
+    routes.insert(index, selected);
+    routes.truncate(MAX_ROUTES);
+    Ok(())
 }
 
 enum RouteDerivation {
@@ -1265,6 +1311,29 @@ mod tests {
     }
 
     #[test]
+    fn selected_qa_target_is_bounded_deduplicated_and_keeps_the_user_goal() {
+        let (mut routes, _) = derive_routes(&["src/pages/checkout.tsx".into()]);
+        apply_selected_target(
+            &mut routes,
+            Some("/checkout"),
+            Some("Complete guest checkout"),
+        )
+        .expect("selected target");
+        assert_eq!(routes[0].route, "/");
+        assert_eq!(routes[1].route, "/checkout");
+        assert_eq!(routes[1].reason, "Selected QA workflow target");
+        assert_eq!(routes[1].goal.as_deref(), Some("Complete guest checkout"));
+        assert_eq!(
+            routes
+                .iter()
+                .filter(|route| route.route == "/checkout")
+                .count(),
+            1
+        );
+        assert!(apply_selected_target(&mut routes, Some("https://unsafe.test"), None).is_err());
+    }
+
+    #[test]
     fn execution_plans_and_command_output_are_bounded() {
         let paths = (0..12)
             .map(|index| format!("src/pages/route-{index}.tsx"))
@@ -1332,6 +1401,7 @@ mod tests {
         let routes = vec![TrexPreviewRoute {
             route: "/".into(),
             reason: "root".into(),
+            goal: None,
         }];
         let passing = vec![passing_journey("/")];
         assert_eq!(
@@ -1386,6 +1456,7 @@ mod tests {
             routes: vec![TrexPreviewRoute {
                 route: "/settings".into(),
                 reason: "Derived from src/pages/settings.tsx".into(),
+                goal: None,
             }],
             journeys: vec![passing_journey("/settings")],
             verdict: TrexPreviewVerdict::PassedWithLimits,

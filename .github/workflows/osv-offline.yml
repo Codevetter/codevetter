@@ -1,0 +1,98 @@
+name: OSV Offline Scan
+
+on:
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: osv-offline-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  refresh-databases:
+    name: Refresh OSV databases
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download ecosystem databases
+        env:
+          OSV_CACHE_ROOT: ${{ runner.temp }}/osv-db/osv-scalibr
+        run: |
+          mkdir -p \
+            "$OSV_CACHE_ROOT/npm" \
+            "$OSV_CACHE_ROOT/crates.io" \
+            "$OSV_CACHE_ROOT/Go" \
+            "$OSV_CACHE_ROOT/SwiftURL"
+          curl --fail --silent --show-error --location \
+            https://osv-vulnerabilities.storage.googleapis.com/npm/all.zip \
+            --output "$OSV_CACHE_ROOT/npm/all.zip"
+          curl --fail --silent --show-error --location \
+            https://osv-vulnerabilities.storage.googleapis.com/crates.io/all.zip \
+            --output "$OSV_CACHE_ROOT/crates.io/all.zip"
+          curl --fail --silent --show-error --location \
+            https://osv-vulnerabilities.storage.googleapis.com/Go/all.zip \
+            --output "$OSV_CACHE_ROOT/Go/all.zip"
+          curl --fail --silent --show-error --location \
+            https://osv-vulnerabilities.storage.googleapis.com/SwiftURL/all.zip \
+            --output "$OSV_CACHE_ROOT/SwiftURL/all.zip"
+          cd "$OSV_CACHE_ROOT"
+          sha256sum npm/all.zip crates.io/all.zip Go/all.zip SwiftURL/all.zip > SHA256SUMS
+      - name: Upload database snapshot
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: osv-databases-${{ github.run_id }}
+          path: ${{ runner.temp }}/osv-db
+          retention-days: 7
+
+  offline-scan:
+    name: Scan with network-disabled mode
+    needs: refresh-databases
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Download database snapshot
+        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5
+        with:
+          name: osv-databases-${{ github.run_id }}
+          path: ${{ runner.temp }}/osv-db
+      - name: Install checksum-pinned OSV-Scanner
+        env:
+          OSV_BINARY: osv-scanner_linux_amd64
+          OSV_SHA256: f9f25499a2c8cc367b3af45df2ea7eeca7fbccceab9c35079968f4b3652194be
+          OSV_URL: https://github.com/google/osv-scanner/releases/download/v2.5.1/osv-scanner_linux_amd64
+        run: |
+          curl --fail --silent --show-error --location "$OSV_URL" --output "$RUNNER_TEMP/$OSV_BINARY"
+          echo "$OSV_SHA256  $RUNNER_TEMP/$OSV_BINARY" | sha256sum --check --strict
+          chmod 0755 "$RUNNER_TEMP/$OSV_BINARY"
+          mkdir -p "$RUNNER_TEMP/osv-bin"
+          mv "$RUNNER_TEMP/$OSV_BINARY" "$RUNNER_TEMP/osv-bin/osv-scanner"
+          echo "$RUNNER_TEMP/osv-bin" >> "$GITHUB_PATH"
+      - name: Run offline scan
+        id: scan
+        continue-on-error: true
+        env:
+          CODEVETTER_OSV_NETWORK_ISOLATION: linux-network-namespace
+          XDG_CACHE_HOME: ${{ runner.temp }}/osv-db
+        run: |
+          sudo unshare --net -- \
+            env \
+              CODEVETTER_OSV_NETWORK_ISOLATION="$CODEVETTER_OSV_NETWORK_ISOLATION" \
+              PATH="$PATH" \
+              XDG_CACHE_HOME="$XDG_CACHE_HOME" \
+              "$(command -v node)" scripts/run-osv-offline.mjs
+      - name: Upload scan evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: osv-offline-evidence-${{ github.run_id }}
+          path: artifacts/tooling/osv
+          if-no-files-found: error
+          retention-days: 30
+      - name: Enforce scan result
+        if: always() && steps.scan.outcome == 'failure'
+        run: exit 1

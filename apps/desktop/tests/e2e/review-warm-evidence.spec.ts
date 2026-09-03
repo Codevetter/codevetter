@@ -412,7 +412,8 @@ test('Review presents deterministic coverage and rejected candidate counts', asy
   await expect(decision.getByRole('link', { name: 'Runtime evidence' })).toBeVisible();
 });
 
-test('Review shows readiness for an external review agent', async ({ page }) => {
+test('Review shows readiness for an external review agent', async ({ page, context }) => {
+  await context.grantPermissions(['clipboard-read', 'clipboard-write']);
   await installReviewMock(page, false);
   await navigateTo(page, '/review');
   await waitForNoSpinners(page);

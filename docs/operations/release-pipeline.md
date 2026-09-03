@@ -63,10 +63,21 @@ See [runbooks/cut-a-release.md](./runbooks/cut-a-release.md).
 
 ## Signing
 
-`release.yml` uses Apple signing/notarization secrets (`APPLE_*`) stored as
-GitHub Actions secrets. Signed release publication is the last gate; the
+`release.yml` signs the Tauri updater archive with
+`TAURI_SIGNING_PRIVATE_KEY`; it does not currently Developer ID-sign or
+notarize the macOS application bundle (`signingIdentity` is null). Updater
+signature verification and Apple Gatekeeper trust are separate claims. The
 graph + MCP budget qualification runs before the build (see
 [development/performance.md](../development/performance.md)).
+
+The unreleased native client has a separate protected
+`native-production-qualification.yml` workflow. It requires Apple Developer ID
+and notarization inputs plus a Sparkle EdDSA key pair, performs all credential
+work only on an ephemeral hosted runner, verifies the exact appcast/archive,
+and qualifies isolated installed upgrade/data/rollback before it may report
+`shipping_ready: true`. It does not publish or retire Tauri. The observed
+preflight run failed closed because all protected inputs were absent; no secret
+value was inspected or logged.
 
 The optional [Native Agent Island](../architecture/native-agent-island.md) is
 bundled as a nested universal sidecar. Release verification checks arm64 and

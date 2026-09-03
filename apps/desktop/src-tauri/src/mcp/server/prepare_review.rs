@@ -168,6 +168,31 @@ fn verification_scope(
     }))
 }
 
+pub(super) fn resolve_agent_evidence_scope(
+    repo_path: &str,
+    consumer: &str,
+    kind: &str,
+    value: Option<&str>,
+) -> Result<EvidenceScopePlan, String> {
+    let consumer = match consumer {
+        "testing" => EvidenceScopeConsumer::Testing,
+        "performance" => EvidenceScopeConsumer::Performance,
+        _ => return Err("Evidence-scope consumer must be testing or performance".to_string()),
+    };
+    let kind = match kind {
+        "flow" => EvidenceScopeKind::Flow,
+        "change" => EvidenceScopeKind::Change,
+        "codebase" => EvidenceScopeKind::Codebase,
+        _ => return Err("Evidence-scope kind must be flow, change, or codebase".to_string()),
+    };
+    tauri::async_runtime::block_on(resolve_evidence_scope(EvidenceScopeInput {
+        repo_path: repo_path.to_string(),
+        kind,
+        value: value.map(str::to_string),
+        consumer,
+    }))
+}
+
 fn scope_value(scope: Result<EvidenceScopePlan, String>) -> Value {
     match scope {
         Ok(plan) => json!({"status": "ready", "plan": plan}),

@@ -1,0 +1,35 @@
+{
+  "schema_version": "codevetter.native-repository-query-benchmark/v1",
+  "recorded_at": "2026-09-01",
+  "binary_profile": "release",
+  "surface": "native-supervised-cli-boundary",
+  "repository": {
+    "label": "indexed incumbent CodeVetter checkout",
+    "graph_indexed": true,
+    "history_indexed": true,
+    "stale_relative_to_live_checkout": true
+  },
+  "query": "verification",
+  "limit": 12,
+  "measurements": {
+    "graph": {
+      "wall_ms": [3160, 2210, 2150, 2170, 2170],
+      "median_ms": 2170,
+      "result_count": 12
+    },
+    "history": {
+      "wall_ms": [820, 820, 810, 820, 810],
+      "median_ms": 820,
+      "result_count": 1
+    }
+  },
+  "method": "/usr/bin/time -p over five independent CLI processes; values are rounded to the reported 10 ms wall-clock precision",
+  "interpretation": "History is sub-second. Structural search is usable for explicit submit but not instant because each native query starts a fresh sidecar and reconstructs the canonical snapshot query index.",
+  "next_step": "Completed by native-repository-query-worker-benchmark.json: the scoped worker now has measured parity, lifecycle, cancellation, memory, stale-index behavior, and supervised fallback.",
+  "limitations": [
+    "This is one local Mac and one indexed repository, not a cross-machine distribution.",
+    "Independent processes intentionally exclude MCP in-process cache reuse.",
+    "The indexed snapshots were stale and the receipt disclosed that state.",
+    "Debug timings are not release qualification; observed Debug medians were approximately 7.39 s for graph and 1.94 s for history."
+  ]
+}

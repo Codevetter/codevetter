@@ -7,6 +7,14 @@ commands are authoritative; no sibling Fleet checkout is required. Protect
 production stability, keep changes scoped, verify work with repo-local checks,
 and record durable follow-up in this repository's GitHub Issues.
 
+Do not run XCUITest, desktop runtime comparison, AppleScript, accessibility
+control, or any automation that can launch apps, take focus, type, click, or
+manage windows while the operator is using the Mac. Foreground automation
+requires fresh authorization for an idle-screen window on that invocation;
+never infer or persist approval. Prefer the background-safe native lane and
+offscreen render gates. Use a dedicated graphical macOS runner for unattended
+interaction qualification.
+
 ## Purpose
 CodeVetter is an execution-backed verification and evaluation system for coding
 agents. It determines whether an agent completed a software task correctly
@@ -56,13 +64,18 @@ apps/
     tests/              # Playwright e2e tests
   landing-page-astro/   # Astro marketing site → Cloudflare Pages (codevetter.com)
 docs/                   # Canonical knowledge system — see docs/index.md
-benchmark/              # Public catch-rate benchmark cases + harness
-scripts/                # Benchmark + deploy + doc-validation scripts
+docs-site/              # Blume presentation layer for docs/ (NOT the source of truth)
+benchmarks/             # Evaluation corpora — public-catch-rate/, agent-prs/,
+                        #   agent-tasks/, runtime-challenges/, context-*/, performance-lab/
+evidence/               # Committed run evidence: design/, performance/, reviews/
+scripts/                # Benchmark + corpus + deploy + doc-validation scripts
 .github/workflows/      # ci, auto-release, release, deploy-landing, weekly, docs
-blume.config.ts         # Blume presentation layer for docs/ (NOT the source of truth)
 STATUS.md               # Compatibility pointer
 PROJECT_STATUS.md       # Current/shipped product truth (fleet source of truth)
 ```
+
+`artifacts/` is gitignored scratch for CLI runs (`--out artifacts/...`).
+Committed evidence belongs in `evidence/`.
 
 ## Key commands
 ```bash
@@ -92,7 +105,7 @@ node scripts/check-docs.mjs   # Validate docs (links, frontmatter, structure)
 - **`isTauriAvailable()` guard**: all IPC calls wrapped so React code also works in plain browser.
 - **DB is `rusqlite`, not `@tauri-apps/plugin-sql`.** Do not re-add `plugin-sql` (removed in the 2026-07-11 desloppification sweep). See `docs/architecture/data-model.md`.
 - **Single package manager: pnpm.** Do not reintroduce `package-lock.json` — dual-lockfile drift broke Cloudflare Pages in May 2026. See `docs/knowledge/failed-approaches.md`.
-- **Nav (7 tabs)**: Usage (`/`), Repo Unpack (`/unpack`), Work (`/agents`), Board (`/board`), Review (`/review`), Testing (`/trex`), Settings (`/settings`). Full surface map in `docs/product/surfaces.md`.
+- **Nav (6 tabs)**: Usage (`/`), Repo Unpack (`/unpack`), Review (`/review`), Testing (`/trex`), Performance (`/performance`), Settings (`/settings`). Work (`/agents`) and Board (`/board`) were retired 2026-08-16 and now redirect. Full surface map in `docs/product/surfaces.md`.
 - **GH Actions**: `ci.yml` (lint + typecheck + unit + MCP + build), `auto-release.yml` → `release.yml` (Tauri binaries), `deploy-landing.yml` (Cloudflare Pages), `weekly.yml` (Mon cron canary), `docs.yml` (doc validation). See `docs/operations/`.
 - Husky pre-commit runs lint-staged on `apps/desktop/src/**/*.{ts,tsx}`; pre-push runs lint + secret scan.
 
@@ -121,7 +134,7 @@ node scripts/check-docs.mjs   # Validate docs (links, frontmatter, structure)
 
 The committed Markdown under `docs/` is the **source of truth** for product
 knowledge, architecture, decisions, workflows, operations, learnings, and
-failed approaches. Blume (`blume.config.ts`) is only the presentation/search
+failed approaches. Blume (`docs-site/blume.config.ts`) is only the presentation/search
 layer — generated output (`.blume/`) is gitignored.
 
 - **Navigation hub**: `docs/index.md`

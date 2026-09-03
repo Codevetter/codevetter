@@ -1,0 +1,142 @@
+{
+  "schema_version": "codevetter.native-tauri-comparison/v1",
+  "recorded_at": "2026-09-01T10:29:32.088Z",
+  "status": "qualified_with_bounded_claims",
+  "source": {
+    "base_sha": "b34ce70edbcfab8cd9463be87b7453de7e623ed3",
+    "branch": "feat/native-macos-evidence-workbench",
+    "working_tree": "includes the uncommitted native migration",
+    "node": "v26.7.0"
+  },
+  "machine": {
+    "platform": "darwin",
+    "architecture": "arm64",
+    "model": "Mac17,8",
+    "logical_cpu": 18,
+    "memory_bytes": 51539607552,
+    "macos": "27.0"
+  },
+  "method": {
+    "runs_per_application": 5,
+    "settle_ms": 5000,
+    "surface": "Performance",
+    "launch_order": [
+      ["native", "tauri"],
+      ["tauri", "native"],
+      ["native", "tauri"],
+      ["tauri", "native"],
+      ["native", "tauri"]
+    ],
+    "launch": "Exact bundle executable; LaunchServices and the installed app were not used.",
+    "state_isolation": "Each sample received a unique CODEVETTER_APP_DATA_DIR.",
+    "surface_confirmation": {
+      "native": "Measure what changed.",
+      "tauri": "Choose a workload to measure",
+      "confirmed_samples": 10
+    },
+    "resource_scope": "One settled recursively owned process-tree observation after the surface marker appeared."
+  },
+  "applications": {
+    "native": {
+      "bundle_identifier": "com.codevetter.desktop.native-preview",
+      "version": "1.11.0",
+      "build": "11100",
+      "executable": "CodeVetterNative",
+      "executable_bytes": 17198368,
+      "bundle_kib": 80116,
+      "package_receipt": "artifacts/native-package/qualification-jUbwnc/qualification.json"
+    },
+    "tauri": {
+      "bundle_identifier": "com.codevetter.desktop",
+      "version": "1.11.0",
+      "build": "1.11.0",
+      "executable": "codevetter-desktop",
+      "executable_bytes": 74639312,
+      "bundle_kib": 165144,
+      "package_source": "apps/desktop/src-tauri/target/release/bundle/macos/CodeVetter.app"
+    }
+  },
+  "metrics": {
+    "first_visible_window_ms": {
+      "native": {
+        "samples": [524.982, 436.857, 342.756, 435.12, 317.447],
+        "minimum": 317.447,
+        "median": 435.12,
+        "average": 411.432,
+        "p95": 524.982,
+        "maximum": 524.982
+      },
+      "tauri": {
+        "samples": [426.733, 419.018, 388.931, 588.98, 373.399],
+        "minimum": 373.399,
+        "median": 419.018,
+        "average": 439.412,
+        "p95": 588.98,
+        "maximum": 588.98
+      },
+      "median_delta_ms": 16.102,
+      "native_to_tauri_median_ratio": 1.038,
+      "classification": "parity",
+      "claim": "No material first-visible-window improvement is claimed."
+    },
+    "settled_process_tree_rss_kib": {
+      "native": {
+        "samples": [117440, 117424, 117120, 117920, 116928],
+        "minimum": 116928,
+        "median": 117424,
+        "average": 117366.4,
+        "p95": 117920,
+        "maximum": 117920
+      },
+      "tauri": {
+        "samples": [169024, 159568, 136288, 180864, 183168],
+        "minimum": 136288,
+        "median": 169024,
+        "average": 165782.4,
+        "p95": 183168,
+        "maximum": 183168
+      },
+      "median_delta_kib": -51600,
+      "native_to_tauri_median_ratio": 0.695,
+      "native_reduction_percent": 30.529,
+      "classification": "improved",
+      "claim": "The native Performance workspace used 30.5% less settled process-tree RSS at the median."
+    },
+    "bundle_kib": {
+      "native": 80116,
+      "tauri": 165144,
+      "native_to_tauri_ratio": 0.485,
+      "native_reduction_percent": 51.486,
+      "classification": "improved"
+    },
+    "host_executable_bytes": {
+      "native": 17198368,
+      "tauri": 74639312,
+      "native_to_tauri_ratio": 0.23,
+      "native_reduction_percent": 76.958,
+      "classification": "improved"
+    }
+  },
+  "qualification": {
+    "all_samples_reached_expected_surface": true,
+    "all_samples_terminated_cleanly": true,
+    "installed_application_touched": false,
+    "startup_non_regression_gate": true,
+    "settled_rss_improvement_gate": true,
+    "bundle_size_improvement_gate": true,
+    "native_performance_claim": "Qualified only for lower settled Performance-workspace RSS and smaller package/executable footprint; startup remains parity."
+  },
+  "reproduction": {
+    "script": "scripts/compare-desktop-runtime.mjs",
+    "test": "pnpm test:native-runtime-compare",
+    "command": "pnpm native:runtime:compare -- --native-app <qualified-native-app> --tauri-app <worktree-tauri-release-app> --runs 5 --settle-ms 5000 --out <artifact-path>",
+    "raw_artifact": "artifacts/performance/native-tauri-comparison-current.json"
+  },
+  "limitations": [
+    "First visible window is observed through macOS Accessibility and is not XCTest ApplicationFirstFramePresentationResponsive.",
+    "The Tauri Performance route is selected through its shipped Command-K palette; native uses its repository-owned qualification launch argument.",
+    "RSS is one settled observation and may miss short-lived descendants between launch and the five-second sample.",
+    "CODEVETTER_APP_DATA_DIR isolates SQLite and generated artifacts. The incumbent Tauri release still uses its normal WebKit data store and normal release background behavior.",
+    "The comparison does not measure scrolling, workload execution, energy, long-session behavior, signing/notarization, installed updates, or rollback."
+  ]
+}

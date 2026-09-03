@@ -1,13 +1,6 @@
-/**
- * Review config persistence and provider presets.
- * Used by the Settings page to configure AI provider credentials.
- */
+/** Review-standards persistence. Provider credentials are never stored here. */
 
 export interface ReviewConfig {
-  gatewayBaseUrl: string;
-  gatewayApiKey: string;
-  gatewayModel: string;
-  reviewTone: string;
   customRules?: string[];
   activeStandardsPack?: string;
   standardsPacks?: StandardsPack[];
@@ -55,20 +48,57 @@ export const DEFAULT_STANDARDS_PACKS: StandardsPack[] = [
   },
 ];
 
+function isStandardsPack(value: unknown): value is StandardsPack {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+  const candidate = value as Partial<StandardsPack>;
+  return (
+    typeof candidate.id === 'string' &&
+    typeof candidate.name === 'string' &&
+    typeof candidate.focus === 'string' &&
+    Array.isArray(candidate.checks) &&
+    candidate.checks.every((check) => typeof check === 'string')
+  );
+}
+
+function sanitizeReviewConfig(value: unknown): ReviewConfig | null {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+  const candidate = value as Partial<ReviewConfig>;
+  const config: ReviewConfig = {};
+
+  if (Array.isArray(candidate.customRules)) {
+    config.customRules = candidate.customRules.filter(
+      (rule): rule is string => typeof rule === 'string'
+    );
+  }
+  if (typeof candidate.activeStandardsPack === 'string') {
+    config.activeStandardsPack = candidate.activeStandardsPack;
+  }
+  if (Array.isArray(candidate.standardsPacks)) {
+    config.standardsPacks = candidate.standardsPacks.filter(isStandardsPack);
+  }
+  return config;
+}
+
 export function loadReviewConfig(): ReviewConfig | null {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return null;
-    const config = JSON.parse(raw) as ReviewConfig;
-    if (!config.gatewayApiKey || !config.gatewayBaseUrl) return null;
+    const config = sanitizeReviewConfig(JSON.parse(raw));
+    if (!config) {
+      localStorage.removeItem(STORAGE_KEY);
+      return null;
+    }
+    const sanitized = JSON.stringify(config);
+    if (sanitized !== raw) localStorage.setItem(STORAGE_KEY, sanitized);
     return config;
   } catch {
+    localStorage.removeItem(STORAGE_KEY);
     return null;
   }
 }
 
 export function saveReviewConfig(config: ReviewConfig): void {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(sanitizeReviewConfig(config) ?? {}));
 }
 
 export function getStandardsPacks(config: ReviewConfig | null): StandardsPack[] {
@@ -123,22 +153,3 @@ export function getActiveStandardsPackId(): string | null {
   if (!config?.activeStandardsPack) return null;
   return getActiveStandardsPack(config).id;
 }
-
-export const PROVIDER_PRESETS: Record<string, { baseUrl: string; model: string }> = {
-  'free-ai': {
-    baseUrl: 'https://ai-gateway.sassmaker.com/v1',
-    model: 'auto',
-  },
-  anthropic: {
-    baseUrl: 'https://api.anthropic.com/v1',
-    model: 'claude-sonnet-4-20250514',
-  },
-  openai: {
-    baseUrl: 'https://api.openai.com/v1',
-    model: 'gpt-4o',
-  },
-  openrouter: {
-    baseUrl: 'https://openrouter.ai/api/v1',
-    model: 'anthropic/claude-sonnet-4-20250514',
-  },
-};

@@ -376,7 +376,150 @@ pub fn load_snapshot_by_id(
     repo_path: &str,
     snapshot_id: &str,
 ) -> Result<Option<StructuralGraphSnapshot>, StructuralGraphError> {
-    let metadata = connection
+    hydrate_snapshot(
+        connection,
+        load_snapshot_metadata_by_id(connection, repo_path, snapshot_id)?,
+    )
+}
+
+/// Load only the canonical fields required by structural search.
+///
+/// Traversal, explanation, and impact continue to hydrate the full snapshot.
+/// The persistent native query worker uses this projection so an interactive
+/// search does not retain unrelated edges, metrics, files, or diagnostics.
+pub fn load_search_snapshot_by_id(
+    connection: &Connection,
+    repo_path: &str,
+    snapshot_id: &str,
+) -> Result<Option<StructuralGraphSnapshot>, StructuralGraphError> {
+    hydrate_search_snapshot(
+        connection,
+        load_snapshot_metadata_by_id(connection, repo_path, snapshot_id)?,
+    )
+}
+
+/// Load the canonical nodes and edges required by interactive graph queries.
+///
+/// Unlike the full snapshot this omits metrics, clones, communities, files,
+/// and diagnostics. The native query worker can therefore retain traversal
+/// capability without holding analysis-only payloads for its whole lifetime.
+pub fn load_interactive_snapshot_by_id(
+    connection: &Connection,
+    repo_path: &str,
+    snapshot_id: &str,
+) -> Result<Option<StructuralGraphSnapshot>, StructuralGraphError> {
+    hydrate_interactive_snapshot(
+        connection,
+        load_snapshot_metadata_by_id(connection, repo_path, snapshot_id)?,
+    )
+}
+
+/// Load the compact edge fields needed by canonical traversal algorithms.
+/// Result edges are hydrated separately, after bounds have reduced the set.
+pub fn load_traversal_edges_by_snapshot_id(
+    connection: &Connection,
+    snapshot_id: &str,
+) -> Result<Vec<StructuralGraphEdge>, StructuralGraphError> {
+    let mut statement = connection
+        .prepare(
+            "SELECT id, from_id, to_id, kind, trust
+             FROM structural_graph_edges WHERE snapshot_id = ?1
+             ORDER BY id",
+        )
+        .map_err(storage_error("prepare structural graph traversal edges"))?;
+    let edges = statement
+        .query_map(params![snapshot_id], |row| {
+            Ok(StructuralGraphEdge {
+                id: row.get(0)?,
+                from: row.get(1)?,
+                to: row.get(2)?,
+                kind: row.get(3)?,
+                evidence: String::new(),
+                trust: GraphTrust::from_storage(&row.get::<_, String>(4)?),
+                origin: GraphOrigin::LegacyMetadata,
+                sources: Vec::new(),
+                candidates: Vec::new(),
+            })
+        })
+        .map_err(storage_error("query structural graph traversal edges"))?
+        .collect::<Result<Vec<_>, _>>()
+        .map_err(storage_error("read structural graph traversal edges"))?;
+    Ok(edges)
+}
+
+/// Hydrate only bounded result edges after traversal has selected their IDs.
+pub fn load_edges_by_ids(
+    connection: &Connection,
+    snapshot_id: &str,
+    edge_ids: &[String],
+) -> Result<Vec<StructuralGraphEdge>, StructuralGraphError> {
+    if edge_ids.is_empty() {
+        return Ok(Vec::new());
+    }
+    let mut edges = Vec::new();
+    for chunk in edge_ids.chunks(250) {
+        let placeholders = (0..chunk.len())
+            .map(|index| format!("?{}", index + 2))
+            .collect::<Vec<_>>()
+            .join(", ");
+        let sql = format!(
+            "SELECT id, from_id, to_id, kind, evidence, trust, origin, candidates_json
+             FROM structural_graph_edges
+             WHERE snapshot_id = ?1 AND id IN ({placeholders})"
+        );
+        let mut values = Vec::with_capacity(chunk.len() + 1);
+        values.push(rusqlite::types::Value::Text(snapshot_id.to_string()));
+        values.extend(chunk.iter().cloned().map(rusqlite::types::Value::Text));
+        let mut statement = connection
+            .prepare(&sql)
+            .map_err(storage_error("prepare bounded structural graph edges"))?;
+        let rows = statement
+            .query_map(rusqlite::params_from_iter(values.iter()), |row| {
+                Ok((
+                    row.get::<_, String>(0)?,
+                    row.get::<_, String>(1)?,
+                    row.get::<_, String>(2)?,
+                    row.get::<_, String>(3)?,
+                    row.get::<_, String>(4)?,
+                    row.get::<_, String>(5)?,
+                    row.get::<_, String>(6)?,
+                    row.get::<_, String>(7)?,
+                ))
+            })
+            .map_err(storage_error("query bounded structural graph edges"))?
+            .collect::<Result<Vec<_>, _>>()
+            .map_err(storage_error("read bounded structural graph edges"))?;
+        let mut sources = load_sources_for_targets(connection, snapshot_id, "edge", chunk)?;
+        edges.extend(
+            rows.into_iter()
+                .map(
+                    |(id, from, to, kind, evidence, trust, origin, candidates_json)| {
+                        Ok(StructuralGraphEdge {
+                            sources: sources.remove(&id).unwrap_or_default(),
+                            id,
+                            from,
+                            to,
+                            kind,
+                            evidence,
+                            trust: GraphTrust::from_storage(&trust),
+                            origin: GraphOrigin::from_storage(&origin),
+                            candidates: from_json(&candidates_json, "edge candidates")?,
+                        })
+                    },
+                )
+                .collect::<Result<Vec<_>, StructuralGraphError>>()?,
+        );
+    }
+    edges.sort_by(|left, right| left.id.cmp(&right.id));
+    Ok(edges)
+}
+
+fn load_snapshot_metadata_by_id(
+    connection: &Connection,
+    repo_path: &str,
+    snapshot_id: &str,
+) -> Result<Option<SnapshotMetadata>, StructuralGraphError> {
+    connection
         .query_row(
             "SELECT id, repo_path, repo_head, schema_version, engine_json, cursor,
                     ignore_fingerprint, coverage_json, truncated, created_at
@@ -399,8 +542,7 @@ pub fn load_snapshot_by_id(
             },
         )
         .optional()
-        .map_err(storage_error("load structural graph snapshot by id"))?;
-    hydrate_snapshot(connection, metadata)
+        .map_err(storage_error("load structural graph snapshot by id"))
 }
 
 type SnapshotMetadata = (
@@ -449,6 +591,94 @@ fn hydrate_snapshot(
         communities: load_communities(connection, &id)?,
         files: load_snapshot_files(connection, &id)?,
         diagnostics: load_diagnostics(connection, &id)?,
+        id,
+        repo_path: stored_repo_path,
+        repo_head,
+        created_at,
+        engine: from_json(&engine_json, "engine")?,
+        cursor,
+        ignore_fingerprint,
+        coverage: from_json(&coverage_json, "coverage")?,
+        truncated: truncated != 0,
+    }))
+}
+
+fn hydrate_search_snapshot(
+    connection: &Connection,
+    metadata: Option<SnapshotMetadata>,
+) -> Result<Option<StructuralGraphSnapshot>, StructuralGraphError> {
+    let Some((
+        id,
+        stored_repo_path,
+        repo_head,
+        schema_version,
+        engine_json,
+        cursor,
+        ignore_fingerprint,
+        coverage_json,
+        truncated,
+        created_at,
+    )) = metadata
+    else {
+        return Ok(None);
+    };
+    if schema_version != STRUCTURAL_GRAPH_SCHEMA_VERSION {
+        return Err(StructuralGraphError::UnsupportedSchema(schema_version));
+    }
+    let mut sources = load_node_source_map(connection, &id)?;
+    Ok(Some(StructuralGraphSnapshot {
+        schema_version,
+        nodes: load_nodes(connection, &id, &mut sources)?,
+        edges: Vec::new(),
+        metrics: Vec::new(),
+        clone_groups: Vec::new(),
+        communities: Vec::new(),
+        files: Vec::new(),
+        diagnostics: Vec::new(),
+        id,
+        repo_path: stored_repo_path,
+        repo_head,
+        created_at,
+        engine: from_json(&engine_json, "engine")?,
+        cursor,
+        ignore_fingerprint,
+        coverage: from_json(&coverage_json, "coverage")?,
+        truncated: truncated != 0,
+    }))
+}
+
+fn hydrate_interactive_snapshot(
+    connection: &Connection,
+    metadata: Option<SnapshotMetadata>,
+) -> Result<Option<StructuralGraphSnapshot>, StructuralGraphError> {
+    let Some((
+        id,
+        stored_repo_path,
+        repo_head,
+        schema_version,
+        engine_json,
+        cursor,
+        ignore_fingerprint,
+        coverage_json,
+        truncated,
+        created_at,
+    )) = metadata
+    else {
+        return Ok(None);
+    };
+    if schema_version != STRUCTURAL_GRAPH_SCHEMA_VERSION {
+        return Err(StructuralGraphError::UnsupportedSchema(schema_version));
+    }
+    let mut sources = load_node_edge_source_map(connection, &id)?;
+    Ok(Some(StructuralGraphSnapshot {
+        schema_version,
+        nodes: load_nodes(connection, &id, &mut sources)?,
+        edges: load_edges(connection, &id, &mut sources)?,
+        metrics: Vec::new(),
+        clone_groups: Vec::new(),
+        communities: Vec::new(),
+        files: Vec::new(),
+        diagnostics: Vec::new(),
         id,
         repo_path: stored_repo_path,
         repo_head,
@@ -703,6 +933,142 @@ fn load_source_map(
         .map_err(storage_error("query structural graph sources"))?
         .collect::<Result<Vec<_>, _>>()
         .map_err(storage_error("read structural graph sources"))?;
+    let mut sources = HashMap::new();
+    for (target_kind, target_id, source) in rows {
+        sources
+            .entry((target_kind, target_id))
+            .or_insert_with(Vec::new)
+            .push(source);
+    }
+    Ok(sources)
+}
+
+fn load_sources_for_targets(
+    connection: &Connection,
+    snapshot_id: &str,
+    target_kind: &str,
+    target_ids: &[String],
+) -> Result<HashMap<String, Vec<GraphSourceAnchor>>, StructuralGraphError> {
+    if target_ids.is_empty() {
+        return Ok(HashMap::new());
+    }
+    let placeholders = (0..target_ids.len())
+        .map(|index| format!("?{}", index + 3))
+        .collect::<Vec<_>>()
+        .join(", ");
+    let sql = format!(
+        "SELECT target_id, path, start_line, start_column, end_line, end_column, excerpt
+         FROM structural_graph_sources
+         WHERE snapshot_id = ?1 AND target_kind = ?2 AND target_id IN ({placeholders})
+         ORDER BY target_id, ordinal"
+    );
+    let mut values = Vec::with_capacity(target_ids.len() + 2);
+    values.push(rusqlite::types::Value::Text(snapshot_id.to_string()));
+    values.push(rusqlite::types::Value::Text(target_kind.to_string()));
+    values.extend(target_ids.iter().cloned().map(rusqlite::types::Value::Text));
+    let mut statement = connection
+        .prepare(&sql)
+        .map_err(storage_error("prepare bounded structural graph sources"))?;
+    let rows = statement
+        .query_map(rusqlite::params_from_iter(values.iter()), |row| {
+            Ok((
+                row.get::<_, String>(0)?,
+                GraphSourceAnchor {
+                    path: row.get(1)?,
+                    start_line: row.get(2)?,
+                    start_column: row.get(3)?,
+                    end_line: row.get(4)?,
+                    end_column: row.get(5)?,
+                    excerpt: row.get(6)?,
+                },
+            ))
+        })
+        .map_err(storage_error("query bounded structural graph sources"))?
+        .collect::<Result<Vec<_>, _>>()
+        .map_err(storage_error("read bounded structural graph sources"))?;
+    let mut sources = HashMap::new();
+    for (target_id, source) in rows {
+        sources
+            .entry(target_id)
+            .or_insert_with(Vec::new)
+            .push(source);
+    }
+    Ok(sources)
+}
+
+fn load_node_source_map(
+    connection: &Connection,
+    snapshot_id: &str,
+) -> Result<HashMap<(String, String), Vec<GraphSourceAnchor>>, StructuralGraphError> {
+    let mut statement = connection
+        .prepare(
+            "SELECT target_id, path, start_line, start_column,
+                    end_line, end_column, excerpt
+             FROM structural_graph_sources
+             WHERE snapshot_id = ?1 AND target_kind = 'node'
+             ORDER BY target_id, ordinal",
+        )
+        .map_err(storage_error("prepare structural graph node sources"))?;
+    let rows = statement
+        .query_map(params![snapshot_id], |row| {
+            Ok((
+                row.get::<_, String>(0)?,
+                GraphSourceAnchor {
+                    path: row.get(1)?,
+                    start_line: row.get(2)?,
+                    start_column: row.get(3)?,
+                    end_line: row.get(4)?,
+                    end_column: row.get(5)?,
+                    excerpt: row.get(6)?,
+                },
+            ))
+        })
+        .map_err(storage_error("query structural graph node sources"))?
+        .collect::<Result<Vec<_>, _>>()
+        .map_err(storage_error("read structural graph node sources"))?;
+    let mut sources = HashMap::new();
+    for (target_id, source) in rows {
+        sources
+            .entry(("node".to_string(), target_id))
+            .or_insert_with(Vec::new)
+            .push(source);
+    }
+    Ok(sources)
+}
+
+fn load_node_edge_source_map(
+    connection: &Connection,
+    snapshot_id: &str,
+) -> Result<HashMap<(String, String), Vec<GraphSourceAnchor>>, StructuralGraphError> {
+    let mut statement = connection
+        .prepare(
+            "SELECT target_kind, target_id, path, start_line, start_column,
+                    end_line, end_column, excerpt
+             FROM structural_graph_sources
+             WHERE snapshot_id = ?1 AND target_kind IN ('node', 'edge')
+             ORDER BY target_kind, target_id, ordinal",
+        )
+        .map_err(storage_error(
+            "prepare structural graph interactive sources",
+        ))?;
+    let rows = statement
+        .query_map(params![snapshot_id], |row| {
+            Ok((
+                row.get::<_, String>(0)?,
+                row.get::<_, String>(1)?,
+                GraphSourceAnchor {
+                    path: row.get(2)?,
+                    start_line: row.get(3)?,
+                    start_column: row.get(4)?,
+                    end_line: row.get(5)?,
+                    end_column: row.get(6)?,
+                    excerpt: row.get(7)?,
+                },
+            ))
+        })
+        .map_err(storage_error("query structural graph interactive sources"))?
+        .collect::<Result<Vec<_>, _>>()
+        .map_err(storage_error("read structural graph interactive sources"))?;
     let mut sources = HashMap::new();
     for (target_kind, target_id, source) in rows {
         sources

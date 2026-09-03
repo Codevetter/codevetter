@@ -5,6 +5,10 @@
       "binaries/codevetter",
       "binaries/ccusage",
       "binaries/codevetter-agent-island"
-    ]
+    ],
+    "resources": {
+      "resources/collectors/": "collectors/",
+      "resources/rustsec-advisory-db/": "rustsec-advisory-db/"
+    }
   }
 }

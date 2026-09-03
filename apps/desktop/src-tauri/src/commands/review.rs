@@ -64,6 +64,23 @@ fn review_cancellation(repo_path: &str) -> Arc<AtomicBool> {
         .unwrap_or_else(|| Arc::new(AtomicBool::new(false)))
 }
 
+fn mark_review_cancellations(active: &std::collections::HashMap<String, Arc<AtomicBool>>) -> usize {
+    for cancellation in active.values() {
+        cancellation.store(true, Ordering::SeqCst);
+    }
+    active.len()
+}
+
+/// Signal every review owned by this process so CLI shutdown can wait for the
+/// normal process-group cleanup path instead of orphaning an agent executor.
+pub fn cancel_all_cli_reviews() -> usize {
+    let active = ACTIVE_REVIEW_CANCELLATIONS
+        .get_or_init(|| Mutex::new(std::collections::HashMap::new()))
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
+    mark_review_cancellations(&active)
+}
+
 #[tauri::command]
 pub async fn cancel_cli_review(repo_path: String) -> Result<Value, String> {
     let key = std::fs::canonicalize(&repo_path)
@@ -89,7 +106,7 @@ pub async fn cancel_cli_review(repo_path: String) -> Result<Value, String> {
 /// usual user-install locations (asdf shims, bun, pnpm, npm global, homebrew,
 /// `~/.local/bin`) and returns the first match. Falls back to the bare name
 /// so the existing PATH lookup still runs if none match.
-fn resolve_cli_path(name: &str) -> String {
+pub(crate) fn resolve_cli_path(name: &str) -> String {
     // First, honor PATH if it works
     if let Ok(path_var) = std::env::var("PATH") {
         for dir in std::env::split_paths(&path_var) {
@@ -2580,6 +2597,15 @@ pub async fn run_cli_review_core(
         context_delivery: "internal".to_string(),
         limitations: readiness_limitations,
     };
+    let intent_diagnostic = crate::commands::review_intent::build_review_intent_diagnostic(
+        &change_description,
+        &changed_files,
+        &findings_val,
+        &qa_runs,
+        review_manifest.complete_coverage,
+    );
+    let intent_diagnostic_json =
+        serde_json::to_value(&intent_diagnostic).unwrap_or_else(|_| json!({}));
 
     let summary = parsed
         .get("summary")
@@ -2750,6 +2776,7 @@ pub async fn run_cli_review_core(
                     "evidence_procedure_steps": evidence_procedure_steps_json.clone(),
                     "coordinator_failed": coordinator_failed,
                     "review_readiness": review_readiness,
+                    "intent_diagnostic": intent_diagnostic_json.clone(),
                     "review_manifest": review_manifest.clone(),
                 })
                 .to_string(),
@@ -2796,6 +2823,7 @@ pub async fn run_cli_review_core(
         "coordinator_used": plan.uses_coordinator,
         "review_status": review_status,
         "review_readiness": review_readiness,
+        "intent_diagnostic": intent_diagnostic_json,
         "review_memory_graph": review_memory_graph_json,
         "trusted_graph_context": trusted_graph_context_json,
         "qa_evidence": qa_evidence_json,
@@ -3495,9 +3523,9 @@ mod tests {
     use super::*;
 
     /// Generate CodeVetter's public-benchmark comparator outputs by running
-    /// every `benchmark/cases/<id>/` through the REAL production review
+    /// every `benchmarks/public-catch-rate/cases/<id>/` through the REAL production review
     /// pipeline (risk tiers, specialists, coordinator, dedup) headlessly.
-    /// Raw pipeline output lands in `benchmark/reviews-raw/<id>.codevetter.raw.json`;
+    /// Raw pipeline output lands in `benchmarks/public-catch-rate/reviews-raw/<id>.codevetter.raw.json`;
     /// ground-truth mapping is a separate, human-checked step. Requires the
     /// `claude` CLI on PATH and burns real quota — hence ignored.
     #[test]
@@ -4158,6 +4186,20 @@ mod tests {
         );
     }
 
+    #[test]
+    fn process_shutdown_marks_every_owned_review_for_cancellation() {
+        let first = Arc::new(AtomicBool::new(false));
+        let second = Arc::new(AtomicBool::new(false));
+        let active = std::collections::HashMap::from([
+            ("first".to_string(), Arc::clone(&first)),
+            ("second".to_string(), Arc::clone(&second)),
+        ]);
+
+        assert_eq!(mark_review_cancellations(&active), 2);
+        assert!(first.load(Ordering::SeqCst));
+        assert!(second.load(Ordering::SeqCst));
+    }
+
     #[cfg(unix)]
     fn executable_script(temp: &tempfile::TempDir, name: &str, body: &str) -> String {
         use std::os::unix::fs::PermissionsExt;
@@ -4173,6 +4215,10 @@ mod tests {
     #[tokio::test]
     async fn review_executor_is_bounded_and_rejects_malformed_output() {
         let temp = tempfile::tempdir().expect("temp");
+        // This test validates parsing and byte bounds, not the timeout path.
+        // Leave enough process-start budget when the full filesystem-heavy
+        // suite runs concurrently on CI; timeout behavior has a separate test.
+        let fixture_timeout = Duration::from_secs(5);
         let valid = executable_script(
             &temp,
             "valid",
@@ -4183,7 +4229,7 @@ mod tests {
             "claude",
             temp.path().to_string_lossy().into_owned(),
             "review".into(),
-            Duration::from_secs(1),
+            fixture_timeout,
             1024,
         )
         .await
@@ -4196,7 +4242,7 @@ mod tests {
             "claude",
             temp.path().to_string_lossy().into_owned(),
             "review".into(),
-            Duration::from_secs(1),
+            fixture_timeout,
             1024,
         )
         .await
@@ -4209,7 +4255,7 @@ mod tests {
             "claude",
             temp.path().to_string_lossy().into_owned(),
             "review".into(),
-            Duration::from_secs(1),
+            fixture_timeout,
             64,
         )
         .await

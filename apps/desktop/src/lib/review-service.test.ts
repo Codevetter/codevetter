@@ -7,7 +7,6 @@ import {
   getActiveStandardsPack,
   getStandardsPacks,
   loadReviewConfig,
-  PROVIDER_PRESETS,
   type ReviewConfig,
   saveReviewConfig,
 } from './review-service';
@@ -29,10 +28,8 @@ class MemoryStorage {
 }
 
 const validConfig: ReviewConfig = {
-  gatewayBaseUrl: 'https://gateway.example/v1',
-  gatewayApiKey: 'sk-test',
-  gatewayModel: 'auto',
-  reviewTone: 'direct',
+  activeStandardsPack: 'product-safety',
+  customRules: ['Check authorization'],
 };
 
 beforeEach(() => {
@@ -45,19 +42,47 @@ describe('loadReviewConfig', () => {
     assert.equal(loadReviewConfig(), null);
   });
 
-  it('returns null when required credentials are missing', () => {
-    saveReviewConfig({ ...validConfig, gatewayApiKey: '' });
-    assert.equal(loadReviewConfig(), null);
-  });
-
   it('returns null on malformed JSON', () => {
     localStorage.setItem('codevetter_review_config', '{not json');
     assert.equal(loadReviewConfig(), null);
+    assert.equal(localStorage.getItem('codevetter_review_config'), null);
   });
 
   it('round-trips a valid config', () => {
     saveReviewConfig(validConfig);
     assert.deepEqual(loadReviewConfig(), validConfig);
+  });
+
+  it('migrates legacy provider config without retaining the credential', () => {
+    localStorage.setItem(
+      'codevetter_review_config',
+      JSON.stringify({
+        ...validConfig,
+        gatewayApiKey: 'sk-legacy-secret',
+        gatewayBaseUrl: 'https://api.example.test/v1',
+        gatewayModel: 'legacy-model',
+        reviewTone: 'direct',
+      })
+    );
+
+    assert.deepEqual(loadReviewConfig(), validConfig);
+    const stored = localStorage.getItem('codevetter_review_config') ?? '';
+    assert.equal(stored.includes('sk-legacy-secret'), false);
+    assert.equal(stored.includes('gatewayApiKey'), false);
+    assert.equal(stored.includes('gatewayBaseUrl'), false);
+    assert.equal(stored.includes('gatewayModel'), false);
+  });
+
+  it('persists only allowlisted review-standard fields', () => {
+    saveReviewConfig({
+      ...validConfig,
+      gatewayApiKey: 'sk-should-not-persist',
+    } as ReviewConfig & { gatewayApiKey: string });
+
+    const stored = localStorage.getItem('codevetter_review_config');
+    assert.ok(stored);
+    assert.deepEqual(JSON.parse(stored), validConfig);
+    assert.equal(stored.includes('sk-should-not-persist'), false);
   });
 });
 
@@ -120,16 +145,5 @@ describe('buildActiveStandardsContext', () => {
     assert.match(context, /- Custom rule: Always check auth/);
     // Blank/whitespace custom rules are filtered out.
     assert.equal((context.match(/Custom rule:/g) ?? []).length, 1);
-  });
-});
-
-describe('PROVIDER_PRESETS', () => {
-  it('exposes a base url and model for each known provider', () => {
-    for (const key of ['free-ai', 'anthropic', 'openai', 'openrouter']) {
-      const preset = PROVIDER_PRESETS[key];
-      assert.ok(preset, `missing preset for ${key}`);
-      assert.match(preset.baseUrl, /^https:\/\//);
-      assert.ok(preset.model.length > 0);
-    }
   });
 });

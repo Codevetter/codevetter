@@ -1,0 +1,930 @@
+{
+  "schema_version": "codevetter.capabilities.v1",
+  "authority": "codevetter-rust-core",
+  "capabilities": [
+    {
+      "id": "verification.local_check",
+      "name": "Local verification",
+      "purpose": "Bind one exact task and change to executable correctness, performance, review, and receipt evidence.",
+      "stage": "current",
+      "surfaces": {
+        "ui": {
+          "availability": "available",
+          "authority": "read_execute",
+          "entrypoints": [
+            "Tauri Review",
+            "Native Review (acceptance binding, plan, execute, findings, proof map, intent diagnostic, recorded-QA artifacts, isolated fix/recheck, source, X-Ray, export)"
+          ]
+        },
+        "cli": {
+          "availability": "available",
+          "authority": "read_execute",
+          "entrypoints": [
+            "codevetter check",
+            "codevetter fix-packet",
+            "codevetter fix",
+            "codevetter xray"
+          ]
+        },
+        "agent": {
+          "availability": "available",
+          "authority": "read_execute",
+          "entrypoints": [
+            "MCP verification_get_receipt (read-only persisted receipt)",
+            "codevetter fix through an explicit local CLI consent boundary"
+          ]
+        }
+      },
+      "underlying_tools": [
+        {
+          "name": "CodeVetter Rust core",
+          "role": "Owns planning, execution order, verdicts, and receipts",
+          "requirement": "bundled"
+        },
+        {
+          "name": "Configured coding-agent CLI",
+          "role": "Produces the model review stage",
+          "requirement": "optional local tool"
+        }
+      ],
+      "data_boundary": "Selected local repository; evidence stays on the Mac unless the configured agent provider is invoked.",
+      "qualification": "partial",
+      "limitations": [
+        "The Tauri-independent verification-command/v1 service correlates native/CLI commands, ordered progress/v2 events, request-scoped verification-cancel/v1 termination, and terminal receipts with one bounded request id.",
+        "Cancellation is supervised at the process boundary but is not yet a canonical engine event.",
+        "An unavailable runtime collector yields an explicit limitation rather than a passing claim.",
+        "Native source opening uses the recorded repository-relative path; line positioning depends on the user's default editor.",
+        "Fix execution is deliberately limited to one retained detached worktree. It never commits, merges, pushes, or modifies the selected checkout; discard requires a separate confirmation.",
+        "The repository-scoped MCP server can read one persisted canonical local-check receipt by bounded run id, but it cannot start or cancel verification. Agent execution remains an explicit local CLI consent boundary."
+      ],
+      "next_step": "Qualify a real isolated fix/recheck plus saved-flow post-fix rerun without duplicating execution authority in Review."
+    },
+    {
+      "id": "verification.runtime_preview",
+      "name": "Runtime preview verification",
+      "purpose": "Exercise changed browser behavior against an exact preview and preserve executable evidence.",
+      "stage": "current",
+      "surfaces": {
+        "ui": {
+          "availability": "available",
+          "authority": "read_execute",
+          "entrypoints": [
+            "Tauri Testing",
+            "Native Testing (secret-safe journey workspace + scope discovery + direct preview + warm + differential + scenarios + PR watcher)"
+          ]
+        },
+        "cli": {
+          "availability": "available",
+          "authority": "read_execute",
+          "entrypoints": [
+            "codevetter scope --consumer testing",
+            "codevetter trex",
+            "codevetter qa",
+            "codevetter warm",
+            "codevetter differential",
+            "codevetter scenario",
+            "codevetter watcher"
+          ]
+        },
+        "agent": {
+          "availability": "available",
+          "authority": "read",
+          "entrypoints": [
+            "MCP resolve_evidence_scope",
+            "MCP qa_workspace_inspect",
+            "MCP prepare_review verification_targets"
+          ]
+        }
+      },
+      "underlying_tools": [
+        {
+          "name": "Playwright",
+          "role": "Runs browser journeys and captures runtime evidence",
+          "requirement": "project or bundled runtime"
+        },
+        {
+          "name": "CodeVetter Rust QA workspace",
+          "role": "Owns secret-safe saved workflow projection, repository spec discovery, explicit target handoff, and deterministic post-fix comparison setup",
+          "requirement": "bundled"
+        }
+      ],
+      "data_boundary": "Selected repository and explicitly supplied preview URL. Watcher polls may contact GitHub, execute project code and a configured agent, and post commit statuses only after foreground confirmation.",
+      "qualification": "partial",
+      "limitations": [
+        "A preview must already exist for direct preview verification; warm, differential, and scenario workflows instead require one repository-owned verify script and supported lockfile.",
+        "Fixture execution is contract evidence, not production-change proof.",
+        "Native and CLI consume one codevetter.qa-workspace/v1 receipt. It imports only non-secret legacy fields into a separate native preference, discovers repository Playwright specs without execution, passes the selected route and goal into the canonical T-REX receipt, and never restores preview network consent. The scoped MCP projection is read-only.",
+        "Native and CLI scenario authoring share the incumbent Rust bridge: free/local generation creates only expiring candidates; validation and dry-run are non-persistent; acceptance is hash-bound and destination-selective. Differential evidence never creates pass evidence. Native PR watcher scheduling exists only for the current app lifetime; every foreground poll is explicitly confirmed and remains alive until new head-SHA receipts persist. The watcher fetches the immutable GitHub PR ref without changing the checkout, uses the repository-declared Node package manager, and resolves status authentication ephemerally from existing local authority. MCP target discovery remains read-only and never starts these runtimes.",
+        "One repository-owned evidence-scope fixture now passes the authoritative Rust resolver, CLI projection, native supervised runner, and real read-only MCP protocol without semantic drift.",
+        "A bounded live PR qualification proved exact-head materialization, pnpm frozen installation, repository-owned lint, conservative NEEDS_REVIEW classification, retained receipt identity, and a GitHub commit status without exposing a token."
+      ],
+      "next_step": "Qualify one real saved-flow post-fix rerun and complete owner visual acceptance while keeping MCP inspection read-only."
+    },
+    {
+      "id": "verification.performance",
+      "name": "Performance verification",
+      "purpose": "Compare bounded workloads and prevent unsupported optimization claims.",
+      "stage": "current",
+      "surfaces": {
+        "ui": {
+          "availability": "available",
+          "authority": "read_execute",
+          "entrypoints": [
+            "Tauri Performance",
+            "Native Performance (scope discovery + exact workload)"
+          ]
+        },
+        "cli": {
+          "availability": "available",
+          "authority": "read_execute",
+          "entrypoints": [
+            "codevetter scope --consumer performance",
+            "codevetter performance",
+            "codevetter check --perf-adapter"
+          ]
+        },
+        "agent": {
+          "availability": "available",
+          "authority": "read",
+          "entrypoints": [
+            "MCP resolve_evidence_scope",
+            "MCP prepare_review verification_targets"
+          ]
+        }
+      },
+      "underlying_tools": [
+        {
+          "name": "CodeVetter performance capsule",
+          "role": "Supervises samples, warmups, timeouts, and paired evidence",
+          "requirement": "bundled"
+        }
+      ],
+      "data_boundary": "Explicit local workload and optional clean baseline checkout.",
+      "qualification": "partial",
+      "limitations": [
+        "Results are workload-specific.",
+        "A missing clean baseline blocks paired-improvement claims.",
+        "Native intent/change/codebase scope resolution, digest-validated recorded-run inspection, the diagnosis-to-paired campaign handoff, and periodic owned-process-tree RSS/process evidence are available. Sampling can miss peaks between 75 ms observations.",
+        "The shared evidence-scope fixture passes Rust, CLI, native, and read-only MCP projections; only UI and CLI retain workload-execution authority.",
+        "Native release launch, steady app RSS, bridge latency, 1,000-event progress throughput, cancellation, worker crash recovery, and five large-receipt decode/render surfaces pass explicit gates."
+      ],
+      "next_step": "Refresh launch, settled RSS, responsiveness, energy, and long-session evidence on the exact current package with owner-approved foreground qualification."
+    },
+    {
+      "id": "evidence.local_usage",
+      "name": "Local agent usage",
+      "purpose": "Inspect local token, cache, cost, model, and session evidence without conflating it with cloud quota telemetry.",
+      "stage": "current",
+      "surfaces": {
+        "ui": {
+          "availability": "available",
+          "authority": "read",
+          "entrypoints": [
+            "Tauri Usage",
+            "Native Usage (ccusage plus separate indexed Devin history)"
+          ]
+        },
+        "cli": {
+          "availability": "available",
+          "authority": "read",
+          "entrypoints": [
+            "codevetter usage"
+          ]
+        },
+        "agent": {
+          "availability": "planned",
+          "authority": "none",
+          "entrypoints": []
+        }
+      },
+      "underlying_tools": [
+        {
+          "name": "ccusage 20.0.20",
+          "role": "Normalizes offline Claude, Codex, and Grok local usage logs",
+          "requirement": "bundled pinned sidecar"
+        },
+        {
+          "name": "CodeVetter Rust core",
+          "role": "Owns provider boundaries, ccusage normalization, separate SQLite Devin history, caching, and stale/unavailable states",
+          "requirement": "bundled"
+        }
+      ],
+      "data_boundary": "Local agent logs, optional read-only imported Codex roots, and indexed Devin sessions from the existing SQLite database; no provider credential or network access.",
+      "qualification": "partial",
+      "limitations": [
+        "Indexed Devin sessions, generated/cache tokens, cost, and model rows follow 1w, 30d, 90d, and all-time windows through a separate Rust projection and are never included in ccusage totals.",
+        "Live provider quotas remain separate telemetry and are never inferred from local spend.",
+        "Native 1w, 30d, 90d, and all-time selection keeps ccusage chart, totals, models, and sessions aligned while the separate Devin desk follows the same selected window."
+      ],
+      "next_step": "Migrate live provider telemetry as a credential-safe separate projection, then expose the bounded report through scoped MCP."
+    },
+    {
+      "id": "usage.history_roots",
+      "name": "Additional Codex history roots",
+      "purpose": "Restore Codex sessions stored outside the active CODEX_HOME without reading or deleting transcript content during configuration.",
+      "stage": "current",
+      "surfaces": {
+        "ui": {
+          "availability": "available",
+          "authority": "read_execute",
+          "entrypoints": [
+            "Tauri Usage settings",
+            "Native Usage settings"
+          ]
+        },
+        "cli": {
+          "availability": "available",
+          "authority": "read_execute",
+          "entrypoints": [
+            "codevetter history-roots"
+          ]
+        },
+        "agent": {
+          "availability": "unavailable",
+          "authority": "none",
+          "entrypoints": []
+        }
+      },
+      "underlying_tools": [
+        {
+          "name": "CodeVetter Rust core",
+          "role": "Owns path normalization, Codex-home validation, deduplication, the 16-root bound, SQLite preference persistence, and the versioned receipt",
+          "requirement": "bundled"
+        }
+      ],
+      "data_boundary": "Absolute local directory identities and availability metadata only; configuration never reads transcript content and removal never deletes provider files.",
+      "qualification": "qualified",
+      "limitations": [
+        "The active CODEX_HOME remains automatic and is not duplicated in the additional-root receipt.",
+        "A selected sessions or archived_sessions directory is normalized to its containing Codex home.",
+        "Reconciliation remains a separate explicit Usage action.",
+        "Agent and MCP surfaces receive no local history-root authority."
+      ],
+      "next_step": "Keep local history-root mutation out of agent authority and preserve the bounded receipt as usage importers evolve."
+    },
+    {
+      "id": "configuration.native_settings",
+      "name": "Native non-secret settings",
+      "purpose": "Read and save declared local preferences without projecting credentials or provider tokens into Swift.",
+      "stage": "building",
+      "surfaces": {
+        "ui": {
+          "availability": "building",
+          "authority": "read_execute",
+          "entrypoints": [
+            "Native Settings",
+            "Native first-run onboarding"
+          ]
+        },
+        "cli": {
+          "availability": "available",
+          "authority": "read_execute",
+          "entrypoints": [
+            "codevetter settings",
+            "codevetter onboarding"
+          ]
+        },
+        "agent": {
+          "availability": "unavailable",
+          "authority": "none",
+          "entrypoints": []
+        }
+      },
+      "underlying_tools": [
+        {
+          "name": "CodeVetter Rust core",
+          "role": "Owns the allowlist, validation, SQLite persistence, and versioned receipt",
+          "requirement": "bundled"
+        }
+      ],
+      "data_boundary": "Twenty-eight declared non-secret local preferences plus the shared onboarding completion flag and default adapter; github_token and all undeclared values are excluded from every receipt.",
+      "qualification": "partial",
+      "limitations": [
+        "Integration credentials remain in their incumbent owner until secure native storage is separately qualified.",
+        "Native onboarding reuses the incumbent completion flag, checks executable presence without inspecting authentication, and changes only the declared default adapter plus completion state.",
+        "Ops read-only aggregate status now has a bounded shared contract; credential writes, live provider refresh, and webhook operations remain with the incumbent owner.",
+        "About now reports native version and bundle identity, and Sparkle is locally packaged but remains disabled until production signing, appcast, EdDSA, and installed-upgrade gates pass."
+      ],
+      "next_step": "Prove secure native credential ownership and production updater behavior separately without widening the non-secret settings receipt."
+    },
+    {
+      "id": "operations.local_status",
+      "name": "Local operations status",
+      "purpose": "Inspect bounded local billing readiness, webhook readiness, and aggregate agent-run evidence without exposing credentials or contacting providers.",
+      "stage": "building",
+      "surfaces": {
+        "ui": {
+          "availability": "available",
+          "authority": "read",
+          "entrypoints": [
+            "Native Settings / Ops"
+          ]
+        },
+        "cli": {
+          "availability": "available",
+          "authority": "read",
+          "entrypoints": [
+            "codevetter ops"
+          ]
+        },
+        "agent": {
+          "availability": "unavailable",
+          "authority": "none",
+          "entrypoints": []
+        }
+      },
+      "underlying_tools": [
+        {
+          "name": "CodeVetter Rust core and SQLite",
+          "role": "Own the fixed time windows, configuration-presence projection, aggregate observability query, secret exclusion, and versioned receipt",
+          "requirement": "bundled"
+        }
+      ],
+      "data_boundary": "Local aggregate counts, rates, durations, and configuration-presence booleans for 7, 30, or 90 days. Credentials, webhook URLs, absolute paths, and provider responses never enter the receipt.",
+      "qualification": "partial",
+      "limitations": [
+        "This surface never refreshes live provider billing or sends a webhook.",
+        "Credential and endpoint writes remain in the incumbent settings surface.",
+        "Indexed-session success remains an explicitly labelled aggregate proxy because the stored source has no failure signal.",
+        "Agent and MCP surfaces receive no operations authority."
+      ],
+      "next_step": "Transfer credential storage and live provider or webhook operations only after a separately reviewed secure-native contract is qualified."
+    },
+    {
+      "id": "presentation.agent_island",
+      "name": "Agent Island",
+      "purpose": "Configure the optional native agent-status presentation without exposing provider content, credentials, or action authority.",
+      "stage": "building",
+      "surfaces": {
+        "ui": {
+          "availability": "building",
+          "authority": "read_execute",
+          "entrypoints": [
+            "Tauri Agent Island runtime",
+            "Native Agent Island settings"
+          ]
+        },
+        "cli": {
+          "availability": "available",
+          "authority": "read_execute",
+          "entrypoints": [
+            "codevetter settings"
+          ]
+        },
+        "agent": {
+          "availability": "unavailable",
+          "authority": "none",
+          "entrypoints": []
+        }
+      },
+      "underlying_tools": [
+        {
+          "name": "CodeVetter Rust core",
+          "role": "Owns the twelve-setting allowlist, validation, SQLite persistence, and helper runtime authority",
+          "requirement": "bundled"
+        },
+        {
+          "name": "AppKit and SwiftUI Agent Island helper",
+          "role": "Owns non-activating presentation and local system speech only",
+          "requirement": "bundled"
+        }
+      ],
+      "data_boundary": "Twelve non-secret presentation and speech preferences. Live session snapshots, prompts, output, commands, paths, provider responses, and credentials never enter the settings receipt.",
+      "qualification": "partial",
+      "limitations": [
+        "The feature remains off by default.",
+        "Native UI, CLI, and the retained helper share the exact persisted preference keys, defaults, and options.",
+        "The new Evidence Workbench stores configuration only; it does not yet launch the helper or action live agent requests.",
+        "Agent and MCP surfaces receive no Agent Island authority."
+      ],
+      "next_step": "Integrate and requalify the supervised helper in the new native host before claiming live runtime parity."
+    },
+    {
+      "id": "evidence.agent_memories",
+      "name": "Local agent memories",
+      "purpose": "Inspect bounded local agent instruction and memory sources without granting edit, deletion, credential, or agent authority.",
+      "stage": "current",
+      "surfaces": {
+        "ui": {
+          "availability": "available",
+          "authority": "read",
+          "entrypoints": [
+            "Tauri Memories",
+            "Native Memories"
+          ]
+        },
+        "cli": {
+          "availability": "available",
+          "authority": "read",
+          "entrypoints": [
+            "codevetter memories"
+          ]
+        },
+        "agent": {
+          "availability": "unavailable",
+          "authority": "none",
+          "entrypoints": []
+        }
+      },
+      "underlying_tools": [
+        {
+          "name": "CodeVetter Rust core",
+          "role": "Owns source discovery, opaque identity, canonical path admission, redaction, byte and character bounds, and Git diff supervision",
+          "requirement": "bundled"
+        }
+      ],
+      "data_boundary": "Explicitly selected local agent memory content. Receipts expose display paths rather than absolute paths and apply line-based secret redaction before content leaves Rust.",
+      "qualification": "qualified",
+      "limitations": [
+        "The source catalog is capped at 128 entries; one document is capped at 512 KiB and 120,000 output characters.",
+        "Redaction is heuristic, so displayed memory remains private operator data.",
+        "The native UI and CLI can list, read, search, copy, and inspect a redacted Git diff; neither can edit or delete a source.",
+        "MCP and agent surfaces receive no memory content or read authority."
+      ],
+      "next_step": "Preserve the read-only boundary while adding explicit source-format fixtures as new agent tools are supported."
+    },
+    {
+      "id": "maintenance.session_retention",
+      "name": "Session archive retention",
+      "purpose": "Preview and explicitly maintain CodeVetter indexed session rows without deleting provider transcripts or source sessions.",
+      "stage": "current",
+      "surfaces": {
+        "ui": {
+          "availability": "available",
+          "authority": "read_execute",
+          "entrypoints": [
+            "Tauri Usage settings",
+            "Native Usage settings"
+          ]
+        },
+        "cli": {
+          "availability": "available",
+          "authority": "read_execute",
+          "entrypoints": [
+            "codevetter retention"
+          ]
+        },
+        "agent": {
+          "availability": "unavailable",
+          "authority": "none",
+          "entrypoints": []
+        }
+      },
+      "underlying_tools": [
+        {
+          "name": "CodeVetter Rust core",
+          "role": "Owns policy validation, protected-reference discovery, stable plan identity, fail-closed apply, checkpoint, and VACUUM",
+          "requirement": "bundled"
+        }
+      ],
+      "data_boundary": "Local CodeVetter archive and FTS rows only; provider transcripts, source sessions, and protected references are retained.",
+      "qualification": "qualified",
+      "limitations": [
+        "Preview persists a plan receipt but deletes no archive rows.",
+        "Apply and VACUUM require explicit UI or CLI authority and are intentionally not exposed to agents."
+      ],
+      "next_step": "Keep destructive maintenance out of agent authority; add separate read-only recovery diagnostics when the history-root transfer is implemented."
+    },
+    {
+      "id": "configuration.review_rubrics",
+      "name": "Review rubric packs",
+      "purpose": "Keep the exact review standards, active selection, prompt context, and usage attribution consistent across product and agent surfaces.",
+      "stage": "current",
+      "surfaces": {
+        "ui": {
+          "availability": "available",
+          "authority": "read_execute",
+          "entrypoints": [
+            "Tauri Rubrics",
+            "Native Rubrics"
+          ]
+        },
+        "cli": {
+          "availability": "available",
+          "authority": "read_execute",
+          "entrypoints": [
+            "codevetter rubrics",
+            "codevetter check"
+          ]
+        },
+        "agent": {
+          "availability": "available",
+          "authority": "read_execute",
+          "entrypoints": [
+            "codevetter check",
+            "codevetter rubrics"
+          ]
+        }
+      },
+      "underlying_tools": [
+        {
+          "name": "CodeVetter Rust core",
+          "role": "Owns built-in definitions, validation, active selection, custom packs, usage attribution, and exact prompt rendering",
+          "requirement": "bundled"
+        }
+      ],
+      "data_boundary": "Non-secret rubric definitions and local review-attribution counts; no provider credentials or review evidence content.",
+      "qualification": "partial",
+      "limitations": [
+        "The incumbent Tauri shell attempts the bounded WebView-local migration on every startup until Rust owns a canonical preference; opening Rubrics also retries and reports sync errors.",
+        "Built-in packs are immutable; custom packs can be created or replaced within declared bounds."
+      ],
+      "next_step": "Qualify the startup bridge against an installed upgrade with custom packs before retiring the Tauri rubric owner."
+    },
+    {
+      "id": "machine.repository_mcp",
+      "name": "Repository-scoped MCP",
+      "purpose": "Expose bounded local history, graph, archaeology, and review-preparation context to agents without granting file-write or provider authority.",
+      "stage": "current",
+      "surfaces": {
+        "ui": {
+          "availability": "available",
+          "authority": "read_execute",
+          "entrypoints": [
+            "Tauri Agent MCP",
+            "Native Agent MCP"
+          ]
+        },
+        "cli": {
+          "availability": "available",
+          "authority": "read_execute",
+          "entrypoints": [
+            "codevetter mcp"
+          ]
+        },
+        "agent": {
+          "availability": "available",
+          "authority": "read",
+          "entrypoints": [
+            "codevetter-mcp stdio server"
+          ]
+        }
+      },
+      "underlying_tools": [
+        {
+          "name": "CodeVetter MCP server",
+          "role": "Serves repository-scoped resources and tools over local stdio",
+          "requirement": "bundled companion executable"
+        },
+        {
+          "name": "CodeVetter Rust core",
+          "role": "Owns scope enablement, redaction, limits, audit metadata, and client configuration",
+          "requirement": "bundled"
+        }
+      ],
+      "data_boundary": "One explicitly selected, history-indexed local repository; operational audit rows never store arguments, prompts, queries, credentials, or evidence content.",
+      "qualification": "partial",
+      "limitations": [
+        "Enabling requires an existing release-history index.",
+        "The server uses local stdio only and cannot write files, refresh indexes, call providers, or listen on the network.",
+        "The native local package gate bundles and smokes codevetter-mcp beside the app; Developer ID and notarized archive proof remain release gates."
+      ],
+      "next_step": "Add scoped MCP projections for remaining non-local-check receipt families and repeat companion qualification in the notarized production archive."
+    },
+    {
+      "id": "evidence.tool_collectors",
+      "name": "External evidence collectors",
+      "purpose": "Attach narrowly scoped security and coverage receipts without treating tool presence as proof.",
+      "stage": "current",
+      "surfaces": {
+        "ui": {
+          "availability": "planned",
+          "authority": "none",
+          "entrypoints": []
+        },
+        "cli": {
+          "availability": "available",
+          "authority": "read_execute",
+          "entrypoints": [
+            "codevetter collect"
+          ]
+        },
+        "agent": {
+          "availability": "unavailable",
+          "authority": "none",
+          "entrypoints": []
+        }
+      },
+      "underlying_tools": [
+        {
+          "name": "Gitleaks 8.30.1",
+          "role": "Scans the selected change without retaining raw secret values",
+          "requirement": "packaged product resource"
+        },
+        {
+          "name": "cargo-audit 0.22.2",
+          "role": "Checks Cargo.lock against a pinned offline RustSec snapshot",
+          "requirement": "packaged product resource"
+        },
+        {
+          "name": "cargo-llvm-cov 0.9.0",
+          "role": "Captures changed Rust line and region evidence for one explicit test target",
+          "requirement": "packaged product resource"
+        }
+      ],
+      "data_boundary": "Explicit change range in the selected local repository; collectors receive only their declared inputs.",
+      "qualification": "partial",
+      "limitations": [
+        "The native glossary reports declared collectors and limitations but does not execute them.",
+        "Collectors never install tools, refresh the advisory database, or enable network access during verification.",
+        "Rust coverage requires a user-selected test target and an existing llvm-tools-preview component.",
+        "The resources are qualified in the local package path; signed and notarized release-bundle proof remains pending."
+      ],
+      "next_step": "Add bounded collector receipt inspection to the native UI and scoped MCP without granting either surface collector-execution authority, then repeat qualification in the signed production archive."
+    },
+    {
+      "id": "repository.snapshot_scan",
+      "name": "Deterministic repository snapshot",
+      "purpose": "Create and inspect one local, bounded source, history, health, and topology snapshot without invoking a model.",
+      "stage": "current",
+      "surfaces": {
+        "ui": {
+          "availability": "available",
+          "authority": "read_execute",
+          "entrypoints": [
+            "Tauri Repo Unpack",
+            "Native Repo Unpack (scan + bounded inspectors)"
+          ]
+        },
+        "cli": {
+          "availability": "available",
+          "authority": "read_execute",
+          "entrypoints": [
+            "codevetter unpack --operation scan",
+            "codevetter unpack --operation inspect"
+          ]
+        },
+        "agent": {
+          "availability": "available",
+          "authority": "read",
+          "entrypoints": [
+            "MCP graph and history tools over an explicitly enabled stored index"
+          ]
+        }
+      },
+      "underlying_tools": [
+        {
+          "name": "CodeVetter Rust core",
+          "role": "Owns the deterministic scan, bounded projection, persistence, and receipt",
+          "requirement": "bundled"
+        },
+        {
+          "name": "Git",
+          "role": "Supplies local revision and bounded history evidence when available",
+          "requirement": "optional local tool"
+        },
+        {
+          "name": "rusqlite",
+          "role": "Persists the canonical local snapshot",
+          "requirement": "bundled"
+        }
+      ],
+      "data_boundary": "One explicitly selected local directory and the local SQLite evidence store; the scan does not call a provider or require network access.",
+      "qualification": "partial",
+      "limitations": [
+        "The client receipt omits the raw full-file list while the bounded canonical snapshot remains local.",
+        "Topology, history, and deterministic health are navigation evidence, not executable verification.",
+        "Native model synthesis execution and cleanup remain migration gaps."
+      ],
+      "next_step": "Migrate the remaining synthesis and cleanup workflows while keeping every Rust receipt authoritative."
+    },
+    {
+      "id": "repository.structural_graph",
+      "name": "Structural repository graph",
+      "purpose": "Navigate source-backed symbols, relationships, impact, and history without presenting topology as runtime proof.",
+      "stage": "current",
+      "surfaces": {
+        "ui": {
+          "availability": "available",
+          "authority": "read",
+          "entrypoints": [
+            "Tauri Repo Unpack",
+            "Native Repo Unpack (bounded snapshot + canonical query desk)"
+          ]
+        },
+        "cli": {
+          "availability": "available",
+          "authority": "read",
+          "entrypoints": [
+            "codevetter unpack --operation query --query-domain graph --query-mode search|explain|impact|path",
+            "codevetter-graph"
+          ]
+        },
+        "agent": {
+          "availability": "available",
+          "authority": "read",
+          "entrypoints": [
+            "graph_query",
+            "graph_impact",
+            "graph_path"
+          ]
+        }
+      },
+      "underlying_tools": [
+        {
+          "name": "Tree-sitter",
+          "role": "Extracts syntax-aware source identities across the qualified language set",
+          "requirement": "bundled"
+        }
+      ],
+      "data_boundary": "Selected local repository and its local SQLite evidence store.",
+      "qualification": "qualified",
+      "limitations": [
+        "Graph relationships are navigation evidence, not executable verification.",
+        "Native search, node explanation, impact, and directed path stay bounded and fail closed when the canonical structural index is unavailable.",
+        "Native retains one read-only search projection per worker, upgrades it in place with compact traversal edges only when required, hydrates bounded result evidence, rechecks live Git freshness and latest snapshot identity on every query, and falls back to the exact supervised one-shot CLI contract when the worker transport is unavailable."
+      ],
+      "next_step": "Add source-opening and richer graph filtering without moving ranking or traversal semantics into Swift."
+    },
+    {
+      "id": "repository.history",
+      "name": "Evidence-backed repository history",
+      "purpose": "Explain bounded historical state and lineage using stable evidence identities and explicit gaps.",
+      "stage": "current",
+      "surfaces": {
+        "ui": {
+          "availability": "available",
+          "authority": "read",
+          "entrypoints": [
+            "Tauri Repo Unpack",
+            "Native Repo Unpack (bounded snapshot + canonical query desk)"
+          ]
+        },
+        "cli": {
+          "availability": "available",
+          "authority": "read",
+          "entrypoints": [
+            "codevetter unpack --operation query --query-domain history --query-mode search|trace"
+          ]
+        },
+        "agent": {
+          "availability": "available",
+          "authority": "read",
+          "entrypoints": [
+            "history_search",
+            "history_explain",
+            "history_trace"
+          ]
+        }
+      },
+      "underlying_tools": [
+        {
+          "name": "Git",
+          "role": "Supplies exact local revision and tag identity",
+          "requirement": "required local tool"
+        }
+      ],
+      "data_boundary": "Authorized repository scope and read-only local SQLite evidence.",
+      "qualification": "qualified",
+      "limitations": [
+        "Explanations remain bounded by indexed evidence and disclose missing causal proof.",
+        "Native history search and causal trace share the canonical Rust index, preserve evidenced versus qualified-lead links, and fail closed when temporal coverage is unavailable.",
+        "Repeated native history queries reuse the same scoped read-only worker and preserve the exact one-shot CLI fallback."
+      ],
+      "next_step": "Add native source lineage without duplicating temporal semantics in Swift."
+    },
+    {
+      "id": "native.evidence_workbench",
+      "name": "Native Evidence Workbench",
+      "purpose": "Provide a fast, accessible macOS operating surface over the canonical Rust verification loop.",
+      "stage": "building",
+      "surfaces": {
+        "ui": {
+          "availability": "building",
+          "authority": "read_execute",
+          "entrypoints": [
+            "apps/macos"
+          ]
+        },
+        "cli": {
+          "availability": "unavailable",
+          "authority": "none",
+          "entrypoints": []
+        },
+        "agent": {
+          "availability": "unavailable",
+          "authority": "none",
+          "entrypoints": []
+        }
+      },
+      "underlying_tools": [
+        {
+          "name": "AppKit",
+          "role": "Owns windows, menus, split views, keyboard behavior, and lifecycle",
+          "requirement": "Apple platform"
+        },
+        {
+          "name": "SwiftUI",
+          "role": "Composes feature, inspector, and settings views",
+          "requirement": "Apple platform"
+        },
+        {
+          "name": "CodeVetter Rust core",
+          "role": "Owns verification execution, persistence, verdicts, and canonical receipts",
+          "requirement": "bundled CLI and MCP companions"
+        },
+        {
+          "name": "Sparkle 2.9.6",
+          "role": "Owns signed update discovery, installation, and relaunch after production configuration",
+          "requirement": "exact Swift package; disabled in preview"
+        },
+        {
+          "name": "XcodeBuildMCP 2.7.0",
+          "role": "Provides reproducible project build and test automation",
+          "requirement": "development only"
+        }
+      ],
+      "data_boundary": "User-selected local repositories; no ambient credential authority. Sparkle remains inactive unless a production HTTPS appcast and EdDSA public key are present.",
+      "qualification": "partial",
+      "limitations": [
+        "The native client does not replace Tauri until feature, output, performance, accessibility, visual, installed-upgrade, and owner gates pass.",
+        "The local package is hardened, non-sandboxed, and ad-hoc signed; Developer ID signing, notarization, production updater inputs, and rollback proof remain open."
+      ],
+      "next_step": "Close retained feature and owner-interaction gaps, refresh exact-package performance with owner-approved foreground qualification, then qualify a notarized installed upgrade before the owner retirement decision."
+    },
+    {
+      "id": "evidence.local_runs",
+      "name": "Verification run ledger",
+      "purpose": "Inspect one bounded chronology of local-check, preview, T-Rex PR, synthetic QA, warm, differential, and audience evidence without rewriting originating receipts.",
+      "stage": "building",
+      "surfaces": {
+        "ui": {
+          "availability": "building",
+          "authority": "read",
+          "entrypoints": [
+            "Native Runs (building)"
+          ]
+        },
+        "cli": {
+          "availability": "available",
+          "authority": "read",
+          "entrypoints": [
+            "codevetter runs"
+          ]
+        },
+        "agent": {
+          "availability": "unavailable",
+          "authority": "none",
+          "entrypoints": []
+        }
+      },
+      "underlying_tools": [
+        {
+          "name": "CodeVetter Rust core",
+          "role": "Owns receipt schemas and persistence",
+          "requirement": "bundled"
+        },
+        {
+          "name": "rusqlite",
+          "role": "Stores complete canonical receipts in the existing local database",
+          "requirement": "bundled"
+        }
+      ],
+      "data_boundary": "Local SQLite database; list results are bounded to at most 100 receipts.",
+      "qualification": "partial",
+      "limitations": [
+        "The ledger is read-only; watcher, QA, and audience workflow controls remain on their originating surfaces until those workspaces migrate.",
+        "The Swift host-render gate excludes window-server frame pacing and interactive scrolling.",
+        "Foreground XCUITest and owner interaction acceptance remain open."
+      ],
+      "next_step": "Complete foreground UI automation and owner interaction acceptance, then use the ledger as shared evidence infrastructure for Testing and Performance."
+    },
+    {
+      "id": "runtime.hardened_isolation",
+      "name": "Hardened execution isolation",
+      "purpose": "Run untrusted project checks with stronger process, filesystem, resource, and network containment.",
+      "stage": "future",
+      "surfaces": {
+        "ui": {
+          "availability": "planned",
+          "authority": "none",
+          "entrypoints": []
+        },
+        "cli": {
+          "availability": "planned",
+          "authority": "none",
+          "entrypoints": []
+        },
+        "agent": {
+          "availability": "planned",
+          "authority": "none",
+          "entrypoints": []
+        }
+      },
+      "underlying_tools": [
+        {
+          "name": "Apple container CLI 1.3.1",
+          "role": "Selected external-prerequisite isolation backend with a CodeVetter-owned mount planner",
+          "requirement": "qualified candidate; runner not shipped"
+        }
+      ],
+      "data_boundary": "Only an app-owned immutable worktree may be mounted, using a canonical read-only source under the selected root. No runtime-isolation claim is made yet.",
+      "qualification": "partial",
+      "limitations": [
+        "The supervised runner, exact local-image preflight, internal-network attestation, bounded output, cancellation, and real-workload regression evidence remain open.",
+        "The CLI string interface retains a final TOCTOU window and is not approved for concurrently mutable host roots."
+      ],
+      "next_step": "Complete the claim-closed runner contract and qualify it against real verification workloads before exposing this capability."
+    }
+  ]
+}

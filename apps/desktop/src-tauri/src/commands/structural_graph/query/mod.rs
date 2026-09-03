@@ -31,7 +31,7 @@ struct StructuralGraphQueryIndex {
 static QUERY_INDEXES: OnceLock<Mutex<HashMap<String, Arc<StructuralGraphQueryIndex>>>> =
     OnceLock::new();
 
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
 pub enum GraphDirection {
     Incoming,
@@ -220,6 +220,15 @@ pub use projection::{
 };
 pub use search::{explain, neighbors, resolve_node, search, search_page};
 pub use traversal::{impact, shortest_path};
+
+/// Materialize the bounded query index without running a synthetic search.
+///
+/// Native clients use this through the read-only repository query worker so
+/// the first intentional query does not pay index construction latency. The
+/// cache and all ranking semantics remain owned by this canonical module.
+pub fn prepare_search_index(snapshot: &StructuralGraphSnapshot) {
+    let _ = query_index(snapshot);
+}
 
 #[cfg(test)]
 mod tests;

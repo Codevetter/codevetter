@@ -97,6 +97,21 @@ removed without discarding otherwise valid evidence. Qualification diagnostics
 and rejected/stale/unresolved counts stay in the manifest so the UI cannot turn
 partial evidence into full confidence.
 
+## External collector boundary
+
+The unreleased `codevetter collect` path resolves the same exact clean Git
+change before invoking explicitly selected product resources.
+`tool_collectors.rs` owns binary/config identity, no-shell supervision,
+process-tree timeouts, output limits, normalization, and limitations; external
+tools do not own the CodeVetter verdict. Gitleaks 8.30.1 drops raw match/secret
+fields, cargo-audit 0.22.2 uses a pinned local RustSec snapshot with fetching
+disabled, and cargo-llvm-cov 0.9.0 requires an explicit test target and existing
+LLVM tools before producing changed-line and changed-region evidence. Missing
+prerequisites are `unavailable`, never a pass or implicit install. The
+[qualification receipt](https://github.com/Codevetter/codevetter/blob/main/evidence/verification/tool-collector-qualification-2026-09-03.md)
+records the proven source/package slice; issue #198 owns the remaining hosted
+bundle and landing gate.
+
 ## Manifest and interruption behavior
 
 SQLite stores additive run, unit, attempt, qualification, and checkpoint state.
@@ -117,9 +132,36 @@ roots, prompts, or raw provider output.
 1. User selects findings (dismissed findings are excluded from bulk selection).
 2. `agent-fix-packet` is built from selected findings: goal, acceptance
    criteria, non-goals, browser/QA evidence refs, usage-routing advice.
-3. Fix attempts run in **isolated git worktrees** (Rust `sandbox.rs`).
-4. Re-review runs the same pipeline against the fix diff.
-5. Per-finding re-check status: `fixed` / `reproduced` / `unchecked`.
+3. After a separate explicit confirmation, `codevetter fix --operation execute`
+   materializes the recorded head as a detached worktree under CodeVetter app
+   data and runs exactly one selected coding-agent CLI there.
+4. Rust bounds the changed-file list and diff, runs `git diff --check`, reruns
+   the correctness target from the source receipt, and source-qualifies a
+   `WORKTREE` re-review.
+5. Per-finding re-check status is `fixed`, `reproduced`, or `unchecked`.
+   `verified_fixed` requires a clean diff, a passing executable target, a
+   completed re-review, and no reproduced or unchecked selected finding.
+6. The worktree remains uncommitted and owner-inspectable. CodeVetter never
+   merges or pushes it. `codevetter fix --operation discard` requires a second
+   explicit confirmation before removing it.
+
+Codex uses its ephemeral workspace-write sandbox. Claude uses non-persistent
+`acceptEdits` mode with an empty strict MCP configuration, and Gemini uses its
+sandbox with `auto_edit` plus extensions disabled. Git credential prompting and
+plain implicit pushes are disabled for the child process. Rust also verifies
+that detached `HEAD` still equals the recorded source SHA; any agent-created
+commit or branch movement fails closed and blocks all recheck claims. These
+controls bound CodeVetter's invocation, but an externally configured CLI or
+provider remains a separate local trust dependency.
+
+Completed local-check receipts additionally support a narrower deterministic
+handoff through native Review and `codevetter fix-packet`. Rust reloads the
+persisted receipt, rejects unknown or unqualified selected finding identities,
+and binds the exact task, attached acceptance requirements, source locations,
+runtime/procedure evidence, route advice, and limitations into
+`codevetter.agent-fix-packet/v1`. The native Review sheet, CLI, and local agent
+invocation then share `codevetter.fix-attempt/v1`; read-only MCP tools do not
+gain execution authority.
 
 ## Verification proof
 
@@ -152,19 +194,31 @@ previewed in a sandboxed iframe. The checked-in landing gallery is a local
 build artifact until its examples are manually adjudicated and deployment is
 separately authorized.
 
+The Tauri panel, native Review sheet, and `codevetter xray` use the same Rust
+builder, sanitizer, and atomic-save implementation. Native preview summarizes
+eligibility, omissions, stages, and public findings without introducing a
+WebView; the selected JSON, Markdown, or HTML artifact is still rendered and
+written by Rust.
+
 ## Standards packs
 
-`StandardsPack` (`review-service.ts`) groups checks by focus
-(`product-safety`, `security-boundary`, …). The active pack is persisted in
-user settings (`codevetter_review_config` localStorage key, mirrored to Tauri
-preferences) and linked to reviews via `local_reviews.standards_pack`. The
-Rubrics page (`/rubrics`) handles pack authoring, exact prompt preview,
-per-pack usage stats, and cloning.
+`RubricPackInput` (`commands/rubric_settings.rs`) groups checks by focus
+(`product-safety`, `security-boundary`, …). The Rust core owns built-ins,
+validation, the active selection, custom packs, exact prompt rendering, and
+the `codevetter.rubric-settings/v1` receipt. Completed reviews link the selected
+id through `local_reviews.standards_pack`. The incumbent Rubrics page imports
+the previous allowlisted `codevetter_review_config` localStorage record once,
+then mirrors the canonical Rust receipt back for compatibility with older
+frontend code. Native Settings and `codevetter rubrics` use the same receipt;
+`codevetter check` consumes its active prompt context directly.
 
 ## Key files
 
-- `apps/desktop/src/lib/review-service.ts` — config and standards packs.
+- `apps/desktop/src-tauri/src/commands/rubric_settings.rs` — canonical rubric config and receipts.
+- `apps/desktop/src/lib/review-service.ts` — incumbent compatibility mirror and prompt fallback.
 - `apps/desktop/src/lib/agent-fix-packet.ts` — fix packet construction.
+- `apps/desktop/src-tauri/src/commands/fix_packet.rs` — receipt-bound native/CLI fix handoff.
+- `apps/desktop/src-tauri/src/commands/fix_attempt.rs` — confirmed detached-worktree execution, bounded diff, executable recheck, re-review, and discard receipt.
 - `apps/desktop/src/lib/review-proof.ts` — verification handoff.
 - `apps/desktop/src/lib/quick-review-*.ts{x}` — QuickReview state, code, format, procedure.
 - `apps/desktop/src/components/quick-review/` — 13 panels (setup, editor, findings, fix diff, verification summary, audience, synthetic QA, history context, review memory graph, evidence insights, create preview, agent status timeline).

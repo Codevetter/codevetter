@@ -5,7 +5,7 @@
   "version": "1.11.0",
   "build": {
     "beforeDevCommand": "npm run dev",
-    "beforeBuildCommand": "npm run prepare:mcp-sidecar:release && npm run prepare:cli-sidecar:release && npm run prepare:ccusage-sidecar && npm run prepare:agent-island:release && npm run build",
+    "beforeBuildCommand": "npm run prepare:mcp-sidecar:release && npm run prepare:cli-sidecar:release && npm run prepare:ccusage-sidecar && npm run prepare:collector-sidecars && npm run prepare:agent-island:release && npm run build",
     "devUrl": "http://localhost:1420",
     "frontendDist": "../out"
   },
