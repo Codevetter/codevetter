@@ -23,7 +23,6 @@ the Settings tab and persisted via Tauri preferences.
 |---|---|---|
 | `DEBUG_TAURI_DRIVER` | `.env` (optional) | Debug flag for the (removed) tauri-driver path; kept for compatibility. |
 | LLM provider keys | Settings tab → Tauri preferences | Anthropic / OpenAI / OpenRouter. Never written to SQLite review tables. |
-| `gatewayBaseUrl`, `gatewayApiKey`, `gatewayModel` | `codevetter_review_config` (localStorage) mirrored to Tauri preferences | `ReviewConfig` in `apps/desktop/src/lib/review-service.ts`. |
 | `reviewTone` | same | Incumbent review presentation default. |
 | `customRules`, `activeStandardsPack`, `standardsPacks` | Rust `review_rubric_config_v1` preference; allowlisted localStorage compatibility mirror | Standards packs authored in Tauri or native Settings and available through `codevetter rubrics`; the first incumbent open migrates older local-only packs. |
 | Auto-updater pubkey + endpoint | `apps/desktop/src-tauri/tauri.conf.json` | `@tauri-apps/plugin-updater` consumes `latest.json` from GitHub Releases. |
@@ -41,6 +40,10 @@ style-src 'self' 'unsafe-inline'; img-src 'self' https: data:
 The only network egress from the product is the user-supplied LLM provider
 and `api.github.com` for PR reads. `api.codevetter.com` is reserved for
 landing-page proxy concerns, not the desktop app.
+
+Legacy `gatewayBaseUrl`, `gatewayApiKey`, and `gatewayModel` fields are removed
+from persisted review configuration. Startup migration scrubs those keys from
+older localStorage payloads; new saves allowlist only active review settings.
 
 ## Build / bundle configuration
 
