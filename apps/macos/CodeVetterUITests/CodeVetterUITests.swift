@@ -135,8 +135,31 @@ final class CodeVetterUITests: XCTestCase {
 
   @MainActor
   func testUsageWorkspacePreservesLocalAndLiveProviderBoundaries() throws {
+    let snapshotDirectory = testingRepository.appending(
+      path: "usage-snapshots", directoryHint: .isDirectory)
+    try FileManager.default.createDirectory(
+      at: snapshotDirectory,
+      withIntermediateDirectories: true
+    )
+    let usageJSON =
+      #"{"status":"ready","stale":false,"error":null,"provenance":{"engine":"ccusage","version":"20.0.20","generated_at":"2026-09-04T00:00:00Z","timezone":"UTC","window":"all","detected_agents":["claude","codex"],"excluded_agents":[],"codex_roots":[],"source_fingerprint":"sha256:ui-test","pricing_complete":true,"fallback_models":[],"unpriced_models":[]},"daily":[],"weekly":[],"monthly":[],"sessions":[],"totals":{"input_tokens":1,"cache_creation_tokens":2,"cache_read_tokens":3,"output_tokens":4,"total_tokens":10,"cost_usd":0.25}}"#
+    let quotaJSON =
+      #"{"schema_version":"codevetter.provider-quota/v1","generated_at":"2026-09-04T00:00:00Z","providers":[{"provider":"claude","status":"ready","source":"fixture","checked_at":"2026-09-04T00:00:00Z","plan":"team","windows":[{"id":"current","label":"Current window","used_percent":12,"remaining_percent":88,"window_duration_minutes":null,"resets_at_unix":null,"reset_description":"2:20am"},{"id":"weekly","label":"Weekly window","used_percent":33,"remaining_percent":67,"window_duration_minutes":null,"resets_at_unix":null,"reset_description":"Sep 6 at 5:30pm"}],"credits":null,"reset_credits":null,"message":null},{"provider":"codex","status":"ready","source":"fixture","checked_at":"2026-09-04T00:00:00Z","plan":"pro","windows":[{"id":"codex.primary","label":"Weekly window","used_percent":25,"remaining_percent":75,"window_duration_minutes":10080,"resets_at_unix":null,"reset_description":null}],"credits":null,"reset_credits":null,"message":null}],"limitations":[]}"#
+    try usageJSON.write(
+      to: snapshotDirectory.appending(path: "local-usage.json"),
+      atomically: true,
+      encoding: .utf8
+    )
+    try quotaJSON.write(
+      to: snapshotDirectory.appending(path: "provider-quota.json"),
+      atomically: true,
+      encoding: .utf8
+    )
     let app = XCUIApplication()
-    app.launchArguments = ["--ui-test-section", "Usage"]
+    app.launchArguments = [
+      "--ui-test-section", "Usage",
+      "--ui-test-usage-cache", snapshotDirectory.path,
+    ]
     app.launch()
     XCTAssertTrue(app.buttons["Usage refresh"].waitForExistence(timeout: 5))
 
@@ -147,24 +170,14 @@ final class CodeVetterUITests: XCTestCase {
     assertSelected(app.buttons["workbench-section-usage"])
     XCTAssertTrue(app.buttons["Usage refresh"].exists)
     let claudeAllowance = app.descendants(matching: .any)["provider-allowance-claude"]
-    let unavailableAllowance = app.staticTexts["Usage allowance unavailable"]
-    let providerBoundary = XCTNSPredicateExpectation(
-      predicate: NSPredicate { _, _ in
-        claudeAllowance.exists || unavailableAllowance.exists
-      },
-      object: nil
+    XCTAssertTrue(
+      claudeAllowance.waitForExistence(timeout: 5),
+      "Claude allowance must restore from the saved snapshot"
     )
-    XCTAssertEqual(
-      XCTWaiter.wait(for: [providerBoundary], timeout: 20),
-      .completed,
-      "Usage must expose provider allowance or its explicit unavailable state"
+    XCTAssertTrue(
+      app.descendants(matching: .any)["provider-allowance-codex"].waitForExistence(timeout: 2),
+      "Codex allowance must restore from the same saved snapshot"
     )
-    if claudeAllowance.exists {
-      XCTAssertTrue(
-        app.descendants(matching: .any)["provider-allowance-codex"].waitForExistence(timeout: 5),
-        "Codex allowance must accompany the Claude provider receipt"
-      )
-    }
   }
 
   @MainActor

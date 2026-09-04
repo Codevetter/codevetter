@@ -6,9 +6,19 @@ import SwiftUI
 @MainActor
 final class CodeVetterAppDelegate: NSObject, NSApplicationDelegate {
   private static let retainedDelegate = CodeVetterAppDelegate()
-  private let model = WorkbenchModel(repositoryAccessStore: RepositoryAccessStore.standard)
+  private lazy var model = WorkbenchModel(
+    repositoryAccessStore: RepositoryAccessStore.standard,
+    usageSnapshotStore: usageSnapshotStore
+  )
   private let updater = NativeUpdaterController()
   private var windowController: NSWindowController?
+
+  private var usageSnapshotStore: UsageSnapshotStore {
+    guard let path = launchValue(after: "--ui-test-usage-cache") else {
+      return UsageSnapshotStore()
+    }
+    return UsageSnapshotStore(directory: URL(fileURLWithPath: path, isDirectory: true))
+  }
 
   static func main() {
     let application = NSApplication.shared
