@@ -45,7 +45,6 @@ Thumbs.db
 # Test artifacts
 test-results/
 playwright-report/
-apps/desktop/synthetic-qa-artifacts/
 .playwright-mcp/
 
 # Public benchmark reviewer output (drop tool outputs here, not tracked)
@@ -56,7 +55,6 @@ artifacts/
 
 # Coverage
 coverage/
-apps/desktop/coverage/
 
 # Misc
 *.log

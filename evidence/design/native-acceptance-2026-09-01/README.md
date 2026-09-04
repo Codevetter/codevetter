@@ -1,8 +1,8 @@
 # Native macOS owner-review evidence — 2026-09-01
 
-These screenshots were regenerated on 2026-09-02 as deterministic offscreen
-AppKit/SwiftUI renders from the current native migration working tree. They do
-not activate CodeVetter or take focus from the operator's desktop.
+These screenshots were regenerated on 2026-09-04 (UTC) as deterministic offscreen
+AppKit/SwiftUI renders from the native-only `main` tree. They do not activate
+CodeVetter or take focus from the operator's desktop.
 
 The set covers the primary product workspaces plus Testing's substantial
 execution modes. It is the visual review packet for issue #201 task 11; owner
@@ -27,6 +27,9 @@ the original render; the gallery contains no external assets or network calls.
   Claude then Codex provenance, deterministic source-qualified reconciliation,
   disagreement classes, and the explicit boundary between review coverage and
   executable proof in both appearances.
+- `testing-setup.png` — the default low-density Testing entry state before any
+  receipt: source, exact change, deployed preview, consent, and one primary
+  action, with scope planning and journeys behind explicit disclosure.
 - `testing.png` — large direct-preview receipt with failed and passing journeys.
 - `performance.png` — exact workload selection beside a digest-verified stored run.
 - `runs.png` — 100-receipt ledger with a 100-response evidence index.
@@ -127,6 +130,13 @@ operational status. Configuration presence and bounded aggregate rows are
 visible in both appearances; credentials, webhook URLs, provider refreshes,
 webhook sends, configuration writes, and agent/MCP authority remain absent.
 
+The 2026-09-04 (UTC) pass added the Testing setup state to the packet and repaired
+the last hard-width segmented controls: the Review mode picker no longer covers
+the finding count, the Runs mode picker no longer clips the evidence count, and
+the Testing change-type picker no longer overlaps the exact-range field. Every
+segmented picker now takes its intrinsic width so counts and adjacent fields
+stay legible at the supported minimum window.
+
 An agent pixel audit of all 35 states found no P0 or P1 visual or interaction
 defect. It did find one P2 orientation issue at the supported 980-point minimum:
 compact navigation hid every workspace label. The compact rail now keeps the
@@ -146,7 +156,7 @@ Its exact results are recorded in the
 [hosted qualification receipt](../../verification/native-hosted-qualification-2026-09-02.md).
 
 `owner-review-manifest.json` records the exact pixel dimensions and SHA-256 of
-all 35 current-tree renders so the packet can be reviewed without confusing an
+all 36 current-tree renders so the packet can be reviewed without confusing an
 older state for the accepted candidate.
 
 The hosted runner also produced a complete 33-state packet, but its PNG bytes

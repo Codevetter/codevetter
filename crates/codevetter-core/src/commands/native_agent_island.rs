@@ -621,7 +621,7 @@ fn resolve_helper_path() -> Result<PathBuf, String> {
         return Ok(development);
     }
     Err(
-        "Native Agent Island helper is not built. Run pnpm prepare:agent-island from apps/desktop."
+        "Native Agent Island helper is not built or bundled; set CODEVETTER_AGENT_ISLAND_BIN to a built helper."
             .to_string(),
     )
 }

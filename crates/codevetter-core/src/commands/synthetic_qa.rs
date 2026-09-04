@@ -57,7 +57,7 @@ struct RepoPlaywrightSummary {
 }
 
 fn resolve_runner_script() -> Result<PathBuf, String> {
-    // Dev / local repo: CARGO_MANIFEST_DIR = apps/desktop/src-tauri
+    // Dev / local repo: CARGO_MANIFEST_DIR = crates/codevetter-core, so the repository root is two levels up.
     let manifest = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
     let dev_script = manifest
         .parent()
@@ -69,7 +69,7 @@ fn resolve_runner_script() -> Result<PathBuf, String> {
         }
     }
     Err(
-        "Synthetic QA runner script not found. Run from the CodeVetter repo with apps/desktop/scripts/run-synthetic-qa.mjs present.".into(),
+        "Synthetic QA runner script not found. The bundled Playwright runner was retired with the desktop shell; provide scripts/run-synthetic-qa.mjs in the CodeVetter repository or use an external_skill runner.".into(),
     )
 }
 

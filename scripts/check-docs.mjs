@@ -86,7 +86,7 @@ for (const file of docsFiles) {
     const resolved = resolve(dirname(file), pathPart);
     const relResolved = toRepoPosix(resolved);
     if (!docsPosix.has(relResolved)) {
-      // Allow links to non-docs files (e.g. ../../apps/desktop/...) if they exist on disk.
+      // Allow links to non-docs files (e.g. ../../crates/codevetter-core/...) if they exist on disk.
       if (!existsSync(resolved)) {
         errors.push(`${rel}: broken link \`${target}\` → ${relResolved} (not found).`);
       }

@@ -45,7 +45,7 @@ scanner can be replaced without adding a production Rust dependency.
 
 ### `cargo-deny` — wired repository policy
 
-The tracked `apps/desktop/src-tauri/deny.toml` evaluates the shipped Apple
+The tracked `crates/codevetter-core/deny.toml` evaluates the shipped Apple
 Silicon target, permits only the license families present in the qualified
 graph, denies wildcard requirements, denies unknown registries and all Git
 dependencies, and reports duplicate versions without failing on Tauri-owned

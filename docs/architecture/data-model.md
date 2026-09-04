@@ -8,14 +8,14 @@ sidebar:
 # Data model
 
 All product state lives in a single local SQLite database managed by
-`rusqlite` inside the Tauri backend. No server, no sync, no cloud DB.
+`rusqlite` inside the Rust core (`crates/codevetter-core`). No server, no sync, no cloud DB.
 
 - **Schema + migrations**: `crates/codevetter-core/src/db/schema.rs`
 - **Queries**: `crates/codevetter-core/src/db/queries.rs`
 - **DB file location**: the existing CodeVetter Application Support directory,
   retained by the native app's production bundle identity.
 
-The webview never touches SQLite directly. It goes through Tauri commands →
+The native SwiftUI client never touches SQLite directly. It goes through the bundled `codevetter` CLI receipts →
 `queries.rs`.
 
 The additive verification-workbench identity and stale-state map is documented

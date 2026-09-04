@@ -3559,7 +3559,8 @@ mod tests {
     #[test]
     #[ignore]
     fn diag_benchmark_generate_codevetter_reviews() {
-        let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../../benchmark");
+        let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../../benchmarks/public-catch-rate");
         let cases_dir = root.join("cases");
         let out_dir = root.join("reviews-raw");
         std::fs::create_dir_all(&out_dir).expect("create reviews-raw");

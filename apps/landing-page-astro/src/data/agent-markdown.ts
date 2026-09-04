@@ -194,7 +194,11 @@ A rejected experiment remains visible. Historical research capability is labeled
 
 ## Telemetry and deletion
 
-CodeVetter does not enable crash or usage telemetry by default. A user can remove local state by uninstalling the application and deleting its local application-data directory.`
+CodeVetter does not enable crash or usage telemetry by default. A user can remove local state by uninstalling the application and deleting its local application-data directory.
+
+## Public website analytics
+
+The public codevetter.com marketing and benchmark pages use PostHog and Microsoft Clarity to understand page visits and interactions. Those pages have no repository upload or CodeVetter account surface. This does not add telemetry to the desktop application.`
   ),
   about: page(
     'About CodeVetter',

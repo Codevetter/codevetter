@@ -68,7 +68,7 @@ is only the presentation and search layer.
 
 - [automation-contract.md](./operations/automation-contract.md) — privacy-safe product, release, reliability, and Foundry evidence contracts.
 - [release-pipeline.md](./operations/release-pipeline.md) — desktop release chain.
-- [signing-and-updates.md](./operations/signing-and-updates.md) — signing keys + auto-update mechanism.
+- [signing-and-updates.md](./operations/signing-and-updates.md) — Developer ID signing, notarization, and Sparkle auto-update inputs.
 - [landing-deploy.md](./operations/landing-deploy.md) — Cloudflare Pages deploy.
 - [ci.md](./operations/ci.md) — CI workflow and order.
 

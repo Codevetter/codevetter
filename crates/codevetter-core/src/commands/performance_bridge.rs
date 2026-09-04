@@ -667,7 +667,7 @@ fn resolve_headless_cli_path() -> Result<PathBuf, String> {
 
 fn resolve_source_cli_path() -> Result<PathBuf, String> {
     let source = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .join("../../../scripts/runtime-failure-capsule/cli.mjs");
+        .join("../../scripts/runtime-failure-capsule/cli.mjs");
     if !source.is_file() {
         return Err("The source performance runtime is unavailable".to_string());
     }

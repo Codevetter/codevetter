@@ -7,9 +7,9 @@ sidebar:
 
 # Review pipeline
 
-The Review surface is a typed React/Tauri workflow. Rust owns Git target
+The Review surface is a typed SwiftUI workflow over Rust-owned receipts. Rust owns Git target
 resolution, deterministic planning, bounded provider execution, source
-qualification, checkpointing, persistence, and cancellation. The webview owns
+qualification, checkpointing, persistence, and cancellation. The native client owns
 configuration and presentation. A provider response is a candidate source, not
 evidence, until the Rust qualifier proves its locator against the selected Git
 target.

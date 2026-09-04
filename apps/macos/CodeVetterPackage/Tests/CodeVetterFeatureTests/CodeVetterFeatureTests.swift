@@ -3960,4 +3960,16 @@ func hundredJourneyTestingReceiptDecodesAndRendersWithinTheNativeGate() throws {
       appearance: .aqua
     )
   }
+  if let screenshotPath = ProcessInfo.processInfo.environment[
+    "CODEVETTER_TESTING_SETUP_SCREENSHOT_PATH"
+  ] {
+    // The owner-review packet also captures the default low-density setup state
+    // that precedes any receipt: source, exact change, preview, and consent.
+    let setup = WorkbenchModel()
+    setup.section = .testing
+    setup.repositoryPath = "/fixture/repo"
+    setup.testingChange = "main...HEAD"
+    setup.testingPreviewURL = "https://preview.example.test"
+    try captureTesting(setup, at: URL(fileURLWithPath: screenshotPath))
+  }
 }

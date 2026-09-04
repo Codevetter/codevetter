@@ -1194,7 +1194,7 @@ async fn run_runtime(
 
 fn resolve_runtime_cli() -> Result<PathBuf, String> {
     let source = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .join("../../../scripts/runtime-failure-capsule/cli.mjs");
+        .join("../../scripts/runtime-failure-capsule/cli.mjs");
     if source.is_file() {
         return source
             .canonicalize()

@@ -282,7 +282,7 @@ they do not need a visible application window.
 The manual-only `native-qualification.yml` workflow is the repository-owned
 hosted path. It runs on GitHub's arm64 `xcode-27` image, grants no release or
 signing authority, and uploads only the unsigned preview package, dSYM, local
-qualification, current-tree 35-state owner-review packet, and release-readiness
+qualification, current-tree 36-state owner-review packet, and release-readiness
 evidence for seven days. Interaction tests remain opt-in through the dispatch
 input; ordinary pushes and pull requests do not start this workflow. This is
 the preferred way to qualify XCUITest without borrowing the operator's active

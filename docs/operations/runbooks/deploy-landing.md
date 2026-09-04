@@ -55,8 +55,8 @@ They are not triggered by push.
   [knowledge/failed-approaches.md](../../knowledge/failed-approaches.md).)
 - **`pnpm-lock.yaml` out of sync** — run `pnpm install` at root, commit the
   lockfile, push, then re-trigger. The May-2026 CF Pages outage was this.
-- **Wrong output directory** — the Astro site writes to `dist`; the desktop
-  Vite writes to `out`. Do not point Pages at `apps/desktop`.
+- **Wrong output directory** — the Astro site writes to `dist`; the retired
+  desktop Vite build wrote to `out`. Point Pages only at the Astro `dist`.
 
 ## Do not
 

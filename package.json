@@ -120,7 +120,9 @@
     "retrieval:discover": "node scripts/context-retrieval/discover-candidates.mjs --registry benchmarks/context-retrieval/candidates.json --fresh-since 2026-02-22"
   },
   "license": "ISC",
-  "lint-staged": {},
+  "lint-staged": {
+    "*.{js,mjs,cjs,ts,tsx,json,jsonc}": "biome check --no-errors-on-unmatched"
+  },
   "devDependencies": {
     "@biomejs/biome": "^2.5.1",
     "@friedemannsommer/lcov-parser": "8.0.0",

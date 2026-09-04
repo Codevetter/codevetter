@@ -8,10 +8,10 @@ import {
   ownerReviewEnvironment,
 } from './render-native-owner-review.mjs';
 
-test('owner-review render contract contains 35 unique environment and image identities', () => {
-  assert.equal(nativeOwnerReviewRenders.length, 35);
-  assert.equal(new Set(nativeOwnerReviewRenders.map(([key]) => key)).size, 35);
-  assert.equal(new Set(nativeOwnerReviewRenders.map(([, path]) => path)).size, 35);
+test('owner-review render contract contains 36 unique environment and image identities', () => {
+  assert.equal(nativeOwnerReviewRenders.length, 36);
+  assert.equal(new Set(nativeOwnerReviewRenders.map(([key]) => key)).size, 36);
+  assert.equal(new Set(nativeOwnerReviewRenders.map(([, path]) => path)).size, 36);
 });
 
 test('owner-review render contract matches the checked manifest identities', () => {
@@ -26,7 +26,7 @@ test('owner-review render contract matches the checked manifest identities', () 
 
 test('owner-review environment resolves every render under the requested output root', () => {
   const environment = ownerReviewEnvironment('/fixture/review');
-  assert.equal(Object.keys(environment).length, 35);
+  assert.equal(Object.keys(environment).length, 36);
   assert.equal(environment.CODEVETTER_USAGE_SCREENSHOT_PATH, '/fixture/review/usage.png');
   assert.equal(
     environment.CODEVETTER_OPS_SETTINGS_LIGHT_SCREENSHOT_PATH,

@@ -43,12 +43,12 @@ questions, not findings.
 
 | Tool | License | Surface | Category detail |
 |---|---|---|---|
-| `cargo-audit` 0.22.2 | MIT OR Apache-2.0 | Product resource, supervised by `src-tauri/` | [supply chain](./tooling-secrets-and-supply-chain.md) |
-| `gitleaks` 8.30.1 | MIT | Product resource, supervised by `src-tauri/` | [supply chain](./tooling-secrets-and-supply-chain.md) |
-| `cargo-llvm-cov` 0.9.0 | MIT OR Apache-2.0 | Product resource, supervised by `src-tauri/` | [coverage](./tooling-coverage.md) |
+| `cargo-audit` 0.22.2 | MIT OR Apache-2.0 | Product resource, supervised by `crates/codevetter-core/` | [supply chain](./tooling-secrets-and-supply-chain.md) |
+| `gitleaks` 8.30.1 | MIT | Product resource, supervised by `crates/codevetter-core/` | [supply chain](./tooling-secrets-and-supply-chain.md) |
+| `cargo-llvm-cov` 0.9.0 | MIT OR Apache-2.0 | Product resource, supervised by `crates/codevetter-core/` | [coverage](./tooling-coverage.md) |
 | τ³-bench (tau2-bench) | MIT | Corpus under `benchmarks/` | [agent benchmarks](./tooling-agent-benchmarks.md) |
 | Terminal-Bench 4.0 (Harbor) | Apache-2.0 | Corpus under `benchmarks/` | [agent benchmarks](./tooling-agent-benchmarks.md) |
-| `libkrun` | Apache-2.0 | In-process VMM in `src-tauri/` | [sandboxing](./tooling-sandboxing.md) |
+| `libkrun` | Apache-2.0 | In-process VMM in `crates/codevetter-core/` | [sandboxing](./tooling-sandboxing.md) |
 
 These are product-lane decisions. The three collector resources now also have
 an unreleased [implementation and qualification receipt](../../evidence/verification/tool-collector-qualification-2026-09-03.md).

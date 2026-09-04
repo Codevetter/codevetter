@@ -53,11 +53,11 @@ when modifying the site. See
 
 ## Gotchas
 
-- **`out` vs `dist`**: the desktop Vite config uses `outDir: "out"`, but the
-  Astro site uses `dist`. The May-2026 CF Pages reconfig failed because the
-  Pages `destination_dir` was set to `dist` while the desktop build wrote to
-  `out`. The Astro site is the only thing deployed to Pages now — keep
-  `destination_dir: dist` and don't point Pages at `apps/desktop`.
+- **`out` vs `dist`**: the Astro site writes to `dist`. The May-2026 CF Pages
+  reconfig failed because the Pages `destination_dir` was set to `dist` while
+  the since-retired desktop Vite build wrote to `out`. The Astro site is the
+  only thing deployed to Pages — keep `destination_dir: dist` and never point
+  Pages at another workspace package.
 - **Single lockfile**: Pages must use `pnpm install --frozen-lockfile` against
   the root `pnpm-lock.yaml`. Do not let a `package-lock.json` reappear.
 

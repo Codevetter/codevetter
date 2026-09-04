@@ -272,7 +272,7 @@ struct PremiumWarmVerificationView: View {
             }
             .pickerStyle(.segmented)
             .labelsHidden()
-            .frame(width: 166)
+            .fixedSize()
             .tint(.secondary)
           }
           .padding(.horizontal, 16)

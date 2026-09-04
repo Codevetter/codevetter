@@ -112,7 +112,7 @@ struct PremiumTestingView: View {
               .tint(.secondary)
               .frame(height: 48)
             }
-            .frame(width: 230)
+            .fixedSize(horizontal: true, vertical: false)
 
             PremiumInput(
               label: model.testingChangeKind == .range ? "EXACT RANGE" : "PULL REQUEST",
@@ -385,7 +385,7 @@ struct PremiumTestingView: View {
             }
             .pickerStyle(.segmented)
             .labelsHidden()
-            .frame(width: 166)
+            .fixedSize()
             .tint(.secondary)
           }
           .padding(.horizontal, 16)

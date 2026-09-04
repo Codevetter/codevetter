@@ -1,6 +1,6 @@
 # Project Status
 
-Last updated: 2026-09-04
+Last updated: 2026-09-05
 
 ## Why / What
 
@@ -54,6 +54,20 @@ Internal (fleet):
 - Local SQLite via `rusqlite` in `crates/codevetter-core` — desktop only, no server.
 
 ## Timeline
+
+- **2026-09-05 — Native-only migration landed on `main` (unreleased):** the
+  Tauri-retirement branch is fast-forwarded onto `main`, so `apps/macos` plus
+  `crates/codevetter-core` is the only buildable product tree. This pass
+  repaired the Rust source-path resolvers that still assumed the
+  `apps/desktop/src-tauri` crate depth (runtime-failure capsule, performance
+  bridge, perf bench, public-catch-rate diagnostics), retired the last
+  `apps/desktop` references in `.gitignore`, docs, and the repository's own
+  `.codevetter/verify.yaml`, and rewrote the signing/auto-update page for
+  Developer ID plus Sparkle. The 36-state owner-review packet was regenerated
+  from `main`; it adds the Testing setup state and fixes the three segmented
+  controls that clipped adjacent counts or fields. Remaining before publication:
+  the eight protected signing/notarization/Sparkle secrets, the exact-archive
+  installed-upgrade proof, and owner visual acceptance (issue #249 tasks 6–8).
 
 - **2026-09-04 — Native-only product migration (release candidate):** SwiftUI
   and AppKit in `apps/macos` are now the sole desktop UI. The retired

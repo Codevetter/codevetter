@@ -6,7 +6,7 @@
 //! profile. Set `CV_GRAPH_BUDGET_MODE=report-only` on shared runners.
 //!
 //! ```bash
-//! # from apps/desktop/src-tauri
+//! # from crates/codevetter-core
 //! cargo test --release perf_bench -- --ignored --nocapture
 //! # one bench, bigger inputs:
 //! CV_BENCH_MAX_MB=128 cargo test --release perf_bench::bench_index_parse -- --ignored --nocapture
@@ -275,7 +275,7 @@ fn bench_structural_graph_real_repo() {
         .map(std::path::PathBuf::from)
         .unwrap_or_else(|_| {
             std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-                .join("../../..")
+                .join("../..")
                 .canonicalize()
                 .expect("canonical repo root")
         });
@@ -566,7 +566,7 @@ fn bench_structural_graph_query_relevance() {
         .map(std::path::PathBuf::from)
         .unwrap_or_else(|_| {
             manifest
-                .join("../../..")
+                .join("../..")
                 .canonicalize()
                 .expect("canonical CodeVetter root")
         });
@@ -769,7 +769,7 @@ fn bench_history_causal_query() {
         .map(std::path::PathBuf::from)
         .unwrap_or_else(|_| {
             std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-                .join("../../..")
+                .join("../..")
                 .canonicalize()
                 .expect("canonical repo root")
         });

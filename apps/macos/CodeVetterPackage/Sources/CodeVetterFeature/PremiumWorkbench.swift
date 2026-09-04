@@ -355,7 +355,7 @@ private struct StoredRunInspector: View {
             .labelsHidden()
             .pickerStyle(.segmented)
             .tint(.secondary)
-            .frame(width: 142)
+            .fixedSize()
           }
           .padding(.horizontal, 16)
           .frame(height: 44)
@@ -1257,7 +1257,7 @@ private struct ReceiptDeskView: View {
               .labelsHidden()
               .pickerStyle(.segmented)
               .tint(.secondary)
-              .frame(width: 280)
+              .fixedSize()
             }
             .padding(.horizontal, 16)
             .frame(height: 40)
