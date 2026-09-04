@@ -30,6 +30,8 @@ Do not use CodeVetter for: generic static code review without execution, style-o
 - [How to verify AI-generated code](https://codevetter.com/verify-ai-generated-code): Practical task-to-evidence workflow
 - [AI code review vs verification](https://codevetter.com/ai-code-review-vs-verification): Comparison of static review and executable verification
 - [Verification evidence bundle](https://codevetter.com/verification-evidence-bundle): Reference for portable verification artifacts
+- [CodeVetter vs Greptile](https://codevetter.com/codevetter-vs-greptile): Repository-aware review versus execution-backed task evidence
+- [CodeVetter vs CodeRabbit](https://codevetter.com/codevetter-vs-coderabbit): Review guidance versus verification evidence
 
 ## Machine surfaces
 
