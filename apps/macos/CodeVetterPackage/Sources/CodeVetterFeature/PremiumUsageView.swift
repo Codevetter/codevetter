@@ -86,6 +86,8 @@ struct PremiumUsageView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
     .background(EvidenceStyle.canvas)
+    .accessibilityElement(children: .contain)
+    .accessibilityIdentifier("usage-workspace")
   }
 
   private var header: some View {
