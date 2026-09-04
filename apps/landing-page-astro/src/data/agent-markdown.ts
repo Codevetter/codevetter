@@ -65,11 +65,11 @@ const staticPages: Record<string, string> = {
   download: page(
     'Download CodeVetter',
     '/download',
-    `CodeVetter is distributed as a native desktop application through GitHub Releases. It runs locally, requires no CodeVetter account, stores product state in local SQLite, and checks GitHub Releases for updates.
+    `CodeVetter is distributed as a native SwiftUI/AppKit macOS application through GitHub Releases. It runs locally, requires no CodeVetter account, stores product state in local SQLite, and installed copies update through a signed Sparkle appcast published with each release.
 
 ## Supported release artifacts
 
-- macOS on Apple Silicon: \`CodeVetter_*_aarch64.dmg\`
+- macOS 14 or newer on Apple Silicon: \`CodeVetter-<version>-arm64.dmg\` (drag-to-Applications installer) and \`CodeVetter-<version>-arm64.zip\` (the Sparkle update archive). Both are Developer ID signed and notarized.
 
 The current public release does not contain Intel macOS, Windows, Linux, or
 Homebrew installers. The repository remains available for source inspection

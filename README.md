@@ -54,10 +54,10 @@ Give your coding agent this prompt:
 Install CodeVetter from the latest GitHub release:
 https://github.com/Codevetter/codevetter/releases/latest
 
-Detect this machine's OS and CPU architecture, download the matching CodeVetter app archive, verify the release asset hash when available, extract it, install CodeVetter.app into /Applications on macOS, remove the quarantine attribute if needed, and launch the app once to verify it starts.
+Confirm this is an Apple-silicon Mac on macOS 14 or newer, download CodeVetter-<version>-arm64.dmg, verify the release asset hash when available, install CodeVetter.app into /Applications, and launch it once to verify it starts. The app is Developer ID signed and notarized, so no quarantine workaround is needed; later releases arrive through the in-app updater.
 ```
 
-Use the signed, notarized DMG or ZIP from the release.
+Use the signed, notarized DMG for a first install; the matching ZIP is the Sparkle update archive.
 
 ### Development Install
 

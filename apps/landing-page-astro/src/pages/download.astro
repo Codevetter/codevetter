@@ -17,8 +17,9 @@ const PLATFORMS: Platform[] = [
   {
     name: 'macOS — Apple Silicon',
     arch: 'arm64',
-    asset: 'CodeVetter_*_aarch64.dmg',
-    command: 'Open the .dmg, drag CodeVetter to Applications.',
+    asset: 'CodeVetter-<version>-arm64.dmg (or .zip)',
+    command:
+      'Open the .dmg and drag CodeVetter to Applications. Requires macOS 14 or newer. The app is Developer ID signed and notarized; later releases install through the in-app Sparkle updater.',
   },
 ];
 ---
@@ -38,9 +39,10 @@ const PLATFORMS: Platform[] = [
         Download
       </h1>
       <p class="mt-3 text-sm leading-7 text-stone-400">
-        The current public artifact is an Apple-silicon macOS DMG. CodeVetter
-        requires no CodeVetter account; release updates are published through
-        GitHub Releases.
+        The current public artifact is a signed and notarized Apple-silicon
+        macOS DMG. CodeVetter requires no CodeVetter account; releases are
+        published through GitHub Releases and installed copies update through
+        the in-app Sparkle appcast.
       </p>
 
       <a

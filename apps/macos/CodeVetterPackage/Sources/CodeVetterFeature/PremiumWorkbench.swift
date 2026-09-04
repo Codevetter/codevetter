@@ -103,7 +103,19 @@ private struct PremiumRunsView: View {
               .font(.system(size: 10))
               .foregroundStyle(EvidenceStyle.warning)
               .padding(18)
-          } else if model.runs.isEmpty, !model.runsLoading {
+          } else if model.runs.isEmpty, model.runsLoading {
+            VStack(spacing: 10) {
+              ProgressView().controlSize(.small)
+              Text("Reading Rust-persisted receipts…").font(.system(size: 12, weight: .medium))
+              Text("The ledger lists the newest 50 runs once the receipt projection returns.")
+                .font(.system(size: 9))
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+            }
+            .padding(24)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .accessibilityLabel("Reading verification runs")
+          } else if model.runs.isEmpty {
             ContentUnavailableView(
               "No verification runs",
               systemImage: "checkmark.shield",

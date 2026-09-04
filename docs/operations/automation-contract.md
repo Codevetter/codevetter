@@ -35,8 +35,8 @@ Do not duplicate this matrix elsewhere — link here.
 | Local SQLite | `rusqlite` in Rust backend (no server) | Local only; `observability.rs` aggregates locally | Sarthak |
 | MCP sidecar | `crates/codevetter-core/src/bin/codevetter-mcp.rs` | `ci.yml` MCP protocol + stdio lifecycle tests; `mcp/sanitize.rs` redaction | Sarthak |
 | Benchmark | `benchmarks/public-catch-rate/` + `scripts/run-catch-rate-benchmark.mjs` | `pnpm test:benchmark`; public cases committed | Sarthak |
-| Release pipeline | `auto-release.yml` → `release.yml` → GitHub Releases | Release assets + `latest.json` manifest | Sarthak |
-| Auto-updater | `@tauri-apps/plugin-updater` consuming `latest.json` | `scripts/verify-release-manifest.mjs` validates linkage | Sarthak |
+| Release pipeline | `auto-release.yml` → `release.yml` → `native-production-qualification.yml` → GitHub Releases | Signed DMG + ZIP + `appcast.xml` bound by `release-readiness.json` | Sarthak |
+| Auto-updater | Sparkle 2.9.6 consuming the latest-release `appcast.xml` | `scripts/verify-release-manifest.mjs` validates the live appcast and archive linkage | Sarthak |
 | Docs | `docs/` + `docs-site/` (Blume) | `docs.yml` link + structure validation | Sarthak |
 | Weekly canary | `weekly.yml` (Mon 09:00 UTC) | Job summary + `canary-evidence.json` artifact | Sarthak |
 | Foundry receipts | `scripts/emit-foundry-receipt.mjs` | Sanitized aggregate receipt; no code/repo/prompt content | Sarthak |
@@ -52,8 +52,8 @@ keys, or local database contents.
 | Stage | Evidence | Source | Privacy stance |
 |---|---|---|---|
 | Acquisition | Landing page views, agent-indexing surface reachability | Cloudflare Pages analytics (aggregate, no review payload) | OK — no product content |
-| Download intent | GitHub Release asset download counts + `latest.json` poll count | GitHub Releases API (aggregate counts) | OK — no product content |
-| Installation / update | Updater manifest version + signature validity | `latest.json` + `.sig` (build-time, no user data) | OK — no product content |
+| Download intent | GitHub Release asset download counts + `appcast.xml` poll count | GitHub Releases API (aggregate counts) | OK — no product content |
+| Installation / update | Appcast version + EdDSA signature validity | `appcast.xml` (build-time, no user data) | OK — no product content |
 | First meaningful review | **Not applicable centrally.** Local SQLite `local_reviews` records status/duration; `observability.rs` aggregates locally | Local only — never transmitted | N/A — would violate "no telemetry" |
 | Meaningful return | **Not applicable centrally.** Local SQLite `cc_sessions` + `local_reviews` windowed counts | Local only — never transmitted | N/A — would violate "no telemetry" |
 
@@ -81,32 +81,30 @@ Every release candidate MUST pass before release approval:
 
 | Gate | Workflow | Evidence |
 |---|---|---|
-| TypeScript | `ci.yml` lint-and-typecheck | `tsc --noEmit` green |
-| Lint | `ci.yml` lint-and-typecheck | Biome green |
-| Unit tests | `ci.yml` lint-and-typecheck | `src/**/*.test.ts` green |
-| MCP protocol + safety | `ci.yml` lint-and-typecheck | `cargo test mcp` + stdio lifecycle green |
-| Desktop build | `ci.yml` lint-and-typecheck | Vite production build green |
-| Rust + Tauri build | `release.yml` | Tauri build green on macOS |
-| Graph + MCP budgets | `release.yml` | `qualify:graph` + `bench:mcp` green |
-| Artifacts | `release.yml` | DMG + `CodeVetter_aarch64.app.tar.gz` + `.sig` uploaded |
-| Updater manifest | `release.yml` + `scripts/verify-release-manifest.mjs` | `latest.json` uploaded; manifest URL resolves to a real asset; signature present |
-| Signing | `release.yml` | `TAURI_SIGNING_PRIVATE_KEY` re-signs the final tarball |
+| Lint + automation tests | `ci.yml` | Biome, Knip, and Node contract tests green |
+| Rust core, CLI, MCP | `ci.yml` | `cargo test`, Clippy, rustfmt, and stdio lifecycle green |
+| Native quiet lane | `ci.yml` / `native-qualification.yml` | Swift package tests, offscreen render gates, Debug and Release compiles green |
+| Package qualification | `native-production-qualification.yml` | `qualification.json` with production identity, six signed companions, no coverage sections |
+| Signing + notarization | `native-production-qualification.yml` | Developer ID, Hardened Runtime, Library Validation, stapled notarization ticket |
+| Installed upgrade proof | `native-production-qualification.yml` | Isolated incumbent → native → rollback with stable-record continuity |
+| Artifacts | `release.yml` | `CodeVetter-<version>-arm64.dmg`, `CodeVetter-<version>-arm64.zip`, `appcast.xml` uploaded |
+| Updater appcast | `release.yml` + `scripts/verify-release-manifest.mjs` | Appcast HTTPS, EdDSA-signed, bound to the exact qualified ZIP; `release-readiness.json` reports `shipping_ready: true` |
 
 **Release approval remains explicit.** Automation prepares evidence and MAY
 open a corrective PR, but MUST NOT publish a release or alter product
 direction without explicit approval. See
 [runbooks/cut-a-release.md](./runbooks/cut-a-release.md).
 
-### Updater manifest validation
+### Updater appcast validation
 
-`scripts/verify-release-manifest.mjs` validates that the live `latest.json`
-manifest references a resolvable artifact with a present signature — **without
+`scripts/verify-release-manifest.mjs` validates that the live Sparkle
+`appcast.xml` references a resolvable, signed release archive — **without
 publishing a release**. It is safe to run from any branch. It checks:
 
-1. `latest.json` downloads from the updater endpoint.
-2. The `version` field is non-empty and semver-shaped.
-3. Each platform entry's `url` resolves (HTTP 200) to a real release asset.
-4. Each platform entry's `signature` is non-empty.
+1. `appcast.xml` downloads from the latest-release endpoint.
+2. The newest item carries a semver-shaped version.
+3. The item declares an archive URL that resolves (HTTP 200) to a real release asset.
+4. The enclosure carries a non-empty Sparkle EdDSA signature.
 
 It does NOT download the full artifact, verify the signature against the
 pubkey, or touch the release pipeline. Those are release-time concerns.
