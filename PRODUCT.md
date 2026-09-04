@@ -4,7 +4,7 @@
 
 ## Platform
 
-macOS desktop application (Tauri 2 with a React webview), with CLI/MCP and
+Native macOS desktop application (SwiftUI + AppKit), with CLI/MCP and
 machine-readable local artifacts as primary verification surfaces.
 
 ## Users
@@ -37,7 +37,7 @@ The primary workflow is local and repository-scoped:
 `task → agent change → executable verification → evidence → measurable verdict`
 
 The CLI/MCP and machine-readable verification bundle are primary product
-surfaces. The Tauri desktop application is a local viewer over the same
+surfaces. The native macOS application is a local viewer over the same
 evidence, graph, history, review, and testing systems. Users bring their own
 Codex or Claude CLI/provider access and keep project data in a local SQLite
 database.

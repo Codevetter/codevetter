@@ -24,6 +24,16 @@ import Testing
     #expect(nativeContrastRatio(lightForeground, against: 0xFFFFFF) >= 4.5)
   }
 }
+
+@Test func providerBrandMarksAreBundledAndDecodable() throws {
+  for provider in ["claude", "codex"] {
+    #expect(ProviderBrandAsset.resourceURL(for: provider) != nil)
+    let image = try #require(ProviderBrandAsset.image(for: provider))
+    #expect(image.size.width > 0)
+    #expect(image.size.height > 0)
+  }
+}
+
 @Test func nativeUpdaterConfigurationFailsClosedUntilEverySigningInputExists() throws {
   let preview = NativeUpdaterConfiguration(
     feedURL: URL(string: "https://updates.example.test/appcast.xml"),

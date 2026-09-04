@@ -146,6 +146,14 @@ final class CodeVetterUITests: XCTestCase {
 
     assertSelected(app.buttons["workbench-section-usage"])
     XCTAssertTrue(app.buttons["Usage refresh"].exists)
+    XCTAssertTrue(
+      app.descendants(matching: .any)["provider-allowance-claude"].waitForExistence(timeout: 20),
+      "Claude allowance must render as a first-class provider card"
+    )
+    XCTAssertTrue(
+      app.descendants(matching: .any)["provider-allowance-codex"].waitForExistence(timeout: 5),
+      "Codex allowance must render as a first-class provider card"
+    )
   }
 
   @MainActor

@@ -1,3 +1,4 @@
+import AppKit
 import SwiftUI
 
 struct UsageTrendPoint: Identifiable, Sendable {
@@ -91,8 +92,8 @@ struct PremiumUsageView: View {
   private var header: some View {
     PremiumPageHeader(
       eyebrow: "Local compute ledger",
-      title: "Usage available",
-      subtitle: "Live remaining allowance from Claude and Codex"
+      title: "Usage remaining",
+      subtitle: "Live allowance from Claude and Codex"
     ) {
       if let report = model.usageReport {
         StatusPill(label: report.status.label, color: report.status.color)
@@ -608,6 +609,17 @@ private struct ProviderAllowanceCard: View {
     provider.provider == "claude" ? "Claude" : "Codex"
   }
 
+  private var isDisplayReady: Bool {
+    provider.isReady && !visibleWindows.isEmpty
+  }
+
+  private var availabilityLabel: String {
+    guard isDisplayReady else { return "ALLOWANCE UNAVAILABLE" }
+    return visibleWindows.contains(where: { $0.remainingPercent <= 10 })
+      ? "ALLOWANCE LOW"
+      : "ALLOWANCE AVAILABLE"
+  }
+
   private var visibleWindows: [ProviderQuotaWindow] {
     if provider.provider == "claude" {
       return Array(
@@ -622,33 +634,29 @@ private struct ProviderAllowanceCard: View {
   var body: some View {
     VStack(alignment: .leading, spacing: 16) {
       HStack(spacing: 9) {
-        Image(systemName: provider.provider == "claude" ? "sparkles" : "terminal.fill")
-          .font(.system(size: 13, weight: .semibold))
-          .foregroundStyle(accent)
-          .frame(width: 34, height: 34)
-          .background(Color.primary.opacity(0.035), in: RoundedRectangle(cornerRadius: 6))
+        ProviderBrandMark(provider: provider.provider, accent: accent)
         VStack(alignment: .leading, spacing: 2) {
           HStack(spacing: 6) {
             Text(displayName).font(.system(size: 14, weight: .semibold))
             if let plan = provider.plan {
               Text(plan.uppercased())
-                .font(.system(size: 7, weight: .bold, design: .monospaced))
+                .font(.caption2.weight(.bold).monospaced())
                 .foregroundStyle(.secondary)
             }
           }
-          Text(provider.isReady ? "USAGE AVAILABLE" : "ALLOWANCE UNAVAILABLE")
-            .font(.system(size: 7, weight: .bold, design: .monospaced))
+          Text(availabilityLabel)
+            .font(.caption2.weight(.bold).monospaced())
             .tracking(0.5)
-            .foregroundStyle(provider.isReady ? accent : EvidenceStyle.warning)
+            .foregroundStyle(isDisplayReady ? accent : EvidenceStyle.warning)
         }
         Spacer()
         Circle()
-          .fill(provider.isReady ? accent : EvidenceStyle.warning)
+          .fill(isDisplayReady ? accent : EvidenceStyle.warning)
           .frame(width: 7, height: 7)
       }
       .help(provider.source)
 
-      if provider.isReady, !visibleWindows.isEmpty {
+      if isDisplayReady {
         HStack(alignment: .top, spacing: 26) {
           ForEach(visibleWindows) { window in
             allowanceValue(window)
@@ -662,15 +670,15 @@ private struct ProviderAllowanceCard: View {
           }
           if let count = provider.resetCredits {
             Label(
-              "\(count) full reset \(count == 1 ? "available" : "available")",
+              "\(count) full \(count == 1 ? "reset" : "resets") available",
               systemImage: "arrow.counterclockwise.circle.fill")
           }
         }
-        .font(.system(size: 9, weight: .semibold))
+        .font(.caption.weight(.semibold))
         .foregroundStyle(.secondary)
       } else {
         Text(provider.message ?? "Provider quota is unavailable.")
-          .font(.system(size: 10))
+          .font(.caption)
           .foregroundStyle(.secondary)
           .fixedSize(horizontal: false, vertical: true)
       }
@@ -679,14 +687,14 @@ private struct ProviderAllowanceCard: View {
     .frame(maxWidth: .infinity, minHeight: 172, alignment: .topLeading)
     .background(EvidenceStyle.surface, in: RoundedRectangle(cornerRadius: 14))
     .overlay { RoundedRectangle(cornerRadius: 14).stroke(EvidenceStyle.separator) }
-    .accessibilityElement(children: .contain)
-    .accessibilityLabel("\(displayName) usage available")
+    .accessibilityElement(children: .combine)
+    .accessibilityIdentifier("provider-allowance-\(provider.provider)")
   }
 
   private func allowanceValue(_ window: ProviderQuotaWindow) -> some View {
     VStack(alignment: .leading, spacing: 4) {
       Text(window.label.replacingOccurrences(of: " window", with: "").uppercased())
-        .font(.system(size: 7, weight: .bold, design: .monospaced))
+        .font(.caption2.weight(.bold).monospaced())
         .tracking(0.55)
         .foregroundStyle(.secondary)
         .lineLimit(1)
@@ -694,7 +702,7 @@ private struct ProviderAllowanceCard: View {
         .font(.system(size: 32, weight: .semibold, design: .rounded))
         .foregroundStyle(window.remainingPercent <= 10 ? EvidenceStyle.failure : .primary)
       Text("remaining")
-        .font(.system(size: 9, weight: .medium))
+        .font(.caption)
         .foregroundStyle(.secondary)
       GeometryReader { geometry in
         ZStack(alignment: .leading) {
@@ -708,7 +716,7 @@ private struct ProviderAllowanceCard: View {
       .frame(height: 4)
       if let reset = resetLabel(window) {
         Text(reset)
-          .font(.system(size: 8, design: .monospaced))
+          .font(.caption2.monospaced())
           .foregroundStyle(.secondary)
           .lineLimit(1)
       }
@@ -716,7 +724,10 @@ private struct ProviderAllowanceCard: View {
     .frame(minWidth: 130, maxWidth: 190, alignment: .leading)
     .accessibilityElement(children: .combine)
     .accessibilityLabel(
-      "\(window.label), \(window.remainingPercent, specifier: "%.0f") percent remaining")
+      [
+        "\(window.label), \(Int(window.remainingPercent.rounded())) percent remaining",
+        resetLabel(window),
+      ].compactMap { $0 }.joined(separator: ". "))
   }
 
   private func creditText(_ credits: ProviderCreditBalance) -> String? {
@@ -736,6 +747,49 @@ private struct ProviderAllowanceCard: View {
     guard let timestamp = window.resetsAtUnix else { return nil }
     let date = Date(timeIntervalSince1970: TimeInterval(timestamp))
     return "Resets \(date.formatted(date: .abbreviated, time: .shortened))"
+  }
+}
+
+enum ProviderBrandAsset {
+  private static let images: [String: NSImage] = Dictionary(
+    uniqueKeysWithValues: ["claude", "codex"].compactMap { provider in
+      guard let url = resourceURL(for: provider), let image = NSImage(contentsOf: url) else {
+        return nil
+      }
+      return (provider, image)
+    })
+
+  static func resourceURL(for provider: String) -> URL? {
+    Bundle.module.url(forResource: "provider-\(provider)", withExtension: "svg")
+  }
+
+  static func image(for provider: String) -> NSImage? {
+    images[provider]
+  }
+}
+
+private struct ProviderBrandMark: View {
+  let provider: String
+  let accent: Color
+
+  var body: some View {
+    Group {
+      if let image = ProviderBrandAsset.image(for: provider) {
+        Image(nsImage: image)
+          .renderingMode(provider == "codex" ? .template : .original)
+          .resizable()
+          .scaledToFit()
+          .foregroundStyle(provider == "codex" ? Color.primary : accent)
+      } else {
+        Image(systemName: provider == "claude" ? "sparkles" : "terminal.fill")
+          .font(.system(size: 14, weight: .semibold))
+          .foregroundStyle(accent)
+      }
+    }
+    .frame(width: 26, height: 26)
+    .padding(7)
+    .background(Color.primary.opacity(0.035), in: RoundedRectangle(cornerRadius: 8))
+    .accessibilityHidden(true)
   }
 }
 
