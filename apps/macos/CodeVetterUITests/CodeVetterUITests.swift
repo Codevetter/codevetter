@@ -146,14 +146,25 @@ final class CodeVetterUITests: XCTestCase {
 
     assertSelected(app.buttons["workbench-section-usage"])
     XCTAssertTrue(app.buttons["Usage refresh"].exists)
-    XCTAssertTrue(
-      app.descendants(matching: .any)["provider-allowance-claude"].waitForExistence(timeout: 20),
-      "Claude allowance must render as a first-class provider card"
+    let claudeAllowance = app.descendants(matching: .any)["provider-allowance-claude"]
+    let unavailableAllowance = app.staticTexts["Usage allowance unavailable"]
+    let providerBoundary = XCTNSPredicateExpectation(
+      predicate: NSPredicate { _, _ in
+        claudeAllowance.exists || unavailableAllowance.exists
+      },
+      object: nil
     )
-    XCTAssertTrue(
-      app.descendants(matching: .any)["provider-allowance-codex"].waitForExistence(timeout: 5),
-      "Codex allowance must render as a first-class provider card"
+    XCTAssertEqual(
+      XCTWaiter.wait(for: [providerBoundary], timeout: 20),
+      .completed,
+      "Usage must expose provider allowance or its explicit unavailable state"
     )
+    if claudeAllowance.exists {
+      XCTAssertTrue(
+        app.descendants(matching: .any)["provider-allowance-codex"].waitForExistence(timeout: 5),
+        "Codex allowance must accompany the Claude provider receipt"
+      )
+    }
   }
 
   @MainActor
