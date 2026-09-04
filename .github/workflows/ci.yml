@@ -100,7 +100,6 @@ jobs:
           pnpm run quality:complexity
           pnpm run quality:cycles
           pnpm run quality:duplication
-          pnpm run quality:dependencies
       - name: Type Check
         working-directory: apps/desktop
         run: pnpm exec tsc --noEmit

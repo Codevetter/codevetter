@@ -1,6 +1,27 @@
 name: OSV Offline Scan
 
 on:
+  pull_request:
+    paths:
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - "apps/desktop/package.json"
+      - "apps/desktop/src-tauri/Cargo.toml"
+      - "apps/desktop/src-tauri/Cargo.lock"
+      - "apps/macos/**/Package.resolved"
+      - "scripts/run-osv-offline.mjs"
+      - ".github/workflows/osv-offline.yml"
+  push:
+    branches: [main]
+    paths:
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - "apps/desktop/package.json"
+      - "apps/desktop/src-tauri/Cargo.toml"
+      - "apps/desktop/src-tauri/Cargo.lock"
+      - "apps/macos/**/Package.resolved"
+      - "scripts/run-osv-offline.mjs"
+      - ".github/workflows/osv-offline.yml"
   workflow_dispatch:
 
 permissions: {}
