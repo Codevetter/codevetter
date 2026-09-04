@@ -8,9 +8,10 @@ sidebar:
 # Product overview
 
 CodeVetter is a **local-first desktop workbench for checking agent-generated
-code**. It runs offline as a Tauri 2 macOS binary, reviews diffs with
-pluggable LLM providers, and persists everything to local SQLite. No server,
-no auth, no cloud.
+code**. Its sole desktop app is native SwiftUI/AppKit on macOS, backed by the
+same Rust core used by the CLI and repository-scoped read-only MCP server.
+Reviews use configured local agent CLIs and evidence persists to local SQLite.
+There is no CodeVetter review server or account.
 
 ## Durable scope
 
@@ -66,6 +67,8 @@ still pending before external claims. See
 ## Surfaces
 
 See [surfaces.md](./surfaces.md) for the full nav + URL-only surface map.
+See [capabilities.md](./capabilities.md) for the synchronized UI/CLI/MCP and
+underlying-tool glossary.
 
 ## Source of truth for status
 

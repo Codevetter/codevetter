@@ -1,192 +1,149 @@
 ---
 title: "How CodeVetter works: end-to-end"
-description: "Learning-tier entry point — the major components, how a review flows through them, and the key design decisions and why."
+description: "Learning-tier entry point for the native app, shared Rust authority, CLI, MCP, and evidence-backed verification loop."
 sidebar:
   order: 0
 ---
 
 # How CodeVetter works: end-to-end
 
-This is the **starting point** for understanding CodeVetter. It connects the
-pieces at a high level and points to the detailed per-component docs for the
-depths. If you read one architecture page first, read this one.
-
-CodeVetter is a **local-first macOS desktop app** for evidence-backed review of
-agent-generated code. There is no server and no CodeVetter-hosted review path:
-the review engine, session indexer, structural graph, history workbench, and
-optional MCP server all run on your machine against one local SQLite file.
+CodeVetter is a local-first macOS verification system for agent-generated
+code. The core loop is task, agent change, executable verification, evidence,
+and measurable verdict. There is no CodeVetter-hosted review server.
 
 ## The four things to hold in your head
 
-1. **A webview UI you click** (React), **a native shell** (Tauri 2 / Rust) that
-   does everything privileged — git, files, subprocesses, SQLite — and a **local
-   database** the two share. The webview never touches the disk or the network
-   directly; it asks Rust to.
-2. **A review loop**: review → fix → re-review → proof. A change goes in, a
-   ranked set of findings comes out, you fix some, and re-review confirms which
-   are actually gone.
-3. **Two read-only context sources** — a syntax-aware **structural graph** and a
-   **release-history workbench** — that orient a review but never invent
-   findings on their own.
-4. **An opt-in MCP sidecar** that exposes those same read-only sources to *other*
-   coding agents.
+1. The native SwiftUI/AppKit app is the sole desktop UI.
+2. The Rust core owns privileged execution, SQLite, verdicts, and versioned
+   receipts.
+3. The `codevetter` CLI and native UI can execute explicitly authorized work;
+   repository-scoped MCP is read-only.
+4. Structural graph and history are navigation evidence, not proof that code
+   works.
 
-## Components and how they connect
+## Components
 
 ```mermaid
-flowchart TB
-  subgraph WV["React 19 + Vite webview — apps/desktop/src"]
-    UI["pages/ (QuickReview, RepoUnpacked, Settings, …)<br/>components/ (shadcn/ui + feature panels)"]
-    SVC["lib/review-service.ts<br/>standards packs + config only"]
-    IPC["lib/tauri-ipc.ts<br/>safeInvoke() + isTauriAvailable() guard"]
-  end
-  subgraph RS["Tauri 2 shell — apps/desktop/src-tauri (Rust)"]
-    CMD["commands/ (~50 modules)<br/>review.rs owns the whole pipeline"]
-    AGENT["agent/ — spawns claude / codex CLIs"]
-    GRAPH["structural_graph/ + history_*.rs"]
-    DB["db/ — rusqlite"]
-    MCP["mcp/ — stdio server binary"]
-  end
-  SQLITE[("SQLite file<br/>one per app data dir")]
-  GIT["git CLI + working tree"]
-  CLI["claude / codex CLI subprocess<br/>(your LLM provider)"]
-  EXTAGENT["external coding agent<br/>(Claude Code, Cursor, Codex)"]
-
-  UI --> SVC --> IPC
-  IPC -->|"invoke()"| CMD
-  CMD --> AGENT --> CLI
-  CMD --> GRAPH
-  CMD --> DB --> SQLITE
-  CMD --> GIT
-  MCP -.read-only.-> SQLITE
-  EXTAGENT -.stdio.-> MCP
+flowchart LR
+  UI["SwiftUI + AppKit native app"] -->|versioned JSON receipts| CORE["Rust core"]
+  CLI["codevetter CLI"] --> CORE
+  AGENT["coding agent"] -->|stdio MCP| MCP["codevetter-mcp"]
+  MCP -->|read only| CORE
+  CORE --> DB[("local SQLite")]
+  CORE --> GIT["selected Git repository"]
+  CORE --> TOOLS["tests, browser journeys, collectors"]
+  CORE --> PROVIDER["configured Claude or Codex CLI"]
 ```
 
-If Mermaid does not render above, read it as: the UI calls the service layer,
-which calls the IPC bridge, which `invoke()`s a Rust command; Rust commands own
-git, the CLI agent subprocess, the graph/history services, and the rusqlite
-database; a separate read-only MCP binary reads the same SQLite file over stdio
-for external agents.
+### Native app
 
-### The webview (`apps/desktop/src`)
+`apps/macos` contains the Xcode workspace, minimal app shell, feature Swift
+package, assets, and XCUITest targets. The UI presents six primary workspaces:
+Usage, Repo Unpack, Review, Testing, Performance, and Settings, plus the bounded
+Runs evidence ledger.
 
-React 19 + Vite. This is the **only** user surface. Route screens live in
-`pages/` (e.g. `QuickReview.tsx`, `RepoUnpacked.tsx`, `Settings.tsx`), panels and
-shadcn/ui primitives in `components/`. State is local React state; anything
-durable or privileged goes through IPC. Notably, `lib/review-service.ts` does
-**not** run the review — it only manages standards-pack config and builds the
-standards-context string that gets passed to the backend. See
-[overview.md](./overview.md) for the full layer table.
+Swift does not open SQLite, traverse Git history, rank findings, or reinterpret
+verdicts. It starts supervised companion commands and decodes exact Rust-owned
+receipt schemas.
 
-### The IPC bridge (`lib/tauri-ipc.ts`)
+### Rust core
 
-Every Rust↔webview call goes through Tauri's `invoke()`, wrapped in
-`safeInvoke()`. If `window.__TAURI_INTERNALS__` is absent (plain `vite dev`, SSR,
-Storybook) it throws a distinguishable `TAURI_NOT_AVAILABLE` so the same React
-code renders a fallback instead of crashing. The typed interfaces here mirror the
-Rust structs in `db/queries.rs` one-for-one — change one side, change the other.
-Details: [ipc-and-commands.md](./ipc-and-commands.md).
+`crates/codevetter-core` contains:
 
-### The Rust backend (`apps/desktop/src-tauri/src`)
+- deterministic verification and review commands;
+- CLI and MCP binaries;
+- SQLite schema, migrations, and queries;
+- graph, history, repository scanning, and exports;
+- performance, browser, watcher, and collector supervision;
+- provider usage and availability normalization.
 
-~50 command modules under `commands/`, each registered in `main.rs`. Rust does
-all file I/O, git, subprocess spawning, the structural graph, history
-reconstruction, and SQLite access. The review pipeline itself — diff, prompt,
-tiers, specialists, coordinator, dedup, score, save — lives entirely in
-`commands/review.rs`.
+The core is platform-neutral and contains no Tauri, Wry, WebKit, GTK, window,
+or WebView runtime. A small internal transport facade preserves source-level
+command annotations while old module names are retired gradually; it has no UI
+or production window authority.
 
-### SQLite via rusqlite (`db/`)
+### SQLite
 
-One local file at the Tauri app-data dir. Reviews land in `local_reviews` +
-`local_review_findings`; the graph in `structural_graph_*` tables; sessions,
-history, QA, audience, and provider tables round it out. Persistence boundaries
-are in [data-model.md](./data-model.md).
+One local CodeVetter database stores reviews, findings, repository snapshots,
+graph/history indexes, usage evidence, QA runs, and bounded preferences. The
+native replacement retains `com.codevetter.desktop`, preserving the existing
+Application Support location. See [Data model](data-model.md).
 
-## How a review actually flows
+### CLI and MCP
 
-Grounded in `apps/desktop/src/pages/QuickReview.tsx` and
-`apps/desktop/src-tauri/src/commands/review.rs`:
+The `codevetter` CLI is the machine-readable execution surface. The native
+app invokes the same commands rather than recreating policy in Swift.
 
-1. **You pick a repo + diff range** in QuickReview and click review. The page
-   calls `runCliReview(...)` (`tauri-ipc.ts`), which `invoke`s the Rust
-   `run_cli_review` command.
-2. **Rust runs the diff.** `run_cli_review_core` shells out to `git diff`,
-   truncates at 100 KB, and collects the changed-file list. (This core is
-   deliberately state-free so the public benchmark harness can run the *exact*
-   production pipeline headlessly.)
-3. **Rust picks a risk tier** from the changed set (`is_sensitive_review_path` +
-   changed-line count): **trivial** (≤10 lines, no sensitive paths — assumption
-   + general specialists, no coordinator), **lite** (≤100 lines), or
-   **full / full-sensitive** (security + product + agent specialists **plus** a
-   coordinator pass). Sensitive paths (auth, secrets, migrations, …) force the
-   full tier.
-4. **Rust builds the prompt** per specialist, folding in the standards-context
-   string the webview sent and a blast-radius summary, then **spawns the CLI
-   agent** (`claude` / `codex`, via `agent/cli_brain.rs`) as a subprocess. The
-   LLM call is the subprocess — your provider, your key, your machine. There is
-   no HTTP call to a CodeVetter server.
-5. **Rust parses + dedupes findings.** `dedupe_findings` runs two passes: exact
-   `file:line:title` collapse, then near-duplicate clustering
-   (`is_duplicate_finding`: same file AND close lines or high token-Jaccard
-   similarity), keeping the higher-severity/confidence statement. On the full
-   tier a coordinator prompt reconciles the specialists and enforces the
-   assumption-integrity rule (drop findings resting on an unconfirmed premise).
-6. **Rust saves** to `local_reviews` + `local_review_findings` and returns a
-   scored, ranked `ReviewFinding[]`.
-7. **The UI renders** the QuickReview editor-primary layout with a verdict
-   sidebar.
+`codevetter-mcp` is an opt-in stdio server scoped to one explicitly enabled
+repository. It can project bounded graph, history, archaeology, preparation,
+capability, and persisted-verification evidence. It cannot write files, call
+providers, execute verification, refresh indexes, or listen on the network.
+See [MCP sidecar](mcp-sidecar.md).
 
-**Fix loop**: you select findings, an `agent-fix-packet` is built (goal,
-acceptance criteria, non-goals, evidence refs), fixes run in an **isolated git
-worktree** (`create_fix_worktree` under `.codevetter-worktrees/`, never your
-working tree), and re-review runs the same pipeline against the fix diff. Each
-finding gets a `fixed` / `reproduced` / `unchecked` status. The full mechanics,
-standards packs, and the reviewer-handoff proof live in
-[review-pipeline.md](./review-pipeline.md).
+## Verification flow
 
-## Context sources (not finding sources)
+1. The operator selects a repository, exact change, task, and acceptance
+   criteria.
+2. Rust resolves a bounded evidence scope and reports gaps before execution.
+3. The operator explicitly authorizes the UI or CLI to run admitted checks.
+4. Rust supervises repository tests, browser journeys, performance workloads,
+   collectors, or configured agent CLIs with timeouts and bounded output.
+5. Every result is tied to repository and revision identity.
+6. Rust builds the canonical receipt and verdict. Missing evidence remains
+   unavailable; it is never converted to zero or pass.
+7. The native app renders the receipt, while CLI exports the same machine
+   contract and MCP may inspect only persisted read-only projections.
 
-The **structural graph** (tree-sitter across 15 language variants, communities,
-trust-weighted paths) and the **release-history workbench** (immutable
-checkpoints, causal `what/why/when` queries) are persisted to SQLite and fed
-into a review as **navigation context only**. They can prove a *local* fact — a
-definition exists, a path connects two symbols, a release touched a file — but
-they cannot create findings, severities, or verified-runtime claims, and code
-emission never implies external ingestion without imported evidence. This
-boundary is load-bearing; see [graph-and-history.md](./graph-and-history.md).
+Review can request independent sequential Claude and Codex passes over the same
+immutable target. Neither reviewer sees the other's output. Rust reconciles
+only exact source-qualified identities and preserves unique or conflicting
+findings.
 
-The same read-only graph + history is exposed to *other* local coding agents
-through the opt-in, stdio-only **MCP sidecar** (13 bounded tools, no network, no
-mutation). See [mcp-sidecar.md](./mcp-sidecar.md).
+The fix loop uses an app-owned detached worktree. It never commits, merges,
+pushes, or modifies the selected checkout. Re-review labels each selected
+finding fixed, reproduced, or unchecked from executable evidence.
 
-## Key design decisions and why
+## Context is not proof
 
-- **Local-first, no server.** Code and diffs never leave your machine except to
-  the LLM provider you configure. The CSP in `tauri.conf.json` pins egress to
-  exactly `api.codevetter.com` (update/telemetry) and `api.github.com` (PR
-  reads); the LLM call is a local CLI subprocess, not webview traffic. Privacy
-  and offline use are the point.
-- **rusqlite, not `@tauri-apps/plugin-sql`.** The DB layer is Rust-internal so
-  schema, migrations, and queries stay in one typed place. `plugin-sql` was
-  removed in the 2026-07-11 desloppification sweep — do not re-add it.
-- **Pipeline in Rust, config in TS.** Keeping diff/tiers/specialists/dedup in
-  `review.rs` lets the benchmark harness run the identical pipeline headlessly
-  and keeps privileged work on the privileged side; the webview only owns
-  standards-pack config.
-- **Multi-provider by CLI subprocess.** CodeVetter spawns whichever CLI you have
-  (`claude`, `codex`; Gemini via local-ai) rather than embedding one SDK, so you
-  bring your own provider and key. Provider presets
-  (Anthropic / OpenAI / OpenRouter / free-ai gateway) live in
-  `review-service.ts`.
-- **`isTauriAvailable()` guard everywhere.** One code path runs in the real app
-  and degrades cleanly in a browser dev build.
+The structural graph and release-history index can show that a symbol exists, a
+path connects two nodes, or a commit changed a file. They cannot establish
+runtime correctness. Review prompts receive this context with revision,
+freshness, trust, and limitation metadata.
+
+The same distinction applies to external tools: Gitleaks, cargo-audit,
+cargo-llvm-cov, ccusage, Playwright, Git, and provider CLIs remain separately
+identified evidence sources. Tool presence alone is not a passing claim.
+
+## Security and privacy boundaries
+
+- User-selected repositories are the only file scope granted to the app.
+- Credentials are excluded from non-secret settings and machine receipts.
+- Raw source leaves the Mac only when the operator invokes a configured
+  provider or an admitted network journey.
+- MCP is local stdio and read-only.
+- Watcher execution and GitHub status posting require explicit foreground
+  consent; credentials are resolved ephemerally.
+- Destructive retention actions are unavailable to agents and require a
+  separate UI or CLI confirmation.
+
+## Distribution
+
+The production application is a sandboxed, hardened native macOS bundle. It
+ships the exact `codevetter`, `codevetter-mcp`, and ccusage companions and
+uses Sparkle for updates.
+
+Publication fails closed unless the exact archive passes Developer ID signing,
+Apple notarization and stapling, Sparkle EdDSA and appcast identity, Gatekeeper,
+installed upgrade, stable-record continuity, native relaunch, and rollback.
+The old signed Tauri archive is retained only as that upgrade/rollback fixture;
+no WebView application is shipped.
 
 ## Where to go next
 
-- [overview.md](./overview.md) — layer table, invariants, what was removed.
-- [ipc-and-commands.md](./ipc-and-commands.md) — the bridge + full command map.
-- [review-pipeline.md](./review-pipeline.md) — the review loop in depth.
-- [data-model.md](./data-model.md) — SQLite tables and boundaries.
-- [graph-and-history.md](./graph-and-history.md) — the two context sources.
-- [mcp-sidecar.md](./mcp-sidecar.md) — the opt-in MCP server.
-- [../development/setup.md](../development/setup.md) — build and run it yourself.
+- [Architecture overview](overview.md)
+- [IPC and commands](ipc-and-commands.md)
+- [Review pipeline](review-pipeline.md)
+- [Graph and history](graph-and-history.md)
+- [Native Rust boundary](native-rust-boundary.md)
+- [Capability glossary](../product/capabilities.md)
+- [Release pipeline](../operations/release-pipeline.md)

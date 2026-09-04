@@ -33,7 +33,7 @@ queries against the current CodeVetter repository.
 Run the fixture and large-repository checks with:
 
 ```bash
-cargo test --manifest-path apps/desktop/src-tauri/Cargo.toml --release \
+cargo test --manifest-path crates/codevetter-core/Cargo.toml --release \
   perf_bench::bench_structural_graph_query_relevance -- \
   --ignored --nocapture --test-threads=1
 ```

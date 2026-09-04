@@ -12,7 +12,6 @@
           "availability": "available",
           "authority": "read_execute",
           "entrypoints": [
-            "Tauri Review",
             "Native Review (acceptance binding, plan, execute, findings, proof map, intent diagnostic, recorded-QA artifacts, isolated fix/recheck, source, X-Ray, export)"
           ]
         },
@@ -50,7 +49,7 @@
       "data_boundary": "Selected local repository; evidence stays on the Mac unless the configured agent provider is invoked.",
       "qualification": "partial",
       "limitations": [
-        "The Tauri-independent verification-command/v1 service correlates native/CLI commands, ordered progress/v2 events, request-scoped verification-cancel/v1 termination, and terminal receipts with one bounded request id.",
+        "The UI-independent verification-command/v1 service correlates native/CLI commands, ordered progress/v2 events, request-scoped verification-cancel/v1 termination, and terminal receipts with one bounded request id.",
         "Cancellation is supervised at the process boundary but is not yet a canonical engine event.",
         "An unavailable runtime collector yields an explicit limitation rather than a passing claim.",
         "Native source opening uses the recorded repository-relative path; line positioning depends on the user's default editor.",
@@ -69,7 +68,6 @@
           "availability": "available",
           "authority": "read_execute",
           "entrypoints": [
-            "Tauri Testing",
             "Native Testing (secret-safe journey workspace + scope discovery + direct preview + warm + differential + scenarios + PR watcher)"
           ]
         },
@@ -130,7 +128,6 @@
           "availability": "available",
           "authority": "read_execute",
           "entrypoints": [
-            "Tauri Performance",
             "Native Performance (scope discovery + exact workload)"
           ]
         },
@@ -180,7 +177,6 @@
           "availability": "available",
           "authority": "read",
           "entrypoints": [
-            "Tauri Usage",
             "Native Usage (ccusage plus separate indexed Devin history)"
           ]
         },
@@ -228,7 +224,6 @@
           "availability": "available",
           "authority": "read_execute",
           "entrypoints": [
-            "Tauri Usage settings",
             "Native Usage settings"
           ]
         },
@@ -300,9 +295,9 @@
       "data_boundary": "Twenty-eight declared non-secret local preferences plus the shared onboarding completion flag and default adapter; github_token and all undeclared values are excluded from every receipt.",
       "qualification": "partial",
       "limitations": [
-        "Integration credentials remain in their incumbent owner until secure native storage is separately qualified.",
+        "Integration credentials remain outside the non-secret settings receipt until secure native storage is separately qualified.",
         "Native onboarding reuses the incumbent completion flag, checks executable presence without inspecting authentication, and changes only the declared default adapter plus completion state.",
-        "Ops read-only aggregate status now has a bounded shared contract; credential writes, live provider refresh, and webhook operations remain with the incumbent owner.",
+        "Ops read-only aggregate status now has a bounded shared contract; credential writes, live provider refresh, and webhook operations remain unavailable pending a secure native contract.",
         "About now reports native version and bundle identity, and Sparkle is locally packaged but remains disabled until production signing, appcast, EdDSA, and installed-upgrade gates pass."
       ],
       "next_step": "Prove secure native credential ownership and production updater behavior separately without widening the non-secret settings receipt."
@@ -344,7 +339,7 @@
       "qualification": "partial",
       "limitations": [
         "This surface never refreshes live provider billing or sends a webhook.",
-        "Credential and endpoint writes remain in the incumbent settings surface.",
+        "Credential and endpoint writes remain unavailable until a secure native contract is qualified.",
         "Indexed-session success remains an explicitly labelled aggregate proxy because the stored source has no failure signal.",
         "Agent and MCP surfaces receive no operations authority."
       ],
@@ -360,7 +355,6 @@
           "availability": "building",
           "authority": "read_execute",
           "entrypoints": [
-            "Tauri Agent Island runtime",
             "Native Agent Island settings"
           ]
         },
@@ -382,22 +376,17 @@
           "name": "CodeVetter Rust core",
           "role": "Owns the twelve-setting allowlist, validation, SQLite persistence, and helper runtime authority",
           "requirement": "bundled"
-        },
-        {
-          "name": "AppKit and SwiftUI Agent Island helper",
-          "role": "Owns non-activating presentation and local system speech only",
-          "requirement": "bundled"
         }
       ],
       "data_boundary": "Twelve non-secret presentation and speech preferences. Live session snapshots, prompts, output, commands, paths, provider responses, and credentials never enter the settings receipt.",
       "qualification": "partial",
       "limitations": [
         "The feature remains off by default.",
-        "Native UI, CLI, and the retained helper share the exact persisted preference keys, defaults, and options.",
-        "The new Evidence Workbench stores configuration only; it does not yet launch the helper or action live agent requests.",
+        "Native UI and CLI share the exact persisted preference keys, defaults, and options.",
+        "The Evidence Workbench stores configuration only; it does not launch a helper or action live agent requests.",
         "Agent and MCP surfaces receive no Agent Island authority."
       ],
-      "next_step": "Integrate and requalify the supervised helper in the new native host before claiming live runtime parity."
+      "next_step": "Treat a future live helper as a separately scoped side quest; the core verification product grants it no runtime authority."
     },
     {
       "id": "evidence.agent_memories",
@@ -409,7 +398,6 @@
           "availability": "available",
           "authority": "read",
           "entrypoints": [
-            "Tauri Memories",
             "Native Memories"
           ]
         },
@@ -453,7 +441,6 @@
           "availability": "available",
           "authority": "read_execute",
           "entrypoints": [
-            "Tauri Usage settings",
             "Native Usage settings"
           ]
         },
@@ -495,7 +482,6 @@
           "availability": "available",
           "authority": "read_execute",
           "entrypoints": [
-            "Tauri Rubrics",
             "Native Rubrics"
           ]
         },
@@ -526,10 +512,10 @@
       "data_boundary": "Non-secret rubric definitions and local review-attribution counts; no provider credentials or review evidence content.",
       "qualification": "partial",
       "limitations": [
-        "The incumbent Tauri shell attempts the bounded WebView-local migration on every startup until Rust owns a canonical preference; opening Rubrics also retries and reports sync errors.",
+        "Rust-owned SQLite is the canonical rubric store; the installed-upgrade gate preserves an existing custom pack and active selection across native replacement and rollback.",
         "Built-in packs are immutable; custom packs can be created or replaced within declared bounds."
       ],
-      "next_step": "Qualify the startup bridge against an installed upgrade with custom packs before retiring the Tauri rubric owner."
+      "next_step": "Keep the installed-upgrade custom-pack continuity gate in every production release qualification."
     },
     {
       "id": "machine.repository_mcp",
@@ -541,7 +527,6 @@
           "availability": "available",
           "authority": "read_execute",
           "entrypoints": [
-            "Tauri Agent MCP",
             "Native Agent MCP"
           ]
         },
@@ -642,7 +627,6 @@
           "availability": "available",
           "authority": "read_execute",
           "entrypoints": [
-            "Tauri Repo Unpack",
             "Native Repo Unpack (scan + bounded inspectors)"
           ]
         },
@@ -698,7 +682,6 @@
           "availability": "available",
           "authority": "read",
           "entrypoints": [
-            "Tauri Repo Unpack",
             "Native Repo Unpack (bounded snapshot + canonical query desk)"
           ]
         },
@@ -746,7 +729,6 @@
           "availability": "available",
           "authority": "read",
           "entrypoints": [
-            "Tauri Repo Unpack",
             "Native Repo Unpack (bounded snapshot + canonical query desk)"
           ]
         },
@@ -787,10 +769,10 @@
       "id": "native.evidence_workbench",
       "name": "Native Evidence Workbench",
       "purpose": "Provide a fast, accessible macOS operating surface over the canonical Rust verification loop.",
-      "stage": "building",
+      "stage": "current",
       "surfaces": {
         "ui": {
-          "availability": "building",
+          "availability": "available",
           "authority": "read_execute",
           "entrypoints": [
             "apps/macos"
@@ -837,10 +819,10 @@
       "data_boundary": "User-selected local repositories; no ambient credential authority. Sparkle remains inactive unless a production HTTPS appcast and EdDSA public key are present.",
       "qualification": "partial",
       "limitations": [
-        "The native client does not replace Tauri until feature, output, performance, accessibility, visual, installed-upgrade, and owner gates pass.",
-        "The local package is hardened, non-sandboxed, and ad-hoc signed; Developer ID signing, notarization, production updater inputs, and rollback proof remain open."
+        "The SwiftUI/AppKit client is the sole desktop application; no WebView application runtime is shipped.",
+        "Developer ID signing, notarization, Sparkle signing, installed upgrade, and rollback are fail-closed production release gates."
       ],
-      "next_step": "Close retained feature and owner-interaction gaps, refresh exact-package performance with owner-approved foreground qualification, then qualify a notarized installed upgrade before the owner retirement decision."
+      "next_step": "Keep exact-package performance, accessibility, visual, installed-upgrade, rollback, and owner-acceptance receipts current for each production release."
     },
     {
       "id": "evidence.local_runs",

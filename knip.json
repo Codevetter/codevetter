@@ -2,37 +2,15 @@
   "$schema": "https://unpkg.com/knip@latest/schema.json",
   "workspaces": {
     ".": {
-      "entry": [
-        "scripts/**/*.mjs"
-      ],
-      "project": [
-        "scripts/**/*.mjs"
-      ]
-    },
-    "apps/desktop": {
-      "entry": [
-        "scripts/**/*.mjs",
-        "tests/**/*.spec.ts",
-        "src/**/*.test.{ts,tsx}"
-      ],
-      "project": [
-        "src/**/*.{ts,tsx}",
-        "scripts/**/*.mjs"
-      ]
+      "entry": ["scripts/**/*.mjs"],
+      "project": ["scripts/**/*.mjs"]
     },
     "apps/landing-page-astro": {
-      "entry": [
-        "src/pages/**/*.{astro,ts}"
-      ],
-      "project": [
-        "src/**/*.{ts,astro}"
-      ]
+      "entry": ["src/pages/**/*.{astro,ts}"],
+      "project": ["src/**/*.{ts,astro}"]
     }
   },
-  "ignoreDependencies": [
-    "tailwindcss",
-    "ccusage"
-  ],
+  "ignoreDependencies": ["ccusage", "tailwindcss"],
   "ignoreBinaries": [
     "actionlint",
     "cargo-deny",
@@ -40,7 +18,6 @@
     "du",
     "go",
     "gitleaks",
-    "lipo",
     "lsof",
     "netstat",
     "osascript",
@@ -49,134 +26,9 @@
     "rustc",
     "sips",
     "spctl",
-    "swift",
-    "tauri",
     "xcode-select"
   ],
   "ignoreIssues": {
-    "apps/desktop/src/lib/business-rule-archaeology/qualification-policy.ts": [
-      "exports",
-      "types"
-    ],
-    "apps/desktop/src/lib/scenario-compiler/candidate.ts": [
-      "exports",
-      "types"
-    ],
-    "apps/desktop/src/lib/scenario-compiler/cli.ts": [
-      "exports",
-      "types"
-    ],
-    "apps/desktop/src/lib/scenario-compiler/provider.ts": [
-      "exports",
-      "types"
-    ],
-    "apps/desktop/src/lib/verification-state-bridge.ts": [
-      "exports",
-      "types"
-    ],
-    "apps/desktop/src/lib/warm-verification/adapters.ts": [
-      "exports",
-      "types"
-    ],
-    "apps/desktop/src/lib/warm-verification/change-set.ts": [
-      "exports",
-      "types"
-    ],
-    "apps/desktop/src/lib/warm-verification/config-loader.ts": [
-      "exports",
-      "types"
-    ],
-    "apps/desktop/src/lib/warm-verification/config.ts": [
-      "exports",
-      "types"
-    ],
-    "apps/desktop/src/lib/warm-verification/differential-comparator.ts": [
-      "duplicates",
-      "exports",
-      "types"
-    ],
-    "apps/desktop/src/lib/warm-verification/differential-config.ts": [
-      "exports",
-      "types"
-    ],
-    "apps/desktop/src/lib/warm-verification/differential-contracts.ts": [
-      "exports",
-      "types"
-    ],
-    "apps/desktop/src/lib/warm-verification/differential-daemon-contracts.ts": [
-      "exports",
-      "types"
-    ],
-    "apps/desktop/src/lib/warm-verification/differential-plan.ts": [
-      "exports",
-      "types"
-    ],
-    "apps/desktop/src/lib/warm-verification/differential-scheduler.ts": [
-      "exports",
-      "types"
-    ],
-    "apps/desktop/src/lib/warm-verification/differential-source.ts": [
-      "exports",
-      "types"
-    ],
-    "apps/desktop/src/lib/warm-verification/differential-timing-policy.ts": [
-      "exports",
-      "types"
-    ],
-    "apps/desktop/src/lib/warm-verification/ipc.ts": [
-      "exports",
-      "types"
-    ],
-    "apps/desktop/src/lib/warm-verification/manifest-loader.ts": [
-      "exports",
-      "types"
-    ],
-    "apps/desktop/src/lib/warm-verification/retention.ts": [
-      "exports",
-      "types"
-    ],
-    "apps/desktop/src/lib/warm-verification/scenario.ts": [
-      "exports",
-      "types"
-    ],
-    "apps/desktop/src/lib/warm-verification/selection.ts": [
-      "exports",
-      "types"
-    ],
-    "apps/desktop/src/lib/warm-verification/source-watcher.ts": [
-      "exports",
-      "types"
-    ],
-    "apps/desktop/src/lib/warm-verification/state.ts": [
-      "exports",
-      "types"
-    ],
-    "apps/desktop/src/lib/warm-verification/supervision.ts": [
-      "exports",
-      "types"
-    ],
-    "apps/desktop/src/lib/warm-verification/visual.ts": [
-      "exports",
-      "types"
-    ],
-    "**/commands/**": [
-      "exports",
-      "types"
-    ],
-    "**/tauri-ipc.ts": [
-      "exports",
-      "types"
-    ],
-    "apps/desktop/src/lib/warm-verification/contracts.ts": [
-      "exports",
-      "types"
-    ],
-    "apps/desktop/src/lib/business-rule-archaeology/contracts.ts": [
-      "exports",
-      "types"
-    ],
-    "apps/desktop/src/lib/scenario-compiler/contracts.ts": [
-      "types"
-    ]
+    "**/commands/**": ["exports", "types"]
   }
 }

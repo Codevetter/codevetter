@@ -1503,7 +1503,7 @@ struct PremiumSettingsView: View {
           Text("Sparkle 2.9.6 selected · preview disabled")
             .font(.system(size: 11, weight: .semibold))
           Text(
-            "The native updater stays off until the production bundle has an HTTPS appcast and a real EdDSA public key. The Tauri feed remains authoritative through the one-time dual-feed cutover."
+            "The updater stays off unless the production bundle has an HTTPS appcast and a real EdDSA public key. Preview builds fail closed."
           )
           .font(.system(size: 9))
           .foregroundStyle(.secondary)
@@ -1859,7 +1859,7 @@ struct PremiumSettingsView: View {
     case .mcp:
       "The CLI and native UI share codevetter.mcp-settings/v1. Repository authority changes are explicit; credentials and evidence payloads never enter the access audit."
     case .agentIsland:
-      "The CLI, native UI, and retained Tauri helper share the same twelve non-secret preferences through codevetter.native-settings/v1. This host stores configuration only; live helper status, preview, session presentation, speech, and validated actions remain incumbent authority."
+      "The CLI and native UI share the same twelve non-secret preferences through codevetter.native-settings/v1. This host stores configuration only; runtime actions remain explicitly authorized."
     case .usage:
       "The CLI and native UI share codevetter.history-roots/v1 and codevetter.session-retention/v1. Root changes are bounded and never read or delete transcripts; retention preview, apply, checkpoint, and VACUUM remain separate operations."
     case .rubrics:

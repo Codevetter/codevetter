@@ -52,7 +52,7 @@ it can:
 - show recent immutable evidence;
 - request bounded artifact cleanup.
 
-The Tauri bridge finds exactly one repository-owned `verify` script, selects its
+The Rust core finds exactly one repository-owned `verify` script, selects its
 package manager from the repository lockfile, invokes it without a shell, limits
 time and output, validates its JSON contract, and persists accepted results. It
 does not bundle Node, a package manager, Playwright, or Chromium.
@@ -134,28 +134,29 @@ the explicit release workflow has not run and no release is claimed here.
 flowchart LR
   TREX[T-Rex controls]
   REVIEW[Review read-only evidence]
-  TAURI[Tauri bridge]
+  CORE[Rust verification core]
   DB[(SQLite)]
   CLI[Repository-owned verify CLI]
   DAEMON[verifyd]
   BROWSER[Warm Chromium]
   APP[Configured React/MSW app]
 
-  TREX --> TAURI
-  REVIEW --> TAURI
-  TAURI --> DB
-  TAURI --> CLI --> DAEMON --> BROWSER --> APP
+  TREX --> CORE
+  REVIEW --> CORE
+  CORE --> DB
+  CORE --> CLI --> DAEMON --> BROWSER --> APP
 ```
 
 ## Related implementation
 
-- `apps/desktop/src/lib/warm-verification/` — verifier contracts, selection,
-  daemon, observers, adapters, and retention
-- `apps/desktop/src-tauri/src/commands/warm_verification_bridge.rs` — safe
+- `crates/codevetter-core/src/commands/warm_verification_bridge.rs` — safe
   repository CLI bridge
-- `apps/desktop/src-tauri/src/commands/warm_verification.rs` — validation and
+- `crates/codevetter-core/src/commands/warm_verification.rs` — validation and
   immutable persistence
-- `apps/desktop/src/pages/TRex.tsx` — operational controls and evidence
-- `apps/desktop/src/lib/audience-validation.ts` — exact-current Review policy
-- `apps/desktop/src/lib/synthetic-qa/` — legacy QA runners and evidence mapping
+- `crates/codevetter-core/src/commands/synthetic_qa.rs` — legacy evidence
+  compatibility
+- `crates/codevetter-core/src/commands/audience_validation.rs` — exact-current
+  Review policy
+- `apps/macos/CodeVetterPackage/Sources/CodeVetterFeature/PremiumTestingView.swift`
+  — native operational controls and evidence
 - `docs/WARM-VERIFICATION.md` — target configuration and operator guide

@@ -5,9 +5,8 @@ on:
     paths:
       - "package.json"
       - "pnpm-lock.yaml"
-      - "apps/desktop/package.json"
-      - "apps/desktop/src-tauri/Cargo.toml"
-      - "apps/desktop/src-tauri/Cargo.lock"
+      - "crates/**/Cargo.toml"
+      - "crates/**/Cargo.lock"
       - "apps/macos/**/Package.resolved"
       - "scripts/run-osv-offline.mjs"
       - ".github/workflows/osv-offline.yml"
@@ -16,9 +15,8 @@ on:
     paths:
       - "package.json"
       - "pnpm-lock.yaml"
-      - "apps/desktop/package.json"
-      - "apps/desktop/src-tauri/Cargo.toml"
-      - "apps/desktop/src-tauri/Cargo.lock"
+      - "crates/**/Cargo.toml"
+      - "crates/**/Cargo.lock"
       - "apps/macos/**/Package.resolved"
       - "scripts/run-osv-offline.mjs"
       - ".github/workflows/osv-offline.yml"

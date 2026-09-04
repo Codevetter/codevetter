@@ -64,14 +64,14 @@ after all selected writes succeed.
 
 ## CLI
 
-From `apps/desktop`:
+From the repository root with a prepared development CLI, or from an installed
+release:
 
 ```bash
-pnpm verify scenario generate \
+codevetter scenario --operation generate \
   --repo /path/to/repo \
   --spec docs/product-spec.md \
   --section "Recurring investment" \
-  --provider local \
   --model qwen2.5-coder:7b \
   --capability portfolio \
   --auth-profile verified-investor \
@@ -80,24 +80,25 @@ pnpm verify scenario generate \
   --request-policy \
   --json
 
-pnpm verify scenario inspect --repo /path/to/repo --json
-pnpm verify scenario validate --candidate CANDIDATE --repo /path/to/repo --json
-pnpm verify scenario dry-run --candidate CANDIDATE --repo /path/to/repo --json
-pnpm verify scenario accept \
-  --candidate CANDIDATE \
+codevetter scenario --operation inspect --repo /path/to/repo --json
+codevetter scenario --operation validate --candidate-id CANDIDATE --repo /path/to/repo --json
+codevetter scenario --operation dry-run --candidate-id CANDIDATE --repo /path/to/repo --json
+codevetter scenario --operation accept \
+  --candidate-id CANDIDATE \
   --candidate-hash SHA256 \
   --destination verify/generated/scenario-HASH.mjs \
   --destination .codevetter/verify.yaml \
   --destination verify/generated/scenario-HASH.provenance.json \
-  --approve-replacement .codevetter/verify.yaml \
+  --approve-replacements \
   --repo /path/to/repo \
   --json
-pnpm verify scenario reject --candidate CANDIDATE --candidate-hash SHA256 --repo /path/to/repo --json
-pnpm verify scenario cleanup --repo /path/to/repo --json
+codevetter scenario --operation reject --candidate-id CANDIDATE --candidate-hash SHA256 --repo /path/to/repo --json
+codevetter scenario --operation cleanup --repo /path/to/repo --apply-cleanup --json
 ```
 
-Use `--approve-replacement DESTINATION` for each existing destination. Hosted OpenAI
-also requires `--remote-approved --paid-approved`; approvals never become defaults.
+Use `--approve-replacements` only after reviewing every selected existing
+destination. Generation remains on the configured local/free path; approvals
+never become defaults.
 
 ## Conflicts and rollback
 

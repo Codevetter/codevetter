@@ -5,17 +5,17 @@ description: Reproducible tooling and ownership boundaries for the AppKit and Sw
 
 # Native macOS development
 
-The native client lives in `apps/macos`. It is a macOS-only projection of the
+The native product lives in `apps/macos`. It is the sole macOS UI over the
 Rust verification engine: AppKit owns application lifecycle, windows, menus,
 split views, and dense desktop behavior; SwiftUI composes bounded feature and
 evidence views. Verification policy, execution, verdicts, and receipt identity
 remain Rust-owned.
 
-The existing Tauri application remains operational while the native client is
-qualified. Native scaffolding or feature presence is not replacement proof.
-The candidate therefore uses `com.codevetter.desktop.native-preview`, separate
-from the shipped Tauri identifier. Transfer `com.codevetter.desktop` only after
-every migration row passes and the owner makes the retirement decision.
+Release builds use the production identifier `com.codevetter.desktop`. Debug
+builds retain `com.codevetter.desktop.native-preview` so development cannot
+silently replace the installed app. Native presence alone is not a shipping
+claim: the protected production workflow must still sign, notarize, package,
+and prove installed upgrade/data/rollback for the exact release candidate.
 
 ## Pinned baseline
 
@@ -254,9 +254,9 @@ pnpm test:native-release
 pnpm native:runtime:compare -- --native-app <qualified-native-app> --tauri-app <worktree-tauri-release-app> --runs 5 --settle-ms 5000 --out <artifact-path> --foreground
 pnpm test:native-runtime-compare
 swift format lint --recursive apps/macos/CodeVetter apps/macos/CodeVetterPackage/Sources apps/macos/CodeVetterPackage/Tests apps/macos/CodeVetterUITests
-cargo fmt --manifest-path apps/desktop/src-tauri/Cargo.toml --check
-cargo clippy --manifest-path apps/desktop/src-tauri/Cargo.toml --all-targets -- -D warnings
-cargo test --manifest-path apps/desktop/src-tauri/Cargo.toml
+cargo fmt --manifest-path crates/codevetter-core/Cargo.toml --check
+cargo clippy --manifest-path crates/codevetter-core/Cargo.toml --all-targets -- -D warnings
+cargo test --manifest-path crates/codevetter-core/Cargo.toml
 ```
 
 `pnpm test:native` is the default automation lane. It lowers scheduling

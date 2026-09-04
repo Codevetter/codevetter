@@ -128,21 +128,21 @@ or no fallback exists, the outcome is `no_confidence`.
 
 ## CLI
 
-Run from `apps/desktop/` while developing CodeVetter, or expose the same command
-as `verify` in the target repository:
+Run through the installed or prepared `codevetter` CLI:
 
 ```bash
-pnpm verify daemon start --repo /path/to/repo
-pnpm verify daemon status --repo /path/to/repo
-pnpm verify changed --repo /path/to/repo
-pnpm verify changed --staged --json
-pnpm verify changed --commit HEAD~1
-pnpm verify changed --range main..HEAD --detailed
-pnpm verify daemon stop --repo /path/to/repo
+codevetter warm --operation start --repo /path/to/repo
+codevetter warm --operation status --repo /path/to/repo
+codevetter warm --operation current --repo /path/to/repo --json
+codevetter warm --operation run --repo /path/to/repo --run-id warm-manual-001 --json
+codevetter warm --operation run --repo /path/to/repo --run-id warm-detailed-001 --detailed --json
+codevetter warm --operation cleanup --repo /path/to/repo --dry-run --json
+codevetter warm --operation stop --repo /path/to/repo
 ```
 
-Only one of worktree (the default), `--staged`, `--commit`, or `--range` may be
-selected. `--detailed` explicitly retains passing screenshots. `--timeout-ms`
+`--run-id` is required for run and cancel so the native UI and CLI can own
+and correlate one exact operation. `--detailed` explicitly retains passing
+screenshots. `--timeout-ms`
 accepts 100 through 300000 milliseconds.
 
 | Outcome | Exit | Meaning |

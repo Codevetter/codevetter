@@ -13,7 +13,7 @@ Execution-backed verification for coding-agent changes.
 - Reproducible runtime evidence for agent changes
 - Deterministic and calibrated graders
 - CLI, MCP, and machine-readable verification bundles
-- Local SQLite storage and a Tauri desktop viewer
+- Local SQLite storage and a native macOS viewer
 - Open source (ISC)
 
 ## Who it's for

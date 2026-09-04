@@ -9,18 +9,14 @@ target/
 .build/
 default.profraw
 
-# Desktop app build
-apps/desktop/src-tauri/target/
-apps/desktop/src-tauri/binaries/codevetter-*
-apps/desktop/src-tauri/binaries/ccusage-*
-apps/desktop/src-tauri/resources/collectors/cargo-audit*
-apps/desktop/src-tauri/resources/collectors/cargo-llvm-cov*
-apps/desktop/src-tauri/resources/collectors/gitleaks*
-apps/desktop/src-tauri/resources/rustsec-advisory-db/snapshot/
-apps/desktop/src-tauri/sidecar/
-apps/desktop/out/
-apps/desktop/.next/
-apps/desktop/native/AgentIsland/.build/
+# Rust core and native packaging outputs
+crates/codevetter-core/target/
+crates/codevetter-core/binaries/codevetter-*
+crates/codevetter-core/binaries/ccusage-*
+crates/codevetter-core/resources/collectors/cargo-audit*
+crates/codevetter-core/resources/collectors/cargo-llvm-cov*
+crates/codevetter-core/resources/collectors/gitleaks*
+crates/codevetter-core/resources/rustsec-advisory-db/snapshot/
 
 # Environment
 .env

@@ -1,6 +1,6 @@
 name: Auto-publish release
 
-# When tauri.conf.json's version changes on main:
+# When the native app version changes on main:
 #   1. Create a GitHub release with tag v<version>.
 #   2. Dispatch release.yml directly to build + sign + upload artifacts.
 #
@@ -15,7 +15,7 @@ on:
   push:
     branches: [main]
     paths:
-      - "apps/desktop/src-tauri/tauri.conf.json"
+      - "apps/macos/Config/Shared.xcconfig"
   workflow_dispatch:
 
 permissions: {}
@@ -37,13 +37,13 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      - name: Read version from tauri.conf.json
+      - name: Read native application version
         id: ver
         run: |
           set -euo pipefail
-          VERSION=$(jq -r '.version' apps/desktop/src-tauri/tauri.conf.json)
-          if [ -z "$VERSION" ] || [ "$VERSION" = "null" ]; then
-            echo "::error::No version field in apps/desktop/src-tauri/tauri.conf.json"
+          VERSION=$(sed -nE 's/^MARKETING_VERSION[[:space:]]*=[[:space:]]*([^[:space:]]+).*$/\1/p' apps/macos/Config/Shared.xcconfig)
+          if [ -z "$VERSION" ]; then
+            echo "::error::No MARKETING_VERSION in apps/macos/Config/Shared.xcconfig"
             exit 1
           fi
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"

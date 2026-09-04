@@ -1,4 +1,4 @@
-name: Release Desktop App
+name: Release Native macOS App
 
 on:
   release:
@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: "Release tag (e.g. v1.1.12) to build artifacts for"
+        description: "Release tag (for example v1.12.0)"
         required: true
         type: string
 
@@ -17,205 +17,72 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  build:
-    name: Build, sign, and upload desktop artifacts
-    strategy:
-      matrix:
-        platform: [macos-latest]
-    runs-on: ${{ matrix.platform }}
+  qualify:
+    name: Sign, notarize, and qualify the native replacement
+    uses: ./.github/workflows/native-production-qualification.yml
+    with:
+      source_ref: ${{ github.event.release.tag_name || inputs.tag }}
+    secrets:
+      APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+      APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+      APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
+      APPLE_ID: ${{ secrets.APPLE_ID }}
+      APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
+      APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+      SPARKLE_EDDSA_PRIVATE_KEY: ${{ secrets.SPARKLE_EDDSA_PRIVATE_KEY }}
+      SPARKLE_EDDSA_PUBLIC_KEY: ${{ secrets.SPARKLE_EDDSA_PUBLIC_KEY }}
     permissions:
-      contents: write # Upload signed artifacts and updater metadata.
+      contents: read
 
+  publish:
+    name: Upload qualified native release assets
+    needs: qualify
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      RELEASE_TAG: ${{ github.event.release.tag_name || inputs.tag }}
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
-          # On workflow_dispatch we want the commit the tag points at, not
-          # the head of main — checkout the tag explicitly.
           ref: ${{ github.event.release.tag_name || inputs.tag }}
           persist-credentials: false
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6
-        # Don't specify version here — it reads "packageManager" from
-        # package.json (pnpm@10.33.2). Specifying both causes
-        # "Multiple versions of pnpm specified" error.
-
-      - name: Setup Node
-        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+      - name: Download exact qualified production candidate
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4
         with:
-          node-version: 22
-          package-manager-cache: false
-
-      - name: Setup Rust
-        uses: dtolnay/rust-toolchain@4360b52568e2003a75bf9bc1d59f33a8e3fc893c # stable
-        with:
-          targets: aarch64-apple-darwin
-
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
-        with:
-          no-cache: true
-
-      - name: Install dependencies
-        run: pnpm install --ignore-scripts
-
-      - name: Install graph interaction test browser
-        working-directory: apps/desktop
-        run: pnpm exec playwright install chromium
-
-      - name: Prepare release MCP sidecar
-        working-directory: apps/desktop
-        env:
-          TAURI_ENV_TARGET_TRIPLE: aarch64-apple-darwin
-        run: pnpm run prepare:mcp-sidecar:release
-
-      - name: Prepare release CLI sidecar
-        working-directory: apps/desktop
-        env:
-          TAURI_ENV_TARGET_TRIPLE: aarch64-apple-darwin
-        run: pnpm run prepare:cli-sidecar:release
-
-      - name: Prepare release ccusage sidecar
-        working-directory: apps/desktop
-        env:
-          TAURI_ENV_TARGET_TRIPLE: aarch64-apple-darwin
+          pattern: native-production-qualification-*
+          path: artifacts/native-release
+          merge-multiple: true
+      - name: Verify and upload native assets
+        shell: bash
         run: |
-          pnpm run test:ccusage-sidecar
-          pnpm run prepare:ccusage-sidecar
-
-      - name: Test pinned macOS collector preparation contract
-        working-directory: apps/desktop
-        run: pnpm run test:collector-sidecars
-
-      # Tauri merges tauri.macos.conf.json before every Cargo build, including
-      # the release-only graph benchmark below. Prepare the declared native
-      # helper before that first build rather than waiting for tauri-action.
-      - name: Prepare release Agent Island sidecar
-        working-directory: apps/desktop
-        env:
-          TAURI_ENV_TARGET_TRIPLE: aarch64-apple-darwin
-        run: pnpm run prepare:agent-island:release
-
-      - name: Qualify canonical graph and MCP performance
-        working-directory: apps/desktop
-        env:
-          # Hosted runner timing is variable. Keep correctness/resource
-          # qualification here; absolute graph ceilings run on the named machine.
-          CV_GRAPH_BUDGET_MODE: report-only
-        run: |
-          CV_ENFORCE_GRAPH_BUDGETS=1 cargo test --release --manifest-path src-tauri/Cargo.toml --lib perf_bench::bench_structural_graph_real_repo -- --ignored --nocapture --test-threads=1
-          pnpm bench:history-ui
-          pnpm qualify:graph:browser
-          pnpm bench:mcp
-
-      - name: Build Tauri app
-        id: tauri
-        uses: tauri-apps/tauri-action@84b9d35b5fc46c1e45415bdb6144030364f7ebc5 # v0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAURI_ENV_TARGET_TRIPLE: aarch64-apple-darwin
-          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
-          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
-        with:
-          projectPath: apps/desktop
-          tagName: ${{ github.event.release.tag_name || inputs.tag }}
-          releaseName: ${{ github.event.release.name || format('CodeVetter {0}', inputs.tag) }}
-          releaseBody: ${{ github.event.release.body || '' }}
-          releaseDraft: false
-          prerelease: false
-          # Emit latest.json manifest with signatures so the in-app updater
-          # can detect + verify releases. The explicit --bundles list forces
-          # tauri build to also produce the updater (.tar.gz + .sig) artifacts;
-          # without it tauri-action silently skips the signature upload.
-          # --features browser-agent keeps the live browser agent (chromiumoxide)
-          # in release binaries; it is intentionally OUT of the default dev build.
-          args: --target aarch64-apple-darwin --bundles app,dmg,updater --features browser-agent
-          includeUpdaterJson: true
-          updaterJsonPreferNsis: false
-
-      - name: Verify aarch64 CLI, MCP, and collector sidecars in final app bundle
-        run: |
-          test -x apps/desktop/src-tauri/target/aarch64-apple-darwin/release/bundle/macos/CodeVetter.app/Contents/MacOS/codevetter
-          test -x apps/desktop/src-tauri/target/aarch64-apple-darwin/release/bundle/macos/CodeVetter.app/Contents/MacOS/codevetter-mcp
-          test -x apps/desktop/src-tauri/target/aarch64-apple-darwin/release/bundle/macos/CodeVetter.app/Contents/MacOS/ccusage
-          EXPECTED_CCUSAGE=$(node -p "require('./apps/desktop/package.json').devDependencies.ccusage")
-          test "$(apps/desktop/src-tauri/target/aarch64-apple-darwin/release/bundle/macos/CodeVetter.app/Contents/MacOS/ccusage --version)" = "ccusage $EXPECTED_CCUSAGE"
-          test -x apps/desktop/src-tauri/target/aarch64-apple-darwin/release/bundle/macos/CodeVetter.app/Contents/Resources/collectors/cargo-audit
-          test -x apps/desktop/src-tauri/target/aarch64-apple-darwin/release/bundle/macos/CodeVetter.app/Contents/Resources/collectors/cargo-llvm-cov
-          test -x apps/desktop/src-tauri/target/aarch64-apple-darwin/release/bundle/macos/CodeVetter.app/Contents/Resources/collectors/gitleaks
-          test -f apps/desktop/src-tauri/target/aarch64-apple-darwin/release/bundle/macos/CodeVetter.app/Contents/Resources/rustsec-advisory-db/snapshot/CODEVETTER_DB_IDENTITY.json
-          test -d apps/desktop/src-tauri/target/aarch64-apple-darwin/release/bundle/macos/CodeVetter.app/Contents/Resources/rustsec-advisory-db/snapshot/crates
-          test "$(apps/desktop/src-tauri/target/aarch64-apple-darwin/release/bundle/macos/CodeVetter.app/Contents/Resources/collectors/cargo-audit --version)" = 'cargo-audit 0.22.2'
-          test "$(apps/desktop/src-tauri/target/aarch64-apple-darwin/release/bundle/macos/CodeVetter.app/Contents/Resources/collectors/cargo-llvm-cov llvm-cov --version)" = 'cargo-llvm-cov 0.9.0'
-          test "$(apps/desktop/src-tauri/target/aarch64-apple-darwin/release/bundle/macos/CodeVetter.app/Contents/Resources/collectors/gitleaks version)" = '8.30.1'
-          pnpm --dir apps/desktop run qualify:cli --binary \
-            src-tauri/target/aarch64-apple-darwin/release/bundle/macos/CodeVetter.app/Contents/MacOS/codevetter
-
-      - name: Qualify Agent Island app and updater payload
-        working-directory: apps/desktop
-        run: |
-          node scripts/verify-agent-island-release.mjs \
-            --app src-tauri/target/aarch64-apple-darwin/release/bundle/macos/CodeVetter.app \
-            --updater src-tauri/target/aarch64-apple-darwin/release/bundle/macos/CodeVetter.app.tar.gz
-
-      # tauri-action repackages the .app -> .tar.gz AFTER tauri build signed
-      # the original tarball, so the on-disk .sig is stale (or absent). Sign
-      # the final tarball ourselves with the same minisign key, then upload
-      # .sig + latest.json. Idempotent via gh release upload --clobber.
-      - name: Sign updater tarball + upload manifest
-        if: always() && hashFiles('apps/desktop/src-tauri/target/aarch64-apple-darwin/release/bundle/macos/CodeVetter.app.tar.gz') != ''
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAG: ${{ github.event.release.tag_name || inputs.tag }}
-          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
-          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
-        run: |
-          set -euxo pipefail
-          BUNDLE=apps/desktop/src-tauri/target/aarch64-apple-darwin/release/bundle/macos
-          TAR_FILE="$BUNDLE/CodeVetter.app.tar.gz"
-          SIG_FILE="$TAR_FILE.sig"
-
-          # Re-sign the (possibly repackaged) tarball. tauri-cli writes the
-          # signature next to the input file as <input>.sig.
-          cd apps/desktop
-          pnpm exec tauri signer sign \
-            --private-key "$TAURI_SIGNING_PRIVATE_KEY" \
-            --password "${TAURI_SIGNING_PRIVATE_KEY_PASSWORD:-}" \
-            "../../$TAR_FILE"
-          cd ../..
-
-          test -f "$SIG_FILE" || { echo "tauri signer did not produce $SIG_FILE" >&2; exit 1; }
-
-          VERSION="${TAG#v}"
-          PUB_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-          URL="https://github.com/${GITHUB_REPOSITORY}/releases/download/$TAG/CodeVetter_aarch64.app.tar.gz"
-          jq -n \
-            --arg version "$VERSION" \
-            --arg pub_date "$PUB_DATE" \
-            --arg url "$URL" \
-            --rawfile sig "$SIG_FILE" \
-            '{
-              version: $version,
-              notes: "See release notes",
-              pub_date: $pub_date,
-              platforms: {
-                "darwin-aarch64": {
-                  signature: $sig,
-                  url: $url
-                }
-              }
-            }' > latest.json
-
-          gh release upload "$TAG" \
-            "$SIG_FILE#CodeVetter_aarch64.app.tar.gz.sig" \
-            "latest.json" \
+          set -euo pipefail
+          VERSION="${RELEASE_TAG#v}"
+          EXPECTED="$(sed -nE 's/^MARKETING_VERSION[[:space:]]*=[[:space:]]*([^[:space:]]+).*$/\1/p' apps/macos/Config/Shared.xcconfig)"
+          test "$VERSION" = "$EXPECTED"
+          DMG="$(find artifacts/native-release -name "CodeVetter-$VERSION-*.dmg" -type f -print -quit)"
+          ZIP="$(find artifacts/native-release -name "CodeVetter-$VERSION-*.zip" -type f -print -quit)"
+          APPCAST="$(find artifacts/native-release -name appcast.xml -type f -print -quit)"
+          READINESS="$(find artifacts/native-release -name release-readiness.json -type f -print -quit)"
+          test -n "$DMG"
+          test -n "$ZIP"
+          test -n "$APPCAST"
+          test -n "$READINESS"
+          jq -e '.shipping_ready == true and (.checks | all(.passed == true))' "$READINESS" >/dev/null
+          gh release upload "$RELEASE_TAG" \
+            "$DMG#CodeVetter-$VERSION-arm64.dmg" \
+            "$ZIP#CodeVetter-$VERSION-arm64.zip" \
+            "$APPCAST#appcast.xml" \
             --clobber --repo "$GITHUB_REPOSITORY"
-
-      # Post-upload verification: confirm the live latest.json manifest
-      # references a resolvable asset with a present signature. This does
-      # NOT download the full artifact or verify the signature against the
-      # pubkey — it only proves the updater contract is internally
-      # consistent after a release. Safe to run after the upload; never
-      # publishes or modifies a release.
-      - name: Verify updater manifest linkage
-        run: node scripts/verify-release-manifest.mjs
+      - name: Verify published release contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          ASSETS="$(gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --json assets --jq '.assets[].name')"
+          grep -Fx "CodeVetter-${RELEASE_TAG#v}-arm64.dmg" <<<"$ASSETS"
+          grep -Fx "CodeVetter-${RELEASE_TAG#v}-arm64.zip" <<<"$ASSETS"
+          grep -Fx appcast.xml <<<"$ASSETS"
+          curl --fail --silent --show-error --location \
+            "https://github.com/$GITHUB_REPOSITORY/releases/latest/download/appcast.xml" >/dev/null

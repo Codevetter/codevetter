@@ -1,6 +1,6 @@
 # Project Status
 
-Last updated: 2026-09-02
+Last updated: 2026-09-04
 
 ## Why / What
 
@@ -40,10 +40,10 @@ separately approved safety design justify renewed investment.
 External:
 - Bundled `ccusage` 20.0.20 sidecar — local, offline Claude/Codex/Grok usage accounting; exact updates are opened weekly and remain qualification-gated.
 - Installed and authenticated Codex or Claude CLI for Work conversations; provider account policy remains external to CodeVetter.
-- GitHub Releases + GitHub Actions — `auto-release.yml` cuts a `v<version>` release on `tauri.conf.json` version bumps, dispatching `release.yml` to build/sign/upload Tauri binaries; `@tauri-apps/plugin-updater` consumes the `latest.json` manifest.
+- GitHub Releases + GitHub Actions — `auto-release.yml` cuts a `v<version>` release on native `Shared.xcconfig` version bumps; `release.yml` signs, notarizes, qualifies, and uploads the SwiftUI app, DMG, ZIP, and Sparkle `appcast.xml`.
 - Cloudflare Pages — hosts the landing page (`codevetter` project, codevetter.com).
 - Optional `ast-grep` on PATH for structural evidence matches (no required runtime dependency).
-- Playwright — e2e testing, existing synthetic-QA runners, and the repository-owned warm Chromium verifier.
+- Xcode/Swift Testing — native unit, rendering, accessibility, and UI qualification. Playwright remains an admitted target for repository verification workflows.
 
 Internal (fleet):
 - Site Health — private portfolio metadata and health evidence.
@@ -51,9 +51,22 @@ Internal (fleet):
 - CodeVetter work remains tracked in this repository's GitHub Issues. The
   retained SaaS Maker link is compatibility-only and is not a task system of
   record.
-- Local SQLite via `rusqlite` in the Tauri backend — desktop only, no server.
+- Local SQLite via `rusqlite` in `crates/codevetter-core` — desktop only, no server.
 
 ## Timeline
+
+- **2026-09-04 — Native-only product migration (release candidate):** SwiftUI
+  and AppKit in `apps/macos` are now the sole desktop UI. The retired
+  React/Tauri shell is removed from the workspace; the Rust verification
+  engine, CLI, MCP server, SQLite layer, and reusable tooling live under
+  `crates/codevetter-core` and `scripts/core-tools`. Native, CLI, and MCP share
+  versioned Rust-owned receipts. CI now qualifies Swift, Rust, MCP, CLI,
+  automation, docs, and the landing site without building a WebView. Release
+  automation targets version 1.12.0 and requires exact-tag Developer ID
+  signing, Hardened Runtime, notarization, stapling, Sparkle EdDSA appcast
+  proof, and isolated installed upgrade/data/rollback evidence before assets
+  can publish. The matte true-black interface uses one shared page grammar and
+  prioritizes provider allowance on Usage while retaining bounded history.
 
 - **2026-09-02 — Independent Claude and Codex review (unreleased source):**
   native Review and `codevetter check --agent cross` now request two sequential,
@@ -98,19 +111,17 @@ Internal (fleet):
   opaque identities and non-absolute display paths, caps reads/output, and
   redacts secret-like content and Git-diff lines heuristically. Memory editing
   and agent/MCP projections remain unavailable. The same Rust settings receipt
-  now preserves all 12 non-secret Agent Island preferences across native UI,
-  CLI, and the retained helper. Native labels configuration as live and the
-  supervised runtime as pending; the helper remains off by default and is not
-  launched by the Evidence Workbench. Native Settings and `codevetter ops`
+  now preserves all 12 non-secret Agent Island preferences across native UI
+  and CLI. The retired helper is not part of the sole native product; any
+  future live presentation runtime is a separately scoped side quest. Native
+  Settings and `codevetter ops`
   now share a fixed-window `codevetter.ops-status/v1` receipt for local
   configuration presence and aggregate run evidence. It excludes credentials,
   webhook URLs, provider calls, webhook sends, writes, and agent/MCP authority.
-  The retained Tauri shell now attempts the sanitized one-time custom-rubric
-  transfer on every startup until Rust owns a canonical preference. Existing
-  Rust state wins, invalid legacy state writes nothing, browser-only mode does
-  not invoke Tauri, and the Rubrics surface remains a visible retry path.
-  Isolated frontend and Rust tests pass; installed WebView-to-native
-  qualification remains an explicit upgrade gate.
+  Rust-owned SQLite is the canonical rubric store. Existing state wins,
+  invalid legacy state writes nothing, and the installed-upgrade workflow
+  proves a custom pack and active selection across native replacement and
+  rollback.
   The isolated hosted lane passes 81 Swift tests, all nine XCUITests, Debug and
   coverage-free Release macOS builds, and unsigned preview packaging without
   using the operator's desktop. A read-only
@@ -179,7 +190,7 @@ Internal (fleet):
 
 - **2026-09-01 — Native macOS package candidate (unreleased source):** the
   native AppKit/SwiftUI Evidence Workbench now builds as a hardened,
-  intentionally non-sandboxed Release app with exact Sparkle 2.9.6 wiring that
+  sandboxed Release app with exact Sparkle 2.9.6 wiring that
   remains disabled for the preview identifier. A repository-owned qualifier
   reuses the existing Rust and ccusage sidecar builders, packages the canonical
   `codevetter`, `codevetter-mcp`, `ccusage`, and performance runtime capsule,
@@ -671,7 +682,10 @@ Internal (fleet):
 
 ## Products
 
-- **CodeVetter desktop app** (`apps/desktop`) — Tauri 2 + React 19 + Vite, macOS build distributed via GitHub Releases with auto-updater. The core product; runs offline with local SQLite, no server.
+- **CodeVetter desktop app** (`apps/macos`) — native SwiftUI/AppKit macOS app
+  distributed through signed and notarized GitHub Releases with Sparkle
+  updates. The Rust authority lives in `crates/codevetter-core`; the product
+  runs locally with SQLite and no server.
 - **Landing page** (`apps/landing-page-astro`) — Astro static export deployed to Cloudflare Pages at codevetter.com via `deploy-landing.yml`.
 - **Benchmark harness** (`benchmarks/agent-prs`) — local catch-rate benchmark tooling (`pnpm bench:catch-rate` etc.), not a deploy surface.
 
@@ -684,7 +698,8 @@ Internal (fleet):
   cognitive complexity, runtime import cycles, clone regression, and
   high/critical production advisories, with generated and fixture boundaries
   explicit and historical debt tracked in GitHub Issues.
-- Local-first desktop binary: Tauri 2 + React 19, macOS, offline, SQLite, no server.
+- Local-first native macOS binary: SwiftUI/AppKit presentation, Rust-owned
+  verification and SQLite, no WebView and no server.
 - Five-surface nav: Usage, Repo Unpack, Review, Testing, Performance. Repo contains Unpack, Activity, Graph, Inventory, Analysis, Handoff, and past snapshots; Settings is an integrated utility hosting Ops, Memories, Rubrics, Agent MCP, and preferences. Retired Work/Board routes redirect to Usage while their local records and backend lifecycle code remain available for separately reviewed cleanup.
 - Testing and Performance now share a local deterministic scope planner for a human-described function/flow, an exact PR or Git change, or a bounded whole-codebase portfolio. Every plan exposes its revision, dirty state, concrete adapters/targets, uncovered paths, and limitations and requires confirmation before execution; human text is discovery input and is never run as a command.
 - Risk-tiered CLI review: trivial single-pass → lite product/agent passes → full sensitive path with security, product, agent specialist passes, coordinator, and dedup metadata.

@@ -3526,8 +3526,8 @@ public final class CodeVetterProcessRunner: @unchecked Sendable {
       bundled,
       "/opt/homebrew/bin/codevetter",
       "/usr/local/bin/codevetter",
-      "\(cwd)/apps/desktop/src-tauri/target/debug/codevetter",
-      "\(cwd)/apps/desktop/src-tauri/target/release/codevetter",
+      "\(cwd)/crates/codevetter-core/target/debug/codevetter",
+      "\(cwd)/crates/codevetter-core/target/release/codevetter",
     ].compactMap { $0 }
     #if DEBUG
       let sourceRoot = URL(fileURLWithPath: #filePath)
@@ -3538,7 +3538,7 @@ public final class CodeVetterProcessRunner: @unchecked Sendable {
         .deletingLastPathComponent()
         .deletingLastPathComponent()
       candidates.append(
-        sourceRoot.appending(path: "apps/desktop/src-tauri/target/debug/codevetter").path)
+        sourceRoot.appending(path: "crates/codevetter-core/target/debug/codevetter").path)
     #endif
     if let path = candidates.first(where: { FileManager.default.isExecutableFile(atPath: $0) }) {
       return URL(fileURLWithPath: path)

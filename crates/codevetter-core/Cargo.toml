@@ -1,0 +1,92 @@
+[package]
+name = "codevetter-core"
+version = "1.12.0"
+edition = "2021"
+publish = false
+description = "CodeVetter verification core, CLI, and read-only MCP server"
+default-run = "codevetter"
+
+[[bin]]
+name = "codevetter-mcp"
+path = "src/bin/codevetter-mcp.rs"
+
+[[bin]]
+name = "codevetter"
+path = "src/bin/codevetter.rs"
+required-features = ["browser-agent"]
+
+# Headless driver for the shipped structural-graph engine. External benchmarks
+# measure the product through this instead of reimplementing extraction.
+[[bin]]
+name = "codevetter-graph"
+path = "src/bin/codevetter-graph.rs"
+
+[dependencies]
+# Source-compatible command facade while legacy annotations are renamed. This
+# is repository-owned and contains no Tauri, WebView, or windowing runtime.
+tauri = { package = "codevetter-transport", path = "../codevetter-transport" }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+sha2 = "0.10"
+rusqlite = { version = "0.31", features = ["bundled", "hooks"] }
+uuid = { version = "1", features = ["v4"] }
+chrono = { version = "0.4", features = ["serde"] }
+tokio = { version = "1", features = ["full"] }
+reqwest = { version = "0.12", features = ["json", "rustls-tls"], default-features = false }
+log = "0.4"
+env_logger = "0.11"
+base64 = "0.22"
+# Immutable historical graphs and commit deltas are large, repetitive JSON.
+# zlib keeps local history bounded without duplicating the normalized live graph tables.
+flate2 = "1"
+chromiumoxide = { version = "0.7", default-features = false, features = ["tokio-runtime"], optional = true }
+futures = { version = "0.3", optional = true }
+sysinfo = { version = "0.32", default-features = false, features = ["system"] }
+jwalk = "0.8"
+rayon = "1.10"
+libc = "0.2"
+portable-pty = "0.9.0"
+tree-sitter = "0.26.3"
+tree-sitter-c = "0.24.0"
+tree-sitter-c-sharp = "0.23.0"
+tree-sitter-cpp = "0.23.0"
+tree-sitter-go = "0.25.0"
+tree-sitter-java = "0.23.0"
+tree-sitter-javascript = "0.25.0"
+tree-sitter-kotlin = { package = "tree-sitter-kotlin-sg", version = "0.4.1" }
+tree-sitter-php = "0.24.0"
+tree-sitter-python = "0.25.0"
+tree-sitter-ruby = "0.23.0"
+tree-sitter-rust = "0.24.0"
+tree-sitter-swift = "0.7.0"
+tree-sitter-typescript = "0.23.2"
+# Official MCP lifecycle/framing/schema implementation. Only local stdio server
+# features are enabled: no HTTP transport, OAuth, client, or network stack.
+rmcp = { version = "=2.2.0", default-features = false, features = ["server", "transport-io", "macros"] }
+
+[dev-dependencies]
+# In-process protocol client and temporary repositories are test-only; the
+# shipped sidecar keeps the minimal server/stdio feature set above.
+rmcp = { version = "=2.2.0", default-features = false, features = ["client", "server", "transport-io"] }
+tempfile = "3"
+
+[profile.dev]
+debug = 1
+
+[profile.dev.package."*"]
+opt-level = 0
+
+[profile.test]
+debug = 1
+
+[profile.release]
+# Shipping companions favor whole-program runtime and footprint over compile
+# throughput. Keep panic unwinding for diagnosability and behavior parity.
+lto = "fat"
+codegen-units = 1
+
+[features]
+default = []
+# Live browser agent: drives real Chrome via chromiumoxide. Kept out of the
+# default build to shrink dev compiles; releases must pass --features browser-agent.
+browser-agent = ["dep:chromiumoxide", "dep:futures"]

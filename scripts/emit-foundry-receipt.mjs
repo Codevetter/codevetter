@@ -12,7 +12,7 @@
 //
 // Exit codes:
 //   0 — receipt emitted (regardless of readiness; the receipt itself reports readiness)
-//   2 — setup error (could not read foundry.json / tauri.conf.json)
+//   2 — setup error (could not read foundry.json / native version config)
 
 import fs from 'node:fs/promises';
 import path from 'node:path';
@@ -20,7 +20,9 @@ import { execSync } from 'node:child_process';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
 const FOUNDRY_JSON = path.join(ROOT, 'foundry.json');
-const TAURI_CONF = path.join(ROOT, 'apps/desktop/src-tauri/tauri.conf.json');
+const NATIVE_CONFIG = path.join(ROOT, 'apps/macos/Config/Shared.xcconfig');
+const APPCAST_ENDPOINT =
+  'https://github.com/Codevetter/codevetter/releases/latest/download/appcast.xml';
 
 // The receipt schema. Any field added here MUST be reviewed against the
 // privacy contract in docs/operations/automation-contract.md. The schema
@@ -78,34 +80,29 @@ async function checkLanding() {
 
 async function checkManifest() {
   try {
-    const conf = await readJson(TAURI_CONF);
-    const endpoint = conf?.plugins?.updater?.endpoints?.[0];
-    if (!endpoint) return { valid: false, reason: 'no endpoint configured' };
-    const res = await fetch(endpoint, { redirect: 'follow' });
+    const res = await fetch(APPCAST_ENDPOINT, { redirect: 'follow' });
     if (!res.ok) return { valid: false, reason: `manifest HTTP ${res.status}` };
-    const m = await res.json();
-    if (!/^\d+\.\d+\.\d+(-[\w.]+)?$/.test(String(m.version ?? ''))) {
+    const xml = await res.text();
+    const version = xml.match(/sparkle:shortVersionString="([^"]+)"/)?.[1];
+    const asset = xml.match(/<enclosure\b[^>]*\burl="([^"]+)"/)?.[1];
+    const signature = xml.match(/sparkle:edSignature="([^"]+)"/)?.[1];
+    if (!/^\d+\.\d+\.\d+(-[\w.]+)?$/.test(String(version ?? ''))) {
       return { valid: false, reason: 'version not semver' };
     }
-    const platforms = Object.entries(m.platforms ?? {});
-    if (platforms.length === 0) return { valid: false, reason: 'no platforms' };
-    for (const [name, entry] of platforms) {
-      if (!entry?.signature) return { valid: false, reason: `platform ${name} missing signature` };
-      if (!entry?.url) return { valid: false, reason: `platform ${name} missing url` };
-      const head = await fetch(entry.url, { method: 'HEAD', redirect: 'follow' });
-      if (head.status !== 200) {
-        // Retry with a ranged GET for CDNs that reject HEAD.
-        const ranged = await fetch(entry.url, {
-          method: 'GET',
-          headers: { Range: 'bytes=0-0' },
-          redirect: 'follow',
-        });
-        if (ranged.status !== 206 && ranged.status !== 200) {
-          return { valid: false, reason: `platform ${name} url HTTP ${head.status}` };
-        }
+    if (!signature) return { valid: false, reason: 'appcast signature missing' };
+    if (!asset) return { valid: false, reason: 'appcast asset missing' };
+    const head = await fetch(asset, { method: 'HEAD', redirect: 'follow' });
+    if (head.status !== 200) {
+      const ranged = await fetch(asset, {
+        method: 'GET',
+        headers: { Range: 'bytes=0-0' },
+        redirect: 'follow',
+      });
+      if (ranged.status !== 206 && ranged.status !== 200) {
+        return { valid: false, reason: `appcast asset HTTP ${head.status}` };
       }
     }
-    return { valid: true, version: m.version };
+    return { valid: true, version };
   } catch (e) {
     return { valid: false, reason: e.message };
   }
@@ -221,10 +218,10 @@ async function main() {
   const args = parseArgs(process.argv);
 
   let foundry;
-  let tauriConf;
+  let nativeConfig;
   try {
     foundry = await readJson(FOUNDRY_JSON);
-    tauriConf = await readJson(TAURI_CONF);
+    nativeConfig = await fs.readFile(NATIVE_CONFIG, 'utf8');
   } catch (e) {
     process.stderr.write(`setup error: ${e.message}\n`);
     process.exit(2);
@@ -234,7 +231,7 @@ async function main() {
     project_slug: foundry.slug ?? null,
     generated_at: new Date().toISOString(),
     git_revision: gitShort(),
-    desktop_version: tauriConf?.version ?? null,
+    desktop_version: nativeConfig.match(/^MARKETING_VERSION\s*=\s*(\S+)\s*$/m)?.[1] ?? null,
     ci_green: args.noNetwork ? null : latestCiGreen(),
     weekly_canary: args.noNetwork ? null : latestWeeklyCanary(),
     latest_release: args.noNetwork ? null : latestRelease(),

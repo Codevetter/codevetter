@@ -61,10 +61,8 @@ with thirteen bounded tools. See [mcp-sidecar.md](./mcp-sidecar.md).
 
 ## Key files
 
-- `apps/desktop/src-tauri/src/commands/structural_graph/` — graph build, query, path, impact, communities.
-- `apps/desktop/src-tauri/src/commands/history_graph.rs` — release checkpoints, deltas, lineage.
-- `apps/desktop/src-tauri/src/commands/history_query.rs` — causal queries.
-- `apps/desktop/src-tauri/src/commands/graph_trust.rs` — trust-weighted paths for Review.
-- `apps/desktop/src/lib/history-workbench.ts` — webview-side slider + projection.
-- `apps/desktop/src/lib/deep-graph-parse.ts` — bounded node-link import parsing.
-- `apps/desktop/src/components/deep-graph-viewer.tsx` — graph surface.
+- `crates/codevetter-core/src/commands/structural_graph/` — graph build, query, path, impact, communities.
+- `crates/codevetter-core/src/commands/history_graph.rs` — release checkpoints, deltas, lineage.
+- `crates/codevetter-core/src/commands/history_query.rs` — causal queries.
+- `crates/codevetter-core/src/commands/graph_trust.rs` — trust-weighted paths for Review.
+- `apps/macos/CodeVetterPackage/Sources/CodeVetterFeature/` — native bounded graph and history inspectors over versioned Rust receipts.

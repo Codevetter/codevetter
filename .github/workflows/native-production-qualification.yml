@@ -2,6 +2,12 @@ name: Native macOS production-candidate qualification
 
 on:
   workflow_call:
+    inputs:
+      source_ref:
+        description: "Exact tag or revision to qualify"
+        required: false
+        default: ""
+        type: string
     secrets:
       APPLE_CERTIFICATE:
         required: true
@@ -43,6 +49,7 @@ jobs:
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
+          ref: ${{ inputs.source_ref || github.ref }}
           fetch-depth: 2
           persist-credentials: false
 

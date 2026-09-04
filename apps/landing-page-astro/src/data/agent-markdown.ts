@@ -199,7 +199,7 @@ CodeVetter does not enable crash or usage telemetry by default. A user can remov
   about: page(
     'About CodeVetter',
     '/about',
-    `CodeVetter is an execution-backed verification and evaluation system for coding agents. It determines whether an agent completed a software task correctly using reproducible runtime evidence — not another LLM opinion. The review pipeline runs locally in a Tauri desktop app; your repository never hits a CodeVetter server.
+    `CodeVetter is an execution-backed verification and evaluation system for coding agents. It determines whether an agent completed a software task correctly using reproducible runtime evidence — not another LLM opinion. The review pipeline runs locally in a native macOS app; your repository never hits a CodeVetter server.
 
 ## What it does
 

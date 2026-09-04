@@ -12,16 +12,16 @@ const OUTPUT_DIRECTORY = 'artifacts/verification-dogfood';
 const OUTPUT_PATH = `${OUTPUT_DIRECTORY}/summary.json`;
 const PRODUCERS = [
   {
-    id: 'playwright',
+    id: 'native-unit',
     command: 'pnpm',
-    args: ['--dir', 'apps/desktop', 'test'],
-    receipts: ['apps/desktop/test-results/playwright.json', 'apps/desktop/test-results/junit.xml'],
+    args: ['test:native'],
+    receipts: [],
   },
   {
-    id: 'c8',
+    id: 'rust-core',
     command: 'pnpm',
-    args: ['--dir', 'apps/desktop', 'test:coverage'],
-    receipts: ['apps/desktop/coverage/lcov.info', 'apps/desktop/coverage/cobertura-coverage.xml'],
+    args: ['core:test'],
+    receipts: [],
   },
 ];
 

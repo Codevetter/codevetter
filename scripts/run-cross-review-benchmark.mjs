@@ -18,7 +18,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const defaultCasesRoot = join(repositoryRoot, 'benchmarks/public-catch-rate/cases');
-const defaultBinary = join(repositoryRoot, 'apps/desktop/src-tauri/target/debug/codevetter');
+const defaultBinary = join(repositoryRoot, 'crates/codevetter-core/target/debug/codevetter');
 const genericTask =
   'Review this exact change for correctness, security, reliability, and maintainability defects.';
 

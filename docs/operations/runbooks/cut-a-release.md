@@ -1,82 +1,69 @@
 ---
 title: Cut a desktop release
-description: Runbook for shipping a new CodeVetter desktop version.
+description: Runbook for shipping the signed and notarized native CodeVetter app.
 sidebar:
   order: 1
 ---
 
 # Cut a desktop release
 
-Releases are triggered by a version bump in
-`apps/desktop/src-tauri/tauri.conf.json` on `main`. The rest is automated by
-`auto-release.yml` → `release.yml`.
+The release version is `MARKETING_VERSION` in
+`apps/macos/Config/Shared.xcconfig`. A version change merged to `main`
+triggers `auto-release.yml`, which creates the GitHub release and dispatches
+`release.yml`.
 
-## Steps
+## Before merge
 
-1. **Verify the working tree is clean and on `main`.**
-   ```bash
-   git status
-   git checkout main
-   git pull --ff-only
-   ```
+1. Confirm the native version and build number are intentional.
+2. Run the local Rust, CLI/MCP, native background, site, docs, and code-health
+   gates.
+3. Review the owner gallery and exact native states.
+4. Open a pull request and wait for Linux CI plus hosted native interaction
+   qualification.
+5. Manually run the protected production-candidate workflow against the exact
+   branch or commit.
 
-2. **Bump the version** in `apps/desktop/src-tauri/tauri.conf.json`:
-   ```json
-   "version": "1.2.21"
-   ```
-   Use semver: patch for fixes, minor for features, major for breaking changes.
+Do not replace the installed app or close the migration issue from local build
+evidence alone.
 
-3. **Runtime-verify in the dev app** before pushing (the release workflow runs
-   graph + MCP budget qualification, but a local sanity check avoids wasted
-   release runs):
-   ```bash
-   cd apps/desktop
-   pnpm tauri:dev          # open the app, exercise the changed surfaces
-   pnpm test:unit
-   pnpm lint
-   pnpm exec tsc --noEmit
-   ```
-   For graph/MCP-touching changes, also run:
-   ```bash
-   pnpm qualify:graph
-   cargo test --release --manifest-path src-tauri/Cargo.toml --test mcp_stdio
-   ```
+## Protected release
 
-4. **Commit and push** the version bump:
-   ```bash
-   git add apps/desktop/src-tauri/tauri.conf.json
-   git commit -m "Release v1.2.21"
-   git push origin main
-   ```
+After merge, verify:
 
-5. **Watch `auto-release.yml`.** It will:
-   - Read the version, tag `v1.2.21`.
-   - Skip if the release already exists (idempotent).
-   - Create the GitHub release with generated notes.
-   - Dispatch `release.yml` with `tag=v1.2.21`.
+1. `auto-release.yml` created the expected `v<version>` tag and release.
+2. `release.yml` qualified the same tag.
+3. The published release contains:
+   - `CodeVetter-<version>-arm64.dmg`;
+   - `CodeVetter-<version>-arm64.zip`;
+   - `appcast.xml`.
+4. The readiness receipt reports every check passing.
+5. The latest-release appcast URL resolves.
 
-6. **Watch `release.yml`.** It will:
-   - Checkout the tag (not main head).
-   - Build + sign + notarize the macOS binary.
-   - Upload the DMG, the signed updater archive, and `latest.json`.
+The workflow must fail closed if signing, notarization, Sparkle inputs, archive
+identity, Gatekeeper, upgrade, data continuity, or rollback evidence is absent.
 
-7. **Verify auto-update.** Installed apps poll `latest.json` and self-update
-   (no dialog). Confirm the release assets are present at
-   `https://github.com/Codevetter/codevetter/releases/latest`.
+## Install and verify
 
-## Abort / re-run
+Install the exact published DMG only after checking no CodeVetter process is
+running. Preserve the previous `/Applications/CodeVetter.app` recoverably
+until the replacement is verified.
 
-- If `release.yml` fails after the release was created, re-run it with
-  `gh workflow run release.yml -f tag=v1.2.21` (it is idempotent on assets
-  that already uploaded, but check for partial uploads).
-- If you need to **cancel** a bad release, delete the GitHub release and tag
-  **before** re-pushing; `auto-release.yml` will then re-create it. Deleting
-  a release is a destructive operation — confirm with the owner first.
+Confirm:
 
-## Do not
+- bundle identifier `com.codevetter.desktop`;
+- executable `CodeVetterNative`;
+- expected short version and build;
+- Developer ID signature;
+- notarization staple and Gatekeeper acceptance;
+- bundled `codevetter`, `codevetter-mcp`, and ccusage companions;
+- existing stable records remain available.
 
-- Do not push a version bump without runtime-verifying the changed surfaces.
-- Do not edit `latest.json` by hand — it is a build artifact.
-- Do not re-add `package-lock.json` or change the package manager.
-- Do not skip the graph/MCP qualification for changes that touch
-  `structural_graph/`, `history_graph.rs`, or `mcp/`.
+Avoid foreground launch automation on the operator's active desktop. Hosted
+qualification owns automated launch, interaction, upgrade, and rollback; the
+operator performs final visual review.
+
+## Closeout
+
+Close the release issue only after source, CI, protected qualification,
+published assets, installed-app verification, and owner acceptance are all
+recorded separately.

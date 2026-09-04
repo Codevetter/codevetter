@@ -1,0 +1,12 @@
+[package]
+name = "codevetter-transport"
+version = "1.12.0"
+edition = "2021"
+publish = false
+
+[lib]
+name = "tauri"
+
+[dependencies]
+codevetter-transport-macros = { path = "../codevetter-transport-macros" }
+tokio = { version = "1", features = ["rt-multi-thread"] }

@@ -1,6 +1,7 @@
 # CodeVetter - macOS App
 
-A modern macOS application using a **workspace + SPM package** architecture for clean separation between app shell and feature code.
+The sole CodeVetter desktop application: a native SwiftUI/AppKit evidence
+workbench backed by the bundled Rust `codevetter` CLI.
 
 ## Project Architecture
 
@@ -13,7 +14,7 @@ CodeVetter/
 │   ├── CodeVetterApp.swift              # App entry point
 │   ├── CodeVetter.entitlements          # App sandbox settings
 │   └── CodeVetter.xctestplan            # Test configuration
-├── CodeVetterPackage/                   # 🚀 Primary development area
+├── CodeVetterPackage/                   # Primary development area
 │   ├── Package.swift                   # Package configuration
 │   ├── Sources/CodeVetterFeature/       # Your feature code
 │   └── Tests/CodeVetterFeatureTests/    # Unit tests
@@ -32,8 +33,10 @@ CodeVetter/
 - No need to manually add files to project targets
 - Reduces project file conflicts in teams
 
-### App Sandbox
-The app is sandboxed by default with basic file access permissions. Modify `CodeVetter.entitlements` to add capabilities as needed.
+### Security boundary
+Release entitlements are intentionally minimal. Repository access is selected
+by the user and execution remains explicit. Do not add entitlements without
+updating package and release qualification.
 
 ## Development Notes
 
@@ -123,7 +126,8 @@ To include assets in your feature package:
 )
 ```
 
-## Notes
+## Verification
 
-### Generated with XcodeBuildMCP
-This project was scaffolded using [XcodeBuildMCP](https://github.com/cameroncooke/XcodeBuildMCP), which provides tools for AI-assisted macOS development workflows.
+From the repository root, run `pnpm test:native` for the background-safe Swift
+tests, isolated performance gates, and Debug build. Use XCUITest only with
+fresh authorization on an idle graphical desktop or a dedicated runner.

@@ -67,7 +67,7 @@ private func sharedSurfaceParityFixture(
   }
   let fixtureURL =
     repositoryRoot
-    .appending(path: "apps/desktop/src-tauri/tests/fixtures/surface-parity/\(name).json")
+    .appending(path: "crates/codevetter-core/tests/fixtures/surface-parity/\(name).json")
   return try #require(
     JSONSerialization.jsonObject(with: Data(contentsOf: fixtureURL)) as? [String: Any]
   )

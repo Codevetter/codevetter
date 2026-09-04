@@ -1,176 +1,99 @@
 ---
 title: Testing
-description: The test and code-health surfaces and how to run each one.
+description: Test, qualification, and code-health surfaces for the native app and shared Rust core.
 sidebar:
   order: 2
 ---
 
 # Testing
 
-CodeVetter has four test surfaces. CI runs all of them in
-[`.github/workflows/ci.yml`](../../.github/workflows/ci.yml).
+Tests are grouped by the boundary they prove. Passing one boundary never
+substitutes for another.
 
-## 1. Frontend unit tests (Node `node:test` + `tsx`)
-
-```bash
-cd apps/desktop
-pnpm test:unit                                   # all src/**/*.test.ts
-pnpm test:review-proof                           # review-proof only
-pnpm test:agent-fix-packet                       # agent-fix-packet only
-pnpm test:synthetic-qa                           # synthetic-qa fixtures
-pnpm test:intent-debugger                        # intent-debugger report
-pnpm test:coverage                               # c8 coverage
-```
-
-Runner is the built-in Node test runner via `tsx` — no Jest/Vitest. Add a
-`*.test.ts` next to the module it tests.
-
-## 2. Playwright e2e (chromium)
+## Native app
 
 ```bash
-cd apps/desktop
-npx playwright install chromium   # first time only
-pnpm test                         # full suite (starts Vite dev server)
-pnpm test:e2e:ui                  # interactive UI mode
-npx playwright test tests/e2e/smoke.spec.ts
-npx playwright test -g "App loads without crashing"
+pnpm test:native:background
 ```
 
-- Config: `apps/desktop/playwright.config.ts`
-- Browser: chromium only (single CI project)
-- Base URL: `http://localhost:1420` (the Vite dev server)
-- Tests live in `apps/desktop/tests/`
-
-## Native Tauri UI qualification (manual)
-
-Manual native qualification must not reuse the normal CodeVetter database.
-Start Vite in one terminal, then point the Tauri process at a fresh, explicit
-application-data directory in another:
+The background lane runs Swift package behavior tests, isolated native
+performance contracts, and a Debug Xcode build without app activation.
 
 ```bash
-cd apps/desktop
-pnpm exec vite --port 1420 --strictPort
-
-cv_qualification_dir="$(mktemp -d /tmp/codevetter-native-qualification.XXXXXX)"
-CODEVETTER_NATIVE_QUALIFICATION=1 \
-  CODEVETTER_APP_DATA_DIR="$cv_qualification_dir" \
-  pnpm exec tauri dev --no-watch \
-  --config '{"build":{"beforeDevCommand":"true","devUrl":"http://localhost:1420/review"}}'
+pnpm test:native:ui
 ```
 
-The qualification flag disables transcript indexing and background watchers;
-`CODEVETTER_APP_DATA_DIR` isolates SQLite migrations and any explicit fixture
-writes. Neither replaces `HOME` nor isolates provider discovery, so keep
-screenshots scoped to the route under qualification and inspect them for local
-account metadata before retaining them.
-
-## 3. Rust tests (`cargo test`)
+The UI lane runs only XCUITest interaction targets. It requires a dedicated
+graphical desktop and explicit approval because it can move focus.
 
 ```bash
-cd apps/desktop/src-tauri
-cargo test                                  # all unit + integration tests
-cargo test mcp::                            # MCP protocol + safety tests
-cargo test --release --test mcp_stdio       # release-mode stdio lifecycle
-cargo test --release perf_bench -- --ignored --nocapture --test-threads=1   # benches
+pnpm test:native:full
 ```
 
-- ~385 Rust tests + the MCP binary + real offline stdio integration.
-- Benches are `#[ignore]`d so they never gate normal `cargo test`.
-- `CV_ENFORCE_GRAPH_BUDGETS=1` makes the real-repo structural bench enforce
-  the release envelope — see [performance.md](./performance.md).
+The full lane keeps background checks before UI automation. Pull requests use a
+hosted macOS runner so local work is not disturbed.
 
-## 4. Benchmark tests (Node `node --test`)
+## Rust core, CLI, and MCP
 
 ```bash
-pnpm test:benchmark    # scripts/run-catch-rate-benchmark.test.mjs
-pnpm bench:public      # 27 public cases, catch-rate/precision/F1
+pnpm core:test
+pnpm core:clippy
+pnpm core:fmt
+cargo test --manifest-path crates/codevetter-core/Cargo.toml --bin codevetter-mcp
+cargo test --manifest-path crates/codevetter-core/Cargo.toml --test mcp_stdio
+cargo test --manifest-path crates/codevetter-core/Cargo.toml --features browser-agent --bin codevetter
 ```
 
-See [benchmark.md](./benchmark.md).
+The CLI and MCP tests prove parsing, receipt semantics, repository scope, JSON
+stdio behavior, cancellation, pagination, and the read-only agent boundary.
 
-## External producer compatibility
-
-CodeVetter does not require other projects to replace their test stack. The
-verification-receipt loader normalizes Playwright JSON and JUnit XML, plus LCOV
-and Cobertura coverage, while preserving the raw artifact hash and missing
-evidence as explicit limitations. Run its focused contracts with:
+## Package and release contracts
 
 ```bash
-pnpm test:verification-receipts
+pnpm test:native-runner
+pnpm test:native-package
+pnpm test:native-package-finalize
+pnpm test:native-appcast
+pnpm test:native-notarization
+pnpm test:native-data-continuity
+pnpm test:native-installed-upgrade
+pnpm test:native-release
 ```
 
-The repository also emits and consumes those upstream formats itself:
+These are deterministic contract tests. The protected production workflow is
+still required for real Developer ID signing, Apple notarization, Sparkle
+signing, Gatekeeper, installed upgrade, data continuity, and rollback.
+
+## Repository automation
 
 ```bash
-pnpm verification:dogfood
+pnpm test:automation
+pnpm test:corpus-contracts
+pnpm test:retrieval
+pnpm test:core-tools
+pnpm capabilities:check
 ```
 
-Playwright writes its built-in JSON and JUnit reports alongside the list and
-HTML reporters. c8 writes LCOV and Cobertura coverage in addition to the console
-summary. Generated reports stay ignored under `apps/desktop/test-results/`,
-`apps/desktop/coverage/`, and `artifacts/`; they are reproducible evidence, not
-committed snapshots. Tests for the retired Work and Board surfaces are no longer
-part of the active E2E inventory.
-
-See [verification-receipts.md](./verification-receipts.md) for supported
-formats and the distinction between producer observations and a qualified
-CodeVetter verdict.
-
-## Native Agent Island
-
-On macOS, the Apple-framework-only helper has a framework-independent protocol
-self-test and focused Rust coverage:
+## Code health and docs
 
 ```bash
-cd apps/desktop
-pnpm test:agent-island
-cargo test --manifest-path src-tauri/Cargo.toml native_agent_island --lib
-cargo test --manifest-path src-tauri/Cargo.toml agent_stream --lib
-cargo test --manifest-path src-tauri/Cargo.toml claude_hook --lib
+pnpm lint
+pnpm knip:strict
+pnpm quality:complexity
+pnpm quality:cycles
+pnpm quality:duplication
+pnpm quality:dependencies
+node scripts/check-docs.mjs
 ```
 
-Architecture, privacy boundaries, and remaining release qualification are in
-[native-agent-island.md](../architecture/native-agent-island.md).
+The change-size and complexity gates compare against a base revision. CI fetches
+that exact base before running them.
 
-## CI order
+## Evidence interpretation
 
-`ci.yml` runs, in order: lint → code health → typecheck → unit tests → MCP
-sidecar build smoke → desktop build → MCP protocol/safety tests → MCP
-release-mode stdio lifecycle. A failure stops the pipeline.
-
-## Strictness gates
-
-- **Biome** is the linter/formatter (`biome.json`, root `pnpm lint`).
-- **`tsc --noEmit`** typecheck in `apps/desktop`.
-- **Knip** is the unused-code and unused-dependency authority (`pnpm knip:strict`).
-- **Biome changed-file complexity** caps new or modified functions at cognitive
-  complexity 20 (`pnpm quality:complexity`). Historical over-threshold
-  functions remain explicit in
-  [GitHub issue #117](https://github.com/Codevetter/codevetter/issues/117) for
-  review by 2026-09-11 rather than being hidden by global suppressions.
-- **Biome's project scanner** rejects runtime dependency cycles
-  (`pnpm quality:cycles`). Type-only imports are excluded because they are
-  erased before runtime.
-- **jscpd** prevents clone growth across authored desktop, landing, and script
-  sources (`pnpm quality:duplication`). Generated artifacts and fixtures are
-  excluded. The 2026-08-11 baseline is 0.75% duplicated lines: 1,000 of 133,900
-  lines across 356 files, with 72 clones at the 8-line/60-token floor.
-- **Dependency audit** blocks high and critical advisories across production
-  and development dependencies
-  (`pnpm quality:dependencies`). The remaining Astro 6 low/moderate baseline is
-  owned by [GitHub issue #116](https://github.com/Codevetter/codevetter/issues/116)
-  for review by 2026-09-11 because its fix requires the Astro 7 major upgrade.
-- **Clippy zero-warning** in release qualification.
-- **Bundle budgets** via `apps/desktop/scripts/bundle-budget.mjs`, followed by
-  the additive upstream Size Limit distribution cap.
-- **GitHub-Issue specs** for non-trivial features; no repo-local spec tree is
-  part of the quality gate.
-- **Pre-commit** (`.husky/pre-commit`): `lint-staged` runs `biome check --write` on staged `apps/desktop/src/**/*.{ts,tsx}`.
-- **Pre-push** (`.husky/pre-push`): runs `pnpm lint` + a secret-pattern scan over tracked files (with anchored exclusions for fixtures, benchmarks, and `secret_policy.rs`).
-
-## Adding tests
-
-- **Pure logic** → `*.test.ts` next to the module, Node test runner.
-- **UI flow** → `tests/e2e/*.spec.ts`, Playwright.
-- **Rust behavior** → `#[test]` in the module or `tests/` integration target.
-- **Benchmark regression** → extend `scripts/run-catch-rate-benchmark.test.mjs` or add a `#[ignore]`d Rust bench in `perf_bench.rs`.
+- A unit test proves its contract, not a production release.
+- A local package may be ad-hoc signed; shipping requires Developer ID and
+  notarization receipts.
+- A successful build does not prove launch, interaction, upgrade, or rollback.
+- MCP remains read-only even when the native app and CLI can execute.
+- Missing provider or runtime evidence is unavailable, never zero or passing.

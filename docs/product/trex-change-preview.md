@@ -147,7 +147,7 @@ PATH, add it explicitly:
 export PATH="$HOME/.local/bin:$PATH"
 ```
 
-`pnpm tauri:dev` does not register a launcher. To remove the installed launcher,
+Development builds do not register a launcher. To remove the installed launcher,
 first confirm it targets the CodeVetter app with
 `readlink "$HOME/.local/bin/codevetter"`, then run
 `unlink "$HOME/.local/bin/codevetter"`. Removing the launcher does not delete

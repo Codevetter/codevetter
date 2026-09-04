@@ -4,7 +4,7 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const manifest = resolve(root, 'apps/desktop/src-tauri/Cargo.toml');
+const manifest = resolve(root, 'crates/codevetter-core/Cargo.toml');
 const output = resolve(
   root,
   'apps/macos/CodeVetterPackage/Sources/CodeVetterFeature/Resources/capabilities.v1.json'

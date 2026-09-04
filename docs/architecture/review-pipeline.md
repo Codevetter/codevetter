@@ -194,8 +194,8 @@ previewed in a sandboxed iframe. The checked-in landing gallery is a local
 build artifact until its examples are manually adjudicated and deployment is
 separately authorized.
 
-The Tauri panel, native Review sheet, and `codevetter xray` use the same Rust
-builder, sanitizer, and atomic-save implementation. Native preview summarizes
+The native Review sheet and `codevetter xray` use the same Rust builder,
+sanitizer, and atomic-save implementation. Native preview summarizes
 eligibility, omissions, stages, and public findings without introducing a
 WebView; the selected JSON, Markdown, or HTML artifact is still rendered and
 written by Rust.
@@ -206,25 +206,22 @@ written by Rust.
 (`product-safety`, `security-boundary`, …). The Rust core owns built-ins,
 validation, the active selection, custom packs, exact prompt rendering, and
 the `codevetter.rubric-settings/v1` receipt. Completed reviews link the selected
-id through `local_reviews.standards_pack`. The incumbent Rubrics page imports
-the previous allowlisted `codevetter_review_config` localStorage record once,
-then mirrors the canonical Rust receipt back for compatibility with older
-frontend code. Native Settings and `codevetter rubrics` use the same receipt;
-`codevetter check` consumes its active prompt context directly.
+id through `local_reviews.standards_pack`. Native Settings and
+`codevetter rubrics` use the same canonical SQLite-backed receipt;
+`codevetter check` consumes its active prompt context directly. The protected
+installed-upgrade fixture proves that existing custom packs and active
+selection survive replacement and rollback.
 
 ## Key files
 
-- `apps/desktop/src-tauri/src/commands/rubric_settings.rs` — canonical rubric config and receipts.
-- `apps/desktop/src/lib/review-service.ts` — incumbent compatibility mirror and prompt fallback.
-- `apps/desktop/src/lib/agent-fix-packet.ts` — fix packet construction.
-- `apps/desktop/src-tauri/src/commands/fix_packet.rs` — receipt-bound native/CLI fix handoff.
-- `apps/desktop/src-tauri/src/commands/fix_attempt.rs` — confirmed detached-worktree execution, bounded diff, executable recheck, re-review, and discard receipt.
-- `apps/desktop/src/lib/review-proof.ts` — verification handoff.
-- `apps/desktop/src/lib/quick-review-*.ts{x}` — QuickReview state, code, format, procedure.
-- `apps/desktop/src/components/quick-review/` — 13 panels (setup, editor, findings, fix diff, verification summary, audience, synthetic QA, history context, review memory graph, evidence insights, create preview, agent status timeline).
-- `apps/desktop/src-tauri/src/commands/review.rs` — execution, coordination, save, fix worktrees.
-- `apps/desktop/src-tauri/src/commands/deterministic_review.rs` — target,
+- `crates/codevetter-core/src/commands/rubric_settings.rs` — canonical rubric config and receipts.
+- `crates/codevetter-core/src/commands/fix_packet.rs` — receipt-bound native/CLI fix handoff.
+- `crates/codevetter-core/src/commands/fix_attempt.rs` — confirmed detached-worktree execution, bounded diff, executable recheck, re-review, and discard receipt.
+- `crates/codevetter-core/src/commands/review.rs` — execution, coordination, save, and fix worktrees.
+- `crates/codevetter-core/src/commands/deterministic_review.rs` — target,
   units, qualification, manifest, checkpoints, and retention.
-- `apps/desktop/src-tauri/src/commands/xray.rs` — public-safe X-Ray contract,
+- `crates/codevetter-core/src/commands/xray.rs` — public-safe X-Ray contract,
   renderers, sanitizer, and atomic save.
-- `apps/desktop/src-tauri/src/agent/` — CLI agent subprocess spawning.
+- `crates/codevetter-core/src/agent/` — CLI agent subprocess spawning.
+- `apps/macos/CodeVetterPackage/Sources/CodeVetterFeature/` — native
+  Review setup, findings, proof map, fix handoff, and export presentation.

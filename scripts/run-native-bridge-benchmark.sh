@@ -4,10 +4,10 @@ set -eu
 SCRIPT_DIR=$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd)
 REPOSITORY_ROOT=$(CDPATH='' cd -- "$SCRIPT_DIR/.." && pwd)
 ARTIFACT_DIR="$REPOSITORY_ROOT/artifacts/native-bridge"
-RUST_MANIFEST="$REPOSITORY_ROOT/apps/desktop/src-tauri/Cargo.toml"
+RUST_MANIFEST="$REPOSITORY_ROOT/crates/codevetter-core/Cargo.toml"
 SWIFT_PACKAGE="$REPOSITORY_ROOT/apps/macos/CodeVetterPackage"
 BRIDGE_LIBRARY="$ARTIFACT_DIR/libcodevetter_bridge_probe.dylib"
-CODEVETTER_CLI="$REPOSITORY_ROOT/apps/desktop/src-tauri/target/release/codevetter"
+CODEVETTER_CLI="$REPOSITORY_ROOT/crates/codevetter-core/target/release/codevetter"
 BENCHMARK_BIN="$SWIFT_PACKAGE/.build/out/Products/Release/NativeBridgeBenchmark"
 XCODEBUILDMCP_NPM_CACHE="$ARTIFACT_DIR/xcodebuildmcp-npm-cache"
 

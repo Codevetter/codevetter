@@ -37,12 +37,12 @@ The product should prefer narrow, evidence-backed loops over broad "code intelli
 
 | Concern | Service |
 |---------|---------|
-| Desktop app | GitHub Releases — Tauri 2 macOS build, with `@tauri-apps/plugin-updater` auto-updater (`latest.json` manifest) |
+| Desktop app | GitHub Releases — signed and notarized native macOS app with Sparkle updates (`appcast.xml`) |
 | Landing page | Cloudflare Pages (`codevetter`, codevetter.com) — static Astro export |
-| Database | Local SQLite via `@tauri-apps/plugin-sql` (desktop only, no server) |
+| Database | Local SQLite via Rust `rusqlite` (desktop only, no server) |
 | Auth | None — LLM provider API keys stored in user settings |
 | AI | User-supplied keys (Anthropic / OpenAI / OpenRouter) |
-| CI/CD | GitHub Actions — `auto-release.yml` cuts a `v<version>` release when `apps/desktop/src-tauri/tauri.conf.json`'s version changes on `main`, which dispatches `release.yml` to build/sign/upload the Tauri binaries; `deploy-landing.yml` deploys the landing page to Cloudflare Pages on push to `main` |
+| CI/CD | GitHub Actions — `auto-release.yml` cuts a `v<version>` release when the native version changes on `main`; `release.yml` signs, notarizes, qualifies, and uploads the macOS app; `deploy-landing.yml` deploys the landing page |
 
 ## Installation
 
@@ -57,54 +57,54 @@ https://github.com/Codevetter/codevetter/releases/latest
 Detect this machine's OS and CPU architecture, download the matching CodeVetter app archive, verify the release asset hash when available, extract it, install CodeVetter.app into /Applications on macOS, remove the quarantine attribute if needed, and launch the app once to verify it starts.
 ```
 
-Prefer the app archive over the DMG until the macOS bundle is Developer ID signed and notarized.
+Use the signed, notarized DMG or ZIP from the release.
 
 ### Development Install
 
 ```bash
-# Clone and install dependencies (uses npm workspaces)
+# Clone and install dependencies
 git clone https://github.com/Codevetter/codevetter.git
 cd CodeVetter
-npm install
+pnpm install
 ```
 
-> Requires the [Rust + Tauri 2 prerequisites](https://v2.tauri.app/start/prerequisites/) for the desktop app.
+Development requires Xcode, Swift, Rust, Node.js, and pnpm.
 
 ## Quick Start
 
 1. Install dependencies (see above)
-2. Launch the desktop app in development mode:
+2. Build the Rust CLI and open the native workspace:
    ```bash
-   cd apps/desktop && npm run tauri:dev
+   pnpm core:build
+   open apps/macos/CodeVetter.xcworkspace
    ```
 3. Open the Review tab, pick a local repository, and run your first review through an installed CLI agent.
 
 ## Common Tasks
 
-**Build a production desktop binary**
+**Qualify the native desktop app**
 ```bash
-cd apps/desktop
-npm run tauri:build
+pnpm test:native
 ```
 
-**Run the Playwright end-to-end suite**
+**Test the Rust verification core, CLI, and MCP server**
 ```bash
-cd apps/desktop
-npm test
+pnpm core:test
 ```
 
 **Build the landing page**
 ```bash
-cd apps/landing-page-astro
-npm run build
+pnpm build:landing
 ```
 
 ## Monorepo Structure
 
 ```
 apps/
-  desktop/             Tauri 2 + React 19 + Vite desktop app — the core product
+  macos/               SwiftUI/AppKit desktop app — the sole product UI
   landing-page-astro/  Astro marketing site (static export, deployed to Cloudflare Pages — codevetter.com)
+crates/
+  codevetter-core/     Rust verification engine, CLI, MCP server, and SQLite persistence
 docs/                  Canonical knowledge system — see docs/index.md
 docs-site/             Blume presentation layer for docs/ (generated output is gitignored)
 benchmarks/            Evaluation corpora (public catch-rate, agent PRs, runtime challenges)
@@ -121,12 +121,12 @@ scripts/               Benchmark + corpus + deploy + doc-validation scripts
 
 | Layer | Technologies |
 |---|---|
-| Desktop frontend | React 19, Vite, Tailwind CSS, shadcn/ui |
-| Desktop backend | Rust (Tauri 2), SQLite |
-| Review engine | TypeScript — runs in the webview, no server required |
+| Desktop app | SwiftUI + AppKit, macOS only |
+| Verification core | Rust, SQLite, bundled CLI and MCP sidecar |
+| Product boundary | Versioned JSON receipts shared by native UI, CLI, and MCP |
 | Landing page | Astro 5 (static export → Cloudflare Pages) |
-| Testing | Playwright (e2e) |
-| Package manager | npm workspaces |
+| Testing | Swift Testing, XCUITest, Rust tests, Node contract tests |
+| Package manager | pnpm workspaces |
 
 ## License
 

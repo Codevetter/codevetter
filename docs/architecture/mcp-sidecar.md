@@ -223,7 +223,7 @@ Recent entries can be inspected or cleared in **Settings → Agent MCP**.
 - **History is stale:** re-index history. Stale responses are still bounded and
   readable, but they do not describe unindexed commits or tags.
 - **The packaged server is unavailable:** use the installed desktop app. For a
-  source build, run `pnpm tauri:dev` or `pnpm tauri:build` from `apps/desktop/`;
+  source build, run `pnpm core:prepare-mcp` from the repository root;
   both prepare the target-specific sidecar before starting Tauri.
 - **The client reports disabled or unavailable scope:** verify the selected
   repository is enabled, then copy its configuration again. Do not reuse another

@@ -1,4 +1,5 @@
 name: CI
+
 on:
   push:
     branches: [main]
@@ -20,6 +21,7 @@ on:
         required: true
         default: false
         type: boolean
+
 permissions: {}
 
 concurrency:
@@ -54,7 +56,7 @@ jobs:
     permissions:
       contents: read
 
-  lint-and-typecheck:
+  verify:
     name: Lint, test, and build
     runs-on: ubuntu-latest
     permissions:
@@ -68,24 +70,15 @@ jobs:
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with:
           node-version: '22'
-          cache: 'pnpm'
+          cache: pnpm
       - uses: dtolnay/rust-toolchain@4360b52568e2003a75bf9bc1d59f33a8e3fc893c # stable
-      - name: Install Tauri Linux dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            libwebkit2gtk-4.1-dev \
-            libayatana-appindicator3-dev \
-            librsvg2-dev \
-            libxdo-dev
       - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2
         with:
-          workspaces: apps/desktop/src-tauri
-      - name: Install Dependencies
+          workspaces: crates/codevetter-core
+      - name: Install locked dependencies
         run: pnpm install --frozen-lockfile
       - name: Lint
-        working-directory: apps/desktop
-        run: pnpm run lint
+        run: pnpm lint
       - name: Fetch code-health base
         if: github.event_name != 'workflow_dispatch'
         env:
@@ -100,65 +93,26 @@ jobs:
           pnpm run quality:complexity
           pnpm run quality:cycles
           pnpm run quality:duplication
-      - name: Type Check
-        working-directory: apps/desktop
-        run: pnpm exec tsc --noEmit
       - name: Build and verify public indexing surfaces
         working-directory: apps/landing-page-astro
         run: |
-          pnpm run build
+          pnpm build
           node scripts/verify-agent-surfaces.mjs
-      - name: Install focused browser
-        working-directory: apps/desktop
-        run: pnpm exec playwright install --with-deps chromium
-      - name: Unit Tests
-        working-directory: apps/desktop
-        # Process-heavy differential fixtures model one singleton-owned daemon.
-        # Serial file execution avoids multiplying Git/browser processes beyond
-        # that production ownership boundary on constrained hosted runners.
+      - name: Test hermetic automation contracts
         run: |
-          pnpm exec node --import tsx --test --test-concurrency=1 "src/**/*.test.ts"
-          pnpm exec node --import tsx --test tests/qualification/warm-verification-live.test.ts
-      - name: Automation readiness tests
-        # Hermetic receipt/corpus contract tests. The live manifest verifier
-        # runs in release.yml as a post-upload check because it needs network.
+          pnpm test:automation
+          pnpm test:corpus-contracts
+          pnpm test:retrieval
+          pnpm test:core-tools
+      - name: Prepare CLI, MCP, and ccusage companions
         run: |
-          pnpm run test:automation
-          pnpm run test:corpus-contracts
-          pnpm run test:retrieval
-      - name: Prepare MCP sidecar
-        working-directory: apps/desktop
-        run: pnpm run prepare:mcp-sidecar
-      - name: Prepare CLI sidecar
-        working-directory: apps/desktop
-        run: pnpm run prepare:cli-sidecar
-      - name: Prepare and qualify ccusage sidecar
-        working-directory: apps/desktop
+          pnpm core:prepare-mcp
+          pnpm core:prepare-cli
+          pnpm core:prepare-ccusage
+          pnpm core:qualify-cli
+      - name: Rust core, CLI, and MCP contracts
         run: |
-          pnpm run test:ccusage-sidecar
-          pnpm run prepare:ccusage-sidecar
-          CCUSAGE_TARGET="$(rustc -vV | sed -n 's/^host: //p')"
-          "src-tauri/binaries/ccusage-$CCUSAGE_TARGET" --version
-      - name: Test pinned macOS collector preparation contract
-        working-directory: apps/desktop
-        run: pnpm run test:collector-sidecars
-      - name: Qualify CLI artifact
-        working-directory: apps/desktop
-        run: |
-          pnpm run test:cli-qualification
-          pnpm run qualify:cli
-      - name: Desktop build
-        working-directory: apps/desktop
-        run: pnpm run build
-      - name: MCP protocol and safety tests
-        working-directory: apps/desktop
-        run: |
-          cargo test --manifest-path src-tauri/Cargo.toml --lib mcp
-          cargo test --manifest-path src-tauri/Cargo.toml --bin codevetter-mcp
-          cargo test --manifest-path src-tauri/Cargo.toml --test mcp_stdio
-      - name: T-Rex CLI contract tests
-        working-directory: apps/desktop
-        run: cargo test --manifest-path src-tauri/Cargo.toml --features browser-agent --bin codevetter
-      - name: MCP and history browser tests
-        working-directory: apps/desktop
-        run: pnpm exec playwright test tests/e2e/mcp-settings.spec.ts tests/e2e/repo-unpacked.spec.ts
+          cargo test --manifest-path crates/codevetter-core/Cargo.toml --lib mcp
+          cargo test --manifest-path crates/codevetter-core/Cargo.toml --bin codevetter-mcp
+          cargo test --manifest-path crates/codevetter-core/Cargo.toml --test mcp_stdio
+          cargo test --manifest-path crates/codevetter-core/Cargo.toml --features browser-agent --bin codevetter

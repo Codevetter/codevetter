@@ -1,70 +1,62 @@
 ---
 title: Configuration
-description: What the desktop app reads at runtime and where user settings live.
+description: Native build identity, local settings, data ownership, and release-only protected inputs.
 sidebar:
   order: 3
 ---
 
 # Configuration
 
-CodeVetter is a local desktop app. There are **no server-side environment
-variables** in the product. The only env var the desktop app reads is
-`DEBUG_TAURI_DRIVER` (see `.env.example`). Everything else is user-entered in
-the Settings tab and persisted via Tauri preferences.
+CodeVetter is a local macOS application with no product server. Swift never
+opens SQLite directly: the Rust core validates settings, reads and writes the
+database, and returns versioned receipts to the app and CLI.
 
-> The old `docs/archive/stale-configuration-2026-04.md` described Cloudflare Workers / GitHub OAuth
-> / D1 / dashboard env vars. None of that is in the product anymore — see
-> [stale-configuration-2026-04.md](https://github.com/Codevetter/codevetter/blob/main/docs/archive/stale-configuration-2026-04.md).
-> Do not re-add those env vars.
+## Build configuration
 
-## Desktop app runtime
+| File | Authority |
+| --- | --- |
+| `apps/macos/Config/Shared.xcconfig` | Product name, executable, bundle identifiers, version, deployment target |
+| `apps/macos/Config/Debug.xcconfig` | Preview-only build behavior |
+| `apps/macos/Config/Release.xcconfig` | Production hardening and updater policy |
+| `apps/macos/Config/CodeVetter.entitlements` | App sandbox and user-selected repository access |
+| `apps/macos/CodeVetterPackage/Package.swift` | Exact Swift package dependencies |
+| `crates/codevetter-core/Cargo.toml` | Rust core, CLI, MCP, and collector dependencies |
 
-| Setting | Where | Notes |
-|---|---|---|
-| `DEBUG_TAURI_DRIVER` | `.env` (optional) | Debug flag for the (removed) tauri-driver path; kept for compatibility. |
-| LLM provider keys | Settings tab → Tauri preferences | Anthropic / OpenAI / OpenRouter. Never written to SQLite review tables. |
-| `reviewTone` | same | Incumbent review presentation default. |
-| `customRules`, `activeStandardsPack`, `standardsPacks` | Rust `review_rubric_config_v1` preference; allowlisted localStorage compatibility mirror | Standards packs authored in Tauri or native Settings and available through `codevetter rubrics`; the first incumbent open migrates older local-only packs. |
-| Auto-updater pubkey + endpoint | `apps/desktop/src-tauri/tauri.conf.json` | `@tauri-apps/plugin-updater` consumes `latest.json` from GitHub Releases. |
+Release uses `com.codevetter.desktop` and executable
+`CodeVetterNative`. Debug uses
+`com.codevetter.desktop.native-preview` to isolate development state.
 
-## CSP
+## User settings
 
-`tauri.conf.json` pins:
+Non-secret settings use the allowlisted
+`codevetter.native-settings/v1` Rust contract. Unknown keys and invalid
+options fail closed. Agent history roots, retention, rubrics, MCP scope,
+onboarding, and operations status each have their own bounded receipt.
 
-```
-default-src 'self'; script-src 'self';
-connect-src 'self' https://api.codevetter.com https://api.github.com;
-style-src 'self' 'unsafe-inline'; img-src 'self' https: data:
-```
+Provider credentials are not part of the non-secret settings receipt and must
+not be written into source, environment files, logs, or generated evidence.
 
-The only network egress from the product is the user-supplied LLM provider
-and `api.github.com` for PR reads. `api.codevetter.com` is reserved for
-landing-page proxy concerns, not the desktop app.
+## Data
 
-Legacy `gatewayBaseUrl`, `gatewayApiKey`, and `gatewayModel` fields are removed
-from persisted review configuration. Startup migration scrubs those keys from
-older localStorage payloads; new saves allowlist only active review settings.
+The Rust core owns the existing CodeVetter Application Support database. The
+native app retains the production bundle identity so installed replacement
+does not create a second data root. Release qualification fingerprints stable
+records before upgrade, after native launch, and after rollback.
 
-## Build / bundle configuration
+## Updater
 
-| File | Purpose |
-|---|---|
-| `apps/desktop/vite.config.ts` | Vite build; `outDir` is `out` (not `dist`) — this bit us during the CF Pages reconfig, see [knowledge/failed-approaches.md](../knowledge/failed-approaches.md). |
-| `apps/desktop/src-tauri/tauri.conf.json` | Tauri window, CSP, updater, bundle targets, `beforeBuildCommand`. **Version bump here triggers `auto-release.yml`.** |
-| `apps/desktop/playwright.config.ts` | Playwright e2e config. |
-| `biome.json` | Linter/formatter (root). |
-| `tsconfig.json` | Shared TS config. |
-| `apps/landing-page-astro/astro.config.mjs` | Astro static export. |
-| `apps/landing-page-astro/wrangler.toml` / `wrangler.worker.jsonc` | Cloudflare Pages / Worker config for the landing page. |
+Sparkle is present but fail-closed unless the production app has:
 
-## CI / deployment secrets (GitHub Actions only, not in the product)
+- an HTTPS appcast;
+- a valid EdDSA public key;
+- a Developer ID signed and notarized archive;
+- an exact appcast/archive identity match.
 
-These are repo-level GitHub Actions secrets, not desktop-app config:
+The release workflow supplies protected inputs through GitHub Actions secrets.
+Do not add secret values to repository configuration or local command history.
 
-- `CLOUDFLARE_API_TOKEN` — used by `deploy-landing.yml`.
-- `APPLE_*` signing/notarization secrets — used by `release.yml`.
-- `GITHUB_TOKEN` — used by `auto-release.yml` to cut releases and dispatch
-  `release.yml`.
+## Public site
 
-See [operations/release-pipeline.md](../operations/release-pipeline.md) and
-[operations/landing-deploy.md](../operations/landing-deploy.md).
+The landing page reads the current native version from
+`apps/macos/Config/Shared.xcconfig`. Its download links target the GitHub
+release DMG, ZIP, and appcast published by the protected release workflow.

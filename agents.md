@@ -43,26 +43,25 @@ desktop app is a local viewer.
   adding languages or domains.
 
 ## Stack
-- Framework: Tauri 2 (Rust backend) + React 19 + Vite (desktop frontend)
-- Language: TypeScript (frontend), Rust (backend)
-- Styling: Tailwind CSS v3 + shadcn/ui (Radix + CVA), warm amber accent (#d4a039)
+- Framework: SwiftUI/AppKit native macOS app + Rust verification core
+- Language: Swift (desktop), Rust (core/CLI/MCP), TypeScript (automation and landing page)
+- Styling: shared SwiftUI evidence components, true-black surfaces, muted bronze accent
 - DB: SQLite via `rusqlite` in the Rust backend (local only, no server)
 - Auth: None (local desktop app; LLM API keys stored in user settings)
-- Testing: Playwright (e2e)
-- Deploy: GitHub Releases (Tauri build + `@tauri-apps/plugin-updater` auto-updater)
+- Testing: Swift Testing + XCUITest + Rust tests + deterministic Node contract tests
+- Deploy: signed/notarized GitHub Releases with Sparkle appcast updates
 - Package manager: pnpm (workspaces root; `packageManager: pnpm@10.33.2` in package.json)
 
 ## Repo structure
 ```
 apps/
-  desktop/              # Tauri 2 + React 19 desktop app (the active product)
-    src/                # React frontend: components/, lib/, pages/, App.tsx
-    src-tauri/          # Rust backend: src/main.rs, commands/, db/, mcp/, agent/, talk.rs
-    src/lib/tauri-ipc.ts  # Typed invoke() wrappers for all Tauri commands
-    vite.config.ts      # Vite config (outDir: "out")
-    playwright.config.ts # e2e test config
-    tests/              # Playwright e2e tests
+  macos/                # SwiftUI/AppKit desktop app (the active product)
+    CodeVetter/         # Minimal app target, assets, updater host
+    CodeVetterPackage/  # Feature code and unit tests
+    CodeVetterUITests/  # XCUITest qualification
   landing-page-astro/   # Astro marketing site → Cloudflare Pages (codevetter.com)
+crates/
+  codevetter-core/      # Rust verification engine, CLI, MCP server, SQLite
 docs/                   # Canonical knowledge system — see docs/index.md
 docs-site/              # Blume presentation layer for docs/ (NOT the source of truth)
 benchmarks/             # Evaluation corpora — public-catch-rate/, agent-prs/,
@@ -79,16 +78,12 @@ Committed evidence belongs in `evidence/`.
 
 ## Key commands
 ```bash
-# From apps/desktop/
-pnpm dev           # Vite dev server only (port 1420)
-pnpm tauri:dev     # Full Tauri app in dev mode (requires Rust toolchain)
-pnpm tauri:build   # Production Tauri binary
-pnpm test          # Playwright e2e tests
-pnpm test:unit     # Node test runner over src/**/*.test.ts
-pnpm lint          # Biome check .
-
 # From repo root
 pnpm install           # Install all workspace deps
+pnpm test:native       # Swift tests + isolated performance gates + Debug build
+pnpm native:build:release # Release configuration build
+pnpm core:test         # Rust core, CLI, and MCP tests
+pnpm core:clippy       # Rust lint gate
 pnpm lint              # Biome check . (root)
 pnpm knip:strict       # Unused code and dependency gate
 pnpm quality:complexity # Changed-file cognitive-complexity gate
@@ -99,15 +94,14 @@ node scripts/check-docs.mjs   # Validate docs (links, frontmatter, structure)
 ```
 
 ## Architecture notes
-- **Desktop binary, no server.** The review pipeline runs in the Rust backend (`src-tauri/src/commands/review.rs`); the React webview is the UI. Works offline (calls the user's configured LLM providers directly).
+- **Native desktop binary, no server.** SwiftUI/AppKit is the only desktop UI. It calls the bundled `codevetter` CLI through typed JSON receipts; the Rust engine lives in `crates/codevetter-core/`.
 - **Multi-LLM provider**: Anthropic, OpenAI, OpenRouter. Keys stored in user settings.
-- **Tauri IPC**: all Rust commands called via typed wrappers in `src/lib/tauri-ipc.ts` → `invoke()` → `src-tauri/src/commands/`.
-- **`isTauriAvailable()` guard**: all IPC calls wrapped so React code also works in plain browser.
+- **Three synchronized surfaces**: SwiftUI, CLI, and MCP consume the same versioned Rust-owned receipt schemas. Do not fork business rules into the UI.
 - **DB is `rusqlite`, not `@tauri-apps/plugin-sql`.** Do not re-add `plugin-sql` (removed in the 2026-07-11 desloppification sweep). See `docs/architecture/data-model.md`.
 - **Single package manager: pnpm.** Do not reintroduce `package-lock.json` — dual-lockfile drift broke Cloudflare Pages in May 2026. See `docs/knowledge/failed-approaches.md`.
-- **Nav (6 tabs)**: Usage (`/`), Repo Unpack (`/unpack`), Review (`/review`), Testing (`/trex`), Performance (`/performance`), Settings (`/settings`). Work (`/agents`) and Board (`/board`) were retired 2026-08-16 and now redirect. Full surface map in `docs/product/surfaces.md`.
-- **GH Actions**: `ci.yml` (lint + typecheck + unit + MCP + build), `auto-release.yml` → `release.yml` (Tauri binaries), `deploy-landing.yml` (Cloudflare Pages), `weekly.yml` (Mon cron canary), `docs.yml` (doc validation). See `docs/operations/`.
-- Husky pre-commit runs lint-staged on `apps/desktop/src/**/*.{ts,tsx}`; pre-push runs lint + secret scan.
+- **Nav (6 sections)**: Usage, Repo Unpack, Review, Testing, Performance, Settings. Full surface map in `docs/product/surfaces.md`.
+- **GH Actions**: `ci.yml` (native + Rust + automation), `auto-release.yml` → `release.yml` (signed/notarized native app), `deploy-landing.yml`, `weekly.yml`, and `docs.yml`. See `docs/operations/`.
+- Husky pre-commit runs the staged secret scan when available; pre-push runs lint + secret scan.
 
 <!-- FLEET-GUIDANCE:START -->
 

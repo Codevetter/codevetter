@@ -1,108 +1,98 @@
 ---
 title: Local setup
-description: Prerequisites, install, and how to run the desktop app and landing page.
+description: Prerequisites, install, and how to build CodeVetter's native app, Rust core, and landing page.
 sidebar:
   order: 1
 ---
 
 # Local setup
 
+CodeVetter has three synchronized product surfaces: the native macOS app, the
+`codevetter` CLI, and the repository-scoped read-only MCP server. Rust owns
+the receipts and persistence; SwiftUI/AppKit presents them.
+
 ## Prerequisites
 
-- **Node.js 22** (matches CI).
-- **Rust + Cargo** (stable) — required for the Tauri desktop app. See
-  [Tauri 2 prerequisites](https://v2.tauri.app/start/prerequisites/).
-- **pnpm 10.33.2** — the repo pins `packageManager: pnpm@10.33.2` in the root
-  `package.json`. Use `corepack enable` if you don't have it.
-- **Playwright chromium** (first time only): `cd apps/desktop && npx playwright install chromium`.
+- macOS 14 or newer with current Xcode command-line tools.
+- Node.js 22, matching CI.
+- pnpm 10.33.2, pinned in the root `package.json`.
+- Stable Rust and Cargo.
 
-## Install
+No Tauri, WebView, Playwright browser download, container runtime, or server is
+required to build the desktop product.
 
-From the repo root:
-
-```bash
-pnpm install
-```
-
-There is a single workspace (`apps/*`). Do not introduce `package-lock.json`
-— the May-2026 Cloudflare Pages failure was caused by dual npm+pnpm lockfile
-drift (see [knowledge/failed-approaches.md](../knowledge/failed-approaches.md)).
-
-## Run the desktop app
+## Install dependencies
 
 ```bash
-cd apps/desktop
-pnpm tauri:dev      # builds MCP sidecar + opens native Tauri window (Vite on :1420)
+pnpm install --frozen-lockfile
 ```
 
-- Hot-reload works for the React frontend.
-- Rust changes require a full rebuild.
-- `pnpm dev` runs only the Vite dev server (no Tauri shell) — useful for UI
-  work where IPC calls fall back to the `TAURI_NOT_AVAILABLE` path.
+## Build and test the native app
 
-## Build a production binary
+Run from the repository root:
 
 ```bash
-cd apps/desktop
-pnpm tauri:build    # production Tauri app + DMG + updater archive
+pnpm test:native:background
 ```
 
-`tauri.conf.json`'s `beforeBuildCommand` runs
-`prepare:mcp-sidecar:release` and `prepare:cli-sidecar:release`, then the
-frontend build, so both packaged executables are bundled beside the app.
-
-## Run the landing page
+This is the normal local lane. It runs Swift package tests, isolated
+performance gates, and a Debug build without launching or focusing CodeVetter.
+Foreground XCUITest is intentionally separate:
 
 ```bash
-cd apps/landing-page-astro
-pnpm install
-pnpm dev            # Astro dev server
-pnpm build          # static export → apps/landing-page-astro/dist
+pnpm test:native:ui
 ```
 
-Deploy is via `deploy-landing.yml` to Cloudflare Pages — see
-[operations/landing-deploy.md](../operations/landing-deploy.md).
+Only use the UI lane on an idle graphical desktop with current operator
+approval. CI runs it on an isolated hosted macOS desktop for pull requests.
 
-## Environment
+Open `apps/macos/CodeVetter.xcworkspace` in Xcode for interactive
+development. Most app code lives under
+`apps/macos/CodeVetterPackage/Sources/CodeVetterFeature/`.
 
-The desktop app reads only `DEBUG_TAURI_DRIVER` (see `.env.example`). All
-other config (LLM provider keys, model, tone, standards packs) is entered in
-the Settings tab and persisted via Tauri preferences — see
-[configuration.md](./configuration.md).
-
-## Common commands (root)
+## Build the Rust authority and companions
 
 ```bash
-pnpm install              # install all workspace deps
-pnpm lint                 # biome check . (root)
-pnpm format               # biome format --write .
-pnpm bench:public         # public 27-case catch-rate benchmark
-pnpm bench:catch-rate     # local catch-rate benchmark
-pnpm deploy               # manual deploy helper (scripts/manual-deploy.mjs)
+pnpm core:build
+pnpm core:test
+pnpm core:prepare-cli
+pnpm core:prepare-mcp
+pnpm core:prepare-ccusage
+pnpm core:qualify-cli
 ```
 
-## Common commands (apps/desktop)
+Generated local companions live under
+`crates/codevetter-core/binaries/` and are ignored. The native package embeds
+the exact companions during qualification.
+
+## Build the public site and docs
 
 ```bash
-pnpm dev                  # Vite only (port 1420)
-pnpm tauri:dev            # full Tauri app
-pnpm tauri:build          # production binary
-pnpm test                 # Playwright e2e
-pnpm test:unit            # node --test over src/**/*.test.ts
-pnpm lint                 # biome check .
-pnpm build                # vite build
-pnpm prepare:mcp-sidecar  # build MCP sidecar binary
-pnpm prepare:cli-sidecar  # build browser-enabled codevetter CLI sidecar
-pnpm bench                # build + bundle budget + Rust benches
-pnpm qualify:graph        # enforced graph + UI data-path budgets
+pnpm build:landing
 ```
 
-The CLI preparation enables the existing `browser-agent` Cargo feature. It
-uses the user's installed Chrome and adds no browser or production package
-dependency. Installed macOS app launches register the bundled binary at
-`~/.local/bin/codevetter`; `pnpm tauri:dev` launches never modify the user's
-command path. CLI qualification can set `CODEVETTER_APP_DATA_DIR` to a temporary
-directory so smoke-test receipts never enter the user's real app database.
+Astro owns the public site. Markdown under `docs/` remains the source of
+truth; Blume supplies the presentation layer.
 
-See [testing.md](./testing.md), [performance.md](./performance.md), and
-[benchmark.md](./benchmark.md) for the test/perf surfaces.
+## Data and identity
+
+Debug uses `com.codevetter.desktop.native-preview` and must not touch the
+installed production app's data. Release uses `com.codevetter.desktop` so the
+native replacement retains the existing Application Support location.
+
+Do not delete, rewrite, or copy user data during local development. Release
+qualification performs upgrade and rollback checks in a temporary hosted
+environment.
+
+## Common checks
+
+```bash
+pnpm lint
+pnpm knip:strict
+pnpm core:fmt
+pnpm core:clippy
+node scripts/check-docs.mjs
+```
+
+Use the smallest relevant check first, then expand to the full lane before a
+pull request.

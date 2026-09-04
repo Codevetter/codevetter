@@ -19,6 +19,7 @@ is only the presentation and search layer.
 ## Product
 
 - [overview.md](./product/overview.md) — what CodeVetter is, durable scope, capability matrix, strategy.
+- [capabilities.md](./product/capabilities.md) — UI, CLI, MCP, underlying-tool, and future-capability glossary.
 - [surfaces.md](./product/surfaces.md) — nav tabs, URL-only routes, removed surfaces.
 - [synthetic-user-qa.md](./product/synthetic-user-qa.md) — runtime proof layer for agent-written code.
 - [trex-change-preview.md](./product/trex-change-preview.md) — exact PR or commit-range verification against an existing preview.
@@ -36,10 +37,9 @@ is only the presentation and search layer.
 - [trex-mcp-projection.md](./architecture/trex-mcp-projection.md) — future
   agent-triggered verification boundary without weakening the read-only MCP.
 - [history-evidence-import.md](./architecture/history-evidence-import.md) — importing provider-side outcomes.
-- [native-agent-island.md](./architecture/native-agent-island.md) — supervised Swift status, speech, and provider-action boundary.
 - [verification-workbench.md](./architecture/verification-workbench.md) — additive evidence identities, retention, managed-run, intent, and performance records.
 - [native-migration-matrix.md](./architecture/native-migration-matrix.md) —
-  no-regression map from every retained Tauri surface to the native macOS app.
+  no-regression map and release gates for the sole native macOS app.
 - [native-rust-boundary.md](./architecture/native-rust-boundary.md) — measured
   hybrid ownership split between in-process reads and supervised execution.
 
@@ -52,8 +52,8 @@ is only the presentation and search layer.
 ## Development
 
 - [setup.md](./development/setup.md) — prerequisites, install, run.
-- [testing.md](./development/testing.md) — the four test surfaces.
-- [performance.md](./development/performance.md) — perf harness and baselines.
+- [testing.md](./development/testing.md) — native, Rust, CLI/MCP, package, and code-health gates.
+- [performance.md](./development/performance.md) — native, Rust, MCP, and exact-package performance gates.
 - [native-macos.md](./development/native-macos.md) — native Evidence Workbench
   toolchain, ownership, and qualification boundaries.
 - [benchmark.md](./development/benchmark.md) — catch-rate benchmark.
@@ -61,7 +61,7 @@ is only the presentation and search layer.
   coding-agent task packages and fail-closed readiness.
 - [verification-receipts.md](./development/verification-receipts.md) — ingest
   project-runner evidence, compare regressions, and explain test blast radius.
-- [configuration.md](./development/configuration.md) — runtime config and CSP.
+- [configuration.md](./development/configuration.md) — native identity, settings, data, and updater configuration.
 - [docs.md](./development/docs.md) — how to write, validate, and render docs.
 
 ## Operations
@@ -124,6 +124,9 @@ below point at the files in the repo on GitHub.
 - [stale-development-2026-04.md](https://github.com/Codevetter/codevetter/blob/main/docs/archive/stale-development-2026-04.md)
 - [stale-configuration-2026-04.md](https://github.com/Codevetter/codevetter/blob/main/docs/archive/stale-configuration-2026-04.md)
 - [stale-testing-2026-04.md](https://github.com/Codevetter/codevetter/blob/main/docs/archive/stale-testing-2026-04.md)
+- [stale-performance-harness-2026-09.md](https://github.com/Codevetter/codevetter/blob/main/docs/archive/stale-performance-harness-2026-09.md) — retired React/Tauri performance harness and historical measurements.
+- [stale-native-agent-island-2026-09.md](https://github.com/Codevetter/codevetter/blob/main/docs/archive/stale-native-agent-island-2026-09.md) — retired helper prototype; any future status island is a side quest.
+- [stale-repo-unpacked-2026-09.md](https://github.com/Codevetter/codevetter/blob/main/docs/archive/stale-repo-unpacked-2026-09.md) — retired React/Tauri implementation notes.
 - [planning-codebase/](https://github.com/Codevetter/codevetter/tree/main/docs/archive/planning-codebase) — pre-desloppification `.planning/codebase/` docs.
 
 ## Open questions

@@ -1,87 +1,77 @@
 ---
 title: CI
-description: What the GitHub Actions CI workflow checks and in what order.
+description: GitHub Actions checks for the native app, Rust core, CLI, MCP, site, and protected release.
 sidebar:
   order: 3
 ---
 
 # CI
 
-`.github/workflows/ci.yml` runs on every push to `main` and every pull request.
+`.github/workflows/ci.yml` runs on pull requests and pushes to `main`.
+Permissions default to none and checkout credentials are not persisted.
 
-## Job: `lint-and-typecheck` (ubuntu-latest)
+## Linux verification
 
-Steps, in order (a failure stops the job):
+The `verify` job installs locked pnpm dependencies and stable Rust, then runs:
 
-1. SHA-pinned `actions/checkout` with persisted credentials disabled
-2. SHA-pinned `pnpm/action-setup` + `actions/setup-node` (Node 22, pnpm cache)
-3. SHA-pinned `dtolnay/rust-toolchain`
-4. Install Tauri Linux deps (`libwebkit2gtk-4.1-dev`, `libayatana-appindicator3-dev`, `librsvg2-dev`, `libxdo-dev`)
-5. `pnpm install --frozen-lockfile`
-6. **Lint** — `pnpm run lint` in `apps/desktop` (Biome)
-7. **Type check** — `pnpm exec tsc --noEmit` in `apps/desktop`
-8. **Unit tests** — `pnpm run test:unit` in `apps/desktop`
-9. **Automation readiness tests** — `pnpm run test:automation` and
-   `pnpm run test:corpus-contracts` at root (hermetic Foundry receipt
-   sanitization plus agent-task contract, qualification, dry-run/approval,
-   disposable runner, timeout/cancellation, output-redaction, cleanup, and
-   deterministic receipt-composition/rescoring tests; the live manifest
-   verifier runs in `release.yml` as a post-upload check, not here)
-10. **MCP sidecar build smoke** — `pnpm run prepare:mcp-sidecar`
-11. **CLI sidecar build smoke** — `pnpm run prepare:cli-sidecar`
-12. **CLI artifact qualification** — focused script tests plus
-    `pnpm run qualify:cli` execute the prepared binary and verify its exact
-    version/help surface and both Tauri bundle declarations
-13. **Desktop build** — `pnpm run build` (Vite production build)
-14. **MCP protocol and safety tests** — Rust library, binary, and stdio integration tests
-15. **T-Rex CLI contract tests** — browser-feature parser, output, and exit-code tests
-16. **MCP and history browser tests** — Settings and Repo Unpack Playwright coverage
+1. Biome lint.
+2. Changed-file size, Knip, complexity, cycle, duplication, and dependency
+   health gates.
+3. Astro public-indexing build and agent-surface verification.
+4. Hermetic automation, corpus, retrieval, and core-tool contracts.
+5. CLI, MCP, and pinned ccusage companion preparation.
+6. Rust library MCP tests, MCP binary and stdio tests, and CLI tests.
 
-## Other workflows
+The Rust dependency graph contains no Tauri, Wry, WebKit, GTK, or windowing
+runtime, so Linux CI verifies only the portable core and machine surfaces.
 
-| Workflow | Trigger | Purpose | Doc |
-|---|---|---|---|
-| `auto-release.yml` | push to `main` on `tauri.conf.json` version bump | cut `v<version>` release + dispatch `release.yml` | [release-pipeline.md](./release-pipeline.md) |
-| `release.yml` | `release.created` or `workflow_dispatch` | build/sign/upload Tauri binaries + `latest.json` | [release-pipeline.md](./release-pipeline.md) |
-| `native-qualification.yml` | `workflow_dispatch` (manual) | qualify the unsigned native macOS preview and optionally run XCUITest on an isolated hosted desktop | [../development/native-macos.md](../development/native-macos.md) |
-| `deploy-landing.yml` | `workflow_dispatch` (manual) | deploy Astro site to Cloudflare Pages | [landing-deploy.md](./landing-deploy.md) |
-| `weekly.yml` | cron `0 9 * * 1` (Mon 09:00 UTC) + `workflow_dispatch` | lockfile-agnostic quality check (lint/typecheck/test/build if defined) | [jobs/weekly-quality.md](./jobs/weekly-quality.md) |
-| `docs.yml` | push/PR | doc link + structure validation | [../development/docs.md](../development/docs.md) |
-| `repository-security.yml` | push to `main`/PR/manual | actionlint + ShellCheck, Biome SARIF, cargo-deny Rust policy, full-history Gitleaks, and zizmor code-scanning uploads | [../knowledge/tooling-decisions.md](../knowledge/tooling-decisions.md) |
-| `osv-offline.yml` | manual | explicit OSV database refresh followed by a separate offline lockfile scan and evidence upload | [../knowledge/tooling-secrets-and-supply-chain.md](../knowledge/tooling-secrets-and-supply-chain.md) |
+## Hosted native qualification
 
-The first complete hosted native qualification passed at commit `824a9e8b`:
-81 Swift tests, nine XCUITests, Debug and coverage-free Release builds, the
-33-state owner packet, unsigned ZIP/DMG packaging, and read-only readiness
-inspection. The exact run, hashes, metrics, and remaining production gates are
-recorded in [the hosted qualification receipt](../../evidence/verification/native-hosted-qualification-2026-09-02.md).
+Pull requests call `.github/workflows/native-qualification.yml` on an
+isolated macOS runner. The reusable workflow builds and tests the SwiftUI/AppKit
+app and can run foreground XCUITest without interrupting the operator's Mac.
 
-`repository-security.yml` uses no application dependency. Gitleaks, actionlint,
-ShellCheck, and cargo-deny are checksum-pinned binaries; every third-party
-action is pinned to a commit; and job permissions are declared narrowly.
-Publish jobs do not use dependency or toolchain caches, so an offline pedantic
-zizmor review has no unsuppressed security findings. Its two remaining
-informational suggestions prefer runner shell commands over the pinned Rust
-toolchain setup action; the maintained, commit-pinned action is retained
-deliberately.
+Manual dispatch inputs can select:
 
-Run `pnpm quality:workflows` when actionlint is installed. It parses every
-workflow, validates GitHub expression and event semantics, and delegates shell
-fragments to ShellCheck. The first qualified audit and exact artifact identities
-are recorded in [the tracked evidence](https://github.com/Codevetter/codevetter/blob/main/evidence/security/actionlint-baseline-2026-08-31.md).
+- background native qualification;
+- foreground interaction qualification;
+- protected production-candidate qualification.
 
-## Local pre-commit / pre-push
+## Protected production qualification
 
-- **pre-commit** (`.husky/pre-commit`): `lint-staged` → `biome check --write` on staged `apps/desktop/src/**/*.{ts,tsx}`, then Gitleaks staged-diff scanning when the binary is installed.
-- **pre-push** (`.husky/pre-push`): `pnpm run lint`, then full-history Gitleaks. A limited tracked-file pattern scan remains as a fallback for contributors without the binary; CI always uses Gitleaks.
+`.github/workflows/native-production-qualification.yml` fails closed unless
+it can prove the exact source and archive through:
 
-Generate a local Biome SARIF 2.1.0 artifact at
-`artifacts/tooling/biome.sarif` with `pnpm quality:sarif`. Generated artifacts
-remain ignored scratch; the workflow uploads them to GitHub code scanning.
+- Release build and companion packaging;
+- Developer ID signing;
+- Apple notarization and staple validation;
+- Sparkle EdDSA signing and appcast identity;
+- Gatekeeper validation;
+- isolated upgrade from the previous signed application;
+- native relaunch, stable-record continuity, and rollback.
 
-Run `pnpm quality:vulnerabilities` after explicitly refreshing the OSV databases.
-The scan itself is offline and produces `artifacts/tooling/osv/results.sarif`
-plus a receipt containing scanner, source, and database identities. Exit `1`
-means findings; exit `2` means the scanner or evidence path failed. This is not
-yet a push/PR gate because the measured baseline must be remediated rather than
-silently accepted. The manual workflow remains red while findings exist.
+Secrets are consumed only by GitHub Actions and are not printed or committed.
+
+## Release automation
+
+A version change in `apps/macos/Config/Shared.xcconfig` on `main` causes
+`auto-release.yml` to create `v<version>` and dispatch `release.yml`.
+The release workflow re-runs protected qualification and uploads only the exact
+qualified DMG, ZIP, and appcast.
+
+## Local parity
+
+Run the smallest relevant command first. Before merging a release change, the
+local baseline is:
+
+```bash
+pnpm lint
+pnpm knip:strict
+pnpm core:test
+pnpm test:native:background
+pnpm build:landing
+node scripts/check-docs.mjs
+```
+
+Local success is source/build evidence. Hosted protected jobs remain the
+authority for signing, notarization, interaction, upgrade, and publication.

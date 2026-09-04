@@ -182,7 +182,7 @@ export function qualifyNativePackage(options = parseArguments(process.argv.slice
     ['codevetter-mcp', join('binaries', `codevetter-mcp-${target}`)],
     ['ccusage', join('binaries', `ccusage-${target}`)],
   ].map(([destinationName, preparedPath]) => {
-    const source = join(repositoryRoot, 'apps/desktop/src-tauri', preparedPath);
+    const source = join(repositoryRoot, 'crates/codevetter-core', preparedPath);
     const destination = join(executableDirectory, destinationName);
     assertFile(source);
     copyFileSync(source, destination);
@@ -192,7 +192,7 @@ export function qualifyNativePackage(options = parseArguments(process.argv.slice
   const collectorDirectory = join(stagedApp, 'Contents/Resources/collectors');
   mkdirSync(collectorDirectory, { recursive: true });
   const collectorSidecars = ['gitleaks', 'cargo-audit', 'cargo-llvm-cov'].map((name) => {
-    const source = join(repositoryRoot, 'apps/desktop/src-tauri/resources/collectors', name);
+    const source = join(repositoryRoot, 'crates/codevetter-core/resources/collectors', name);
     const destination = join(collectorDirectory, name);
     assertFile(source);
     copyFileSync(source, destination);
@@ -210,7 +210,7 @@ export function qualifyNativePackage(options = parseArguments(process.argv.slice
   }
   const advisoryDatabaseSource = join(
     repositoryRoot,
-    'apps/desktop/src-tauri/resources/rustsec-advisory-db/snapshot'
+    'crates/codevetter-core/resources/rustsec-advisory-db/snapshot'
   );
   const advisoryDatabaseDestination = join(
     stagedApp,
@@ -357,14 +357,14 @@ function isCanonicalEdDSAPublicKey(value) {
 
 function prepareSidecars(target) {
   for (const [script, args] of [
-    ['apps/desktop/scripts/prepare-cli-sidecar.mjs', ['--release']],
-    ['apps/desktop/scripts/prepare-mcp-sidecar.mjs', ['--release']],
-    ['apps/desktop/scripts/prepare-ccusage-sidecar.mjs', []],
-    ['apps/desktop/scripts/prepare-collector-sidecars.mjs', []],
+    ['scripts/core-tools/prepare-cli-sidecar.mjs', ['--release']],
+    ['scripts/core-tools/prepare-mcp-sidecar.mjs', ['--release']],
+    ['scripts/core-tools/prepare-ccusage-sidecar.mjs', []],
+    ['scripts/core-tools/prepare-collector-sidecars.mjs', []],
   ]) {
     run(process.execPath, [join(repositoryRoot, script), ...args], {
       stdio: 'inherit',
-      env: { ...process.env, TAURI_ENV_TARGET_TRIPLE: target },
+      env: { ...process.env, CODEVETTER_TARGET_TRIPLE: target },
     });
   }
 }
