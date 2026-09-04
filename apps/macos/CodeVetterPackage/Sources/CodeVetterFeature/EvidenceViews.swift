@@ -41,7 +41,7 @@ public struct EvidenceSidebarView: View {
             .foregroundStyle(.secondary)
         }
         Text(model.registry.schemaVersion)
-          .font(.system(size: 9, design: .monospaced))
+          .font(.system(size: 10, design: .monospaced))
           .foregroundStyle(.tertiary)
           .lineLimit(1)
       }
@@ -60,7 +60,7 @@ public struct EvidenceSidebarView: View {
   private func navigationGroup(_ title: String, sections: [WorkbenchSection]) -> some View {
     VStack(alignment: .leading, spacing: 3) {
       Text(title.uppercased())
-        .font(.system(size: 9, weight: .bold))
+        .font(.system(size: 10, weight: .bold))
         .foregroundStyle(.tertiary)
         .padding(.horizontal, 11)
         .padding(.bottom, 3)
@@ -187,7 +187,7 @@ private struct VerifyView: View {
         HStack(alignment: .top) {
           VStack(alignment: .leading, spacing: 5) {
             Text("REVIEW")
-              .font(.system(size: 9, weight: .bold))
+              .font(.system(size: 10, weight: .bold))
               .tracking(0.8)
               .foregroundStyle(EvidenceStyle.amberForeground)
             Text("Verify a change")
@@ -332,7 +332,7 @@ private struct VerificationRail: View {
           Text(stage.1)
             .font(.system(size: 11, weight: .semibold))
           Text(stage.2)
-            .font(.system(size: 9))
+            .font(.system(size: 10))
             .foregroundStyle(.secondary)
             .multilineTextAlignment(.center)
             .lineLimit(2)
@@ -374,7 +374,7 @@ private struct VerificationRail: View {
               .foregroundStyle(EvidenceStyle.success)
           } else if index == activeIndex {
             Text("CURRENT")
-              .font(.system(size: 8, weight: .bold))
+              .font(.system(size: 10, weight: .bold))
               .foregroundStyle(EvidenceStyle.amberForeground)
           }
         }
@@ -426,7 +426,7 @@ private struct ReceiptSummary: View {
   private func receiptMetric(_ label: String, _ value: String) -> some View {
     VStack(alignment: .leading, spacing: 4) {
       Text(label.uppercased())
-        .font(.system(size: 9, weight: .semibold))
+        .font(.system(size: 10, weight: .semibold))
         .foregroundStyle(.tertiary)
       Text(value.replacingOccurrences(of: "_", with: " "))
         .font(.system(size: 12, weight: .semibold, design: .monospaced))
@@ -471,7 +471,7 @@ struct CapabilityCatalogView: View {
           PremiumFieldLabel("CAPABILITY GLOSSARY")
           Spacer()
           Text("UI · CLI · AGENT")
-            .font(.system(size: 9, weight: .bold, design: .monospaced))
+            .font(.system(size: 10, weight: .bold, design: .monospaced))
             .foregroundStyle(.secondary)
         }
         .padding(.horizontal, 12)
@@ -527,7 +527,7 @@ struct CapabilityCatalogView: View {
 
   private func header(_ text: String, alignment: Alignment = .center) -> some View {
     Text(text.uppercased())
-      .font(.system(size: 9, weight: .bold))
+      .font(.system(size: 10, weight: .bold))
       .foregroundStyle(.tertiary)
       .frame(maxWidth: .infinity, alignment: alignment)
       .padding(.vertical, 8)
@@ -554,7 +554,7 @@ struct CapabilityCatalogView: View {
       Circle().fill(color(for: availability)).frame(width: 6, height: 6)
       Text(label)
     }
-    .font(.system(size: 8, weight: .semibold, design: .monospaced))
+    .font(.system(size: 10, weight: .semibold, design: .monospaced))
     .foregroundStyle(availability == .available ? Color.primary : Color.secondary)
     .padding(.horizontal, 7)
     .frame(height: 24)
@@ -668,7 +668,7 @@ struct CapabilityInspector: View {
         Text(tool.name).font(.system(size: 11, weight: .semibold))
         Text(tool.role).font(.system(size: 10)).foregroundStyle(.secondary)
         Text(tool.requirement.uppercased())
-          .font(.system(size: 8, weight: .bold))
+          .font(.system(size: 10, weight: .bold))
           .foregroundStyle(.tertiary)
       }
     }
@@ -723,7 +723,7 @@ private func panelHeading(_ title: String, caption: String) -> some View {
 private func inspectorPair(_ label: String, _ value: String) -> some View {
   VStack(alignment: .leading, spacing: 3) {
     Text(label.uppercased())
-      .font(.system(size: 9, weight: .bold))
+      .font(.system(size: 10, weight: .bold))
       .foregroundStyle(.tertiary)
     Text(value.replacingOccurrences(of: "_", with: " "))
       .font(.system(size: 11, design: label == "Data boundary" ? .default : .monospaced))

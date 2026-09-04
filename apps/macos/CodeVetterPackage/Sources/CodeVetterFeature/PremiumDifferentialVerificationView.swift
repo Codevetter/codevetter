@@ -9,12 +9,12 @@ struct PremiumDifferentialVerificationView: View {
       HStack(spacing: 14) {
         VStack(alignment: .leading, spacing: 4) {
           Text("DIFFERENTIAL / PAIRED EVIDENCE")
-            .font(.system(size: 9, weight: .bold, design: .monospaced))
+            .font(.system(size: 10, weight: .bold, design: .monospaced))
             .tracking(1.1).foregroundStyle(EvidenceStyle.amberForeground)
           Text("Compare behavior, not just code.")
             .font(.system(size: 21, weight: .semibold)).tracking(-0.3)
           Text("Exact reference · exact candidate · same scenarios · zero model calls")
-            .font(.system(size: 9, design: .monospaced)).foregroundStyle(.secondary)
+            .font(.system(size: 10, design: .monospaced)).foregroundStyle(.secondary)
         }
         Spacer()
         StatusPill(label: model.differentialState.rawValue, color: stateColor)
@@ -118,7 +118,7 @@ struct PremiumDifferentialVerificationView: View {
             Divider()
             PremiumFieldLabel("REASON CODES")
             ForEach(prepared.reasonCodes, id: \.self) { reason in
-              Text(reason).font(.system(size: 9, design: .monospaced)).foregroundStyle(.secondary)
+              Text(reason).font(.system(size: 10, design: .monospaced)).foregroundStyle(.secondary)
             }
           }
         } else {
@@ -137,7 +137,7 @@ struct PremiumDifferentialVerificationView: View {
         Text(
           "Swift renders the contract. Rust owns source materialization, parity, comparison, cleanup, persistence, and classification."
         )
-        .font(.system(size: 9)).foregroundStyle(.secondary)
+        .font(.system(size: 10)).foregroundStyle(.secondary)
         .fixedSize(horizontal: false, vertical: true)
       }
       .padding(24)
@@ -172,13 +172,13 @@ struct PremiumDifferentialVerificationView: View {
       HStack(spacing: 14) {
         VStack(alignment: .leading, spacing: 4) {
           Text("COMPARISON RECORDED")
-            .font(.system(size: 9, weight: .bold, design: .monospaced))
+            .font(.system(size: 10, weight: .bold, design: .monospaced))
             .tracking(1).foregroundStyle(classificationColor(summary.classification))
           Text(model.differentialStatusMessage).font(.system(size: 16, weight: .semibold))
           Text(
             "\(summary.scenarioCount) scenarios · \(summary.deltaCount) deltas · \(summary.blockingDeltaCount) blocking"
           )
-          .font(.system(size: 9, design: .monospaced)).foregroundStyle(.secondary)
+          .font(.system(size: 10, design: .monospaced)).foregroundStyle(.secondary)
         }
         Spacer()
         StatusPill(
@@ -204,7 +204,7 @@ struct PremiumDifferentialVerificationView: View {
           datum("MODEL CALLS", "\(summary.modelCallCount)")
           Divider()
           Text("Differential evidence never creates pass evidence.")
-            .font(.system(size: 9, weight: .semibold)).foregroundStyle(EvidenceStyle.warning)
+            .font(.system(size: 10, weight: .semibold)).foregroundStyle(EvidenceStyle.warning)
             .fixedSize(horizontal: false, vertical: true)
           Spacer()
           Label("Rust validated + persisted", systemImage: "checkmark.seal.fill")
@@ -237,11 +237,11 @@ struct PremiumDifferentialVerificationView: View {
                   .font(.system(size: 11, weight: .semibold))
                   .foregroundStyle(delta.blocking ? EvidenceStyle.failure : EvidenceStyle.warning)
                   Spacer()
-                  Text(delta.direction).font(.system(size: 9, design: .monospaced)).foregroundStyle(
+                  Text(delta.direction).font(.system(size: 10, design: .monospaced)).foregroundStyle(
                     .secondary)
                 }
                 Text(delta.scenarioID).font(.system(size: 10, design: .monospaced))
-                Text(delta.policyID).font(.system(size: 8, design: .monospaced)).foregroundStyle(
+                Text(delta.policyID).font(.system(size: 10, design: .monospaced)).foregroundStyle(
                   .tertiary)
               }
               .padding(14).background(EvidenceStyle.surface, in: RoundedRectangle(cornerRadius: 12))
@@ -250,7 +250,7 @@ struct PremiumDifferentialVerificationView: View {
             if !summary.reasonCodes.isEmpty {
               PremiumFieldLabel("REASON CODES")
               ForEach(summary.reasonCodes, id: \.self) { reason in
-                Text(reason).font(.system(size: 9, design: .monospaced)).foregroundStyle(.secondary)
+                Text(reason).font(.system(size: 10, design: .monospaced)).foregroundStyle(.secondary)
               }
             }
           }.padding(18)
@@ -263,7 +263,7 @@ struct PremiumDifferentialVerificationView: View {
     HStack {
       Text(label).font(.system(size: 10, weight: .semibold))
       Spacer()
-      Text(value).font(.system(size: 9, design: .monospaced)).foregroundStyle(.secondary)
+      Text(value).font(.system(size: 10, design: .monospaced)).foregroundStyle(.secondary)
     }
     .padding(12).background(EvidenceStyle.surface, in: RoundedRectangle(cornerRadius: 10))
   }
@@ -271,7 +271,7 @@ struct PremiumDifferentialVerificationView: View {
   private func datum(_ label: String, _ value: String) -> some View {
     VStack(alignment: .leading, spacing: 4) {
       PremiumFieldLabel(label)
-      Text(value).font(.system(size: 9, weight: .medium, design: .monospaced)).foregroundStyle(
+      Text(value).font(.system(size: 10, weight: .medium, design: .monospaced)).foregroundStyle(
         .secondary
       ).textSelection(.enabled).lineLimit(2)
     }

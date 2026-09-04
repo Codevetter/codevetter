@@ -151,7 +151,7 @@ struct PremiumSettingsView: View {
           ForEach(Array(settingsGroups.enumerated()), id: \.offset) { _, group in
             VStack(alignment: .leading, spacing: 4) {
               Text(group.0.uppercased())
-                .font(.system(size: 8, weight: .bold, design: .monospaced))
+                .font(.system(size: 10, weight: .bold, design: .monospaced))
                 .tracking(0.8)
                 .foregroundStyle(.tertiary)
                 .padding(.horizontal, 12)
@@ -169,7 +169,7 @@ struct PremiumSettingsView: View {
                     Spacer()
                     if !settings(in: section).isEmpty {
                       Text("\(settings(in: section).count)")
-                        .font(.system(size: 8, design: .monospaced))
+                        .font(.system(size: 10, design: .monospaced))
                         .foregroundStyle(.secondary)
                     }
                   }
@@ -208,7 +208,7 @@ struct PremiumSettingsView: View {
         )
         .foregroundStyle(.secondary)
       }
-      .font(.system(size: 8))
+      .font(.system(size: 10))
       .padding(14)
     }
     .background(EvidenceStyle.inspector)
@@ -234,7 +234,7 @@ struct PremiumSettingsView: View {
         ProgressView().controlSize(.small).tint(EvidenceStyle.amber)
         Text("Opening declared settings…").font(.system(size: 12, weight: .medium))
         Text("No credential value is requested by this projection.")
-          .font(.system(size: 9))
+          .font(.system(size: 10))
           .foregroundStyle(.secondary)
       }
       .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -305,7 +305,7 @@ struct PremiumSettingsView: View {
       }
       Spacer()
       Text(sectionStatusLabel)
-        .font(.system(size: 8, weight: .bold, design: .monospaced))
+        .font(.system(size: 10, weight: .bold, design: .monospaced))
         .foregroundStyle(sectionStatusColor)
     }
   }
@@ -321,7 +321,7 @@ struct PremiumSettingsView: View {
       HStack(spacing: 8) {
         StatusPill(label: "Incumbent authority retained", color: EvidenceStyle.warning)
         Text("No preference, credential, or destructive action is silently substituted.")
-          .font(.system(size: 8))
+          .font(.system(size: 10))
           .foregroundStyle(.secondary)
       }
     }
@@ -338,7 +338,7 @@ struct PremiumSettingsView: View {
           .font(.system(size: 11, weight: .semibold))
         Spacer()
         Text(model.registry.schemaVersion)
-          .font(.system(size: 8, weight: .semibold, design: .monospaced))
+          .font(.system(size: 10, weight: .semibold, design: .monospaced))
           .foregroundStyle(.secondary)
           .padding(.horizontal, 9)
           .frame(height: 25)
@@ -367,7 +367,7 @@ struct PremiumSettingsView: View {
             settingsMetric("TOOLS", capability.underlyingTools.count.formatted())
           }
           Label(capability.dataBoundary, systemImage: "lock.shield")
-            .font(.system(size: 9))
+            .font(.system(size: 10))
             .foregroundStyle(.secondary)
             .lineLimit(2)
           DisclosureGroup("Tools, limitations, and next step") {
@@ -409,7 +409,7 @@ struct PremiumSettingsView: View {
           Text(
             "These preferences are shared with the retained supervised helper. The new Evidence Workbench does not yet launch it, read transcripts, or action provider requests."
           )
-          .font(.system(size: 9))
+          .font(.system(size: 10))
           .foregroundStyle(.secondary)
           .fixedSize(horizontal: false, vertical: true)
           HStack(spacing: 7) {
@@ -425,10 +425,10 @@ struct PremiumSettingsView: View {
           HStack(spacing: 7) {
             Circle().fill(EvidenceStyle.amber).frame(width: 7, height: 7)
             Text("CODEX · REVIEW READY")
-              .font(.system(size: 8, weight: .bold, design: .monospaced))
+              .font(.system(size: 10, weight: .bold, design: .monospaced))
               .foregroundStyle(Color.white.opacity(0.86))
             Text("+2")
-              .font(.system(size: 8, weight: .bold, design: .monospaced))
+              .font(.system(size: 10, weight: .bold, design: .monospaced))
               .foregroundStyle(EvidenceStyle.amber)
           }
           .padding(.horizontal, 13)
@@ -436,7 +436,7 @@ struct PremiumSettingsView: View {
           .background(Color.black, in: Capsule())
           .overlay { Capsule().stroke(EvidenceStyle.amber.opacity(0.32)) }
           Text("Non-activating preview · no live session content")
-            .font(.system(size: 7, design: .monospaced))
+            .font(.system(size: 10, design: .monospaced))
             .foregroundStyle(.secondary)
         }
       }
@@ -465,7 +465,7 @@ struct PremiumSettingsView: View {
         Text(
           "Swift receives preference labels and values only. Session identities, prompts, output, commands, paths, provider responses, and credentials are excluded from this settings receipt."
         )
-        .font(.system(size: 9))
+        .font(.system(size: 10))
         .foregroundStyle(.secondary)
       }
       .padding(.horizontal, 4)
@@ -489,7 +489,7 @@ struct PremiumSettingsView: View {
           Text(
             "Rust reads aggregate local evidence and configuration presence. This path never fetches a provider invoice, returns a key or endpoint, or sends a webhook."
           )
-          .font(.system(size: 9))
+          .font(.system(size: 10))
           .foregroundStyle(.secondary)
           .fixedSize(horizontal: false, vertical: true)
         }
@@ -512,7 +512,7 @@ struct PremiumSettingsView: View {
             model.loadOpsStatus(windowDays: days)
           } label: {
             Text("\(days)d")
-              .font(.system(size: 9, weight: .semibold, design: .monospaced))
+              .font(.system(size: 10, weight: .semibold, design: .monospaced))
               .padding(.horizontal, 10)
               .frame(height: 26)
               .foregroundStyle(
@@ -602,7 +602,7 @@ struct PremiumSettingsView: View {
                 Text(opsDuration(row.medianDurationSeconds)).frame(width: 62, alignment: .trailing)
                 Text(opsDuration(row.p95DurationSeconds)).frame(width: 62, alignment: .trailing)
               }
-              .font(.system(size: 9, design: .monospaced))
+              .font(.system(size: 10, design: .monospaced))
               .padding(.horizontal, 14)
               .frame(height: 38)
               if index < receipt.observability.count - 1 {
@@ -618,7 +618,7 @@ struct PremiumSettingsView: View {
           PremiumFieldLabel("AUTHORITY HELD BACK")
           ForEach(receipt.limitations, id: \.self) { limitation in
             Label(limitation, systemImage: "lock.fill")
-              .font(.system(size: 8))
+              .font(.system(size: 10))
               .foregroundStyle(.secondary)
           }
         }
@@ -638,7 +638,7 @@ struct PremiumSettingsView: View {
         )
         if let checked = model.memoryReceipt?.candidateLocationsChecked {
           Text("\(checked) known locations checked")
-            .font(.system(size: 8, design: .monospaced))
+            .font(.system(size: 10, design: .monospaced))
             .foregroundStyle(.secondary)
         }
         if model.memoryReceipt?.limits.sourcesTruncated == true {
@@ -666,7 +666,7 @@ struct PremiumSettingsView: View {
       HStack(alignment: .top, spacing: 12) {
         VStack(alignment: .leading, spacing: 10) {
           Label("SOURCE CATALOG", systemImage: "memorychip")
-            .font(.system(size: 9, weight: .bold, design: .monospaced))
+            .font(.system(size: 10, weight: .bold, design: .monospaced))
             .foregroundStyle(EvidenceStyle.amberForeground)
           TextField("Filter sources", text: $memorySourceQuery)
             .textFieldStyle(.roundedBorder)
@@ -692,15 +692,15 @@ struct PremiumSettingsView: View {
                         .lineLimit(1)
                       Spacer()
                       Text(source.tool.uppercased())
-                        .font(.system(size: 7, weight: .bold, design: .monospaced))
+                        .font(.system(size: 10, weight: .bold, design: .monospaced))
                         .foregroundStyle(.secondary)
                     }
                     Text(source.displayPath)
-                      .font(.system(size: 8, design: .monospaced))
+                      .font(.system(size: 10, design: .monospaced))
                       .foregroundStyle(.secondary)
                       .lineLimit(1)
                     Text(source.preview.isEmpty ? source.note : source.preview)
-                      .font(.system(size: 8))
+                      .font(.system(size: 10))
                       .foregroundStyle(.secondary)
                       .lineLimit(2)
                   }
@@ -737,7 +737,7 @@ struct PremiumSettingsView: View {
         "Rust admits only known sources, emits opaque identities and display paths, redacts secret-like lines, and caps one read at 512 KiB / 120,000 characters.",
         systemImage: "lock.shield.fill"
       )
-      .font(.system(size: 9))
+      .font(.system(size: 10))
       .foregroundStyle(.secondary)
       .padding(12)
       .frame(maxWidth: .infinity, alignment: .leading)
@@ -759,7 +759,7 @@ struct PremiumSettingsView: View {
               ]
               .filter { !$0.isEmpty }.joined(separator: " · ")
             )
-            .font(.system(size: 8, design: .monospaced))
+            .font(.system(size: 10, design: .monospaced))
             .foregroundStyle(.secondary)
           }
         }
@@ -792,7 +792,7 @@ struct PremiumSettingsView: View {
       if model.memoryLoading, memoryVisibleText.isEmpty {
         VStack(spacing: 8) {
           ProgressView().controlSize(.small).tint(EvidenceStyle.amber)
-          Text("Reading bounded source…").font(.system(size: 9)).foregroundStyle(.secondary)
+          Text("Reading bounded source…").font(.system(size: 10)).foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity, minHeight: 340)
       } else if memoryVisibleText.isEmpty {
@@ -802,14 +802,14 @@ struct PremiumSettingsView: View {
             .foregroundStyle(EvidenceStyle.amberForeground)
           Text("No readable document selected").font(.system(size: 11, weight: .semibold))
           Text("Unavailable sources remain visible without expanding file authority.")
-            .font(.system(size: 9))
+            .font(.system(size: 10))
             .foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity, minHeight: 340)
       } else {
         ScrollView([.horizontal, .vertical]) {
           Text(filteredMemoryText)
-            .font(.system(size: 9, design: .monospaced))
+            .font(.system(size: 10, design: .monospaced))
             .textSelection(.enabled)
             .frame(maxWidth: .infinity, alignment: .topLeading)
             .padding(12)
@@ -825,7 +825,7 @@ struct PremiumSettingsView: View {
             label: document.truncated ? "Truncated safely" : "Complete bounded read",
             color: document.truncated ? EvidenceStyle.warning : EvidenceStyle.success
           )
-          Text(document.extractionNote).font(.system(size: 8)).foregroundStyle(.secondary)
+          Text(document.extractionNote).font(.system(size: 10)).foregroundStyle(.secondary)
         }
       } else if let diff = model.memoryDiff {
         StatusPill(
@@ -894,7 +894,7 @@ struct PremiumSettingsView: View {
           Text(
             "Restore sessions outside the active CODEX_HOME. Rust normalizes, bounds, and deduplicates roots before Usage or reconciliation can consume them."
           )
-          .font(.system(size: 9))
+          .font(.system(size: 10))
           .foregroundStyle(.secondary)
           .fixedSize(horizontal: false, vertical: true)
         }
@@ -911,7 +911,7 @@ struct PremiumSettingsView: View {
 
       if let issue = model.historyRootsIssue {
         Label(issue, systemImage: "exclamationmark.triangle.fill")
-          .font(.system(size: 9))
+          .font(.system(size: 10))
           .foregroundStyle(EvidenceStyle.warning)
           .padding(12)
           .frame(maxWidth: .infinity, alignment: .leading)
@@ -921,7 +921,7 @@ struct PremiumSettingsView: View {
       if model.historyRootsLoading, model.historyRootsReceipt == nil {
         HStack(spacing: 10) {
           ProgressView().controlSize(.small).tint(EvidenceStyle.amber)
-          Text("Reading bounded history-root configuration…").font(.system(size: 9))
+          Text("Reading bounded history-root configuration…").font(.system(size: 10))
         }
         .padding(.vertical, 8)
       } else if let receipt = model.historyRootsReceipt, !receipt.roots.isEmpty {
@@ -941,7 +941,7 @@ struct PremiumSettingsView: View {
                   .truncationMode(.middle)
                   .help(root.path)
                 Text(historyRootState(root))
-                  .font(.system(size: 8))
+                  .font(.system(size: 10))
                   .foregroundStyle(.secondary)
               }
               Spacer()
@@ -971,7 +971,7 @@ struct PremiumSettingsView: View {
             Text("The active Codex home is already automatic")
               .font(.system(size: 10, weight: .semibold))
             Text("Add a root only when older sessions live elsewhere.")
-              .font(.system(size: 8))
+              .font(.system(size: 10))
               .foregroundStyle(.secondary)
           }
         }
@@ -984,7 +984,7 @@ struct PremiumSettingsView: View {
         "Adding or removing a root never reads or deletes transcript content. Reconcile from Usage when ready.",
         systemImage: "lock.shield.fill"
       )
-      .font(.system(size: 8))
+      .font(.system(size: 10))
       .foregroundStyle(.secondary)
     }
     .padding(18)
@@ -1011,7 +1011,7 @@ struct PremiumSettingsView: View {
             Text(
               "Only CodeVetter archive and FTS rows are candidates. Provider transcripts and source sessions stay untouched."
             )
-            .font(.system(size: 9))
+            .font(.system(size: 10))
             .foregroundStyle(.secondary)
           }
           Spacer()
@@ -1059,7 +1059,7 @@ struct PremiumSettingsView: View {
 
       if let issue = model.retentionIssue {
         Label(issue, systemImage: "exclamationmark.triangle.fill")
-          .font(.system(size: 9))
+          .font(.system(size: 10))
           .foregroundStyle(EvidenceStyle.warning)
           .padding(14)
           .frame(maxWidth: .infinity, alignment: .leading)
@@ -1085,7 +1085,7 @@ struct PremiumSettingsView: View {
             Text(
               "Previewing persists a stable plan identity. Applying it later fails closed if the archive or protected-reference set changed."
             )
-            .font(.system(size: 9))
+            .font(.system(size: 10))
             .foregroundStyle(.secondary)
           }
         }
@@ -1106,7 +1106,7 @@ struct PremiumSettingsView: View {
           .textFieldStyle(.plain)
           .font(.system(size: 15, weight: .semibold, design: .monospaced))
           .onChange(of: value.wrappedValue) { _, _ in model.clearRetentionPreview() }
-        Text(suffix).font(.system(size: 9)).foregroundStyle(.secondary)
+        Text(suffix).font(.system(size: 10)).foregroundStyle(.secondary)
       }
       .padding(.horizontal, 12)
       .frame(height: 38)
@@ -1121,7 +1121,7 @@ struct PremiumSettingsView: View {
       HStack {
         VStack(alignment: .leading, spacing: 4) {
           PremiumFieldLabel("REVIEWED PLAN")
-          Text(plan.id).font(.system(size: 9, design: .monospaced)).textSelection(.enabled)
+          Text(plan.id).font(.system(size: 10, design: .monospaced)).textSelection(.enabled)
         }
         Spacer()
         StatusPill(label: "Dry run", color: EvidenceStyle.amber)
@@ -1134,7 +1134,7 @@ struct PremiumSettingsView: View {
       }
       if plan.candidates.isEmpty {
         Label("Nothing matches this policy.", systemImage: "checkmark.circle.fill")
-          .font(.system(size: 9, weight: .semibold))
+          .font(.system(size: 10, weight: .semibold))
           .foregroundStyle(EvidenceStyle.success)
       }
       if !plan.protected.isEmpty {
@@ -1145,19 +1145,19 @@ struct PremiumSettingsView: View {
             Text(
               "\(plan.protected.count) \(plan.protected.count == 1 ? "session" : "sessions")"
             )
-            .font(.system(size: 8, weight: .semibold, design: .monospaced))
+            .font(.system(size: 10, weight: .semibold, design: .monospaced))
             .foregroundStyle(EvidenceStyle.success)
           }
           ForEach(plan.protected.prefix(8)) { entry in
             HStack(alignment: .firstTextBaseline, spacing: 10) {
               Text(String(entry.sessionID.prefix(14)))
-                .font(.system(size: 8, design: .monospaced))
+                .font(.system(size: 10, design: .monospaced))
                 .foregroundStyle(.secondary)
               Text(entry.reasons.joined(separator: " · "))
-                .font(.system(size: 8))
+                .font(.system(size: 10))
               Spacer()
               Text("\(entry.rows) rows")
-                .font(.system(size: 8, design: .monospaced))
+                .font(.system(size: 10, design: .monospaced))
                 .foregroundStyle(.secondary)
             }
           }
@@ -1169,7 +1169,7 @@ struct PremiumSettingsView: View {
         "Provider-owned transcripts are never deleted by this plan.",
         systemImage: "lock.shield.fill"
       )
-      .font(.system(size: 8, weight: .semibold))
+      .font(.system(size: 10, weight: .semibold))
       .foregroundStyle(EvidenceStyle.success)
     }
     .padding(18)
@@ -1184,7 +1184,7 @@ struct PremiumSettingsView: View {
         Text(receipt.operation == .apply ? "Reviewed plan applied" : "Archive checkpoint complete")
           .font(.system(size: 12, weight: .semibold))
         Text(receipt.generatedAt)
-          .font(.system(size: 8, design: .monospaced))
+          .font(.system(size: 10, design: .monospaced))
           .foregroundStyle(.secondary)
       }
       Spacer()
@@ -1225,7 +1225,7 @@ struct PremiumSettingsView: View {
         VStack(alignment: .leading, spacing: 14) {
           if let issue = model.rubricIssue {
             Label(issue, systemImage: "exclamationmark.triangle.fill")
-              .font(.system(size: 9))
+              .font(.system(size: 10))
               .foregroundStyle(EvidenceStyle.warning)
               .padding(14)
               .frame(maxWidth: .infinity, alignment: .leading)
@@ -1243,7 +1243,7 @@ struct PremiumSettingsView: View {
               VStack(alignment: .leading, spacing: 3) {
                 Text("Create a custom rubric").font(.system(size: 11, weight: .semibold))
                 Text("Add a focused review standard only when the built-in packs do not fit.")
-                  .font(.system(size: 9)).foregroundStyle(.secondary)
+                  .font(.system(size: 10)).foregroundStyle(.secondary)
               }
             }
             .tint(EvidenceStyle.amberForeground)
@@ -1256,7 +1256,7 @@ struct PremiumSettingsView: View {
                   ? "Default not attributed" : "Selection attributed",
                 color: receipt.activePackID == nil ? EvidenceStyle.warning : EvidenceStyle.success)
               Text("Each completed review stores the selected pack id with its evidence.")
-                .font(.system(size: 8))
+                .font(.system(size: 10))
                 .foregroundStyle(.secondary)
               Spacer()
               Button {
@@ -1293,7 +1293,7 @@ struct PremiumSettingsView: View {
             Text(pack.name).font(.system(size: 14, weight: .semibold))
             if pack.builtIn { StatusPill(label: "Built in", color: Color.secondary) }
           }
-          Text(pack.focus).font(.system(size: 9)).foregroundStyle(.secondary)
+          Text(pack.focus).font(.system(size: 10)).foregroundStyle(.secondary)
             .fixedSize(horizontal: false, vertical: true)
         }
         Spacer()
@@ -1316,7 +1316,7 @@ struct PremiumSettingsView: View {
         Text(
           "\(pack.reviewCount.formatted()) reviews · \(pack.totalFindings.formatted()) findings · \(pack.checks.count.formatted()) checks"
         )
-        .font(.system(size: 9, weight: .medium, design: .monospaced))
+        .font(.system(size: 10, weight: .medium, design: .monospaced))
         .foregroundStyle(.secondary)
         Spacer()
         Button(expandedRubricID == pack.id ? "Hide details" : "View details") {
@@ -1339,7 +1339,7 @@ struct PremiumSettingsView: View {
           }
           DisclosureGroup("Exact prompt preview") {
             Text(pack.promptPreview)
-              .font(.system(size: 9, design: .monospaced))
+              .font(.system(size: 10, design: .monospaced))
               .textSelection(.enabled)
               .frame(maxWidth: .infinity, alignment: .leading)
               .padding(.top, 8)
@@ -1371,14 +1371,14 @@ struct PremiumSettingsView: View {
       PremiumFieldLabel("CUSTOM PACK")
       Text("Create and use").font(.system(size: 14, weight: .semibold))
       Text("The Rust core validates ids, text bounds, and 1–32 checks before persistence.")
-        .font(.system(size: 8))
+        .font(.system(size: 10))
         .foregroundStyle(.secondary)
       rubricTextField("Pack name", text: $newRubricName)
       rubricTextField("Review focus", text: $newRubricFocus)
       VStack(alignment: .leading, spacing: 5) {
         PremiumFieldLabel("ONE CHECK PER LINE")
         TextEditor(text: $newRubricChecks)
-          .font(.system(size: 9))
+          .font(.system(size: 10))
           .scrollContentBackground(.hidden)
           .padding(8)
           .frame(minHeight: 145)
@@ -1403,7 +1403,7 @@ struct PremiumSettingsView: View {
   private func rubricTextField(_ label: String, text: Binding<String>) -> some View {
     TextField(label, text: text)
       .textFieldStyle(.plain)
-      .font(.system(size: 9))
+      .font(.system(size: 10))
       .padding(.horizontal, 10)
       .frame(height: 36)
       .background(EvidenceStyle.surface, in: RoundedRectangle(cornerRadius: 8))
@@ -1505,7 +1505,7 @@ struct PremiumSettingsView: View {
           Text(
             "The updater stays off unless the production bundle has an HTTPS appcast and a real EdDSA public key. Preview builds fail closed."
           )
-          .font(.system(size: 9))
+          .font(.system(size: 10))
           .foregroundStyle(.secondary)
           .fixedSize(horizontal: false, vertical: true)
         }
@@ -1537,7 +1537,7 @@ struct PremiumSettingsView: View {
       PremiumFieldLabel(label)
       Spacer()
       Text(value)
-        .font(.system(size: 9, design: label == "IDENTIFIER" ? .monospaced : .default))
+        .font(.system(size: 10, design: label == "IDENTIFIER" ? .monospaced : .default))
         .foregroundStyle(.secondary)
         .textSelection(.enabled)
     }
@@ -1552,7 +1552,7 @@ struct PremiumSettingsView: View {
         VStack(alignment: .leading, spacing: 5) {
           PremiumFieldLabel("REPOSITORY SCOPE")
           Text(model.repositoryPath.isEmpty ? "No repository selected" : model.repositoryPath)
-            .font(.system(size: 9, design: .monospaced))
+            .font(.system(size: 10, design: .monospaced))
             .foregroundStyle(model.repositoryPath.isEmpty ? Color.secondary : Color.primary)
             .lineLimit(1)
         }
@@ -1581,7 +1581,7 @@ struct PremiumSettingsView: View {
 
       if let issue = model.mcpIssue {
         Label(issue, systemImage: "exclamationmark.triangle.fill")
-          .font(.system(size: 9))
+          .font(.system(size: 10))
           .foregroundStyle(EvidenceStyle.warning)
           .padding(14)
           .frame(maxWidth: .infinity, alignment: .leading)
@@ -1623,7 +1623,7 @@ struct PremiumSettingsView: View {
           Text(
             "Local stdio only · no file writes, provider calls, index refresh, or network listener"
           )
-          .font(.system(size: 9))
+          .font(.system(size: 10))
           .foregroundStyle(.secondary)
         }
         Spacer()
@@ -1639,7 +1639,7 @@ struct PremiumSettingsView: View {
           "Build release history in Repo Unpack before enabling MCP.",
           systemImage: "clock.badge.exclamationmark"
         )
-        .font(.system(size: 9))
+        .font(.system(size: 10))
         .foregroundStyle(EvidenceStyle.warning)
       }
       HStack(spacing: 8) {
@@ -1656,10 +1656,10 @@ struct PremiumSettingsView: View {
           )
           .frame(width: 7, height: 7)
         Text(mcpReadiness(settings))
-          .font(.system(size: 9, weight: .semibold))
+          .font(.system(size: 10, weight: .semibold))
         Spacer()
         Text("prepare_review")
-          .font(.system(size: 8, design: .monospaced))
+          .font(.system(size: 10, design: .monospaced))
           .foregroundStyle(.secondary)
       }
     }
@@ -1684,12 +1684,12 @@ struct PremiumSettingsView: View {
         .disabled(settings.clientConfigJSON == nil)
       }
       Text(settings.serverPath)
-        .font(.system(size: 8, design: .monospaced))
+        .font(.system(size: 10, design: .monospaced))
         .foregroundStyle(.secondary)
         .textSelection(.enabled)
       ScrollView(.horizontal) {
         Text(settings.clientConfigJSON ?? "Configuration unavailable for this repository.")
-          .font(.system(size: 8, design: .monospaced))
+          .font(.system(size: 10, design: .monospaced))
           .textSelection(.enabled)
           .padding(12)
       }
@@ -1700,7 +1700,7 @@ struct PremiumSettingsView: View {
         VStack(alignment: .leading, spacing: 3) {
           Text("Prepare one review").font(.system(size: 10, weight: .semibold))
           Text("Context and suggested checks—not a verdict.")
-            .font(.system(size: 8))
+            .font(.system(size: 10))
             .foregroundStyle(.secondary)
         }
         Spacer()
@@ -1730,27 +1730,27 @@ struct PremiumSettingsView: View {
           .disabled(model.mcpLoading || settings.recentAudit.isEmpty)
       }
       Text("Arguments, prompts, query text, credentials, and evidence are never recorded here.")
-        .font(.system(size: 9))
+        .font(.system(size: 10))
         .foregroundStyle(.secondary)
       if settings.recentAudit.isEmpty {
         Text("No MCP accesses recorded for this repository.")
-          .font(.system(size: 9))
+          .font(.system(size: 10))
           .foregroundStyle(.secondary)
           .padding(.vertical, 12)
       } else {
         ForEach(settings.recentAudit.prefix(12)) { entry in
           HStack(spacing: 12) {
             VStack(alignment: .leading, spacing: 2) {
-              Text(entry.operation).font(.system(size: 9, weight: .medium, design: .monospaced))
-              Text(entry.createdAt).font(.system(size: 7, design: .monospaced)).foregroundStyle(
+              Text(entry.operation).font(.system(size: 10, weight: .medium, design: .monospaced))
+              Text(entry.createdAt).font(.system(size: 10, design: .monospaced)).foregroundStyle(
                 .secondary)
             }
             Spacer()
             Text(entry.status)
-              .font(.system(size: 8, weight: .semibold, design: .monospaced))
+              .font(.system(size: 10, weight: .semibold, design: .monospaced))
               .foregroundStyle(entry.status == "ok" ? EvidenceStyle.success : EvidenceStyle.warning)
             Text("\(entry.durationMS) ms · \(entry.responseBytes) B")
-              .font(.system(size: 8, design: .monospaced))
+              .font(.system(size: 10, design: .monospaced))
               .foregroundStyle(.secondary)
           }
           .padding(.vertical, 5)
@@ -1773,7 +1773,7 @@ struct PremiumSettingsView: View {
     VStack(alignment: .leading, spacing: 8) {
       PremiumFieldLabel(title)
       Text(values.joined(separator: " · "))
-        .font(.system(size: 9))
+        .font(.system(size: 10))
         .foregroundStyle(.secondary)
         .fixedSize(horizontal: false, vertical: true)
     }
@@ -1830,7 +1830,7 @@ struct PremiumSettingsView: View {
       Label(projectionCommand, systemImage: "terminal")
         .font(.system(size: 10, weight: .semibold, design: .monospaced))
       Text(projectionDetail)
-        .font(.system(size: 9))
+        .font(.system(size: 10))
         .foregroundStyle(.secondary)
     }
     .padding(16)
@@ -1985,7 +1985,7 @@ private struct NativeSettingRow: View {
           if saving { ProgressView().controlSize(.mini).tint(EvidenceStyle.amber) }
         }
         Text(setting.description)
-          .font(.system(size: 9))
+          .font(.system(size: 10))
           .foregroundStyle(.secondary)
       }
       Spacer(minLength: 28)
@@ -2033,7 +2033,7 @@ private struct NativeSettingRow: View {
       HStack(spacing: 7) {
         TextField(setting.defaultValue, text: $draft)
           .textFieldStyle(.roundedBorder)
-          .font(.system(size: 9, design: .monospaced))
+          .font(.system(size: 10, design: .monospaced))
           .onSubmit { if draft != setting.value { save(draft) } }
           .accessibilityLabel(setting.label)
         Button("Save") {

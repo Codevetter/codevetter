@@ -91,9 +91,9 @@ struct PremiumUsageView: View {
 
   private var header: some View {
     PremiumPageHeader(
-      eyebrow: "Local compute ledger",
-      title: "Usage remaining",
-      subtitle: "Live allowance from Claude and Codex"
+      eyebrow: "Allowance and local history",
+      title: "Usage",
+      subtitle: "Live Claude and Codex allowance first, then bounded usage from local agent logs"
     ) {
       if let report = model.usageReport {
         let showingSavedData =
@@ -201,7 +201,7 @@ struct PremiumUsageView: View {
         .background(color.opacity(0.12), in: RoundedRectangle(cornerRadius: 10))
       VStack(alignment: .leading, spacing: 3) {
         Text(title).font(.system(size: 13, weight: .semibold))
-        Text(detail).font(.system(size: 9)).foregroundStyle(.secondary)
+        Text(detail).font(.system(size: 10)).foregroundStyle(.secondary)
       }
       Spacer()
     }
@@ -237,7 +237,7 @@ struct PremiumUsageView: View {
               Spacer()
               Image(systemName: devinDetailsExpanded ? "chevron.up" : "chevron.down")
             }
-            .font(.system(size: 9, weight: .semibold))
+            .font(.system(size: 10, weight: .semibold))
             .foregroundStyle(.secondary)
             .premiumHitTarget(minHeight: 36)
           }
@@ -282,7 +282,7 @@ struct PremiumUsageView: View {
           Text(title)
             .font(.system(size: 15, weight: .semibold))
           Text(summary.source)
-            .font(.system(size: 9, design: .monospaced))
+            .font(.system(size: 10, design: .monospaced))
             .foregroundStyle(.secondary)
         }
         .frame(width: 260, alignment: .leading)
@@ -318,7 +318,7 @@ struct PremiumUsageView: View {
               Text(compact(UInt64(max(model.generatedTokens, 0))))
                 .foregroundStyle(.secondary)
             }
-            .font(.system(size: 9, weight: .semibold, design: .monospaced))
+            .font(.system(size: 10, weight: .semibold, design: .monospaced))
             .padding(.horizontal, 9)
             .frame(height: 27)
             .background(EvidenceStyle.inspector, in: Capsule())
@@ -327,7 +327,7 @@ struct PremiumUsageView: View {
         }
         Spacer(minLength: 10)
         Text(summary.limitations.joined(separator: " · "))
-          .font(.system(size: 8, design: .monospaced))
+          .font(.system(size: 10, design: .monospaced))
           .foregroundStyle(.secondary)
           .lineLimit(2)
           .multilineTextAlignment(.trailing)
@@ -345,7 +345,7 @@ struct PremiumUsageView: View {
       Text(value)
         .font(.system(size: 16, weight: .semibold, design: .monospaced))
       Text(label)
-        .font(.system(size: 8, weight: .bold, design: .monospaced))
+        .font(.system(size: 10, weight: .bold, design: .monospaced))
         .tracking(0.8)
         .foregroundStyle(.secondary)
     }
@@ -386,7 +386,7 @@ struct PremiumUsageView: View {
           Text("Historical usage")
             .font(.system(size: 15, weight: .semibold))
           Text("Generated tokens from local agent logs · cache reads remain separate")
-            .font(.system(size: 9))
+            .font(.system(size: 10))
             .foregroundStyle(.secondary)
         }
         Spacer()
@@ -406,7 +406,7 @@ struct PremiumUsageView: View {
               Circle().fill(agentColor(agent)).frame(width: 6, height: 6)
               Text(agent.capitalized)
             }
-            .font(.system(size: 9, weight: .semibold))
+            .font(.system(size: 10, weight: .semibold))
             .foregroundStyle(selected ? EvidenceStyle.amberForeground : Color.secondary)
             .padding(.horizontal, 10)
             .premiumHitTarget(minWidth: 70, minHeight: 36)
@@ -457,19 +457,19 @@ struct PremiumUsageView: View {
         Divider()
         PremiumFieldLabel("FALLBACK PRICING")
         Text(report.provenance.fallbackModels.joined(separator: " · "))
-          .font(.system(size: 9, design: .monospaced))
+          .font(.system(size: 10, design: .monospaced))
           .foregroundStyle(EvidenceStyle.warning)
           .lineLimit(3)
       }
       if let error = report.error {
         Divider()
         Label(error.message, systemImage: "exclamationmark.triangle.fill")
-          .font(.system(size: 9))
+          .font(.system(size: 10))
           .foregroundStyle(EvidenceStyle.warning)
       }
       Spacer(minLength: 0)
       Text("Read-only · offline · no quota inference")
-        .font(.system(size: 8, weight: .semibold, design: .monospaced))
+        .font(.system(size: 10, weight: .semibold, design: .monospaced))
         .foregroundStyle(.secondary)
     }
     .padding(18)
@@ -487,7 +487,7 @@ struct PremiumUsageView: View {
         }
         Spacer()
         Text("generated")
-          .font(.system(size: 8, design: .monospaced))
+          .font(.system(size: 10, design: .monospaced))
           .foregroundStyle(.secondary)
       }
       .padding(16)
@@ -508,7 +508,7 @@ struct PremiumUsageView: View {
               .lineLimit(1)
             if row.fallback {
               Text("FALLBACK")
-                .font(.system(size: 7, weight: .bold, design: .monospaced))
+                .font(.system(size: 10, weight: .bold, design: .monospaced))
                 .foregroundStyle(EvidenceStyle.warning)
             }
             Spacer()
@@ -538,7 +538,7 @@ struct PremiumUsageView: View {
         }
         Spacer()
         Text("showing \(projection.recentSessions.count) of \(projection.sessionCount)")
-          .font(.system(size: 8, design: .monospaced))
+          .font(.system(size: 10, design: .monospaced))
           .foregroundStyle(.secondary)
       }
       .padding(16)
@@ -555,9 +555,9 @@ struct PremiumUsageView: View {
             Circle().fill(agentColor(session.agent)).frame(width: 6, height: 6)
             VStack(alignment: .leading, spacing: 2) {
               Text(session.agent.capitalized)
-                .font(.system(size: 9, weight: .semibold))
+                .font(.system(size: 10, weight: .semibold))
               Text(session.lastActivity ?? session.sessionID)
-                .font(.system(size: 8, design: .monospaced))
+                .font(.system(size: 10, design: .monospaced))
                 .foregroundStyle(.secondary)
                 .lineLimit(1)
             }
@@ -810,7 +810,7 @@ private struct UsageMetric: View {
     VStack(alignment: .leading, spacing: 6) {
       Text(value).font(.system(size: 24, weight: .medium, design: .rounded))
       PremiumFieldLabel(label)
-      Text(detail).font(.system(size: 8)).foregroundStyle(.secondary).lineLimit(1)
+      Text(detail).font(.system(size: 10)).foregroundStyle(.secondary).lineLimit(1)
     }
     .padding(16)
     .frame(maxWidth: .infinity, alignment: .leading)
@@ -828,7 +828,7 @@ private struct UsageFact: View {
     VStack(alignment: .leading, spacing: 3) {
       PremiumFieldLabel(label)
       Text(value)
-        .font(.system(size: 9, weight: .medium, design: .monospaced))
+        .font(.system(size: 10, weight: .medium, design: .monospaced))
         .foregroundStyle(color)
         .lineLimit(1)
     }
@@ -845,7 +845,7 @@ private struct UsageScaleSwitch: View {
           selection = scale
         } label: {
           Text(scale.rawValue)
-            .font(.system(size: 9, weight: .semibold))
+            .font(.system(size: 10, weight: .semibold))
             .foregroundStyle(
               selection == scale ? EvidenceStyle.amberForeground : Color.secondary
             )
@@ -881,7 +881,7 @@ private struct UsageWindowSwitch: View {
           if window == .oneWeek { scale = .day }
         } label: {
           Text(window.rawValue)
-            .font(.system(size: 9, weight: .semibold))
+            .font(.system(size: 10, weight: .semibold))
             .foregroundStyle(
               selection == window ? EvidenceStyle.amberForeground : Color.secondary
             )
@@ -949,7 +949,7 @@ private struct UsageTrendChart: View {
             Spacer()
             Text(shortLabel(points.last?.period ?? ""))
           }
-          .font(.system(size: 7, design: .monospaced))
+          .font(.system(size: 10, design: .monospaced))
           .foregroundStyle(.secondary)
         }
       }

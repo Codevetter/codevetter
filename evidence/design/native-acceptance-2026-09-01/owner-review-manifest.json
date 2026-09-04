@@ -8,182 +8,182 @@
     {
       "path": "usage.png",
       "pixels": "2560x1600",
-      "sha256": "f5e844bf1080266e95768471fd83dd9ed767c5111564d67fd41cba983d68ab24"
+      "sha256": "4be163ed82cacc2164dc90d9cc149ec1721af2936d5d882806b99bb5de5f4ed9"
     },
     {
       "path": "repo-unpack.png",
       "pixels": "2560x1600",
-      "sha256": "1ed0ba36d16354f5135d52051ec6455c0eb77513135188b46a12a8e37d988d6e"
+      "sha256": "c09188c1dd7147a1d472c48ac99a6df72b51865e13d491ed06c93dca7ce6d463"
     },
     {
       "path": "repository-query-desk.png",
       "pixels": "3040x1960",
-      "sha256": "106dcdf913d027eebbf82cb54fae9d8c65bad0676976469b5250bcef24746ec3"
+      "sha256": "ec17261e92546a4adf378f5a88aac8d147363606cfc6303bc99f2dfe0f627a07"
     },
     {
       "path": "repository-query-evidence-workbench.png",
       "pixels": "3040x1960",
-      "sha256": "a64c8abfe3744d7cf1a7e482459612bf052efd564847d2f74ac37bed4e8a5571"
+      "sha256": "dd70119ff2515c6913238a139c223daf8985cf2a6e02b8f079313872ee7ea037"
     },
     {
       "path": "review-findings.png",
       "pixels": "2560x1600",
-      "sha256": "1fa0d5630dcc49e374ac8e6e3eae65f847a30070381b2dbe451d7e74f651bf5a"
+      "sha256": "358bef3d9dd796bad86d6879984325a1941fd57e745bd13187dac7aa8b82f7b8"
     },
     {
       "path": "review-findings-light.png",
       "pixels": "2560x1600",
-      "sha256": "20b239f9a021777263a584d272a7f69ab648750324aeea80cb74e3efee555361"
+      "sha256": "02359769dc1562a7f8cc7faadcf7269bcb7e808c5c5d0c597d8e267c68587aa5"
     },
     {
       "path": "review-cross-review.png",
       "pixels": "2560x1600",
-      "sha256": "afb07537d7e16078a6766e15f97f1bd8f798fd5e52002fb426c3a73213f8d0c1"
+      "sha256": "07c18fd898e70dab729485d3fcfd5bdaeefd988b2aa46afe90ac2bb496e8e71b"
     },
     {
       "path": "review-cross-review-light.png",
       "pixels": "2560x1600",
-      "sha256": "704952df1ecc94871f5d590d54fe89a6948d15d66763e8212aa4d0bd523f52ac"
+      "sha256": "4c6b2d03711957d0b086f4872185271a1ec077d991627f31cda5467d7e753592"
     },
     {
       "path": "review-proof-map.png",
       "pixels": "1520x1600",
-      "sha256": "d628ca4bbfa7f22cf314b0f9846b91428062582b85f3307718abfdb77c6414bc"
+      "sha256": "a6029e7d118d0cfcdf48c5d8d75113f19d6cc343332f599c8255e42a28786491"
     },
     {
       "path": "review-intent.png",
       "pixels": "1520x1600",
-      "sha256": "a997d19fc652a6113287b30fa2f90e558ec45d547fea081ffef2f779efc2c688"
+      "sha256": "cd8be5d0652ca4776d2b28e9cd7d1afa4d9a7ebfa4e46bb5d82523ea5faacfe2"
     },
     {
       "path": "testing.png",
       "pixels": "1960x1280",
-      "sha256": "4feb1e8b943b3e7f32dde5dcec32a1fb02971e320ea0fb4668cf61f221d74592"
+      "sha256": "ac2942d5119570f783f37b955d8890078a863408b00bc7db929aeb91e2b9c03d"
     },
     {
       "path": "testing-light.png",
       "pixels": "1960x1280",
-      "sha256": "ea107f44a3bb0fc871857a94ff1854b65fa1d82fc1b4d4d35abdac9318ce95c4"
+      "sha256": "103f31ac10fd0d089698d96077e8feb4e929aa5da509f37dcccd1e8237046dd7"
     },
     {
       "path": "testing-setup.png",
       "pixels": "1960x1280",
-      "sha256": "bc517021e51a6c2aa8dd63fabb264c21793131825f030f923df2911b85a2e539"
+      "sha256": "d0df6202312d13bff135065bcf4297204e8593e836a4415138d97a160875c88e"
     },
     {
       "path": "testing-warm.png",
       "pixels": "2200x1440",
-      "sha256": "b6778d51ed6efcaa328ff8e42a1edcd1aed37b3f01975800ed4bfd22ddb882f9"
+      "sha256": "404310b4e5375e9e972de704ac4533d01d8cc84315cb910f0df7dc80a560e39d"
     },
     {
       "path": "testing-differential.png",
       "pixels": "2200x1440",
-      "sha256": "a935052cfaa38f15e071b41fe43d485bc91214b864772fae46c0bfcd17bb904d"
+      "sha256": "feb78c71709594ea005834251547aa49dd75d585cdf74052fdebb85c9775b227"
     },
     {
       "path": "testing-scenario.png",
       "pixels": "2360x1520",
-      "sha256": "4a442ecbb9f428f5ddf83a16b53893b3a186c7234c2d63674b7b8e427a565fb3"
+      "sha256": "5d7eaee7012844089aa2b12a77313e6acc884d70b761cfb43c3a74d2e79e7e3a"
     },
     {
       "path": "testing-watcher.png",
       "pixels": "2360x1520",
-      "sha256": "6de182f58a6e450efd7adaf3c21e4ca53b75d82e38a9daa0a446ebdb3b3c6b0f"
+      "sha256": "d322b12e024f8f1c402a76b5d7314fb8bda0e4d711136f8ad9d7d666512f9f12"
     },
     {
       "path": "qa-journey-workspace.png",
       "pixels": "2360x1520",
-      "sha256": "36c6cacfc42771b9d808f224837ebc1f6a03255598791945ff1b36299a877f16"
+      "sha256": "5da7da83b0abb438c452a8b3d7619d0ddc27b1b82d81ed52f800f9272872942a"
     },
     {
       "path": "performance.png",
       "pixels": "1960x1280",
-      "sha256": "bbbd4d9ec41dd44a36df1f1f5bb07499ba692c6d02474fc7229b8f5c27892e61"
+      "sha256": "fa4f8e0c3d167ef422b8cdc44ae096f09ef7f90a592bc18de97bdea6be6c8a5b"
     },
     {
       "path": "performance-light.png",
       "pixels": "1960x1280",
-      "sha256": "6ccd23eb27e6637d20e735a864566ec97799f15bb2624209ec67ad2e9dbbdc1a"
+      "sha256": "882d93256f4f352425b55f8ddf0349157ce20120d0211fb6771a5ad5480e5335"
     },
     {
       "path": "runs.png",
       "pixels": "2560x1600",
-      "sha256": "3910c20b086bfdaa72ee893afb15724a3cda90fb85959bd0efe381db702f152b"
+      "sha256": "84ba8b656339d4753cb33fd5d6fc105604d6218635e1c3c0c0548129b261fc25"
     },
     {
       "path": "runs-light.png",
       "pixels": "2560x1600",
-      "sha256": "f8a02a7d706da5b38ed499396200f0b63730e4b601ff904c6ea6343abf4054de"
+      "sha256": "fa1d719d758858c567e1c8f1f2bf637dea0f7c4f22210efa8a88059d42191fc6"
     },
     {
       "path": "capabilities-mcp.png",
       "pixels": "2560x1600",
-      "sha256": "b331ee20d0a0cf28def92a5dd87bfdec387cb7fbe863bd1c32fe230cbb25a6ea"
+      "sha256": "5dc6a0c2e64f0aa729ff40625c5fe4b08fb0e754ff611a8f56c7cde61f13b892"
     },
     {
       "path": "settings.png",
       "pixels": "2560x1600",
-      "sha256": "cf43239c3b8f98175e26c9f8341a01d5468dfc63d237d9e5690e7e45244c1fc2"
+      "sha256": "b94739e31f769d57c81fdfcda628c1e0efffc6834c29cf1eac753e7d85fb2311"
     },
     {
       "path": "settings-rubrics.png",
       "pixels": "2560x1600",
-      "sha256": "25a306c162a7965fd2e689a9bb68e69b0dc58b428aafc1327e6b3c6fd3847385"
+      "sha256": "4ef4a0096b372a1f6a11b8d0e5400596b1c5ba826044e34a6b94801027fd290b"
     },
     {
       "path": "settings-rubrics-light.png",
       "pixels": "2560x1600",
-      "sha256": "5307900d48f237368e1746d02bcec23339f4d867702d96ba06d8dbbb6635668e"
+      "sha256": "b5d6440e417f72441296c8bb8a1f89a1674449171b19f2bc1455af508416f568"
     },
     {
       "path": "settings-history-roots.png",
       "pixels": "2560x1600",
-      "sha256": "336e5be81843766fb4880c8f255018d274a53dee2e5cd372900b1c6376e52d75"
+      "sha256": "935c2372ba6434d0a15cca3d924fd8557437c2bee0faf036682cb3bee000f8ce"
     },
     {
       "path": "settings-history-roots-light.png",
       "pixels": "2560x1600",
-      "sha256": "585abd0c260e73e7de82834c237495a0a52a633cb8c9989a17b348ccc2308458"
+      "sha256": "f38606895d7b89c3443ef9b05acda374337d0ee19e4b01fca8509ec85389afac"
     },
     {
       "path": "settings-memories.png",
       "pixels": "2560x1600",
-      "sha256": "cf46002c73c202fdaee7dbf6e3237bd2b7afe5770d0739922257d2968542a64a"
+      "sha256": "7b6103d92bd1baa0d3df1be63f35a716665961404603abbdf53ac207b1ea4bde"
     },
     {
       "path": "settings-memories-light.png",
       "pixels": "2560x1600",
-      "sha256": "789f36cee922414256af532876755adadad2ff2d3f819071b9c9aa9b1beda31d"
+      "sha256": "5b233abb074b3997d0d04327b2ccfd043b97b9e7140103bd6a5e6dd83c674c7e"
     },
     {
       "path": "settings-agent-island.png",
       "pixels": "2560x1600",
-      "sha256": "c98a042e7d586266fd3bbfdd36f289ad34bc86f29b971a02e368941e0f9fee14"
+      "sha256": "19fd810423f79a78b4da1634c3aa0330f7da2a382e852c68a39f4e4b7e1522cb"
     },
     {
       "path": "settings-agent-island-light.png",
       "pixels": "2560x1600",
-      "sha256": "c03ea5d3682212a561b6382d34e16ddd0a7bb4319a59351ede171b232250f5b6"
+      "sha256": "52ab056eb9435f5a48c46c1e909755c8d0956dd2b288a1c9d6b7c52a52855695"
     },
     {
       "path": "settings-ops.png",
       "pixels": "2560x1600",
-      "sha256": "d15de36f487439c0f1807d3c891ff1688349bb31f545016bf7205b97c06940d6"
+      "sha256": "70caa3fd0eba7289e5b209e079b30dec1eaa95a140c44908ecea7bd6236676fd"
     },
     {
       "path": "settings-ops-light.png",
       "pixels": "2560x1600",
-      "sha256": "9c73791ec87d946e31604faddbba9b805db854c2063b853834af376b2f917acd"
+      "sha256": "37715381c71d10dcdddebb5f93bd48435c8ee9eb58131a6c2f0863fbea63f903"
     },
     {
       "path": "onboarding-purpose.png",
       "pixels": "1520x1200",
-      "sha256": "7369baca3300e1b7c2d1b14497c3c87e232a26ac8039c7c19f671c7b38ab4193"
+      "sha256": "81f0c1b204b1977824c12fd2b43edbcfb68a52eb4bb1c068600bd2396a786751"
     },
     {
       "path": "onboarding-agent.png",
       "pixels": "1520x1200",
-      "sha256": "85248acd683a3bc2861352045b1480ca52c50a5321e539e52ae4d5cae493f43f"
+      "sha256": "76ab230ad1da2e62e59d11d714245f5f4ac478316ac5f174a5a9e55b4ec62d61"
     }
   ]
 }

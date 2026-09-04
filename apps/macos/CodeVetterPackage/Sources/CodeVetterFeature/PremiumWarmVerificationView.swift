@@ -37,14 +37,14 @@ struct PremiumWarmVerificationView: View {
     HStack(spacing: 16) {
       VStack(alignment: .leading, spacing: 4) {
         Text("WARM / CHANGED PROOF")
-          .font(.system(size: 9, weight: .bold, design: .monospaced))
+          .font(.system(size: 10, weight: .bold, design: .monospaced))
           .tracking(1.15)
           .foregroundStyle(EvidenceStyle.amberForeground)
         Text("Keep the browser hot. Re-prove only what changed.")
           .font(.system(size: 20, weight: .semibold))
           .tracking(-0.3)
         Text("One repository-owned daemon · deterministic scenario selection · zero model calls")
-          .font(.system(size: 9, design: .monospaced))
+          .font(.system(size: 10, design: .monospaced))
           .foregroundStyle(.secondary)
       }
       Spacer()
@@ -182,7 +182,7 @@ struct PremiumWarmVerificationView: View {
         Text(
           "Swift never recreates daemon, scenario, observation, retention, or outcome semantics. Agents use this same CLI contract."
         )
-        .font(.system(size: 9))
+        .font(.system(size: 10))
         .foregroundStyle(.secondary)
         .fixedSize(horizontal: false, vertical: true)
       }
@@ -223,7 +223,7 @@ struct PremiumWarmVerificationView: View {
       HStack(spacing: 12) {
         VStack(alignment: .leading, spacing: 4) {
           Text(result.outcome == .passed ? "CHANGED SCOPE QUALIFIED" : "CHANGED SCOPE EVIDENCE")
-            .font(.system(size: 9, weight: .bold, design: .monospaced))
+            .font(.system(size: 10, weight: .bold, design: .monospaced))
             .tracking(1)
             .foregroundStyle(outcomeColor(result.outcome))
           Text(model.warmStatusMessage)
@@ -232,7 +232,7 @@ struct PremiumWarmVerificationView: View {
           Text(
             "\(result.selection.changedPaths.count) paths · \(result.scenarios.count) scenarios · \(result.observations.count) observations"
           )
-          .font(.system(size: 9, design: .monospaced))
+          .font(.system(size: 10, design: .monospaced))
           .foregroundStyle(.secondary)
         }
         Spacer()
@@ -285,7 +285,7 @@ struct PremiumWarmVerificationView: View {
           if mode == .json {
             ScrollView([.horizontal, .vertical]) {
               Text(model.warmReceiptJSON)
-                .font(.system(size: 9, design: .monospaced))
+                .font(.system(size: 10, design: .monospaced))
                 .foregroundStyle(.secondary)
                 .textSelection(.enabled)
                 .padding(18)
@@ -321,10 +321,10 @@ struct PremiumWarmVerificationView: View {
               Circle().fill(outcomeColor(scenario.outcome)).frame(width: 7, height: 7)
               VStack(alignment: .leading, spacing: 3) {
                 Text(scenario.scenarioID)
-                  .font(.system(size: 9, weight: .semibold, design: .monospaced))
+                  .font(.system(size: 10, weight: .semibold, design: .monospaced))
                   .lineLimit(2)
                 Text("\(Int(scenario.durationMS)) ms")
-                  .font(.system(size: 8, design: .monospaced))
+                  .font(.system(size: 10, design: .monospaced))
                   .foregroundStyle(.secondary)
               }
               Spacer(minLength: 0)
@@ -338,7 +338,7 @@ struct PremiumWarmVerificationView: View {
       VStack(alignment: .leading, spacing: 6) {
         PremiumFieldLabel("SELECTION")
         Text(result.selection.explanation)
-          .font(.system(size: 9))
+          .font(.system(size: 10))
           .foregroundStyle(.secondary)
           .fixedSize(horizontal: false, vertical: true)
         Label(
@@ -346,7 +346,7 @@ struct PremiumWarmVerificationView: View {
           systemImage: result.selection.complete
             ? "checkmark.circle.fill" : "exclamationmark.triangle.fill"
         )
-        .font(.system(size: 9, weight: .semibold))
+        .font(.system(size: 10, weight: .semibold))
         .foregroundStyle(result.selection.complete ? EvidenceStyle.success : EvidenceStyle.warning)
       }
       .padding(16)
@@ -365,7 +365,7 @@ struct PremiumWarmVerificationView: View {
         Text(
           "\(result.artifacts.count) retained artifacts · \(result.modelCallCount) model calls"
         )
-        .font(.system(size: 9, weight: .medium, design: .monospaced))
+        .font(.system(size: 10, weight: .medium, design: .monospaced))
         .foregroundStyle(.secondary)
 
         if result.observations.isEmpty {
@@ -388,7 +388,7 @@ struct PremiumWarmVerificationView: View {
                 .foregroundStyle(observationColor(observation.disposition))
                 Spacer()
                 Text(observation.scenarioID)
-                  .font(.system(size: 8, design: .monospaced))
+                  .font(.system(size: 10, design: .monospaced))
                   .foregroundStyle(.secondary)
               }
               Text(observation.message)
@@ -396,7 +396,7 @@ struct PremiumWarmVerificationView: View {
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
               Text(observation.policyID)
-                .font(.system(size: 8, design: .monospaced))
+                .font(.system(size: 10, design: .monospaced))
                 .foregroundStyle(.tertiary)
             }
             .padding(14)
@@ -412,12 +412,12 @@ struct PremiumWarmVerificationView: View {
               Image(systemName: "doc.badge.lock").foregroundStyle(EvidenceStyle.amberForeground)
               VStack(alignment: .leading, spacing: 3) {
                 Text(artifact.relativePath)
-                  .font(.system(size: 9, weight: .medium, design: .monospaced))
+                  .font(.system(size: 10, weight: .medium, design: .monospaced))
                   .lineLimit(2)
                 Text(
                   "\(artifact.kind) · \(byteLabel(artifact.bytes)) · retained until \(artifact.retainedUntil)"
                 )
-                .font(.system(size: 8))
+                .font(.system(size: 10))
                 .foregroundStyle(.secondary)
               }
               Spacer(minLength: 0)
@@ -450,16 +450,16 @@ struct PremiumWarmVerificationView: View {
         PremiumFieldLabel("LIMITATIONS")
         if result.limitations.isEmpty {
           Label("No limitations recorded", systemImage: "checkmark.circle.fill")
-            .font(.system(size: 9, weight: .semibold))
+            .font(.system(size: 10, weight: .semibold))
             .foregroundStyle(EvidenceStyle.success)
         } else {
           ForEach(result.limitations) { limitation in
             VStack(alignment: .leading, spacing: 4) {
               Label(limitation.code, systemImage: "exclamationmark.triangle")
-                .font(.system(size: 9, weight: .semibold))
+                .font(.system(size: 10, weight: .semibold))
                 .foregroundStyle(limitation.affectsConfidence ? EvidenceStyle.warning : .secondary)
               Text(limitation.message)
-                .font(.system(size: 9))
+                .font(.system(size: 10))
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
             }
@@ -480,7 +480,7 @@ struct PremiumWarmVerificationView: View {
       Image(systemName: icon).foregroundStyle(EvidenceStyle.amberForeground).frame(width: 16)
       Text(label).font(.system(size: 10, weight: .semibold))
       Spacer()
-      Text(value).font(.system(size: 9, design: .monospaced)).foregroundStyle(.secondary)
+      Text(value).font(.system(size: 10, design: .monospaced)).foregroundStyle(.secondary)
     }
     .padding(12)
     .background(EvidenceStyle.surface, in: RoundedRectangle(cornerRadius: 10))
@@ -502,7 +502,7 @@ struct PremiumWarmVerificationView: View {
     VStack(alignment: .leading, spacing: 4) {
       PremiumFieldLabel(label)
       Text(value)
-        .font(.system(size: 9, weight: .medium, design: .monospaced))
+        .font(.system(size: 10, weight: .medium, design: .monospaced))
         .foregroundStyle(.secondary)
         .textSelection(.enabled)
         .lineLimit(2)

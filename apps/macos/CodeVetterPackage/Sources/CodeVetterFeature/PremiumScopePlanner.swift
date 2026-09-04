@@ -20,7 +20,7 @@ struct PremiumScopePlanner: View {
       HStack(alignment: .top, spacing: 12) {
         VStack(alignment: .leading, spacing: 3) {
           Text(title.uppercased())
-            .font(.system(size: 9, weight: .bold, design: .monospaced))
+            .font(.system(size: 10, weight: .bold, design: .monospaced))
             .tracking(0.9)
             .foregroundStyle(EvidenceStyle.amberForeground)
           Text(subtitle)
@@ -70,7 +70,7 @@ struct PremiumScopePlanner: View {
           .accessibilityIdentifier("\(accessibilityID)-resolve")
         if let plan {
           Text("\(plan.candidates.count) runnable · \(plan.uncoveredPaths.count) uncovered")
-            .font(.system(size: 9, weight: .medium, design: .monospaced))
+            .font(.system(size: 10, weight: .medium, design: .monospaced))
             .foregroundStyle(.secondary)
             .lineLimit(1)
         }
@@ -78,7 +78,7 @@ struct PremiumScopePlanner: View {
 
       if let issue {
         Label(issue, systemImage: "exclamationmark.triangle.fill")
-          .font(.system(size: 9, weight: .medium))
+          .font(.system(size: 10, weight: .medium))
           .foregroundStyle(EvidenceStyle.failure)
           .fixedSize(horizontal: false, vertical: true)
       }
@@ -114,7 +114,7 @@ struct PremiumScopePlanner: View {
                     Text(
                       "\(candidate.adapter) · \(candidate.confidenceLabel) · \(candidate.reason)"
                     )
-                    .font(.system(size: 9))
+                    .font(.system(size: 10))
                     .foregroundStyle(.secondary)
                     .lineLimit(compact ? 1 : 2)
                   }
@@ -141,7 +141,7 @@ struct PremiumScopePlanner: View {
 
         if let limitation = plan.limitations.first {
           Text(limitation)
-            .font(.system(size: 8.5))
+            .font(.system(size: 10))
             .foregroundStyle(.tertiary)
             .fixedSize(horizontal: false, vertical: true)
         }

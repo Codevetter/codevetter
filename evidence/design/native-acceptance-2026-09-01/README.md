@@ -137,6 +137,14 @@ the Testing change-type picker no longer overlaps the exact-range field. Every
 segmented picker now takes its intrinsic width so counts and adjacent fields
 stay legible at the supported minimum window.
 
+A follow-up polish pass on the same day raised the caption floor: every 7, 8,
+and 9 point caption, count, and identity label now renders at 10 points and
+page subtitles at 11 points, so evidence identities stay legible on non-Retina
+displays without changing layout. Usage now carries one name across the
+navigation, eyebrow, and title; Repo Unpack's scan bar is a single status row;
+and the Performance lane uses a plain "Exact workload evidence" title with the
+four-step contract shown once. All 36 renders in this packet reflect that pass.
+
 An agent pixel audit of all 35 states found no P0 or P1 visual or interaction
 defect. It did find one P2 orientation issue at the supported 980-point minimum:
 compact navigation hid every workspace label. The compact rail now keeps the

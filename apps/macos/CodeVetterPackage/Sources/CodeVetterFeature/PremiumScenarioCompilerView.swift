@@ -38,12 +38,12 @@ struct PremiumScenarioCompilerView: View {
     HStack(spacing: 16) {
       VStack(alignment: .leading, spacing: 4) {
         Text("SCENARIO FOUNDRY")
-          .font(.system(size: 9, weight: .bold, design: .monospaced))
+          .font(.system(size: 10, weight: .bold, design: .monospaced))
           .tracking(1.15).foregroundStyle(EvidenceStyle.amberForeground)
         Text("Turn intent into executable journeys—safely.")
           .font(.system(size: 20, weight: .semibold)).tracking(-0.3)
         Text("Generate · inspect · validate · dry-run · explicitly accept")
-          .font(.system(size: 9, design: .monospaced)).foregroundStyle(.secondary)
+          .font(.system(size: 10, design: .monospaced)).foregroundStyle(.secondary)
       }
       Spacer()
       StatusPill(label: model.scenarioState.rawValue, color: stateColor)
@@ -88,11 +88,11 @@ struct PremiumScenarioCompilerView: View {
         Text(
           "Generation is free/local only. It creates an expiring candidate, never project files."
         )
-        .font(.system(size: 9)).foregroundStyle(.secondary)
+        .font(.system(size: 10)).foregroundStyle(.secondary)
         .fixedSize(horizontal: false, vertical: true)
         if let issue = model.scenarioIssue ?? model.scenarioInputIssue {
           Label(issue, systemImage: "exclamationmark.triangle.fill")
-            .font(.system(size: 9)).foregroundStyle(EvidenceStyle.warning)
+            .font(.system(size: 10)).foregroundStyle(EvidenceStyle.warning)
             .fixedSize(horizontal: false, vertical: true)
         }
         Button("Generate candidate") { model.generateScenarioCandidate() }
@@ -138,17 +138,17 @@ struct PremiumScenarioCompilerView: View {
                 HStack {
                   Circle().fill(candidateColor(candidate)).frame(width: 7, height: 7)
                   Text(candidate.status.uppercased())
-                    .font(.system(size: 8, weight: .bold, design: .monospaced))
+                    .font(.system(size: 10, weight: .bold, design: .monospaced))
                   Spacer()
                   if candidate.cacheHit {
-                    Image(systemName: "bolt.fill").font(.system(size: 8)).foregroundStyle(
+                    Image(systemName: "bolt.fill").font(.system(size: 10)).foregroundStyle(
                       EvidenceStyle.amberForeground)
                   }
                 }
                 Text(candidate.specSourcePath)
                   .font(.system(size: 10, weight: .semibold, design: .monospaced)).lineLimit(2)
                 Text("\(candidate.files.count) files · \(candidate.dryRun.status)")
-                  .font(.system(size: 8, design: .monospaced)).foregroundStyle(.secondary)
+                  .font(.system(size: 10, design: .monospaced)).foregroundStyle(.secondary)
               }
               .padding(12).frame(maxWidth: .infinity, alignment: .leading)
               .background(
@@ -188,7 +188,7 @@ struct PremiumScenarioCompilerView: View {
           Text(
             "\(candidate.unresolvedRequirements.count) unresolved · \(candidate.usage.actualCostUSD.map { String(format: "$%.4f", $0) } ?? "$0") model cost"
           )
-          .font(.system(size: 9, weight: .medium, design: .monospaced))
+          .font(.system(size: 10, weight: .medium, design: .monospaced))
           .foregroundStyle(.secondary)
           if !candidate.validation.issues.isEmpty {
             PremiumFieldLabel("VALIDATION")
@@ -198,7 +198,7 @@ struct PremiumScenarioCompilerView: View {
                 systemImage: issue.severity == "error"
                   ? "xmark.octagon.fill" : "exclamationmark.triangle.fill"
               )
-              .font(.system(size: 9)).foregroundStyle(
+              .font(.system(size: 10)).foregroundStyle(
                 issue.severity == "error" ? EvidenceStyle.failure : EvidenceStyle.warning
               )
               .fixedSize(horizontal: false, vertical: true)
@@ -218,13 +218,13 @@ struct PremiumScenarioCompilerView: View {
                     Text(
                       "\(file.kind) · \(file.replacesExisting ? "replaces existing" : "new file")"
                     )
-                    .font(.system(size: 8)).foregroundStyle(.secondary)
+                    .font(.system(size: 10)).foregroundStyle(.secondary)
                   }
                 }
               }.toggleStyle(.checkbox).tint(EvidenceStyle.amber)
               if !file.diff.isEmpty {
                 Text(String(file.diff.prefix(12_000)))
-                  .font(.system(size: 8, design: .monospaced)).foregroundStyle(.secondary)
+                  .font(.system(size: 10, design: .monospaced)).foregroundStyle(.secondary)
                   .textSelection(.enabled).padding(10)
                   .frame(maxWidth: .infinity, alignment: .leading)
                   .background(Color.black, in: RoundedRectangle(cornerRadius: 8))
@@ -243,7 +243,7 @@ struct PremiumScenarioCompilerView: View {
           Text(
             "Acceptance writes only checked destinations and revalidates the candidate hash. Dry-run evidence is never promoted into product proof."
           )
-          .font(.system(size: 9)).foregroundStyle(.secondary)
+          .font(.system(size: 10)).foregroundStyle(.secondary)
           .fixedSize(horizontal: false, vertical: true)
         }.padding(20)
       }
@@ -284,7 +284,7 @@ struct PremiumScenarioCompilerView: View {
 
   private func boundary(_ label: String, _ satisfied: Bool) -> some View {
     Label(label, systemImage: satisfied ? "checkmark.circle.fill" : "circle")
-      .font(.system(size: 9, weight: .medium)).foregroundStyle(
+      .font(.system(size: 10, weight: .medium)).foregroundStyle(
         satisfied ? EvidenceStyle.success : .secondary)
   }
 

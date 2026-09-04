@@ -37,7 +37,7 @@ struct PremiumCommandPaletteView: View {
             return .handled
           }
         Text("ESC")
-          .font(.system(size: 8, weight: .bold, design: .monospaced))
+          .font(.system(size: 10, weight: .bold, design: .monospaced))
           .foregroundStyle(.tertiary)
           .padding(.horizontal, 7)
           .padding(.vertical, 5)
@@ -75,12 +75,12 @@ struct PremiumCommandPaletteView: View {
                   VStack(alignment: .leading, spacing: 3) {
                     Text(section.rawValue).font(.system(size: 13, weight: .semibold))
                     Text(sectionPurpose(section))
-                      .font(.system(size: 9))
+                      .font(.system(size: 10))
                       .foregroundStyle(.secondary)
                   }
                   Spacer()
                   Text("⌘\(index + 1)")
-                    .font(.system(size: 9, weight: .medium, design: .monospaced))
+                    .font(.system(size: 10, weight: .medium, design: .monospaced))
                     .foregroundStyle(.tertiary)
                 }
                 .padding(.horizontal, 13)
@@ -113,7 +113,7 @@ struct PremiumCommandPaletteView: View {
         Spacer()
         Text("One workbench · one Rust evidence model")
       }
-      .font(.system(size: 8, weight: .medium))
+      .font(.system(size: 10, weight: .medium))
       .foregroundStyle(.tertiary)
       .padding(.horizontal, 18)
       .frame(height: 38)

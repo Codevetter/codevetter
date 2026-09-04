@@ -63,7 +63,7 @@ struct StatusPill: View {
       Circle().fill(color).frame(width: 6, height: 6)
       Text(evidenceStatusLabel(label))
     }
-    .font(.system(size: 9, weight: .semibold, design: .monospaced))
+    .font(.system(size: 10, weight: .semibold, design: .monospaced))
     .foregroundStyle(color)
     .padding(.vertical, 3)
     .accessibilityLabel(evidenceStatusLabel(label))

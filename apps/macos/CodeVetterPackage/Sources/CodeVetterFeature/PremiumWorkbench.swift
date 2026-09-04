@@ -108,7 +108,7 @@ private struct PremiumRunsView: View {
               ProgressView().controlSize(.small)
               Text("Reading Rust-persisted receipts…").font(.system(size: 12, weight: .medium))
               Text("The ledger lists the newest 50 runs once the receipt projection returns.")
-                .font(.system(size: 9))
+                .font(.system(size: 10))
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
             }
@@ -146,7 +146,7 @@ private struct PremiumRunsView: View {
                       showsAllRuns.toggle()
                     }
                     .buttonStyle(.borderless)
-                    .font(.system(size: 9, weight: .semibold))
+                    .font(.system(size: 10, weight: .semibold))
                     .padding(.vertical, 8)
                   }
                 }
@@ -241,7 +241,7 @@ private struct RunLedgerRow: View {
         StatusPill(label: verdict, color: verdictColor)
         Spacer()
         Text(run.sourceLabel ?? run.kindLabel.uppercased())
-          .font(.system(size: 8, design: .monospaced))
+          .font(.system(size: 10, design: .monospaced))
           .foregroundStyle(.secondary)
       }
       Text(run.title)
@@ -252,7 +252,7 @@ private struct RunLedgerRow: View {
         Spacer()
         Text(run.recordedAt)
       }
-      .font(.system(size: 8, design: .monospaced))
+      .font(.system(size: 10, design: .monospaced))
       .foregroundStyle(.secondary)
       .lineLimit(1)
     }
@@ -307,18 +307,18 @@ private struct StoredRunInspector: View {
       HStack {
         VStack(alignment: .leading, spacing: 5) {
           Text("CANONICAL VERIFICATION RECEIPT")
-            .font(.system(size: 9, weight: .bold, design: .monospaced))
+            .font(.system(size: 10, weight: .bold, design: .monospaced))
             .tracking(1)
             .foregroundStyle(EvidenceStyle.amberForeground)
           Text(run.title).font(.system(size: 20, weight: .semibold)).lineLimit(1)
           Text(run.id)
-            .font(.system(size: 9, design: .monospaced))
+            .font(.system(size: 10, design: .monospaced))
             .foregroundStyle(.secondary)
         }
         Spacer()
         if let position {
           Text(position)
-            .font(.system(size: 9, weight: .medium, design: .monospaced))
+            .font(.system(size: 10, weight: .medium, design: .monospaced))
             .foregroundStyle(.secondary)
             .accessibilityLabel("Run \(position)")
         }
@@ -351,11 +351,11 @@ private struct StoredRunInspector: View {
             Spacer()
             if detailMode == .evidence {
               Text(String(run.indexedEvidenceCount))
-                .font(.system(size: 9, design: .monospaced))
+                .font(.system(size: 10, design: .monospaced))
                 .foregroundStyle(.secondary)
             } else {
               Text(run.receiptSchema)
-                .font(.system(size: 9, design: .monospaced))
+                .font(.system(size: 10, design: .monospaced))
                 .foregroundStyle(.secondary)
                 .lineLimit(1)
             }
@@ -491,7 +491,7 @@ private struct RunEvidenceIndex: View {
                   .font(.system(size: 10, weight: .semibold, design: .monospaced))
                 Spacer()
                 Text(response.provenance.uppercased())
-                  .font(.system(size: 8, weight: .bold, design: .monospaced))
+                  .font(.system(size: 10, weight: .bold, design: .monospaced))
                   .foregroundStyle(EvidenceStyle.amberForeground)
               }
               Text(response.criterion)
@@ -501,11 +501,11 @@ private struct RunEvidenceIndex: View {
                 Spacer()
                 Text(response.confidence, format: .percent.precision(.fractionLength(0)))
               }
-              .font(.system(size: 9, design: .monospaced))
+              .font(.system(size: 10, design: .monospaced))
               .foregroundStyle(.secondary)
               if let feedback = response.feedback, !feedback.isEmpty {
                 Text(feedback)
-                  .font(.system(size: 9))
+                  .font(.system(size: 10))
                   .foregroundStyle(.secondary)
                   .lineLimit(3)
               }
@@ -594,13 +594,13 @@ private struct PremiumTopBar: View {
       HStack(spacing: 8) {
         Circle().fill(EvidenceStyle.success).frame(width: 6, height: 6)
         Text("RUST")
-          .font(.system(size: 8, weight: .bold, design: .monospaced))
+          .font(.system(size: 10, weight: .bold, design: .monospaced))
           .foregroundStyle(.secondary)
         Button {
           model.commandPalettePresented = true
         } label: {
           Text("⌘K")
-            .font(.system(size: 9, weight: .semibold, design: .monospaced))
+            .font(.system(size: 10, weight: .semibold, design: .monospaced))
             .foregroundStyle(.secondary)
             .premiumHitTarget(minWidth: 42, minHeight: PremiumPageLayout.navigationControlHeight)
             .background(Color.primary.opacity(0.055), in: RoundedRectangle(cornerRadius: 6))
@@ -762,7 +762,7 @@ private struct PremiumReviewView: View {
                 ? "Runs independent Claude then Codex passes against the same immutable change. Agreement is coverage, not proof."
                 : "One reviewer pass; executable correctness remains a separate gate."
             )
-            .font(.system(size: 9))
+            .font(.system(size: 10))
             .foregroundStyle(.secondary)
           }
 
@@ -865,7 +865,7 @@ private struct PremiumReviewView: View {
       }
       if let issue = model.specIssue {
         Label(issue, systemImage: "exclamationmark.triangle")
-          .font(.system(size: 9))
+          .font(.system(size: 10))
           .foregroundStyle(EvidenceStyle.warning)
       }
     }
@@ -915,7 +915,7 @@ private struct PlannedChecksView: View {
         .foregroundStyle(receipt.status == "ready" ? EvidenceStyle.success : EvidenceStyle.warning)
         Spacer()
         Text(String(receipt.source.headSha.prefix(12)))
-          .font(.system(size: 9, design: .monospaced))
+          .font(.system(size: 10, design: .monospaced))
           .foregroundStyle(.secondary)
       }
       .accessibilityIdentifier(
@@ -930,7 +930,7 @@ private struct PlannedChecksView: View {
           Text(
             "\(model.selectedRequirementIDs.count) selected · \(coverage.summary.totalRequirements) extracted"
           )
-          .font(.system(size: 9, design: .monospaced))
+          .font(.system(size: 10, design: .monospaced))
           .foregroundStyle(.secondary)
         }
         ForEach(coverage.requirements) { requirement in
@@ -948,12 +948,12 @@ private struct PlannedChecksView: View {
               VStack(alignment: .leading, spacing: 3) {
                 Text(requirement.title).font(.system(size: 10, weight: .semibold))
                 Text("\(requirement.id) · \(requirement.sourcePath):\(requirement.startLine)")
-                  .font(.system(size: 8, design: .monospaced))
+                  .font(.system(size: 10, design: .monospaced))
                   .foregroundStyle(.secondary)
               }
               Spacer()
               Text(requirement.status.replacingOccurrences(of: "_", with: " "))
-                .font(.system(size: 8, weight: .semibold, design: .monospaced))
+                .font(.system(size: 10, weight: .semibold, design: .monospaced))
                 .foregroundStyle(.secondary)
             }
           }
@@ -962,7 +962,7 @@ private struct PlannedChecksView: View {
         }
         if !model.reviewPlanIsCurrent {
           Text("Selection changed. Plan again to bind the exact requirements before execution.")
-            .font(.system(size: 9))
+            .font(.system(size: 10))
             .foregroundStyle(EvidenceStyle.warning)
         }
       }
@@ -976,7 +976,7 @@ private struct PlannedChecksView: View {
         Text(
           "CodeVetter will not run or issue a verdict until the missing executable target or requirement binding is resolved and planned again."
         )
-        .font(.system(size: 9, weight: .medium))
+        .font(.system(size: 10, weight: .medium))
         .foregroundStyle(EvidenceStyle.warning)
         .fixedSize(horizontal: false, vertical: true)
       }
@@ -1070,7 +1070,7 @@ private struct ProofSequenceView: View {
   var body: some View {
     VStack(alignment: .leading, spacing: 0) {
       Text("PROOF SEQUENCE")
-        .font(.system(size: 9, weight: .bold, design: .monospaced))
+        .font(.system(size: 10, weight: .bold, design: .monospaced))
         .tracking(1.1)
         .foregroundStyle(.secondary)
         .padding(.bottom, 26)
@@ -1082,11 +1082,11 @@ private struct ProofSequenceView: View {
                 index == activeIndex ? EvidenceStyle.amber : Color.primary.opacity(0.07))
               if index < activeIndex {
                 Image(systemName: "checkmark")
-                  .font(.system(size: 8, weight: .bold))
+                  .font(.system(size: 10, weight: .bold))
                   .foregroundStyle(EvidenceStyle.success)
               } else {
                 Text(String(format: "%02d", index + 1))
-                  .font(.system(size: 8, weight: .bold, design: .monospaced))
+                  .font(.system(size: 10, weight: .bold, design: .monospaced))
                   .foregroundStyle(index == activeIndex ? EvidenceStyle.ink : .secondary)
               }
             }
@@ -1153,7 +1153,7 @@ private struct ReceiptDeskView: View {
         HStack {
           VStack(alignment: .leading, spacing: 4) {
             Text("VERIFICATION RECEIPT")
-              .font(.system(size: 9, weight: .bold, design: .monospaced))
+              .font(.system(size: 10, weight: .bold, design: .monospaced))
               .foregroundStyle(EvidenceStyle.amberForeground)
             Text(receipt.task).font(.system(size: 20, weight: .semibold)).lineLimit(1)
             Text("\(receipt.source.input)  ·  \(receipt.source.changedPaths.count) changed paths")
@@ -1221,7 +1221,7 @@ private struct ReceiptDeskView: View {
                           .lineLimit(1)
                         Spacer()
                         Image(systemName: "arrow.up.forward.square")
-                          .font(.system(size: 8))
+                          .font(.system(size: 10))
                           .foregroundStyle(.tertiary)
                       }
                       .padding(.horizontal, 14)
@@ -1242,23 +1242,23 @@ private struct ReceiptDeskView: View {
           VStack(alignment: .leading, spacing: 0) {
             HStack(spacing: 12) {
               Text(detailHeading)
-                .font(.system(size: 9, weight: .bold, design: .monospaced))
+                .font(.system(size: 10, weight: .bold, design: .monospaced))
               Spacer()
               if detailMode == .findings {
                 Text("\(receipt.reviewFindings.count) findings")
-                  .font(.system(size: 9, design: .monospaced))
+                  .font(.system(size: 10, design: .monospaced))
                   .foregroundStyle(.secondary)
               } else if detailMode == .proof {
                 Text("recorded review context")
-                  .font(.system(size: 9, design: .monospaced))
+                  .font(.system(size: 10, design: .monospaced))
                   .foregroundStyle(.secondary)
               } else if detailMode == .intent {
                 Text("human disposition required")
-                  .font(.system(size: 9, design: .monospaced))
+                  .font(.system(size: 10, design: .monospaced))
                   .foregroundStyle(.secondary)
               } else {
                 Text(receipt.schemaVersion)
-                  .font(.system(size: 9, design: .monospaced))
+                  .font(.system(size: 10, design: .monospaced))
                   .foregroundStyle(.secondary)
               }
               Picker("Receipt detail", selection: $detailMode) {
@@ -1335,7 +1335,7 @@ private struct ReceiptDeskView: View {
               Spacer()
               if let actionIssue {
                 Label(actionIssue, systemImage: "exclamationmark.triangle.fill")
-                  .font(.system(size: 9))
+                  .font(.system(size: 10))
                   .foregroundStyle(EvidenceStyle.warning)
                   .fixedSize(horizontal: false, vertical: true)
               }
@@ -1413,7 +1413,7 @@ private struct ReceiptDeskView: View {
                 StatusPill(label: finding.severity, color: findingColor(finding.severity))
                 if let confidence = finding.confidence {
                   Text(confidence, format: .percent.precision(.fractionLength(0)))
-                    .font(.system(size: 8, design: .monospaced))
+                    .font(.system(size: 10, design: .monospaced))
                     .foregroundStyle(.secondary)
                 }
                 if let classification = finding.crossReviewClass {
@@ -1425,7 +1425,7 @@ private struct ReceiptDeskView: View {
                 }
                 if !finding.reviewers.isEmpty {
                   Text(finding.reviewers.joined(separator: " + "))
-                    .font(.system(size: 8, weight: .semibold, design: .monospaced))
+                    .font(.system(size: 10, weight: .semibold, design: .monospaced))
                     .foregroundStyle(.secondary)
                 }
                 Spacer()
@@ -1444,13 +1444,13 @@ private struct ReceiptDeskView: View {
                 .textSelection(.enabled)
               if let path = finding.filePath {
                 Text(path + (finding.line.map { ":\($0)" } ?? ""))
-                  .font(.system(size: 9, design: .monospaced))
+                  .font(.system(size: 10, design: .monospaced))
                   .foregroundStyle(EvidenceStyle.amberForeground)
                   .lineLimit(1)
               }
               if let suggestion = finding.suggestion, !suggestion.isEmpty {
                 Label(suggestion, systemImage: "wrench.and.screwdriver")
-                  .font(.system(size: 9))
+                  .font(.system(size: 10))
                   .foregroundStyle(.secondary)
               }
             }
@@ -1478,7 +1478,7 @@ private struct ReceiptDeskView: View {
       VStack(alignment: .leading, spacing: 10) {
         HStack {
           Label("INDEPENDENT CROSS-REVIEW", systemImage: "person.2.badge.gearshape")
-            .font(.system(size: 9, weight: .bold, design: .monospaced))
+            .font(.system(size: 10, weight: .bold, design: .monospaced))
             .foregroundStyle(EvidenceStyle.amberForeground)
           Spacer()
           StatusPill(
@@ -1508,31 +1508,31 @@ private struct ReceiptDeskView: View {
             ForEach(Array(passes.enumerated()), id: \.offset) { _, pass in
               HStack {
                 Text((pass.value(at: "reviewer")?.stringValue ?? "reviewer").uppercased())
-                  .font(.system(size: 9, weight: .bold, design: .monospaced))
+                  .font(.system(size: 10, weight: .bold, design: .monospaced))
                 Text(pass.value(at: "status")?.stringValue ?? "incomplete")
-                  .font(.system(size: 9))
+                  .font(.system(size: 10))
                   .foregroundStyle(.secondary)
                 Spacer()
                 if let duration = pass.value(at: "duration_ms")?.numberValue {
                   Text("\(Int(duration)) ms")
-                    .font(.system(size: 8, design: .monospaced))
+                    .font(.system(size: 10, design: .monospaced))
                     .foregroundStyle(.secondary)
                 }
               }
             }
             Text("USAGE  \(usageSummary)")
-              .font(.system(size: 8, weight: .semibold, design: .monospaced))
+              .font(.system(size: 10, weight: .semibold, design: .monospaced))
               .foregroundStyle(.secondary)
           }
           .padding(.top, 8)
         }
-        .font(.system(size: 9, weight: .semibold))
+        .font(.system(size: 10, weight: .semibold))
         .tint(EvidenceStyle.amberForeground)
         Text(
           evidence.value(at: "proof_boundary")?.stringValue
             ?? "Reviewer agreement is coverage, never executable proof."
         )
-        .font(.system(size: 9))
+        .font(.system(size: 10))
         .foregroundStyle(.secondary)
       }
       .padding(14)
@@ -1564,7 +1564,7 @@ private struct ReceiptDeskView: View {
       VStack(alignment: .leading, spacing: 2) {
         Text(value).font(.system(size: 15, weight: .semibold, design: .monospaced))
         Text(label)
-          .font(.system(size: 7, weight: .bold, design: .monospaced))
+          .font(.system(size: 10, weight: .bold, design: .monospaced))
           .foregroundStyle(.secondary)
       }
       .padding(9)
@@ -1716,7 +1716,7 @@ struct ReviewIntentDiagnosticView: View {
         Text("Evidence around the goal—not an inferred success claim")
           .font(.system(size: 14, weight: .semibold))
         Text(text(closure, "reason") ?? "No closure rationale was recorded.")
-          .font(.system(size: 9))
+          .font(.system(size: 10))
           .foregroundStyle(.secondary)
           .fixedSize(horizontal: false, vertical: true)
       }
@@ -1746,7 +1746,7 @@ struct ReviewIntentDiagnosticView: View {
         PremiumFieldLabel("ORIGINAL INTENT")
         Spacer()
         Text(text(intent, "source") ?? "unknown source")
-          .font(.system(size: 8, weight: .medium, design: .monospaced))
+          .font(.system(size: 10, weight: .medium, design: .monospaced))
           .foregroundStyle(.secondary)
       }
       Text(text(intent, "summary") ?? "No explicit task intent captured")
@@ -1756,7 +1756,7 @@ struct ReviewIntentDiagnosticView: View {
         LazyVGrid(columns: [GridItem(.adaptive(minimum: 118), spacing: 7)], spacing: 7) {
           ForEach(surfaces, id: \.self) { surface in
             Label(normalized(surface), systemImage: surfaceIcon(surface))
-              .font(.system(size: 8, weight: .semibold, design: .monospaced))
+              .font(.system(size: 10, weight: .semibold, design: .monospaced))
               .foregroundStyle(EvidenceStyle.amberForeground)
               .padding(.horizontal, 9)
               .frame(height: 28)
@@ -1787,7 +1787,7 @@ struct ReviewIntentDiagnosticView: View {
         }
         .padding(.top, 8)
       } label: {
-        Text("Additional signal counts").font(.system(size: 9, weight: .semibold))
+        Text("Additional signal counts").font(.system(size: 10, weight: .semibold))
       }
       .tint(EvidenceStyle.amberForeground)
     }
@@ -1822,11 +1822,11 @@ struct ReviewIntentDiagnosticView: View {
                 .font(.system(size: 10, weight: .semibold))
               Spacer()
               Text(normalized(text(item, "status") ?? "pending"))
-                .font(.system(size: 8, weight: .bold, design: .monospaced))
+                .font(.system(size: 10, weight: .bold, design: .monospaced))
                 .foregroundStyle(statusColor(text(item, "status") ?? "pending"))
             }
             Text(text(item, "detail") ?? "No detail recorded.")
-              .font(.system(size: 8))
+              .font(.system(size: 10))
               .foregroundStyle(.secondary)
               .fixedSize(horizontal: false, vertical: true)
           }
@@ -1850,14 +1850,14 @@ struct ReviewIntentDiagnosticView: View {
       } else {
         ForEach(gaps, id: \.self) { gap in
           Label(gap, systemImage: "exclamationmark.triangle")
-            .font(.system(size: 9))
+            .font(.system(size: 10))
             .foregroundStyle(EvidenceStyle.warning)
         }
       }
       Divider()
       ForEach(limitations, id: \.self) { limitation in
         Label(limitation, systemImage: "person.crop.circle.badge.exclamationmark")
-          .font(.system(size: 8))
+          .font(.system(size: 10))
           .foregroundStyle(.secondary)
       }
     }
@@ -1922,12 +1922,12 @@ struct AgentFixPacketView: View {
         VStack(alignment: .leading, spacing: 3) {
           Text("Agent Fix Handoff").font(.system(size: 17, weight: .semibold))
           Text("Selected findings · exact task · evidence to preserve")
-            .font(.system(size: 9, design: .monospaced))
+            .font(.system(size: 10, design: .monospaced))
             .foregroundStyle(.secondary)
         }
         Spacer()
         Text(receipt.runID ?? "unpersisted")
-          .font(.system(size: 8, design: .monospaced))
+          .font(.system(size: 10, design: .monospaced))
           .foregroundStyle(.secondary)
         Button("Done") { dismiss() }.buttonStyle(.bordered)
       }
@@ -1962,12 +1962,12 @@ struct AgentFixPacketView: View {
                         .lineLimit(2)
                       Spacer()
                       Text(finding.severity.uppercased())
-                        .font(.system(size: 7, weight: .bold, design: .monospaced))
+                        .font(.system(size: 10, weight: .bold, design: .monospaced))
                         .foregroundStyle(severityColor(finding.severity))
                     }
                     if let path = finding.filePath {
                       Text(path + (finding.line.map { ":\($0)" } ?? ""))
-                        .font(.system(size: 8, design: .monospaced))
+                        .font(.system(size: 10, design: .monospaced))
                         .foregroundStyle(.secondary)
                     }
                   }
@@ -1989,11 +1989,11 @@ struct AgentFixPacketView: View {
             if model.fixPacketLoading {
               ProgressView("Rust is binding the exact receipt…")
                 .controlSize(.small)
-                .font(.system(size: 9))
+                .font(.system(size: 10))
             }
             if let issue = model.fixPacketIssue {
               Label(issue, systemImage: "exclamationmark.triangle.fill")
-                .font(.system(size: 9))
+                .font(.system(size: 10))
                 .foregroundStyle(EvidenceStyle.failure)
                 .fixedSize(horizontal: false, vertical: true)
             }
@@ -2023,7 +2023,7 @@ struct AgentFixPacketView: View {
             VStack(alignment: .leading, spacing: 4) {
               Text("Bounded patch handoff").font(.system(size: 16, weight: .semibold))
               Text(packet.routeAdvice)
-                .font(.system(size: 9))
+                .font(.system(size: 10))
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
             }
@@ -2060,17 +2060,17 @@ struct AgentFixPacketView: View {
                 "No explicit acceptance requirements were attached.",
                 systemImage: "exclamationmark.triangle"
               )
-              .font(.system(size: 9))
+              .font(.system(size: 10))
               .foregroundStyle(EvidenceStyle.warning)
             } else {
               ForEach(packet.task.acceptanceCriteria, id: \.self) { criterion in
                 Label(criterion, systemImage: "checkmark.circle")
-                  .font(.system(size: 9))
+                  .font(.system(size: 10))
                   .foregroundStyle(.secondary)
               }
             }
             Text("Non-goals are empty because CodeVetter does not infer them.")
-              .font(.system(size: 8, design: .monospaced))
+              .font(.system(size: 10, design: .monospaced))
               .foregroundStyle(.secondary)
           }
 
@@ -2081,16 +2081,16 @@ struct AgentFixPacketView: View {
                   Text(finding.title).font(.system(size: 10, weight: .semibold))
                   Spacer()
                   Text(finding.severity.uppercased())
-                    .font(.system(size: 7, weight: .bold, design: .monospaced))
+                    .font(.system(size: 10, weight: .bold, design: .monospaced))
                     .foregroundStyle(severityColor(finding.severity))
                 }
-                Text(finding.summary).font(.system(size: 9)).foregroundStyle(.secondary)
+                Text(finding.summary).font(.system(size: 10)).foregroundStyle(.secondary)
                 Text(finding.filePath + (finding.line.map { ":\($0)" } ?? ""))
-                  .font(.system(size: 8, design: .monospaced))
+                  .font(.system(size: 10, design: .monospaced))
                   .foregroundStyle(EvidenceStyle.amberForeground)
                 if let suggestion = finding.suggestion {
                   Label(suggestion, systemImage: "lightbulb")
-                    .font(.system(size: 8))
+                    .font(.system(size: 10))
                     .foregroundStyle(.secondary)
                 }
               }
@@ -2105,19 +2105,19 @@ struct AgentFixPacketView: View {
                 Circle().fill(statusColor(evidence.status)).frame(width: 7, height: 7).padding(
                   .top, 4)
                 VStack(alignment: .leading, spacing: 3) {
-                  Text(evidence.label).font(.system(size: 9, weight: .semibold))
+                  Text(evidence.label).font(.system(size: 10, weight: .semibold))
                   Text(evidence.qualification)
-                    .font(.system(size: 8, design: .monospaced))
+                    .font(.system(size: 10, design: .monospaced))
                     .foregroundStyle(.secondary)
                   if let artifact = evidence.artifact {
                     Text(artifact)
-                      .font(.system(size: 8, design: .monospaced))
+                      .font(.system(size: 10, design: .monospaced))
                       .foregroundStyle(EvidenceStyle.amberForeground)
                   }
                 }
                 Spacer()
                 Text(evidence.status.replacingOccurrences(of: "_", with: " "))
-                  .font(.system(size: 8, weight: .bold, design: .monospaced))
+                  .font(.system(size: 10, weight: .bold, design: .monospaced))
                   .foregroundStyle(statusColor(evidence.status))
               }
               .padding(9)
@@ -2127,7 +2127,7 @@ struct AgentFixPacketView: View {
 
           ForEach(packet.limitations, id: \.self) { limitation in
             Label(limitation, systemImage: "exclamationmark.triangle")
-              .font(.system(size: 8))
+              .font(.system(size: 10))
               .foregroundStyle(.secondary)
           }
         }
@@ -2153,7 +2153,7 @@ struct AgentFixPacketView: View {
       Text(
         "Run one coding agent against the exact recorded head in a detached app-data worktree. CodeVetter never commits, merges, pushes, or edits the selected checkout."
       )
-      .font(.system(size: 9))
+      .font(.system(size: 10))
       .foregroundStyle(.secondary)
       .fixedSize(horizontal: false, vertical: true)
 
@@ -2169,7 +2169,7 @@ struct AgentFixPacketView: View {
 
       Toggle(isOn: $model.fixAttemptConfirmed) {
         Text("Allow one agent to edit the detached worktree and rerun recorded proof")
-          .font(.system(size: 9, weight: .medium))
+          .font(.system(size: 10, weight: .medium))
       }
       .toggleStyle(.checkbox)
       .disabled(model.fixAttemptLoading || model.fixAttemptReceipt != nil)
@@ -2179,7 +2179,7 @@ struct AgentFixPacketView: View {
         if model.fixAttemptLoading {
           ProgressView().controlSize(.small)
           Text("Agent is editing, then Rust will recheck the diff, target, and findings…")
-            .font(.system(size: 8))
+            .font(.system(size: 10))
             .foregroundStyle(.secondary)
           Spacer()
           Button("Cancel", role: .cancel) { model.cancelFixAttempt() }
@@ -2195,14 +2195,14 @@ struct AgentFixPacketView: View {
           .accessibilityIdentifier("execute-fix-attempt")
           Spacer()
           Text("HEAD \(packet.source.headSHA.prefix(10))")
-            .font(.system(size: 8, design: .monospaced))
+            .font(.system(size: 10, design: .monospaced))
             .foregroundStyle(.secondary)
         }
       }
 
       if let issue = model.fixAttemptIssue {
         Label(issue, systemImage: "exclamationmark.triangle.fill")
-          .font(.system(size: 9))
+          .font(.system(size: 10))
           .foregroundStyle(EvidenceStyle.failure)
           .fixedSize(horizontal: false, vertical: true)
       }
@@ -2226,7 +2226,7 @@ struct AgentFixPacketView: View {
             .font(.system(size: 11, weight: .bold, design: .monospaced))
             .foregroundStyle(statusColor(attempt.state))
           Text(attempt.attemptID)
-            .font(.system(size: 8, design: .monospaced))
+            .font(.system(size: 10, design: .monospaced))
             .foregroundStyle(.secondary)
         }
         Spacer()
@@ -2250,7 +2250,7 @@ struct AgentFixPacketView: View {
       }
 
       Text(attempt.worktree.path)
-        .font(.system(size: 8, design: .monospaced))
+        .font(.system(size: 10, design: .monospaced))
         .foregroundStyle(.secondary)
         .textSelection(.enabled)
 
@@ -2259,8 +2259,8 @@ struct AgentFixPacketView: View {
           Circle().fill(statusColor(finding.status)).frame(width: 7, height: 7).padding(.top, 4)
           VStack(alignment: .leading, spacing: 2) {
             Text("\(finding.findingID) · \(finding.status)")
-              .font(.system(size: 8, weight: .bold, design: .monospaced))
-            Text(finding.reason).font(.system(size: 8)).foregroundStyle(.secondary)
+              .font(.system(size: 10, weight: .bold, design: .monospaced))
+            Text(finding.reason).font(.system(size: 10)).foregroundStyle(.secondary)
           }
         }
       }
@@ -2269,19 +2269,19 @@ struct AgentFixPacketView: View {
         DisclosureGroup("Bounded diff preview · \(attempt.change.diffBytes) bytes") {
           ScrollView(.horizontal) {
             Text(attempt.change.diffPreview)
-              .font(.system(size: 8, design: .monospaced))
+              .font(.system(size: 10, design: .monospaced))
               .textSelection(.enabled)
               .frame(maxWidth: .infinity, alignment: .leading)
               .padding(9)
           }
           .background(EvidenceStyle.canvas, in: RoundedRectangle(cornerRadius: 8))
         }
-        .font(.system(size: 9, weight: .semibold))
+        .font(.system(size: 10, weight: .semibold))
       }
 
       ForEach(attempt.limitations, id: \.self) { limitation in
         Label(limitation, systemImage: "info.circle")
-          .font(.system(size: 8))
+          .font(.system(size: 10))
           .foregroundStyle(.secondary)
       }
 
@@ -2289,7 +2289,7 @@ struct AgentFixPacketView: View {
         Divider()
         Toggle(isOn: $model.fixAttemptDiscardConfirmed) {
           Text("Discard this retained unmerged worktree")
-            .font(.system(size: 9, weight: .medium))
+            .font(.system(size: 10, weight: .medium))
         }
         .toggleStyle(.checkbox)
         .accessibilityIdentifier("confirm-discard-fix-attempt")
@@ -2370,13 +2370,13 @@ struct XrayExportView: View {
         VStack(alignment: .leading, spacing: 3) {
           Text("Agent PR X-Ray").font(.system(size: 17, weight: .semibold))
           Text("Public-safe evidence export · no model rerun")
-            .font(.system(size: 9, design: .monospaced))
+            .font(.system(size: 10, design: .monospaced))
             .foregroundStyle(.secondary)
         }
         Spacer()
         if let reviewID = receipt.reviewID {
           Text(reviewID)
-            .font(.system(size: 8, design: .monospaced))
+            .font(.system(size: 10, design: .monospaced))
             .foregroundStyle(.secondary)
             .lineLimit(1)
         }
@@ -2433,7 +2433,7 @@ struct XrayExportView: View {
               VStack(alignment: .leading, spacing: 8) {
                 PremiumFieldLabel("OPTIONAL SUGGESTION EXCERPTS")
                 Text("Every excerpt needs explicit per-finding approval.")
-                  .font(.system(size: 8))
+                  .font(.system(size: 10))
                   .foregroundStyle(.secondary)
                 ForEach(approvableFindings) { finding in
                   if let findingID = finding.persistedID {
@@ -2445,7 +2445,7 @@ struct XrayExportView: View {
                       )
                     )
                     .toggleStyle(.checkbox)
-                    .font(.system(size: 9))
+                    .font(.system(size: 10))
                   }
                 }
               }
@@ -2467,17 +2467,17 @@ struct XrayExportView: View {
             if model.xrayLoading {
               ProgressView("Rust is rebuilding the sanitized packet…")
                 .controlSize(.small)
-                .font(.system(size: 9))
+                .font(.system(size: 10))
             }
             if let issue = model.xrayIssue {
               Label(issue, systemImage: "exclamationmark.triangle.fill")
-                .font(.system(size: 9))
+                .font(.system(size: 10))
                 .foregroundStyle(EvidenceStyle.failure)
                 .fixedSize(horizontal: false, vertical: true)
             }
             if let path = model.xraySavedPath {
               Label("Saved \(path)", systemImage: "checkmark.circle.fill")
-                .font(.system(size: 8, design: .monospaced))
+                .font(.system(size: 10, design: .monospaced))
                 .foregroundStyle(EvidenceStyle.success)
                 .textSelection(.enabled)
             }
@@ -2517,7 +2517,7 @@ struct XrayExportView: View {
                   ? "The current packet passed the Rust sanitizer and publication gates."
                   : "Resolve every recorded gate, then build a fresh preview."
               )
-              .font(.system(size: 9))
+              .font(.system(size: 10))
               .foregroundStyle(.secondary)
             }
             Spacer()
@@ -2541,7 +2541,7 @@ struct XrayExportView: View {
             xraySection("PUBLICATION GATES", icon: "lock.fill", color: EvidenceStyle.warning) {
               ForEach(result.allIssues, id: \.self) { issue in
                 Label(issue, systemImage: "exclamationmark.triangle")
-                  .font(.system(size: 9))
+                  .font(.system(size: 10))
                   .foregroundStyle(.secondary)
               }
             }
@@ -2561,10 +2561,10 @@ struct XrayExportView: View {
                   Text(stage.value(at: "label")?.stringValue ?? "Evidence stage")
                     .font(.system(size: 10, weight: .semibold))
                   Text(stage.value(at: "provenance")?.stringValue ?? "No provenance recorded")
-                    .font(.system(size: 8, design: .monospaced))
+                    .font(.system(size: 10, design: .monospaced))
                     .foregroundStyle(.secondary)
                   if let omission = stage.value(at: "omission_reason")?.stringValue {
-                    Text(omission).font(.system(size: 8)).foregroundStyle(EvidenceStyle.warning)
+                    Text(omission).font(.system(size: 10)).foregroundStyle(EvidenceStyle.warning)
                   }
                 }
                 Spacer()
@@ -2572,7 +2572,7 @@ struct XrayExportView: View {
                   (stage.value(at: "status")?.stringValue ?? "incomplete")
                     .replacingOccurrences(of: "_", with: " ")
                 )
-                .font(.system(size: 8, weight: .bold, design: .monospaced))
+                .font(.system(size: 10, weight: .bold, design: .monospaced))
                 .foregroundStyle(xrayOutcomeColor(stage.value(at: "status")?.stringValue ?? ""))
               }
               .padding(9)
@@ -2589,11 +2589,11 @@ struct XrayExportView: View {
                       .font(.system(size: 10, weight: .semibold))
                     Spacer()
                     Text(finding.value(at: "severity")?.stringValue ?? "unknown")
-                      .font(.system(size: 8, weight: .bold, design: .monospaced))
+                      .font(.system(size: 10, weight: .bold, design: .monospaced))
                       .foregroundStyle(EvidenceStyle.failure)
                   }
                   Text(finding.value(at: "summary")?.stringValue ?? "")
-                    .font(.system(size: 8))
+                    .font(.system(size: 10))
                     .foregroundStyle(.secondary)
                     .lineLimit(3)
                 }
@@ -2604,7 +2604,7 @@ struct XrayExportView: View {
           }
 
           Text("Packet \(result.xrayID) · generated entirely from persisted local evidence")
-            .font(.system(size: 8, design: .monospaced))
+            .font(.system(size: 10, design: .monospaced))
             .foregroundStyle(.secondary)
         }
         .padding(18)
@@ -2725,7 +2725,7 @@ struct ReviewProofMapView: View {
           VStack(alignment: .leading, spacing: 3) {
             Text("Full proof map").font(.system(size: 11, weight: .semibold))
             Text("Manifest, graph context, QA evidence, leads, and procedure")
-              .font(.system(size: 9)).foregroundStyle(.secondary)
+              .font(.system(size: 10)).foregroundStyle(.secondary)
           }
         }
         .tint(EvidenceStyle.amberForeground)
@@ -2757,13 +2757,13 @@ struct ReviewProofMapView: View {
         Text(
           "Recorded execution is proof. Graph neighborhoods and candidate leads are bounded context, never ground truth."
         )
-        .font(.system(size: 9))
+        .font(.system(size: 10))
         .foregroundStyle(.secondary)
         .fixedSize(horizontal: false, vertical: true)
       }
       Spacer()
       Label("Rust-owned", systemImage: "checkmark.seal.fill")
-        .font(.system(size: 9, weight: .semibold, design: .monospaced))
+        .font(.system(size: 10, weight: .semibold, design: .monospaced))
         .foregroundStyle(EvidenceStyle.success)
     }
     .padding(14)
@@ -2799,7 +2799,7 @@ struct ReviewProofMapView: View {
         }
         .padding(.top, 8)
       }
-      .font(.system(size: 9, weight: .semibold))
+      .font(.system(size: 10, weight: .semibold))
       .tint(EvidenceStyle.amberForeground)
     }
   }
@@ -2841,7 +2841,7 @@ struct ReviewProofMapView: View {
           ]
           .compactMap { $0 }.joined(separator: "  ·  ")
         )
-        .font(.system(size: 9, design: .monospaced))
+        .font(.system(size: 10, design: .monospaced))
         .foregroundStyle(EvidenceStyle.amberForeground)
         .lineLimit(1)
       }
@@ -2851,24 +2851,24 @@ struct ReviewProofMapView: View {
             .fill(coverageColor(text(unit, "coverage_state") ?? "failed"))
             .frame(width: 6, height: 6)
           Text(text(unit, "file_path") ?? "Unknown file")
-            .font(.system(size: 9, weight: .medium, design: .monospaced))
+            .font(.system(size: 10, weight: .medium, design: .monospaced))
             .lineLimit(1)
           Spacer()
           Text(text(unit, "file_status") ?? "—")
-            .font(.system(size: 8, design: .monospaced))
+            .font(.system(size: 10, design: .monospaced))
             .foregroundStyle(.secondary)
           Text(formatBytes(unit.value(at: "diff_bytes")?.numberValue))
-            .font(.system(size: 8, design: .monospaced))
+            .font(.system(size: 10, design: .monospaced))
             .foregroundStyle(.secondary)
           Text(normalized(text(unit, "coverage_state") ?? "unknown"))
-            .font(.system(size: 8, weight: .semibold, design: .monospaced))
+            .font(.system(size: 10, weight: .semibold, design: .monospaced))
             .foregroundStyle(coverageColor(text(unit, "coverage_state") ?? "failed"))
         }
         .padding(.vertical, 3)
       }
       if units.count > 10 {
         Text("+ \(units.count - 10) more manifest units in canonical JSON")
-          .font(.system(size: 8, design: .monospaced))
+          .font(.system(size: 10, design: .monospaced))
           .foregroundStyle(.secondary)
       }
     }
@@ -2896,7 +2896,7 @@ struct ReviewProofMapView: View {
           "CURRENT HEAD", text(value, "current_head").map { String($0.prefix(12)) } ?? "—")
       }
       Text("Graph edges are accepted only under the recorded qualification and revision identity.")
-        .font(.system(size: 8))
+        .font(.system(size: 10))
         .foregroundStyle(.secondary)
     }
   }
@@ -2917,7 +2917,7 @@ struct ReviewProofMapView: View {
         proofMetric("TRUNCATED", yesNo(value.value(at: "truncated")?.boolValue))
       }
       Text("Context neighborhood · not proof")
-        .font(.system(size: 8, weight: .bold, design: .monospaced))
+        .font(.system(size: 10, weight: .bold, design: .monospaced))
         .foregroundStyle(EvidenceStyle.warning)
       ForEach(Array(contextNodes.prefix(8).enumerated()), id: \.offset) { _, node in
         HStack(alignment: .top, spacing: 9) {
@@ -2926,17 +2926,17 @@ struct ReviewProofMapView: View {
             .frame(width: 15)
           VStack(alignment: .leading, spacing: 2) {
             Text(text(node, "label") ?? text(node, "id") ?? "Context node")
-              .font(.system(size: 9, weight: .semibold))
+              .font(.system(size: 10, weight: .semibold))
             if let detail = text(node, "detail") {
-              Text(detail).font(.system(size: 8)).foregroundStyle(.secondary)
+              Text(detail).font(.system(size: 10)).foregroundStyle(.secondary)
             }
             if let path = text(node, "file_path") {
-              Text(path).font(.system(size: 8, design: .monospaced)).foregroundStyle(.secondary)
+              Text(path).font(.system(size: 10, design: .monospaced)).foregroundStyle(.secondary)
             }
           }
           Spacer()
           Text(normalized(text(node, "kind") ?? "context"))
-            .font(.system(size: 7, weight: .bold, design: .monospaced))
+            .font(.system(size: 10, weight: .bold, design: .monospaced))
             .foregroundStyle(.secondary)
         }
         .padding(9)
@@ -2952,7 +2952,7 @@ struct ReviewProofMapView: View {
       if let onOpenTesting {
         HStack {
           Text("Review reads evidence; Testing owns browser execution and confirmation.")
-            .font(.system(size: 8))
+            .font(.system(size: 10))
             .foregroundStyle(.secondary)
           Spacer()
           Button("Open Testing", systemImage: "arrow.right") {
@@ -2971,11 +2971,11 @@ struct ReviewProofMapView: View {
               label: passed ? "passed" : "failed",
               color: passed ? EvidenceStyle.success : EvidenceStyle.failure)
             Text(text(run, "runner_type") ?? "recorded runner")
-              .font(.system(size: 8, weight: .semibold, design: .monospaced))
+              .font(.system(size: 10, weight: .semibold, design: .monospaced))
               .foregroundStyle(.secondary)
             Spacer()
             Text(duration(run.value(at: "duration_ms")?.numberValue))
-              .font(.system(size: 8, design: .monospaced))
+              .font(.system(size: 10, design: .monospaced))
               .foregroundStyle(.secondary)
           }
           Text(text(run, "goal") ?? "Recorded synthetic journey")
@@ -3007,7 +3007,7 @@ struct ReviewProofMapView: View {
       }
       if let artifactIssue {
         Label(artifactIssue, systemImage: "info.circle")
-          .font(.system(size: 8))
+          .font(.system(size: 10))
           .foregroundStyle(.secondary)
       }
     }
@@ -3016,7 +3016,7 @@ struct ReviewProofMapView: View {
   private var candidateCard: some View {
     proofSection("EVIDENCE LEADS", icon: "scope", color: EvidenceStyle.warning) {
       Text("Ranked context candidates · investigate before treating as proof")
-        .font(.system(size: 8, weight: .bold, design: .monospaced))
+        .font(.system(size: 10, weight: .bold, design: .monospaced))
         .foregroundStyle(EvidenceStyle.warning)
       ForEach(Array(candidates.prefix(6).enumerated()), id: \.offset) { _, candidate in
         VStack(alignment: .leading, spacing: 6) {
@@ -3026,26 +3026,26 @@ struct ReviewProofMapView: View {
               color: severityColor(text(candidate, "severity_hint") ?? "")
             )
             Text(normalized(text(candidate, "kind") ?? "candidate"))
-              .font(.system(size: 9, weight: .semibold))
+              .font(.system(size: 10, weight: .semibold))
             Spacer()
             Text(confidence(candidate.value(at: "confidence")?.numberValue))
-              .font(.system(size: 8, design: .monospaced))
+              .font(.system(size: 10, design: .monospaced))
               .foregroundStyle(.secondary)
           }
           Text(text(candidate, "why_it_matters") ?? "No rationale recorded.")
-            .font(.system(size: 9))
+            .font(.system(size: 10))
             .foregroundStyle(.secondary)
           let paths = strings(candidate, "affected_files")
           if !paths.isEmpty {
             Text(paths.prefix(3).joined(separator: "  ·  "))
-              .font(.system(size: 8, design: .monospaced))
+              .font(.system(size: 10, design: .monospaced))
               .foregroundStyle(EvidenceStyle.amberForeground)
               .lineLimit(1)
           }
           let checks = strings(candidate, "suggested_checks")
           if let check = checks.first {
             Label(check, systemImage: "checklist")
-              .font(.system(size: 8))
+              .font(.system(size: 10))
               .foregroundStyle(.secondary)
           }
         }
@@ -3060,7 +3060,7 @@ struct ReviewProofMapView: View {
       ForEach(Array(procedures.prefix(8).enumerated()), id: \.offset) { index, step in
         HStack(alignment: .top, spacing: 10) {
           Text(String(format: "%02d", index + 1))
-            .font(.system(size: 9, weight: .bold, design: .monospaced))
+            .font(.system(size: 10, weight: .bold, design: .monospaced))
             .foregroundStyle(EvidenceStyle.amberForeground)
             .frame(width: 22)
           VStack(alignment: .leading, spacing: 4) {
@@ -3069,25 +3069,25 @@ struct ReviewProofMapView: View {
                 .font(.system(size: 10, weight: .semibold))
               Spacer()
               Text(normalized(text(step, "status") ?? "planned"))
-                .font(.system(size: 8, weight: .bold, design: .monospaced))
+                .font(.system(size: 10, weight: .bold, design: .monospaced))
                 .foregroundStyle(statusColor(text(step, "status") ?? "planned"))
             }
             if let action = text(step, "action") {
-              Text(action).font(.system(size: 9)).foregroundStyle(.secondary)
+              Text(action).font(.system(size: 10)).foregroundStyle(.secondary)
             }
             if let output = text(step, "output") {
               Text("OUTPUT · \(output)")
-                .font(.system(size: 8, design: .monospaced))
+                .font(.system(size: 10, design: .monospaced))
                 .foregroundStyle(.secondary)
             }
             if let artifact = text(step, "artifact"), !artifact.isEmpty {
               Text("ARTIFACT · \(artifact)")
-                .font(.system(size: 8, design: .monospaced))
+                .font(.system(size: 10, design: .monospaced))
                 .foregroundStyle(EvidenceStyle.amberForeground)
             }
             if let gate = text(step, "gate") {
               Label(gate, systemImage: "shield.lefthalf.filled")
-                .font(.system(size: 8))
+                .font(.system(size: 10))
                 .foregroundStyle(.secondary)
             }
           }
@@ -3106,7 +3106,7 @@ struct ReviewProofMapView: View {
       Text("No deterministic proof map was recorded")
         .font(.system(size: 11, weight: .semibold))
       Text("The canonical JSON remains available; this receipt predates proof-map evidence.")
-        .font(.system(size: 9))
+        .font(.system(size: 10))
         .foregroundStyle(.secondary)
     }
     .padding(24)
@@ -3147,9 +3147,9 @@ struct ReviewProofMapView: View {
 
   private func proofFact(_ label: String, _ value: String) -> some View {
     HStack {
-      Text(label).font(.system(size: 8, weight: .medium)).foregroundStyle(.secondary)
+      Text(label).font(.system(size: 10, weight: .medium)).foregroundStyle(.secondary)
       Spacer()
-      Text(value).font(.system(size: 8, weight: .semibold, design: .monospaced))
+      Text(value).font(.system(size: 10, weight: .semibold, design: .monospaced))
     }
     .padding(8)
     .background(EvidenceStyle.canvas, in: RoundedRectangle(cornerRadius: 8))
@@ -3159,14 +3159,14 @@ struct ReviewProofMapView: View {
     VStack(alignment: .leading, spacing: 2) {
       PremiumFieldLabel(label)
       Text(value)
-        .font(.system(size: 8, weight: .medium, design: .monospaced))
+        .font(.system(size: 10, weight: .medium, design: .monospaced))
         .lineLimit(1)
     }
   }
 
   private func limitationRow(_ value: String) -> some View {
     Label(value, systemImage: "exclamationmark.triangle")
-      .font(.system(size: 8))
+      .font(.system(size: 10))
       .foregroundStyle(.secondary)
   }
 
@@ -3304,7 +3304,7 @@ private struct SpecCoverageEvidenceCard: View {
         }
         Spacer()
         Text(String(coverage.headSHA.prefix(12)))
-          .font(.system(size: 8, design: .monospaced))
+          .font(.system(size: 10, design: .monospaced))
           .foregroundStyle(.secondary)
       }
       HStack(spacing: 8) {
@@ -3330,18 +3330,18 @@ private struct SpecCoverageEvidenceCard: View {
                   Text(requirement.title).font(.system(size: 10, weight: .semibold))
                   Spacer()
                   Text(requirement.status.replacingOccurrences(of: "_", with: " "))
-                    .font(.system(size: 8, weight: .semibold, design: .monospaced))
+                    .font(.system(size: 10, weight: .semibold, design: .monospaced))
                     .foregroundStyle(statusColor(requirement.status))
                 }
                 Text("\(requirement.id) · \(requirement.sourcePath):\(requirement.startLine)")
-                  .font(.system(size: 8, design: .monospaced))
+                  .font(.system(size: 10, design: .monospaced))
                   .foregroundStyle(.secondary)
                 if let evidence = requirement.evidence {
                   Text(
                     [evidence.stage, evidence.adapter, evidence.target]
                       .compactMap { $0 }.joined(separator: " · ")
                   )
-                  .font(.system(size: 8, design: .monospaced))
+                  .font(.system(size: 10, design: .monospaced))
                   .foregroundStyle(EvidenceStyle.amberForeground)
                 }
               }
@@ -3351,13 +3351,13 @@ private struct SpecCoverageEvidenceCard: View {
           }
           ForEach(coverage.limitations, id: \.self) { limitation in
             Label(limitation, systemImage: "exclamationmark.triangle")
-              .font(.system(size: 9))
+              .font(.system(size: 10))
               .foregroundStyle(.secondary)
           }
         }
         .padding(.top, 8)
       }
-      .font(.system(size: 9, weight: .semibold))
+      .font(.system(size: 10, weight: .semibold))
       .tint(EvidenceStyle.amberForeground)
     }
     .padding(14)
@@ -3370,7 +3370,7 @@ private struct SpecCoverageEvidenceCard: View {
       PremiumFieldLabel(label)
       Text(percent.map { "\($0)%" } ?? "—")
         .font(.system(size: 16, weight: .semibold, design: .rounded))
-      Text(count).font(.system(size: 8, design: .monospaced)).foregroundStyle(.secondary)
+      Text(count).font(.system(size: 10, design: .monospaced)).foregroundStyle(.secondary)
     }
     .padding(10)
     .frame(maxWidth: .infinity, alignment: .leading)

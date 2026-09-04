@@ -26,7 +26,7 @@ struct PremiumOnboardingView: View {
         CodeVetterBrandMark(size: 36)
         VStack(alignment: .leading, spacing: 2) {
           Text("CODEVETTER")
-            .font(.system(size: 9, weight: .bold, design: .monospaced))
+            .font(.system(size: 10, weight: .bold, design: .monospaced))
             .tracking(1.1)
             .foregroundStyle(EvidenceStyle.amberForeground)
           Text("Evidence Workbench").font(.system(size: 13, weight: .semibold))
@@ -37,7 +37,7 @@ struct PremiumOnboardingView: View {
         ForEach(Array(steps.enumerated()), id: \.offset) { index, label in
           VStack(alignment: .leading, spacing: 5) {
             Text(label.uppercased())
-              .font(.system(size: 7, weight: .bold, design: .monospaced))
+              .font(.system(size: 10, weight: .bold, design: .monospaced))
               .foregroundStyle(index == model.onboardingStep ? Color.primary : Color.secondary)
             Capsule()
               .fill(index <= model.onboardingStep ? EvidenceStyle.amber : EvidenceStyle.separator)
@@ -121,7 +121,7 @@ struct PremiumOnboardingView: View {
               .frame(width: 24)
             VStack(alignment: .leading, spacing: 3) {
               Text(tool.label).font(.system(size: 12, weight: .semibold))
-              Text(tool.role).font(.system(size: 9)).foregroundStyle(.secondary)
+              Text(tool.role).font(.system(size: 10)).foregroundStyle(.secondary)
             }
             Spacer()
             StatusPill(
@@ -142,7 +142,7 @@ struct PremiumOnboardingView: View {
         "Missing tools do not become green checks. You can finish setup and install them later.",
         systemImage: "lock.shield"
       )
-      .font(.system(size: 9))
+      .font(.system(size: 10))
       .foregroundStyle(.secondary)
     }
     .padding(38)
@@ -211,12 +211,12 @@ struct PremiumOnboardingView: View {
     HStack(spacing: 10) {
       if let issue = model.onboardingIssue {
         Label(issue, systemImage: "exclamationmark.triangle.fill")
-          .font(.system(size: 9))
+          .font(.system(size: 10))
           .foregroundStyle(EvidenceStyle.warning)
           .lineLimit(2)
       } else {
         Text("No credential values enter the onboarding receipt.")
-          .font(.system(size: 8, design: .monospaced))
+          .font(.system(size: 10, design: .monospaced))
           .foregroundStyle(.secondary)
       }
       Spacer()
@@ -255,7 +255,7 @@ struct PremiumOnboardingView: View {
     HStack(spacing: 12) {
       Image(systemName: symbol).foregroundStyle(EvidenceStyle.amberForeground).frame(width: 24)
       VStack(alignment: .leading, spacing: 2) {
-        Text(eyebrow).font(.system(size: 7, weight: .bold, design: .monospaced)).foregroundStyle(
+        Text(eyebrow).font(.system(size: 10, weight: .bold, design: .monospaced)).foregroundStyle(
           .secondary)
         Text(title).font(.system(size: 11, weight: .semibold))
       }
@@ -283,7 +283,7 @@ struct PremiumOnboardingView: View {
             .foregroundStyle(selected ? EvidenceStyle.amberForeground : Color.secondary)
         }
         Text(title).font(.system(size: 15, weight: .semibold))
-        Text(subtitle).font(.system(size: 9)).foregroundStyle(.secondary)
+        Text(subtitle).font(.system(size: 10)).foregroundStyle(.secondary)
         StatusPill(
           label: toolAvailable(for: id) ? "CLI available" : "CLI not found",
           color: toolAvailable(for: id) ? EvidenceStyle.success : Color.secondary)
@@ -316,10 +316,10 @@ struct PremiumOnboardingView: View {
       Image(systemName: symbol)
         .font(.system(size: 18))
         .foregroundStyle(EvidenceStyle.amberForeground)
-      Text(eyebrow).font(.system(size: 7, weight: .bold, design: .monospaced)).foregroundStyle(
+      Text(eyebrow).font(.system(size: 10, weight: .bold, design: .monospaced)).foregroundStyle(
         .secondary)
       Text(title).font(.system(size: 14, weight: .semibold))
-      Text(detail).font(.system(size: 9)).foregroundStyle(.secondary).fixedSize(
+      Text(detail).font(.system(size: 10)).foregroundStyle(.secondary).fixedSize(
         horizontal: false, vertical: true)
     }
     .padding(16)
@@ -331,7 +331,7 @@ struct PremiumOnboardingView: View {
   private func workbenchRow(_ number: String, _ label: String) -> some View {
     HStack(spacing: 13) {
       Text(number)
-        .font(.system(size: 9, weight: .bold, design: .monospaced))
+        .font(.system(size: 10, weight: .bold, design: .monospaced))
         .foregroundStyle(EvidenceStyle.ink)
         .frame(width: 23, height: 23)
         .background(EvidenceStyle.amber, in: Circle())

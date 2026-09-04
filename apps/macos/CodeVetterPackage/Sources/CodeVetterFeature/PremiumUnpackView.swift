@@ -100,7 +100,7 @@ struct PremiumUnpackView: View {
             .truncationMode(.middle)
           Spacer(minLength: 8)
           Text("Choose…")
-            .font(.system(size: 8, weight: .semibold))
+            .font(.system(size: 10, weight: .semibold))
             .foregroundStyle(.secondary)
         }
         .padding(.horizontal, 12)
@@ -112,15 +112,11 @@ struct PremiumUnpackView: View {
       .accessibilityLabel("Choose repository to unpack")
       .accessibilityIdentifier("repo-unpack-choose-repository")
 
-      VStack(alignment: .leading, spacing: 2) {
-        PremiumFieldLabel(
-          (model.unpackLoading || model.repositoryQueryLoading)
-            ? "RUST OPERATION ACTIVE" : "DETERMINISTIC SNAPSHOT")
-        Text(model.unpackStatusMessage)
-          .font(.system(size: 9))
-          .foregroundStyle(model.unpackIssue == nil ? Color.secondary : EvidenceStyle.warning)
-          .lineLimit(1)
-      }
+      Text(model.unpackStatusMessage)
+        .font(.system(size: 11))
+        .foregroundStyle(model.unpackIssue == nil ? Color.secondary : EvidenceStyle.warning)
+        .lineLimit(1)
+        .truncationMode(.tail)
       Spacer(minLength: 12)
 
       if model.unpackLoading || model.repositoryQueryLoading {
@@ -139,7 +135,7 @@ struct PremiumUnpackView: View {
       }
     }
     .padding(.horizontal, PremiumPageLayout.horizontalInset)
-    .frame(minHeight: 62)
+    .frame(minHeight: 54)
     .background(EvidenceStyle.surface)
   }
 
@@ -154,7 +150,7 @@ struct PremiumUnpackView: View {
         PremiumFieldLabel("SNAPSHOT LEDGER")
         Spacer()
         Text("\(model.unpackSnapshots.count)")
-          .font(.system(size: 9, weight: .semibold, design: .monospaced))
+          .font(.system(size: 10, weight: .semibold, design: .monospaced))
           .foregroundStyle(.secondary)
       }
       .padding(16)
@@ -196,7 +192,7 @@ struct PremiumUnpackView: View {
                 showsAllSnapshots.toggle()
               }
               .buttonStyle(.borderless)
-              .font(.system(size: 9, weight: .semibold))
+              .font(.system(size: 10, weight: .semibold))
               .padding(.vertical, 8)
             }
           }
@@ -206,7 +202,7 @@ struct PremiumUnpackView: View {
 
       Rectangle().fill(EvidenceStyle.separator).frame(height: 1)
       Label("Rust-owned local history", systemImage: "checkmark.seal.fill")
-        .font(.system(size: 9, weight: .semibold))
+        .font(.system(size: 10, weight: .semibold))
         .foregroundStyle(EvidenceStyle.success)
         .help(
           "Snapshot creation, comparison, export, graph, and history queries share the bounded Rust authority."
@@ -248,7 +244,7 @@ struct PremiumUnpackView: View {
         ProgressView().controlSize(.small)
         Text("Opening the bounded Rust snapshot…").font(.system(size: 12, weight: .medium))
         Text("The native client never opens or reinterprets SQLite directly.")
-          .font(.system(size: 9))
+          .font(.system(size: 10))
           .foregroundStyle(.secondary)
       }
       .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -270,7 +266,7 @@ struct PremiumUnpackView: View {
           section = item
         } label: {
           Text(item.rawValue)
-            .font(.system(size: 9, weight: .semibold))
+            .font(.system(size: 10, weight: .semibold))
             .foregroundStyle(section == item ? EvidenceStyle.amberForeground : Color.secondary)
             .padding(.horizontal, 12)
             .frame(height: 29)
@@ -299,13 +295,13 @@ struct PremiumUnpackView: View {
           secondarySections.contains(section) ? section.rawValue : "More",
           systemImage: "ellipsis.circle"
         )
-        .font(.system(size: 9, weight: .semibold))
+        .font(.system(size: 10, weight: .semibold))
       }
       .menuStyle(.borderlessButton)
       .fixedSize()
       Spacer()
       Text(hasBrief ? "LOCAL + MODEL-LABELLED" : "LOCAL EVIDENCE ONLY")
-        .font(.system(size: 7, weight: .bold, design: .monospaced))
+        .font(.system(size: 10, weight: .bold, design: .monospaced))
         .foregroundStyle(hasBrief ? EvidenceStyle.warning : EvidenceStyle.success)
     }
     .padding(.horizontal, 14)
@@ -393,7 +389,7 @@ struct PremiumUnpackView: View {
         PremiumFieldLabel("SELECTED REPOSITORY")
         Text(snapshot.repoName).font(.system(size: 22, weight: .semibold))
         Text(snapshot.repoPath)
-          .font(.system(size: 9, design: .monospaced))
+          .font(.system(size: 10, design: .monospaced))
           .foregroundStyle(.secondary)
           .lineLimit(1)
       }
@@ -442,7 +438,7 @@ struct PremiumUnpackView: View {
         }
         Spacer()
         Text("\(inventory.workspaceUnits.count) units")
-          .font(.system(size: 8, design: .monospaced))
+          .font(.system(size: 10, design: .monospaced))
           .foregroundStyle(.secondary)
       }
       LazyVGrid(
@@ -452,7 +448,7 @@ struct PremiumUnpackView: View {
       ) {
         ForEach(inventory.stackTags, id: \.self) { tag in
           Text(tag)
-            .font(.system(size: 8, weight: .semibold))
+            .font(.system(size: 10, weight: .semibold))
             .padding(.horizontal, 9)
             .frame(height: 25)
             .background(EvidenceStyle.amber.opacity(0.1), in: Capsule())
@@ -468,12 +464,12 @@ struct PremiumUnpackView: View {
           VStack(alignment: .leading, spacing: 2) {
             Text(unit.name).font(.system(size: 10, weight: .semibold))
             Text("\(unit.kind.replacingOccurrences(of: "_", with: " ")) · \(unit.fileCount) files")
-              .font(.system(size: 8, design: .monospaced))
+              .font(.system(size: 10, design: .monospaced))
               .foregroundStyle(.secondary)
           }
           Spacer()
           Text(unit.languages.prefix(3).map(\.language).joined(separator: " · "))
-            .font(.system(size: 8))
+            .font(.system(size: 10))
             .foregroundStyle(.secondary)
         }
         .frame(height: 36)
@@ -482,10 +478,10 @@ struct PremiumUnpackView: View {
       PremiumFieldLabel("LANGUAGE WEIGHT")
       ForEach(inventory.languages.prefix(6)) { language in
         HStack {
-          Text(language.language).font(.system(size: 9, weight: .medium))
+          Text(language.language).font(.system(size: 10, weight: .medium))
           Spacer()
           Text("\(language.files) files · \(byteCount(Int(language.bytes)))")
-            .font(.system(size: 8, design: .monospaced))
+            .font(.system(size: 10, design: .monospaced))
             .foregroundStyle(.secondary)
         }
       }
@@ -511,8 +507,8 @@ struct PremiumUnpackView: View {
               Image(systemName: "arrow.right.square")
                 .foregroundStyle(EvidenceStyle.amberForeground)
               VStack(alignment: .leading, spacing: 2) {
-                Text(entry.path).font(.system(size: 9, weight: .medium, design: .monospaced))
-                Text(entry.reason).font(.system(size: 8)).foregroundStyle(.secondary)
+                Text(entry.path).font(.system(size: 10, weight: .medium, design: .monospaced))
+                Text(entry.reason).font(.system(size: 10)).foregroundStyle(.secondary)
               }
               Spacer()
             }
@@ -526,11 +522,11 @@ struct PremiumUnpackView: View {
                 .foregroundStyle(
                   node.isDirectory ? EvidenceStyle.amberForeground : Color.secondary)
               Text(node.path.isEmpty ? node.name : node.path)
-                .font(.system(size: 9, design: .monospaced))
+                .font(.system(size: 10, design: .monospaced))
                 .lineLimit(1)
               Spacer()
               Text("\(node.fileCount)")
-                .font(.system(size: 8, design: .monospaced))
+                .font(.system(size: 10, design: .monospaced))
                 .foregroundStyle(.secondary)
             }
             .padding(.horizontal, 14)
@@ -544,7 +540,7 @@ struct PremiumUnpackView: View {
         inventory.allFilesCapped
           ? "Raw file list withheld · tree projection only" : "Complete bounded tree projection"
       )
-      .font(.system(size: 8, weight: .semibold, design: .monospaced))
+      .font(.system(size: 10, weight: .semibold, design: .monospaced))
       .foregroundStyle(inventory.allFilesCapped ? EvidenceStyle.warning : EvidenceStyle.success)
       .padding(14)
     }
@@ -562,19 +558,19 @@ struct PremiumUnpackView: View {
         }
         Spacer()
         Text(inventory.history.truncated ? "BOUNDED" : "COMPLETE")
-          .font(.system(size: 7, weight: .bold, design: .monospaced))
+          .font(.system(size: 10, weight: .bold, design: .monospaced))
           .foregroundStyle(EvidenceStyle.warning)
       }
       Text(inventory.history.summary)
-        .font(.system(size: 9))
+        .font(.system(size: 10))
         .foregroundStyle(.secondary)
         .lineLimit(3)
       ForEach(inventory.history.recentCommits.prefix(4)) { commit in
         HStack(alignment: .top, spacing: 9) {
           Text(String(commit.sha.prefix(7)))
-            .font(.system(size: 8, weight: .semibold, design: .monospaced))
+            .font(.system(size: 10, weight: .semibold, design: .monospaced))
             .foregroundStyle(EvidenceStyle.amberForeground)
-          Text(commit.subject).font(.system(size: 9)).lineLimit(2)
+          Text(commit.subject).font(.system(size: 10)).lineLimit(2)
           Spacer()
         }
       }
@@ -594,7 +590,7 @@ struct PremiumUnpackView: View {
         }
         Spacer()
         Text("\(inventory.health.hotspotCount) hotspots")
-          .font(.system(size: 8, design: .monospaced))
+          .font(.system(size: 10, design: .monospaced))
           .foregroundStyle(EvidenceStyle.warning)
       }
       ForEach(inventory.health.topFiles.prefix(4)) { file in
@@ -604,12 +600,12 @@ struct PremiumUnpackView: View {
             .foregroundStyle(file.score < 5 ? EvidenceStyle.warning : EvidenceStyle.success)
             .frame(width: 28)
           VStack(alignment: .leading, spacing: 2) {
-            Text(file.path).font(.system(size: 9, weight: .medium, design: .monospaced)).lineLimit(
+            Text(file.path).font(.system(size: 10, weight: .medium, design: .monospaced)).lineLimit(
               1)
             Text(
               "\(file.lines) lines · churn \(file.churn) · \(file.hasTestSignal ? "test signal" : "no adjacent test")"
             )
-            .font(.system(size: 8))
+            .font(.system(size: 10))
             .foregroundStyle(.secondary)
           }
           Spacer()
@@ -649,7 +645,7 @@ struct PremiumUnpackView: View {
           if let prompt = report.agentPrompt, !prompt.isEmpty {
             DisclosureGroup("Recorded agent handoff prompt") {
               Text(prompt)
-                .font(.system(size: 9, design: .monospaced))
+                .font(.system(size: 10, design: .monospaced))
                 .textSelection(.enabled)
                 .padding(.top, 10)
             }
@@ -813,12 +809,12 @@ struct PremiumUnpackView: View {
               Text(
                 "\(inventory.graph.nodes.count) nodes · \(inventory.graph.edges.count) relationships · \(inventory.graph.truncated ? "bounded" : "complete")"
               )
-              .font(.system(size: 9))
+              .font(.system(size: 10))
               .foregroundStyle(.secondary)
             }
             Spacer()
             Text("Optional detail")
-              .font(.system(size: 8, weight: .semibold, design: .monospaced))
+              .font(.system(size: 10, weight: .semibold, design: .monospaced))
               .foregroundStyle(.secondary)
           }
         }
@@ -917,7 +913,7 @@ struct PremiumUnpackView: View {
           Text(issue).foregroundStyle(EvidenceStyle.warning)
         }
       }
-      .font(.system(size: 8, design: .monospaced))
+      .font(.system(size: 10, design: .monospaced))
       .foregroundStyle(.secondary)
     }
     .padding(14)
@@ -938,7 +934,7 @@ struct PremiumUnpackView: View {
       .premiumField()
     } else if let issue = model.repositoryQueryIssue {
       Label(issue, systemImage: "exclamationmark.triangle.fill")
-        .font(.system(size: 9))
+        .font(.system(size: 10))
         .foregroundStyle(EvidenceStyle.warning)
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -982,7 +978,7 @@ struct PremiumUnpackView: View {
           Text(
             "Structure ranks indexed symbols and paths. History searches Git revisions plus persisted entities and events, with any coverage gap shown beside the result."
           )
-          .font(.system(size: 9))
+          .font(.system(size: 10))
           .foregroundStyle(.secondary)
         }
         Spacer()
@@ -1040,7 +1036,7 @@ struct PremiumUnpackView: View {
           detail: historyHitDetail(item)
         )
         Image(systemName: "arrow.right")
-          .font(.system(size: 9, weight: .bold))
+          .font(.system(size: 10, weight: .bold))
           .foregroundStyle(EvidenceStyle.amberForeground)
       }
     }
@@ -1054,7 +1050,7 @@ struct PremiumUnpackView: View {
   ) -> some View {
     Button(action: action) {
       Label(title, systemImage: icon)
-        .font(.system(size: 8, weight: .semibold))
+        .font(.system(size: 10, weight: .semibold))
         .foregroundStyle(.secondary)
         .padding(.horizontal, 8)
         .frame(height: 23)
@@ -1078,7 +1074,7 @@ struct PremiumUnpackView: View {
       .premiumField()
     } else if let issue = model.repositoryQueryDetailIssue {
       Label(issue, systemImage: "exclamationmark.triangle.fill")
-        .font(.system(size: 9))
+        .font(.system(size: 10))
         .foregroundStyle(EvidenceStyle.warning)
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -1099,16 +1095,16 @@ struct PremiumUnpackView: View {
           .foregroundStyle(EvidenceStyle.amberForeground)
         VStack(alignment: .leading, spacing: 2) {
           Text("PATH ORIGIN")
-            .font(.system(size: 8, weight: .bold, design: .monospaced))
+            .font(.system(size: 10, weight: .bold, design: .monospaced))
             .foregroundStyle(EvidenceStyle.amberForeground)
           Text(origin.label).font(.system(size: 11, weight: .semibold))
           Text("Choose Route here on a different structural match.")
-            .font(.system(size: 9)).foregroundStyle(.secondary)
+            .font(.system(size: 10)).foregroundStyle(.secondary)
         }
         Spacer()
         Button("Clear") { model.repositoryGraphPathOrigin = nil }
           .buttonStyle(.plain)
-          .font(.system(size: 9, weight: .semibold))
+          .font(.system(size: 10, weight: .semibold))
       }
       .padding(14)
       .background(EvidenceStyle.amber.opacity(0.06), in: RoundedRectangle(cornerRadius: 10))
@@ -1123,7 +1119,7 @@ struct PremiumUnpackView: View {
           PremiumFieldLabel("NODE / CANONICAL IDENTITY")
           Text(explanation.node.label).font(.system(size: 15, weight: .semibold))
           Text(explanation.node.qualifiedName ?? explanation.node.id)
-            .font(.system(size: 9, design: .monospaced)).foregroundStyle(.secondary)
+            .font(.system(size: 10, design: .monospaced)).foregroundStyle(.secondary)
         }
         Spacer()
         UnpackMetric(
@@ -1139,7 +1135,7 @@ struct PremiumUnpackView: View {
             model.repositoryImpactDirection = direction
           } label: {
             Text(direction.rawValue.capitalized)
-              .font(.system(size: 8, weight: .semibold))
+              .font(.system(size: 10, weight: .semibold))
               .foregroundStyle(
                 model.repositoryImpactDirection == direction ? Color.black : Color.secondary
               )
@@ -1155,7 +1151,7 @@ struct PremiumUnpackView: View {
         Stepper(
           "Depth \(model.repositoryImpactDepth)", value: $model.repositoryImpactDepth, in: 1...12
         )
-        .font(.system(size: 8, weight: .semibold))
+        .font(.system(size: 10, weight: .semibold))
         .frame(width: 112)
         Spacer()
         repositoryQueryAction("Set path origin", icon: "smallcircle.filled.circle") {
@@ -1171,7 +1167,7 @@ struct PremiumUnpackView: View {
       }
       if let source = explanation.node.sources.first {
         Text("SOURCE  \(source.path):\(source.startLine ?? 1)")
-          .font(.system(size: 8, weight: .bold, design: .monospaced))
+          .font(.system(size: 10, weight: .bold, design: .monospaced))
           .foregroundStyle(.secondary)
       }
     }
@@ -1216,15 +1212,15 @@ struct PremiumUnpackView: View {
       ForEach(Array(path.nodes.enumerated()), id: \.element.id) { index, node in
         HStack(alignment: .top, spacing: 10) {
           Text(String(format: "%02d", index + 1))
-            .font(.system(size: 8, weight: .bold, design: .monospaced))
+            .font(.system(size: 10, weight: .bold, design: .monospaced))
             .foregroundStyle(EvidenceStyle.amberForeground)
           VStack(alignment: .leading, spacing: 2) {
             Text(node.label).font(.system(size: 10, weight: .semibold))
-            Text(node.path ?? node.id).font(.system(size: 8, design: .monospaced))
+            Text(node.path ?? node.id).font(.system(size: 10, design: .monospaced))
               .foregroundStyle(.secondary)
             if index < path.edges.count {
               Text(path.edges[index].kind.uppercased())
-                .font(.system(size: 7, weight: .bold, design: .monospaced))
+                .font(.system(size: 10, weight: .bold, design: .monospaced))
                 .foregroundStyle(EvidenceStyle.amberForeground)
             }
           }
@@ -1251,7 +1247,7 @@ struct PremiumUnpackView: View {
               episode.stagesPresent.map { $0.uppercased() }.joined(separator: " → "))
             Spacer()
             Text("\(episode.startedAt) — \(episode.endedAt)")
-              .font(.system(size: 7, design: .monospaced)).foregroundStyle(.secondary)
+              .font(.system(size: 10, design: .monospaced)).foregroundStyle(.secondary)
           }
           ForEach(episode.events) { event in
             UnpackEvidenceRow(
@@ -1261,7 +1257,7 @@ struct PremiumUnpackView: View {
           }
           ForEach(episode.gaps, id: \.self) { gap in
             Label(gap, systemImage: "questionmark.diamond")
-              .font(.system(size: 8)).foregroundStyle(EvidenceStyle.warning)
+              .font(.system(size: 10)).foregroundStyle(EvidenceStyle.warning)
           }
         }
         .padding(12)
@@ -1288,7 +1284,7 @@ struct PremiumUnpackView: View {
           ? EvidenceStyle.warning : EvidenceStyle.success
       )
       Text(receipt.authority.replacingOccurrences(of: "_", with: " "))
-        .font(.system(size: 8, weight: .bold, design: .monospaced))
+        .font(.system(size: 10, weight: .bold, design: .monospaced))
         .foregroundStyle(.secondary)
       Spacer()
       Text(
@@ -1296,7 +1292,7 @@ struct PremiumUnpackView: View {
           ? "\(receipt.graphStatus.nodeCount) nodes · \(receipt.graphStatus.edgeCount) edges"
           : "\(receipt.historyStatus.eventCount) events · \(receipt.historyStatus.checkpointCount) checkpoints"
       )
-      .font(.system(size: 8, design: .monospaced))
+      .font(.system(size: 10, design: .monospaced))
       .foregroundStyle(.secondary)
     }
   }
@@ -1443,7 +1439,7 @@ struct PremiumUnpackView: View {
           VStack(alignment: .leading, spacing: 9) {
             PremiumFieldLabel("RECORDED AGENT PROMPT")
             Text(prompt)
-              .font(.system(size: 9, design: .monospaced))
+              .font(.system(size: 10, design: .monospaced))
               .textSelection(.enabled)
           }
           .padding(16)
@@ -1530,7 +1526,7 @@ private struct UnpackDeskHeader: View {
   var body: some View {
     VStack(alignment: .leading, spacing: 6) {
       Text(eyebrow)
-        .font(.system(size: 8, weight: .bold, design: .monospaced))
+        .font(.system(size: 10, weight: .bold, design: .monospaced))
         .tracking(0.9)
         .foregroundStyle(EvidenceStyle.amberForeground)
       Text(title).font(.system(size: 20, weight: .semibold))
@@ -1560,14 +1556,14 @@ private struct UnpackListPanel<Content: View>: View {
         PremiumFieldLabel(title)
         Spacer()
         Text("\(count)")
-          .font(.system(size: 8, weight: .semibold, design: .monospaced))
+          .font(.system(size: 10, weight: .semibold, design: .monospaced))
           .foregroundStyle(.secondary)
       }
       .padding(14)
       Divider()
       if count == 0 {
         Text("No recorded evidence in this bounded snapshot.")
-          .font(.system(size: 9))
+          .font(.system(size: 10))
           .foregroundStyle(.secondary)
           .padding(14)
       } else {
@@ -1594,10 +1590,10 @@ private struct UnpackEvidenceRow: View {
         .frame(width: 17)
       VStack(alignment: .leading, spacing: 3) {
         Text(title)
-          .font(.system(size: 9, weight: .medium))
+          .font(.system(size: 10, weight: .medium))
           .lineLimit(2)
         Text(detail)
-          .font(.system(size: 8, design: .monospaced))
+          .font(.system(size: 10, design: .monospaced))
           .foregroundStyle(.secondary)
           .lineLimit(2)
       }
@@ -1619,16 +1615,16 @@ private struct UnpackBriefSectionCard: View {
         PremiumFieldLabel(sectionID.replacingOccurrences(of: "-", with: " ").uppercased())
         Spacer()
         Text("\(section.claims.count) claims")
-          .font(.system(size: 8, design: .monospaced))
+          .font(.system(size: 10, design: .monospaced))
           .foregroundStyle(.secondary)
       }
       Text(section.title).font(.system(size: 15, weight: .semibold))
       Text(section.summary).font(.system(size: 10)).foregroundStyle(.secondary)
       ForEach(section.claims.prefix(30)) { claim in
         VStack(alignment: .leading, spacing: 4) {
-          Text(claim.claim).font(.system(size: 9, weight: .medium))
+          Text(claim.claim).font(.system(size: 10, weight: .medium))
           Text(claim.sources.prefix(4).joined(separator: " · "))
-            .font(.system(size: 8, design: .monospaced))
+            .font(.system(size: 10, design: .monospaced))
             .foregroundStyle(EvidenceStyle.amberForeground)
             .lineLimit(2)
         }
@@ -1658,12 +1654,12 @@ private struct UnpackSnapshotRow: View {
           Text(snapshot.repoName).font(.system(size: 10, weight: .semibold))
           Spacer()
           Text(snapshot.status.replacingOccurrences(of: "_", with: " "))
-            .font(.system(size: 7, weight: .bold, design: .monospaced))
+            .font(.system(size: 10, weight: .bold, design: .monospaced))
             .foregroundStyle(
               snapshot.errorMessage == nil ? EvidenceStyle.success : EvidenceStyle.warning)
         }
         Text(snapshot.repoPath)
-          .font(.system(size: 8, design: .monospaced))
+          .font(.system(size: 10, design: .monospaced))
           .foregroundStyle(.secondary)
           .lineLimit(1)
         HStack {
@@ -1671,7 +1667,7 @@ private struct UnpackSnapshotRow: View {
           Spacer()
           Text(snapshot.commitSHA.map { String($0.prefix(7)) } ?? "no commit")
         }
-        .font(.system(size: 7, design: .monospaced))
+        .font(.system(size: 10, design: .monospaced))
         .foregroundStyle(.secondary)
       }
     }
@@ -1696,7 +1692,7 @@ private struct UnpackMetric: View {
     VStack(alignment: .leading, spacing: 6) {
       Text(value).font(.system(size: 23, weight: .medium, design: .rounded))
       PremiumFieldLabel(label)
-      Text(detail).font(.system(size: 8)).foregroundStyle(.secondary).lineLimit(1)
+      Text(detail).font(.system(size: 10)).foregroundStyle(.secondary).lineLimit(1)
     }
     .padding(16)
     .frame(maxWidth: .infinity, alignment: .leading)
@@ -1712,7 +1708,7 @@ private struct UnpackIdentity: View {
   var body: some View {
     VStack(alignment: .trailing, spacing: 3) {
       PremiumFieldLabel(label)
-      Text(value).font(.system(size: 9, weight: .medium, design: .monospaced))
+      Text(value).font(.system(size: 10, weight: .medium, design: .monospaced))
     }
   }
 }

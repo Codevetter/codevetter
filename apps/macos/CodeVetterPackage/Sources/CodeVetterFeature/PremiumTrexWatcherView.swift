@@ -55,7 +55,7 @@ struct PremiumTrexWatcherView: View {
     HStack(alignment: .top, spacing: 18) {
       VStack(alignment: .leading, spacing: 5) {
         Text("PR AUTOMATION")
-          .font(.system(size: 9, weight: .bold, design: .monospaced))
+          .font(.system(size: 10, weight: .bold, design: .monospaced))
           .tracking(1.15)
           .foregroundStyle(EvidenceStyle.amberForeground)
         Text("Incoming PR Watcher").font(.system(size: 25, weight: .semibold))
@@ -95,7 +95,7 @@ struct PremiumTrexWatcherView: View {
           Text(repositoryName)
             .font(.system(size: 17, weight: .semibold))
           Text(model.repositoryPath)
-            .font(.system(size: 8, design: .monospaced))
+            .font(.system(size: 10, design: .monospaced))
             .foregroundStyle(.secondary)
             .lineLimit(2)
             .truncationMode(.middle)
@@ -123,7 +123,7 @@ struct PremiumTrexWatcherView: View {
           .frame(height: 42)
           .premiumField()
           Text("60 seconds minimum · 24 hours maximum")
-            .font(.system(size: 8))
+            .font(.system(size: 10))
             .foregroundStyle(.secondary)
         }
 
@@ -151,7 +151,7 @@ struct PremiumTrexWatcherView: View {
           Text(
             "The native app owns timing only while it is open. Rust owns repository discovery, worktree isolation, project execution, agent synthesis, GitHub statuses, and SQLite history."
           )
-          .font(.system(size: 9))
+          .font(.system(size: 10))
           .foregroundStyle(.secondary)
           .fixedSize(horizontal: false, vertical: true)
         }
@@ -166,7 +166,7 @@ struct PremiumTrexWatcherView: View {
             watcherFact("LAST POLL", watcher.lastPolledAt ?? "Never")
             if let error = watcher.lastError {
               Text(error)
-                .font(.system(size: 8, design: .monospaced))
+                .font(.system(size: 10, design: .monospaced))
                 .foregroundStyle(EvidenceStyle.failure)
                 .textSelection(.enabled)
             }
@@ -190,7 +190,7 @@ struct PremiumTrexWatcherView: View {
         }
         Spacer()
         Text("\(model.trexWatcherRuns.count) retained")
-          .font(.system(size: 8, weight: .semibold, design: .monospaced))
+          .font(.system(size: 10, weight: .semibold, design: .monospaced))
           .foregroundStyle(.secondary)
       }
       .padding(18)
@@ -215,14 +215,14 @@ struct PremiumTrexWatcherView: View {
               DisclosureGroup("Latest canonical receipt", isExpanded: $showingRawReceipt) {
                 ScrollView(.horizontal) {
                   Text(model.trexWatcherReceiptJSON)
-                    .font(.system(size: 8, design: .monospaced))
+                    .font(.system(size: 10, design: .monospaced))
                     .foregroundStyle(.secondary)
                     .textSelection(.enabled)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.top, 10)
                 }
               }
-              .font(.system(size: 9, weight: .semibold))
+              .font(.system(size: 10, weight: .semibold))
               .padding(14)
               .background(EvidenceStyle.surface, in: RoundedRectangle(cornerRadius: 11))
               .overlay { RoundedRectangle(cornerRadius: 11).stroke(EvidenceStyle.separator) }
@@ -259,7 +259,7 @@ struct PremiumTrexWatcherView: View {
         )
         .foregroundStyle(.secondary)
       }
-      .font(.system(size: 8))
+      .font(.system(size: 10))
     }
     .padding(18)
     .background(EvidenceStyle.chrome)
@@ -280,7 +280,7 @@ struct PremiumTrexWatcherView: View {
             || model.trexWatcherIntervalSeconds > 86_400
         {
           Text("Choose an interval from 60 to 86,400 seconds.")
-            .font(.system(size: 8))
+            .font(.system(size: 10))
             .foregroundStyle(EvidenceStyle.warning)
         }
       }
@@ -331,7 +331,7 @@ struct PremiumTrexWatcherView: View {
           Text("PR #\(run.prNumber)")
             .font(.system(size: 11, weight: .semibold, design: .monospaced))
           Text(String(run.headSHA.prefix(8)))
-            .font(.system(size: 8, design: .monospaced))
+            .font(.system(size: 10, design: .monospaced))
             .foregroundStyle(.secondary)
           Spacer()
           StatusPill(label: run.verdict, color: verdictColor(run.verdict))
@@ -353,11 +353,11 @@ struct PremiumTrexWatcherView: View {
               .help("Rerun this exact open PR after an infrastructure-limited attempt")
           }
         }
-        .font(.system(size: 8, design: .monospaced))
+        .font(.system(size: 10, design: .monospaced))
         .foregroundStyle(.secondary)
         if let error = run.statusError {
           Text(error)
-            .font(.system(size: 8))
+            .font(.system(size: 10))
             .foregroundStyle(EvidenceStyle.warning)
             .lineLimit(2)
         }
@@ -371,25 +371,25 @@ struct PremiumTrexWatcherView: View {
   private func watcherFact(_ label: String, _ value: String) -> some View {
     HStack {
       Text(label)
-        .font(.system(size: 7, weight: .bold, design: .monospaced))
+        .font(.system(size: 10, weight: .bold, design: .monospaced))
         .foregroundStyle(.secondary)
       Spacer()
       Text(value)
-        .font(.system(size: 8, weight: .medium, design: .monospaced))
+        .font(.system(size: 10, weight: .medium, design: .monospaced))
     }
   }
 
   private func authorityStep(_ number: String, _ title: String, _ detail: String) -> some View {
     HStack(alignment: .top, spacing: 11) {
       Text(number)
-        .font(.system(size: 8, weight: .bold, design: .monospaced))
+        .font(.system(size: 10, weight: .bold, design: .monospaced))
         .foregroundStyle(EvidenceStyle.amberForeground)
         .frame(width: 24, height: 24)
         .background(EvidenceStyle.amber.opacity(0.1), in: RoundedRectangle(cornerRadius: 6))
       VStack(alignment: .leading, spacing: 4) {
         Text(title).font(.system(size: 10, weight: .semibold))
         Text(detail)
-          .font(.system(size: 8))
+          .font(.system(size: 10))
           .foregroundStyle(.secondary)
           .fixedSize(horizontal: false, vertical: true)
       }

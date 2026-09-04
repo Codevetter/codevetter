@@ -195,7 +195,7 @@ struct PremiumTestingView: View {
                   }
                   Spacer()
                   Text("Configure").font(.system(size: 10, weight: .semibold))
-                  Image(systemName: "chevron.right").font(.system(size: 9, weight: .bold))
+                  Image(systemName: "chevron.right").font(.system(size: 10, weight: .bold))
                 }
                 .padding(13)
                 .background(EvidenceStyle.surface, in: RoundedRectangle(cornerRadius: 12))
@@ -295,7 +295,7 @@ struct PremiumTestingView: View {
           let issue = model.testingInputIssue
         {
           Text(issue)
-            .font(.system(size: 9))
+            .font(.system(size: 10))
             .foregroundStyle(.tertiary)
             .lineLimit(2)
         }
@@ -333,7 +333,7 @@ struct PremiumTestingView: View {
       HStack(spacing: 16) {
         VStack(alignment: .leading, spacing: 4) {
           Text("T-REX PREVIEW RECEIPT")
-            .font(.system(size: 9, weight: .bold, design: .monospaced))
+            .font(.system(size: 10, weight: .bold, design: .monospaced))
             .tracking(1.1)
             .foregroundStyle(EvidenceStyle.amberForeground)
           Text(receipt.summary)
@@ -342,7 +342,7 @@ struct PremiumTestingView: View {
           Text(
             "\(receipt.source.input)  ·  \(receipt.routes.count) routes  ·  \(receipt.journeys.count) journeys"
           )
-          .font(.system(size: 9, design: .monospaced))
+          .font(.system(size: 10, design: .monospaced))
           .foregroundStyle(.secondary)
         }
         Spacer()
@@ -375,7 +375,7 @@ struct PremiumTestingView: View {
         VStack(spacing: 0) {
           HStack {
             Text("EXECUTABLE PROOF")
-              .font(.system(size: 9, weight: .bold, design: .monospaced))
+              .font(.system(size: 10, weight: .bold, design: .monospaced))
               .tracking(0.9)
             Spacer()
             Picker("Detail", selection: $detailMode) {
@@ -456,7 +456,7 @@ private struct TestingCapabilityStrip: View {
         PremiumFieldLabel("TESTING COVERAGE")
         Spacer()
         Text("No hidden parity claims")
-          .font(.system(size: 9, weight: .medium))
+          .font(.system(size: 10, weight: .medium))
           .foregroundStyle(.secondary)
       }
       LazyVGrid(columns: [GridItem(.adaptive(minimum: 130), spacing: 8)], spacing: 8) {
@@ -467,7 +467,7 @@ private struct TestingCapabilityStrip: View {
               .frame(width: 6, height: 6)
             VStack(alignment: .leading, spacing: 2) {
               Text(capability.0).font(.system(size: 10, weight: .semibold))
-              Text(capability.1).font(.system(size: 8)).foregroundStyle(.secondary)
+              Text(capability.1).font(.system(size: 10)).foregroundStyle(.secondary)
             }
             Spacer(minLength: 0)
           }
@@ -500,7 +500,7 @@ private struct TestingExecutionContract: View {
             ZStack {
               Circle().fill(stepColor(index).opacity(index == activeIndex ? 1 : 0.12))
               Text(String(format: "%02d", index + 1))
-                .font(.system(size: 8, weight: .bold, design: .monospaced))
+                .font(.system(size: 10, weight: .bold, design: .monospaced))
                 .foregroundStyle(index == activeIndex ? EvidenceStyle.ink : .secondary)
             }
             .frame(width: 28, height: 28)
@@ -511,7 +511,7 @@ private struct TestingExecutionContract: View {
           VStack(alignment: .leading, spacing: 4) {
             Text(step.0).font(.system(size: 11, weight: .semibold))
             Text(step.1)
-              .font(.system(size: 9))
+              .font(.system(size: 10))
               .foregroundStyle(.secondary)
               .fixedSize(horizontal: false, vertical: true)
           }
@@ -528,7 +528,7 @@ private struct TestingExecutionContract: View {
         Text(
           "Swift validates the form and renders the receipt. Rust owns source resolution, network checks, route selection, execution, persistence, and verdict semantics."
         )
-        .font(.system(size: 9))
+        .font(.system(size: 10))
         .foregroundStyle(.secondary)
         .fixedSize(horizontal: false, vertical: true)
       }
@@ -571,7 +571,7 @@ private struct TestingSourceIndex: View {
               HStack(spacing: 8) {
                 Image(systemName: "doc.text").foregroundStyle(EvidenceStyle.amberForeground)
                 Text(path)
-                  .font(.system(size: 9, design: .monospaced))
+                  .font(.system(size: 10, design: .monospaced))
                   .lineLimit(2)
                 Spacer(minLength: 0)
               }
@@ -588,7 +588,7 @@ private struct TestingSourceIndex: View {
         Text(receipt.source.kind == .range ? "Git range" : "GitHub pull request")
           .font(.system(size: 10, weight: .semibold))
         Text("\(receipt.source.commits.count) commits")
-          .font(.system(size: 9, design: .monospaced))
+          .font(.system(size: 10, design: .monospaced))
           .foregroundStyle(.secondary)
       }
       .padding(16)
@@ -621,7 +621,7 @@ private struct TestingEvidenceView: View {
             .foregroundStyle(previewStatusColor(receipt.preview.status))
             Spacer()
             Text(receipt.preview.finalURL)
-              .font(.system(size: 9, design: .monospaced))
+              .font(.system(size: 10, design: .monospaced))
               .foregroundStyle(.secondary)
               .lineLimit(1)
           }
@@ -638,7 +638,7 @@ private struct TestingEvidenceView: View {
           PremiumFieldLabel("BROWSER JOURNEYS")
           Spacer()
           Text("\(receipt.journeys.filter(\.pass).count)/\(receipt.journeys.count) passed")
-            .font(.system(size: 9, weight: .semibold, design: .monospaced))
+            .font(.system(size: 10, weight: .semibold, design: .monospaced))
             .foregroundStyle(.secondary)
         }
 
@@ -661,7 +661,7 @@ private struct TestingEvidenceView: View {
                 .foregroundStyle(journey.pass ? EvidenceStyle.success : EvidenceStyle.failure)
                 Spacer()
                 Text("\(journey.durationMS) ms")
-                  .font(.system(size: 9, design: .monospaced))
+                  .font(.system(size: 10, design: .monospaced))
                   .foregroundStyle(.secondary)
               }
               Text(journey.notes)
@@ -675,13 +675,13 @@ private struct TestingEvidenceView: View {
                   "\(journey.trace.consoleErrors.count) console errors",
                   systemImage: "terminal.fill"
                 )
-                .font(.system(size: 9, weight: .medium))
+                .font(.system(size: 10, weight: .medium))
                 .foregroundStyle(EvidenceStyle.warning)
               }
               let artifacts = journey.artifacts + [journey.screenshotPath].compactMap { $0 }
               if !artifacts.isEmpty {
                 Text(artifacts.joined(separator: "  ·  "))
-                  .font(.system(size: 8, design: .monospaced))
+                  .font(.system(size: 10, design: .monospaced))
                   .foregroundStyle(.tertiary)
                   .lineLimit(2)
               }
@@ -728,7 +728,7 @@ private struct TestingReceiptInspector: View {
         ForEach(receipt.routes) { route in
           VStack(alignment: .leading, spacing: 3) {
             Text(route.route).font(.system(size: 10, weight: .semibold, design: .monospaced))
-            Text(route.reason).font(.system(size: 9)).foregroundStyle(.secondary)
+            Text(route.reason).font(.system(size: 10)).foregroundStyle(.secondary)
           }
         }
         Divider()
@@ -740,7 +740,7 @@ private struct TestingReceiptInspector: View {
         } else {
           ForEach(receipt.limitations, id: \.self) { limitation in
             Label(limitation, systemImage: "exclamationmark.triangle")
-              .font(.system(size: 9))
+              .font(.system(size: 10))
               .foregroundStyle(.secondary)
               .fixedSize(horizontal: false, vertical: true)
           }

@@ -31,14 +31,14 @@ struct PremiumPageHeader<Trailing: View>: View {
     HStack(alignment: .top, spacing: 18) {
       VStack(alignment: .leading, spacing: 5) {
         Text(eyebrow.uppercased())
-          .font(.system(size: 9, weight: .bold, design: .monospaced))
+          .font(.system(size: 10, weight: .bold, design: .monospaced))
           .tracking(1.1)
           .foregroundStyle(EvidenceStyle.amberForeground)
         Text(title)
           .font(.system(size: 22, weight: .semibold))
           .tracking(-0.3)
         Text(subtitle)
-          .font(.system(size: 10))
+          .font(.system(size: 11))
           .foregroundStyle(.secondary)
       }
       Spacer(minLength: 18)

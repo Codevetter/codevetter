@@ -72,7 +72,7 @@ struct PremiumPerformanceView: View {
                   .lineLimit(1)
                   .truncationMode(.middle)
                 Spacer()
-                Text("Choose…").font(.system(size: 9, weight: .semibold)).foregroundStyle(
+                Text("Choose…").font(.system(size: 10, weight: .semibold)).foregroundStyle(
                   .secondary)
               }
               .padding(.horizontal, 13)
@@ -89,7 +89,7 @@ struct PremiumPerformanceView: View {
                     PremiumFieldLabel("RECORDED RUN")
                     Spacer()
                     Text("DIGEST VERIFIED")
-                      .font(.system(size: 8, weight: .bold, design: .monospaced))
+                      .font(.system(size: 10, weight: .bold, design: .monospaced))
                       .foregroundStyle(EvidenceStyle.success)
                   }
                   HStack(spacing: 8) {
@@ -108,7 +108,7 @@ struct PremiumPerformanceView: View {
                   if !model.performanceRecordedRunID.isEmpty,
                     let issue = model.performanceInspectionInputIssue
                   {
-                    Text(issue).font(.system(size: 9)).foregroundStyle(.tertiary)
+                    Text(issue).font(.system(size: 10)).foregroundStyle(.tertiary)
                   }
                 }
 
@@ -134,7 +134,7 @@ struct PremiumPerformanceView: View {
               VStack(alignment: .leading, spacing: 3) {
                 Text("Advanced source options").font(.system(size: 11, weight: .semibold))
                 Text("Inspect a receipt or discover workloads automatically")
-                  .font(.system(size: 9)).foregroundStyle(.secondary)
+                  .font(.system(size: 10)).foregroundStyle(.secondary)
               }
             }
             .tint(EvidenceStyle.amberForeground)
@@ -199,7 +199,7 @@ struct PremiumPerformanceView: View {
             "Local execution · Rust-owned admission · bounded cleanup",
             systemImage: "checkmark.shield"
           )
-          .font(.system(size: 9, weight: .medium))
+          .font(.system(size: 10, weight: .medium))
           .foregroundStyle(.secondary)
         }
         .padding(22)
@@ -226,7 +226,7 @@ struct PremiumPerformanceView: View {
           ProgressView().controlSize(.small).tint(EvidenceStyle.amber)
         }
         Text(model.performanceStatusMessage)
-          .font(.system(size: 9, weight: .medium))
+          .font(.system(size: 10, weight: .medium))
           .foregroundStyle(.secondary)
           .lineLimit(2)
       }
@@ -246,7 +246,7 @@ struct PremiumPerformanceView: View {
         StatusPill(label: model.performanceState.rawValue, color: performanceStateColor)
       }
       if let issue = currentInputIssue {
-        Text(issue).font(.system(size: 9)).foregroundStyle(.tertiary).lineLimit(2)
+        Text(issue).font(.system(size: 10)).foregroundStyle(.tertiary).lineLimit(2)
       }
     }
     .padding(14)
@@ -260,13 +260,13 @@ struct PremiumPerformanceView: View {
           Text(
             isInspectingRecordedRun ? "RECORDED RUN INSPECTION" : "PERFORMANCE EVIDENCE LANE"
           )
-          .font(.system(size: 9, weight: .bold, design: .monospaced))
+          .font(.system(size: 10, weight: .bold, design: .monospaced))
           .tracking(1.1)
           .foregroundStyle(EvidenceStyle.amberForeground)
           Text(
             isInspectingRecordedRun
-              ? "Read the stored receipt. Verify its digest. Preserve its limits."
-              : "Measure one flow. Change one thing. Prove it."
+              ? "Stored receipt inspection"
+              : "Exact workload evidence"
           )
           .font(.system(size: 17, weight: .semibold))
         }
@@ -353,28 +353,12 @@ struct PremiumPerformanceView: View {
         .multilineTextAlignment(.center)
         .frame(maxWidth: 430)
       }
-      HStack(spacing: 24) {
-        contractStep("01", "Admit", "Exact identity")
-        contractStep("02", "Capture", "Observed proof")
-        contractStep("03", "Diagnose", "Bounded inference")
-        contractStep("04", "Compare", "Paired verdict")
-      }
-      .padding(.top, 8)
       Label("Authority: codevetter performance", systemImage: "checkmark.seal.fill")
         .font(.system(size: 10, weight: .semibold, design: .monospaced))
         .foregroundStyle(EvidenceStyle.success)
     }
     .frame(maxWidth: .infinity, minHeight: 450)
     .padding(28)
-  }
-
-  private func contractStep(_ index: String, _ title: String, _ detail: String) -> some View {
-    VStack(spacing: 6) {
-      Text(index).font(.system(size: 9, weight: .bold, design: .monospaced))
-        .foregroundStyle(EvidenceStyle.amberForeground)
-      Text(title).font(.system(size: 11, weight: .semibold))
-      Text(detail).font(.system(size: 9)).foregroundStyle(.secondary)
-    }
   }
 
   private var repositoryLabel: String {
@@ -464,7 +448,7 @@ private struct PerformanceEvidenceLane: View {
   private func step(_ index: String, _ label: String, state: LaneState) -> some View {
     HStack(spacing: 9) {
       Text(index)
-        .font(.system(size: 9, weight: .bold, design: .monospaced))
+        .font(.system(size: 10, weight: .bold, design: .monospaced))
         .foregroundStyle(state == .active ? EvidenceStyle.ink : laneColor(state))
         .frame(width: 25, height: 25)
         .background(
@@ -608,14 +592,14 @@ private struct PerformanceReceiptDesk: View {
         campaignCell("PROMOTION", presentation.promotion, ready: presentation.confirmed)
       }
       Text(baselineLabel)
-        .font(.system(size: 9, design: .monospaced))
+        .font(.system(size: 10, design: .monospaced))
         .foregroundStyle(.secondary)
         .lineLimit(1)
         .truncationMode(.middle)
       if model.performanceResultReceipt?.operation == .diagnose,
         !model.canVerifyPairedPerformance, let issue = model.performancePairedInputIssue
       {
-        Text(issue).font(.system(size: 9)).foregroundStyle(.tertiary)
+        Text(issue).font(.system(size: 10)).foregroundStyle(.tertiary)
       }
     }
     .padding(22)
@@ -657,7 +641,7 @@ private struct PerformanceReceiptDesk: View {
     VStack(alignment: .leading, spacing: 5) {
       PremiumFieldLabel(label)
       Text(value)
-        .font(.system(size: 9, weight: .semibold))
+        .font(.system(size: 10, weight: .semibold))
         .foregroundStyle(ready ? EvidenceStyle.success : Color.secondary)
         .lineLimit(1)
     }
@@ -706,7 +690,7 @@ private struct PerformanceReceiptDesk: View {
                   ?? "Evidence"
               )
               .font(.system(size: 10, weight: .semibold))
-              Text(row.displayValue).font(.system(size: 9, design: .monospaced)).foregroundStyle(
+              Text(row.displayValue).font(.system(size: 10, design: .monospaced)).foregroundStyle(
                 .secondary
               )
               .lineLimit(3)
@@ -717,7 +701,7 @@ private struct PerformanceReceiptDesk: View {
           Text(
             "+ \(rows.count - performanceEvidencePreviewLimit) more evidence rows in canonical JSON"
           )
-          .font(.system(size: 8, design: .monospaced))
+          .font(.system(size: 10, design: .monospaced))
           .foregroundStyle(.secondary)
         }
       }
@@ -760,10 +744,10 @@ private struct PerformanceReceiptDesk: View {
       Text(
         "Process limit \(plan.result.value(at: "limits", "max_processes")?.displayValue ?? "—") · egress \(plan.result.value(at: "limits", "max_external_requests")?.displayValue == "0" ? "blocked" : "unknown") · cleanup \(plan.cleanup.ownedProcessReaped ? "reaped" : "unproven")"
       )
-      .font(.system(size: 9, weight: .medium, design: .monospaced))
+      .font(.system(size: 10, weight: .medium, design: .monospaced))
       .foregroundStyle(.secondary)
       ForEach(resources.limitations, id: \.self) { limitation in
-        Text(limitation).font(.system(size: 9)).foregroundStyle(.tertiary)
+        Text(limitation).font(.system(size: 10)).foregroundStyle(.tertiary)
       }
     }
     .padding(.top, 10)
@@ -834,7 +818,7 @@ private struct PerformanceRecordedRunDesk: View {
           Text(diagnosis).font(.system(size: 12, weight: .medium))
           if let verdict = resultSummary?.value(at: "verdict", "status")?.stringValue {
             Text("Verdict · \(verdict.replacingOccurrences(of: "_", with: " "))")
-              .font(.system(size: 9, weight: .semibold, design: .monospaced))
+              .font(.system(size: 10, weight: .semibold, design: .monospaced))
               .foregroundStyle(EvidenceStyle.amberForeground)
           }
         }
@@ -928,7 +912,7 @@ private struct PerformanceJSONDesk: View {
         model.performanceResultReceiptJSON.isEmpty
           ? model.performancePlanReceiptJSON : model.performanceResultReceiptJSON
       )
-      .font(.system(size: 9, design: .monospaced))
+      .font(.system(size: 10, design: .monospaced))
       .textSelection(.enabled)
       .foregroundStyle(.secondary)
       .frame(maxWidth: .infinity, alignment: .leading)
@@ -936,7 +920,7 @@ private struct PerformanceJSONDesk: View {
         Rectangle().fill(EvidenceStyle.separator).frame(height: 1)
         PremiumFieldLabel("ADMISSION RECEIPT")
         Text(model.performancePlanReceiptJSON)
-          .font(.system(size: 9, design: .monospaced))
+          .font(.system(size: 10, design: .monospaced))
           .textSelection(.enabled)
           .foregroundStyle(.secondary)
       }

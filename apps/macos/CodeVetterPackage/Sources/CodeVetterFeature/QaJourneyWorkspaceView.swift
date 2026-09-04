@@ -25,7 +25,7 @@ struct QaJourneyWorkspaceView: View {
     HStack(spacing: 14) {
       VStack(alignment: .leading, spacing: 4) {
         Text("TESTING / JOURNEY SETUP")
-          .font(.system(size: 9, weight: .bold, design: .monospaced))
+          .font(.system(size: 10, weight: .bold, design: .monospaced))
           .tracking(1.1)
           .foregroundStyle(EvidenceStyle.amberForeground)
         Text("Reuse the flow. Keep execution honest.")
@@ -77,7 +77,7 @@ struct QaJourneyWorkspaceView: View {
                     systemName: workflow.editable
                       ? "point.3.filled.connected.trianglepath.dotted" : "lock.fill"
                   )
-                  .font(.system(size: 9, weight: .semibold))
+                  .font(.system(size: 10, weight: .semibold))
                   .foregroundStyle(
                     workflow.id == model.qaSelectedWorkflowID
                       ? EvidenceStyle.amberForeground : Color.secondary)
@@ -87,7 +87,7 @@ struct QaJourneyWorkspaceView: View {
                   Spacer()
                 }
                 Text("\(workflow.runnerType) · \(workflow.targets.count) targets")
-                  .font(.system(size: 8, design: .monospaced))
+                  .font(.system(size: 10, design: .monospaced))
                   .foregroundStyle(.secondary)
                   .lineLimit(1)
               }
@@ -113,9 +113,9 @@ struct QaJourneyWorkspaceView: View {
 
       VStack(alignment: .leading, spacing: 5) {
         Label("Secret-safe projection", systemImage: "key.slash")
-          .font(.system(size: 9, weight: .semibold))
+          .font(.system(size: 10, weight: .semibold))
         Text("Storage-state paths and arbitrary commands never enter this native receipt.")
-          .font(.system(size: 8))
+          .font(.system(size: 10))
           .foregroundStyle(.secondary)
           .fixedSize(horizontal: false, vertical: true)
       }
@@ -195,7 +195,7 @@ struct QaJourneyWorkspaceView: View {
                   .truncationMode(.middle)
                   Spacer()
                   Image(systemName: "chevron.up.chevron.down")
-                    .font(.system(size: 8, weight: .bold))
+                    .font(.system(size: 10, weight: .bold))
                     .foregroundStyle(.secondary)
                 }
                 .padding(.horizontal, 12)
@@ -218,7 +218,7 @@ struct QaJourneyWorkspaceView: View {
 
         if let limitation = model.selectedQaWorkflow?.limitation {
           Label(limitation, systemImage: "lock.fill")
-            .font(.system(size: 9))
+            .font(.system(size: 10))
             .foregroundStyle(.secondary)
         }
       }
@@ -233,7 +233,7 @@ struct QaJourneyWorkspaceView: View {
         VStack(alignment: .leading, spacing: 3) {
           PremiumFieldLabel("SAVED TARGETS")
           Text("A selected target becomes an explicit route and goal in the T-REX receipt.")
-            .font(.system(size: 9))
+            .font(.system(size: 10))
             .foregroundStyle(.secondary)
         }
         Spacer()
@@ -283,7 +283,7 @@ struct QaJourneyWorkspaceView: View {
           ? EvidenceStyle.amberForeground : EvidenceStyle.success)
       VStack(alignment: .leading, spacing: 3) {
         Text(preparation.status == "needs_rerun" ? "POST-FIX RERUN READY" : "POST-FIX COMPARISON")
-          .font(.system(size: 9, weight: .bold, design: .monospaced))
+          .font(.system(size: 10, weight: .bold, design: .monospaced))
           .tracking(0.8)
         Text(preparation.summary)
           .font(.system(size: 10))
@@ -305,7 +305,7 @@ struct QaJourneyWorkspaceView: View {
   private var actionBar: some View {
     HStack(spacing: 10) {
       Text("\(model.qaWorkspaceReceipt?.specs.count ?? 0) specs discovered")
-        .font(.system(size: 9, design: .monospaced))
+        .font(.system(size: 10, design: .monospaced))
         .foregroundStyle(.secondary)
       Spacer()
       Button("Delete workflow", role: .destructive) { model.deleteQaWorkflow() }
