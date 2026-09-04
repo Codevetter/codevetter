@@ -1,108 +1,254 @@
 import SwiftUI
 
+struct UsageTrendPoint: Identifiable, Sendable {
+  let period: String
+  let generatedTokens: UInt64
+
+  var id: String { period }
+}
+
+struct UsageViewProjection: Sendable {
+  let totals: LocalUsageTotals
+  let activeDays: Int
+  let sessionCount: Int
+  let recentSessions: [LocalUsageSession]
+  let models: [LocalUsageModel]
+  let trend: [UsageTrendPoint]
+
+  init(
+    report: LocalUsageReport,
+    selectedAgents: Set<String>,
+    window: UsageWindow,
+    scale: UsageScale,
+    referenceDate: Date = Date()
+  ) {
+    let dayPeriods = report.periods(for: .day, window: window, referenceDate: referenceDate)
+    var selectedTotals = LocalUsageTotals.zero
+    var modelsByName: [String: LocalUsageModel] = [:]
+    for period in dayPeriods {
+      selectedTotals = selectedTotals.adding(period.totals(for: selectedAgents))
+      for agent in period.agents where selectedAgents.contains(agent.agent) {
+        for item in agent.models {
+          if let current = modelsByName[item.model] {
+            modelsByName[item.model] = LocalUsageModel(
+              model: item.model,
+              totals: current.totals.adding(item.totals),
+              fallback: current.fallback || item.fallback,
+              priced: current.priced && item.priced
+            )
+          } else {
+            modelsByName[item.model] = item
+          }
+        }
+      }
+    }
+
+    let matchingSessions = report.sessions(
+      for: selectedAgents,
+      window: window,
+      referenceDate: referenceDate
+    )
+    let trendLimit =
+      switch scale {
+      case .day: 180
+      case .week: 24
+      case .month: 18
+      }
+    let trendPeriods = report.periods(for: scale, window: window, referenceDate: referenceDate)
+      .suffix(trendLimit)
+
+    totals = selectedTotals
+    activeDays = dayPeriods.count
+    sessionCount = matchingSessions.count
+    recentSessions = Array(matchingSessions.prefix(8))
+    models = modelsByName.values.sorted {
+      $0.totals.generatedTokens > $1.totals.generatedTokens
+    }
+    trend = trendPeriods.map {
+      UsageTrendPoint(
+        period: $0.period,
+        generatedTokens: $0.totals(for: selectedAgents).generatedTokens
+      )
+    }
+  }
+}
+
 struct PremiumUsageView: View {
   @Bindable var model: WorkbenchModel
+  @State private var devinDetailsExpanded = false
+  @State private var localDetailsExpanded = false
 
   var body: some View {
     VStack(spacing: 0) {
       header
       Rectangle().fill(EvidenceStyle.separator).frame(height: 1)
-      sourceBoundary(model.usageReport)
-        .padding(.horizontal, 18)
-        .padding(.top, 14)
-      Group {
-        if let report = model.usageReport {
-          reportDesk(report)
-        } else if model.usageLoading {
-          loadingDesk
-        } else {
-          unavailableDesk
-        }
-      }
-      .frame(maxWidth: .infinity, maxHeight: .infinity)
+      usageDesk
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
     .background(EvidenceStyle.canvas)
   }
 
   private var header: some View {
-    HStack(alignment: .top, spacing: 18) {
-      VStack(alignment: .leading, spacing: 5) {
-        Text("LOCAL COMPUTE LEDGER")
-          .font(.system(size: 9, weight: .bold, design: .monospaced))
-          .tracking(1.1)
-          .foregroundStyle(EvidenceStyle.amberForeground)
-        Text("Usage").font(.system(size: 25, weight: .semibold))
-        Text("Token, cache, cost, model, and session evidence from local agent logs")
-          .font(.system(size: 10))
-          .foregroundStyle(.secondary)
-      }
-      Spacer()
+    PremiumPageHeader(
+      eyebrow: "Local compute ledger",
+      title: "Usage available",
+      subtitle: "Live remaining allowance from Claude and Codex"
+    ) {
       if let report = model.usageReport {
         StatusPill(label: report.status.label, color: report.status.color)
       }
       Button {
         model.loadUsage(refresh: true)
+        model.loadProviderQuota()
       } label: {
-        Label(model.usageLoading ? "Refreshing" : "Refresh", systemImage: "arrow.clockwise")
+        Label(
+          model.usageLoading || model.providerQuotaLoading ? "Refreshing" : "Refresh",
+          systemImage: "arrow.clockwise"
+        )
       }
       .buttonStyle(.bordered)
-      .disabled(model.usageLoading)
+      .disabled(model.usageLoading || model.providerQuotaLoading)
       .accessibilityLabel("Usage refresh")
     }
-    .padding(.horizontal, 22)
-    .padding(.vertical, 18)
-    .background(EvidenceStyle.chrome)
   }
 
-  private func reportDesk(_ report: LocalUsageReport) -> some View {
+  private var usageDesk: some View {
     ScrollView {
       LazyVStack(alignment: .leading, spacing: 14) {
-        metrics(report)
-        if let devin = report.devin {
-          devinPanel(devin)
+        providerAllowance
+        historicalUsage
+
+        Button {
+          withAnimation(.easeInOut(duration: 0.18)) {
+            localDetailsExpanded.toggle()
+          }
+        } label: {
+          HStack(spacing: 8) {
+            Image(systemName: "chart.bar.xaxis")
+            Text(localDetailsExpanded ? "Hide usage diagnostics" : "Show usage diagnostics")
+            Spacer()
+            Image(systemName: localDetailsExpanded ? "chevron.up" : "chevron.down")
+          }
+          .font(.system(size: 10, weight: .semibold))
+          .foregroundStyle(.secondary)
+          .padding(.horizontal, 14)
+          .premiumHitTarget(minHeight: 40)
+          .contentShape(Rectangle())
         }
-        HStack(alignment: .top, spacing: 14) {
-          trendPanel(report)
-            .frame(maxWidth: .infinity)
-          adapterHealth(report)
-            .frame(width: 285)
-        }
-        HStack(alignment: .top, spacing: 14) {
-          modelPanel(report)
-          sessionsPanel(report)
+        .buttonStyle(.plain)
+        .accessibilityLabel(
+          localDetailsExpanded ? "Hide usage diagnostics" : "Show usage diagnostics")
+
+        if localDetailsExpanded {
+          localUsageDetails
+            .transition(.opacity.combined(with: .move(edge: .top)))
         }
       }
-      .padding(.horizontal, 18)
+      .padding(.horizontal, PremiumPageLayout.horizontalInset)
       .padding(.vertical, 14)
     }
   }
 
-  private func sourceBoundary(_ report: LocalUsageReport?) -> some View {
-    HStack(spacing: 8) {
-      UsageBoundaryCard(
-        eyebrow: "ACCOUNTED HERE",
-        title: "Claude · Codex · Grok",
-        detail: "ccusage \(report?.provenance.version ?? "20.0.20") · offline local logs",
-        icon: "checkmark.seal.fill",
-        color: EvidenceStyle.success
-      )
-      UsageBoundaryCard(
-        eyebrow: "SEPARATE SOURCE",
-        title: "Devin activity",
-        detail: devinBoundaryDetail(report?.devin),
-        icon: "arrow.triangle.branch",
+  @ViewBuilder
+  private var historicalUsage: some View {
+    if let report = model.usageReport {
+      trendPanel(report, projection: model.usageProjection(for: report))
+    }
+  }
+
+  @ViewBuilder
+  private var providerAllowance: some View {
+    if let receipt = model.providerQuotaReceipt {
+      HStack(alignment: .top, spacing: 12) {
+        ForEach(receipt.providers) { provider in
+          ProviderAllowanceCard(provider: provider)
+        }
+      }
+    } else if model.providerQuotaLoading {
+      allowanceStatus(
+        icon: "arrow.triangle.2.circlepath",
+        title: "Checking Claude and Codex…",
+        detail: "Provider allowance loads independently from local activity.",
         color: EvidenceStyle.amber
       )
-      UsageBoundaryCard(
-        eyebrow: "SEPARATE TELEMETRY",
-        title: "Provider quotas",
-        detail: "Live limits never inferred from spend",
-        icon: "gauge.open.with.lines.needle.33percent",
-        color: EvidenceStyle.amber
+    } else {
+      allowanceStatus(
+        icon: "exclamationmark.triangle.fill",
+        title: "Usage allowance unavailable",
+        detail: model.providerQuotaIssue ?? "Press Refresh to check both providers.",
+        color: EvidenceStyle.warning
       )
     }
-    .accessibilityElement(children: .contain)
-    .accessibilityLabel("Usage provider boundaries")
+  }
+
+  private func allowanceStatus(icon: String, title: String, detail: String, color: Color)
+    -> some View
+  {
+    HStack(spacing: 12) {
+      Image(systemName: icon)
+        .font(.system(size: 14, weight: .semibold))
+        .foregroundStyle(color)
+        .frame(width: 34, height: 34)
+        .background(color.opacity(0.12), in: RoundedRectangle(cornerRadius: 10))
+      VStack(alignment: .leading, spacing: 3) {
+        Text(title).font(.system(size: 13, weight: .semibold))
+        Text(detail).font(.system(size: 9)).foregroundStyle(.secondary)
+      }
+      Spacer()
+    }
+    .padding(18)
+    .frame(maxWidth: .infinity, alignment: .leading)
+    .background(EvidenceStyle.surface, in: RoundedRectangle(cornerRadius: 14))
+    .overlay { RoundedRectangle(cornerRadius: 14).stroke(EvidenceStyle.separator) }
+  }
+
+  @ViewBuilder
+  private var localUsageDetails: some View {
+    if let report = model.usageReport {
+      let projection = model.usageProjection(for: report)
+      VStack(alignment: .leading, spacing: 14) {
+        HStack {
+          VStack(alignment: .leading, spacing: 3) {
+            PremiumFieldLabel("LOCAL ACTIVITY · NOT PROVIDER ALLOWANCE")
+            Text("Token and session evidence")
+              .font(.system(size: 14, weight: .semibold))
+          }
+          Spacer()
+          StatusPill(label: report.status.label, color: report.status.color)
+        }
+        metrics(report, projection: projection)
+        if let devin = report.devin {
+          Button {
+            withAnimation(.easeInOut(duration: 0.18)) {
+              devinDetailsExpanded.toggle()
+            }
+          } label: {
+            HStack {
+              Text("Devin · \(devinBoundaryDetail(devin))")
+              Spacer()
+              Image(systemName: devinDetailsExpanded ? "chevron.up" : "chevron.down")
+            }
+            .font(.system(size: 9, weight: .semibold))
+            .foregroundStyle(.secondary)
+            .premiumHitTarget(minHeight: 36)
+          }
+          .buttonStyle(.plain)
+          if devinDetailsExpanded { devinPanel(devin) }
+        }
+        adapterHealth(report)
+        HStack(alignment: .top, spacing: 14) {
+          modelPanel(projection)
+          sessionsPanel(projection)
+        }
+      }
+    } else {
+      allowanceStatus(
+        icon: model.usageLoading ? "arrow.triangle.2.circlepath" : "chart.bar.xaxis",
+        title: model.usageLoading ? "Loading local activity…" : "Local activity unavailable",
+        detail: model.usageIssue ?? "Local activity is optional and does not affect allowance.",
+        color: model.usageLoading ? EvidenceStyle.amber : EvidenceStyle.warning
+      )
+    }
   }
 
   private func devinBoundaryDetail(_ summary: DevinUsageSummary?) -> String {
@@ -197,42 +343,40 @@ struct PremiumUsageView: View {
     .frame(minWidth: 88, alignment: .leading)
   }
 
-  private func metrics(_ report: LocalUsageReport) -> some View {
-    let totals = selectedTotals(report)
-    let sessions = filteredSessions(report)
-    let activeDays = report.periods(for: .day, window: model.usageWindow).count
-    return HStack(spacing: 8) {
+  private func metrics(_ report: LocalUsageReport, projection: UsageViewProjection) -> some View {
+    HStack(spacing: 8) {
       UsageMetric(
-        value: compact(totals.generatedTokens),
+        value: compact(projection.totals.generatedTokens),
         label: "GENERATED TOKENS",
         detail: model.usageWindow.description
       )
       UsageMetric(
-        value: compact(totals.cacheReadTokens),
+        value: compact(projection.totals.cacheReadTokens),
         label: "CACHE READ",
-        detail: cacheShare(totals)
+        detail: cacheShare(projection.totals)
       )
       UsageMetric(
-        value: currency(totals.costUSD),
+        value: currency(projection.totals.costUSD),
         label: "LOCAL LOG COST",
         detail: report.provenance.pricingComplete ? "priced models complete" : "pricing has gaps"
       )
       UsageMetric(
-        value: compact(UInt64(sessions.count)),
+        value: compact(UInt64(projection.sessionCount)),
         label: "SESSIONS",
-        detail: "\(activeDays) active days"
+        detail: "\(projection.activeDays) active days"
       )
     }
   }
 
-  private func trendPanel(_ report: LocalUsageReport) -> some View {
+  private func trendPanel(_ report: LocalUsageReport, projection: UsageViewProjection) -> some View
+  {
     VStack(alignment: .leading, spacing: 14) {
       HStack(alignment: .top) {
         VStack(alignment: .leading, spacing: 4) {
-          PremiumFieldLabel("LOCAL ACTIVITY")
-          Text("Generated token trend")
+          PremiumFieldLabel("LOCAL HISTORY · NOT PROVIDER ALLOWANCE")
+          Text("Historical usage")
             .font(.system(size: 15, weight: .semibold))
-          Text("Selected agents only · cache reads remain a separate efficiency signal")
+          Text("Generated tokens from local agent logs · cache reads remain separate")
             .font(.system(size: 9))
             .foregroundStyle(.secondary)
         }
@@ -254,13 +398,13 @@ struct PremiumUsageView: View {
               Text(agent.capitalized)
             }
             .font(.system(size: 9, weight: .semibold))
-            .foregroundStyle(selected ? Color.primary : Color.secondary)
+            .foregroundStyle(selected ? EvidenceStyle.amberForeground : Color.secondary)
             .padding(.horizontal, 10)
-            .frame(height: 28)
-            .background(selected ? EvidenceStyle.amber.opacity(0.12) : Color.clear, in: Capsule())
-            .overlay {
-              Capsule().stroke(
-                selected ? EvidenceStyle.amber.opacity(0.34) : EvidenceStyle.separator)
+            .premiumHitTarget(minWidth: 70, minHeight: 36)
+            .overlay(alignment: .bottom) {
+              Rectangle()
+                .fill(selected ? EvidenceStyle.amberForeground : EvidenceStyle.separator)
+                .frame(height: selected ? 2 : 1)
             }
           }
           .buttonStyle(.plain)
@@ -270,13 +414,12 @@ struct PremiumUsageView: View {
       }
 
       UsageTrendChart(
-        periods: boundedPeriods(report),
-        selectedAgents: model.usageSelectedAgents,
+        points: projection.trend,
         scale: model.usageScale
       )
-      .frame(height: 190)
+      .frame(height: 125)
     }
-    .padding(18)
+    .padding(16)
     .background(EvidenceStyle.surface, in: RoundedRectangle(cornerRadius: 14))
     .overlay { RoundedRectangle(cornerRadius: 14).stroke(EvidenceStyle.separator) }
   }
@@ -326,7 +469,7 @@ struct PremiumUsageView: View {
     .overlay { RoundedRectangle(cornerRadius: 14).stroke(EvidenceStyle.separator) }
   }
 
-  private func modelPanel(_ report: LocalUsageReport) -> some View {
+  private func modelPanel(_ projection: UsageViewProjection) -> some View {
     VStack(alignment: .leading, spacing: 0) {
       HStack {
         VStack(alignment: .leading, spacing: 3) {
@@ -340,7 +483,7 @@ struct PremiumUsageView: View {
       }
       .padding(16)
       Divider()
-      let rows = aggregateModels(report)
+      let rows = projection.models
       if rows.isEmpty {
         Text("No model activity in this local report.")
           .font(.system(size: 10))
@@ -377,7 +520,7 @@ struct PremiumUsageView: View {
     .overlay { RoundedRectangle(cornerRadius: 14).stroke(EvidenceStyle.separator) }
   }
 
-  private func sessionsPanel(_ report: LocalUsageReport) -> some View {
+  private func sessionsPanel(_ projection: UsageViewProjection) -> some View {
     VStack(alignment: .leading, spacing: 0) {
       HStack {
         VStack(alignment: .leading, spacing: 3) {
@@ -385,13 +528,13 @@ struct PremiumUsageView: View {
           Text("Local agent activity").font(.system(size: 14, weight: .semibold))
         }
         Spacer()
-        Text("showing \(min(filteredSessions(report).count, 8))")
+        Text("showing \(projection.recentSessions.count) of \(projection.sessionCount)")
           .font(.system(size: 8, design: .monospaced))
           .foregroundStyle(.secondary)
       }
       .padding(16)
       Divider()
-      let sessions = Array(filteredSessions(report).prefix(8))
+      let sessions = projection.recentSessions
       if sessions.isEmpty {
         Text("No sessions match the selected agents.")
           .font(.system(size: 10))
@@ -449,76 +592,150 @@ struct PremiumUsageView: View {
     )
   }
 
-  private func boundedPeriods(_ report: LocalUsageReport) -> [LocalUsagePeriod] {
-    let limit =
-      switch model.usageScale {
-      case .day: 180
-      case .week: 24
-      case .month: 18
-      }
-    return Array(
-      report.periods(for: model.usageScale, window: model.usageWindow).suffix(limit)
-    )
-  }
-
-  private func aggregateModels(_ report: LocalUsageReport) -> [LocalUsageModel] {
-    var models: [String: LocalUsageModel] = [:]
-    for period in report.periods(for: .day, window: model.usageWindow) {
-      for agent in period.agents where model.usageSelectedAgents.contains(agent.agent) {
-        for item in agent.models {
-          if let current = models[item.model] {
-            models[item.model] = LocalUsageModel(
-              model: item.model,
-              totals: current.totals.adding(item.totals),
-              fallback: current.fallback || item.fallback,
-              priced: current.priced && item.priced
-            )
-          } else {
-            models[item.model] = item
-          }
-        }
-      }
-    }
-    return models.values.sorted { $0.totals.generatedTokens > $1.totals.generatedTokens }
-  }
-
-  private func filteredSessions(_ report: LocalUsageReport) -> [LocalUsageSession] {
-    report.sessions(for: model.usageSelectedAgents, window: model.usageWindow)
-  }
-
-  private func selectedTotals(_ report: LocalUsageReport) -> LocalUsageTotals {
-    report.totals(for: model.usageSelectedAgents, window: model.usageWindow)
-  }
 }
 
-private struct UsageBoundaryCard: View {
-  let eyebrow: String
-  let title: String
-  let detail: String
-  let icon: String
-  let color: Color
+private struct ProviderAllowanceCard: View {
+  let provider: ProviderQuotaStatus
+
+  private var accent: Color {
+    if visibleWindows.contains(where: { $0.remainingPercent <= 10 }) {
+      return EvidenceStyle.failure
+    }
+    return provider.provider == "claude" ? EvidenceStyle.amberForeground : Color.secondary
+  }
+
+  private var displayName: String {
+    provider.provider == "claude" ? "Claude" : "Codex"
+  }
+
+  private var visibleWindows: [ProviderQuotaWindow] {
+    if provider.provider == "claude" {
+      return Array(
+        provider.windows.filter {
+          !$0.id.localizedCaseInsensitiveContains("model")
+            && !$0.id.localizedCaseInsensitiveContains("fable")
+        }.prefix(2))
+    }
+    return Array(provider.windows.prefix(1))
+  }
 
   var body: some View {
-    HStack(spacing: 11) {
-      Image(systemName: icon)
-        .font(.system(size: 12, weight: .semibold))
-        .foregroundStyle(color)
-        .frame(width: 28, height: 28)
-        .background(color.opacity(0.11), in: RoundedRectangle(cornerRadius: 8))
-      VStack(alignment: .leading, spacing: 2) {
-        Text(eyebrow)
-          .font(.system(size: 7, weight: .bold, design: .monospaced))
-          .tracking(0.7)
-          .foregroundStyle(color)
-        Text(title).font(.system(size: 10, weight: .semibold))
-        Text(detail).font(.system(size: 8)).foregroundStyle(.secondary).lineLimit(1)
+    VStack(alignment: .leading, spacing: 16) {
+      HStack(spacing: 9) {
+        Image(systemName: provider.provider == "claude" ? "sparkles" : "terminal.fill")
+          .font(.system(size: 13, weight: .semibold))
+          .foregroundStyle(accent)
+          .frame(width: 34, height: 34)
+          .background(Color.primary.opacity(0.035), in: RoundedRectangle(cornerRadius: 6))
+        VStack(alignment: .leading, spacing: 2) {
+          HStack(spacing: 6) {
+            Text(displayName).font(.system(size: 14, weight: .semibold))
+            if let plan = provider.plan {
+              Text(plan.uppercased())
+                .font(.system(size: 7, weight: .bold, design: .monospaced))
+                .foregroundStyle(.secondary)
+            }
+          }
+          Text(provider.isReady ? "USAGE AVAILABLE" : "ALLOWANCE UNAVAILABLE")
+            .font(.system(size: 7, weight: .bold, design: .monospaced))
+            .tracking(0.5)
+            .foregroundStyle(provider.isReady ? accent : EvidenceStyle.warning)
+        }
+        Spacer()
+        Circle()
+          .fill(provider.isReady ? accent : EvidenceStyle.warning)
+          .frame(width: 7, height: 7)
       }
-      Spacer(minLength: 0)
+      .help(provider.source)
+
+      if provider.isReady, !visibleWindows.isEmpty {
+        HStack(alignment: .top, spacing: 26) {
+          ForEach(visibleWindows) { window in
+            allowanceValue(window)
+          }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+
+        HStack(spacing: 14) {
+          if let credits = provider.credits, let creditText = creditText(credits) {
+            Label(creditText, systemImage: "creditcard.fill")
+          }
+          if let count = provider.resetCredits {
+            Label(
+              "\(count) full reset \(count == 1 ? "available" : "available")",
+              systemImage: "arrow.counterclockwise.circle.fill")
+          }
+        }
+        .font(.system(size: 9, weight: .semibold))
+        .foregroundStyle(.secondary)
+      } else {
+        Text(provider.message ?? "Provider quota is unavailable.")
+          .font(.system(size: 10))
+          .foregroundStyle(.secondary)
+          .fixedSize(horizontal: false, vertical: true)
+      }
     }
-    .padding(12)
-    .frame(maxWidth: .infinity)
-    .background(EvidenceStyle.surface, in: RoundedRectangle(cornerRadius: 12))
-    .overlay { RoundedRectangle(cornerRadius: 12).stroke(EvidenceStyle.separator) }
+    .padding(20)
+    .frame(maxWidth: .infinity, minHeight: 172, alignment: .topLeading)
+    .background(EvidenceStyle.surface, in: RoundedRectangle(cornerRadius: 14))
+    .overlay { RoundedRectangle(cornerRadius: 14).stroke(EvidenceStyle.separator) }
+    .accessibilityElement(children: .contain)
+    .accessibilityLabel("\(displayName) usage available")
+  }
+
+  private func allowanceValue(_ window: ProviderQuotaWindow) -> some View {
+    VStack(alignment: .leading, spacing: 4) {
+      Text(window.label.replacingOccurrences(of: " window", with: "").uppercased())
+        .font(.system(size: 7, weight: .bold, design: .monospaced))
+        .tracking(0.55)
+        .foregroundStyle(.secondary)
+        .lineLimit(1)
+      Text("\(window.remainingPercent, specifier: "%.0f")%")
+        .font(.system(size: 32, weight: .semibold, design: .rounded))
+        .foregroundStyle(window.remainingPercent <= 10 ? EvidenceStyle.failure : .primary)
+      Text("remaining")
+        .font(.system(size: 9, weight: .medium))
+        .foregroundStyle(.secondary)
+      GeometryReader { geometry in
+        ZStack(alignment: .leading) {
+          Capsule().fill(Color.primary.opacity(0.07))
+          Capsule()
+            .fill(window.remainingPercent <= 10 ? EvidenceStyle.failure : accent)
+            .frame(
+              width: geometry.size.width * max(0, min(window.remainingPercent / 100, 1)))
+        }
+      }
+      .frame(height: 4)
+      if let reset = resetLabel(window) {
+        Text(reset)
+          .font(.system(size: 8, design: .monospaced))
+          .foregroundStyle(.secondary)
+          .lineLimit(1)
+      }
+    }
+    .frame(minWidth: 130, maxWidth: 190, alignment: .leading)
+    .accessibilityElement(children: .combine)
+    .accessibilityLabel(
+      "\(window.label), \(window.remainingPercent, specifier: "%.0f") percent remaining")
+  }
+
+  private func creditText(_ credits: ProviderCreditBalance) -> String? {
+    if let limit = credits.limitAmount, let used = credits.usedAmount {
+      return "$\(Int(max(0, limit - used).rounded())) credits"
+    }
+    if let remaining = credits.remainingPercent {
+      return "\(Int(remaining.rounded()))% credits"
+    }
+    return nil
+  }
+
+  private func resetLabel(_ window: ProviderQuotaWindow) -> String? {
+    if let description = window.resetDescription {
+      return "Resets \(description)"
+    }
+    guard let timestamp = window.resetsAtUnix else { return nil }
+    let date = Date(timeIntervalSince1970: TimeInterval(timestamp))
+    return "Resets \(date.formatted(date: .abbreviated, time: .shortened))"
   }
 }
 
@@ -567,12 +784,15 @@ private struct UsageScaleSwitch: View {
         } label: {
           Text(scale.rawValue)
             .font(.system(size: 9, weight: .semibold))
-            .foregroundStyle(selection == scale ? EvidenceStyle.ink : Color.secondary)
-            .frame(width: 58, height: 26)
-            .background(
-              selection == scale ? EvidenceStyle.amber : Color.clear,
-              in: RoundedRectangle(cornerRadius: 7)
+            .foregroundStyle(
+              selection == scale ? EvidenceStyle.amberForeground : Color.secondary
             )
+            .premiumHitTarget(minWidth: 58, minHeight: 34)
+            .overlay(alignment: .bottom) {
+              Rectangle()
+                .fill(selection == scale ? EvidenceStyle.amberForeground : Color.clear)
+                .frame(height: 2)
+            }
         }
         .buttonStyle(.plain)
         .accessibilityValue(selection == scale ? "Selected" : "")
@@ -600,13 +820,16 @@ private struct UsageWindowSwitch: View {
         } label: {
           Text(window.rawValue)
             .font(.system(size: 9, weight: .semibold))
-            .foregroundStyle(selection == window ? EvidenceStyle.ink : Color.secondary)
-            .frame(minWidth: 34, minHeight: 24)
-            .padding(.horizontal, 3)
-            .background(
-              selection == window ? EvidenceStyle.amber : Color.clear,
-              in: RoundedRectangle(cornerRadius: 7)
+            .foregroundStyle(
+              selection == window ? EvidenceStyle.amberForeground : Color.secondary
             )
+            .premiumHitTarget(minWidth: 40, minHeight: 34)
+            .padding(.horizontal, 3)
+            .overlay(alignment: .bottom) {
+              Rectangle()
+                .fill(selection == window ? EvidenceStyle.amberForeground : Color.clear)
+                .frame(height: 2)
+            }
         }
         .buttonStyle(.plain)
         .accessibilityLabel(window.description)
@@ -623,37 +846,36 @@ private struct UsageWindowSwitch: View {
 }
 
 private struct UsageTrendChart: View {
-  let periods: [LocalUsagePeriod]
-  let selectedAgents: Set<String>
+  let points: [UsageTrendPoint]
   let scale: UsageScale
 
   var body: some View {
-    if periods.isEmpty {
+    if points.isEmpty {
       ContentUnavailableView("No local activity", systemImage: "chart.bar")
     } else {
       GeometryReader { geometry in
-        let values = periods.map { $0.totals(for: selectedAgents).generatedTokens }
+        let values = points.map(\.generatedTokens)
         let maximum = max(values.max() ?? 0, 1)
         ZStack(alignment: .bottom) {
           HStack(alignment: .bottom, spacing: scale == .day ? 3 : 7) {
-            ForEach(Array(zip(periods.indices, periods)), id: \.1.id) { index, period in
-              let value = period.totals(for: selectedAgents).generatedTokens
+            ForEach(Array(zip(points.indices, points)), id: \.1.id) { index, point in
               RoundedRectangle(cornerRadius: 3)
                 .fill(
-                  index == periods.indices.last
-                    ? EvidenceStyle.amber : EvidenceStyle.amber.opacity(0.34)
+                  index == points.indices.last
+                    ? EvidenceStyle.amberForeground : Color.secondary.opacity(0.28)
                 )
                 .frame(
                   height: max(
                     3,
-                    (geometry.size.height - 22) * CGFloat(Double(value) / Double(maximum))
+                    (geometry.size.height - 22)
+                      * CGFloat(Double(point.generatedTokens) / Double(maximum))
                   )
                 )
-                .help("\(period.period): \(compact(value)) generated tokens")
+                .help("\(point.period): \(compact(point.generatedTokens)) generated tokens")
                 .frame(maxWidth: .infinity)
                 .accessibilityElement(children: .ignore)
-                .accessibilityLabel(period.period)
-                .accessibilityValue("\(value) generated tokens")
+                .accessibilityLabel(point.period)
+                .accessibilityValue("\(point.generatedTokens) generated tokens")
             }
           }
           .padding(.bottom, 18)
@@ -661,9 +883,9 @@ private struct UsageTrendChart: View {
             Rectangle().fill(EvidenceStyle.separator).frame(height: 1).offset(y: -17)
           }
           HStack {
-            Text(shortLabel(periods.first?.period ?? ""))
+            Text(shortLabel(points.first?.period ?? ""))
             Spacer()
-            Text(shortLabel(periods.last?.period ?? ""))
+            Text(shortLabel(points.last?.period ?? ""))
           }
           .font(.system(size: 7, design: .monospaced))
           .foregroundStyle(.secondary)

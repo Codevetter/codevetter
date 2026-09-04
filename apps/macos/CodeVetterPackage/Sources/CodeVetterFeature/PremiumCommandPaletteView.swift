@@ -84,7 +84,7 @@ struct PremiumCommandPaletteView: View {
                     .foregroundStyle(.tertiary)
                 }
                 .padding(.horizontal, 13)
-                .frame(height: 44)
+                .premiumHitTarget(minHeight: 46)
                 .background(
                   index == selectedIndex ? EvidenceStyle.amber.opacity(0.09) : Color.clear,
                   in: RoundedRectangle(cornerRadius: 9)
@@ -150,7 +150,6 @@ struct PremiumCommandPaletteView: View {
     case .testing: "Exercise changed behavior and preserve runtime evidence"
     case .performance: "Measure one exact workload and compare one change"
     case .runs: "Inspect canonical Rust-persisted verification receipts"
-    case .capabilities: "See UI, CLI, and agent authority from one registry"
     case .settings: "Manage local behavior without exposing credentials"
     }
   }

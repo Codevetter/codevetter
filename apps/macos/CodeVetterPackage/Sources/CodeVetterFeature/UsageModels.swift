@@ -292,9 +292,25 @@ public struct LocalUsageReport: Codable, Sendable {
     guard let cutoff = usageWindowCutoff(window, referenceDate: referenceDate) else {
       return periods(for: scale)
     }
+    let calendar = usageCalendar()
+    let referenceDay = usageDayKey(referenceDate)
+    let cutoffDay = usageDayKey(cutoff)
+    let lowerWeekDay = usageDayKey(
+      calendar.date(byAdding: .day, value: -6, to: cutoff) ?? cutoff)
+    let referenceMonth = String(referenceDay.prefix(7))
+    let cutoffMonth = String(cutoffDay.prefix(7))
     return periods(for: scale).filter { period in
-      guard let interval = usagePeriodInterval(period.period, scale: scale) else { return false }
-      return interval.start <= referenceDate && interval.end >= cutoff
+      switch scale {
+      case .day:
+        guard usagePeriodKeyIsValid(period.period, length: 10) else { return false }
+        return period.period >= cutoffDay && period.period <= referenceDay
+      case .week:
+        guard usagePeriodKeyIsValid(period.period, length: 10) else { return false }
+        return period.period >= lowerWeekDay && period.period <= referenceDay
+      case .month:
+        guard usagePeriodKeyIsValid(period.period, length: 7) else { return false }
+        return period.period >= cutoffMonth && period.period <= referenceMonth
+      }
     }
   }
 
@@ -312,14 +328,92 @@ public struct LocalUsageReport: Codable, Sendable {
     window: UsageWindow,
     referenceDate: Date = Date()
   ) -> [LocalUsageSession] {
-    let agentSessions = sessions.filter { selectedAgents.contains($0.agent) }
-    guard let cutoff = usageWindowCutoff(window, referenceDate: referenceDate) else {
-      return agentSessions
-    }
-    return agentSessions.filter { session in
-      guard let raw = session.lastActivity, let activity = usageTimestamp(raw) else { return false }
+    let cutoff = usageWindowCutoff(window, referenceDate: referenceDate)
+    let cutoffKey = cutoff.map(usageUTCInstantKey)
+    let referenceKey = usageUTCInstantKey(referenceDate)
+    return sessions.filter { session in
+      guard selectedAgents.contains(session.agent) else { return false }
+      guard let cutoff else { return true }
+      guard let raw = session.lastActivity else {
+        return false
+      }
+      if let rawKey = usageUTCInstantKey(raw), let cutoffKey {
+        return rawKey >= cutoffKey && rawKey <= referenceKey
+      }
+      guard let activity = usageTimestamp(raw) else { return false }
       return activity >= cutoff && activity <= referenceDate
     }
+  }
+}
+
+public struct ProviderQuotaReceipt: Codable, Sendable {
+  public let schemaVersion: String
+  public let generatedAt: String
+  public let providers: [ProviderQuotaStatus]
+  public let limitations: [String]
+
+  enum CodingKeys: String, CodingKey {
+    case providers, limitations
+    case schemaVersion = "schema_version"
+    case generatedAt = "generated_at"
+  }
+}
+
+public struct ProviderQuotaStatus: Codable, Identifiable, Sendable {
+  public let provider: String
+  public let status: String
+  public let source: String
+  public let checkedAt: String
+  public let plan: String?
+  public let windows: [ProviderQuotaWindow]
+  public let credits: ProviderCreditBalance?
+  public let resetCredits: UInt64?
+  public let message: String?
+
+  public var id: String { provider }
+  public var isReady: Bool { status == "ready" }
+
+  enum CodingKeys: String, CodingKey {
+    case provider, status, source, plan, windows, credits, message
+    case checkedAt = "checked_at"
+    case resetCredits = "reset_credits"
+  }
+}
+
+public struct ProviderQuotaWindow: Codable, Identifiable, Sendable {
+  public let id: String
+  public let label: String
+  public let usedPercent: Double
+  public let remainingPercent: Double
+  public let windowDurationMinutes: UInt64?
+  public let resetsAtUnix: Int64?
+  public let resetDescription: String?
+
+  enum CodingKeys: String, CodingKey {
+    case id, label
+    case usedPercent = "used_percent"
+    case remainingPercent = "remaining_percent"
+    case windowDurationMinutes = "window_duration_minutes"
+    case resetsAtUnix = "resets_at_unix"
+    case resetDescription = "reset_description"
+  }
+}
+
+public struct ProviderCreditBalance: Codable, Sendable {
+  public let usedPercent: Double?
+  public let remainingPercent: Double?
+  public let usedAmount: Double?
+  public let limitAmount: Double?
+  public let currency: String?
+  public let resetDescription: String?
+
+  enum CodingKeys: String, CodingKey {
+    case currency
+    case usedPercent = "used_percent"
+    case remainingPercent = "remaining_percent"
+    case usedAmount = "used_amount"
+    case limitAmount = "limit_amount"
+    case resetDescription = "reset_description"
   }
 }
 
@@ -336,33 +430,86 @@ private func usageWindowCutoff(_ window: UsageWindow, referenceDate: Date) -> Da
   return calendar.date(byAdding: .day, value: -(dayCount - 1), to: today)
 }
 
-private func usagePeriodInterval(_ raw: String, scale: UsageScale) -> DateInterval? {
-  let parts = raw.split(separator: "-").compactMap { Int($0) }
-  let calendar = usageCalendar()
-  let components: DateComponents
-  switch scale {
-  case .day, .week:
-    guard parts.count == 3 else { return nil }
-    components = DateComponents(year: parts[0], month: parts[1], day: parts[2])
-  case .month:
-    guard parts.count == 2 else { return nil }
-    components = DateComponents(year: parts[0], month: parts[1], day: 1)
-  }
-  guard let start = calendar.date(from: components) else { return nil }
-  let end: Date
-  switch scale {
-  case .day:
-    end = calendar.date(byAdding: .day, value: 1, to: start)!.addingTimeInterval(-1)
-  case .week:
-    end = calendar.date(byAdding: .day, value: 7, to: start)!.addingTimeInterval(-1)
-  case .month:
-    end = calendar.date(byAdding: .month, value: 1, to: start)!.addingTimeInterval(-1)
-  }
-  return DateInterval(start: start, end: end)
-}
+private nonisolated(unsafe) let usageTimestampFormatter = ISO8601DateFormatter()
 
 private func usageTimestamp(_ raw: String) -> Date? {
-  ISO8601DateFormatter().date(from: raw)
+  usageTimestampFormatter.date(from: raw)
+}
+
+private struct UsageUTCInstantKey: Comparable {
+  let second: UInt64
+  let nanosecond: UInt32
+
+  static func < (left: Self, right: Self) -> Bool {
+    left.second < right.second
+      || (left.second == right.second && left.nanosecond < right.nanosecond)
+  }
+}
+
+private func usageUTCInstantKey(_ date: Date) -> UsageUTCInstantKey {
+  let seconds = floor(date.timeIntervalSince1970)
+  let fraction = max(0, date.timeIntervalSince1970 - seconds)
+  return UsageUTCInstantKey(
+    second: usageUTCInstantKey(usageTimestampFormatter.string(from: date))?.second ?? 0,
+    nanosecond: UInt32(min(fraction * 1_000_000_000, 999_999_999))
+  )
+}
+
+private func usageUTCInstantKey(_ raw: String) -> UsageUTCInstantKey? {
+  let bytes = Array(raw.utf8)
+  guard bytes.count >= 20, bytes.last == 90,
+    bytes[4] == 45, bytes[7] == 45, bytes[10] == 84,
+    bytes[13] == 58, bytes[16] == 58
+  else { return nil }
+  var second: UInt64 = 0
+  for index in [0, 1, 2, 3, 5, 6, 8, 9, 11, 12, 14, 15, 17, 18] {
+    guard bytes[index] >= 48, bytes[index] <= 57 else { return nil }
+    second = second * 10 + UInt64(bytes[index] - 48)
+  }
+  var nanosecond: UInt32 = 0
+  if bytes.count > 20, bytes[19] == 46 {
+    var digits = 0
+    var index = 20
+    while index < bytes.count - 1, digits < 9 {
+      guard bytes[index] >= 48, bytes[index] <= 57 else { return nil }
+      nanosecond = nanosecond * 10 + UInt32(bytes[index] - 48)
+      digits += 1
+      index += 1
+    }
+    while digits < 9 {
+      nanosecond *= 10
+      digits += 1
+    }
+  } else if bytes.count != 20 {
+    return nil
+  }
+  return UsageUTCInstantKey(second: second, nanosecond: nanosecond)
+}
+
+private func usageDayKey(_ date: Date) -> String {
+  String(usageTimestampFormatter.string(from: date).prefix(10))
+}
+
+private func usagePeriodKeyIsValid(_ raw: String, length: Int) -> Bool {
+  guard raw.count == length else { return false }
+  let characters = Array(raw)
+  guard characters.count == length, characters[4] == "-" else { return false }
+  if length == 10, characters[7] != "-" { return false }
+  return characters.enumerated().allSatisfy { index, character in
+    index == 4 || (length == 10 && index == 7) || character.isNumber
+  }
+}
+
+private func usageUTCSecondKey(_ raw: String) -> String? {
+  guard raw.hasSuffix("Z"), raw.count >= 20 else { return nil }
+  let key = raw.prefix(19)
+  guard key[key.index(key.startIndex, offsetBy: 4)] == "-",
+    key[key.index(key.startIndex, offsetBy: 7)] == "-",
+    key[key.index(key.startIndex, offsetBy: 10)] == "T",
+    key[key.index(key.startIndex, offsetBy: 13)] == ":",
+    key[key.index(key.startIndex, offsetBy: 16)] == ":"
+  else { return nil }
+  return String(key)
 }
 
 public struct LocalUsageRunResult: Sendable {

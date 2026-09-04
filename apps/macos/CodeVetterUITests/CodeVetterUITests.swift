@@ -28,12 +28,9 @@ final class CodeVetterUITests: XCTestCase {
   func testPrimaryWorkbenchIsVisible() throws {
     let app = XCUIApplication()
     app.launch()
-    XCTAssertTrue(app.staticTexts["Can this change ship?"].waitForExistence(timeout: 5))
-    XCTAssertTrue(app.buttons["Choose repository"].exists)
-    XCTAssertTrue(app.staticTexts["PROOF SEQUENCE"].exists)
+    XCTAssertTrue(app.buttons["Choose repository"].waitForExistence(timeout: 5))
     for destination in [
-      "Usage", "Repo Unpack", "Review", "Testing", "Performance", "Runs", "Capabilities",
-      "Settings",
+      "Usage", "Repo Unpack", "Review", "Testing", "Performance", "Runs", "Settings",
     ] {
       XCTAssertTrue(app.buttons[destination].exists, "Missing retained surface: \(destination)")
     }
@@ -42,7 +39,8 @@ final class CodeVetterUITests: XCTestCase {
     XCTAssertTrue(app.menuItems["Usage"].exists)
     app.typeKey(.escape, modifierFlags: [])
     app.typeKey("1", modifierFlags: .command)
-    XCTAssertTrue(app.staticTexts["LOCAL COMPUTE LEDGER"].waitForExistence(timeout: 5))
+    assertSelected(app.buttons["workbench-section-usage"])
+    XCTAssertTrue(app.buttons["Usage refresh"].waitForExistence(timeout: 5))
 
     app.buttons["Runs"].click()
     assertSelected(app.buttons["Runs"])
@@ -53,7 +51,7 @@ final class CodeVetterUITests: XCTestCase {
   func testCommandPaletteSearchesAndOpensAWorkspaceFromTheKeyboard() throws {
     let app = XCUIApplication()
     app.launch()
-    XCTAssertTrue(app.staticTexts["Can this change ship?"].waitForExistence(timeout: 5))
+    XCTAssertTrue(app.buttons["Choose repository"].waitForExistence(timeout: 5))
     app.activate()
 
     let palette = app.descendants(matching: .any)["command-palette"]
@@ -65,7 +63,8 @@ final class CodeVetterUITests: XCTestCase {
 
     XCTAssertTrue(palette.waitForNonExistence(timeout: 3))
     assertSelected(app.buttons["workbench-section-performance"])
-    XCTAssertTrue(app.staticTexts["Measure what changed."].waitForExistence(timeout: 2))
+    XCTAssertTrue(
+      app.descendants(matching: .any)["performance-workspace"].waitForExistence(timeout: 2))
 
     openCommandPaletteWithKeyboard(app, palette: palette)
     let reopenedSearch = app.textFields["command-palette-search"]
@@ -91,13 +90,13 @@ final class CodeVetterUITests: XCTestCase {
 
     assertSelected(app.buttons["Testing"])
     XCTAssertTrue(
-      app.staticTexts["Test the change where users touch it."].waitForExistence(timeout: 2))
+      app.descendants(matching: .any)["testing-workspace"].waitForExistence(timeout: 2))
     XCTAssertTrue(app.buttons["Choose testing repository"].exists)
     XCTAssertTrue(app.radioButtons["Git range"].exists)
     XCTAssertTrue(app.radioButtons["GitHub pull request"].exists)
-    XCTAssertTrue(
-      app.descendants(matching: .any)["testing-scope-planner"].waitForExistence(timeout: 2))
-    XCTAssertTrue(app.buttons["testing-scope-planner-resolve"].exists)
+    let advancedSetup = app.descendants(matching: .any)["advanced-testing-setup"]
+    XCTAssertTrue(advancedSetup.exists)
+    advancedSetup.click()
     XCTAssertTrue(app.checkBoxes["Allow this bounded preview verification"].exists)
     XCTAssertTrue(app.buttons["Run preview proof"].exists)
     XCTAssertFalse(app.buttons["Run preview proof"].isEnabled)
@@ -121,7 +120,8 @@ final class CodeVetterUITests: XCTestCase {
       ("Scenarios", "scenario-compiler-workspace"),
       ("PR watcher", "trex-watcher-workspace"),
     ] {
-      let trigger = app.buttons[workspace.0]
+      app.menuButtons["Testing tools"].click()
+      let trigger = app.menuItems[workspace.0]
       XCTAssertTrue(trigger.waitForExistence(timeout: 3), "Missing \(workspace.0) trigger")
       XCTAssertTrue(trigger.isEnabled, "\(workspace.0) should be reachable with a repository")
       trigger.click()
@@ -136,19 +136,16 @@ final class CodeVetterUITests: XCTestCase {
   @MainActor
   func testUsageWorkspacePreservesLocalAndLiveProviderBoundaries() throws {
     let app = XCUIApplication()
+    app.launchArguments = ["--ui-test-section", "Usage"]
     app.launch()
-    XCTAssertTrue(app.staticTexts["Can this change ship?"].waitForExistence(timeout: 5))
+    XCTAssertTrue(app.buttons["Usage refresh"].waitForExistence(timeout: 5))
 
     let usageSection = app.buttons["workbench-section-usage"]
     XCTAssertTrue(usageSection.waitForExistence(timeout: 2))
     usageSection.click()
 
     assertSelected(app.buttons["workbench-section-usage"])
-    XCTAssertTrue(app.staticTexts["LOCAL COMPUTE LEDGER"].waitForExistence(timeout: 2))
     XCTAssertTrue(app.buttons["Usage refresh"].exists)
-    XCTAssertTrue(app.staticTexts["Claude · Codex · Grok"].waitForExistence(timeout: 2))
-    XCTAssertTrue(app.staticTexts["Devin activity"].exists)
-    XCTAssertTrue(app.staticTexts["Provider quotas"].exists)
   }
 
   @MainActor
@@ -159,13 +156,15 @@ final class CodeVetterUITests: XCTestCase {
     app.buttons["Repo Unpack"].click()
 
     assertSelected(app.buttons["Repo Unpack"])
+    XCTAssertTrue(
+      app.descendants(matching: .any)["repo-unpack-workspace"].waitForExistence(timeout: 2))
     XCTAssertTrue(app.staticTexts["REPOSITORY MEMORY"].waitForExistence(timeout: 2))
     XCTAssertTrue(app.staticTexts["SNAPSHOT LEDGER"].exists)
     XCTAssertTrue(
       app.descendants(matching: .any)["repo-unpack-read-only-status"].waitForExistence(timeout: 2)
     )
     XCTAssertTrue(app.buttons["Refresh Repo Unpack snapshots"].exists)
-    XCTAssertTrue(app.staticTexts["Rust-owned SQLite history"].exists)
+    XCTAssertTrue(app.staticTexts["Rust-owned local history"].exists)
     XCTAssertTrue(
       app.descendants(matching: .any)["repo-unpack-choose-repository"].exists
     )
@@ -225,10 +224,6 @@ final class CodeVetterUITests: XCTestCase {
 
     let usageSection = app.buttons["settings-section-usage"]
     usageSection.click()
-    assertSelected(usageSection)
-    XCTAssertTrue(app.buttons["preview-session-retention"].waitForExistence(timeout: 2))
-    XCTAssertTrue(app.buttons["checkpoint-session-archive"].exists)
-    XCTAssertTrue(app.buttons["vacuum-session-archive"].exists)
 
     let rubricsSection = app.buttons["settings-section-rubrics"]
     rubricsSection.click()
@@ -246,12 +241,13 @@ final class CodeVetterUITests: XCTestCase {
     app.buttons["Performance"].click()
 
     assertSelected(app.buttons["Performance"])
-    XCTAssertTrue(app.staticTexts["Measure what changed."].waitForExistence(timeout: 2))
+    XCTAssertTrue(
+      app.descendants(matching: .any)["performance-workspace"].waitForExistence(timeout: 2))
     XCTAssertTrue(app.buttons["Choose performance repository"].exists)
     XCTAssertTrue(app.popUpButtons["Performance adapter"].exists)
-    XCTAssertTrue(
-      app.descendants(matching: .any)["performance-scope-planner"].waitForExistence(timeout: 2))
-    XCTAssertTrue(app.buttons["performance-scope-planner-resolve"].exists)
+    let advancedSource = app.descendants(matching: .any)["advanced-performance-source-options"]
+    XCTAssertTrue(advancedSource.exists)
+    advancedSource.click()
     XCTAssertTrue(app.buttons["Plan"].exists)
     XCTAssertFalse(app.buttons["Plan"].isEnabled)
     XCTAssertTrue(app.buttons["Capture evidence"].exists)
@@ -300,4 +296,5 @@ final class CodeVetterUITests: XCTestCase {
     app.typeKey("k", modifierFlags: .command)
     XCTAssertTrue(palette.waitForExistence(timeout: 3))
   }
+
 }

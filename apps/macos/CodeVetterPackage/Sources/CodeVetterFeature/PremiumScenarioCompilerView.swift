@@ -3,16 +3,22 @@ import SwiftUI
 struct PremiumScenarioCompilerView: View {
   @Bindable var model: WorkbenchModel
   @Environment(\.dismiss) private var dismiss
+  @State private var showsAuthoring = false
+  @State private var showsCandidateList = false
 
   var body: some View {
     VStack(spacing: 0) {
       header
       Rectangle().fill(EvidenceStyle.separator).frame(height: 1)
       HStack(spacing: 0) {
-        authoringPanel.frame(width: 310)
-        Rectangle().fill(EvidenceStyle.separator).frame(width: 1)
-        candidateList.frame(width: 250)
-        Rectangle().fill(EvidenceStyle.separator).frame(width: 1)
+        if model.selectedScenarioCandidate == nil || showsAuthoring {
+          authoringPanel.frame(width: 310)
+          Rectangle().fill(EvidenceStyle.separator).frame(width: 1)
+        }
+        if model.selectedScenarioCandidate == nil || showsCandidateList {
+          candidateList.frame(width: 250)
+          Rectangle().fill(EvidenceStyle.separator).frame(width: 1)
+        }
         candidateInspector
       }
       Rectangle().fill(EvidenceStyle.separator).frame(height: 1)
@@ -41,6 +47,20 @@ struct PremiumScenarioCompilerView: View {
       }
       Spacer()
       StatusPill(label: model.scenarioState.rawValue, color: stateColor)
+      if model.selectedScenarioCandidate != nil {
+        Menu {
+          Button(showsAuthoring ? "Hide setup" : "Edit setup") {
+            showsAuthoring.toggle()
+          }
+          Button(showsCandidateList ? "Hide candidates" : "Browse candidates") {
+            showsCandidateList.toggle()
+          }
+        } label: {
+          Label("Details", systemImage: "sidebar.leading")
+        }
+        .menuStyle(.borderlessButton)
+        .fixedSize()
+      }
       Button("Done") { dismiss() }.buttonStyle(.bordered)
     }
     .padding(.horizontal, 24).frame(height: 88).background(EvidenceStyle.chrome)
@@ -164,10 +184,12 @@ struct PremiumScenarioCompilerView: View {
           HStack(spacing: 10) {
             metric("VALID", candidate.validation.qualified ? "YES" : "NO")
             metric("FILES", "\(candidate.files.count)")
-            metric("UNRESOLVED", "\(candidate.unresolvedRequirements.count)")
-            metric(
-              "COST", candidate.usage.actualCostUSD.map { String(format: "$%.4f", $0) } ?? "$0")
           }
+          Text(
+            "\(candidate.unresolvedRequirements.count) unresolved · \(candidate.usage.actualCostUSD.map { String(format: "$%.4f", $0) } ?? "$0") model cost"
+          )
+          .font(.system(size: 9, weight: .medium, design: .monospaced))
+          .foregroundStyle(.secondary)
           if !candidate.validation.issues.isEmpty {
             PremiumFieldLabel("VALIDATION")
             ForEach(candidate.validation.issues) { issue in

@@ -2544,6 +2544,44 @@ public final class CodeVetterProcessRunner: @unchecked Sendable {
     }
   }
 
+  public func runProviderQuota() async throws -> ProviderQuotaReceipt {
+    let executable = try resolveExecutable()
+    let execution = try await runTrackedProcess(
+      executable: executable,
+      arguments: ["quota", "--provider", "all", "--json"]
+    )
+    let output = execution.stdoutString.trimmingCharacters(in: .whitespacesAndNewlines)
+    let errors = execution.stderrString.trimmingCharacters(in: .whitespacesAndNewlines)
+    guard !output.isEmpty else {
+      throw VerificationRunnerError.emptyReceipt(errors)
+    }
+    do {
+      let receipt = try JSONDecoder().decode(ProviderQuotaReceipt.self, from: Data(output.utf8))
+      guard receipt.schemaVersion == "codevetter.provider-quota/v1" else {
+        throw VerificationRunnerError.invalidReceipt(
+          "Unsupported provider quota schema \(receipt.schemaVersion).")
+      }
+      let ready = receipt.providers.filter(\.isReady).count
+      let expectedStatus: Int32 =
+        if ready == receipt.providers.count {
+          0
+        } else if ready > 0 {
+          1
+        } else {
+          2
+        }
+      guard execution.status == expectedStatus else {
+        throw VerificationRunnerError.invalidReceipt(
+          "Provider quota availability conflicts with process status \(execution.status).")
+      }
+      return receipt
+    } catch let error as VerificationRunnerError {
+      throw error
+    } catch {
+      throw VerificationRunnerError.invalidReceipt(error.localizedDescription)
+    }
+  }
+
   public func listUnpackSnapshots(repositoryPath: String? = nil, limit: Int = 50) async throws
     -> UnpackHistoryReceipt
   {

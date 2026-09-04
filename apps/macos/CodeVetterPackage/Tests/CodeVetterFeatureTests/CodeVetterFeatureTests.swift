@@ -95,7 +95,8 @@ private func sharedSurfaceParityFixture(
 @Test
 func nativeCapabilitiesRenderTheMCPAndCollectorAuthoritySplit() throws {
   let model = WorkbenchModel()
-  model.section = .capabilities
+  model.section = .settings
+  model.settingsSection = .capabilities
   model.selectedCapabilityID = "machine.repository_mcp"
 
   let collectors = try #require(
@@ -125,7 +126,7 @@ func nativeCapabilitiesRenderTheMCPAndCollectorAuthoritySplit() throws {
   host.layoutSubtreeIfNeeded()
   host.displayIfNeeded()
 
-  #expect(WorkbenchSection.allCases.count == 8)
+  #expect(WorkbenchSection.allCases.count == 7)
   #expect(model.section == .review)
   #expect(host.fittingSize.width <= 520)
   #expect(host.fittingSize.height <= 520)
@@ -1760,6 +1761,62 @@ func supervisedUsageRunnerRejectsStatusExitMismatch() async throws {
 }
 
 @Test
+func supervisedProviderQuotaRunnerPreservesRemainingWindowsAndPartialAvailability() async throws {
+  let fixtureDirectory = FileManager.default.temporaryDirectory
+    .appending(path: "codevetter-quota-\(UUID().uuidString)")
+  try FileManager.default.createDirectory(at: fixtureDirectory, withIntermediateDirectories: true)
+  defer { try? FileManager.default.removeItem(at: fixtureDirectory) }
+
+  let executable = fixtureDirectory.appending(path: "codevetter")
+  let argumentsFile = fixtureDirectory.appending(path: "arguments.txt")
+  let receipt =
+    #"{"schema_version":"codevetter.provider-quota/v1","generated_at":"2026-09-03T00:00:00Z","providers":[{"provider":"claude","status":"ready","source":"Claude Code /usage","checked_at":"2026-09-03T00:00:00Z","plan":"Claude Team","windows":[{"id":"current","label":"Current window","used_percent":3,"remaining_percent":97,"window_duration_minutes":null,"resets_at_unix":null,"reset_description":"2:20am (Asia/Calcutta)"},{"id":"weekly","label":"Weekly window","used_percent":32,"remaining_percent":68,"window_duration_minutes":null,"resets_at_unix":null,"reset_description":"Sep 6 at 5:30pm (Asia/Calcutta)"}],"credits":{"used_percent":0,"remaining_percent":100,"used_amount":0,"limit_amount":150,"currency":"USD","reset_description":"Oct 1 (Asia/Calcutta)"},"reset_credits":null,"message":null},{"provider":"codex","status":"unavailable","source":"codex app-server account/rateLimits/read","checked_at":"2026-09-03T00:00:00Z","plan":null,"windows":[],"credits":null,"reset_credits":null,"message":"Sign in with Codex."}],"limitations":["Unavailable provider telemetry is never represented as zero usage."]}"#
+  let script = """
+    #!/bin/sh
+    printf '%s' "$*" > '\(argumentsFile.path)'
+    printf '%s\n' '\(receipt)'
+    exit 1
+    """
+  try script.write(to: executable, atomically: true, encoding: .utf8)
+  try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: executable.path)
+
+  let result = try await CodeVetterProcessRunner(executableURL: executable).runProviderQuota()
+  #expect(result.providers.count == 2)
+  #expect(result.providers[0].windows[0].remainingPercent == 97)
+  #expect(result.providers[0].credits?.limitAmount == 150)
+  #expect(result.providers[1].status == "unavailable")
+  #expect(
+    try String(contentsOf: argumentsFile, encoding: .utf8)
+      == "quota --provider all --json"
+  )
+}
+
+@Test
+func supervisedProviderQuotaRunnerRejectsAvailabilityExitMismatch() async throws {
+  let fixtureDirectory = FileManager.default.temporaryDirectory
+    .appending(path: "codevetter-quota-mismatch-\(UUID().uuidString)")
+  try FileManager.default.createDirectory(at: fixtureDirectory, withIntermediateDirectories: true)
+  defer { try? FileManager.default.removeItem(at: fixtureDirectory) }
+
+  let executable = fixtureDirectory.appending(path: "codevetter")
+  let receipt =
+    #"{"schema_version":"codevetter.provider-quota/v1","generated_at":"2026-09-03T00:00:00Z","providers":[{"provider":"codex","status":"ready","source":"codex app-server account/rateLimits/read","checked_at":"2026-09-03T00:00:00Z","plan":"pro","windows":[{"id":"codex.primary","label":"Weekly window","used_percent":92,"remaining_percent":8,"window_duration_minutes":10080,"resets_at_unix":1788750854,"reset_description":null}],"credits":null,"reset_credits":1,"message":null}],"limitations":[]}"#
+  try "#!/bin/sh\nprintf '%s\\n' '\(receipt)'\nexit 2\n".write(
+    to: executable,
+    atomically: true,
+    encoding: .utf8
+  )
+  try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: executable.path)
+
+  do {
+    _ = try await CodeVetterProcessRunner(executableURL: executable).runProviderQuota()
+    Issue.record("A ready provider quota receipt must not survive exit 2")
+  } catch let error as VerificationRunnerError {
+    #expect(error.localizedDescription.contains("conflicts with process status"))
+  }
+}
+
+@Test
 func supervisedUnpackRunnerPreservesScanComparisonAndExportContracts() async throws {
   let fixtureDirectory = FileManager.default.temporaryDirectory
     .appending(path: "codevetter-unpack-\(UUID().uuidString)")
@@ -2843,6 +2900,9 @@ func usageWindowsKeepChartTotalsModelsAndSessionsOnOneBoundary() throws {
     monthly: [usagePeriod("2026-08", agent: claude, generated: 60, model: "sonnet")],
     sessions: [
       usageSession("current", agent: claude, activity: "2026-09-01T10:00:00Z"),
+      usageSession("fraction", agent: claude, activity: "2026-09-01T11:59:59.999Z"),
+      usageSession("offset", agent: claude, activity: "2026-09-01T17:29:59+05:30"),
+      usageSession("future", agent: claude, activity: "2026-09-01T12:00:00.900Z"),
       usageSession("month", agent: claude, activity: "2026-08-10T10:00:00Z"),
       usageSession("old", agent: claude, activity: "2026-05-01T10:00:00Z"),
       usageSession("unknown", agent: claude, activity: nil),
@@ -2867,12 +2927,12 @@ func usageWindowsKeepChartTotalsModelsAndSessionsOnOneBoundary() throws {
   #expect(report.periods(for: .month, window: .oneWeek, referenceDate: reference).count == 1)
   #expect(
     report.sessions(for: selected, window: .oneWeek, referenceDate: reference).map(\.sessionID) == [
-      "current"
+      "current", "fraction", "offset",
     ])
   #expect(
     report.sessions(for: selected, window: .thirtyDays, referenceDate: reference).map(\.sessionID)
-      == ["current", "month"])
-  #expect(report.sessions(for: selected, window: .allTime, referenceDate: reference).count == 4)
+      == ["current", "fraction", "offset", "month"])
+  #expect(report.sessions(for: selected, window: .allTime, referenceDate: reference).count == 7)
 }
 
 @Test
@@ -2910,6 +2970,7 @@ func devinUsageProjectsTheSelectedWindowWithoutJoiningCcusageTotals() throws {
 @Test
 func largeUsageReportDecodesAndRendersWithinTheNativeGate() throws {
   let agentNames = ["claude", "codex", "grok"]
+  let sessionCount = 2_500
   var calendar = Calendar(identifier: .gregorian)
   calendar.timeZone = TimeZone(secondsFromGMT: 0)!
   let today = calendar.startOfDay(for: Date())
@@ -2954,12 +3015,8 @@ func largeUsageReportDecodesAndRendersWithinTheNativeGate() throws {
     return period
   }
   var sessions = [[String: Any]]()
-  for index in 0..<100 {
-    let lastActivity = String(
-      format: "2026-08-31T00:%02d:%02dZ",
-      index / 60,
-      index % 60
-    )
+  for index in 0..<sessionCount {
+    let lastActivity = ISO8601DateFormatter().string(from: today)
     let session: [String: Any] = [
       "session_id": "session-\(index)",
       "agent": agentNames[index % agentNames.count],
@@ -3093,6 +3150,34 @@ func largeUsageReportDecodesAndRendersWithinTheNativeGate() throws {
   model.usageReportJSON = String(decoding: payload, as: UTF8.self)
   model.usageSelectedAgents = Set(agentNames)
   model.usageScale = .week
+  model.providerQuotaReceipt = try JSONDecoder().decode(
+    ProviderQuotaReceipt.self,
+    from: Data(
+      """
+      {"schema_version":"codevetter.provider-quota/v1","generated_at":"2026-09-04T00:00:00Z","providers":[{"provider":"claude","status":"ready","source":"Claude Code /usage","checked_at":"2026-09-04T00:00:00Z","plan":"Claude Team","windows":[{"id":"current","label":"Current window","used_percent":12,"remaining_percent":88,"window_duration_minutes":null,"resets_at_unix":null,"reset_description":"2:20am"},{"id":"weekly","label":"Weekly window","used_percent":33,"remaining_percent":67,"window_duration_minutes":null,"resets_at_unix":null,"reset_description":"Sep 6 at 5:30pm"},{"id":"weekly_model_fable","label":"Fable weekly window","used_percent":4,"remaining_percent":96,"window_duration_minutes":null,"resets_at_unix":null,"reset_description":"Sep 6 at 5:30pm"}],"credits":{"used_percent":0,"remaining_percent":100,"used_amount":0,"limit_amount":150,"currency":"USD","reset_description":"Oct 1"},"reset_credits":null,"message":null},{"provider":"codex","status":"ready","source":"codex app-server account/rateLimits/read","checked_at":"2026-09-04T00:00:00Z","plan":"pro","windows":[{"id":"codex.primary","label":"Weekly window","used_percent":93,"remaining_percent":7,"window_duration_minutes":10080,"resets_at_unix":1788750854,"reset_description":null}],"credits":null,"reset_credits":null,"message":null}],"limitations":[]}
+      """.utf8
+    )
+  )
+
+  var projectionSamples = [UInt64]()
+  for _ in 0..<20 {
+    let started = DispatchTime.now().uptimeNanoseconds
+    _ = UsageViewProjection(
+      report: model.usageReport!,
+      selectedAgents: model.usageSelectedAgents,
+      window: model.usageWindow,
+      scale: model.usageScale,
+      referenceDate: today
+    )
+    projectionSamples.append((DispatchTime.now().uptimeNanoseconds - started) / 1_000)
+  }
+  _ = model.usageProjection(for: model.usageReport!)
+  var cachedProjectionSamples = [UInt64]()
+  for _ in 0..<500 {
+    let started = DispatchTime.now().uptimeNanoseconds
+    _ = model.usageProjection(for: model.usageReport!)
+    cachedProjectionSamples.append((DispatchTime.now().uptimeNanoseconds - started) / 1_000)
+  }
   renderUsage(model)
   model.usageScale = .month
   renderUsage(model)
@@ -3106,15 +3191,20 @@ func largeUsageReportDecodesAndRendersWithinTheNativeGate() throws {
   }
 
   let decodeP95 = percentile95(decodeSamples)
+  let projectionP95 = percentile95(projectionSamples)
+  let cachedProjectionP95 = percentile95(cachedProjectionSamples)
   let renderP95 = percentile95(renderSamples)
   if nativePerformanceGateEnabled() {
-    #expect(decodeP95 < 25_000, "Large usage decoding must stay below 25 ms p95")
-    #expect(renderP95 < 150_000, "Large usage rendering must stay below 150 ms p95")
+    #expect(decodeP95 < 30_000, "Large usage decoding must stay below 30 ms p95")
+    #expect(projectionP95 < 50_000, "A cold Usage selection must stay below 50 ms p95")
+    #expect(cachedProjectionP95 < 1_000, "A repeated Usage selection must stay below 1 ms p95")
+    #expect(renderP95 < 50_000, "Large usage rendering must stay below 50 ms p95")
   }
   print(
     "NATIVE_USAGE_BENCHMARK_JSON "
-      + "{\"decode_p95_us\":\(decodeP95),\"render_p95_us\":\(renderP95),"
-      + "\"daily_periods\":365,\"sessions\":100,\"decode_samples\":100,\"render_samples\":20}"
+      + "{\"decode_p95_us\":\(decodeP95),\"projection_p95_us\":\(projectionP95),"
+      + "\"cached_projection_p95_us\":\(cachedProjectionP95),\"render_p95_us\":\(renderP95),"
+      + "\"daily_periods\":365,\"sessions\":\(sessionCount),\"decode_samples\":100,\"render_samples\":20}"
   )
 
   if let screenshotPath = ProcessInfo.processInfo.environment["CODEVETTER_USAGE_SCREENSHOT_PATH"] {
@@ -3132,6 +3222,70 @@ func largeUsageReportDecodesAndRendersWithinTheNativeGate() throws {
       at: URL(fileURLWithPath: screenshotPath),
       appearance: .aqua
     )
+  }
+}
+
+@MainActor
+@Test
+func providerQuotaCollectionReturnsControlToTheUIImmediately() async throws {
+  let fixtureDirectory = FileManager.default.temporaryDirectory
+    .appending(path: "codevetter-provider-quota-\(UUID().uuidString)", directoryHint: .isDirectory)
+  try FileManager.default.createDirectory(at: fixtureDirectory, withIntermediateDirectories: true)
+  defer { try? FileManager.default.removeItem(at: fixtureDirectory) }
+  let executable = fixtureDirectory.appending(path: "codevetter")
+  let receipt =
+    #"{"schema_version":"codevetter.provider-quota/v1","generated_at":"2026-09-04T00:00:00Z","providers":[{"provider":"codex","status":"ready","source":"fixture","checked_at":"2026-09-04T00:00:00Z","plan":"pro","windows":[{"id":"codex.primary","label":"Weekly window","used_percent":25,"remaining_percent":75,"window_duration_minutes":10080,"resets_at_unix":null,"reset_description":null}],"credits":null,"reset_credits":null,"message":null}],"limitations":[]}"#
+  try "#!/bin/sh\nsleep 0.25\nprintf '%s' '\(receipt)'\n".write(
+    to: executable, atomically: true, encoding: .utf8)
+  try FileManager.default.setAttributes([.posixPermissions: 0o700], ofItemAtPath: executable.path)
+
+  let model = WorkbenchModel(runner: CodeVetterProcessRunner(executableURL: executable))
+  let started = DispatchTime.now().uptimeNanoseconds
+  model.loadProviderQuota()
+  let returnLatencyMicroseconds = (DispatchTime.now().uptimeNanoseconds - started) / 1_000
+  #expect(returnLatencyMicroseconds < 16_000, "Quota refresh must return within one frame")
+  #expect(model.providerQuotaLoading)
+
+  try await Task.sleep(for: .milliseconds(40))
+  #expect(model.providerQuotaLoading, "The collector should still be running off the UI actor")
+  while model.providerQuotaLoading {
+    try await Task.sleep(for: .milliseconds(20))
+  }
+  #expect(model.providerQuotaReceipt?.providers.first?.windows.first?.remainingPercent == 75)
+}
+
+@MainActor
+@Test
+func everyTopLevelPageRendersInsideTheSharedWorkbenchGeometry() throws {
+  let model = WorkbenchModel()
+  let screenshotRoot = ProcessInfo.processInfo.environment["CODEVETTER_ALIGNED_PAGES_DIR"]
+    .map { URL(fileURLWithPath: $0, isDirectory: true) }
+  if let screenshotRoot {
+    try FileManager.default.createDirectory(at: screenshotRoot, withIntermediateDirectories: true)
+  }
+
+  for section in WorkbenchSection.allCases {
+    model.section = section
+    renderUsage(model)
+    if let screenshotRoot {
+      let slug = section.rawValue.lowercased().replacingOccurrences(of: " ", with: "-")
+      try captureWorkbench(
+        model,
+        at: screenshotRoot.appending(path: "\(slug)-1280.png"),
+        appearance: .darkAqua
+      )
+      if section == .usage {
+        for width in [390, 768, 1_440] {
+          try captureWorkbench(
+            model,
+            at: screenshotRoot.appending(path: "usage-\(width).png"),
+            appearance: .darkAqua,
+            width: CGFloat(width),
+            height: 900
+          )
+        }
+      }
+    }
   }
 }
 

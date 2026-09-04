@@ -1,0 +1,9 @@
+[[IgnoredVulns]]
+id = "GHSA-5p2g-fcmc-qvqq"
+ignoreUntil = 2026-10-04
+reason = "image-size has no published fixed release; Blume only processes repository-owned images during the static docs build"
+
+[[IgnoredVulns]]
+id = "GHSA-w3rx-r6r6-pgpr"
+ignoreUntil = 2026-10-04
+reason = "image-size has no published fixed release; Blume only processes repository-owned images during the static docs build"

@@ -13,12 +13,26 @@ private enum PerformanceDetailMode: String, CaseIterable, Identifiable {
 struct PremiumPerformanceView: View {
   @Bindable var model: WorkbenchModel
   @State private var detailMode: PerformanceDetailMode = .evidence
+  @State private var showAdvancedSource = false
+  @State private var showsCompletedSetup = false
 
   var body: some View {
-    HStack(spacing: 0) {
-      workloadControls.frame(width: 350)
-      Rectangle().fill(EvidenceStyle.separator).frame(width: 1)
-      evidenceWorkspace
+    VStack(spacing: 0) {
+      PremiumPageHeader(
+        eyebrow: "Measured change",
+        title: "Performance",
+        subtitle: "Admit one exact workload, capture observed evidence, and compare like with like"
+      ) {
+        StatusPill(label: model.performanceState.rawValue, color: performanceStatusColor)
+      }
+      Rectangle().fill(EvidenceStyle.separator).frame(height: 1)
+      HStack(spacing: 0) {
+        if model.performanceResultReceipt == nil || showsCompletedSetup {
+          workloadControls.frame(width: 350)
+          Rectangle().fill(EvidenceStyle.separator).frame(width: 1)
+        }
+        evidenceWorkspace
+      }
     }
     .background(EvidenceStyle.canvas)
     .fileImporter(
@@ -45,20 +59,6 @@ struct PremiumPerformanceView: View {
     VStack(spacing: 0) {
       ScrollView {
         VStack(alignment: .leading, spacing: 21) {
-          VStack(alignment: .leading, spacing: 6) {
-            Text("PERFORMANCE / EXACT WORKLOAD")
-              .font(.system(size: 9, weight: .bold, design: .monospaced))
-              .tracking(1.15)
-              .foregroundStyle(EvidenceStyle.amberForeground)
-            Text("Measure what changed.")
-              .font(.system(size: 25, weight: .semibold))
-              .tracking(-0.4)
-            Text("Admit one local workload, capture observed evidence, then compare one change.")
-              .font(.system(size: 11))
-              .foregroundStyle(.secondary)
-              .fixedSize(horizontal: false, vertical: true)
-          }
-
           VStack(alignment: .leading, spacing: 14) {
             PremiumFieldLabel("REPOSITORY")
             Button {
@@ -82,53 +82,66 @@ struct PremiumPerformanceView: View {
             .buttonStyle(.plain)
             .accessibilityLabel("Choose performance repository")
 
-            VStack(alignment: .leading, spacing: 9) {
-              HStack {
-                PremiumFieldLabel("RECORDED RUN")
-                Spacer()
-                Text("DIGEST VERIFIED")
-                  .font(.system(size: 8, weight: .bold, design: .monospaced))
-                  .foregroundStyle(EvidenceStyle.success)
+            DisclosureGroup(isExpanded: $showAdvancedSource) {
+              VStack(alignment: .leading, spacing: 14) {
+                VStack(alignment: .leading, spacing: 9) {
+                  HStack {
+                    PremiumFieldLabel("RECORDED RUN")
+                    Spacer()
+                    Text("DIGEST VERIFIED")
+                      .font(.system(size: 8, weight: .bold, design: .monospaced))
+                      .foregroundStyle(EvidenceStyle.success)
+                  }
+                  HStack(spacing: 8) {
+                    Image(systemName: "archivebox").foregroundStyle(EvidenceStyle.amberForeground)
+                    TextField("performance-run-7", text: $model.performanceRecordedRunID)
+                      .textFieldStyle(.plain)
+                      .font(.system(size: 10, design: .monospaced))
+                      .accessibilityLabel("Recorded performance run ID")
+                    Button("Inspect") { model.inspectPerformanceRun() }
+                      .buttonStyle(.borderless)
+                      .disabled(!model.canInspectPerformanceRun)
+                  }
+                  .padding(.horizontal, 11)
+                  .frame(height: 38)
+                  .premiumField()
+                  if !model.performanceRecordedRunID.isEmpty,
+                    let issue = model.performanceInspectionInputIssue
+                  {
+                    Text(issue).font(.system(size: 9)).foregroundStyle(.tertiary)
+                  }
+                }
+
+                PremiumScopePlanner(
+                  title: "Workload discovery",
+                  subtitle:
+                    "Turn one flow, exact change, or bounded portfolio into closed workload candidates.",
+                  kind: $model.performanceScopeKind,
+                  value: $model.performanceScopeValue,
+                  plan: model.performanceDiscoveryPlan,
+                  loading: model.performanceScopeLoading,
+                  issue: model.performanceScopeIssue ?? model.performanceScopeInputIssue,
+                  canResolve: model.canResolvePerformanceScope,
+                  selectedCandidateID: selectedPerformanceCandidateID,
+                  compact: true,
+                  accessibilityID: "performance-scope-planner",
+                  onResolve: model.resolvePerformanceScope,
+                  onSelect: model.applyPerformanceScopeCandidate
+                )
               }
-              HStack(spacing: 8) {
-                Image(systemName: "archivebox").foregroundStyle(EvidenceStyle.amberForeground)
-                TextField("performance-run-7", text: $model.performanceRecordedRunID)
-                  .textFieldStyle(.plain)
-                  .font(.system(size: 10, design: .monospaced))
-                  .accessibilityLabel("Recorded performance run ID")
-                Button("Inspect") { model.inspectPerformanceRun() }
-                  .buttonStyle(.borderless)
-                  .disabled(!model.canInspectPerformanceRun)
-              }
-              .padding(.horizontal, 11)
-              .frame(height: 38)
-              .premiumField()
-              if !model.performanceRecordedRunID.isEmpty,
-                let issue = model.performanceInspectionInputIssue
-              {
-                Text(issue).font(.system(size: 9)).foregroundStyle(.tertiary)
+              .padding(.top, 12)
+            } label: {
+              VStack(alignment: .leading, spacing: 3) {
+                Text("Advanced source options").font(.system(size: 11, weight: .semibold))
+                Text("Inspect a receipt or discover workloads automatically")
+                  .font(.system(size: 9)).foregroundStyle(.secondary)
               }
             }
+            .tint(EvidenceStyle.amberForeground)
+            .accessibilityIdentifier("advanced-performance-source-options")
             .padding(12)
             .background(EvidenceStyle.surface, in: RoundedRectangle(cornerRadius: 11))
             .overlay { RoundedRectangle(cornerRadius: 11).stroke(EvidenceStyle.separator) }
-
-            PremiumScopePlanner(
-              title: "Workload discovery",
-              subtitle:
-                "Turn one flow, exact change, or bounded portfolio into closed workload candidates.",
-              kind: $model.performanceScopeKind,
-              value: $model.performanceScopeValue,
-              plan: model.performanceDiscoveryPlan,
-              loading: model.performanceScopeLoading,
-              issue: model.performanceScopeIssue ?? model.performanceScopeInputIssue,
-              canResolve: model.canResolvePerformanceScope,
-              selectedCandidateID: selectedPerformanceCandidateID,
-              compact: true,
-              accessibilityID: "performance-scope-planner",
-              onResolve: model.resolvePerformanceScope,
-              onSelect: model.applyPerformanceScopeCandidate
-            )
 
             VStack(alignment: .leading, spacing: 7) {
               PremiumFieldLabel("ADAPTER")
@@ -182,17 +195,12 @@ struct PremiumPerformanceView: View {
             }
           }
 
-          VStack(alignment: .leading, spacing: 9) {
-            Label("Local · zero egress", systemImage: "network.slash")
-            Label("Rust-owned admission", systemImage: "checkmark.shield")
-            Label("Bounded process cleanup", systemImage: "wind")
-          }
-          .font(.system(size: 10, weight: .medium))
+          Label(
+            "Local execution · Rust-owned admission · bounded cleanup",
+            systemImage: "checkmark.shield"
+          )
+          .font(.system(size: 9, weight: .medium))
           .foregroundStyle(.secondary)
-          .padding(13)
-          .frame(maxWidth: .infinity, alignment: .leading)
-          .background(EvidenceStyle.surface, in: RoundedRectangle(cornerRadius: 11))
-          .overlay { RoundedRectangle(cornerRadius: 11).stroke(EvidenceStyle.separator) }
         }
         .padding(22)
       }
@@ -271,23 +279,34 @@ struct PremiumPerformanceView: View {
               } label: {
                 Text(mode.rawValue)
                   .font(.system(size: 10, weight: .semibold))
-                  .foregroundStyle(detailMode == mode ? EvidenceStyle.ink : Color.secondary)
+                  .foregroundStyle(
+                    detailMode == mode ? EvidenceStyle.amberForeground : Color.secondary
+                  )
                   .padding(.horizontal, 13)
                   .frame(height: 28)
-                  .background(
-                    detailMode == mode ? EvidenceStyle.amber : Color.clear,
-                    in: RoundedRectangle(cornerRadius: 7)
-                  )
+                  .overlay(alignment: .bottom) {
+                    if detailMode == mode {
+                      Rectangle()
+                        .fill(EvidenceStyle.amberForeground)
+                        .frame(height: 1)
+                        .padding(.horizontal, 9)
+                    }
+                  }
               }
               .buttonStyle(.plain)
               .accessibilityAddTraits(detailMode == mode ? .isSelected : [])
             }
           }
           .padding(2)
-          .background(EvidenceStyle.surface, in: RoundedRectangle(cornerRadius: 9))
-          .overlay { RoundedRectangle(cornerRadius: 9).stroke(EvidenceStyle.separator) }
           .accessibilityElement(children: .contain)
           .accessibilityLabel("Performance receipt detail")
+        }
+        if model.performanceResultReceipt != nil {
+          Button(showsCompletedSetup ? "Hide setup" : "Edit setup") {
+            showsCompletedSetup.toggle()
+          }
+          .buttonStyle(.bordered)
+          .controlSize(.small)
         }
         Button("Reset") { model.resetPerformance() }
           .buttonStyle(.borderless)
@@ -297,7 +316,7 @@ struct PremiumPerformanceView: View {
       .frame(height: 72)
       .background(EvidenceStyle.chrome)
 
-      if !isInspectingRecordedRun {
+      if !isInspectingRecordedRun, model.performanceResultReceipt == nil {
         PerformanceEvidenceLane(model: model)
         Rectangle().fill(EvidenceStyle.separator).frame(height: 1)
       }
@@ -361,6 +380,15 @@ struct PremiumPerformanceView: View {
   private var repositoryLabel: String {
     guard !model.repositoryPath.isEmpty else { return "No repository selected" }
     return URL(fileURLWithPath: model.repositoryPath).lastPathComponent
+  }
+
+  private var performanceStatusColor: Color {
+    switch model.performanceState {
+    case .completed: EvidenceStyle.success
+    case .failed: EvidenceStyle.failure
+    case .limited: EvidenceStyle.warning
+    default: EvidenceStyle.amber
+    }
   }
 
   private var isInspectingRecordedRun: Bool {
@@ -462,6 +490,11 @@ private struct PerformanceEvidenceLane: View {
 private struct PerformanceReceiptDesk: View {
   @Bindable var model: WorkbenchModel
   let plan: PerformanceRunReceipt
+  @State private var showsProcessDetails = false
+
+  private var activeResources: PerformanceResourceReceipt? {
+    model.performanceResultReceipt?.resources ?? plan.resources
+  }
 
   var body: some View {
     VStack(alignment: .leading, spacing: 0) {
@@ -485,18 +518,12 @@ private struct PerformanceReceiptDesk: View {
         }
 
         HStack(spacing: 8) {
-          planMetric("MODE", plan.result.value(at: "mode")?.displayValue ?? "—")
+          planMetric("PEAK RSS", peakRSSLabel)
           planMetric(
-            "PROCESSES", plan.result.value(at: "limits", "max_processes")?.displayValue ?? "—")
-          planMetric(
-            "EGRESS",
-            plan.result.value(at: "limits", "max_external_requests")?.displayValue == "0"
-              ? "Blocked" : "Unknown")
-          planMetric(
-            "COST",
-            plan.result.value(at: "limits", "max_cost_microusd")?.displayValue == "0"
-              ? "$0" : "Unknown")
-          planMetric("CLEANUP", plan.cleanup.ownedProcessReaped ? "Reaped" : "Unproven")
+            "BOUNDARY",
+            plan.cleanup.ownedProcessReaped
+              && plan.result.value(at: "limits", "max_external_requests")?.displayValue == "0"
+              ? "Bounded" : "Review")
         }
       }
       .padding(22)
@@ -505,9 +532,15 @@ private struct PerformanceReceiptDesk: View {
         ReceiptList(title: "BLOCKERS", items: plan.blockers, color: EvidenceStyle.failure)
       }
 
-      if let resources = model.performanceResultReceipt?.resources ?? plan.resources {
+      if let resources = activeResources {
         Rectangle().fill(EvidenceStyle.separator).frame(height: 1)
-        resourceEvidence(resources)
+        DisclosureGroup("Process sampling details", isExpanded: $showsProcessDetails) {
+          resourceEvidence(resources)
+        }
+        .font(.system(size: 10, weight: .semibold))
+        .tint(EvidenceStyle.amberForeground)
+        .padding(.horizontal, 22)
+        .padding(.vertical, 14)
       }
 
       if let result = model.performanceResultReceipt {
@@ -639,6 +672,12 @@ private struct PerformanceReceiptDesk: View {
       ? "No baseline repository selected" : model.performanceBaselineRepositoryPath
   }
 
+  private var peakRSSLabel: String {
+    activeResources?.peakRSSBytes.map {
+      ByteCountFormatter.string(fromByteCount: Int64($0), countStyle: .memory)
+    } ?? "—"
+  }
+
   private func planMetric(_ label: String, _ value: String) -> some View {
     VStack(alignment: .leading, spacing: 5) {
       PremiumFieldLabel(label)
@@ -718,11 +757,16 @@ private struct PerformanceReceiptDesk: View {
         planMetric("SAMPLES", String(resources.samples))
         planMetric("INTERVAL", "\(resources.sampleIntervalMS)ms")
       }
+      Text(
+        "Process limit \(plan.result.value(at: "limits", "max_processes")?.displayValue ?? "—") · egress \(plan.result.value(at: "limits", "max_external_requests")?.displayValue == "0" ? "blocked" : "unknown") · cleanup \(plan.cleanup.ownedProcessReaped ? "reaped" : "unproven")"
+      )
+      .font(.system(size: 9, weight: .medium, design: .monospaced))
+      .foregroundStyle(.secondary)
       ForEach(resources.limitations, id: \.self) { limitation in
         Text(limitation).font(.system(size: 9)).foregroundStyle(.tertiary)
       }
     }
-    .padding(22)
+    .padding(.top, 10)
   }
 }
 

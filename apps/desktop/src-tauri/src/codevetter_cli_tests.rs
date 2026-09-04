@@ -822,6 +822,71 @@ fn usage_parser_and_human_output_preserve_provider_boundaries() {
 }
 
 #[test]
+fn quota_parser_and_human_output_preserve_remaining_and_unavailable_states() {
+    let cwd = Path::new("/tmp/widget");
+    let CliCommand::Quota(arguments) = parse_arguments(
+        [
+            "quota".into(),
+            "--provider".into(),
+            "codex".into(),
+            "--json".into(),
+        ],
+        cwd,
+    )
+    .expect("quota arguments") else {
+        panic!("expected quota");
+    };
+    assert_eq!(arguments.provider, ProviderQuotaSelection::Codex);
+    assert_eq!(arguments.output, OutputMode::Json);
+    assert!(parse_arguments(["quota".into(), "--provider".into(), "unknown".into()], cwd).is_err());
+
+    let receipt = ProviderQuotaReceipt {
+        schema_version: "codevetter.provider-quota/v1".into(),
+        generated_at: "2026-09-03T00:00:00Z".into(),
+        providers: vec![
+            codevetter_desktop::commands::provider_quota::ProviderQuotaStatus {
+                provider: "codex".into(),
+                status: "ready".into(),
+                source: "codex app-server account/rateLimits/read".into(),
+                checked_at: "2026-09-03T00:00:00Z".into(),
+                plan: Some("pro".into()),
+                windows: vec![
+                    codevetter_desktop::commands::provider_quota::ProviderQuotaWindow {
+                        id: "codex.primary".into(),
+                        label: "Weekly window".into(),
+                        used_percent: 92.0,
+                        remaining_percent: 8.0,
+                        window_duration_minutes: Some(10_080),
+                        resets_at_unix: Some(1_788_750_854),
+                        reset_description: None,
+                    },
+                ],
+                credits: None,
+                reset_credits: Some(1),
+                message: None,
+            },
+            codevetter_desktop::commands::provider_quota::ProviderQuotaStatus {
+                provider: "claude".into(),
+                status: "unavailable".into(),
+                source: "Claude Code /usage".into(),
+                checked_at: "2026-09-03T00:00:00Z".into(),
+                plan: None,
+                windows: vec![],
+                credits: None,
+                reset_credits: None,
+                message: Some("Open Claude Code and run /usage.".into()),
+            },
+        ],
+        limitations: vec![],
+    };
+    let output = render_human_quota(&receipt);
+    assert!(output.contains("Weekly window: 8% remaining"));
+    assert!(output.contains("full reset credits: 1"));
+    assert!(output.contains("claude: unavailable"));
+    assert!(!output.contains("0% remaining\n  Open Claude"));
+}
+
+#[test]
 fn ops_parser_and_human_output_preserve_read_only_secret_boundary() {
     let cwd = Path::new("/tmp/widget");
     let CliCommand::Ops(arguments) = parse_arguments(

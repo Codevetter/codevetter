@@ -237,8 +237,7 @@ struct PremiumOnboardingView: View {
           model.onboardingStep += 1
         }
       }
-      .buttonStyle(.borderedProminent)
-      .tint(EvidenceStyle.amber)
+      .buttonStyle(PremiumPrimaryButtonStyle())
       .keyboardShortcut(.return, modifiers: [])
       .disabled(model.onboardingLoading)
       .accessibilityIdentifier(

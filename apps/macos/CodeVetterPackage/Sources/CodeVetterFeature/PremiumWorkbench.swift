@@ -25,12 +25,6 @@ public struct PremiumWorkbenchRootView: View {
         PremiumPerformanceView(model: model)
       case .runs:
         PremiumRunsView(model: model)
-      case .capabilities:
-        HStack(spacing: 0) {
-          EvidenceWorkbenchView(model: model)
-          Rectangle().fill(EvidenceStyle.separator).frame(width: 1)
-          EvidenceInspectorView(model: model).frame(width: 320)
-        }
       case .settings:
         PremiumSettingsView(model: model)
       }
@@ -47,8 +41,13 @@ public struct PremiumWorkbenchRootView: View {
       model.loadOnboarding()
     }
     .task(id: model.section) {
-      if model.section == .usage, model.usageReport == nil {
-        model.loadUsage()
+      if model.section == .usage {
+        if model.usageReport == nil {
+          model.loadUsage()
+        }
+        if model.providerQuotaReceipt == nil {
+          model.loadProviderQuota()
+        }
       } else if model.section == .repository, model.unpackSnapshots.isEmpty {
         model.loadUnpackSnapshots()
       } else if model.section == .settings, model.settingsReceipt == nil {
@@ -64,128 +63,131 @@ private struct PremiumRunsView: View {
   @Bindable var model: WorkbenchModel
   @Environment(\.accessibilityReduceMotion) private var reduceMotion
   @State private var exportIssue: String?
+  @State private var showsAllRuns = false
   @FocusState private var ledgerFocused: Bool
 
   var body: some View {
-    HStack(spacing: 0) {
-      VStack(alignment: .leading, spacing: 0) {
-        HStack(alignment: .top) {
-          VStack(alignment: .leading, spacing: 5) {
-            Text("EVIDENCE LEDGER")
-              .font(.system(size: 9, weight: .bold, design: .monospaced))
-              .tracking(1.1)
-              .foregroundStyle(EvidenceStyle.amberForeground)
-            Text("Runs").font(.system(size: 25, weight: .semibold))
-            Text("Rust-persisted verification receipts")
-              .font(.system(size: 10))
-              .foregroundStyle(.secondary)
+    VStack(spacing: 0) {
+      PremiumPageHeader(
+        eyebrow: "Evidence ledger",
+        title: "Runs",
+        subtitle: "Rust-persisted verification receipts and their recorded limitations"
+      ) {
+        Menu {
+          Button("All repositories") {
+            model.setRunLedgerScope(.all)
           }
-          Spacer()
-          Menu {
-            Button("All repositories") {
-              model.setRunLedgerScope(.all)
-            }
-            Button("Current repository") {
-              model.setRunLedgerScope(.currentRepository)
-            }
-            .disabled(!model.canFilterRunsByRepository)
-          } label: {
-            Label(model.runLedgerScopeLabel, systemImage: "line.3.horizontal.decrease.circle")
-              .font(.system(size: 9, weight: .semibold))
+          Button("Current repository") {
+            model.setRunLedgerScope(.currentRepository)
           }
-          .menuStyle(.borderlessButton)
-          .fixedSize()
-          .help("Filter the evidence ledger")
-          Button {
-            model.loadRuns()
-          } label: {
-            Image(systemName: model.runsLoading ? "arrow.clockwise" : "arrow.clockwise")
-          }
-          .buttonStyle(.borderless)
-          .disabled(model.runsLoading)
-          .help("Refresh runs")
+          .disabled(!model.canFilterRunsByRepository)
+        } label: {
+          Label(model.runLedgerScopeLabel, systemImage: "line.3.horizontal.decrease.circle")
         }
-        .padding(22)
-
-        Rectangle().fill(EvidenceStyle.separator).frame(height: 1)
-
-        if let issue = model.runsIssue {
-          Label(issue, systemImage: "exclamationmark.triangle.fill")
-            .font(.system(size: 10))
-            .foregroundStyle(EvidenceStyle.warning)
-            .padding(18)
-        } else if model.runs.isEmpty, !model.runsLoading {
-          ContentUnavailableView(
-            "No verification runs",
-            systemImage: "checkmark.shield",
-            description: Text(
-              "Local checks, previews, T-Rex PR checks, synthetic QA, warm, differential, and audience receipts will appear here."
-            )
-          )
-        } else {
-          ScrollViewReader { proxy in
-            ScrollView {
-              LazyVStack(spacing: 5) {
-                ForEach(model.runs) { run in
-                  Button {
-                    model.selectedRunID = run.id
-                  } label: {
-                    RunLedgerRow(run: run, selected: model.selectedRunID == run.id)
-                  }
-                  .buttonStyle(.plain)
-                  .accessibilityLabel("\(run.kindLabel) run: \(run.title)")
-                  .accessibilityValue(model.selectedRunID == run.id ? "Selected" : "")
-                  .accessibilityAddTraits(model.selectedRunID == run.id ? .isSelected : [])
-                  .id(run.id)
-                }
-              }
-              .padding(10)
-            }
-            .focusable()
-            .focusEffectDisabled()
-            .focused($ledgerFocused)
-            .overlay {
-              Rectangle()
-                .stroke(ledgerFocused ? EvidenceStyle.amber.opacity(0.48) : Color.clear)
-            }
-            .onAppear { ledgerFocused = true }
-            .onMoveCommand { direction in
-              switch direction {
-              case .up: model.moveRunSelection(by: -1)
-              case .down: model.moveRunSelection(by: 1)
-              default: return
-              }
-              if let selectedRunID = model.selectedRunID {
-                if reduceMotion {
-                  proxy.scrollTo(selectedRunID, anchor: .center)
-                } else {
-                  withAnimation(.easeOut(duration: 0.12)) {
-                    proxy.scrollTo(selectedRunID, anchor: .center)
-                  }
-                }
-              }
-            }
-          }
+        .menuStyle(.borderlessButton)
+        .fixedSize()
+        .help("Filter the evidence ledger")
+        Button {
+          model.loadRuns()
+        } label: {
+          Label("Refresh", systemImage: "arrow.clockwise")
         }
+        .buttonStyle(.bordered)
+        .disabled(model.runsLoading)
+        .help("Refresh runs")
       }
-      .frame(width: 330)
-      .frame(maxHeight: .infinity, alignment: .top)
-      .background(EvidenceStyle.chrome)
+      Rectangle().fill(EvidenceStyle.separator).frame(height: 1)
 
-      Rectangle().fill(EvidenceStyle.separator).frame(width: 1)
-
-      if let run = model.selectedRun {
-        StoredRunInspector(run: run, position: model.selectedRunPosition) {
-          export(run)
+      HStack(spacing: 0) {
+        VStack(alignment: .leading, spacing: 0) {
+          if let issue = model.runsIssue {
+            Label(issue, systemImage: "exclamationmark.triangle.fill")
+              .font(.system(size: 10))
+              .foregroundStyle(EvidenceStyle.warning)
+              .padding(18)
+          } else if model.runs.isEmpty, !model.runsLoading {
+            ContentUnavailableView(
+              "No verification runs",
+              systemImage: "checkmark.shield",
+              description: Text(
+                "Local checks, previews, T-Rex PR checks, synthetic QA, warm, differential, and audience receipts will appear here."
+              )
+            )
+          } else {
+            ScrollViewReader { proxy in
+              ScrollView {
+                LazyVStack(spacing: 5) {
+                  ForEach(Array(model.runs.prefix(showsAllRuns ? model.runs.count : 4))) { run in
+                    Button {
+                      model.selectedRunID = run.id
+                    } label: {
+                      RunLedgerRow(run: run, selected: model.selectedRunID == run.id)
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("\(run.kindLabel) run: \(run.title)")
+                    .accessibilityValue(model.selectedRunID == run.id ? "Selected" : "")
+                    .accessibilityAddTraits(model.selectedRunID == run.id ? .isSelected : [])
+                    .id(run.id)
+                  }
+                  if model.runs.count > 4 {
+                    Button(showsAllRuns ? "Show recent runs" : "Show all \(model.runs.count) runs")
+                    {
+                      showsAllRuns.toggle()
+                    }
+                    .buttonStyle(.borderless)
+                    .font(.system(size: 9, weight: .semibold))
+                    .padding(.vertical, 8)
+                  }
+                }
+                .padding(10)
+              }
+              .focusable()
+              .focusEffectDisabled()
+              .focused($ledgerFocused)
+              .overlay {
+                Rectangle()
+                  .stroke(ledgerFocused ? EvidenceStyle.amber.opacity(0.48) : Color.clear)
+              }
+              .onAppear { ledgerFocused = true }
+              .onMoveCommand { direction in
+                switch direction {
+                case .up: model.moveRunSelection(by: -1)
+                case .down: model.moveRunSelection(by: 1)
+                default: return
+                }
+                if let selectedRunID = model.selectedRunID {
+                  if reduceMotion {
+                    proxy.scrollTo(selectedRunID, anchor: .center)
+                  } else {
+                    withAnimation(.easeOut(duration: 0.12)) {
+                      proxy.scrollTo(selectedRunID, anchor: .center)
+                    }
+                  }
+                }
+              }
+            }
+          }
         }
-        .id(run.id)
-      } else {
-        ContentUnavailableView(
-          "Select a receipt",
-          systemImage: "doc.text.magnifyingglass",
-          description: Text("The canonical Rust receipt remains the source of truth.")
-        )
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .frame(width: 330)
+        .frame(maxHeight: .infinity, alignment: .top)
+        .background(EvidenceStyle.chrome)
+
+        Rectangle().fill(EvidenceStyle.separator).frame(width: 1)
+
+        if let run = model.selectedRun {
+          StoredRunInspector(run: run, position: model.selectedRunPosition) {
+            export(run)
+          }
+          .id(run.id)
+        } else {
+          ContentUnavailableView(
+            "Select a receipt",
+            systemImage: "doc.text.magnifyingglass",
+            description: Text("The canonical Rust receipt remains the source of truth.")
+          )
+          .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
       }
     }
     .accessibilityElement(children: .contain)
@@ -281,6 +283,7 @@ private struct StoredRunInspector: View {
   let position: String?
   let export: () -> Void
   @State private var detailMode: StoredRunDetailMode
+  @State private var showsProofIdentity = false
 
   init(run: StoredVerificationRun, position: String?, export: @escaping () -> Void) {
     self.run = run
@@ -309,6 +312,14 @@ private struct StoredRunInspector: View {
             .foregroundStyle(.secondary)
             .accessibilityLabel("Run \(position)")
         }
+        Button(
+          showsProofIdentity ? "Hide details" : "Details",
+          systemImage: "sidebar.trailing"
+        ) {
+          showsProofIdentity.toggle()
+        }
+        .buttonStyle(.bordered)
+        .controlSize(.small)
         Button("Export JSON", systemImage: "square.and.arrow.up", action: export)
           .buttonStyle(.bordered)
           .controlSize(.small)
@@ -345,7 +356,7 @@ private struct StoredRunInspector: View {
             }
             .labelsHidden()
             .pickerStyle(.segmented)
-            .tint(EvidenceStyle.amber)
+            .tint(.secondary)
             .frame(width: 142)
           }
           .padding(.horizontal, 16)
@@ -365,47 +376,49 @@ private struct StoredRunInspector: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
 
-        Rectangle().fill(EvidenceStyle.separator).frame(width: 1)
+        if showsProofIdentity {
+          Rectangle().fill(EvidenceStyle.separator).frame(width: 1)
 
-        VStack(alignment: .leading, spacing: 18) {
-          PremiumFieldLabel("PROOF IDENTITY")
-          runPair("REPOSITORY", run.repositoryName)
-          runPair("FAMILY", run.kindLabel)
-          if let source = run.sourceLabel {
-            runPair("SOURCE", source)
-          }
-          if let receipt = run.localCheckReceipt {
-            runPair("BASE", String(receipt.source.baseSha.prefix(12)))
-            runPair("HEAD", String(receipt.source.headSha.prefix(12)))
-          }
-          if !run.audienceResponses.isEmpty {
-            runPair("RESPONSES", String(run.audienceResponses.count))
-          }
-          if !run.artifacts.isEmpty {
-            runPair("ARTIFACTS", String(run.artifacts.count))
-          }
-          runPair("RECORDED", run.recordedAt)
-          Divider()
-          PremiumFieldLabel("LIMITATIONS")
-          if run.limitations.isEmpty {
-            Label("No limitations recorded", systemImage: "checkmark.circle")
-              .font(.system(size: 10))
-              .foregroundStyle(EvidenceStyle.success)
-          } else {
-            ForEach(run.limitations, id: \.self) { limitation in
-              Label(limitation, systemImage: "exclamationmark.triangle")
-                .font(.system(size: 10))
-                .foregroundStyle(.secondary)
+          VStack(alignment: .leading, spacing: 18) {
+            PremiumFieldLabel("PROOF IDENTITY")
+            runPair("REPOSITORY", run.repositoryName)
+            runPair("FAMILY", run.kindLabel)
+            if let source = run.sourceLabel {
+              runPair("SOURCE", source)
             }
+            if let receipt = run.localCheckReceipt {
+              runPair("BASE", String(receipt.source.baseSha.prefix(12)))
+              runPair("HEAD", String(receipt.source.headSha.prefix(12)))
+            }
+            if !run.audienceResponses.isEmpty {
+              runPair("RESPONSES", String(run.audienceResponses.count))
+            }
+            if !run.artifacts.isEmpty {
+              runPair("ARTIFACTS", String(run.artifacts.count))
+            }
+            runPair("RECORDED", run.recordedAt)
+            Divider()
+            PremiumFieldLabel("LIMITATIONS")
+            if run.limitations.isEmpty {
+              Label("No limitations recorded", systemImage: "checkmark.circle")
+                .font(.system(size: 10))
+                .foregroundStyle(EvidenceStyle.success)
+            } else {
+              ForEach(run.limitations, id: \.self) { limitation in
+                Label(limitation, systemImage: "exclamationmark.triangle")
+                  .font(.system(size: 10))
+                  .foregroundStyle(.secondary)
+              }
+            }
+            Spacer()
+            Label("Rust-persisted", systemImage: "checkmark.seal.fill")
+              .font(.system(size: 10, weight: .semibold))
+              .foregroundStyle(EvidenceStyle.success)
           }
-          Spacer()
-          Label("Rust-persisted", systemImage: "checkmark.seal.fill")
-            .font(.system(size: 10, weight: .semibold))
-            .foregroundStyle(EvidenceStyle.success)
+          .padding(22)
+          .frame(width: 270)
+          .background(EvidenceStyle.inspector)
         }
-        .padding(22)
-        .frame(width: 270)
-        .background(EvidenceStyle.inspector)
       }
     }
   }
@@ -429,6 +442,7 @@ private struct StoredRunInspector: View {
 
 private struct RunEvidenceIndex: View {
   let run: StoredVerificationRun
+  @State private var showsAllEvidence = false
 
   private var isEmpty: Bool {
     run.indexedEvidenceCount == 0
@@ -443,7 +457,10 @@ private struct RunEvidenceIndex: View {
     } else {
       ScrollView {
         LazyVStack(alignment: .leading, spacing: 5) {
-          ForEach(run.changedPaths, id: \.self) { path in
+          ForEach(
+            Array(run.changedPaths.prefix(showsAllEvidence ? run.changedPaths.count : 3)),
+            id: \.self
+          ) { path in
             Label(path, systemImage: "doc.text")
               .font(.system(size: 10, design: .monospaced))
               .foregroundStyle(.secondary)
@@ -453,7 +470,11 @@ private struct RunEvidenceIndex: View {
               .frame(height: 30)
           }
 
-          ForEach(run.audienceResponses) { response in
+          ForEach(
+            Array(
+              run.audienceResponses.prefix(
+                showsAllEvidence ? run.audienceResponses.count : 3))
+          ) { response in
             VStack(alignment: .leading, spacing: 6) {
               HStack {
                 Text(response.participantID)
@@ -489,7 +510,10 @@ private struct RunEvidenceIndex: View {
               "Audience response from \(response.participantID), \(response.criterion)")
           }
 
-          ForEach(run.artifacts, id: \.self) { artifact in
+          ForEach(
+            Array(run.artifacts.prefix(showsAllEvidence ? run.artifacts.count : 3)),
+            id: \.self
+          ) { artifact in
             Label(artifact, systemImage: "paperclip")
               .font(.system(size: 10, design: .monospaced))
               .foregroundStyle(.secondary)
@@ -497,6 +521,16 @@ private struct RunEvidenceIndex: View {
               .frame(maxWidth: .infinity, alignment: .leading)
               .padding(12)
               .background(EvidenceStyle.inspector, in: RoundedRectangle(cornerRadius: 9))
+          }
+          if run.indexedEvidenceCount > 3 {
+            Button(
+              showsAllEvidence
+                ? "Show evidence summary" : "Show all \(run.indexedEvidenceCount) evidence items"
+            ) {
+              showsAllEvidence.toggle()
+            }
+            .buttonStyle(.bordered)
+            .controlSize(.small)
           }
         }
         .padding(10)
@@ -558,8 +592,7 @@ private struct PremiumTopBar: View {
           Text("⌘K")
             .font(.system(size: 9, weight: .semibold, design: .monospaced))
             .foregroundStyle(.secondary)
-            .padding(.horizontal, 7)
-            .padding(.vertical, 5)
+            .premiumHitTarget(minWidth: 42, minHeight: PremiumPageLayout.navigationControlHeight)
             .background(Color.primary.opacity(0.055), in: RoundedRectangle(cornerRadius: 6))
         }
         .buttonStyle(.plain)
@@ -596,15 +629,16 @@ private struct PremiumTopBar: View {
             model.section == section ? EvidenceStyle.amberForeground : Color.secondary
           )
           .padding(.horizontal, showsLabel ? 9 : 8)
-          .frame(height: 32)
-          .background {
+          .premiumHitTarget(
+            minWidth: PremiumPageLayout.navigationControlHeight,
+            minHeight: PremiumPageLayout.navigationControlHeight
+          )
+          .overlay(alignment: .bottom) {
             if model.section == section {
-              RoundedRectangle(cornerRadius: 9)
-                .fill(EvidenceStyle.amber.opacity(0.08))
-                .overlay {
-                  RoundedRectangle(cornerRadius: 9)
-                    .stroke(EvidenceStyle.amber.opacity(0.24), lineWidth: 1)
-                }
+              Rectangle()
+                .fill(EvidenceStyle.amberForeground)
+                .frame(height: 1)
+                .padding(.horizontal, 7)
             }
           }
         }
@@ -625,15 +659,25 @@ private struct PremiumReviewView: View {
   @Bindable var model: WorkbenchModel
 
   var body: some View {
-    Group {
-      if model.receipt == nil {
-        HStack(spacing: 0) {
-          reviewSetup
-          Rectangle().fill(EvidenceStyle.separator).frame(width: 1)
-          ProofSequenceView(model: model).frame(width: 330)
+    VStack(spacing: 0) {
+      PremiumPageHeader(
+        eyebrow: "Executable verification",
+        title: "Review",
+        subtitle: "Bind one exact change to runnable evidence before deciding whether it can ship"
+      ) {
+        StatusPill(label: model.verificationState.rawValue, color: statusColor)
+      }
+      Rectangle().fill(EvidenceStyle.separator).frame(height: 1)
+      Group {
+        if model.receipt == nil {
+          HStack(spacing: 0) {
+            reviewSetup
+            Rectangle().fill(EvidenceStyle.separator).frame(width: 1)
+            ProofSequenceView(model: model).frame(width: 330)
+          }
+        } else {
+          ReceiptDeskView(model: model)
         }
-      } else {
-        ReceiptDeskView(model: model)
       }
     }
     .fileImporter(
@@ -660,23 +704,6 @@ private struct PremiumReviewView: View {
   private var reviewSetup: some View {
     ScrollView {
       VStack(alignment: .leading, spacing: 28) {
-        HStack(alignment: .top) {
-          VStack(alignment: .leading, spacing: 7) {
-            Text("VERIFICATION / NEW")
-              .font(.system(size: 9, weight: .bold, design: .monospaced))
-              .tracking(1.2)
-              .foregroundStyle(EvidenceStyle.amberForeground)
-            Text("Can this change ship?")
-              .font(.system(size: 34, weight: .semibold))
-              .tracking(-0.7)
-            Text("CodeVetter answers only after executable evidence is attached.")
-              .font(.system(size: 14))
-              .foregroundStyle(.secondary)
-          }
-          Spacer()
-          StatusPill(label: model.verificationState.rawValue, color: statusColor)
-        }
-
         VStack(alignment: .leading, spacing: 15) {
           PremiumFieldLabel("REPOSITORY")
           Button {
@@ -718,6 +745,7 @@ private struct PremiumReviewView: View {
               Text("Claude + Codex").tag("cross")
             }
             .pickerStyle(.segmented)
+            .tint(.secondary)
             .accessibilityIdentifier("review-strategy")
             Text(
               model.reviewAgent == "cross"
@@ -775,8 +803,9 @@ private struct PremiumReviewView: View {
           }
         }
       }
-      .padding(38)
+      .padding(PremiumPageLayout.horizontalInset)
       .frame(maxWidth: 850, alignment: .leading)
+      .frame(maxWidth: .infinity, alignment: .leading)
     }
     .background(EvidenceStyle.canvas)
   }
@@ -1106,6 +1135,7 @@ private struct ReceiptDeskView: View {
   @State private var actionIssue: String?
   @State private var showingXray = false
   @State private var showingFixPacket = false
+  @State private var showsProofSummary = false
 
   var body: some View {
     if let receipt = model.receipt {
@@ -1125,27 +1155,35 @@ private struct ReceiptDeskView: View {
             label: receipt.status ?? receipt.verdict ?? "Completed",
             color: receiptOutcomeColor(receipt)
           )
-          if receipt.reviewID != nil {
-            Button("Agent PR X-Ray", systemImage: "eye.trianglebadge.exclamationmark") {
-              showingXray = true
-            }
-            .buttonStyle(.bordered)
-            .controlSize(.small)
-          }
-          if receipt.runID != nil, receipt.reviewFindings.contains(where: { $0.persistedID != nil })
-          {
-            Button("Fix handoff", systemImage: "wrench.and.screwdriver") {
-              showingFixPacket = true
-            }
-            .buttonStyle(.bordered)
-            .controlSize(.small)
-          }
-          Button("Export JSON", systemImage: "square.and.arrow.up") {
-            exportReceipt(receipt)
+          Button(
+            showsProofSummary ? "Hide details" : "Details",
+            systemImage: "sidebar.trailing"
+          ) {
+            showsProofSummary.toggle()
           }
           .buttonStyle(.bordered)
           .controlSize(.small)
-          .keyboardShortcut("e", modifiers: [.command, .shift])
+          Menu {
+            if receipt.reviewID != nil {
+              Button("Agent PR X-Ray", systemImage: "eye.trianglebadge.exclamationmark") {
+                showingXray = true
+              }
+            }
+            if receipt.runID != nil,
+              receipt.reviewFindings.contains(where: { $0.persistedID != nil })
+            {
+              Button("Fix handoff", systemImage: "wrench.and.screwdriver") {
+                showingFixPacket = true
+              }
+            }
+            Button("Export JSON", systemImage: "square.and.arrow.up") {
+              exportReceipt(receipt)
+            }
+          } label: {
+            Label("More", systemImage: "ellipsis.circle")
+          }
+          .menuStyle(.borderlessButton)
+          .fixedSize()
           Button("New verification") {
             model.resetVerification()
           }
@@ -1157,37 +1195,39 @@ private struct ReceiptDeskView: View {
         .overlay(alignment: .bottom) { Rectangle().fill(EvidenceStyle.separator).frame(height: 1) }
 
         HStack(spacing: 0) {
-          VStack(alignment: .leading, spacing: 0) {
-            PremiumFieldLabel("CHANGED PATHS").padding(16)
-            ScrollView {
-              VStack(spacing: 2) {
-                ForEach(receipt.source.changedPaths, id: \.self) { path in
-                  Button {
-                    openSource(path: path, line: nil, receipt: receipt)
-                  } label: {
-                    HStack(spacing: 8) {
-                      Image(systemName: "doc.text").foregroundStyle(EvidenceStyle.amberForeground)
-                      Text(path)
-                        .font(.system(size: 10, design: .monospaced))
-                        .lineLimit(1)
-                      Spacer()
-                      Image(systemName: "arrow.up.forward.square")
-                        .font(.system(size: 8))
-                        .foregroundStyle(.tertiary)
+          if showsProofSummary {
+            VStack(alignment: .leading, spacing: 0) {
+              PremiumFieldLabel("CHANGED PATHS").padding(16)
+              ScrollView {
+                VStack(spacing: 2) {
+                  ForEach(receipt.source.changedPaths, id: \.self) { path in
+                    Button {
+                      openSource(path: path, line: nil, receipt: receipt)
+                    } label: {
+                      HStack(spacing: 8) {
+                        Image(systemName: "doc.text").foregroundStyle(EvidenceStyle.amberForeground)
+                        Text(path)
+                          .font(.system(size: 10, design: .monospaced))
+                          .lineLimit(1)
+                        Spacer()
+                        Image(systemName: "arrow.up.forward.square")
+                          .font(.system(size: 8))
+                          .foregroundStyle(.tertiary)
+                      }
+                      .padding(.horizontal, 14)
+                      .frame(height: 32)
                     }
-                    .padding(.horizontal, 14)
-                    .frame(height: 32)
+                    .buttonStyle(.plain)
+                    .help("Open source")
                   }
-                  .buttonStyle(.plain)
-                  .help("Open source")
                 }
               }
             }
-          }
-          .frame(width: 230)
-          .background(EvidenceStyle.surface)
+            .frame(width: 230)
+            .background(EvidenceStyle.surface)
 
-          Rectangle().fill(EvidenceStyle.separator).frame(width: 1)
+            Rectangle().fill(EvidenceStyle.separator).frame(width: 1)
+          }
 
           VStack(alignment: .leading, spacing: 0) {
             HStack(spacing: 12) {
@@ -1218,7 +1258,7 @@ private struct ReceiptDeskView: View {
               }
               .labelsHidden()
               .pickerStyle(.segmented)
-              .tint(EvidenceStyle.amber)
+              .tint(.secondary)
               .frame(width: 280)
             }
             .padding(.horizontal, 16)
@@ -1249,51 +1289,54 @@ private struct ReceiptDeskView: View {
           }
           .frame(maxWidth: .infinity, maxHeight: .infinity)
 
-          Rectangle().fill(EvidenceStyle.separator).frame(width: 1)
+          if showsProofSummary {
+            Rectangle().fill(EvidenceStyle.separator).frame(width: 1)
 
-          VStack(alignment: .leading, spacing: 20) {
-            PremiumFieldLabel("PROOF SUMMARY")
-            Text(
-              (receipt.status ?? receipt.verdict ?? "Completed").replacingOccurrences(
-                of: "_", with: " ")
-            )
-            .font(.system(size: 22, weight: .semibold))
-            receiptPair("BASE", String(receipt.source.baseSha.prefix(12)))
-            receiptPair("HEAD", String(receipt.source.headSha.prefix(12)))
-            if let stages = receipt.stages {
-              receiptPair("REVIEW", stages.review.status.replacingOccurrences(of: "_", with: " "))
-              receiptPair(
-                "CORRECTNESS", stages.correctness.status.replacingOccurrences(of: "_", with: " "))
-              receiptPair(
-                "PERFORMANCE", stages.performance.status.replacingOccurrences(of: "_", with: " "))
-            }
-            Divider()
-            PremiumFieldLabel("LIMITATIONS")
-            if receipt.limitations.isEmpty {
-              Label("No limitations recorded", systemImage: "checkmark.circle")
-                .font(.system(size: 11))
-                .foregroundStyle(EvidenceStyle.success)
-            } else {
-              ForEach(receipt.limitations, id: \.self) { limitation in
-                Label(limitation, systemImage: "exclamationmark.triangle")
-                  .font(.system(size: 10))
-                  .foregroundStyle(.secondary)
+            VStack(alignment: .leading, spacing: 20) {
+              PremiumFieldLabel("PROOF SUMMARY")
+              Text(
+                (receipt.status ?? receipt.verdict ?? "Completed").replacingOccurrences(
+                  of: "_", with: " ")
+              )
+              .font(.system(size: 22, weight: .semibold))
+              receiptPair("BASE", String(receipt.source.baseSha.prefix(12)))
+              receiptPair("HEAD", String(receipt.source.headSha.prefix(12)))
+              if let stages = receipt.stages {
+                receiptPair(
+                  "REVIEW", stages.review.status.replacingOccurrences(of: "_", with: " "))
+                receiptPair(
+                  "CORRECTNESS", stages.correctness.status.replacingOccurrences(of: "_", with: " "))
+                receiptPair(
+                  "PERFORMANCE", stages.performance.status.replacingOccurrences(of: "_", with: " "))
               }
+              Divider()
+              PremiumFieldLabel("LIMITATIONS")
+              if receipt.limitations.isEmpty {
+                Label("No limitations recorded", systemImage: "checkmark.circle")
+                  .font(.system(size: 11))
+                  .foregroundStyle(EvidenceStyle.success)
+              } else {
+                ForEach(receipt.limitations, id: \.self) { limitation in
+                  Label(limitation, systemImage: "exclamationmark.triangle")
+                    .font(.system(size: 10))
+                    .foregroundStyle(.secondary)
+                }
+              }
+              Spacer()
+              if let actionIssue {
+                Label(actionIssue, systemImage: "exclamationmark.triangle.fill")
+                  .font(.system(size: 9))
+                  .foregroundStyle(EvidenceStyle.warning)
+                  .fixedSize(horizontal: false, vertical: true)
+              }
+              Label("Rust-owned receipt", systemImage: "checkmark.seal.fill")
+                .font(.system(size: 10, weight: .semibold))
+                .foregroundStyle(EvidenceStyle.success)
             }
-            Spacer()
-            if let actionIssue {
-              Label(actionIssue, systemImage: "exclamationmark.triangle.fill")
-                .font(.system(size: 9))
-                .foregroundStyle(EvidenceStyle.warning)
-                .fixedSize(horizontal: false, vertical: true)
-            }
-            Label("Rust-owned receipt", systemImage: "checkmark.seal.fill")
-              .font(.system(size: 10, weight: .semibold))
-              .foregroundStyle(EvidenceStyle.success)
+            .padding(22)
+            .frame(width: 300)
+            .background(EvidenceStyle.inspector)
           }
-          .padding(22)
-          .frame(width: 300)
-          .background(EvidenceStyle.inspector)
         }
       }
       .sheet(isPresented: $showingXray) {
@@ -1413,6 +1456,7 @@ private struct ReceiptDeskView: View {
 
   private struct CrossReviewEvidenceCard: View {
     let evidence: PerformanceJSONValue
+    @State private var showsQualificationDetails = false
 
     private var passes: [PerformanceJSONValue] {
       evidence.value(at: "passes")?.arrayValue ?? []
@@ -1435,34 +1479,45 @@ private struct ReceiptDeskView: View {
         }
         HStack(spacing: 8) {
           crossMetric("BOTH", value: count("corroborated"))
-          crossMetric("CLAUDE ONLY", value: count("claude_only"))
-          crossMetric("CODEX ONLY", value: count("codex_only"))
           crossMetric("CONFLICTS", value: count("conflicting"))
         }
-        HStack(spacing: 8) {
-          crossMetric("REJECTED", value: count("rejected"))
-          crossMetric("STALE", value: count("stale"))
-          crossMetric("UNRESOLVED", value: count("unresolved"))
-          crossMetric("TOTAL TIME", value: "\(totalDuration) ms")
-        }
-        ForEach(Array(passes.enumerated()), id: \.offset) { _, pass in
-          HStack {
-            Text((pass.value(at: "reviewer")?.stringValue ?? "reviewer").uppercased())
-              .font(.system(size: 9, weight: .bold, design: .monospaced))
-            Text(pass.value(at: "status")?.stringValue ?? "incomplete")
-              .font(.system(size: 9))
-              .foregroundStyle(.secondary)
-            Spacer()
-            if let duration = pass.value(at: "duration_ms")?.numberValue {
-              Text("\(Int(duration)) ms")
-                .font(.system(size: 8, design: .monospaced))
-                .foregroundStyle(.secondary)
+        DisclosureGroup(
+          "Reviewer timing and qualification details", isExpanded: $showsQualificationDetails
+        ) {
+          VStack(alignment: .leading, spacing: 9) {
+            HStack(spacing: 8) {
+              crossMetric("CLAUDE ONLY", value: count("claude_only"))
+              crossMetric("CODEX ONLY", value: count("codex_only"))
             }
+            HStack(spacing: 8) {
+              crossMetric("REJECTED", value: count("rejected"))
+              crossMetric("STALE", value: count("stale"))
+              crossMetric("UNRESOLVED", value: count("unresolved"))
+              crossMetric("TOTAL TIME", value: "\(totalDuration) ms")
+            }
+            ForEach(Array(passes.enumerated()), id: \.offset) { _, pass in
+              HStack {
+                Text((pass.value(at: "reviewer")?.stringValue ?? "reviewer").uppercased())
+                  .font(.system(size: 9, weight: .bold, design: .monospaced))
+                Text(pass.value(at: "status")?.stringValue ?? "incomplete")
+                  .font(.system(size: 9))
+                  .foregroundStyle(.secondary)
+                Spacer()
+                if let duration = pass.value(at: "duration_ms")?.numberValue {
+                  Text("\(Int(duration)) ms")
+                    .font(.system(size: 8, design: .monospaced))
+                    .foregroundStyle(.secondary)
+                }
+              }
+            }
+            Text("USAGE  \(usageSummary)")
+              .font(.system(size: 8, weight: .semibold, design: .monospaced))
+              .foregroundStyle(.secondary)
           }
+          .padding(.top, 8)
         }
-        Text("USAGE  \(usageSummary)")
-          .font(.system(size: 8, weight: .semibold, design: .monospaced))
-          .foregroundStyle(.secondary)
+        .font(.system(size: 9, weight: .semibold))
+        .tint(EvidenceStyle.amberForeground)
         Text(
           evidence.value(at: "proof_boundary")?.stringValue
             ?? "Reviewer agreement is coverage, never executable proof."
@@ -1600,6 +1655,7 @@ private struct ReceiptDeskView: View {
 struct ReviewIntentDiagnosticView: View {
   let evidence: PerformanceJSONValue
   let onVerifyInTesting: (() -> Void)?
+  @State private var showsSignalDetails = false
 
   init(evidence: PerformanceJSONValue, onVerifyInTesting: (() -> Void)? = nil) {
     self.evidence = evidence
@@ -1614,9 +1670,9 @@ struct ReviewIntentDiagnosticView: View {
         LazyVStack(alignment: .leading, spacing: 12) {
           intentHero(diagnostic)
           intentSummary(diagnostic)
+          gapsAndLimits(diagnostic)
           signalGrid(diagnostic)
           timeline(diagnostic)
-          gapsAndLimits(diagnostic)
         }
         .padding(14)
       } else {
@@ -1661,9 +1717,7 @@ struct ReviewIntentDiagnosticView: View {
           Button("Verify in Testing", systemImage: "play.rectangle.on.rectangle") {
             onVerifyInTesting()
           }
-          .buttonStyle(.borderedProminent)
-          .tint(EvidenceStyle.amber)
-          .foregroundStyle(EvidenceStyle.ink)
+          .buttonStyle(PremiumPrimaryButtonStyle())
           .controlSize(.small)
           .accessibilityIdentifier("review.intent.open-testing")
         }
@@ -1709,13 +1763,23 @@ struct ReviewIntentDiagnosticView: View {
 
   private func signalGrid(_ value: PerformanceJSONValue) -> some View {
     let signals = value.value(at: "signals")
-    return LazyVGrid(columns: [GridItem(.adaptive(minimum: 112), spacing: 8)], spacing: 8) {
-      diagnosticMetric("PATHS", text(signals, "changed_paths") ?? "0")
-      diagnosticMetric("FINDINGS", text(signals, "findings") ?? "0")
-      diagnosticMetric("HIGH RISK", text(signals, "high_risk_findings") ?? "0")
-      diagnosticMetric("QA RUNS", text(signals, "qa_runs") ?? "0")
-      diagnosticMetric("QA PASSED", text(signals, "passed_qa_runs") ?? "0")
-      diagnosticMetric("ARTIFACTS", text(signals, "qa_artifacts") ?? "0")
+    return VStack(alignment: .leading, spacing: 9) {
+      LazyVGrid(columns: [GridItem(.adaptive(minimum: 150), spacing: 8)], spacing: 8) {
+        diagnosticMetric("FINDINGS", text(signals, "findings") ?? "0")
+        diagnosticMetric("HIGH RISK", text(signals, "high_risk_findings") ?? "0")
+      }
+      DisclosureGroup(isExpanded: $showsSignalDetails) {
+        HStack(spacing: 8) {
+          diagnosticMetric("QA PASSED", text(signals, "passed_qa_runs") ?? "0")
+          diagnosticMetric("PATHS", text(signals, "changed_paths") ?? "0")
+          diagnosticMetric("QA RUNS", text(signals, "qa_runs") ?? "0")
+          diagnosticMetric("ARTIFACTS", text(signals, "qa_artifacts") ?? "0")
+        }
+        .padding(.top, 8)
+      } label: {
+        Text("Additional signal counts").font(.system(size: 9, weight: .semibold))
+      }
+      .tint(EvidenceStyle.amberForeground)
     }
   }
 
@@ -2089,6 +2153,7 @@ struct AgentFixPacketView: View {
         Text("Gemini").tag("gemini")
       }
       .pickerStyle(.segmented)
+      .tint(.secondary)
       .disabled(model.fixAttemptLoading)
       .accessibilityIdentifier("fix-attempt-agent")
 
@@ -2351,6 +2416,7 @@ struct XrayExportView: View {
               }
               .labelsHidden()
               .pickerStyle(.segmented)
+              .tint(.secondary)
             }
 
             if !approvableFindings.isEmpty {
@@ -2599,6 +2665,8 @@ struct ReviewProofMapView: View {
   let repositoryPath: String?
   let onOpenTesting: (() -> Void)?
   @State private var artifactIssue: String?
+  @State private var showsFullProofMap = false
+  @State private var showsReadinessDetails = false
 
   init(
     evidence: PerformanceJSONValue,
@@ -2633,12 +2701,27 @@ struct ReviewProofMapView: View {
       LazyVStack(alignment: .leading, spacing: 12) {
         proofLegend
         if let readiness { readinessCard(readiness) }
-        if let manifest { manifestCard(manifest) }
-        if let graph { graphCard(graph) }
-        if let trustedGraph { trustedGraphCard(trustedGraph) }
-        if !qaRuns.isEmpty { qaCard }
-        if !candidates.isEmpty { candidateCard }
-        if !procedures.isEmpty { procedureCard }
+        DisclosureGroup(isExpanded: $showsFullProofMap) {
+          LazyVStack(alignment: .leading, spacing: 12) {
+            if let manifest { manifestCard(manifest) }
+            if let graph { graphCard(graph) }
+            if let trustedGraph { trustedGraphCard(trustedGraph) }
+            if !qaRuns.isEmpty { qaCard }
+            if !candidates.isEmpty { candidateCard }
+            if !procedures.isEmpty { procedureCard }
+          }
+          .padding(.top, 12)
+        } label: {
+          VStack(alignment: .leading, spacing: 3) {
+            Text("Full proof map").font(.system(size: 11, weight: .semibold))
+            Text("Manifest, graph context, QA evidence, leads, and procedure")
+              .font(.system(size: 9)).foregroundStyle(.secondary)
+          }
+        }
+        .tint(EvidenceStyle.amberForeground)
+        .padding(14)
+        .background(EvidenceStyle.inspector, in: RoundedRectangle(cornerRadius: 12))
+        .overlay { RoundedRectangle(cornerRadius: 12).stroke(EvidenceStyle.separator) }
         if readiness == nil && manifest == nil && graph == nil && trustedGraph == nil
           && qaRuns.isEmpty
           && candidates.isEmpty && procedures.isEmpty
@@ -2685,20 +2768,29 @@ struct ReviewProofMapView: View {
       HStack(spacing: 8) {
         proofMetric("STATUS", normalized(status))
         proofMetric("COVERAGE", yesNo(value.value(at: "complete_coverage")?.boolValue))
-        proofMetric("RUNTIME", text(value, "runtime_evidence_count") ?? "0")
-        proofMetric("MCP CALLS", text(value, "codevetter_mcp_call_count") ?? "0")
       }
-      LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 8) {
-        proofFact("Graph", normalized(text(value, "graph_status") ?? "unavailable"))
-        proofFact("History", normalized(text(value, "history_status") ?? "empty"))
-        proofFact("Conventions", normalized(text(value, "conventions_status") ?? "not present"))
-        proofFact("Coordinator", normalized(text(value, "coordinator_status") ?? "not run"))
-        proofFact("Context delivery", normalized(text(value, "context_delivery") ?? "internal"))
-        proofFact("History chars", text(value, "history_chars") ?? "0")
+      DisclosureGroup("Readiness details", isExpanded: $showsReadinessDetails) {
+        VStack(alignment: .leading, spacing: 8) {
+          HStack(spacing: 8) {
+            proofMetric("RUNTIME", text(value, "runtime_evidence_count") ?? "0")
+            proofMetric("MCP CALLS", text(value, "codevetter_mcp_call_count") ?? "0")
+          }
+          LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 8) {
+            proofFact("Graph", normalized(text(value, "graph_status") ?? "unavailable"))
+            proofFact("History", normalized(text(value, "history_status") ?? "empty"))
+            proofFact("Conventions", normalized(text(value, "conventions_status") ?? "not present"))
+            proofFact("Coordinator", normalized(text(value, "coordinator_status") ?? "not run"))
+            proofFact("Context delivery", normalized(text(value, "context_delivery") ?? "internal"))
+            proofFact("History chars", text(value, "history_chars") ?? "0")
+          }
+          ForEach(limitations.prefix(4), id: \.self) { limitation in
+            limitationRow(limitation)
+          }
+        }
+        .padding(.top, 8)
       }
-      ForEach(limitations.prefix(4), id: \.self) { limitation in
-        limitationRow(limitation)
-      }
+      .font(.system(size: 9, weight: .semibold))
+      .tint(EvidenceStyle.amberForeground)
     }
   }
 
@@ -3190,6 +3282,7 @@ struct ReviewProofMapView: View {
 
 private struct SpecCoverageEvidenceCard: View {
   let coverage: VerificationSpecCoverage
+  @State private var showsDetails = false
 
   var body: some View {
     VStack(alignment: .leading, spacing: 12) {
@@ -3206,49 +3299,56 @@ private struct SpecCoverageEvidenceCard: View {
       }
       HStack(spacing: 8) {
         coverageMetric(
-          "REVIEW INPUT", coverage.summary.reviewInputCoveragePercent,
-          "\(coverage.summary.reviewInputRequirements)/\(coverage.summary.totalRequirements)")
-        coverageMetric(
           "EXECUTABLE", coverage.summary.executableEvidenceCoveragePercent,
           "\(coverage.summary.selectedForExecution)/\(coverage.summary.totalRequirements)")
         coverageMetric(
           "VERIFIED", coverage.summary.verifiedCoveragePercent,
           "\(coverage.summary.verified)/\(coverage.summary.totalRequirements)")
       }
-      ForEach(coverage.requirements) { requirement in
-        HStack(alignment: .top, spacing: 10) {
-          Image(systemName: statusIcon(requirement.status))
-            .foregroundStyle(statusColor(requirement.status))
-            .frame(width: 16)
-          VStack(alignment: .leading, spacing: 4) {
-            HStack {
-              Text(requirement.title).font(.system(size: 10, weight: .semibold))
-              Spacer()
-              Text(requirement.status.replacingOccurrences(of: "_", with: " "))
-                .font(.system(size: 8, weight: .semibold, design: .monospaced))
+      DisclosureGroup("Requirement details", isExpanded: $showsDetails) {
+        VStack(alignment: .leading, spacing: 9) {
+          coverageMetric(
+            "REVIEW INPUT", coverage.summary.reviewInputCoveragePercent,
+            "\(coverage.summary.reviewInputRequirements)/\(coverage.summary.totalRequirements)")
+          ForEach(coverage.requirements) { requirement in
+            HStack(alignment: .top, spacing: 10) {
+              Image(systemName: statusIcon(requirement.status))
                 .foregroundStyle(statusColor(requirement.status))
+                .frame(width: 16)
+              VStack(alignment: .leading, spacing: 4) {
+                HStack {
+                  Text(requirement.title).font(.system(size: 10, weight: .semibold))
+                  Spacer()
+                  Text(requirement.status.replacingOccurrences(of: "_", with: " "))
+                    .font(.system(size: 8, weight: .semibold, design: .monospaced))
+                    .foregroundStyle(statusColor(requirement.status))
+                }
+                Text("\(requirement.id) · \(requirement.sourcePath):\(requirement.startLine)")
+                  .font(.system(size: 8, design: .monospaced))
+                  .foregroundStyle(.secondary)
+                if let evidence = requirement.evidence {
+                  Text(
+                    [evidence.stage, evidence.adapter, evidence.target]
+                      .compactMap { $0 }.joined(separator: " · ")
+                  )
+                  .font(.system(size: 8, design: .monospaced))
+                  .foregroundStyle(EvidenceStyle.amberForeground)
+                }
+              }
             }
-            Text("\(requirement.id) · \(requirement.sourcePath):\(requirement.startLine)")
-              .font(.system(size: 8, design: .monospaced))
+            .padding(10)
+            .background(EvidenceStyle.inspector, in: RoundedRectangle(cornerRadius: 9))
+          }
+          ForEach(coverage.limitations, id: \.self) { limitation in
+            Label(limitation, systemImage: "exclamationmark.triangle")
+              .font(.system(size: 9))
               .foregroundStyle(.secondary)
-            if let evidence = requirement.evidence {
-              Text(
-                [evidence.stage, evidence.adapter, evidence.target]
-                  .compactMap { $0 }.joined(separator: " · ")
-              )
-              .font(.system(size: 8, design: .monospaced))
-              .foregroundStyle(EvidenceStyle.amberForeground)
-            }
           }
         }
-        .padding(10)
-        .background(EvidenceStyle.inspector, in: RoundedRectangle(cornerRadius: 9))
+        .padding(.top, 8)
       }
-      ForEach(coverage.limitations, id: \.self) { limitation in
-        Label(limitation, systemImage: "exclamationmark.triangle")
-          .font(.system(size: 9))
-          .foregroundStyle(.secondary)
-      }
+      .font(.system(size: 9, weight: .semibold))
+      .tint(EvidenceStyle.amberForeground)
     }
     .padding(14)
     .background(EvidenceStyle.surface, in: RoundedRectangle(cornerRadius: 12))
@@ -3292,27 +3392,28 @@ struct PremiumPrimaryButtonStyle: ButtonStyle {
   func makeBody(configuration: Configuration) -> some View {
     configuration.label
       .font(.system(size: 12, weight: .bold))
-      .foregroundStyle(isEnabled ? EvidenceStyle.ink : Color.secondary)
+      .foregroundStyle(isEnabled ? EvidenceStyle.amberForeground : Color.secondary)
       .padding(.horizontal, 18)
-      .frame(height: 38)
+      .frame(minHeight: 40)
+      .contentShape(Rectangle())
       .background(
         isEnabled
-          ? EvidenceStyle.amber.opacity(configuration.isPressed ? 0.82 : 1)
+          ? EvidenceStyle.amber.opacity(configuration.isPressed ? 0.12 : 0.035)
           : EvidenceStyle.surface,
-        in: RoundedRectangle(cornerRadius: 10)
+        in: RoundedRectangle(cornerRadius: 6)
       )
       .overlay {
-        RoundedRectangle(cornerRadius: 10)
-          .stroke(isEnabled ? EvidenceStyle.amber.opacity(0.3) : EvidenceStyle.separator)
+        RoundedRectangle(cornerRadius: 6)
+          .stroke(
+            isEnabled ? EvidenceStyle.amberForeground.opacity(0.65) : EvidenceStyle.separator)
       }
-      .scaleEffect(isEnabled && configuration.isPressed ? 0.985 : 1)
       .opacity(isEnabled ? 1 : 0.72)
   }
 }
 
 extension View {
   func premiumField() -> some View {
-    background(EvidenceStyle.surface, in: RoundedRectangle(cornerRadius: 12))
-      .overlay { RoundedRectangle(cornerRadius: 12).stroke(EvidenceStyle.separator) }
+    background(EvidenceStyle.surface, in: RoundedRectangle(cornerRadius: 6))
+      .overlay { RoundedRectangle(cornerRadius: 6).stroke(EvidenceStyle.separator) }
   }
 }

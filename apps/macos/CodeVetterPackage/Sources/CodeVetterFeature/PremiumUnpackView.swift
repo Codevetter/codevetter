@@ -19,6 +19,7 @@ private enum UnpackDeskSection: String, CaseIterable, Identifiable {
 struct PremiumUnpackView: View {
   @Bindable var model: WorkbenchModel
   @State private var section: UnpackDeskSection = .overview
+  @State private var showsAllSnapshots = false
 
   init(model: WorkbenchModel, startsInQueryDesk: Bool = false) {
     self.model = model
@@ -52,18 +53,11 @@ struct PremiumUnpackView: View {
   }
 
   private var header: some View {
-    HStack(alignment: .top, spacing: 18) {
-      VStack(alignment: .leading, spacing: 5) {
-        Text("REPOSITORY MEMORY")
-          .font(.system(size: 9, weight: .bold, design: .monospaced))
-          .tracking(1.1)
-          .foregroundStyle(EvidenceStyle.amberForeground)
-        Text("Repo Unpack").font(.system(size: 25, weight: .semibold))
-        Text("Stored source maps, history leads, structural evidence, and explicit coverage")
-          .font(.system(size: 10))
-          .foregroundStyle(.secondary)
-      }
-      Spacer()
+    PremiumPageHeader(
+      eyebrow: "Repository memory",
+      title: "Repo Unpack",
+      subtitle: "Stored source maps, history leads, structural evidence, and explicit coverage"
+    ) {
       StatusPill(
         label: (model.unpackLoading || model.repositoryQueryLoading)
           ? "Rust operation active" : "Native scan + query",
@@ -90,9 +84,6 @@ struct PremiumUnpackView: View {
       .disabled(model.unpackLoading)
       .accessibilityLabel("Refresh Repo Unpack snapshots")
     }
-    .padding(.horizontal, 22)
-    .padding(.vertical, 18)
-    .background(EvidenceStyle.chrome)
   }
 
   private var scanBar: some View {
@@ -113,7 +104,8 @@ struct PremiumUnpackView: View {
             .foregroundStyle(.secondary)
         }
         .padding(.horizontal, 12)
-        .frame(width: 310, height: 38)
+        .frame(width: 310)
+        .premiumHitTarget(minHeight: 40)
         .premiumField()
       }
       .buttonStyle(.plain)
@@ -141,15 +133,13 @@ struct PremiumUnpackView: View {
         } label: {
           Label("Unpack repository", systemImage: "shippingbox.and.arrow.backward.fill")
         }
-        .buttonStyle(.borderedProminent)
-        .tint(EvidenceStyle.amber)
-        .foregroundStyle(Color.black)
+        .buttonStyle(PremiumPrimaryButtonStyle())
         .disabled(!model.canScanUnpackRepository)
         .accessibilityIdentifier("repo-unpack-scan")
       }
     }
-    .padding(.horizontal, 18)
-    .frame(height: 58)
+    .padding(.horizontal, PremiumPageLayout.horizontalInset)
+    .frame(minHeight: 62)
     .background(EvidenceStyle.surface)
   }
 
@@ -180,7 +170,11 @@ struct PremiumUnpackView: View {
       } else {
         ScrollView {
           LazyVStack(spacing: 5) {
-            ForEach(model.unpackSnapshots) { snapshot in
+            ForEach(
+              Array(
+                model.unpackSnapshots.prefix(
+                  showsAllSnapshots ? model.unpackSnapshots.count : 4))
+            ) { snapshot in
               Button {
                 model.selectUnpackSnapshot(snapshot.id)
               } label: {
@@ -194,22 +188,30 @@ struct PremiumUnpackView: View {
               .accessibilityValue(
                 snapshot.id == model.selectedUnpackSnapshotID ? "Selected" : snapshot.status)
             }
+            if model.unpackSnapshots.count > 4 {
+              Button(
+                showsAllSnapshots
+                  ? "Show recent snapshots" : "Show all \(model.unpackSnapshots.count) snapshots"
+              ) {
+                showsAllSnapshots.toggle()
+              }
+              .buttonStyle(.borderless)
+              .font(.system(size: 9, weight: .semibold))
+              .padding(.vertical, 8)
+            }
           }
           .padding(10)
         }
       }
 
       Rectangle().fill(EvidenceStyle.separator).frame(height: 1)
-      VStack(alignment: .leading, spacing: 7) {
-        Label("Rust-owned SQLite history", systemImage: "checkmark.seal.fill")
-          .foregroundStyle(EvidenceStyle.success)
-        Text(
-          "Native creation, bounded comparison, canonical exports, and read-only graph/history queries use shared Rust boundaries. Model synthesis and cleanup remain separately gated."
+      Label("Rust-owned local history", systemImage: "checkmark.seal.fill")
+        .font(.system(size: 9, weight: .semibold))
+        .foregroundStyle(EvidenceStyle.success)
+        .help(
+          "Snapshot creation, comparison, export, graph, and history queries share the bounded Rust authority."
         )
-        .foregroundStyle(.secondary)
-      }
-      .font(.system(size: 8))
-      .padding(14)
+        .padding(14)
     }
     .background(EvidenceStyle.inspector)
   }
@@ -260,20 +262,26 @@ struct PremiumUnpackView: View {
   }
 
   private func sectionRail(hasBrief: Bool) -> some View {
-    HStack(spacing: 6) {
-      ForEach(UnpackDeskSection.allCases) { item in
+    let primarySections: [UnpackDeskSection] = [.overview, .activity, .graph, .analysis]
+    let secondarySections: [UnpackDeskSection] = [.brief, .inventory, .rules, .handoff, .delta]
+    return HStack(spacing: 6) {
+      ForEach(primarySections) { item in
         Button {
           section = item
         } label: {
           Text(item.rawValue)
             .font(.system(size: 9, weight: .semibold))
-            .foregroundStyle(section == item ? Color.black : Color.secondary)
+            .foregroundStyle(section == item ? EvidenceStyle.amberForeground : Color.secondary)
             .padding(.horizontal, 12)
             .frame(height: 29)
-            .background(
-              section == item ? EvidenceStyle.amber : Color.clear,
-              in: RoundedRectangle(cornerRadius: 8)
-            )
+            .overlay(alignment: .bottom) {
+              if section == item {
+                Rectangle()
+                  .fill(EvidenceStyle.amberForeground)
+                  .frame(height: 1)
+                  .padding(.horizontal, 8)
+              }
+            }
         }
         .buttonStyle(.plain)
         .disabled(item == .brief && !hasBrief)
@@ -281,6 +289,20 @@ struct PremiumUnpackView: View {
         .accessibilityValue(section == item ? "Selected" : "")
         .accessibilityIdentifier("repo-unpack-section-\(item.rawValue.lowercased())")
       }
+      Menu {
+        ForEach(secondarySections) { item in
+          Button(item.rawValue) { section = item }
+            .disabled(item == .brief && !hasBrief)
+        }
+      } label: {
+        Label(
+          secondarySections.contains(section) ? section.rawValue : "More",
+          systemImage: "ellipsis.circle"
+        )
+        .font(.system(size: 9, weight: .semibold))
+      }
+      .menuStyle(.borderlessButton)
+      .fixedSize()
       Spacer()
       Text(hasBrief ? "LOCAL + MODEL-LABELLED" : "LOCAL EVIDENCE ONLY")
         .font(.system(size: 7, weight: .bold, design: .monospaced))
@@ -297,18 +319,71 @@ struct PremiumUnpackView: View {
     ScrollView {
       LazyVStack(alignment: .leading, spacing: 14) {
         identity(snapshot, inventory: inventory)
-        metrics(snapshot, inventory: inventory)
-        HStack(alignment: .top, spacing: 14) {
-          systemMap(inventory)
-          sourceOutline(inventory)
-            .frame(width: 330)
+        overviewAtAGlance(inventory)
+        DisclosureGroup {
+          VStack(alignment: .leading, spacing: 14) {
+            metrics(snapshot, inventory: inventory)
+            HStack(alignment: .top, spacing: 14) {
+              systemMap(inventory)
+              sourceOutline(inventory)
+                .frame(width: 330)
+            }
+            HStack(alignment: .top, spacing: 14) {
+              historyPanel(inventory)
+              healthPanel(inventory)
+            }
+          }
+          .padding(.top, 12)
+        } label: {
+          Label("Explore full snapshot evidence", systemImage: "square.stack.3d.up")
+            .font(.system(size: 11, weight: .semibold))
         }
-        HStack(alignment: .top, spacing: 14) {
-          historyPanel(inventory)
-          healthPanel(inventory)
-        }
+        .tint(EvidenceStyle.amberForeground)
+        .padding(15)
+        .background(EvidenceStyle.inspector, in: RoundedRectangle(cornerRadius: 12))
+        .overlay { RoundedRectangle(cornerRadius: 12).stroke(EvidenceStyle.separator) }
       }
       .padding(18)
+    }
+  }
+
+  private func overviewAtAGlance(_ inventory: UnpackInventory) -> some View {
+    HStack(alignment: .top, spacing: 14) {
+      VStack(alignment: .leading, spacing: 12) {
+        PremiumFieldLabel("ARCHITECTURE")
+        Text(inventory.stackTags.prefix(5).joined(separator: " · "))
+          .font(.system(size: 13, weight: .semibold))
+        Text(
+          "\(inventory.workspaceUnits.count) workspace units · \(inventory.languages.count) languages · \(inventory.manifests.count) manifests"
+        )
+        .font(.system(size: 10))
+        .foregroundStyle(.secondary)
+        Button("Open inventory") { section = .inventory }
+          .buttonStyle(.bordered)
+          .controlSize(.small)
+      }
+      .padding(16)
+      .frame(maxWidth: .infinity, alignment: .leading)
+      .background(EvidenceStyle.surface, in: RoundedRectangle(cornerRadius: 12))
+      .overlay { RoundedRectangle(cornerRadius: 12).stroke(EvidenceStyle.separator) }
+
+      VStack(alignment: .leading, spacing: 12) {
+        PremiumFieldLabel("EVIDENCE HEALTH")
+        Text(String(format: "%.1f average health", inventory.health.averageScore))
+          .font(.system(size: 13, weight: .semibold))
+        Text(
+          "\(inventory.health.hotspotCount) hotspots · \(inventory.history.recentCommits.count) retained commits · \(inventory.graph.nodes.count) graph nodes"
+        )
+        .font(.system(size: 10))
+        .foregroundStyle(.secondary)
+        Button("Open analysis") { section = .analysis }
+          .buttonStyle(.bordered)
+          .controlSize(.small)
+      }
+      .padding(16)
+      .frame(maxWidth: .infinity, alignment: .leading)
+      .background(EvidenceStyle.surface, in: RoundedRectangle(cornerRadius: 12))
+      .overlay { RoundedRectangle(cornerRadius: 12).stroke(EvidenceStyle.separator) }
     }
   }
 
@@ -709,32 +784,48 @@ struct PremiumUnpackView: View {
         )
         repositoryQueryConsole
         repositoryQueryResults
-        UnpackDeskHeader(
-          eyebrow: "SNAPSHOT / QUALIFIED TOPOLOGY",
-          title: "Recorded relationships remain visible",
-          detail:
-            "\(inventory.graph.nodes.count) nodes · \(inventory.graph.edges.count) edges · \(inventory.graph.truncated ? "bounded projection" : "complete recorded projection")"
-        )
-        HStack(alignment: .top, spacing: 12) {
-          UnpackListPanel(title: "NODES", count: inventory.graph.nodes.count) {
-            ForEach(inventory.graph.nodes.prefix(80)) { node in
-              UnpackEvidenceRow(
-                icon: "circle.hexagongrid",
-                title: node.label,
-                detail: "\(node.kind) · \(node.path ?? node.detail ?? node.id)"
-              )
+        DisclosureGroup {
+          HStack(alignment: .top, spacing: 12) {
+            UnpackListPanel(title: "NODES", count: inventory.graph.nodes.count) {
+              ForEach(inventory.graph.nodes.prefix(80)) { node in
+                UnpackEvidenceRow(
+                  icon: "circle.hexagongrid",
+                  title: node.label,
+                  detail: "\(node.kind) · \(node.path ?? node.detail ?? node.id)"
+                )
+              }
+            }
+            UnpackListPanel(title: "RELATIONSHIPS", count: inventory.graph.edges.count) {
+              ForEach(inventory.graph.edges.prefix(120)) { edge in
+                UnpackEvidenceRow(
+                  icon: "arrow.triangle.branch",
+                  title: "\(edge.from) → \(edge.to)",
+                  detail: "\(edge.kind) · \(edge.trust) · \(edge.evidence)"
+                )
+              }
             }
           }
-          UnpackListPanel(title: "RELATIONSHIPS", count: inventory.graph.edges.count) {
-            ForEach(inventory.graph.edges.prefix(120)) { edge in
-              UnpackEvidenceRow(
-                icon: "arrow.triangle.branch",
-                title: "\(edge.from) → \(edge.to)",
-                detail: "\(edge.kind) · \(edge.trust) · \(edge.evidence)"
+          .padding(.top, 12)
+        } label: {
+          HStack {
+            VStack(alignment: .leading, spacing: 3) {
+              Text("Recorded topology").font(.system(size: 11, weight: .semibold))
+              Text(
+                "\(inventory.graph.nodes.count) nodes · \(inventory.graph.edges.count) relationships · \(inventory.graph.truncated ? "bounded" : "complete")"
               )
+              .font(.system(size: 9))
+              .foregroundStyle(.secondary)
             }
+            Spacer()
+            Text("Optional detail")
+              .font(.system(size: 8, weight: .semibold, design: .monospaced))
+              .foregroundStyle(.secondary)
           }
         }
+        .tint(EvidenceStyle.amberForeground)
+        .padding(15)
+        .background(EvidenceStyle.inspector, in: RoundedRectangle(cornerRadius: 12))
+        .overlay { RoundedRectangle(cornerRadius: 12).stroke(EvidenceStyle.separator) }
       }
       .padding(18)
     }
@@ -806,9 +897,7 @@ struct PremiumUnpackView: View {
             Label("Query", systemImage: "arrow.right")
           }
         }
-        .buttonStyle(.borderedProminent)
-        .tint(EvidenceStyle.amber)
-        .foregroundStyle(Color.black)
+        .buttonStyle(PremiumPrimaryButtonStyle())
         .frame(minWidth: 86)
         .disabled(!model.canQueryRepositoryEvidence)
         .accessibilityIdentifier("repo-query-submit")
@@ -1077,9 +1166,7 @@ struct PremiumUnpackView: View {
         } label: {
           Label("Trace impact", systemImage: "scope")
         }
-        .buttonStyle(.borderedProminent)
-        .tint(EvidenceStyle.amber)
-        .foregroundStyle(Color.black)
+        .buttonStyle(PremiumPrimaryButtonStyle())
         .controlSize(.small)
       }
       if let source = explanation.node.sources.first {
@@ -1414,9 +1501,7 @@ struct PremiumUnpackView: View {
         )
       } actions: {
         Button("Compare with previous snapshot") { model.compareUnpackWithPrevious() }
-          .buttonStyle(.borderedProminent)
-          .tint(EvidenceStyle.amber)
-          .foregroundStyle(Color.black)
+          .buttonStyle(PremiumPrimaryButtonStyle())
           .disabled(!model.canCompareUnpackSnapshot)
           .accessibilityIdentifier("repo-unpack-compare")
       }

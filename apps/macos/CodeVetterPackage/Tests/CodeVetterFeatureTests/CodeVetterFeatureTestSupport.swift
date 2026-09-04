@@ -360,7 +360,10 @@ func renderCapabilities(_ model: WorkbenchModel) {
 func captureCapabilities(_ model: WorkbenchModel, at destination: URL) throws {
   let host = NSHostingView(rootView: PremiumWorkbenchRootView(model: model))
   host.appearance = NSAppearance(named: .darkAqua)
-  host.frame = NSRect(x: 0, y: 0, width: 1_280, height: 800)
+  let width =
+    ProcessInfo.processInfo.environment["CODEVETTER_CAPABILITIES_SCREENSHOT_WIDTH"]
+    .flatMap(Double.init) ?? 1_280
+  host.frame = NSRect(x: 0, y: 0, width: width, height: 800)
   for _ in 0..<3 {
     host.layoutSubtreeIfNeeded()
     host.displayIfNeeded()
@@ -576,8 +579,7 @@ func captureSettings(
 }
 
 @MainActor
-func captureHost<Content: View>(_ host: NSHostingView<Content>, at destination: URL) throws
-{
+func captureHost<Content: View>(_ host: NSHostingView<Content>, at destination: URL) throws {
   guard let bitmap = host.bitmapImageRepForCachingDisplay(in: host.bounds) else {
     throw CocoaError(.fileWriteUnknown)
   }
@@ -638,9 +640,20 @@ func captureUsage(
   at destination: URL,
   appearance: NSAppearance.Name
 ) throws {
+  try captureWorkbench(model, at: destination, appearance: appearance)
+}
+
+@MainActor
+func captureWorkbench(
+  _ model: WorkbenchModel,
+  at destination: URL,
+  appearance: NSAppearance.Name,
+  width: CGFloat = 1_280,
+  height: CGFloat = 800
+) throws {
   let host = NSHostingView(rootView: PremiumWorkbenchRootView(model: model))
   host.appearance = NSAppearance(named: appearance)
-  host.frame = NSRect(x: 0, y: 0, width: 1_280, height: 800)
+  host.frame = NSRect(x: 0, y: 0, width: width, height: height)
   host.layoutSubtreeIfNeeded()
   host.displayIfNeeded()
   guard let bitmap = host.bitmapImageRepForCachingDisplay(in: host.bounds) else {

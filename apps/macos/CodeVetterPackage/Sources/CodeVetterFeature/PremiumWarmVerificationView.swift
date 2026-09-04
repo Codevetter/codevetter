@@ -11,6 +11,7 @@ struct PremiumWarmVerificationView: View {
   @Bindable var model: WorkbenchModel
   @Environment(\.dismiss) private var dismiss
   @State private var mode: WarmReceiptMode = .evidence
+  @State private var showsReceiptDetails = false
 
   var body: some View {
     VStack(spacing: 0) {
@@ -236,6 +237,12 @@ struct PremiumWarmVerificationView: View {
         }
         Spacer()
         StatusPill(label: outcomeLabel(result.outcome), color: outcomeColor(result.outcome))
+        Button {
+          showsReceiptDetails.toggle()
+        } label: {
+          Label(showsReceiptDetails ? "Hide details" : "Details", systemImage: "sidebar.leading")
+        }
+        .buttonStyle(.bordered)
         Button("Open in Runs") {
           model.showingWarmVerifier = false
           model.section = .runs
@@ -250,8 +257,10 @@ struct PremiumWarmVerificationView: View {
       .overlay(alignment: .bottom) { Rectangle().fill(EvidenceStyle.separator).frame(height: 1) }
 
       HStack(spacing: 0) {
-        scenarioIndex(result).frame(width: 250)
-        Rectangle().fill(EvidenceStyle.separator).frame(width: 1)
+        if showsReceiptDetails {
+          scenarioIndex(result).frame(width: 250)
+          Rectangle().fill(EvidenceStyle.separator).frame(width: 1)
+        }
         VStack(spacing: 0) {
           HStack {
             PremiumFieldLabel("RUNTIME EVIDENCE")
@@ -264,7 +273,7 @@ struct PremiumWarmVerificationView: View {
             .pickerStyle(.segmented)
             .labelsHidden()
             .frame(width: 166)
-            .tint(EvidenceStyle.amber)
+            .tint(.secondary)
           }
           .padding(.horizontal, 16)
           .frame(height: 46)
@@ -287,8 +296,10 @@ struct PremiumWarmVerificationView: View {
           }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        Rectangle().fill(EvidenceStyle.separator).frame(width: 1)
-        receiptInspector(result).frame(width: 290)
+        if showsReceiptDetails {
+          Rectangle().fill(EvidenceStyle.separator).frame(width: 1)
+          receiptInspector(result).frame(width: 290)
+        }
       }
     }
   }
@@ -349,9 +360,13 @@ struct PremiumWarmVerificationView: View {
         HStack(spacing: 10) {
           metricCard("SCENARIOS", "\(result.scenarios.count)")
           metricCard("OBSERVATIONS", "\(result.observations.count)")
-          metricCard("ARTIFACTS", "\(result.artifacts.count)")
-          metricCard("MODEL CALLS", "\(result.modelCallCount)")
         }
+
+        Text(
+          "\(result.artifacts.count) retained artifacts · \(result.modelCallCount) model calls"
+        )
+        .font(.system(size: 9, weight: .medium, design: .monospaced))
+        .foregroundStyle(.secondary)
 
         if result.observations.isEmpty {
           Label("No policy observations were recorded", systemImage: "checkmark.circle")

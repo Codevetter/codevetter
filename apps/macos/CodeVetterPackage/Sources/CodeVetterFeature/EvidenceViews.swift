@@ -26,7 +26,7 @@ public struct EvidenceSidebarView: View {
       navigationGroup("Workspace", sections: [.usage, .repository])
       navigationGroup("Verification", sections: [.review, .testing, .performance])
         .padding(.top, 12)
-      navigationGroup("Evidence", sections: [.runs, .capabilities])
+      navigationGroup("Evidence", sections: [.runs])
         .padding(.top, 12)
 
       Spacer()
@@ -88,7 +88,7 @@ public struct EvidenceSidebarView: View {
       }
       .foregroundStyle(model.section == section ? .primary : .secondary)
       .padding(.horizontal, 11)
-      .frame(height: 31)
+      .premiumHitTarget(minHeight: PremiumPageLayout.navigationControlHeight)
       .background {
         RoundedRectangle(cornerRadius: 7)
           .fill(model.section == section ? Color.primary.opacity(0.09) : .clear)
@@ -113,8 +113,6 @@ public struct EvidenceWorkbenchView: View {
       switch model.section {
       case .review:
         VerifyView(model: model)
-      case .capabilities:
-        CapabilityCatalogView(model: model)
       case .usage:
         EmptyWorkbenchView(
           title: "Usage",
@@ -172,11 +170,7 @@ public struct EvidenceInspectorView: View {
   public var body: some View {
     ScrollView {
       VStack(alignment: .leading, spacing: 18) {
-        if model.section == .capabilities, let capability = model.selectedCapability {
-          CapabilityInspector(capability: capability)
-        } else {
-          VerificationInspector(model: model)
-        }
+        VerificationInspector(model: model)
       }
       .padding(18)
     }
@@ -253,9 +247,7 @@ private struct VerifyView: View {
               } label: {
                 Label("Plan verification", systemImage: "list.bullet.clipboard")
               }
-              .buttonStyle(.borderedProminent)
-              .tint(EvidenceStyle.amber)
-              .foregroundStyle(.black.opacity(0.84))
+              .buttonStyle(PremiumPrimaryButtonStyle())
               .disabled(!model.canStart)
               .keyboardShortcut(.return, modifiers: [.command])
 
@@ -444,73 +436,93 @@ private struct ReceiptSummary: View {
   }
 }
 
-private struct CapabilityCatalogView: View {
+struct CapabilityCatalogView: View {
   @Bindable var model: WorkbenchModel
+  let showsHeader: Bool
+
+  init(model: WorkbenchModel, showsHeader: Bool = true) {
+    self.model = model
+    self.showsHeader = showsHeader
+  }
 
   var body: some View {
     VStack(alignment: .leading, spacing: 16) {
-      HStack(alignment: .top) {
-        VStack(alignment: .leading, spacing: 5) {
-          Text("Capabilities")
-            .font(.system(size: 24, weight: .semibold))
-          Text("One Rust-owned glossary for the UI, CLI, and AI agent surfaces.")
-            .font(.system(size: 13))
+      if showsHeader {
+        HStack(alignment: .top) {
+          VStack(alignment: .leading, spacing: 5) {
+            Text("Capabilities")
+              .font(.system(size: 24, weight: .semibold))
+            Text("One Rust-owned glossary for the UI, CLI, and AI agent surfaces.")
+              .font(.system(size: 13))
+              .foregroundStyle(.secondary)
+          }
+          Spacer()
+          Text(model.registry.schemaVersion)
+            .font(.system(size: 10, design: .monospaced))
             .foregroundStyle(.secondary)
+            .padding(.horizontal, 9)
+            .padding(.vertical, 5)
+            .background(Color.primary.opacity(0.06), in: Capsule())
         }
-        Spacer()
-        Text(model.registry.schemaVersion)
-          .font(.system(size: 10, design: .monospaced))
-          .foregroundStyle(.secondary)
-          .padding(.horizontal, 9)
-          .padding(.vertical, 5)
-          .background(Color.primary.opacity(0.06), in: Capsule())
       }
 
-      Grid(horizontalSpacing: 12, verticalSpacing: 0) {
-        GridRow {
-          header("Capability", alignment: .leading)
-          header("Stage")
-          header("UI")
-          header("CLI")
-          header("Agent")
+      LazyVStack(spacing: 5) {
+        HStack {
+          PremiumFieldLabel("CAPABILITY GLOSSARY")
+          Spacer()
+          Text("UI · CLI · AGENT")
+            .font(.system(size: 9, weight: .bold, design: .monospaced))
+            .foregroundStyle(.secondary)
         }
-        Divider().gridCellColumns(5)
+        .padding(.horizontal, 12)
+        .padding(.bottom, 4)
         ForEach(model.registry.capabilities) { capability in
-          GridRow {
-            Button {
-              model.selectedCapabilityID = capability.id
-            } label: {
+          Button {
+            model.selectedCapabilityID = capability.id
+          } label: {
+            HStack(spacing: 14) {
               VStack(alignment: .leading, spacing: 3) {
                 Text(capability.name)
                   .font(.system(size: 12, weight: .semibold))
-                Text(capability.id)
-                  .font(.system(size: 9, design: .monospaced))
-                  .foregroundStyle(.tertiary)
+                Text(capability.purpose)
+                  .font(.system(size: 10))
+                  .foregroundStyle(.secondary)
+                  .lineLimit(1)
               }
               .frame(maxWidth: .infinity, alignment: .leading)
-              .contentShape(Rectangle())
+              StatusPill(
+                label: capability.stage.rawValue.capitalized,
+                color: capability.stage == .current ? EvidenceStyle.success : Color.secondary
+              )
+              HStack(spacing: 6) {
+                surfaceBadge("UI", capability.surfaces.ui.availability)
+                surfaceBadge("CLI", capability.surfaces.cli.availability)
+                surfaceBadge("AI", capability.surfaces.agent.availability)
+              }
             }
-            .buttonStyle(.plain)
-            stageLabel(capability.stage)
-            availabilityLabel(capability.surfaces.ui.availability)
-            availabilityLabel(capability.surfaces.cli.availability)
-            availabilityLabel(capability.surfaces.agent.availability)
+            .padding(.horizontal, 12)
+            .frame(minHeight: 52)
+            .contentShape(Rectangle())
+            .background(
+              model.selectedCapabilityID == capability.id
+                ? EvidenceStyle.amber.opacity(0.08)
+                : Color.clear,
+              in: RoundedRectangle(cornerRadius: 9)
+            )
+            .overlay {
+              RoundedRectangle(cornerRadius: 9).stroke(
+                model.selectedCapabilityID == capability.id
+                  ? EvidenceStyle.amber.opacity(0.28) : EvidenceStyle.separator)
+            }
           }
-          .padding(.vertical, 10)
-          .background(
-            model.selectedCapabilityID == capability.id
-              ? EvidenceStyle.amber.opacity(0.07)
-              : .clear
-          )
-          Divider().gridCellColumns(5)
+          .buttonStyle(.plain)
         }
       }
-      .padding(12)
+      .padding(10)
       .background(EvidenceStyle.panel.opacity(0.78), in: RoundedRectangle(cornerRadius: 12))
       .overlay { RoundedRectangle(cornerRadius: 12).stroke(EvidenceStyle.separator) }
-      Spacer()
     }
-    .padding(24)
+    .padding(showsHeader ? 24 : 0)
   }
 
   private func header(_ text: String, alignment: Alignment = .center) -> some View {
@@ -535,6 +547,20 @@ private struct CapabilityCatalogView: View {
     .foregroundStyle(color(for: availability))
     .frame(maxWidth: .infinity)
     .accessibilityLabel(availability.rawValue)
+  }
+
+  private func surfaceBadge(_ label: String, _ availability: Availability) -> some View {
+    HStack(spacing: 4) {
+      Circle().fill(color(for: availability)).frame(width: 6, height: 6)
+      Text(label)
+    }
+    .font(.system(size: 8, weight: .semibold, design: .monospaced))
+    .foregroundStyle(availability == .available ? Color.primary : Color.secondary)
+    .padding(.horizontal, 7)
+    .frame(height: 24)
+    .background(EvidenceStyle.inspector, in: Capsule())
+    .overlay { Capsule().stroke(EvidenceStyle.separator) }
+    .accessibilityLabel("\(label) \(availability.rawValue)")
   }
 
   private func symbol(for availability: Availability) -> String {
@@ -619,7 +645,7 @@ private func inspectorRequirement(_ title: String, _ detail: String, icon: Strin
   }
 }
 
-private struct CapabilityInspector: View {
+struct CapabilityInspector: View {
   let capability: Capability
 
   var body: some View {

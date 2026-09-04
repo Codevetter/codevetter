@@ -5,17 +5,23 @@ struct PremiumTrexWatcherView: View {
   @Environment(\.dismiss) private var dismiss
   @State private var showingEnableConsent = false
   @State private var showingRawReceipt = false
+  @State private var showsConfiguration = false
+  @State private var showsAuthority = false
 
   var body: some View {
     VStack(spacing: 0) {
       header
       Rectangle().fill(EvidenceStyle.separator).frame(height: 1)
       HStack(spacing: 0) {
-        scheduleDesk.frame(width: 310)
-        Rectangle().fill(EvidenceStyle.separator).frame(width: 1)
+        if model.currentTrexWatcher == nil || showsConfiguration {
+          scheduleDesk.frame(width: 310)
+          Rectangle().fill(EvidenceStyle.separator).frame(width: 1)
+        }
         runLedger.frame(maxWidth: .infinity, maxHeight: .infinity)
-        Rectangle().fill(EvidenceStyle.separator).frame(width: 1)
-        authorityRail.frame(width: 270)
+        if showsAuthority {
+          Rectangle().fill(EvidenceStyle.separator).frame(width: 1)
+          authorityRail.frame(width: 270)
+        }
       }
       Rectangle().fill(EvidenceStyle.separator).frame(height: 1)
       actionBar
@@ -59,6 +65,20 @@ struct PremiumTrexWatcherView: View {
       }
       Spacer()
       StatusPill(label: watcherStatusLabel, color: watcherStatusColor)
+      if model.currentTrexWatcher != nil {
+        Menu {
+          Button(showsConfiguration ? "Hide setup" : "Edit setup") {
+            showsConfiguration.toggle()
+          }
+          Button(showsAuthority ? "Hide authority contract" : "Show authority contract") {
+            showsAuthority.toggle()
+          }
+        } label: {
+          Label("Details", systemImage: "sidebar.leading")
+        }
+        .menuStyle(.borderlessButton)
+        .fixedSize()
+      }
       Button("Done") { dismiss() }
         .buttonStyle(.bordered)
     }
