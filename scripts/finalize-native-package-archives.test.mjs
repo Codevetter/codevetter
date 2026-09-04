@@ -1,7 +1,11 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { parseArguments, updateArchiveReceipt } from './finalize-native-package-archives.mjs';
+import {
+  parseArguments,
+  temporaryArchivePath,
+  updateArchiveReceipt,
+} from './finalize-native-package-archives.mjs';
 
 test('final archive hashes replace only the exact qualified archive identities', () => {
   const qualification = {
@@ -27,4 +31,15 @@ test('argument parsing requires one qualification receipt', () => {
     '/tmp/qualification.json'
   );
   assert.throws(() => parseArguments([]), /--qualification is required/);
+});
+
+test('temporary archive names keep the final extension so hdiutil does not append .dmg', () => {
+  assert.equal(
+    temporaryArchivePath('/pkg/CodeVetter-1.12.2-arm64.dmg'),
+    '/pkg/CodeVetter-1.12.2-arm64.finalizing.dmg'
+  );
+  assert.equal(
+    temporaryArchivePath('/pkg/CodeVetter-1.12.2-arm64.zip'),
+    '/pkg/CodeVetter-1.12.2-arm64.finalizing.zip'
+  );
 });

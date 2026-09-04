@@ -36,6 +36,13 @@ export function updateArchiveReceipt(qualification, artifacts) {
   };
 }
 
+// `hdiutil create` appends `.dmg` when the output path lacks that extension, so
+// the temporary archive must keep the final extension at the end of its name.
+export function temporaryArchivePath(target) {
+  const extension = target.slice(target.lastIndexOf('.'));
+  return `${target.slice(0, -extension.length)}.finalizing${extension}`;
+}
+
 export function finalizeNativePackageArchives(
   options = parseArguments(process.argv.slice(2)),
   run = runCommand
@@ -49,7 +56,7 @@ export function finalizeNativePackageArchives(
   const artifacts = [];
   for (const archive of qualification.archives ?? []) {
     const target = join(directory, archive.name);
-    const temporary = `${target}.finalizing`;
+    const temporary = temporaryArchivePath(target);
     rmSync(temporary, { recursive: true, force: true });
     if (archive.name.endsWith('.zip')) {
       run('ditto', ['-c', '-k', '--sequesterRsrc', '--keepParent', app, temporary]);
