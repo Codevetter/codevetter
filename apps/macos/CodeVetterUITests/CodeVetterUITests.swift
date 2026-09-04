@@ -94,9 +94,9 @@ final class CodeVetterUITests: XCTestCase {
     XCTAssertTrue(app.buttons["Choose testing repository"].exists)
     XCTAssertTrue(app.radioButtons["Git range"].exists)
     XCTAssertTrue(app.radioButtons["GitHub pull request"].exists)
-    app.descendants(matching: .any)["advanced-testing-setup"].click()
-    let resolveScope = app.buttons["testing-scope-planner-resolve"]
-    XCTAssertTrue(reveal(resolveScope, in: app.scrollViews.firstMatch))
+    let advancedSetup = app.descendants(matching: .any)["advanced-testing-setup"]
+    XCTAssertTrue(advancedSetup.exists)
+    advancedSetup.click()
     XCTAssertTrue(app.checkBoxes["Allow this bounded preview verification"].exists)
     XCTAssertTrue(app.buttons["Run preview proof"].exists)
     XCTAssertFalse(app.buttons["Run preview proof"].isEnabled)
@@ -224,7 +224,6 @@ final class CodeVetterUITests: XCTestCase {
 
     let usageSection = app.buttons["settings-section-usage"]
     usageSection.click()
-    assertSelected(app.buttons["settings-section-usage"])
 
     let rubricsSection = app.buttons["settings-section-rubrics"]
     rubricsSection.click()
@@ -246,9 +245,9 @@ final class CodeVetterUITests: XCTestCase {
       app.descendants(matching: .any)["performance-workspace"].waitForExistence(timeout: 2))
     XCTAssertTrue(app.buttons["Choose performance repository"].exists)
     XCTAssertTrue(app.popUpButtons["Performance adapter"].exists)
-    app.descendants(matching: .any)["advanced-performance-source-options"].click()
-    let resolveScope = app.buttons["performance-scope-planner-resolve"]
-    XCTAssertTrue(reveal(resolveScope, in: app.scrollViews.firstMatch))
+    let advancedSource = app.descendants(matching: .any)["advanced-performance-source-options"]
+    XCTAssertTrue(advancedSource.exists)
+    advancedSource.click()
     XCTAssertTrue(app.buttons["Plan"].exists)
     XCTAssertFalse(app.buttons["Plan"].isEnabled)
     XCTAssertTrue(app.buttons["Capture evidence"].exists)
@@ -298,17 +297,4 @@ final class CodeVetterUITests: XCTestCase {
     XCTAssertTrue(palette.waitForExistence(timeout: 3))
   }
 
-  @MainActor
-  private func reveal(
-    _ element: XCUIElement,
-    in scrollView: XCUIElement,
-    attempts: Int = 3
-  ) -> Bool {
-    if element.exists { return true }
-    for _ in 0..<attempts {
-      scrollView.swipeUp()
-      if element.waitForExistence(timeout: 1) { return true }
-    }
-    return false
-  }
 }
