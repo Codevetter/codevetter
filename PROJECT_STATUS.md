@@ -76,7 +76,7 @@ Internal (fleet):
   `crates/codevetter-core` and `scripts/core-tools`. Native, CLI, and MCP share
   versioned Rust-owned receipts. CI now qualifies Swift, Rust, MCP, CLI,
   automation, docs, and the landing site without building a WebView. Release
-  automation targets version 1.12.0 and requires exact-tag Developer ID
+  automation targets version 1.12.1 and requires exact-tag Developer ID
   signing, Hardened Runtime, notarization, stapling, Sparkle EdDSA appcast
   proof, and isolated installed upgrade/data/rollback evidence before assets
   can publish. The matte true-black interface uses one shared page grammar and

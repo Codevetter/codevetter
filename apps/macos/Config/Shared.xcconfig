@@ -15,8 +15,8 @@ EXECUTABLE_NAME = CodeVetterNative
 // Debug stays isolated from user data; Release owns the production identity.
 PRODUCT_BUNDLE_IDENTIFIER = com.codevetter.desktop
 PRODUCT_BUNDLE_IDENTIFIER[config=Debug] = com.codevetter.desktop.native-preview
-MARKETING_VERSION = 1.12.0
-CURRENT_PROJECT_VERSION = 11200
+MARKETING_VERSION = 1.12.1
+CURRENT_PROJECT_VERSION = 11201
 
 // ==========================================
 // Platform Configuration
@@ -33,6 +33,13 @@ GENERATE_INFOPLIST_FILE = YES
 INFOPLIST_KEY_LSApplicationCategoryType = public.app-category.developer-tools
 INFOPLIST_KEY_NSHumanReadableCopyright = Copyright 2026 CodeVetter
 ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon
+// Production channel only. scripts/run-native-checks.mjs passes
+// CODEVETTER_PRODUCTION_INFOPLIST=Config/Production-Info.plist so Xcode merges the
+// Sparkle feed and public-key fragment into the generated Info.plist. It stays
+// empty for Debug and preview builds, and only this app target maps it onto
+// INFOPLIST_FILE, so SwiftPM package targets are unaffected.
+CODEVETTER_PRODUCTION_INFOPLIST =
+INFOPLIST_FILE = $(CODEVETTER_PRODUCTION_INFOPLIST)
 
 // ==========================================
 // Entitlements

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!--
+	Production-only Info.plist fragment. Xcode merges it with the generated
+	Info.plist when scripts/run-native-checks.mjs sets
+	CODEVETTER_PRODUCTION_INFOPLIST for the production channel (Shared.xcconfig
+	maps that setting onto INFOPLIST_FILE for the app target only). Xcode
+	ignores custom INFOPLIST_KEY_* build settings, so the Sparkle keys must come
+	from a real plist. Preview and Debug builds never reference this file and
+	therefore carry no feed or public key.
+	-->
+	<key>SUFeedURL</key>
+	<string>$(CODEVETTER_SPARKLE_FEED_URL)</string>
+	<key>SUPublicEDKey</key>
+	<string>$(CODEVETTER_SPARKLE_PUBLIC_KEY)</string>
+</dict>
+</plist>

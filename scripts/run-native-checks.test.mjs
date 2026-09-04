@@ -90,11 +90,12 @@ test('production release builds require exact updater and identity inputs', () =
       CODEVETTER_NATIVE_SPARKLE_FEED_URL:
         'https://github.com/Codevetter/codevetter/releases/latest/download/appcast.xml',
       CODEVETTER_NATIVE_SPARKLE_PUBLIC_KEY: publicKey,
-    }).slice(-3),
+    }).slice(-4),
     [
       'PRODUCT_BUNDLE_IDENTIFIER=com.codevetter.desktop',
-      'INFOPLIST_KEY_SUFeedURL=https://github.com/Codevetter/codevetter/releases/latest/download/appcast.xml',
-      `INFOPLIST_KEY_SUPublicEDKey=${publicKey}`,
+      'CODEVETTER_PRODUCTION_INFOPLIST=Config/Production-Info.plist',
+      'CODEVETTER_SPARKLE_FEED_URL=https://github.com/Codevetter/codevetter/releases/latest/download/appcast.xml',
+      `CODEVETTER_SPARKLE_PUBLIC_KEY=${publicKey}`,
     ]
   );
   assert.throws(

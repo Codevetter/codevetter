@@ -1,6 +1,6 @@
 [package]
 name = "codevetter-transport"
-version = "1.12.0"
+version = "1.12.1"
 edition = "2021"
 publish = false
 
@@ -8,5 +8,5 @@ publish = false
 name = "tauri"
 
 [dependencies]
-codevetter-transport-macros = { version = "=1.12.0", path = "../codevetter-transport-macros" }
+codevetter-transport-macros = { version = "=1.12.1", path = "../codevetter-transport-macros" }
 tokio = { version = "1", features = ["rt-multi-thread"] }

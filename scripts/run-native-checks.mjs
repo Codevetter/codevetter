@@ -69,13 +69,19 @@ export function nativeReleaseBuildSettings(environment = process.env) {
       'Production native builds require a canonical 32-byte Sparkle EdDSA public key'
     );
   }
+  // Xcode ignores custom INFOPLIST_KEY_* settings, so the Sparkle keys travel
+  // through a production-only plist fragment that Xcode merges with the
+  // generated Info.plist. Shared.xcconfig maps CODEVETTER_PRODUCTION_INFOPLIST
+  // onto INFOPLIST_FILE for the app target alone; the values are plain build
+  // settings that Xcode expands inside the fragment.
   return [
     ...settings,
     'CODE_SIGNING_ALLOWED=NO',
     'CODE_SIGNING_REQUIRED=NO',
     `PRODUCT_BUNDLE_IDENTIFIER=${bundleIdentifier}`,
-    `INFOPLIST_KEY_SUFeedURL=${feedURL}`,
-    `INFOPLIST_KEY_SUPublicEDKey=${publicKey}`,
+    'CODEVETTER_PRODUCTION_INFOPLIST=Config/Production-Info.plist',
+    `CODEVETTER_SPARKLE_FEED_URL=${feedURL}`,
+    `CODEVETTER_SPARKLE_PUBLIC_KEY=${publicKey}`,
   ];
 }
 

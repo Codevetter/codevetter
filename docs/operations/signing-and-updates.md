@@ -52,7 +52,10 @@ with the previous key, so rotate only with a documented migration release.
 `CODEVETTER_NATIVE_BUNDLE_IDENTIFIER` is `com.codevetter.desktop`,
 `CODEVETTER_NATIVE_SPARKLE_FEED_URL` is HTTPS, and
 `CODEVETTER_NATIVE_SPARKLE_PUBLIC_KEY` is a canonical 32-byte EdDSA key. It
-then injects `SUFeedURL` and `SUPublicEDKey` into the Release `Info.plist`. The
+then passes `CODEVETTER_PRODUCTION_INFOPLIST=Config/Production-Info.plist` plus the two values as
+build settings, and Xcode merges that fragment's `SUFeedURL` and
+`SUPublicEDKey` into the generated Release `Info.plist`. A plist fragment is
+required because Xcode ignores custom `INFOPLIST_KEY_*` settings. The
 feed is the latest-release asset
 `https://github.com/Codevetter/codevetter/releases/latest/download/appcast.xml`.
 
