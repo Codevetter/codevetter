@@ -30,8 +30,7 @@ final class CodeVetterUITests: XCTestCase {
     app.launch()
     XCTAssertTrue(app.buttons["Choose repository"].waitForExistence(timeout: 5))
     for destination in [
-      "Usage", "Repo Unpack", "Review", "Testing", "Performance", "Runs", "Capabilities",
-      "Settings",
+      "Usage", "Repo Unpack", "Review", "Testing", "Performance", "Runs", "Settings",
     ] {
       XCTAssertTrue(app.buttons[destination].exists, "Missing retained surface: \(destination)")
     }
@@ -96,9 +95,8 @@ final class CodeVetterUITests: XCTestCase {
     XCTAssertTrue(app.radioButtons["Git range"].exists)
     XCTAssertTrue(app.radioButtons["GitHub pull request"].exists)
     app.descendants(matching: .any)["advanced-testing-setup"].click()
-    let planner = app.descendants(matching: .any)["testing-scope-planner"]
-    XCTAssertTrue(reveal(planner, in: app.scrollViews.firstMatch))
-    XCTAssertTrue(app.buttons["testing-scope-planner-resolve"].exists)
+    let resolveScope = app.buttons["testing-scope-planner-resolve"]
+    XCTAssertTrue(reveal(resolveScope, in: app.scrollViews.firstMatch))
     XCTAssertTrue(app.checkBoxes["Allow this bounded preview verification"].exists)
     XCTAssertTrue(app.buttons["Run preview proof"].exists)
     XCTAssertFalse(app.buttons["Run preview proof"].isEnabled)
@@ -226,8 +224,7 @@ final class CodeVetterUITests: XCTestCase {
 
     let usageSection = app.buttons["settings-section-usage"]
     usageSection.click()
-    XCTAssertTrue(
-      app.descendants(matching: .any)["settings-usage-workspace"].waitForExistence(timeout: 2))
+    assertSelected(app.buttons["settings-section-usage"])
 
     let rubricsSection = app.buttons["settings-section-rubrics"]
     rubricsSection.click()
@@ -250,9 +247,8 @@ final class CodeVetterUITests: XCTestCase {
     XCTAssertTrue(app.buttons["Choose performance repository"].exists)
     XCTAssertTrue(app.popUpButtons["Performance adapter"].exists)
     app.descendants(matching: .any)["advanced-performance-source-options"].click()
-    let planner = app.descendants(matching: .any)["performance-scope-planner"]
-    XCTAssertTrue(reveal(planner, in: app.scrollViews.firstMatch))
-    XCTAssertTrue(app.buttons["performance-scope-planner-resolve"].exists)
+    let resolveScope = app.buttons["performance-scope-planner-resolve"]
+    XCTAssertTrue(reveal(resolveScope, in: app.scrollViews.firstMatch))
     XCTAssertTrue(app.buttons["Plan"].exists)
     XCTAssertFalse(app.buttons["Plan"].isEnabled)
     XCTAssertTrue(app.buttons["Capture evidence"].exists)

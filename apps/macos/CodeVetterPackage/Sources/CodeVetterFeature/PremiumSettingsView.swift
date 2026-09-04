@@ -477,8 +477,6 @@ struct PremiumSettingsView: View {
       historyRootsPanel
       retentionPanel
     }
-    .accessibilityElement(children: .contain)
-    .accessibilityIdentifier("settings-usage-workspace")
   }
 
   private var opsPanel: some View {
