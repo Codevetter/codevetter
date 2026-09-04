@@ -11,7 +11,8 @@ use serde_json::{json, Value};
 use super::review::resolve_cli_path;
 
 const CODEX_TIMEOUT: Duration = Duration::from_secs(8);
-const CLAUDE_TIMEOUT: Duration = Duration::from_secs(10);
+const CLAUDE_STARTUP_TIMEOUT: Duration = Duration::from_secs(5);
+const CLAUDE_TIMEOUT: Duration = Duration::from_secs(15);
 const OUTPUT_LIMIT_BYTES: usize = 256 * 1024;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -411,7 +412,8 @@ fn collect_claude_quota() -> ProviderQuotaStatus {
         }
     });
 
-    thread::sleep(Duration::from_millis(700));
+    let mut bytes = Vec::new();
+    wait_for_claude_startup(&rx, &mut bytes);
     if writer.write_all(b"/usage\r").is_err() || writer.flush().is_err() {
         let _ = child.kill();
         let _ = child.wait();
@@ -423,7 +425,6 @@ fn collect_claude_quota() -> ProviderQuotaStatus {
     }
 
     let deadline = Instant::now() + CLAUDE_TIMEOUT;
-    let mut bytes = Vec::new();
     let mut last_output = Instant::now();
     loop {
         if Instant::now() >= deadline {
@@ -439,7 +440,7 @@ fn collect_claude_quota() -> ProviderQuotaStatus {
                 }
             }
             Err(mpsc::RecvTimeoutError::Timeout) => {
-                if claude_capture_complete(&bytes)
+                if claude_required_windows_available(&bytes)
                     && last_output.elapsed() >= Duration::from_millis(900)
                 {
                     break;
@@ -455,18 +456,54 @@ fn collect_claude_quota() -> ProviderQuotaStatus {
         .unwrap_or_else(|error| unavailable("claude", "Claude Code /usage", error))
 }
 
+fn wait_for_claude_startup(rx: &mpsc::Receiver<Vec<u8>>, bytes: &mut Vec<u8>) {
+    let deadline = Instant::now() + CLAUDE_STARTUP_TIMEOUT;
+    let mut saw_banner = false;
+    let mut last_output = Instant::now();
+    loop {
+        if Instant::now() >= deadline {
+            break;
+        }
+        match rx.recv_timeout(Duration::from_millis(100)) {
+            Ok(chunk) => {
+                last_output = Instant::now();
+                let remaining = OUTPUT_LIMIT_BYTES.saturating_sub(bytes.len());
+                bytes.extend_from_slice(&chunk[..chunk.len().min(remaining)]);
+                saw_banner = strip_terminal_sequences(&String::from_utf8_lossy(bytes))
+                    .contains("Claude Code v");
+            }
+            Err(mpsc::RecvTimeoutError::Timeout) => {
+                if saw_banner && last_output.elapsed() >= Duration::from_millis(400) {
+                    break;
+                }
+            }
+            Err(mpsc::RecvTimeoutError::Disconnected) => break,
+        }
+    }
+}
+
 fn claude_capture_complete(bytes: &[u8]) -> bool {
+    if !claude_required_windows_available(bytes) {
+        return false;
+    }
+    let output = strip_terminal_sequences(&String::from_utf8_lossy(bytes));
+    let Ok(status) = parse_claude_usage_text(&output) else {
+        return false;
+    };
+    status
+        .credits
+        .as_ref()
+        .and_then(|credits| credits.reset_description.as_ref())
+        .is_some()
+}
+
+fn claude_required_windows_available(bytes: &[u8]) -> bool {
     let output = strip_terminal_sequences(&String::from_utf8_lossy(bytes));
     let Ok(status) = parse_claude_usage_text(&output) else {
         return false;
     };
     status.windows.iter().any(|window| window.id == "current")
         && status.windows.iter().any(|window| window.id == "weekly")
-        && status
-            .credits
-            .as_ref()
-            .and_then(|credits| credits.reset_description.as_ref())
-            .is_some()
 }
 
 fn parse_claude_usage_text(output: &str) -> Result<ProviderQuotaStatus, String> {
@@ -845,6 +882,14 @@ Usage credits\r0% used\r$0.00 / $150.00 spent\rResets Oct 1 (Asia/Calcutta)\r";
         assert_eq!(quota.windows[0].remaining_percent, 88.0);
         assert_eq!(quota.windows[1].id, "weekly");
         assert_eq!(quota.windows[1].remaining_percent, 66.0);
+    }
+
+    #[test]
+    fn claude_capture_can_finish_after_required_windows_settle_without_credits() {
+        let output = b"Current session\n12% used\nResets 2:20am\n\
+Current week (all models)\n34% used\nResets Sep 6 at 5:30pm\n";
+        assert!(claude_required_windows_available(output));
+        assert!(!claude_capture_complete(output));
     }
 
     #[test]
