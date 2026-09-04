@@ -48,7 +48,9 @@ export function nativeReleaseBuildSettings(environment = process.env) {
     'CLANG_COVERAGE_MAPPING=NO',
   ];
   const channel = environment.CODEVETTER_NATIVE_CHANNEL ?? 'preview';
-  if (channel === 'preview') return settings;
+  if (channel === 'preview') {
+    return [...settings, 'PRODUCT_BUNDLE_IDENTIFIER=com.codevetter.desktop.native-preview'];
+  }
   if (channel !== 'production') {
     throw new Error(`Unsupported native release channel: ${channel}`);
   }

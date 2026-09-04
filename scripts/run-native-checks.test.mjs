@@ -77,6 +77,7 @@ test('release automation disables coverage at the workspace command boundary', (
     'ENABLE_CODE_COVERAGE=NO',
     'CLANG_ENABLE_CODE_COVERAGE=NO',
     'CLANG_COVERAGE_MAPPING=NO',
+    'PRODUCT_BUNDLE_IDENTIFIER=com.codevetter.desktop.native-preview',
   ]);
 });
 

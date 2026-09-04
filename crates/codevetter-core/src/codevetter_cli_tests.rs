@@ -686,7 +686,7 @@ fn capabilities_parser_and_human_output_share_the_registry() {
     let output = render_human_capabilities(&capability_registry());
     assert!(output.contains("verification.local_check"));
     assert!(output.contains("native.evidence_workbench"));
-    assert!(output.contains("UI: building | CLI: unavailable | agent: unavailable"));
+    assert!(output.contains("UI: available | CLI: unavailable | agent: unavailable"));
 }
 
 #[test]
