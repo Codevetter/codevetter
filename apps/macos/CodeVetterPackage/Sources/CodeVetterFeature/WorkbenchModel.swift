@@ -202,6 +202,8 @@ public final class WorkbenchModel {
   public var usageTimezone = TimeZone.current.identifier
   public var usageLoading = false
   public var usageIssue: String?
+  public private(set) var usageShowingSavedSnapshot = false
+  public private(set) var providerQuotaShowingSavedSnapshot = false
   public var unpackSnapshots: [UnpackSnapshotSummary] = []
   public var selectedUnpackSnapshotID: String?
   public var unpackSnapshot: UnpackSnapshotRecord?
@@ -267,6 +269,7 @@ public final class WorkbenchModel {
 
   private let runner: CodeVetterProcessRunner
   private let repositoryAccessStore: RepositoryAccessStore?
+  private let usageSnapshotStore: UsageSnapshotStore
   private var runTask: Task<Void, Never>?
   private var activeReviewRequestID: String?
   private var reviewPlanFingerprint: String?
@@ -288,6 +291,10 @@ public final class WorkbenchModel {
   private var performanceScopeTask: Task<Void, Never>?
   private var usageTask: Task<Void, Never>?
   private var providerQuotaTask: Task<Void, Never>?
+  private var usageSnapshotRestoreTask: Task<RestoredUsageSnapshots, Never>?
+  private var usageSnapshotsRestored = false
+  private var usageLastLoadedAt: Date?
+  private var providerQuotaLastLoadedAt: Date?
   @ObservationIgnored private var usageProjectionCache:
     [UsageProjectionCacheKey: UsageViewProjection] = [:]
   @ObservationIgnored private var usageProjectionReferenceDate = Date()
@@ -307,10 +314,12 @@ public final class WorkbenchModel {
 
   public init(
     runner: CodeVetterProcessRunner = CodeVetterProcessRunner(),
-    repositoryAccessStore: RepositoryAccessStore? = nil
+    repositoryAccessStore: RepositoryAccessStore? = nil,
+    usageSnapshotStore: UsageSnapshotStore = UsageSnapshotStore()
   ) {
     self.runner = runner
     self.repositoryAccessStore = repositoryAccessStore
+    self.usageSnapshotStore = usageSnapshotStore
     do {
       registry = try CapabilityRegistry.bundled()
       registryIssue = nil
@@ -1901,6 +1910,65 @@ public final class WorkbenchModel {
       "Ready to inspect another exact workload before project code executes."
   }
 
+  public func restoreUsageSnapshots() async {
+    guard !usageSnapshotsRestored else { return }
+    let restoreTask: Task<RestoredUsageSnapshots, Never>
+    if let usageSnapshotRestoreTask {
+      restoreTask = usageSnapshotRestoreTask
+    } else {
+      let store = usageSnapshotStore
+      let task = Task.detached(priority: .utility) {
+        store.restore()
+      }
+      usageSnapshotRestoreTask = task
+      restoreTask = task
+    }
+
+    let snapshots = await restoreTask.value
+    guard !Task.isCancelled else { return }
+    if usageReport == nil, let report = snapshots.usageReport {
+      usageReport = report
+      usageReportJSON = snapshots.usageReportJSON
+      usageLastLoadedAt = snapshots.usageSavedAt
+      usageShowingSavedSnapshot = true
+      let detected = Set(report.provenance.detectedAgents)
+      usageSelectedAgents = detected
+    }
+    if providerQuotaReceipt == nil, let receipt = snapshots.providerQuota {
+      providerQuotaReceipt = receipt
+      providerQuotaLastLoadedAt = snapshots.providerQuotaSavedAt
+      providerQuotaShowingSavedSnapshot = true
+    }
+    usageSnapshotsRestored = true
+    usageSnapshotRestoreTask = nil
+  }
+
+  public func prepareUsage() async {
+    await restoreUsageSnapshots()
+    let now = Date()
+    if usageReport == nil
+      || usageReport?.provenance.timezone != usageTimezone
+      || needsUsageRefresh(loadedAt: usageLastLoadedAt, now: now, interval: 5 * 60)
+    {
+      loadUsage()
+    }
+    if providerQuotaReceipt == nil
+      || needsUsageRefresh(loadedAt: providerQuotaLastLoadedAt, now: now, interval: 2 * 60)
+    {
+      loadProviderQuota()
+    }
+  }
+
+  public func warmUsage() async {
+    await restoreUsageSnapshots()
+    if usageReport == nil {
+      loadUsage()
+    }
+    if providerQuotaReceipt == nil {
+      loadProviderQuota()
+    }
+  }
+
   public func loadUsage(refresh: Bool = false) {
     guard !usageLoading else { return }
     usageLoading = true
@@ -1916,10 +1984,17 @@ public final class WorkbenchModel {
         guard !Task.isCancelled else { return }
         usageReport = result.report
         usageReportJSON = result.rawJSON
+        usageLastLoadedAt = Date()
+        usageShowingSavedSnapshot = false
         let detected = Set(result.report.provenance.detectedAgents)
         usageSelectedAgents.formIntersection(detected)
         if usageSelectedAgents.isEmpty {
           usageSelectedAgents = detected
+        }
+        let store = usageSnapshotStore
+        let rawJSON = result.rawJSON
+        Task.detached(priority: .utility) {
+          try? store.saveUsage(rawJSON: rawJSON)
         }
       } catch is CancellationError {
         // Navigation may cancel this bounded read without changing the last accepted report.
@@ -1951,12 +2026,24 @@ public final class WorkbenchModel {
         }
         guard !Task.isCancelled else { return }
         providerQuotaReceipt = receipt
+        providerQuotaLastLoadedAt = Date()
+        providerQuotaShowingSavedSnapshot = false
+        let store = usageSnapshotStore
+        Task.detached(priority: .utility) {
+          try? store.saveProviderQuota(receipt)
+        }
       } catch is CancellationError {
         // Navigation may cancel this bounded read without changing the last accepted receipt.
       } catch {
         providerQuotaIssue = error.localizedDescription
       }
     }
+  }
+
+  private func needsUsageRefresh(loadedAt: Date?, now: Date, interval: TimeInterval) -> Bool {
+    guard let loadedAt else { return true }
+    let age = now.timeIntervalSince(loadedAt)
+    return age < 0 || age >= interval
   }
 
   public func toggleUsageAgent(_ agent: String) {

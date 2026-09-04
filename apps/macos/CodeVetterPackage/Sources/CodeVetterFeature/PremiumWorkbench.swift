@@ -40,14 +40,12 @@ public struct PremiumWorkbenchRootView: View {
     .task {
       model.loadOnboarding()
     }
+    .task {
+      await model.warmUsage()
+    }
     .task(id: model.section) {
       if model.section == .usage {
-        if model.usageReport == nil {
-          model.loadUsage()
-        }
-        if model.providerQuotaReceipt == nil {
-          model.loadProviderQuota()
-        }
+        await model.prepareUsage()
       } else if model.section == .repository, model.unpackSnapshots.isEmpty {
         model.loadUnpackSnapshots()
       } else if model.section == .settings, model.settingsReceipt == nil {

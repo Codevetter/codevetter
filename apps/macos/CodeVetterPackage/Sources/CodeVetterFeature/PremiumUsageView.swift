@@ -96,7 +96,15 @@ struct PremiumUsageView: View {
       subtitle: "Live allowance from Claude and Codex"
     ) {
       if let report = model.usageReport {
-        StatusPill(label: report.status.label, color: report.status.color)
+        let showingSavedData =
+          model.usageShowingSavedSnapshot || model.providerQuotaShowingSavedSnapshot
+        StatusPill(
+          label: showingSavedData
+            ? (model.usageLoading || model.providerQuotaLoading
+              ? "Saved data · updating" : "Saved data")
+            : report.status.label,
+          color: showingSavedData ? EvidenceStyle.amber : report.status.color
+        )
       }
       Button {
         model.loadUsage(refresh: true)

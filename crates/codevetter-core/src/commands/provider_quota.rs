@@ -76,19 +76,30 @@ pub struct ProviderCreditBalance {
 }
 
 pub fn collect_provider_quotas(selection: ProviderQuotaSelection) -> ProviderQuotaReceipt {
-    let mut providers = Vec::new();
-    if matches!(
-        selection,
-        ProviderQuotaSelection::All | ProviderQuotaSelection::Claude
-    ) {
-        providers.push(collect_claude_quota());
-    }
-    if matches!(
-        selection,
-        ProviderQuotaSelection::All | ProviderQuotaSelection::Codex
-    ) {
-        providers.push(collect_codex_quota());
-    }
+    let providers = match selection {
+        ProviderQuotaSelection::Claude => vec![collect_claude_quota()],
+        ProviderQuotaSelection::Codex => vec![collect_codex_quota()],
+        ProviderQuotaSelection::All => thread::scope(|scope| {
+            let claude = scope.spawn(collect_claude_quota);
+            let codex = scope.spawn(collect_codex_quota);
+            vec![
+                claude.join().unwrap_or_else(|_| {
+                    unavailable(
+                        "claude",
+                        "Claude Code /usage",
+                        "Claude quota collection stopped unexpectedly",
+                    )
+                }),
+                codex.join().unwrap_or_else(|_| {
+                    unavailable(
+                        "codex",
+                        "codex app-server account/rateLimits/read",
+                        "Codex quota collection stopped unexpectedly",
+                    )
+                }),
+            ]
+        }),
+    };
     ProviderQuotaReceipt {
         schema_version: "codevetter.provider-quota/v1".to_string(),
         generated_at: chrono::Utc::now().to_rfc3339(),

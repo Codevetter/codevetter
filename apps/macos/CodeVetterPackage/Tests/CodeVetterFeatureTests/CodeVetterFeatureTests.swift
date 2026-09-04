@@ -34,6 +34,107 @@ import Testing
   }
 }
 
+@MainActor
+@Test func usageSnapshotsRestoreBeforeLiveCollectionFinishes() async throws {
+  let directory = FileManager.default.temporaryDirectory
+    .appending(path: "codevetter-usage-snapshots-\(UUID().uuidString)", directoryHint: .isDirectory)
+  defer { try? FileManager.default.removeItem(at: directory) }
+  let store = UsageSnapshotStore(directory: directory)
+  let usageJSON =
+    #"{"status":"ready","stale":false,"error":null,"provenance":{"engine":"ccusage","version":"20.0.20","generated_at":"2026-09-04T00:00:00Z","timezone":"UTC","window":"all","detected_agents":["claude","codex"],"excluded_agents":[],"codex_roots":[],"source_fingerprint":"sha256:snapshot","pricing_complete":true,"fallback_models":[],"unpriced_models":[]},"daily":[],"weekly":[],"monthly":[],"sessions":[],"totals":{"input_tokens":1,"cache_creation_tokens":2,"cache_read_tokens":3,"output_tokens":4,"total_tokens":10,"cost_usd":0.25}}"#
+  let quotaJSON =
+    #"{"schema_version":"codevetter.provider-quota/v1","generated_at":"2026-09-04T00:00:00Z","providers":[{"provider":"codex","status":"ready","source":"fixture","checked_at":"2026-09-04T00:00:00Z","plan":"pro","windows":[{"id":"codex.primary","label":"Weekly window","used_percent":25,"remaining_percent":75,"window_duration_minutes":10080,"resets_at_unix":null,"reset_description":null}],"credits":null,"reset_credits":null,"message":null}],"limitations":[]}"#
+  let quota = try JSONDecoder().decode(ProviderQuotaReceipt.self, from: Data(quotaJSON.utf8))
+  try store.saveUsage(rawJSON: usageJSON)
+  try store.saveProviderQuota(quota)
+  let usagePermissions = try FileManager.default.attributesOfItem(
+    atPath: directory.appending(path: "local-usage.json").path
+  )[.posixPermissions] as? NSNumber
+
+  let model = WorkbenchModel(usageSnapshotStore: store)
+  await model.restoreUsageSnapshots()
+
+  #expect(model.usageReport?.totals.totalTokens == 10)
+  #expect(model.usageReportJSON == usageJSON)
+  #expect(model.usageSelectedAgents == ["claude", "codex"])
+  #expect(model.providerQuotaReceipt?.providers.first?.provider == "codex")
+  #expect(model.usageShowingSavedSnapshot)
+  #expect(model.providerQuotaShowingSavedSnapshot)
+  #expect(!model.usageLoading)
+  #expect(!model.providerQuotaLoading)
+  #expect(usagePermissions?.intValue == 0o600)
+}
+
+@Test func usageSnapshotStoreIgnoresMalformedFiles() throws {
+  let directory = FileManager.default.temporaryDirectory
+    .appending(path: "codevetter-invalid-usage-snapshots-\(UUID().uuidString)", directoryHint: .isDirectory)
+  try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+  defer { try? FileManager.default.removeItem(at: directory) }
+  try Data("not-json".utf8).write(to: directory.appending(path: "local-usage.json"))
+  try Data("[]".utf8).write(to: directory.appending(path: "provider-quota.json"))
+
+  let restored = UsageSnapshotStore(directory: directory).restore()
+
+  #expect(restored.usageReport == nil)
+  #expect(restored.usageReportJSON.isEmpty)
+  #expect(restored.providerQuota == nil)
+}
+
+@MainActor
+@Test func staleUsageSnapshotsStayVisibleWhileCollectorsRevalidate() async throws {
+  let root = FileManager.default.temporaryDirectory
+    .appending(path: "codevetter-stale-usage-\(UUID().uuidString)", directoryHint: .isDirectory)
+  let snapshotDirectory = root.appending(path: "snapshots", directoryHint: .isDirectory)
+  let executable = root.appending(path: "codevetter")
+  defer { try? FileManager.default.removeItem(at: root) }
+  try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+  let usageJSON =
+    #"{"status":"ready","stale":false,"error":null,"provenance":{"engine":"ccusage","version":"20.0.20","generated_at":"2026-09-04T00:00:00Z","timezone":"UTC","window":"all","detected_agents":["codex"],"excluded_agents":[],"codex_roots":[],"source_fingerprint":"sha256:snapshot","pricing_complete":true,"fallback_models":[],"unpriced_models":[]},"daily":[],"weekly":[],"monthly":[],"sessions":[],"totals":{"input_tokens":1,"cache_creation_tokens":2,"cache_read_tokens":3,"output_tokens":4,"total_tokens":10,"cost_usd":0.25}}"#
+  let quotaJSON =
+    #"{"schema_version":"codevetter.provider-quota/v1","generated_at":"2026-09-04T00:00:00Z","providers":[{"provider":"codex","status":"ready","source":"fixture","checked_at":"2026-09-04T00:00:00Z","plan":"pro","windows":[{"id":"codex.primary","label":"Weekly window","used_percent":25,"remaining_percent":75,"window_duration_minutes":10080,"resets_at_unix":null,"reset_description":null}],"credits":null,"reset_credits":null,"message":null}],"limitations":[]}"#
+  let store = UsageSnapshotStore(directory: snapshotDirectory)
+  let quota = try JSONDecoder().decode(ProviderQuotaReceipt.self, from: Data(quotaJSON.utf8))
+  try store.saveUsage(rawJSON: usageJSON)
+  try store.saveProviderQuota(quota)
+  let staleDate = Date().addingTimeInterval(-10 * 60)
+  for file in ["local-usage.json", "provider-quota.json"] {
+    try FileManager.default.setAttributes(
+      [.modificationDate: staleDate],
+      ofItemAtPath: snapshotDirectory.appending(path: file).path
+    )
+  }
+  try """
+  #!/bin/sh
+  sleep 0.25
+  if [ "$1" = "usage" ]; then
+    printf '%s' '\(usageJSON)'
+  else
+    printf '%s' '\(quotaJSON)'
+  fi
+  """.write(to: executable, atomically: true, encoding: .utf8)
+  try FileManager.default.setAttributes([.posixPermissions: 0o700], ofItemAtPath: executable.path)
+
+  let model = WorkbenchModel(
+    runner: CodeVetterProcessRunner(executableURL: executable),
+    usageSnapshotStore: store
+  )
+  model.usageTimezone = "UTC"
+  await model.prepareUsage()
+
+  #expect(model.usageReport?.totals.totalTokens == 10)
+  #expect(model.providerQuotaReceipt?.providers.first?.provider == "codex")
+  #expect(model.usageShowingSavedSnapshot)
+  #expect(model.providerQuotaShowingSavedSnapshot)
+  #expect(model.usageLoading)
+  #expect(model.providerQuotaLoading)
+
+  while model.usageLoading || model.providerQuotaLoading {
+    try await Task.sleep(for: .milliseconds(20))
+  }
+  #expect(!model.usageShowingSavedSnapshot)
+  #expect(!model.providerQuotaShowingSavedSnapshot)
+}
+
 @Test func nativeUpdaterConfigurationFailsClosedUntilEverySigningInputExists() throws {
   let preview = NativeUpdaterConfiguration(
     feedURL: URL(string: "https://updates.example.test/appcast.xml"),
@@ -3188,6 +3289,19 @@ func largeUsageReportDecodesAndRendersWithinTheNativeGate() throws {
     _ = model.usageProjection(for: model.usageReport!)
     cachedProjectionSamples.append((DispatchTime.now().uptimeNanoseconds - started) / 1_000)
   }
+  let snapshotDirectory = FileManager.default.temporaryDirectory
+    .appending(path: "codevetter-usage-restore-benchmark-\(UUID().uuidString)")
+  defer { try? FileManager.default.removeItem(at: snapshotDirectory) }
+  let snapshotStore = UsageSnapshotStore(directory: snapshotDirectory)
+  try snapshotStore.saveUsage(rawJSON: String(decoding: payload, as: UTF8.self))
+  for _ in 0..<3 { _ = snapshotStore.restore() }
+  var snapshotRestoreSamples = [UInt64]()
+  for _ in 0..<20 {
+    let started = DispatchTime.now().uptimeNanoseconds
+    let restored = snapshotStore.restore()
+    snapshotRestoreSamples.append((DispatchTime.now().uptimeNanoseconds - started) / 1_000)
+    #expect(restored.usageReport?.sessions.count == sessionCount)
+  }
   renderUsage(model)
   model.usageScale = .month
   renderUsage(model)
@@ -3203,17 +3317,20 @@ func largeUsageReportDecodesAndRendersWithinTheNativeGate() throws {
   let decodeP95 = percentile95(decodeSamples)
   let projectionP95 = percentile95(projectionSamples)
   let cachedProjectionP95 = percentile95(cachedProjectionSamples)
+  let snapshotRestoreP95 = percentile95(snapshotRestoreSamples)
   let renderP95 = percentile95(renderSamples)
   if nativePerformanceGateEnabled() {
     #expect(decodeP95 < 30_000, "Large usage decoding must stay below 30 ms p95")
     #expect(projectionP95 < 50_000, "A cold Usage selection must stay below 50 ms p95")
     #expect(cachedProjectionP95 < 1_000, "A repeated Usage selection must stay below 1 ms p95")
+    #expect(snapshotRestoreP95 < 50_000, "A saved Usage snapshot must restore below 50 ms p95")
     #expect(renderP95 < 50_000, "Large usage rendering must stay below 50 ms p95")
   }
   print(
     "NATIVE_USAGE_BENCHMARK_JSON "
       + "{\"decode_p95_us\":\(decodeP95),\"projection_p95_us\":\(projectionP95),"
       + "\"cached_projection_p95_us\":\(cachedProjectionP95),\"render_p95_us\":\(renderP95),"
+      + "\"snapshot_restore_p95_us\":\(snapshotRestoreP95),"
       + "\"daily_periods\":365,\"sessions\":\(sessionCount),\"decode_samples\":100,\"render_samples\":20}"
   )
 
