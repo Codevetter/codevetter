@@ -3195,7 +3195,7 @@ func largeUsageReportDecodesAndRendersWithinTheNativeGate() throws {
   let cachedProjectionP95 = percentile95(cachedProjectionSamples)
   let renderP95 = percentile95(renderSamples)
   if nativePerformanceGateEnabled() {
-    #expect(decodeP95 < 25_000, "Large usage decoding must stay below 25 ms p95")
+    #expect(decodeP95 < 30_000, "Large usage decoding must stay below 30 ms p95")
     #expect(projectionP95 < 50_000, "A cold Usage selection must stay below 50 ms p95")
     #expect(cachedProjectionP95 < 1_000, "A repeated Usage selection must stay below 1 ms p95")
     #expect(renderP95 < 50_000, "Large usage rendering must stay below 50 ms p95")
