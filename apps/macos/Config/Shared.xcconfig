@@ -15,8 +15,8 @@ EXECUTABLE_NAME = CodeVetterNative
 // Keep the migration candidate isolated from the shipped Tauri application.
 // The production identifier transfers only after the retirement gate passes.
 PRODUCT_BUNDLE_IDENTIFIER = com.codevetter.desktop.native-preview
-MARKETING_VERSION = 1.11.0
-CURRENT_PROJECT_VERSION = 11100
+MARKETING_VERSION = 1.11.1
+CURRENT_PROJECT_VERSION = 11101
 
 // ==========================================
 // Platform Configuration
@@ -32,6 +32,7 @@ LD_RUNPATH_SEARCH_PATHS = $(inherited) @executable_path/../Frameworks
 GENERATE_INFOPLIST_FILE = YES
 INFOPLIST_KEY_LSApplicationCategoryType = public.app-category.developer-tools
 INFOPLIST_KEY_NSHumanReadableCopyright = Copyright 2026 CodeVetter
+ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon
 
 // ==========================================
 // Entitlements

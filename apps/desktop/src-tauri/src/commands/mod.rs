@@ -47,6 +47,7 @@ mod perf_bench;
 pub mod performance_bridge;
 pub mod preferences;
 pub mod procedure_events;
+pub mod provider_quota;
 pub mod qa_workspace;
 pub mod repo_query;
 pub mod repo_workspace;

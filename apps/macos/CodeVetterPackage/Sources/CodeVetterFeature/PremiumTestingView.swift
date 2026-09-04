@@ -11,16 +11,24 @@ private enum TestingDetailMode: String, CaseIterable, Identifiable {
 struct PremiumTestingView: View {
   @Bindable var model: WorkbenchModel
   @State private var detailMode: TestingDetailMode = .evidence
+  @State private var showAdvancedSetup = false
+  @State private var showReceiptDetails = false
 
   var body: some View {
-    Group {
-      if let receipt = model.testingReceipt {
-        receiptDesk(receipt)
-      } else {
-        HStack(spacing: 0) {
+    VStack(spacing: 0) {
+      PremiumPageHeader(
+        eyebrow: "Runtime evidence",
+        title: "Testing",
+        subtitle: "Exercise the exact changed experience and preserve routes, journeys, and limits"
+      ) {
+        StatusPill(label: model.testingState.rawValue, color: testingStatusColor)
+      }
+      Rectangle().fill(EvidenceStyle.separator).frame(height: 1)
+      Group {
+        if let receipt = model.testingReceipt {
+          receiptDesk(receipt)
+        } else {
           testingSetup
-          Rectangle().fill(EvidenceStyle.separator).frame(width: 1)
-          TestingExecutionContract(model: model).frame(width: 310)
         }
       }
     }
@@ -60,61 +68,51 @@ struct PremiumTestingView: View {
   private var testingSetup: some View {
     VStack(spacing: 0) {
       ScrollView {
-        VStack(alignment: .leading, spacing: 24) {
-          HStack(alignment: .top) {
-            VStack(alignment: .leading, spacing: 7) {
-              Text("T-REX / DIRECT PREVIEW")
-                .font(.system(size: 9, weight: .bold, design: .monospaced))
-                .tracking(1.2)
-                .foregroundStyle(EvidenceStyle.amberForeground)
-              Text("Test the change where users touch it.")
-                .font(.system(size: 30, weight: .semibold))
-                .tracking(-0.55)
-              Text(
-                "Bind one exact change to one deployed preview, then keep every route, journey, artifact, and limitation attached to the Rust receipt."
-              )
-              .font(.system(size: 13))
+        VStack(alignment: .leading, spacing: 18) {
+          VStack(alignment: .leading, spacing: 5) {
+            Text("Prove one changed experience")
+              .font(.system(size: 18, weight: .semibold))
+            Text("Choose the source and preview. CodeVetter resolves the rest before execution.")
+              .font(.system(size: 11))
               .foregroundStyle(.secondary)
-              .fixedSize(horizontal: false, vertical: true)
-            }
-            Spacer(minLength: 20)
-            StatusPill(label: model.testingState.rawValue, color: testingStatusColor)
           }
 
-          VStack(alignment: .leading, spacing: 15) {
-            PremiumFieldLabel("REPOSITORY")
-            Button {
-              model.choosingRepository = true
-            } label: {
-              HStack(spacing: 11) {
-                Image(systemName: "folder.fill").foregroundStyle(EvidenceStyle.amberForeground)
-                Text(repositoryLabel)
-                  .font(.system(size: 13, weight: .medium, design: .monospaced))
-                  .foregroundStyle(model.repositoryPath.isEmpty ? .secondary : .primary)
-                  .lineLimit(1)
-                  .truncationMode(.middle)
-                Spacer()
-                Text("Choose…")
-                  .font(.system(size: 10, weight: .semibold))
-                  .foregroundStyle(.secondary)
-              }
-              .padding(.horizontal, 15)
-              .frame(height: 48)
-              .premiumField()
+          PremiumFieldLabel("SOURCE")
+          Button {
+            model.choosingRepository = true
+          } label: {
+            HStack(spacing: 11) {
+              Image(systemName: "folder.fill").foregroundStyle(EvidenceStyle.amberForeground)
+              Text(repositoryLabel)
+                .font(.system(size: 13, weight: .medium, design: .monospaced))
+                .foregroundStyle(model.repositoryPath.isEmpty ? .secondary : .primary)
+                .lineLimit(1)
+                .truncationMode(.middle)
+              Spacer()
+              Text("Choose…")
+                .font(.system(size: 11, weight: .semibold))
+                .foregroundStyle(.secondary)
             }
-            .buttonStyle(.plain)
-            .accessibilityLabel("Choose testing repository")
+            .padding(.horizontal, 15)
+            .frame(height: 48)
+            .premiumField()
+          }
+          .buttonStyle(.plain)
+          .accessibilityLabel("Choose testing repository")
 
+          HStack(alignment: .bottom, spacing: 14) {
             VStack(alignment: .leading, spacing: 8) {
-              PremiumFieldLabel("CHANGE IDENTITY")
+              PremiumFieldLabel("CHANGE TYPE")
               Picker("Change identity", selection: $model.testingChangeKind) {
                 Text("Git range").tag(TrexChangeKind.range)
                 Text("GitHub pull request").tag(TrexChangeKind.pullRequest)
               }
               .pickerStyle(.segmented)
               .labelsHidden()
-              .tint(EvidenceStyle.amber)
+              .tint(.secondary)
+              .frame(height: 48)
             }
+            .frame(width: 230)
 
             PremiumInput(
               label: model.testingChangeKind == .range ? "EXACT RANGE" : "PULL REQUEST",
@@ -122,73 +120,14 @@ struct PremiumTestingView: View {
               placeholder: changePlaceholder,
               text: $model.testingChange
             )
-
-            PremiumScopePlanner(
-              title: "Changed-scope planner",
-              subtitle:
-                "Resolve this change, one user flow, or a bounded codebase portfolio into Rust-owned runnable targets before browser execution.",
-              kind: $model.testingScopeKind,
-              value: testingScopeValue,
-              plan: model.testingScopePlan,
-              loading: model.testingScopeLoading,
-              issue: model.testingScopeIssue ?? model.testingScopeInputIssue,
-              canResolve: model.canResolveTestingScope,
-              selectedCandidateID: model.selectedTestingScopeCandidateID,
-              compact: false,
-              accessibilityID: "testing-scope-planner",
-              onResolve: model.resolveTestingScope,
-              onSelect: model.selectTestingScopeCandidate
-            )
-
-            Button {
-              model.openQaWorkspace()
-            } label: {
-              HStack(spacing: 12) {
-                ZStack {
-                  RoundedRectangle(cornerRadius: 9)
-                    .fill(EvidenceStyle.amber.opacity(0.12))
-                    .frame(width: 38, height: 38)
-                  Image(systemName: "point.3.connected.trianglepath.dotted")
-                    .foregroundStyle(EvidenceStyle.amberForeground)
-                }
-                VStack(alignment: .leading, spacing: 3) {
-                  Text(
-                    model.testingQaWorkflowName.isEmpty
-                      ? "Journey setup" : model.testingQaWorkflowName
-                  )
-                  .font(.system(size: 12, weight: .semibold))
-                  Text(
-                    model.testingTargetRoute.isEmpty
-                      ? "Saved targets, repository Playwright specs, and post-fix rerun setup"
-                      : "\(model.testingTargetRoute) · \(model.testingTargetGoal)"
-                  )
-                  .font(.system(size: 10))
-                  .foregroundStyle(.secondary)
-                  .lineLimit(2)
-                }
-                Spacer()
-                Text("Configure")
-                  .font(.system(size: 10, weight: .semibold))
-                  .foregroundStyle(.secondary)
-                Image(systemName: "chevron.right")
-                  .font(.system(size: 9, weight: .bold))
-                  .foregroundStyle(.tertiary)
-              }
-              .padding(13)
-              .background(EvidenceStyle.surface, in: RoundedRectangle(cornerRadius: 12))
-              .overlay { RoundedRectangle(cornerRadius: 12).stroke(EvidenceStyle.separator) }
-            }
-            .buttonStyle(.plain)
-            .disabled(model.repositoryPath.isEmpty)
-            .accessibilityLabel("Configure saved QA journeys")
-
-            PremiumInput(
-              label: "DEPLOYED PREVIEW",
-              icon: "safari",
-              placeholder: "https://preview.example.com",
-              text: $model.testingPreviewURL
-            )
           }
+
+          PremiumInput(
+            label: "DEPLOYED PREVIEW",
+            icon: "safari",
+            placeholder: "https://preview.example.com",
+            text: $model.testingPreviewURL
+          )
 
           Toggle(isOn: $model.testingConfirmed) {
             VStack(alignment: .leading, spacing: 4) {
@@ -212,7 +151,74 @@ struct PremiumTestingView: View {
           .background(EvidenceStyle.surface, in: RoundedRectangle(cornerRadius: 12))
           .overlay { RoundedRectangle(cornerRadius: 12).stroke(EvidenceStyle.separator) }
 
-          TestingCapabilityStrip()
+          testingContractSummary
+
+          DisclosureGroup(isExpanded: $showAdvancedSetup) {
+            VStack(alignment: .leading, spacing: 16) {
+              PremiumScopePlanner(
+                title: "Changed-scope planner",
+                subtitle:
+                  "Resolve this change, one user flow, or a bounded codebase portfolio into Rust-owned runnable targets before browser execution.",
+                kind: $model.testingScopeKind,
+                value: testingScopeValue,
+                plan: model.testingScopePlan,
+                loading: model.testingScopeLoading,
+                issue: model.testingScopeIssue ?? model.testingScopeInputIssue,
+                canResolve: model.canResolveTestingScope,
+                selectedCandidateID: model.selectedTestingScopeCandidateID,
+                compact: false,
+                accessibilityID: "testing-scope-planner",
+                onResolve: model.resolveTestingScope,
+                onSelect: model.selectTestingScopeCandidate
+              )
+
+              Button {
+                model.openQaWorkspace()
+              } label: {
+                HStack(spacing: 12) {
+                  Image(systemName: "point.3.connected.trianglepath.dotted")
+                    .foregroundStyle(EvidenceStyle.amberForeground)
+                    .frame(width: 24)
+                  VStack(alignment: .leading, spacing: 3) {
+                    Text(
+                      model.testingQaWorkflowName.isEmpty
+                        ? "Journey setup" : model.testingQaWorkflowName
+                    )
+                    .font(.system(size: 12, weight: .semibold))
+                    Text(
+                      model.testingTargetRoute.isEmpty
+                        ? "Saved targets, repository Playwright specs, and post-fix rerun setup"
+                        : "\(model.testingTargetRoute) · \(model.testingTargetGoal)"
+                    )
+                    .font(.system(size: 10))
+                    .foregroundStyle(.secondary)
+                  }
+                  Spacer()
+                  Text("Configure").font(.system(size: 10, weight: .semibold))
+                  Image(systemName: "chevron.right").font(.system(size: 9, weight: .bold))
+                }
+                .padding(13)
+                .background(EvidenceStyle.surface, in: RoundedRectangle(cornerRadius: 12))
+                .overlay { RoundedRectangle(cornerRadius: 12).stroke(EvidenceStyle.separator) }
+              }
+              .buttonStyle(.plain)
+              .disabled(model.repositoryPath.isEmpty)
+              .accessibilityLabel("Configure saved QA journeys")
+
+              TestingCapabilityStrip()
+            }
+            .padding(.top, 14)
+          } label: {
+            VStack(alignment: .leading, spacing: 3) {
+              Text("Advanced testing setup").font(.system(size: 12, weight: .semibold))
+              Text("Scope planning, saved journeys, and capability inventory")
+                .font(.system(size: 10)).foregroundStyle(.secondary)
+            }
+          }
+          .tint(EvidenceStyle.amberForeground)
+          .padding(15)
+          .background(EvidenceStyle.inspector, in: RoundedRectangle(cornerRadius: 12))
+          .overlay { RoundedRectangle(cornerRadius: 12).stroke(EvidenceStyle.separator) }
 
           if model.testingState == .failed || model.testingState == .cancelled {
             Label(
@@ -233,12 +239,30 @@ struct PremiumTestingView: View {
           }
 
         }
-        .padding(34)
-        .frame(maxWidth: 820, alignment: .leading)
+        .padding(PremiumPageLayout.horizontalInset)
+        .frame(maxWidth: 760, alignment: .leading)
+        .frame(maxWidth: .infinity, alignment: .top)
       }
       Rectangle().fill(EvidenceStyle.separator).frame(height: 1)
       testingActionBar
     }
+  }
+
+  private var testingContractSummary: some View {
+    HStack(spacing: 16) {
+      VStack(alignment: .leading, spacing: 4) {
+        PremiumFieldLabel("RUST EXECUTION CONTRACT")
+        Text("Resolve → execute → persist")
+          .font(.system(size: 12, weight: .semibold))
+      }
+      Spacer()
+      Label("codevetter trex", systemImage: "checkmark.seal.fill")
+        .font(.system(size: 10, weight: .semibold, design: .monospaced))
+        .foregroundStyle(EvidenceStyle.success)
+    }
+    .padding(15)
+    .background(EvidenceStyle.inspector, in: RoundedRectangle(cornerRadius: 12))
+    .overlay { RoundedRectangle(cornerRadius: 12).stroke(EvidenceStyle.separator) }
   }
 
   private var testingScopeValue: Binding<String> {
@@ -276,25 +300,17 @@ struct PremiumTestingView: View {
         }
       }
       Spacer()
-      Button("Warm changed proof") {
-        model.showingWarmVerifier = true
+      Menu {
+        Button("Warm changed proof") { model.showingWarmVerifier = true }
+        Button("Differential") { model.showingDifferentialVerifier = true }
+        Button("Scenarios") { model.showingScenarioCompiler = true }
+        Divider()
+        Button("PR watcher") { model.showingTrexWatcher = true }
+      } label: {
+        Label("Testing tools", systemImage: "ellipsis.circle")
       }
-      .buttonStyle(.bordered)
-      .disabled(model.repositoryPath.isEmpty || model.testingState == .running)
-      Button("Differential") {
-        model.showingDifferentialVerifier = true
-      }
-      .buttonStyle(.bordered)
-      .disabled(model.repositoryPath.isEmpty || model.testingState == .running)
-      Button("Scenarios") {
-        model.showingScenarioCompiler = true
-      }
-      .buttonStyle(.bordered)
-      .disabled(model.repositoryPath.isEmpty || model.testingState == .running)
-      Button("PR watcher") {
-        model.showingTrexWatcher = true
-      }
-      .buttonStyle(.bordered)
+      .menuStyle(.borderlessButton)
+      .fixedSize()
       .disabled(model.repositoryPath.isEmpty || model.testingState == .running)
       if model.testingState == .running {
         Button("Cancel", role: .destructive) { model.cancelTesting() }
@@ -330,6 +346,13 @@ struct PremiumTestingView: View {
         }
         Spacer()
         StatusPill(label: verdictLabel(receipt.verdict), color: verdictColor(receipt.verdict))
+        Button(
+          showReceiptDetails ? "Hide details" : "Details",
+          systemImage: "sidebar.trailing"
+        ) {
+          showReceiptDetails.toggle()
+        }
+        .buttonStyle(.bordered)
         Button("Open in Runs") {
           model.section = .runs
           model.loadRuns()
@@ -344,8 +367,10 @@ struct PremiumTestingView: View {
       .overlay(alignment: .bottom) { Rectangle().fill(EvidenceStyle.separator).frame(height: 1) }
 
       HStack(spacing: 0) {
-        TestingSourceIndex(receipt: receipt).frame(width: 230)
-        Rectangle().fill(EvidenceStyle.separator).frame(width: 1)
+        if showReceiptDetails {
+          TestingSourceIndex(receipt: receipt).frame(width: 230)
+          Rectangle().fill(EvidenceStyle.separator).frame(width: 1)
+        }
         VStack(spacing: 0) {
           HStack {
             Text("EXECUTABLE PROOF")
@@ -360,7 +385,7 @@ struct PremiumTestingView: View {
             .pickerStyle(.segmented)
             .labelsHidden()
             .frame(width: 166)
-            .tint(EvidenceStyle.amber)
+            .tint(.secondary)
           }
           .padding(.horizontal, 16)
           .frame(height: 48)
@@ -383,8 +408,10 @@ struct PremiumTestingView: View {
           }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        Rectangle().fill(EvidenceStyle.separator).frame(width: 1)
-        TestingReceiptInspector(receipt: receipt).frame(width: 290)
+        if showReceiptDetails {
+          Rectangle().fill(EvidenceStyle.separator).frame(width: 1)
+          TestingReceiptInspector(receipt: receipt).frame(width: 290)
+        }
       }
     }
   }
@@ -571,6 +598,13 @@ private struct TestingSourceIndex: View {
 
 private struct TestingEvidenceView: View {
   let receipt: TrexPreviewReceipt
+  @State private var showsAllJourneys = false
+
+  private var displayedJourneys: [TrexSyntheticJourney] {
+    guard !showsAllJourneys else { return receipt.journeys }
+    let prioritized = receipt.journeys.filter { !$0.pass } + receipt.journeys.filter(\.pass)
+    return Array(prioritized.prefix(2))
+  }
 
   var body: some View {
     ScrollView {
@@ -615,7 +649,7 @@ private struct TestingEvidenceView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(EvidenceStyle.warning.opacity(0.07), in: RoundedRectangle(cornerRadius: 12))
         } else {
-          ForEach(receipt.journeys) { journey in
+          ForEach(displayedJourneys) { journey in
             VStack(alignment: .leading, spacing: 9) {
               HStack {
                 Label(
@@ -654,6 +688,16 @@ private struct TestingEvidenceView: View {
             .padding(15)
             .background(EvidenceStyle.surface, in: RoundedRectangle(cornerRadius: 12))
             .overlay { RoundedRectangle(cornerRadius: 12).stroke(EvidenceStyle.separator) }
+          }
+          if receipt.journeys.count > 2 {
+            Button(
+              showsAllJourneys
+                ? "Show priority journeys" : "Show all \(receipt.journeys.count) journeys"
+            ) {
+              showsAllJourneys.toggle()
+            }
+            .buttonStyle(.bordered)
+            .controlSize(.small)
           }
         }
       }

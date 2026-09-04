@@ -49,7 +49,7 @@ struct PremiumDifferentialVerificationView: View {
                   Text(kind.rawValue.capitalized).tag(kind)
                 }
               }
-              .pickerStyle(.segmented).labelsHidden().tint(EvidenceStyle.amber)
+              .pickerStyle(.segmented).labelsHidden().tint(.secondary)
             }
             if model.differentialCandidateKind == .commit
               || model.differentialCandidateKind == .range

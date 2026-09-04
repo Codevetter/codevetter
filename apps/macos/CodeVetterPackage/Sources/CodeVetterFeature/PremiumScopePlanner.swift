@@ -41,7 +41,7 @@ struct PremiumScopePlanner: View {
       }
       .pickerStyle(.segmented)
       .labelsHidden()
-      .tint(EvidenceStyle.amber)
+      .tint(.secondary)
 
       if kind != .codebase {
         HStack(spacing: 9) {

@@ -219,7 +219,12 @@ export function qualifyNativePackage(options = parseArguments(process.argv.slice
   cpSync(advisoryDatabaseSource, advisoryDatabaseDestination, { recursive: true });
 
   signSparkle(stagedApp, options.identity);
-  for (const executable of sidecars) sign(executable, options.identity);
+  for (const executable of executableSidecars) sign(executable, options.identity);
+  for (const executable of collectorSidecars) {
+    // macOS rejects ad-hoc hardened third-party Go collectors on current hosts.
+    // Developer ID production packages retain hardened runtime for every binary.
+    sign(executable, options.identity, undefined, options.identity !== '-');
+  }
   const appEntitlements =
     options.identity === '-' ? writeLocalPreviewEntitlements(runDirectory) : releaseEntitlements;
   sign(stagedApp, options.identity, appEntitlements);
@@ -364,11 +369,17 @@ function prepareSidecars(target) {
   }
 }
 
-function sign(path, identity, entitlements) {
-  const args = ['--force', '--sign', identity, '--options', 'runtime'];
+export function codesignArguments(path, identity, entitlements, hardenedRuntime = true) {
+  const args = ['--force', '--sign', identity];
+  if (hardenedRuntime) args.push('--options', 'runtime');
   if (identity === '-') args.push('--timestamp=none');
   if (entitlements) args.push('--entitlements', entitlements);
   args.push(path);
+  return args;
+}
+
+function sign(path, identity, entitlements, hardenedRuntime = true) {
+  const args = codesignArguments(path, identity, entitlements, hardenedRuntime);
   run('codesign', args, { stdio: 'inherit' });
 }
 

@@ -9,8 +9,8 @@ colors:
   evidence-white: "#f4f4f5"
   secondary-gray: "#a1a1aa"
   muted-gray: "#8a8a93"
-  action-amber: "#f3ad3d"
-  action-amber-strong: "#ffc75e"
+  action-amber: "#b87824"
+  action-amber-strong: "#c9903c"
   failure-rose: "#fb7185"
   warning-gold: "#fbbf24"
   verified-green: "#4ade80"
@@ -40,10 +40,10 @@ typography:
     fontWeight: 400
     lineHeight: 1.5
 rounded:
-  compact: "0.5rem"
-  control: "0.625rem"
-  surface: "0.75rem"
-  pill: "9999px"
+  compact: "0.25rem"
+  control: "0.375rem"
+  surface: "0.375rem"
+  pill: "0.25rem"
 spacing:
   xs: "0.25rem"
   sm: "0.5rem"
@@ -53,8 +53,8 @@ spacing:
   section: "1.5rem"
 components:
   button-primary:
-    backgroundColor: "{colors.action-amber}"
-    textColor: "{colors.canvas-ink}"
+    backgroundColor: "{colors.surface-ink}"
+    textColor: "{colors.action-amber-strong}"
     rounded: "{rounded.control}"
     padding: "0.5rem 1rem"
     height: "2.5rem"
@@ -103,7 +103,8 @@ oversized presentation typography on operating surfaces.
 - A true-black canvas with near-black working planes separated by restrained
   hairline borders.
 - Compact native-feeling controls with generous focus treatment.
-- Warm amber used sparingly for action, selection, and verification emphasis.
+- Muted amber used sparingly as a line, label, or focus marker rather than an
+  ambient fill.
 - Monospace reserved for paths, revisions, commands, and evidence identities.
 - Every state remains understandable without color alone.
 
@@ -126,9 +127,10 @@ priority in both appearances.
 
 ### Primary
 
-- **Action Amber:** the primary action, selected navigation, and focused
-  verification emphasis.
-- **Action Amber Strong:** hover and high-attention action state.
+- **Action Amber:** the border or marker for the single primary action and
+  selected navigation.
+- **Action Amber Strong:** readable action text and keyboard focus, not a large
+  decorative fill.
 
 ### Neutral
 
@@ -210,28 +212,26 @@ and global command bar remain outside this workbench.
 
 ## Elevation & Depth
 
-Depth is primarily tonal and structural. Hairline translucent borders, subtle
-top-edge highlights, and inset highlights separate planes. Large diffuse
-shadows support major cards or glass overlays but never imitate floating
-marketing tiles.
+Depth is structural rather than glossy. Hairline borders and restrained tonal
+steps separate planes. The operating surface uses no glow, glass, highlight,
+or decorative shadow.
 
 **The Flat Evidence Rule.** Evidence rows are stable nested planes; hover lift
 and decorative transform are reserved for actionable controls.
 
 ## Shapes
 
-Controls use gently curved 8–10px corners. Primary panels and cards use 12px
-corners. Status badges are full pills, while evidence rows and metric tiles use
-compact corners so dense results remain orderly. Borders are low-contrast at
-rest and strengthen on hover or focus.
+Controls and evidence planes use restrained 4–6px corners. Status is an inline
+dot and written label, not a filled capsule. Borders carry hierarchy and
+strengthen on hover or focus.
 
 ## Components
 
 ### Buttons
 
-- **Shape:** compact rounded controls at a 40px default height.
-- **Primary:** amber fill, ink text, restrained warm shadow, and a brighter
-  amber hover.
+- **Shape:** compact 6px controls at a 40px default height.
+- **Primary:** near-black surface, muted amber label and hairline border, with
+  no shadow or glow.
 - **Secondary / Outline:** raised ink or translucent white with a hairline
   border.
 - **Focus:** visible amber ring offset against the canvas.
@@ -239,17 +239,19 @@ rest and strengthen on hover or focus.
 
 ### Chips
 
-- **Style:** full-pill or compact status forms with a translucent fill,
-  hairline border, short text, and optional 12–14px icon.
-- **State:** selected or semantic variants pair color with explicit wording.
+Chips are reserved for interactive filters. Status never masquerades as a
+filter: it uses an inline marker and text without a filled capsule.
+
+- **Style:** compact interactive filters use a quiet outline and short text.
+- **State:** selected filters use a bottom rule; semantic status stays inline
+  and pairs color with explicit wording.
 
 ### Cards / Containers
 
-- **Corner Style:** 12px primary cards; 8–10px nested evidence.
-- **Background:** ink surfaces in deliberate tonal steps.
-- **Shadow Strategy:** diffuse only on major planes, inset highlight on raised
-  controls and cards.
-- **Border:** translucent white by default; amber tint for a verification focus.
+- **Corner Style:** 6px primary cards; 4–6px nested evidence.
+- **Background:** true black or a one-step ink surface.
+- **Shadow Strategy:** none on operating surfaces.
+- **Border:** neutral hairlines by default; amber only for current focus.
 - **Internal Padding:** 20px primary, 12–16px nested.
 
 ### Inputs / Fields
@@ -261,9 +263,9 @@ rest and strengthen on hover or focus.
 
 ### Navigation
 
-The top rail uses icon-and-label items with a quiet default state, subtle hover
-fill, and amber-bordered active state. The repository sidebar stays structural,
-separate from the current task surface.
+The top rail uses icon-and-label items with a quiet default state and a thin
+amber active rule. The repository sidebar stays structural, separate from the
+current task surface.
 
 ## Do's and Don'ts
 

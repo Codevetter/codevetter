@@ -332,6 +332,7 @@ public enum NativeSettingsSection: String, CaseIterable, Identifiable, Sendable 
   case general
   case appearance
   case integrations
+  case capabilities
   case agents
   case agentIsland = "agent_island"
   case mcp
@@ -349,6 +350,7 @@ public enum NativeSettingsSection: String, CaseIterable, Identifiable, Sendable 
     case .general: "General"
     case .appearance: "Appearance"
     case .integrations: "Integrations"
+    case .capabilities: "Capabilities"
     case .agents: "Agents"
     case .agentIsland: "Agent Island"
     case .mcp: "Agent MCP"
@@ -366,6 +368,7 @@ public enum NativeSettingsSection: String, CaseIterable, Identifiable, Sendable 
     case .general: "slider.horizontal.3"
     case .appearance: "circle.lefthalf.filled"
     case .integrations: "point.3.connected.trianglepath.dotted"
+    case .capabilities: "square.grid.2x2"
     case .agents: "terminal"
     case .agentIsland: "rectangle.topthird.inset.filled"
     case .mcp: "arrow.trianglehead.branch"

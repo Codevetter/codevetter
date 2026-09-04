@@ -1,6 +1,12 @@
 import Foundation
 import Observation
 
+private struct UsageProjectionCacheKey: Hashable {
+  let agents: String
+  let window: String
+  let scale: String
+}
+
 public enum WorkbenchSection: String, CaseIterable, Hashable, Identifiable, Sendable {
   case usage = "Usage"
   case repository = "Repo Unpack"
@@ -8,7 +14,6 @@ public enum WorkbenchSection: String, CaseIterable, Hashable, Identifiable, Send
   case testing = "Testing"
   case performance = "Performance"
   case runs = "Runs"
-  case capabilities = "Capabilities"
   case settings = "Settings"
 
   public var id: String { rawValue }
@@ -21,7 +26,6 @@ public enum WorkbenchSection: String, CaseIterable, Hashable, Identifiable, Send
     case .testing: "testtube.2"
     case .performance: "gauge.with.dots.needle.67percent"
     case .runs: "clock.arrow.circlepath"
-    case .capabilities: "square.grid.2x2"
     case .settings: "gearshape"
     }
   }
@@ -182,8 +186,16 @@ public final class WorkbenchModel {
   public var performanceScopeLoading = false
   public var performanceScopeIssue: String?
   var performancePlanScopeFingerprint: String?
-  public var usageReport: LocalUsageReport?
+  public var usageReport: LocalUsageReport? {
+    didSet {
+      usageProjectionCache.removeAll(keepingCapacity: true)
+      usageProjectionReferenceDate = Date()
+    }
+  }
   public var usageReportJSON = ""
+  public var providerQuotaReceipt: ProviderQuotaReceipt?
+  public var providerQuotaLoading = false
+  public var providerQuotaIssue: String?
   public var usageScale: UsageScale = .day
   public var usageWindow: UsageWindow = .thirtyDays
   public var usageSelectedAgents: Set<String> = []
@@ -275,6 +287,10 @@ public final class WorkbenchModel {
   private var testingScopeTask: Task<Void, Never>?
   private var performanceScopeTask: Task<Void, Never>?
   private var usageTask: Task<Void, Never>?
+  private var providerQuotaTask: Task<Void, Never>?
+  @ObservationIgnored private var usageProjectionCache:
+    [UsageProjectionCacheKey: UsageViewProjection] = [:]
+  @ObservationIgnored private var usageProjectionReferenceDate = Date()
   private var unpackTask: Task<Void, Never>?
   private var repositoryQueryWarmTask: Task<Void, Never>?
   private var repositoryQueryTask: Task<Void, Never>?
@@ -1913,6 +1929,36 @@ public final class WorkbenchModel {
     }
   }
 
+  public func loadProviderQuota() {
+    guard !providerQuotaLoading else { return }
+    providerQuotaLoading = true
+    providerQuotaIssue = nil
+    providerQuotaTask = Task { [weak self] in
+      guard let self else { return }
+      defer {
+        providerQuotaLoading = false
+        providerQuotaTask = nil
+      }
+      do {
+        let runner = self.runner
+        let collection = Task.detached(priority: .utility) {
+          try await runner.runProviderQuota()
+        }
+        let receipt = try await withTaskCancellationHandler {
+          try await collection.value
+        } onCancel: {
+          collection.cancel()
+        }
+        guard !Task.isCancelled else { return }
+        providerQuotaReceipt = receipt
+      } catch is CancellationError {
+        // Navigation may cancel this bounded read without changing the last accepted receipt.
+      } catch {
+        providerQuotaIssue = error.localizedDescription
+      }
+    }
+  }
+
   public func toggleUsageAgent(_ agent: String) {
     if usageSelectedAgents.contains(agent) {
       guard usageSelectedAgents.count > 1 else { return }
@@ -1920,6 +1966,29 @@ public final class WorkbenchModel {
     } else {
       usageSelectedAgents.insert(agent)
     }
+  }
+
+  func usageProjection(for report: LocalUsageReport) -> UsageViewProjection {
+    let key = UsageProjectionCacheKey(
+      agents: usageSelectedAgents.sorted().joined(separator: "\u{0}"),
+      window: usageWindow.rawValue,
+      scale: usageScale.rawValue
+    )
+    if let cached = usageProjectionCache[key] {
+      return cached
+    }
+    let projection = UsageViewProjection(
+      report: report,
+      selectedAgents: usageSelectedAgents,
+      window: usageWindow,
+      scale: usageScale,
+      referenceDate: usageProjectionReferenceDate
+    )
+    if usageProjectionCache.count >= 32 {
+      usageProjectionCache.removeAll(keepingCapacity: true)
+    }
+    usageProjectionCache[key] = projection
+    return projection
   }
 
   public func loadUnpackSnapshots() {

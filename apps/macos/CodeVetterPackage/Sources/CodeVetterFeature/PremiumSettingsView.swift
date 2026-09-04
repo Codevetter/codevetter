@@ -11,6 +11,8 @@ struct PremiumSettingsView: View {
   @State private var retentionAgeDays = "90"
   @State private var retentionMaxMiB = "2048"
   @State private var expandedRubricID: String?
+  @State private var creatingRubric = false
+  @State private var showsCapabilityGlossary = false
   @State private var newRubricName = ""
   @State private var newRubricFocus = ""
   @State private var newRubricChecks = ""
@@ -105,43 +107,38 @@ struct PremiumSettingsView: View {
   }
 
   private var header: some View {
-    HStack(alignment: .top, spacing: 18) {
-      VStack(alignment: .leading, spacing: 5) {
-        Text("LOCAL CONTROL PLANE")
-          .font(.system(size: 9, weight: .bold, design: .monospaced))
-          .tracking(1.1)
-          .foregroundStyle(EvidenceStyle.amberForeground)
-        Text("Settings").font(.system(size: 25, weight: .semibold))
-        Text("Rust-persisted preferences with a deliberately non-secret native projection")
-          .font(.system(size: 10))
-          .foregroundStyle(.secondary)
-      }
-      Spacer()
-      StatusPill(
-        label: model.opsLoading
-          ? "Reading aggregates"
-          : (model.settingsLoading ? "Reading preferences" : "Secrets excluded"),
-        color: (model.settingsIssue == nil && model.opsIssue == nil)
-          ? EvidenceStyle.success : EvidenceStyle.warning
-      )
-      Button {
-        if model.settingsSection == .ops {
-          model.loadOpsStatus()
-        } else {
-          model.loadNativeSettings()
+    PremiumPageHeader(
+      eyebrow: "Local control plane",
+      title: "Settings",
+      subtitle: "Rust-persisted preferences with a deliberately non-secret native projection"
+    ) {
+      if model.settingsSection == .capabilities {
+        StatusPill(label: "Bundled registry", color: EvidenceStyle.success)
+      } else {
+        StatusPill(
+          label: model.opsLoading
+            ? "Reading aggregates"
+            : (model.settingsLoading ? "Reading preferences" : "Secrets excluded"),
+          color: (model.settingsIssue == nil && model.opsIssue == nil)
+            ? EvidenceStyle.success : EvidenceStyle.warning
+        )
+        Button {
+          if model.settingsSection == .ops {
+            model.loadOpsStatus()
+          } else {
+            model.loadNativeSettings()
+          }
+        } label: {
+          Label("Refresh", systemImage: "arrow.clockwise")
         }
-      } label: {
-        Label("Refresh", systemImage: "arrow.clockwise")
+        .buttonStyle(.bordered)
+        .disabled(model.settingsLoading || model.opsLoading)
+        .accessibilityLabel(
+          model.settingsSection == .ops
+            ? "Refresh operational evidence" : "Refresh native settings"
+        )
       }
-      .buttonStyle(.bordered)
-      .disabled(model.settingsLoading || model.opsLoading)
-      .accessibilityLabel(
-        model.settingsSection == .ops ? "Refresh operational evidence" : "Refresh native settings"
-      )
     }
-    .padding(.horizontal, 22)
-    .padding(.vertical, 18)
-    .background(EvidenceStyle.chrome)
   }
 
   private var sectionRail: some View {
@@ -150,44 +147,54 @@ struct PremiumSettingsView: View {
         .padding(16)
       Rectangle().fill(EvidenceStyle.separator).frame(height: 1)
       ScrollView {
-        LazyVStack(spacing: 4) {
-          ForEach(NativeSettingsSection.allCases) { section in
-            Button {
-              model.settingsSection = section
-            } label: {
-              HStack(spacing: 10) {
-                Image(systemName: section.systemImage)
-                  .frame(width: 18)
-                  .foregroundStyle(
+        LazyVStack(alignment: .leading, spacing: 14) {
+          ForEach(Array(settingsGroups.enumerated()), id: \.offset) { _, group in
+            VStack(alignment: .leading, spacing: 4) {
+              Text(group.0.uppercased())
+                .font(.system(size: 8, weight: .bold, design: .monospaced))
+                .tracking(0.8)
+                .foregroundStyle(.tertiary)
+                .padding(.horizontal, 12)
+              ForEach(group.1) { section in
+                Button {
+                  model.settingsSection = section
+                } label: {
+                  HStack(spacing: 10) {
+                    Image(systemName: section.systemImage)
+                      .frame(width: 18)
+                      .foregroundStyle(
+                        model.settingsSection == section
+                          ? EvidenceStyle.amberForeground : Color.secondary)
+                    Text(section.label).font(.system(size: 10, weight: .semibold))
+                    Spacer()
+                    if !settings(in: section).isEmpty {
+                      Text("\(settings(in: section).count)")
+                        .font(.system(size: 8, design: .monospaced))
+                        .foregroundStyle(.secondary)
+                    }
+                  }
+                  .padding(.horizontal, 12)
+                  .premiumHitTarget(minHeight: PremiumPageLayout.navigationControlHeight)
+                  .background(
                     model.settingsSection == section
-                      ? EvidenceStyle.amberForeground : Color.secondary)
-                Text(section.label).font(.system(size: 10, weight: .semibold))
-                Spacer()
-                if !settings(in: section).isEmpty {
-                  Text("\(settings(in: section).count)")
-                    .font(.system(size: 8, design: .monospaced))
-                    .foregroundStyle(.secondary)
+                      ? Color.primary.opacity(0.035) : Color.clear
+                  )
+                  .overlay(alignment: .leading) {
+                    if model.settingsSection == section {
+                      Rectangle()
+                        .fill(EvidenceStyle.amberForeground)
+                        .frame(width: 2)
+                    }
+                  }
                 }
-              }
-              .padding(.horizontal, 12)
-              .frame(height: 36)
-              .contentShape(Rectangle())
-              .background(
-                model.settingsSection == section ? EvidenceStyle.amber.opacity(0.09) : Color.clear,
-                in: RoundedRectangle(cornerRadius: 9)
-              )
-              .overlay {
-                RoundedRectangle(cornerRadius: 9).stroke(
-                  model.settingsSection == section
-                    ? EvidenceStyle.amber.opacity(0.25) : Color.clear)
+                .buttonStyle(.plain)
+                .accessibilityLabel(section.label)
+                .accessibilityIdentifier("settings-section-\(section.rawValue)")
+                .accessibilityValue(model.settingsSection == section ? "Selected" : "")
+                .accessibilityAddTraits(model.settingsSection == section ? .isSelected : [])
+                .accessibilityRemoveTraits(model.settingsSection == section ? [] : .isSelected)
               }
             }
-            .buttonStyle(.plain)
-            .accessibilityLabel(section.label)
-            .accessibilityIdentifier("settings-section-\(section.rawValue)")
-            .accessibilityValue(model.settingsSection == section ? "Selected" : "")
-            .accessibilityAddTraits(model.settingsSection == section ? .isSelected : [])
-            .accessibilityRemoveTraits(model.settingsSection == section ? [] : .isSelected)
           }
         }
         .padding(10)
@@ -207,11 +214,21 @@ struct PremiumSettingsView: View {
     .background(EvidenceStyle.inspector)
   }
 
+  private var settingsGroups: [(String, [NativeSettingsSection])] {
+    [
+      ("Product", [.general, .appearance, .notifications, .usage]),
+      ("Agents", [.agents, .agentIsland, .rubrics, .memories]),
+      ("Connections", [.integrations, .capabilities, .mcp]),
+      ("System", [.ops, .about]),
+    ]
+  }
+
   @ViewBuilder
   private var settingsDesk: some View {
     if model.settingsLoading, model.settingsReceipt == nil,
-      ![NativeSettingsSection.mcp, .usage, .rubrics, .memories, .ops, .about].contains(
-        model.settingsSection)
+      ![NativeSettingsSection.capabilities, .mcp, .usage, .rubrics, .memories, .ops, .about]
+        .contains(
+          model.settingsSection)
     {
       VStack(spacing: 12) {
         ProgressView().controlSize(.small).tint(EvidenceStyle.amber)
@@ -234,7 +251,9 @@ struct PremiumSettingsView: View {
               .background(
                 EvidenceStyle.warning.opacity(0.08), in: RoundedRectangle(cornerRadius: 10))
           }
-          if model.settingsSection == .mcp {
+          if model.settingsSection == .capabilities {
+            capabilitiesPanel
+          } else if model.settingsSection == .mcp {
             mcpPanel
           } else if model.settingsSection == .usage {
             usagePanel
@@ -310,6 +329,74 @@ struct PremiumSettingsView: View {
     .frame(maxWidth: .infinity, alignment: .leading)
     .background(EvidenceStyle.surface, in: RoundedRectangle(cornerRadius: 14))
     .overlay { RoundedRectangle(cornerRadius: 14).stroke(EvidenceStyle.separator) }
+  }
+
+  private var capabilitiesPanel: some View {
+    VStack(alignment: .leading, spacing: 14) {
+      HStack {
+        Label("One authority registry", systemImage: "point.3.connected.trianglepath.dotted")
+          .font(.system(size: 11, weight: .semibold))
+        Spacer()
+        Text(model.registry.schemaVersion)
+          .font(.system(size: 8, weight: .semibold, design: .monospaced))
+          .foregroundStyle(.secondary)
+          .padding(.horizontal, 9)
+          .frame(height: 25)
+          .background(EvidenceStyle.inspector, in: Capsule())
+          .overlay { Capsule().stroke(EvidenceStyle.separator) }
+      }
+
+      if let capability = model.selectedCapability {
+        VStack(alignment: .leading, spacing: 10) {
+          HStack(alignment: .top) {
+            VStack(alignment: .leading, spacing: 4) {
+              Text(capability.name).font(.system(size: 16, weight: .semibold))
+              Text(capability.purpose)
+                .font(.system(size: 11))
+                .foregroundStyle(.secondary)
+            }
+            Spacer()
+            StatusPill(
+              label: capability.qualification.rawValue,
+              color: capability.qualification.rawValue == "qualified"
+                ? EvidenceStyle.success : EvidenceStyle.warning
+            )
+          }
+          HStack(spacing: 8) {
+            settingsMetric("STAGE", capability.stage.rawValue.capitalized)
+            settingsMetric("TOOLS", capability.underlyingTools.count.formatted())
+          }
+          Label(capability.dataBoundary, systemImage: "lock.shield")
+            .font(.system(size: 9))
+            .foregroundStyle(.secondary)
+            .lineLimit(2)
+          DisclosureGroup("Tools, limitations, and next step") {
+            VStack(alignment: .leading, spacing: 12) {
+              CapabilityInspector(capability: capability)
+            }
+            .padding(.top, 10)
+          }
+          .font(.system(size: 10, weight: .semibold))
+          .tint(EvidenceStyle.amberForeground)
+        }
+        .padding(16)
+        .background(EvidenceStyle.inspector, in: RoundedRectangle(cornerRadius: 12))
+        .overlay { RoundedRectangle(cornerRadius: 12).stroke(EvidenceStyle.separator) }
+      }
+
+      DisclosureGroup("Browse capability glossary", isExpanded: $showsCapabilityGlossary) {
+        CapabilityCatalogView(model: model, showsHeader: false)
+          .frame(maxWidth: .infinity, alignment: .topLeading)
+          .padding(.top, 10)
+      }
+      .font(.system(size: 10, weight: .semibold))
+      .tint(EvidenceStyle.amberForeground)
+    }
+    .padding(18)
+    .background(EvidenceStyle.surface, in: RoundedRectangle(cornerRadius: 14))
+    .overlay { RoundedRectangle(cornerRadius: 14).stroke(EvidenceStyle.separator) }
+    .accessibilityElement(children: .contain)
+    .accessibilityIdentifier("settings-capabilities")
   }
 
   private var agentIslandPanel: some View {
@@ -1146,13 +1233,23 @@ struct PremiumSettingsView: View {
                 EvidenceStyle.warning.opacity(0.08), in: RoundedRectangle(cornerRadius: 10))
           }
           if let receipt = model.rubricReceipt {
-            HStack(alignment: .top, spacing: 14) {
-              LazyVStack(spacing: 10) {
-                ForEach(receipt.packs) { pack in rubricPackCard(pack) }
-              }
-              customRubricCard(existing: receipt.packs)
-                .frame(width: 260)
+            LazyVStack(spacing: 10) {
+              ForEach(receipt.packs) { pack in rubricPackCard(pack) }
             }
+            DisclosureGroup(isExpanded: $creatingRubric) {
+              customRubricCard(existing: receipt.packs)
+                .padding(.top, 12)
+            } label: {
+              VStack(alignment: .leading, spacing: 3) {
+                Text("Create a custom rubric").font(.system(size: 11, weight: .semibold))
+                Text("Add a focused review standard only when the built-in packs do not fit.")
+                  .font(.system(size: 9)).foregroundStyle(.secondary)
+              }
+            }
+            .tint(EvidenceStyle.amberForeground)
+            .padding(14)
+            .background(EvidenceStyle.inspector, in: RoundedRectangle(cornerRadius: 11))
+            .overlay { RoundedRectangle(cornerRadius: 11).stroke(EvidenceStyle.separator) }
             HStack(spacing: 8) {
               StatusPill(
                 label: receipt.activePackID == nil
@@ -1215,18 +1312,14 @@ struct PremiumSettingsView: View {
           .accessibilityIdentifier("select-rubric-\(pack.id)")
         }
       }
-      ForEach(pack.checks, id: \.self) { check in
-        HStack(alignment: .firstTextBaseline, spacing: 8) {
-          Circle().fill(EvidenceStyle.amber).frame(width: 4, height: 4)
-          Text(check).font(.system(size: 8)).fixedSize(horizontal: false, vertical: true)
-        }
-      }
-      HStack(spacing: 8) {
-        settingsMetric("REVIEWS", pack.reviewCount.formatted())
-        settingsMetric("FINDINGS", pack.totalFindings.formatted())
+      HStack(spacing: 10) {
+        Text(
+          "\(pack.reviewCount.formatted()) reviews · \(pack.totalFindings.formatted()) findings · \(pack.checks.count.formatted()) checks"
+        )
+        .font(.system(size: 9, weight: .medium, design: .monospaced))
+        .foregroundStyle(.secondary)
         Spacer()
-        Button("Duplicate") { duplicateRubric(pack) }.buttonStyle(.bordered)
-        Button(expandedRubricID == pack.id ? "Hide preview" : "Prompt preview") {
+        Button(expandedRubricID == pack.id ? "Hide details" : "View details") {
           expandedRubricID = expandedRubricID == pack.id ? nil : pack.id
         }
         .buttonStyle(.bordered)
@@ -1234,21 +1327,23 @@ struct PremiumSettingsView: View {
       if expandedRubricID == pack.id {
         VStack(alignment: .leading, spacing: 8) {
           HStack {
-            PremiumFieldLabel("EXACT REVIEW CONTEXT")
+            PremiumFieldLabel("REVIEW CHECKS")
             Spacer()
-            Button(copiedMcpValue == "rubric-\(pack.id)" ? "Copied" : "Copy") {
-              copyToPasteboard(pack.promptPreview)
-              copiedMcpValue = "rubric-\(pack.id)"
-            }
-            .buttonStyle(.borderless)
+            Button("Duplicate") { duplicateRubric(pack) }.buttonStyle(.bordered)
           }
-          ScrollView {
+          ForEach(pack.checks, id: \.self) { check in
+            HStack(alignment: .firstTextBaseline, spacing: 8) {
+              Circle().fill(EvidenceStyle.amber).frame(width: 4, height: 4)
+              Text(check).font(.system(size: 10)).fixedSize(horizontal: false, vertical: true)
+            }
+          }
+          DisclosureGroup("Exact prompt preview") {
             Text(pack.promptPreview)
-              .font(.system(size: 8, design: .monospaced))
+              .font(.system(size: 9, design: .monospaced))
               .textSelection(.enabled)
               .frame(maxWidth: .infinity, alignment: .leading)
+              .padding(.top, 8)
           }
-          .frame(maxHeight: 180)
         }
         .padding(12)
         .background(EvidenceStyle.inspector, in: RoundedRectangle(cornerRadius: 9))
@@ -1257,8 +1352,15 @@ struct PremiumSettingsView: View {
     .padding(16)
     .background(EvidenceStyle.surface, in: RoundedRectangle(cornerRadius: 13))
     .overlay {
-      RoundedRectangle(cornerRadius: 13).stroke(
-        pack.active ? EvidenceStyle.amber.opacity(0.55) : EvidenceStyle.separator)
+      RoundedRectangle(cornerRadius: 13).stroke(EvidenceStyle.separator)
+    }
+    .overlay(alignment: .leading) {
+      if pack.active {
+        Rectangle()
+          .fill(EvidenceStyle.amberForeground)
+          .frame(width: 2)
+          .padding(.vertical, 10)
+      }
     }
     .accessibilityElement(children: .contain)
     .accessibilityIdentifier("rubric-pack-\(pack.id)")
@@ -1289,8 +1391,7 @@ struct PremiumSettingsView: View {
         Label("Save and use pack", systemImage: "square.and.arrow.down")
           .frame(maxWidth: .infinity)
       }
-      .buttonStyle(.borderedProminent)
-      .tint(EvidenceStyle.amber)
+      .buttonStyle(PremiumPrimaryButtonStyle())
       .disabled(!customRubricIsValid || model.rubricLoading)
       .accessibilityIdentifier("save-custom-rubric")
     }
@@ -1529,8 +1630,7 @@ struct PremiumSettingsView: View {
         Button(settings.enabled ? "Disable" : "Enable") {
           model.runMcpSettings(operation: settings.enabled ? .disable : .enable)
         }
-        .buttonStyle(.borderedProminent)
-        .tint(EvidenceStyle.amber)
+        .buttonStyle(PremiumPrimaryButtonStyle())
         .disabled(model.mcpLoading || (!settings.enabled && !settings.indexed))
         .accessibilityLabel(settings.enabled ? "Disable repository MCP" : "Enable repository MCP")
       }
@@ -1741,6 +1841,7 @@ struct PremiumSettingsView: View {
 
   private var projectionCommand: String {
     switch model.settingsSection {
+    case .capabilities: "codevetter capabilities --json"
     case .mcp: "codevetter mcp"
     case .agentIsland: "codevetter settings --set native_agent_island_…"
     case .usage: "codevetter history-roots · codevetter retention"
@@ -1753,6 +1854,8 @@ struct PremiumSettingsView: View {
 
   private var projectionDetail: String {
     switch model.settingsSection {
+    case .capabilities:
+      "The bundled registry is the shared glossary for the native UI, CLI, and agent surfaces. Availability and limitations remain explicit instead of being inferred from navigation visibility."
     case .mcp:
       "The CLI and native UI share codevetter.mcp-settings/v1. Repository authority changes are explicit; credentials and evidence payloads never enter the access audit."
     case .agentIsland:
@@ -1775,6 +1878,7 @@ struct PremiumSettingsView: View {
   }
 
   private var sectionIsLive: Bool {
+    if model.settingsSection == .capabilities { return !model.registry.capabilities.isEmpty }
     if model.settingsSection == .mcp { return model.mcpSettingsReceipt != nil }
     if model.settingsSection == .usage { return true }
     if model.settingsSection == .rubrics { return model.rubricReceipt != nil }
@@ -1809,6 +1913,7 @@ struct PremiumSettingsView: View {
     case .general: "Review defaults and deliberate indexing behavior."
     case .appearance: "Visual density and evidence presentation preferences."
     case .integrations: "External connection readiness without credential exposure."
+    case .capabilities: "The shared UI, CLI, and AI-agent glossary and authority map."
     case .agents: "Default agent roles, concurrency, and local executable discovery."
     case .agentIsland: "Opt-in native presentation, speech, and privacy-safe preferences."
     case .mcp: "Repository-scoped machine access, tools, resources, and audit."

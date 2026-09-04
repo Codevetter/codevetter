@@ -95,6 +95,7 @@ final class CodeVetterUITests: XCTestCase {
     XCTAssertTrue(app.buttons["Choose testing repository"].exists)
     XCTAssertTrue(app.radioButtons["Git range"].exists)
     XCTAssertTrue(app.radioButtons["GitHub pull request"].exists)
+    app.buttons["Advanced testing setup"].click()
     XCTAssertTrue(
       app.descendants(matching: .any)["testing-scope-planner"].waitForExistence(timeout: 2))
     XCTAssertTrue(app.buttons["testing-scope-planner-resolve"].exists)
@@ -121,6 +122,7 @@ final class CodeVetterUITests: XCTestCase {
       ("Scenarios", "scenario-compiler-workspace"),
       ("PR watcher", "trex-watcher-workspace"),
     ] {
+      app.menuButtons["Testing tools"].click()
       let trigger = app.buttons[workspace.0]
       XCTAssertTrue(trigger.waitForExistence(timeout: 3), "Missing \(workspace.0) trigger")
       XCTAssertTrue(trigger.isEnabled, "\(workspace.0) should be reachable with a repository")
@@ -249,6 +251,7 @@ final class CodeVetterUITests: XCTestCase {
     XCTAssertTrue(app.staticTexts["Measure what changed."].waitForExistence(timeout: 2))
     XCTAssertTrue(app.buttons["Choose performance repository"].exists)
     XCTAssertTrue(app.popUpButtons["Performance adapter"].exists)
+    app.buttons["Advanced source options"].click()
     XCTAssertTrue(
       app.descendants(matching: .any)["performance-scope-planner"].waitForExistence(timeout: 2))
     XCTAssertTrue(app.buttons["performance-scope-planner-resolve"].exists)

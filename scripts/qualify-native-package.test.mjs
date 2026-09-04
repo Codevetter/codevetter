@@ -11,10 +11,29 @@ import {
   assertPackagedCliCapabilities,
   assertPreviewBundle,
   assertProductionBundle,
+  codesignArguments,
   hostTarget,
   parseArguments,
   runtimeFiles,
 } from './qualify-native-package.mjs';
+
+test('local preview collectors can omit hardened runtime without weakening production signing', () => {
+  assert.deepEqual(codesignArguments('/tmp/gitleaks', '-', undefined, false), [
+    '--force',
+    '--sign',
+    '-',
+    '--timestamp=none',
+    '/tmp/gitleaks',
+  ]);
+  assert.deepEqual(codesignArguments('/tmp/gitleaks', 'Developer ID Application: Example'), [
+    '--force',
+    '--sign',
+    'Developer ID Application: Example',
+    '--options',
+    'runtime',
+    '/tmp/gitleaks',
+  ]);
+});
 
 test('packaged CLI preserves rich repository-query parity', () => {
   const help = [
