@@ -138,6 +138,7 @@ struct PremiumPerformanceView: View {
               }
             }
             .tint(EvidenceStyle.amberForeground)
+            .accessibilityIdentifier("advanced-performance-source-options")
             .padding(12)
             .background(EvidenceStyle.surface, in: RoundedRectangle(cornerRadius: 11))
             .overlay { RoundedRectangle(cornerRadius: 11).stroke(EvidenceStyle.separator) }

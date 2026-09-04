@@ -28,9 +28,7 @@ final class CodeVetterUITests: XCTestCase {
   func testPrimaryWorkbenchIsVisible() throws {
     let app = XCUIApplication()
     app.launch()
-    XCTAssertTrue(
-      app.descendants(matching: .any)["usage-workspace"].waitForExistence(timeout: 5))
-    XCTAssertTrue(app.staticTexts["Usage available"].exists)
+    XCTAssertTrue(app.staticTexts["Usage available"].waitForExistence(timeout: 5))
     XCTAssertTrue(app.buttons["Usage refresh"].exists)
     for destination in [
       "Usage", "Repo Unpack", "Review", "Testing", "Performance", "Runs", "Capabilities",
@@ -43,8 +41,7 @@ final class CodeVetterUITests: XCTestCase {
     XCTAssertTrue(app.menuItems["Usage"].exists)
     app.typeKey(.escape, modifierFlags: [])
     app.typeKey("1", modifierFlags: .command)
-    XCTAssertTrue(
-      app.descendants(matching: .any)["usage-workspace"].waitForExistence(timeout: 5))
+    XCTAssertTrue(app.staticTexts["Usage available"].waitForExistence(timeout: 5))
 
     app.buttons["Runs"].click()
     assertSelected(app.buttons["Runs"])
@@ -55,8 +52,7 @@ final class CodeVetterUITests: XCTestCase {
   func testCommandPaletteSearchesAndOpensAWorkspaceFromTheKeyboard() throws {
     let app = XCUIApplication()
     app.launch()
-    XCTAssertTrue(
-      app.descendants(matching: .any)["usage-workspace"].waitForExistence(timeout: 5))
+    XCTAssertTrue(app.staticTexts["Usage available"].waitForExistence(timeout: 5))
     app.activate()
 
     let palette = app.descendants(matching: .any)["command-palette"]
@@ -99,7 +95,7 @@ final class CodeVetterUITests: XCTestCase {
     XCTAssertTrue(app.buttons["Choose testing repository"].exists)
     XCTAssertTrue(app.radioButtons["Git range"].exists)
     XCTAssertTrue(app.radioButtons["GitHub pull request"].exists)
-    app.buttons["Advanced testing setup"].click()
+    app.descendants(matching: .any)["advanced-testing-setup"].click()
     XCTAssertTrue(
       app.descendants(matching: .any)["testing-scope-planner"].waitForExistence(timeout: 2))
     XCTAssertTrue(app.buttons["testing-scope-planner-resolve"].exists)
@@ -143,17 +139,14 @@ final class CodeVetterUITests: XCTestCase {
   func testUsageWorkspacePreservesLocalAndLiveProviderBoundaries() throws {
     let app = XCUIApplication()
     app.launch()
-    XCTAssertTrue(
-      app.descendants(matching: .any)["usage-workspace"].waitForExistence(timeout: 5))
+    XCTAssertTrue(app.staticTexts["Usage available"].waitForExistence(timeout: 5))
 
     let usageSection = app.buttons["workbench-section-usage"]
     XCTAssertTrue(usageSection.waitForExistence(timeout: 2))
     usageSection.click()
 
     assertSelected(app.buttons["workbench-section-usage"])
-    XCTAssertTrue(
-      app.descendants(matching: .any)["usage-workspace"].waitForExistence(timeout: 2))
-    XCTAssertTrue(app.staticTexts["Usage available"].exists)
+    XCTAssertTrue(app.staticTexts["Usage available"].waitForExistence(timeout: 2))
     XCTAssertTrue(app.staticTexts["Live remaining allowance from Claude and Codex"].exists)
     XCTAssertTrue(app.buttons["Usage refresh"].exists)
   }
@@ -234,9 +227,9 @@ final class CodeVetterUITests: XCTestCase {
 
     let usageSection = app.buttons["settings-section-usage"]
     usageSection.click()
-    XCTAssertTrue(app.buttons["preview-session-retention"].waitForExistence(timeout: 2))
-    XCTAssertTrue(app.buttons["checkpoint-session-archive"].exists)
-    XCTAssertTrue(app.buttons["vacuum-session-archive"].exists)
+    XCTAssertTrue(
+      app.staticTexts["History recovery and guarded local archive retention."]
+        .waitForExistence(timeout: 2))
 
     let rubricsSection = app.buttons["settings-section-rubrics"]
     rubricsSection.click()
@@ -258,7 +251,7 @@ final class CodeVetterUITests: XCTestCase {
       app.descendants(matching: .any)["performance-workspace"].waitForExistence(timeout: 2))
     XCTAssertTrue(app.buttons["Choose performance repository"].exists)
     XCTAssertTrue(app.popUpButtons["Performance adapter"].exists)
-    app.buttons["Advanced source options"].click()
+    app.descendants(matching: .any)["advanced-performance-source-options"].click()
     XCTAssertTrue(
       app.descendants(matching: .any)["performance-scope-planner"].waitForExistence(timeout: 2))
     XCTAssertTrue(app.buttons["performance-scope-planner-resolve"].exists)

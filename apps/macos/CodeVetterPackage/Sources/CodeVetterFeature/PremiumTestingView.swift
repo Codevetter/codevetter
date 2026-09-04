@@ -216,6 +216,7 @@ struct PremiumTestingView: View {
             }
           }
           .tint(EvidenceStyle.amberForeground)
+          .accessibilityIdentifier("advanced-testing-setup")
           .padding(15)
           .background(EvidenceStyle.inspector, in: RoundedRectangle(cornerRadius: 12))
           .overlay { RoundedRectangle(cornerRadius: 12).stroke(EvidenceStyle.separator) }
