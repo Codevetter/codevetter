@@ -104,18 +104,46 @@ function parseEnclosure(xml) {
   if (!tag) throw new Error('Sparkle appcast enclosure is missing');
   return {
     url: requiredAttribute(tag, 'url'),
-    version: requiredAttribute(tag, 'sparkle:version'),
-    shortVersion: requiredAttribute(tag, 'sparkle:shortVersionString'),
+    version: requiredIdentity(xml, tag, 'sparkle:version'),
+    shortVersion: requiredIdentity(xml, tag, 'sparkle:shortVersionString'),
     length: Number(requiredAttribute(tag, 'length')),
     signature: requiredAttribute(tag, 'sparkle:edSignature'),
   };
 }
 
+// Sparkle's generate_appcast writes the two version identities as <item> children.
+// Hand-written and older feeds carry them as <enclosure> attributes instead. Accept
+// either placement, and refuse a feed that states both and disagrees with itself.
+function requiredIdentity(xml, tag, name) {
+  const attribute = optionalAttribute(tag, name);
+  const element = optionalElement(xml, name);
+  if (attribute !== undefined && element !== undefined && attribute !== element) {
+    throw new Error(`Sparkle appcast states conflicting ${name}: "${element}" and "${attribute}"`);
+  }
+  const value = element ?? attribute;
+  if (value === undefined) throw new Error(`Sparkle appcast is missing ${name}`);
+  return value;
+}
+
+function escapeForPattern(name) {
+  return name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function optionalAttribute(tag, name) {
+  const value = tag.match(new RegExp(`\\s${escapeForPattern(name)}="([^"]*)"`, 'i'))?.[1];
+  return value ? decodeEntities(value) : undefined;
+}
+
+function optionalElement(xml, name) {
+  const escaped = escapeForPattern(name);
+  const value = xml.match(new RegExp(`<${escaped}>([^<]*)</${escaped}>`, 'i'))?.[1]?.trim();
+  return value ? decodeEntities(value) : undefined;
+}
+
 function requiredAttribute(tag, name) {
-  const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const value = tag.match(new RegExp(`\\s${escaped}="([^"]+)"`, 'i'))?.[1];
-  if (!value) throw new Error(`Sparkle appcast enclosure is missing ${name}`);
-  return decodeEntities(value);
+  const value = optionalAttribute(tag, name);
+  if (value === undefined) throw new Error(`Sparkle appcast enclosure is missing ${name}`);
+  return value;
 }
 
 function decodeEntities(value) {

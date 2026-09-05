@@ -4,7 +4,29 @@ import test from 'node:test';
 
 import { evaluateNativeAppcast, parseArguments } from './inspect-native-appcast.mjs';
 
-function fixture() {
+// `generate_appcast` emits the version identities as <item> children; older and
+// hand-written feeds put them on the <enclosure>. Both must qualify identically.
+function itemLayout({ archiveName, archiveBytes, signature }) {
+  return `<?xml version="1.0" standalone="yes"?>
+<rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" version="2.0">
+    <channel>
+        <title>CodeVetter</title>
+        <item>
+            <title>1.11.0</title>
+            <sparkle:version>11100</sparkle:version>
+            <sparkle:shortVersionString>1.11.0</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+            <enclosure url="https://github.com/Codevetter/codevetter/releases/latest/download/${archiveName}" length="${archiveBytes.length}" type="application/octet-stream" sparkle:edSignature="${signature}"/>
+        </item>
+    </channel>
+</rss>`;
+}
+
+function enclosureLayout({ archiveName, archiveBytes, signature }) {
+  return `<rss><channel><item><enclosure url="https://github.com/Codevetter/codevetter/releases/latest/download/${archiveName}" sparkle:version="11100" sparkle:shortVersionString="1.11.0" length="${archiveBytes.length}" sparkle:edSignature="${signature}" /></item></channel></rss>`;
+}
+
+function fixture(layout = enclosureLayout) {
   const { privateKey, publicKey } = generateKeyPairSync('ed25519');
   const publicDER = publicKey.export({ format: 'der', type: 'spki' });
   const rawPublicKey = publicDER.subarray(-32).toString('base64');
@@ -13,7 +35,7 @@ function fixture() {
   const archiveName = 'CodeVetter-1.11.0-arm64.zip';
   const archiveSHA256 = createHash('sha256').update(archiveBytes).digest('hex');
   return {
-    xml: `<rss><channel><item><enclosure url="https://github.com/Codevetter/codevetter/releases/latest/download/${archiveName}" sparkle:version="11100" sparkle:shortVersionString="1.11.0" length="${archiveBytes.length}" sparkle:edSignature="${signature}" /></item></channel></rss>`,
+    xml: layout({ archiveName, archiveBytes, signature }),
     info: {
       CFBundleIdentifier: 'com.codevetter.desktop',
       CFBundleVersion: '11100',
@@ -35,6 +57,38 @@ test('exact Sparkle archive signature and identities qualify offline', () => {
   assert.equal(receipt.status, 'qualified');
   assert.equal(receipt.qualified, true);
   assert.deepEqual(receipt.blockers, []);
+});
+
+test('the generate_appcast item layout qualifies exactly like the enclosure layout', () => {
+  const receipt = evaluateNativeAppcast(fixture(itemLayout));
+  assert.equal(receipt.status, 'qualified');
+  assert.deepEqual(receipt.blockers, []);
+  assert.equal(receipt.application.build, '11100');
+  assert.equal(receipt.application.version, '1.11.0');
+});
+
+test('a feed that disagrees with itself about the version fails closed', () => {
+  const input = fixture(itemLayout);
+  assert.throws(
+    () =>
+      evaluateNativeAppcast({
+        ...input,
+        xml: input.xml.replace('<enclosure url=', '<enclosure sparkle:version="11101" url='),
+      }),
+    /conflicting sparkle:version/
+  );
+});
+
+test('a feed missing the version in both placements fails closed', () => {
+  const input = fixture(itemLayout);
+  assert.throws(
+    () =>
+      evaluateNativeAppcast({
+        ...input,
+        xml: input.xml.replace('<sparkle:version>11100</sparkle:version>', ''),
+      }),
+    /missing sparkle:version/
+  );
 });
 
 test('tampered archives and mismatched versions fail closed', () => {

@@ -55,7 +55,7 @@ Internal (fleet):
 
 ## Timeline
 
-- **2026-09-05 — Usage revalidates on its own (1.13.1):** the Usage section
+- **2026-09-05 — Usage revalidates on its own (1.13.2):** the Usage section
   keeps itself current while it is open instead of collecting once per
   navigation. `PremiumUsageView` owns a poll that SwiftUI cancels with the
   view, so nothing collects after the operator leaves the section. Local
@@ -71,6 +71,14 @@ Internal (fleet):
   1.13.0 tag bumped only the native marketing version, so the bundled Rust
   companions still reported 1.12.2 and `core:qualify-cli` failed on `main`.
   The three crates and their exact path pins now move with the app version.
+  The v1.13.1 production run then signed, notarized, and stapled the app and
+  generated the Sparkle appcast, but `inspect-native-appcast.mjs` read
+  `sparkle:version` and `sparkle:shortVersionString` only as `<enclosure>`
+  attributes. `generate_appcast` writes both as `<item>` children, which its
+  test fixture never modelled, so every appcast it produced failed closed. The
+  inspector now accepts either placement, refuses a feed that states both and
+  disagrees, and still requires the signature, length, and identity matches it
+  always did. Reproduced against the exact bundled Sparkle binary.
 
 - **2026-09-05 — Native-only migration landed on `main` (unreleased):** the
   Tauri-retirement branch is fast-forwarded onto `main`, so `apps/macos` plus
