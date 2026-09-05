@@ -262,6 +262,19 @@ public struct DevinUsageSummary: Codable, Sendable {
       models: models
     )
   }
+
+  /// An unreadable Devin history is never the same claim as a quiet window, so the
+  /// desk distinguishes the two instead of rendering both as zero activity.
+  public func availability(for window: UsageWindow) -> DevinUsageAvailability {
+    guard status == "ready" else { return .unavailable }
+    return projection(for: window).sessions > 0 ? .active : .empty
+  }
+}
+
+public enum DevinUsageAvailability: Equatable, Sendable {
+  case unavailable
+  case empty
+  case active
 }
 
 public struct LocalUsageReport: Codable, Sendable {

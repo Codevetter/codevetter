@@ -13,7 +13,7 @@ language, loading/empty/error treatment, and keyboard-sized click targets.
 
 | Section | Native source | Primary result |
 |---|---|---|
-| Usage | `PremiumUsageView.swift` | Remaining provider allowance first, then bounded historical usage. Unavailable quota is labelled unavailable, never zero. |
+| Usage | `PremiumUsageView.swift` | Remaining provider allowance first, then bounded historical usage, then Devin's separate indexed history. Unavailable quota or Devin history is labelled unavailable, never zero. |
 | Repo Unpack | `PremiumUnpackView.swift` | Repository brief, inventory, graph/history evidence, and exports. |
 | Review | `PremiumWorkbench.swift` | Exact change, independent Claude/Codex review, executable evidence, findings, and handoff receipts. |
 | Testing | `PremiumTestingView.swift` plus focused testing views | Preview, changed verification, scenarios, differential runs, warm verification, and opt-in PR watchers. |
@@ -48,6 +48,18 @@ attempts. Run `codevetter --help` for the exact current contract.
 MCP remains read-only: it can inspect evidence and prepare bounded review
 context, but it cannot start a review, execute tests, approve a fix, alter
 settings, or publish anything.
+
+## Devin on the Usage desk
+
+Devin is indexed from its own SQLite session history and is never folded into
+the ccusage totals, so it renders as its own panel on the page rather than as a
+diagnostic. The panel follows the same 1w/30d/90d/all-time window selection as
+the ccusage desk.
+
+`DevinUsageSummary.availability(for:)` separates three states the panel must not
+conflate: an unreadable history reads `unavailable`, a readable history with no
+sessions in the window reads `empty`, and anything else reads as activity. Stale
+counters alongside a failed status still read `unavailable`.
 
 ## Usage revalidation
 
