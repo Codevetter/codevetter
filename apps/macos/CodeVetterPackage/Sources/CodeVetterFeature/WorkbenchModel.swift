@@ -293,8 +293,17 @@ public final class WorkbenchModel {
   private var providerQuotaTask: Task<Void, Never>?
   private var usageSnapshotRestoreTask: Task<RestoredUsageSnapshots, Never>?
   private var usageSnapshotsRestored = false
-  private var usageLastLoadedAt: Date?
+  public private(set) var usageLastLoadedAt: Date?
   private var providerQuotaLastLoadedAt: Date?
+  /// Local agent-log usage is an offline `ccusage` scan, so it can revalidate often.
+  @ObservationIgnored public var usageAutoRefreshInterval: TimeInterval = 60
+  /// Provider allowance spawns supervised `claude` and `codex` sessions that can take
+  /// twenty seconds and reach the provider. The cadence is measured from the end of the
+  /// previous collection, and polling suspends while the app is not frontmost, so this
+  /// only runs while an operator is actually reading the page.
+  @ObservationIgnored public var providerQuotaAutoRefreshInterval: TimeInterval = 60
+  @ObservationIgnored public var usageAutoRefreshTick: TimeInterval = 5
+  @ObservationIgnored private var usageAutoRefreshSuspended = false
   @ObservationIgnored private var usageProjectionCache:
     [UsageProjectionCacheKey: UsageViewProjection] = [:]
   @ObservationIgnored private var usageProjectionReferenceDate = Date()
@@ -1945,18 +1954,53 @@ public final class WorkbenchModel {
 
   public func prepareUsage() async {
     await restoreUsageSnapshots()
-    let now = Date()
+    refreshUsageIfStale()
+  }
+
+  /// Collects whichever usage surface has outlived its cadence. Both reads are
+  /// independently gated, so the slow provider allowance never delays local history.
+  public func refreshUsageIfStale(now: Date = Date()) {
     if usageReport == nil
       || usageReport?.provenance.timezone != usageTimezone
-      || needsUsageRefresh(loadedAt: usageLastLoadedAt, now: now, interval: 5 * 60)
+      || needsUsageRefresh(loadedAt: usageLastLoadedAt, now: now, interval: usageAutoRefreshInterval)
     {
       loadUsage()
     }
     if providerQuotaReceipt == nil
-      || needsUsageRefresh(loadedAt: providerQuotaLastLoadedAt, now: now, interval: 2 * 60)
+      || needsUsageRefresh(
+        loadedAt: providerQuotaLastLoadedAt,
+        now: now,
+        interval: providerQuotaAutoRefreshInterval
+      )
     {
       loadProviderQuota()
     }
+  }
+
+  /// Drives the Usage section's automatic revalidation. The caller owns the lifetime:
+  /// SwiftUI cancels this with the view, so the poll never outlives the visible section.
+  public func runUsageAutoRefresh() async {
+    while !Task.isCancelled {
+      do {
+        try await Task.sleep(for: .seconds(usageAutoRefreshTick))
+      } catch {
+        return
+      }
+      guard !Task.isCancelled else { return }
+      guard !usageAutoRefreshSuspended else { continue }
+      refreshUsageIfStale()
+    }
+  }
+
+  /// Suspends polling while the app is not frontmost so background windows never
+  /// spawn provider sessions the operator cannot see.
+  public func setUsageAutoRefreshSuspended(_ suspended: Bool) {
+    usageAutoRefreshSuspended = suspended
+  }
+
+  public func usageWindowBecameActive() {
+    usageAutoRefreshSuspended = false
+    refreshUsageIfStale()
   }
 
   public func warmUsage() async {
@@ -1982,10 +2026,21 @@ public final class WorkbenchModel {
       do {
         let result = try await runner.runUsage(timezone: usageTimezone, refresh: refresh)
         guard !Task.isCancelled else { return }
-        usageReport = result.report
-        usageReportJSON = result.rawJSON
         usageLastLoadedAt = Date()
         usageShowingSavedSnapshot = false
+        // A repeat collection over unchanged agent logs carries the same source
+        // fingerprint. Keeping the accepted report avoids discarding the projection
+        // cache and re-rendering the whole section underneath the reader.
+        let fingerprint = result.report.provenance.sourceFingerprint
+        if !fingerprint.isEmpty,
+          fingerprint == usageReport?.provenance.sourceFingerprint,
+          result.report.provenance.timezone == usageReport?.provenance.timezone,
+          result.report.status == usageReport?.status
+        {
+          return
+        }
+        usageReport = result.report
+        usageReportJSON = result.rawJSON
         let detected = Set(result.report.provenance.detectedAgents)
         usageSelectedAgents.formIntersection(detected)
         if usageSelectedAgents.isEmpty {

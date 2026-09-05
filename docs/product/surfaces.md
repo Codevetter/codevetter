@@ -49,6 +49,23 @@ MCP remains read-only: it can inspect evidence and prepare bounded review
 context, but it cannot start a review, execute tests, approve a fix, alter
 settings, or publish anything.
 
+## Usage revalidation
+
+Usage keeps itself current while the section is open. `PremiumUsageView`
+starts a poll that lives exactly as long as the visible section, so nothing
+collects in the background after you navigate away.
+
+| Surface | Cadence | Why |
+|---|---|---|
+| Local history (`codevetter usage`) | 60s | Offline `ccusage` scan over agent logs. |
+| Provider allowance (`codevetter quota`) | 60s | Spawns supervised `claude` and `codex` sessions that can take twenty seconds and reach the provider. The cadence is measured from the end of the previous collection. |
+
+Polling suspends while the app is not frontmost and revalidates immediately on
+reactivation, so a backgrounded window never spawns provider sessions the
+operator cannot see. A repeat collection whose `source_fingerprint` matches the
+accepted report keeps that report rather than re-rendering identical data. The
+header Refresh button always forces both reads.
+
 ## Interaction policy
 
 - Review findings are leads until executable evidence supports a verdict.

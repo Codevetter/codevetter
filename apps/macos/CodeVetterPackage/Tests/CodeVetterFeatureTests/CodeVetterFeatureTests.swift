@@ -135,6 +135,134 @@ import Testing
   #expect(!model.providerQuotaShowingSavedSnapshot)
 }
 
+@MainActor
+private struct UsageAutoRefreshHarness {
+  let root: URL
+  let model: WorkbenchModel
+
+  init(sameFingerprintOnEveryCall: Bool) throws {
+    root = FileManager.default.temporaryDirectory
+      .appending(path: "codevetter-usage-poll-\(UUID().uuidString)", directoryHint: .isDirectory)
+    try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+    let executable = root.appending(path: "codevetter")
+    let usageCalls = root.appending(path: "usage-calls").path
+    let quotaCalls = root.appending(path: "quota-calls").path
+    let fingerprint =
+      sameFingerprintOnEveryCall ? "sha256:constant" : #"sha256:call-'"$count"'"#
+    let quotaJSON =
+      #"{"schema_version":"codevetter.provider-quota/v1","generated_at":"2026-09-04T00:00:00Z","providers":[{"provider":"codex","status":"ready","source":"fixture","checked_at":"2026-09-04T00:00:00Z","plan":"pro","windows":[],"credits":null,"reset_credits":null,"message":null}],"limitations":[]}"#
+    try """
+    #!/bin/sh
+    if [ "$1" = "usage" ]; then
+      printf 'x' >> "\(usageCalls)"
+      count=$(wc -c < "\(usageCalls)" | tr -d ' ')
+      printf '{"status":"ready","stale":false,"error":null,"provenance":{"engine":"ccusage","version":"20.0.20","generated_at":"2026-09-04T00:00:0'"$count"'Z","timezone":"UTC","window":"all","detected_agents":["codex"],"excluded_agents":[],"codex_roots":[],"source_fingerprint":"\(fingerprint)","pricing_complete":true,"fallback_models":[],"unpriced_models":[]},"daily":[],"weekly":[],"monthly":[],"sessions":[],"totals":{"input_tokens":1,"cache_creation_tokens":2,"cache_read_tokens":3,"output_tokens":4,"total_tokens":10,"cost_usd":0.25}}'
+    else
+      printf 'x' >> "\(quotaCalls)"
+      printf '%s' '\(quotaJSON)'
+    fi
+    """.write(to: executable, atomically: true, encoding: .utf8)
+    try FileManager.default.setAttributes(
+      [.posixPermissions: 0o700], ofItemAtPath: executable.path)
+
+    model = WorkbenchModel(
+      runner: CodeVetterProcessRunner(executableURL: executable),
+      usageSnapshotStore: UsageSnapshotStore(
+        directory: root.appending(path: "snapshots", directoryHint: .isDirectory))
+    )
+    model.usageTimezone = "UTC"
+    model.usageAutoRefreshTick = 0.05
+    model.usageAutoRefreshInterval = 0.1
+    model.providerQuotaAutoRefreshInterval = 600
+  }
+
+  func usageCollectionCount() -> Int {
+    let data = try? Data(contentsOf: root.appending(path: "usage-calls"))
+    return data?.count ?? 0
+  }
+
+  func cleanUp() {
+    try? FileManager.default.removeItem(at: root)
+  }
+
+  func settle() async throws {
+    while model.usageLoading || model.providerQuotaLoading {
+      try await Task.sleep(for: .milliseconds(20))
+    }
+  }
+
+  func waitForUsageCollections(atLeast target: Int) async throws -> Bool {
+    let deadline = Date().addingTimeInterval(10)
+    while Date() < deadline {
+      if usageCollectionCount() >= target { return true }
+      try await Task.sleep(for: .milliseconds(20))
+    }
+    return false
+  }
+}
+
+@MainActor
+@Test func usageRecollectsOnItsOwnAfterTheCadenceElapses() async throws {
+  let harness = try UsageAutoRefreshHarness(sameFingerprintOnEveryCall: false)
+  defer { harness.cleanUp() }
+  let model = harness.model
+
+  await model.prepareUsage()
+  try await harness.settle()
+  #expect(harness.usageCollectionCount() == 1)
+  let firstCollectedAt = try #require(model.usageLastLoadedAt)
+
+  let poll = Task { await model.runUsageAutoRefresh() }
+  let recollected = try await harness.waitForUsageCollections(atLeast: 3)
+  try await harness.settle()
+  poll.cancel()
+
+  #expect(recollected)
+  #expect(!model.usageShowingSavedSnapshot)
+  #expect((model.usageLastLoadedAt ?? firstCollectedAt) > firstCollectedAt)
+}
+
+@MainActor
+@Test func usageAutoRefreshStaysQuietWhileTheAppIsNotFrontmost() async throws {
+  let harness = try UsageAutoRefreshHarness(sameFingerprintOnEveryCall: false)
+  defer { harness.cleanUp() }
+  let model = harness.model
+
+  await model.prepareUsage()
+  try await harness.settle()
+  model.setUsageAutoRefreshSuspended(true)
+
+  let poll = Task { await model.runUsageAutoRefresh() }
+  try await Task.sleep(for: .milliseconds(500))
+  let suspendedCount = harness.usageCollectionCount()
+  model.usageWindowBecameActive()
+  let resumed = try await harness.waitForUsageCollections(atLeast: suspendedCount + 1)
+  poll.cancel()
+
+  #expect(suspendedCount == 1)
+  #expect(resumed)
+}
+
+@MainActor
+@Test func repeatUsageCollectionKeepsTheAcceptedReportWhenSourcesAreUnchanged() async throws {
+  let harness = try UsageAutoRefreshHarness(sameFingerprintOnEveryCall: true)
+  defer { harness.cleanUp() }
+  let model = harness.model
+
+  model.loadUsage()
+  try await harness.settle()
+  let firstGeneratedAt = model.usageReport?.provenance.generatedAt
+  #expect(firstGeneratedAt == "2026-09-04T00:00:01Z")
+
+  model.loadUsage()
+  try await harness.settle()
+
+  #expect(harness.usageCollectionCount() == 2)
+  #expect(model.usageReport?.provenance.generatedAt == firstGeneratedAt)
+  #expect(model.usageReportJSON.contains("2026-09-04T00:00:01Z"))
+  #expect(!model.usageShowingSavedSnapshot)
+}
+
 @Test func nativeUpdaterConfigurationFailsClosedUntilEverySigningInputExists() throws {
   let preview = NativeUpdaterConfiguration(
     feedURL: URL(string: "https://updates.example.test/appcast.xml"),

@@ -55,6 +55,20 @@ Internal (fleet):
 
 ## Timeline
 
+- **2026-09-05 — Usage revalidates on its own (1.13.0):** the Usage section
+  keeps itself current while it is open instead of collecting once per
+  navigation. `PremiumUsageView` owns a poll that SwiftUI cancels with the
+  view, so nothing collects after the operator leaves the section. Local
+  history and provider allowance both revalidate every 60 seconds, measured
+  from the end of the previous collection, and the header reports how long ago
+  the accepted report was collected. Polling suspends while the app is not
+  frontmost and revalidates immediately on reactivation, so a backgrounded
+  window never spawns the supervised `claude` and `codex` sessions the provider
+  allowance requires. A repeat collection whose `source_fingerprint` matches
+  the accepted report keeps that report rather than re-rendering identical
+  data. Cadence and suspension are covered by Swift tests; see
+  [docs/product/surfaces.md](docs/product/surfaces.md).
+
 - **2026-09-05 — Native-only migration landed on `main` (unreleased):** the
   Tauri-retirement branch is fast-forwarded onto `main`, so `apps/macos` plus
   `crates/codevetter-core` is the only buildable product tree. This pass

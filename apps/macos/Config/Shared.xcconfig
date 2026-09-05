@@ -15,8 +15,8 @@ EXECUTABLE_NAME = CodeVetterNative
 // Debug stays isolated from user data; Release owns the production identity.
 PRODUCT_BUNDLE_IDENTIFIER = com.codevetter.desktop
 PRODUCT_BUNDLE_IDENTIFIER[config=Debug] = com.codevetter.desktop.native-preview
-MARKETING_VERSION = 1.12.2
-CURRENT_PROJECT_VERSION = 11202
+MARKETING_VERSION = 1.13.0
+CURRENT_PROJECT_VERSION = 11300
 
 // ==========================================
 // Platform Configuration

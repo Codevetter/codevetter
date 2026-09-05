@@ -87,6 +87,21 @@ struct PremiumUsageView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
     .background(EvidenceStyle.canvas)
+    .onAppear { model.setUsageAutoRefreshSuspended(!NSApp.isActive) }
+    .task {
+      await model.prepareUsage()
+      await model.runUsageAutoRefresh()
+    }
+    .onReceive(
+      NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)
+    ) { _ in
+      model.usageWindowBecameActive()
+    }
+    .onReceive(
+      NotificationCenter.default.publisher(for: NSApplication.didResignActiveNotification)
+    ) { _ in
+      model.setUsageAutoRefreshSuspended(true)
+    }
   }
 
   private var header: some View {
@@ -105,6 +120,13 @@ struct PremiumUsageView: View {
             : report.status.label,
           color: showingSavedData ? EvidenceStyle.amber : report.status.color
         )
+      }
+      if let collectedAt = model.usageLastLoadedAt {
+        Text("Updated \(Text(collectedAt, style: .relative)) ago")
+          .font(.system(size: 10, weight: .medium, design: .monospaced))
+          .foregroundStyle(.secondary)
+          .monospacedDigit()
+          .accessibilityLabel("Usage collected")
       }
       Button {
         model.loadUsage(refresh: true)

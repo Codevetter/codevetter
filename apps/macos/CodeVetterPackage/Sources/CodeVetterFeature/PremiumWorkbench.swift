@@ -44,9 +44,9 @@ public struct PremiumWorkbenchRootView: View {
       await model.warmUsage()
     }
     .task(id: model.section) {
-      if model.section == .usage {
-        await model.prepareUsage()
-      } else if model.section == .repository, model.unpackSnapshots.isEmpty {
+      // Usage owns its own preparation and revalidation inside PremiumUsageView so the
+      // poll lives exactly as long as the visible section.
+      if model.section == .repository, model.unpackSnapshots.isEmpty {
         model.loadUnpackSnapshots()
       } else if model.section == .settings, model.settingsReceipt == nil {
         model.loadNativeSettings()
