@@ -55,7 +55,7 @@ Internal (fleet):
 
 ## Timeline
 
-- **2026-09-05 — Usage revalidates on its own (1.13.0):** the Usage section
+- **2026-09-05 — Usage revalidates on its own (1.13.1):** the Usage section
   keeps itself current while it is open instead of collecting once per
   navigation. `PremiumUsageView` owns a poll that SwiftUI cancels with the
   view, so nothing collects after the operator leaves the section. Local
@@ -67,7 +67,10 @@ Internal (fleet):
   allowance requires. A repeat collection whose `source_fingerprint` matches
   the accepted report keeps that report rather than re-rendering identical
   data. Cadence and suspension are covered by Swift tests; see
-  [docs/product/surfaces.md](docs/product/surfaces.md).
+  [docs/product/surfaces.md](docs/product/surfaces.md). Cut as 1.13.1: the
+  1.13.0 tag bumped only the native marketing version, so the bundled Rust
+  companions still reported 1.12.2 and `core:qualify-cli` failed on `main`.
+  The three crates and their exact path pins now move with the app version.
 
 - **2026-09-05 — Native-only migration landed on `main` (unreleased):** the
   Tauri-retirement branch is fast-forwarded onto `main`, so `apps/macos` plus

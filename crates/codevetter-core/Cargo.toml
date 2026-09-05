@@ -1,6 +1,6 @@
 [package]
 name = "codevetter-core"
-version = "1.12.2"
+version = "1.13.1"
 edition = "2021"
 publish = false
 description = "CodeVetter verification core, CLI, and read-only MCP server"
@@ -24,7 +24,7 @@ path = "src/bin/codevetter-graph.rs"
 [dependencies]
 # Source-compatible command facade while legacy annotations are renamed. This
 # is repository-owned and contains no Tauri, WebView, or windowing runtime.
-tauri = { package = "codevetter-transport", version = "=1.12.2", path = "../codevetter-transport" }
+tauri = { package = "codevetter-transport", version = "=1.13.1", path = "../codevetter-transport" }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 sha2 = "0.10"
