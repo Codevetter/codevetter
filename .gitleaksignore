@@ -8,3 +8,6 @@
 81df29eebf1d724d2939cbfd8123b86e9848a940:foundry.json:generic-api-key:4
 # Historical database migration fixture value.
 ac5d18ee9b33811accec2df5d7bc33b69f9bb6c3:apps/desktop/src-tauri/src/db/schema.rs:generic-api-key:23
+# App Health browser ingestion key, public by design. The file is served from the
+# site's public/ directory and posts the value as `public_key`; it is origin-pinned.
+70a16b627507b985b8c3366dfc4cb2411d98e9ab:apps/landing-page-astro/public/app-health-log.js:generic-api-key:6
