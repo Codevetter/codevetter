@@ -21,6 +21,7 @@ const KNOWN_MD_PAGES = new Set([
   '/codevetter-vs-coderabbit',
   '/codevetter-vs-greptile',
   '/coding-agent-verification',
+  '/compare',
   '/contact',
   '/docs',
   '/download',

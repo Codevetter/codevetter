@@ -135,6 +135,13 @@
       "description": "Comparison of static code review and executable verification"
     },
     {
+      "id": "compare",
+      "url": "https://codevetter.com/compare",
+      "md": "https://codevetter.com/compare.md",
+      "kind": "static",
+      "description": "Three-way comparison hub: CodeVetter, CodeRabbit, and Greptile on where code is processed and what each publishes as evidence"
+    },
+    {
       "id": "verification-evidence-bundle",
       "url": "https://codevetter.com/verification-evidence-bundle",
       "md": "https://codevetter.com/verification-evidence-bundle.md",

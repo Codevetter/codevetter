@@ -76,7 +76,6 @@ struct UsageViewProjection: Sendable {
 
 struct PremiumUsageView: View {
   @Bindable var model: WorkbenchModel
-  @State private var devinDetailsExpanded = false
   @State private var localDetailsExpanded = false
 
   var body: some View {
@@ -148,6 +147,7 @@ struct PremiumUsageView: View {
       LazyVStack(alignment: .leading, spacing: 14) {
         providerAllowance
         historicalUsage
+        devinUsage
 
         Button {
           withAnimation(.easeInOut(duration: 0.18)) {
@@ -184,6 +184,15 @@ struct PremiumUsageView: View {
   private var historicalUsage: some View {
     if let report = model.usageReport {
       trendPanel(report, projection: model.usageProjection(for: report))
+    }
+  }
+
+  // Devin is indexed from its own SQLite history and is never folded into the
+  // ccusage totals above, so it reads as its own desk rather than a diagnostic.
+  @ViewBuilder
+  private var devinUsage: some View {
+    if let devin = model.usageReport?.devin {
+      devinPanel(devin)
     }
   }
 
@@ -248,24 +257,6 @@ struct PremiumUsageView: View {
           StatusPill(label: report.status.label, color: report.status.color)
         }
         metrics(report, projection: projection)
-        if let devin = report.devin {
-          Button {
-            withAnimation(.easeInOut(duration: 0.18)) {
-              devinDetailsExpanded.toggle()
-            }
-          } label: {
-            HStack {
-              Text("Devin · \(devinBoundaryDetail(devin))")
-              Spacer()
-              Image(systemName: devinDetailsExpanded ? "chevron.up" : "chevron.down")
-            }
-            .font(.system(size: 10, weight: .semibold))
-            .foregroundStyle(.secondary)
-            .premiumHitTarget(minHeight: 36)
-          }
-          .buttonStyle(.plain)
-          if devinDetailsExpanded { devinPanel(devin) }
-        }
         adapterHealth(report)
         HStack(alignment: .top, spacing: 14) {
           modelPanel(projection)
@@ -282,21 +273,21 @@ struct PremiumUsageView: View {
     }
   }
 
-  private func devinBoundaryDetail(_ summary: DevinUsageSummary?) -> String {
-    guard let summary else { return "Local history unavailable · never folded into ccusage" }
-    guard summary.status == "ready" else {
-      return "No indexed sessions · never folded into ccusage"
-    }
-    let projection = summary.projection(for: model.usageWindow)
-    let cost = currency(projection.costUSD)
-    return "\(projection.sessions) sessions · \(cost) \(model.usageWindow.rawValue) · separate"
-  }
-
   private func devinPanel(_ summary: DevinUsageSummary) -> some View {
     let projection = summary.projection(for: model.usageWindow)
+    let availability = summary.availability(for: model.usageWindow)
     let title =
-      projection.sessions > 0
-      ? "Indexed Devin activity" : "No Devin activity \(model.usageWindow.description)"
+      switch availability {
+      case .unavailable: "Devin local history unavailable"
+      case .active: "Indexed Devin activity"
+      case .empty: "No Devin activity \(model.usageWindow.description)"
+      }
+    let pillLabel =
+      switch availability {
+      case .unavailable: "unavailable"
+      case .empty: "empty"
+      case .active: "\(model.usageWindow.rawValue) local history"
+      }
     return VStack(alignment: .leading, spacing: 12) {
       HStack(alignment: .center, spacing: 18) {
         VStack(alignment: .leading, spacing: 4) {
@@ -327,8 +318,8 @@ struct PremiumUsageView: View {
         )
         Spacer(minLength: 0)
         StatusPill(
-          label: projection.sessions > 0 ? "\(model.usageWindow.rawValue) local history" : "empty",
-          color: projection.sessions > 0 ? EvidenceStyle.success : EvidenceStyle.warning
+          label: pillLabel,
+          color: availability == .active ? EvidenceStyle.success : EvidenceStyle.warning
         )
       }
 

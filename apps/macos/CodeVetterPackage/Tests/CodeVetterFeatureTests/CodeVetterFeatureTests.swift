@@ -263,6 +263,38 @@ private struct UsageAutoRefreshHarness {
   #expect(!model.usageShowingSavedSnapshot)
 }
 
+private func devinSummary(status: String, sessions: Int64) -> DevinUsageSummary {
+  let json = """
+    {"status":"\(status)","source":"CodeVetter SQLite · indexed Devin sessions.db",
+     "sessions":\(sessions),"generated_tokens":1200,"cache_read_tokens":200,
+     "output_tokens":300,"cost_usd":0.42,
+     "models":[{"model":"glm-5.2","sessions":\(sessions),"generated_tokens":1200,
+                "cache_read_tokens":200,"cost_usd":0.42}],
+     "windows":[{"window":"30d","since":"2026-08-06","sessions":\(sessions),
+                 "generated_tokens":1200,"cache_read_tokens":200,"cost_usd":0.42,
+                 "models":[]}],
+     "limitations":["This local history is not live quota telemetry."]}
+    """
+  return try! JSONDecoder().decode(DevinUsageSummary.self, from: Data(json.utf8))
+}
+
+@Test func devinDistinguishesAnUnreadableHistoryFromAQuietWindow() throws {
+  let active = devinSummary(status: "ready", sessions: 3)
+  #expect(active.availability(for: .thirtyDays) == .active)
+
+  let quiet = devinSummary(status: "ready", sessions: 0)
+  #expect(quiet.availability(for: .thirtyDays) == .empty)
+
+  // A source CodeVetter could not read must never be reported as zero activity,
+  // even when the projected counters are zero.
+  let unreadable = devinSummary(status: "unavailable", sessions: 0)
+  #expect(unreadable.availability(for: .thirtyDays) == .unavailable)
+
+  // Nor when stale counters survive alongside a failed status.
+  let staleCounters = devinSummary(status: "unavailable", sessions: 3)
+  #expect(staleCounters.availability(for: .thirtyDays) == .unavailable)
+}
+
 @Test func nativeUpdaterConfigurationFailsClosedUntilEverySigningInputExists() throws {
   let preview = NativeUpdaterConfiguration(
     feedURL: URL(string: "https://updates.example.test/appcast.xml"),
