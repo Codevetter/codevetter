@@ -2,6 +2,18 @@ import AppKit
 import SwiftUI
 import UniformTypeIdentifiers
 
+@MainActor
+public func makeWorkbenchHostingController(model: WorkbenchModel, contentSize: NSSize)
+  -> NSHostingController<PremiumWorkbenchRootView>
+{
+  let controller = NSHostingController(rootView: PremiumWorkbenchRootView(model: model))
+  // AppKit owns the resizable window. SwiftUI's inferred minimum can become taller
+  // than the display when the import landing is measured without a width proposal.
+  controller.sizingOptions = []
+  controller.view.frame = NSRect(origin: .zero, size: contentSize)
+  return controller
+}
+
 public struct PremiumWorkbenchRootView: View {
   @Bindable private var model: WorkbenchModel
 
@@ -16,9 +28,20 @@ public struct PremiumWorkbenchRootView: View {
       case .usage:
         PremiumUsageView(model: model)
       case .repository:
-        PremiumUnpackView(model: model)
+        NavigatorWorkspaceView(model: model, mode: .explore)
       case .review:
-        PremiumReviewView(model: model)
+        if model.navigator.showVerification {
+          VStack(spacing: 0) {
+            HStack {
+              Button("Back to source browser", systemImage: "chevron.left") { model.navigator.showVerification = false }
+                .buttonStyle(.borderless)
+              Spacer()
+            }.padding(.horizontal, 20).frame(height: 34)
+            PremiumReviewView(model: model)
+          }
+        } else {
+          NavigatorWorkspaceView(model: model, mode: .review)
+        }
       case .testing:
         PremiumTestingView(model: model)
       case .performance:
@@ -1597,21 +1620,7 @@ private struct ReceiptDeskView: View {
       actionIssue = "The receipt source path is not repository-contained."
       return
     }
-    let root = URL(fileURLWithPath: receipt.repoPath, isDirectory: true).standardizedFileURL
-    let target = root.appending(path: path).standardizedFileURL
-    let rootPrefix = root.path.hasSuffix("/") ? root.path : root.path + "/"
-    guard target.path.hasPrefix(rootPrefix), FileManager.default.fileExists(atPath: target.path)
-    else {
-      actionIssue = "The recorded source path is no longer available in this checkout."
-      return
-    }
-    if NSWorkspace.shared.open(target) {
-      actionIssue = line.map {
-        "Opened source at recorded line \($0); line positioning depends on the default editor."
-      }
-    } else {
-      actionIssue = "macOS could not open the recorded source file."
-    }
+    model.openNavigatorSource(path: path, line: line, receipt: receipt)
   }
 
   private func findingColor(_ severity: String) -> Color {

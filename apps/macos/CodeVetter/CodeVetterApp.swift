@@ -83,8 +83,8 @@ final class CodeVetterAppDelegate: NSObject, NSApplicationDelegate {
     window.toolbarStyle = .unified
     window.minSize = NSSize(width: 980, height: 640)
     window.center()
-    window.contentViewController = NSHostingController(
-      rootView: PremiumWorkbenchRootView(model: model))
+    window.contentViewController = makeWorkbenchHostingController(
+      model: model, contentSize: window.contentView!.bounds.size)
     window.isReleasedWhenClosed = false
     window.tabbingMode = .preferred
 

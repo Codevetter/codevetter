@@ -219,6 +219,12 @@ export function qualifyNativePackage(options = parseArguments(process.argv.slice
   cpSync(advisoryDatabaseSource, advisoryDatabaseDestination, { recursive: true });
 
   signSparkle(stagedApp, options.identity);
+  const navigatorLibrary = join(stagedApp, 'Contents/Frameworks/libcodevetter_navigator.dylib');
+  assertFile(navigatorLibrary);
+  sign(navigatorLibrary, options.identity);
+  const semanticServer = join(stagedApp, 'Contents/Resources/TypeScript/lib/tsc');
+  assertFile(semanticServer);
+  sign(semanticServer, options.identity);
   for (const executable of executableSidecars) sign(executable, options.identity);
   for (const executable of collectorSidecars) {
     // macOS rejects ad-hoc hardened third-party Go collectors on current hosts.

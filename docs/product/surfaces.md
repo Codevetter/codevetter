@@ -14,8 +14,8 @@ language, loading/empty/error treatment, and keyboard-sized click targets.
 | Section | Native source | Primary result |
 |---|---|---|
 | Usage | `PremiumUsageView.swift` | Remaining provider allowance first, then bounded historical usage, then Devin's separate indexed history. Unavailable quota or Devin history is labelled unavailable, never zero. |
-| Repo Unpack | `PremiumUnpackView.swift` | Repository brief, inventory, graph/history evidence, and exports. |
-| Review | `PremiumWorkbench.swift` | Exact change, independent Claude/Codex review, executable evidence, findings, and handoff receipts. |
+| Explore | `NavigatorWorkspaceView.swift` | Read-only Git source, fuzzy file search, indexed search, declarations, history, and integrated Unpack. |
+| Review | `NavigatorWorkspaceView.swift`, `PremiumWorkbench.swift` | Pinned GitHub/local diffs and exact source links, alongside the existing executable verification and handoff receipts. |
 | Testing | `PremiumTestingView.swift` plus focused testing views | Preview, changed verification, scenarios, differential runs, warm verification, and opt-in PR watchers. |
 | Performance | `PremiumPerformanceView.swift` | Exact local workload, baseline/candidate measurements, limits, cleanup, and optimization verdict. |
 | Settings | `PremiumSettingsView.swift` | Accounts, agents, MCP, rubrics, memories, usage roots, updater/about, and other configuration. |
@@ -79,6 +79,46 @@ accepted report keeps that report rather than re-rendering identical data. The
 header Refresh button always forces both reads.
 
 ## Interaction policy
+
+### Review and Explore navigation
+
+The landing surface accepts public GitHub repository, PR, commit, branch, and
+file URLs, or a local repository. The Rust navigator pins commits and blobs;
+PRs use their merge base. Source opens before background indexing. `Cmd+P`
+finds files, `Shift+Cmd+F` searches indexed text, and `Shift+Cmd+O` lists
+JavaScript/TypeScript declarations. The source plane renders visible rows from
+bounded Rust windows. Unified and split diffs retain old/new line numbers;
+full-source and base/head views share the same pinned identity.
+
+Unpack is available beside source. Its deterministic map links repository
+instructions, architecture documents, manifests, entry points, and imports to
+their files. Existing reports at the matching revision add subsystem claims,
+workspace modules, and decision sources. Imported text snapshots can be handed
+to the existing Unpack scan without executing repository code. Coverage
+exclusions remain explicit. Findings and recorded runtime stack locations open
+inside CodeVetter at the receipt revision, never through the default editor.
+
+The navigator has a separate in-process library boundary; verification remains
+on the existing CLI/receipt boundary. See
+[the navigator implementation](../../crates/codevetter-navigator/src/lib.rs)
+and [tracking issue #285](https://github.com/Codevetter/codevetter/issues/285).
+Double-click, F12, and the source context menu use bundled TypeScript 7.0.2
+semantic definitions; Shift+F12 finds references. Left/right arrows move the
+symbol position and up/down arrows move source lines. Rust runs the native LSP
+worker against separate base/head source snapshots with admitted compiler
+configuration, including path aliases. Its macOS sandbox denies outside reads,
+writes, subprocesses other than the worker itself, and network access. It never
+installs dependencies or runs repository code. External packages and unsupported
+languages remain outside semantic coverage; file browsing and literal search
+continue independently. The declaration list remains syntax-backed.
+Text indexing and semantic snapshots are bounded to 32 MiB, individual
+indexed files to 2 MiB, and source reads to 64 MiB; excluded content is never
+reported as indexed. Git history is limited by available fetched history.
+Refreshing explicitly replaces a local source snapshot; a drifted local diff
+is rejected. In-process benchmark timings do not establish keyboard-to-pixel
+latency or foreground interaction qualification.
+
+### Verification policy
 
 - Review findings are leads until executable evidence supports a verdict.
 - Watchers are opt-in and app-lifetime bounded; they do not run while the app

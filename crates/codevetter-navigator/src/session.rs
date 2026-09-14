@@ -105,6 +105,7 @@ pub struct Session {
     documents: Mutex<HashMap<String, Arc<Document>>>,
     pub index: RwLock<Index>,
     pub diffs: Mutex<HashMap<String, serde_json::Value>>,
+    pub semantics: Mutex<HashMap<String, crate::semantic::SemanticServer>>,
 }
 
 impl Session {
@@ -196,6 +197,7 @@ impl Session {
             documents: Mutex::new(HashMap::new()),
             index: RwLock::new(Index::default()),
             diffs: Mutex::new(HashMap::new()),
+            semantics: Mutex::new(HashMap::new()),
         }))
     }
 

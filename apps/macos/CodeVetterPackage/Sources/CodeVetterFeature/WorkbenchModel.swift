@@ -9,7 +9,7 @@ private struct UsageProjectionCacheKey: Hashable {
 
 public enum WorkbenchSection: String, CaseIterable, Hashable, Identifiable, Sendable {
   case usage = "Usage"
-  case repository = "Repo Unpack"
+  case repository = "Explore"
   case review = "Review"
   case testing = "Testing"
   case performance = "Performance"
@@ -50,6 +50,7 @@ public enum RunLedgerScope: String, Sendable {
 @MainActor
 @Observable
 public final class WorkbenchModel {
+  var navigator = NavigatorModel()
   public var section: WorkbenchSection = .review
   public var commandPalettePresented = false
   public var selectedCapabilityID = "verification.local_check"
