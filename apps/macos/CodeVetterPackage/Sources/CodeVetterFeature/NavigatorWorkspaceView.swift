@@ -4,7 +4,6 @@ import UniformTypeIdentifiers
 struct NavigatorWorkspaceView: View {
   @Bindable var model: WorkbenchModel
   let mode: NavigatorMode
-  @State private var choosingLocal = false
   @State private var inspectorVisible = true
   @State private var quickIndex = 0
   @FocusState private var quickFocused: Bool
@@ -37,7 +36,7 @@ struct NavigatorWorkspaceView: View {
     .sheet(isPresented: $nav.showFullUnpack) {
       PremiumUnpackView(model: model).frame(minWidth: 980, minHeight: 640)
     }
-    .fileImporter(isPresented: $choosingLocal, allowedContentTypes: [.folder]) { result in
+    .fileImporter(isPresented: $model.choosingRepository, allowedContentTypes: [.folder]) { result in
       guard case .success(let url) = result else { return }
       model.selectRepository(url)
       nav.open(url.path, review: mode == .review)
@@ -136,7 +135,7 @@ struct NavigatorWorkspaceView: View {
           .foregroundStyle(EvidenceStyle.warning).textSelection(.enabled)
       }
       HStack(spacing: 20) {
-        Button("Open local repository…", systemImage: "folder") { choosingLocal = true }
+        Button("Open local repository…", systemImage: "folder") { model.choosingRepository = true }
         Button("Verify a local change", systemImage: "checkmark.shield") {
           nav.showVerification = true
           model.section = .review
@@ -169,7 +168,7 @@ struct NavigatorWorkspaceView: View {
     return HStack(spacing: 12) {
       Menu {
         Button("Open GitHub URL…") { nav.showImport() }
-        Button("Open local repository…") { choosingLocal = true }
+        Button("Open local repository…") { model.choosingRepository = true }
         Button("Refresh source snapshot") { nav.open(review: mode == .review) }
       } label: {
         Label(nav.snapshot?.label ?? "Repository", systemImage: "folder")

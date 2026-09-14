@@ -193,6 +193,10 @@ final class CodeVetterUITests: XCTestCase {
     XCTAssertTrue(app.buttons["Verify a local change"].isHittable)
     XCTAssertTrue(
       app.staticTexts["Read-only by design. Repository code does not run when you open it."].exists)
+    app.menuBars.menuBarItems["File"].click()
+    app.menuItems["Open Repository…"].click()
+    XCTAssertTrue(app.sheets.firstMatch.waitForExistence(timeout: 3))
+    app.typeKey(.escape, modifierFlags: [])
   }
 
   @MainActor
