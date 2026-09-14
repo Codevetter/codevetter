@@ -5,6 +5,22 @@ import Testing
 
 @testable import CodeVetterFeature
 
+@Test func navigatorRuntimeLocationParsingRejectsEscapesAndBacktrackingInputs() {
+  let locations = navigatorRuntimeLocations(in: [
+    "at run (/repo/src/session.ts:27:9)", "./src/session.ts:27",
+    "../outside.ts:4 /elsewhere/file.ts:3 /repo/../escape.ts:5 src/missing.ts:0",
+    "src/ok.ts:18",
+  ], repository: "/repo")
+  #expect(locations.map(\.path) == ["src/session.ts", "src/ok.ts"])
+  #expect(locations.map(\.line) == [27, 18])
+  let adversarial = String(repeating: "!/", count: 10_000) + "! src/ok.ts:12"
+  let start = ContinuousClock.now
+  let recovered = navigatorRuntimeLocations(in: [adversarial], repository: "/repo")
+  #expect(start.duration(to: .now) < .seconds(1))
+  #expect(recovered.map(\.path) == ["src/ok.ts"])
+  #expect(recovered.first?.line == 12)
+}
+
 private func navigatorFixture() throws -> (URL, String, String) {
   let root = FileManager.default.temporaryDirectory.appendingPathComponent(
     "navigator-\(UUID().uuidString)")

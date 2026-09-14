@@ -135,3 +135,7 @@ navigate evidence and never establishes a pass by itself.
 - The first hosted Usage performance sample was 51.35 ms p95 against the unchanged 50 ms
   gate. A single fresh-runner retry passed all five performance gates; the original failure
   remains recorded in GitHub Actions run 34803933948, attempt 1.
+- CodeQL identified exponential backtracking in the runtime-location regex. The redundant
+  slash-delimited repetition was removed; the path character class already admits slashes.
+  Regression coverage checks 10,000 adversarial `!/` fragments, valid source recovery,
+  duplicate suppression, and rejection of traversal, external paths, and zero line numbers.

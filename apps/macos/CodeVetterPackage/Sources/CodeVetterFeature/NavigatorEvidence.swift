@@ -30,9 +30,7 @@ extension WorkbenchModel {
 func navigatorRuntimeLocations(_ receipt: VerificationReceipt) -> [NavigatorLocation] {
   guard let stage = receipt.stages?.correctness,
     let bytes = try? JSONEncoder().encode(stage.evidence),
-    let object = try? JSONSerialization.jsonObject(with: bytes),
-    let pattern = try? NSRegularExpression(
-      pattern: #"(?:^|[\s(])((?:[^\s():]+/)*[^\s():]+\.[A-Za-z0-9]+):(\d+)(?::\d+)?"#)
+    let object = try? JSONSerialization.jsonObject(with: bytes)
   else { return [] }
   var strings: [String] = []
   func collect(_ value: Any) {
@@ -49,14 +47,23 @@ func navigatorRuntimeLocations(_ receipt: VerificationReceipt) -> [NavigatorLoca
     }
   }
   collect(object)
+  return navigatorRuntimeLocations(in: strings, repository: receipt.repoPath)
+}
+
+func navigatorRuntimeLocations(in strings: [String], repository: String) -> [NavigatorLocation] {
+  // The path character class already includes '/'. Repeating a slash-delimited
+  // group around it creates ambiguous partitions and exponential backtracking.
+  guard let pattern = try? NSRegularExpression(
+    pattern: #"(?:^|[\s(])([^\s():]+\.[A-Za-z0-9]+):(\d+)(?::\d+)?"#)
+  else { return [] }
   var locations: [NavigatorLocation] = []
   var seen: Set<String> = []
   for text in strings {
     let ns = text as NSString
     for match in pattern.matches(in: text, range: NSRange(location: 0, length: ns.length)) {
       var path = ns.substring(with: match.range(at: 1))
-      if path.hasPrefix(receipt.repoPath + "/") {
-        path = String(path.dropFirst(receipt.repoPath.count + 1))
+      if path.hasPrefix(repository + "/") {
+        path = String(path.dropFirst(repository.count + 1))
       }
       if path.hasPrefix("./") { path = String(path.dropFirst(2)) }
       guard !path.hasPrefix("/"), !path.split(separator: "/").contains(".."),
