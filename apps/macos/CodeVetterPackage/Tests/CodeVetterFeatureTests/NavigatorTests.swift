@@ -151,6 +151,33 @@ private func navigatorFixture() throws -> (URL, String, String) {
   try navigatorCapture(model, at: output.appendingPathComponent("review-split.png"), width: 1440)
 }
 
+@MainActor @Test func navigatorWindowSizingRemainsOwnedByAppKit() {
+  let model = WorkbenchModel()
+  // No window is ordered on screen: this remains safe on the operator's desktop.
+  let window = NSWindow(
+    contentRect: NSRect(x: 0, y: 0, width: 1280, height: 800),
+    styleMask: [.titled, .closable, .resizable, .fullSizeContentView],
+    backing: .buffered, defer: false)
+  window.isReleasedWhenClosed = false
+  window.minSize = NSSize(width: 980, height: 640)
+  let initialFrame = window.frame
+  let controller = makeWorkbenchHostingController(
+    model: model, contentSize: window.contentView!.bounds.size)
+  #expect(controller.sizingOptions.isEmpty)
+  window.contentViewController = controller
+  defer {
+    window.contentViewController = nil
+    window.close()
+  }
+  for section in [WorkbenchSection.review, .testing, .settings, .repository] {
+    model.section = section
+    controller.view.layoutSubtreeIfNeeded()
+    #expect(window.frame == initialFrame)
+    #expect(window.minSize == NSSize(width: 980, height: 640))
+    #expect(!window.isVisible)
+  }
+}
+
 @MainActor private func navigatorCapture(
   _ model: WorkbenchModel, at path: URL, width: CGFloat, dark: Bool = true
 ) throws {

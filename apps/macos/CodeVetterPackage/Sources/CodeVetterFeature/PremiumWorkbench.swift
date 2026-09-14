@@ -2,6 +2,18 @@ import AppKit
 import SwiftUI
 import UniformTypeIdentifiers
 
+@MainActor
+public func makeWorkbenchHostingController(model: WorkbenchModel, contentSize: NSSize)
+  -> NSHostingController<PremiumWorkbenchRootView>
+{
+  let controller = NSHostingController(rootView: PremiumWorkbenchRootView(model: model))
+  // AppKit owns the resizable window. SwiftUI's inferred minimum can become taller
+  // than the display when the import landing is measured without a width proposal.
+  controller.sizingOptions = []
+  controller.view.frame = NSRect(origin: .zero, size: contentSize)
+  return controller
+}
+
 public struct PremiumWorkbenchRootView: View {
   @Bindable private var model: WorkbenchModel
 

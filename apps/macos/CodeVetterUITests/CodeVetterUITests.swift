@@ -190,6 +190,7 @@ final class CodeVetterUITests: XCTestCase {
     XCTAssertTrue(
       app.textFields["navigator-github-url"].waitForExistence(timeout: 2))
     XCTAssertTrue(app.buttons["Open local repository…"].exists)
+    XCTAssertTrue(app.buttons["Verify a local change"].isHittable)
     XCTAssertTrue(
       app.staticTexts["Read-only by design. Repository code does not run when you open it."].exists)
   }

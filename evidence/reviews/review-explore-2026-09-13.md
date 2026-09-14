@@ -124,3 +124,14 @@ navigate evidence and never establishes a pass by itself.
 - Release preparation targets v1.14.0 (build 11400), split into dependency-ordered
   engine and native integration PRs to satisfy the repository change-size gate.
   Published assets and protected production qualification are not implied by this record.
+
+## Hosted release regression
+
+- Hosted interaction qualification exposed SwiftUI-derived window bounds of approximately
+  2,300 pixels high, leaving Review, Testing, and Settings controls offscreen. AppKit now
+  owns window bounds through explicit hosting sizing options and the existing content size.
+  An offscreen window test checks size preservation across all four affected sections;
+  the hosted import test also requires the verification action to be hittable.
+- The first hosted Usage performance sample was 51.35 ms p95 against the unchanged 50 ms
+  gate. A single fresh-runner retry passed all five performance gates; the original failure
+  remains recorded in GitHub Actions run 34803933948, attempt 1.
