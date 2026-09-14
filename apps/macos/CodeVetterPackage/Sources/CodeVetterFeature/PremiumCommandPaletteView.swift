@@ -145,7 +145,7 @@ struct PremiumCommandPaletteView: View {
   private func sectionPurpose(_ section: WorkbenchSection) -> String {
     switch section {
     case .usage: "Inspect local provider usage without inventing quota truth"
-    case .repository: "Read bounded repository structure and stored snapshots"
+    case .repository: "Browse exact source, search code, and unpack repository structure"
     case .review: "Plan and inspect execution-backed change verification"
     case .testing: "Exercise changed behavior and preserve runtime evidence"
     case .performance: "Measure one exact workload and compare one change"

@@ -37,6 +37,17 @@ separately approved safety design justify renewed investment.
 
 ## Current verification repair
 
+- #285: Review/Explore is implemented in local source, with the primary import
+  and semantic navigation flows foreground-checked. VoiceOver work is deferred
+  by the owner; actual display-frame timing remains unmeasured and v1.14.0 is
+  undergoing release qualification. GitHub URL import, pinned Git source/diffs,
+  in-process Rust navigation, virtual source windows, indexed search, and
+  source-linked Unpack/evidence are integrated. The continuation adds sandboxed
+  TypeScript 7.0.2 semantic definitions/references and source/diff accessibility
+  selection repair, qualified with background tests. See
+  [surface behavior and limits](docs/product/surfaces.md#review-and-explore-navigation).
+  No release or production update is implied by the local implementation.
+
 - #272: the shared check preparation now rejects missing, non-file and repository-escaping runtime targets before preflight readiness or execution. Reproduced in the published v1.13.7 CLI; 15 local-check tests, the shared-service preflight/execution regression, and the rebuilt CLI reproduction pass. Published v1.13.8 includes the repair; the downloaded signed/notarized package rejects the missing target. Issue #272 is closed.
 
 - Runtime CLI launch-path repair: symlinked and URL-encoded entry paths are normalized before main-module detection; the 18-test runtime suite passes. Published v1.13.8 passes the same symlink-with-spaces reproduction; issue #273 is closed.

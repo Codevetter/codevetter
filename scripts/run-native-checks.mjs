@@ -197,6 +197,31 @@ export function runNativeChecks(options, spawn = spawnSync) {
   }
   const cache = nativeCheckCachePath();
   mkdirSync(cache, { recursive: true });
+  // Swift integration tests exercise the real in-process boundary before Xcode builds the app.
+  const navigator = spawn(
+    process.execPath,
+    [resolve(repositoryRoot, 'scripts/build-navigator.mjs')],
+    {
+      cwd: repositoryRoot,
+      env: process.env,
+      stdio: 'inherit',
+    }
+  );
+  if (navigator.error) throw navigator.error;
+  if (navigator.status !== 0) return navigator.status ?? 1;
+  if (options.mode === 'background' || options.mode === 'full') {
+    const navigatorTests = spawn(
+      'cargo',
+      ['test', '--locked', '--manifest-path', 'crates/codevetter-navigator/Cargo.toml'],
+      {
+        cwd: repositoryRoot,
+        env: process.env,
+        stdio: 'inherit',
+      }
+    );
+    if (navigatorTests.error) throw navigatorTests.error;
+    if (navigatorTests.status !== 0) return navigatorTests.status ?? 1;
+  }
   for (const command of nativeCheckCommands(options, process.env)) {
     process.stdout.write(`\n[native] ${command.label}\n`);
     if (!command.backgroundSafe) {

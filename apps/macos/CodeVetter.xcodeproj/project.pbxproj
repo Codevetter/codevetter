@@ -114,6 +114,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 8BC2657E2DEDD3F500F279A4 /* Build configuration list for PBXNativeTarget "CodeVetter" */;
 			buildPhases = (
+				C0DE28500000000000000001 /* Build and embed navigator */,
 				8BC265582DEDD3F400F279A4 /* Sources */,
 				8BC265592DEDD3F400F279A4 /* Frameworks */,
 				8BC2655A2DEDD3F400F279A4 /* Resources */,
@@ -200,6 +201,21 @@
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		C0DE28500000000000000001 /* Build and embed navigator */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = ();
+			inputPaths = ();
+			name = "Build and embed navigator";
+			outputPaths = ("$(TARGET_BUILD_DIR)/$(FRAMEWORKS_FOLDER_PATH)/libcodevetter_navigator.dylib",);
+			alwaysOutOfDate = 1;
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "export PATH=\"/opt/homebrew/bin:$PATH\"\n/usr/bin/env node \"$SRCROOT/../../scripts/build-navigator.mjs\" --embed\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXResourcesBuildPhase section */
 		8BC2655A2DEDD3F400F279A4 /* Resources */ = {

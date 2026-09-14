@@ -2,6 +2,7 @@
 mod diff;
 mod git;
 mod github;
+mod semantic;
 mod session;
 mod understanding;
 
@@ -103,6 +104,7 @@ pub fn request(request: Value) -> Result<Value> {
             json!({"paths": understanding::fuzzy(session.snapshot.files.iter().map(|f| f.path.clone()), query)}),
         ),
         "search" => understanding::search(&session, query, false),
+        "semantic" => semantic::navigate(&session, &request),
         "references" => understanding::search(&session, query, true),
         "symbols" | "definition" => {
             let index = session.index.read().map_err(|_| "Index unavailable")?;

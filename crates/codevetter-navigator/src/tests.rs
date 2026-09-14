@@ -61,6 +61,84 @@ fn fixture() -> (tempfile::TempDir, String, String) {
 }
 
 #[test]
+#[cfg(target_os = "macos")]
+fn semantic_native_alias_shadowing_unicode_and_revision() {
+    let (dir, base, head) = fixture();
+    fs::write(
+        dir.path().join("tsconfig.json"),
+        r#"{"compilerOptions":{"paths":{"@app/*":["./src/*"]},"strict":true},"include":["src"]}"#,
+    )
+    .unwrap();
+    fs::write(dir.path().join("src/types.ts"), "export interface Session { token: string }\nexport function authenticate(): Session { return {token: 'ok'}; }\n").unwrap();
+    fs::write(dir.path().join("src/use.ts"), "import { authenticate as login } from '@app/types';\nconst emoji = '😀'; const session = login();\nsession.token;\nfunction isolated(login: () => number) { return login(); }\n").unwrap();
+    let cache = tempfile::tempdir().unwrap();
+    let opened =
+        request(json!({"version":1,"operation":"open","input":dir.path(),"cache":cache.path()}))
+            .unwrap();
+    let server = std::env::var_os("CODEVETTER_NAVIGATOR_TEST_SERVER")
+        .map(std::path::PathBuf::from)
+        .unwrap_or_else(|| {
+            Path::new(env!("CARGO_MANIFEST_DIR"))
+                .join("../../artifacts/navigator-typescript/lib/tsc")
+        });
+    assert!(
+        server.is_file(),
+        "Run pnpm navigator:build to stage the pinned TypeScript worker"
+    );
+    let navigate = |path: &str, line: usize, column: usize, operation: &str| {
+        request(json!({"version":1,"operation":"semantic","session":opened["id"],"path":path,"line":line,"column":column,"query":operation,"server":server})).unwrap()
+    };
+    let source = "const emoji = '😀'; const session = login();";
+    let column = source[..source.find("login()").unwrap()]
+        .encode_utf16()
+        .count();
+    let start = Instant::now();
+    let definition = navigate("src/use.ts", 2, column, "definition");
+    assert_eq!(
+        definition["locations"][0]["path"], "src/types.ts",
+        "{definition}"
+    );
+    assert_eq!(definition["locations"][0]["line"], 2);
+    eprintln!("Native semantic cold definition: {:?}", start.elapsed());
+    let property = navigate("src/use.ts", 3, 9, "definition");
+    assert_eq!(
+        property["locations"][0]["path"], "src/types.ts",
+        "{property}"
+    );
+    assert_eq!(property["locations"][0]["line"], 1);
+    let shadow = navigate("src/use.ts", 4, 49, "definition");
+    assert_eq!(shadow["locations"][0]["path"], "src/use.ts", "{shadow}");
+    assert_eq!(shadow["locations"][0]["line"], 4);
+    let references = navigate("src/use.ts", 2, column, "references");
+    assert!(
+        !references["locations"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|v| v["path"] == "src/use.ts" && v["line"] == 4),
+        "{references}"
+    );
+    assert!(references["locations"].as_array().unwrap().len() >= 2);
+    fs::write(
+        dir.path().join("src/types.ts"),
+        "changed outside the immutable semantic snapshot",
+    )
+    .unwrap();
+    let start = Instant::now();
+    for _ in 0..100 {
+        assert_eq!(navigate("src/use.ts", 2, column, "definition"), definition);
+    }
+    eprintln!("Native semantic warm mean: {:?}", start.elapsed() / 100);
+    request(json!({"version":1,"operation":"close","session":opened["id"]})).unwrap();
+    let pinned = request(json!({"version":1,"operation":"open","input":dir.path(),"cache":cache.path(),"revision":head,"base":base})).unwrap();
+    for side in ["base", "head"] {
+        let response = request(json!({"version":1,"operation":"semantic","session":pinned["id"],"path":"src/session.ts","side":side,"line":2,"column":9,"query":"definition","server":server})).unwrap();
+        assert_eq!(response["locations"][0]["line"], 1, "{response}");
+    }
+    request(json!({"version":1,"operation":"close","session":pinned["id"]})).unwrap();
+}
+
+#[test]
 fn github_url_types_and_rejection() {
     for (url, kind) in [
         ("https://github.com/owner/repo", "repository"),
@@ -320,4 +398,144 @@ fn navigation_warm_measurements() {
     let start = Instant::now();
     understanding::fuzzy(paths.into_iter(), "session42");
     eprintln!("10k-file fuzzy query: {:?}", start.elapsed());
+}
+
+#[test]
+#[ignore = "Explicit live public GitHub qualification; requires network"]
+fn live_public_github_import() {
+    let cache = tempfile::tempdir().unwrap();
+    for url in [
+        "https://github.com/octocat/Hello-World",
+        "https://github.com/octocat/Hello-World/blob/master/README#L1",
+        "https://github.com/octocat/Hello-World/tree/master",
+        "https://github.com/octocat/Hello-World/pull/1",
+        "https://github.com/octocat/Hello-World/commit/7fd1a60",
+    ] {
+        let start = Instant::now();
+        let session = Session::open(1, url, cache.path(), None, None).unwrap();
+        let path = session.snapshot.initial_path.as_ref().unwrap();
+        let doc = session.document(path, "head").unwrap();
+        eprintln!(
+            "LIVE {url}: {:?}, {} files, head {}, blob {}, {} bytes",
+            start.elapsed(),
+            session.snapshot.files.len(),
+            session.snapshot.head,
+            doc.blob,
+            doc.text.len()
+        );
+        assert!(!doc.text.is_empty());
+        if url.contains("/pull/") {
+            assert!(session.snapshot.base.is_some());
+            assert!(session.snapshot.files.iter().any(|f| !f.status.is_empty()));
+        }
+    }
+}
+
+#[test]
+fn indexed_search_p95_measurement() {
+    let (dir, _, head) = fixture();
+    let session = Session::open(
+        1,
+        dir.path().to_str().unwrap(),
+        dir.path(),
+        Some(&head),
+        None,
+    )
+    .unwrap();
+    {
+        let mut index = session.index.write().unwrap();
+        for i in 0..1000 {
+            let text =
+                "export function sample(value: string) { return value.length > 0; }\n".repeat(100);
+            index.documents.push((
+                format!("src/module{i}.ts"),
+                Arc::new(session::Document::new(format!("{i}"), text.into_bytes())),
+            ));
+        }
+        index.done = true;
+    }
+    let mut samples = Vec::new();
+    for _ in 0..50 {
+        let start = Instant::now();
+        understanding::search(&session, "no_match_entire_corpus", false).unwrap();
+        samples.push(start.elapsed());
+    }
+    samples.sort();
+    eprintln!(
+        "6.4 MB / 1000 indexed files / 100000 lines / 50 misses: p95 {:?}",
+        samples[47]
+    );
+}
+
+#[test]
+#[ignore = "Explicit live regular-repository import and indexing qualification"]
+fn live_regular_repository_index() {
+    let cache = tempfile::tempdir().unwrap();
+    let start = Instant::now();
+    let session = Session::open(
+        44,
+        "https://github.com/expressjs/express",
+        cache.path(),
+        None,
+        None,
+    )
+    .unwrap();
+    let doc = session
+        .document(session.snapshot.initial_path.as_ref().unwrap(), "head")
+        .unwrap();
+    eprintln!(
+        "EXPRESS first source {:?}, {} files, {} bytes, {}",
+        start.elapsed(),
+        session.snapshot.files.len(),
+        doc.text.len(),
+        session.snapshot.head
+    );
+    session.start_index();
+    let deadline = Instant::now() + Duration::from_secs(120);
+    while !session.index.read().unwrap().done {
+        assert!(Instant::now() < deadline);
+        std::thread::sleep(Duration::from_millis(50));
+    }
+    let index = session.index.read().unwrap();
+    eprintln!(
+        "EXPRESS indexed {} files / {} bytes / {} excluded in {:?}",
+        index.files,
+        index.bytes,
+        index.skipped,
+        start.elapsed()
+    );
+    assert!(index.files > 20);
+    assert!(!index.symbols.is_empty());
+    drop(index);
+    let result = understanding::search(&session, "createApplication", true).unwrap();
+    assert!(!result["locations"].as_array().unwrap().is_empty());
+    let source = session.materialize().unwrap();
+    assert_eq!(
+        git::sha(Path::new(&source), "HEAD").unwrap(),
+        session.snapshot.head
+    );
+    eprintln!("EXPRESS Unpack snapshot ready, same HEAD");
+    if let Ok(cli) = std::env::var("CODEVETTER_NAVIGATOR_QUALIFY_CLI") {
+        let output = Command::new(cli)
+            .args(["unpack", "--operation", "scan", "--repo", &source, "--json"])
+            .env(
+                "CODEVETTER_APP_DATA_DIR",
+                cache.path().join("isolated-unpack-state"),
+            )
+            .output()
+            .unwrap();
+        assert!(
+            output.status.success(),
+            "{}",
+            String::from_utf8_lossy(&output.stderr)
+        );
+        let receipt: Value = serde_json::from_slice(&output.stdout).unwrap();
+        assert_eq!(receipt["schema_version"], "codevetter.unpack-scan/v1");
+        assert_eq!(receipt["inventory"]["commit_sha"], session.snapshot.head);
+        assert!(receipt["inventory"]["files_scanned"].as_u64().unwrap() > 20);
+        eprintln!(
+            "EXPRESS existing Unpack CLI: {} files scanned, exact source SHA preserved",
+            receipt["inventory"]["files_scanned"]
+        );
+    }
 }

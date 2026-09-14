@@ -28,9 +28,9 @@ final class CodeVetterUITests: XCTestCase {
   func testPrimaryWorkbenchIsVisible() throws {
     let app = XCUIApplication()
     app.launch()
-    XCTAssertTrue(app.buttons["Choose repository"].waitForExistence(timeout: 5))
+    XCTAssertTrue(app.textFields["navigator-github-url"].waitForExistence(timeout: 5))
     for destination in [
-      "Usage", "Repo Unpack", "Review", "Testing", "Performance", "Runs", "Settings",
+      "Usage", "Explore", "Review", "Testing", "Performance", "Runs", "Settings",
     ] {
       XCTAssertTrue(app.buttons[destination].exists, "Missing retained surface: \(destination)")
     }
@@ -51,7 +51,7 @@ final class CodeVetterUITests: XCTestCase {
   func testCommandPaletteSearchesAndOpensAWorkspaceFromTheKeyboard() throws {
     let app = XCUIApplication()
     app.launch()
-    XCTAssertTrue(app.buttons["Choose repository"].waitForExistence(timeout: 5))
+    XCTAssertTrue(app.textFields["navigator-github-url"].waitForExistence(timeout: 5))
     app.activate()
 
     let palette = app.descendants(matching: .any)["command-palette"]
@@ -181,29 +181,17 @@ final class CodeVetterUITests: XCTestCase {
   }
 
   @MainActor
-  func testRepoUnpackWorkspacePreservesRustScanAndInspectionAuthority() throws {
+  func testExploreStartsWithReadOnlyGitHubImport() throws {
     let app = XCUIApplication()
     app.launch()
 
-    app.buttons["Repo Unpack"].click()
-
-    assertSelected(app.buttons["Repo Unpack"])
+    app.buttons["Explore"].click()
+    assertSelected(app.buttons["Explore"])
     XCTAssertTrue(
-      app.descendants(matching: .any)["repo-unpack-workspace"].waitForExistence(timeout: 2))
-    XCTAssertTrue(app.staticTexts["REPOSITORY MEMORY"].waitForExistence(timeout: 2))
-    XCTAssertTrue(app.staticTexts["SNAPSHOT LEDGER"].exists)
+      app.textFields["navigator-github-url"].waitForExistence(timeout: 2))
+    XCTAssertTrue(app.buttons["Open local repository…"].exists)
     XCTAssertTrue(
-      app.descendants(matching: .any)["repo-unpack-read-only-status"].waitForExistence(timeout: 2)
-    )
-    XCTAssertTrue(app.buttons["Refresh Repo Unpack snapshots"].exists)
-    XCTAssertTrue(app.staticTexts["Rust-owned local history"].exists)
-    XCTAssertTrue(
-      app.descendants(matching: .any)["repo-unpack-choose-repository"].exists
-    )
-    let scan = app.descendants(matching: .any)["repo-unpack-scan"]
-    XCTAssertTrue(scan.exists)
-    XCTAssertFalse(scan.isEnabled, "A scan requires an explicitly selected repository")
-    XCTAssertTrue(app.descendants(matching: .any)["repo-unpack-export"].exists)
+      app.staticTexts["Read-only by design. Repository code does not run when you open it."].exists)
   }
 
   @MainActor
@@ -216,6 +204,7 @@ final class CodeVetterUITests: XCTestCase {
     app.launch()
 
     assertSelected(app.buttons["Review"])
+    app.buttons["Verify a local change"].click()
     let strategy = app.descendants(matching: .any)["review-strategy"]
     XCTAssertTrue(strategy.waitForExistence(timeout: 3))
     XCTAssertTrue(app.radioButtons["Claude"].exists)
