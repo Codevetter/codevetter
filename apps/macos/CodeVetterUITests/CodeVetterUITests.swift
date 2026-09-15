@@ -100,8 +100,9 @@ final class CodeVetterUITests: XCTestCase {
     XCTAssertTrue(app.checkBoxes["Allow this bounded preview verification"].exists)
     XCTAssertTrue(app.buttons["Run preview proof"].exists)
     XCTAssertFalse(app.buttons["Run preview proof"].isEnabled)
-    XCTAssertTrue(app.staticTexts["RUST EXECUTION CONTRACT"].exists)
-    XCTAssertTrue(app.staticTexts["codevetter trex"].exists)
+    XCTAssertTrue(app.staticTexts["WHAT HAPPENS NEXT"].exists)
+    XCTAssertTrue(app.buttons["Use Review comparison"].exists)
+    XCTAssertFalse(app.buttons["Use Review comparison"].isEnabled)
   }
 
   @MainActor
@@ -233,10 +234,10 @@ final class CodeVetterUITests: XCTestCase {
     app.buttons["Settings"].click()
 
     assertSelected(app.buttons["Settings"])
-    XCTAssertTrue(app.staticTexts["LOCAL CONTROL PLANE"].waitForExistence(timeout: 2))
+    XCTAssertTrue(app.staticTexts["PREFERENCES AND CONNECTIONS"].waitForExistence(timeout: 2))
     XCTAssertTrue(app.staticTexts["SETTINGS SECTIONS"].exists)
-    XCTAssertTrue(app.buttons["Refresh native settings"].exists)
-    XCTAssertTrue(app.staticTexts["Rust owns persistence"].exists)
+    XCTAssertTrue(app.buttons["Refresh general settings"].exists)
+    XCTAssertTrue(app.staticTexts["Saved on this Mac"].exists)
     for section in [
       "General", "Appearance", "Integrations", "Agents", "Agent MCP", "Notifications", "Usage",
       "Rubrics", "Ops", "Memories", "About",
@@ -247,9 +248,11 @@ final class CodeVetterUITests: XCTestCase {
     let mcpSection = app.buttons["Agent MCP"]
     mcpSection.click()
     assertSelected(mcpSection)
+    XCTAssertTrue(app.buttons["Refresh mcp settings"].exists)
 
     let usageSection = app.buttons["settings-section-usage"]
     usageSection.click()
+    XCTAssertTrue(app.buttons["Refresh usage settings"].exists)
 
     let rubricsSection = app.buttons["settings-section-rubrics"]
     rubricsSection.click()
@@ -271,6 +274,7 @@ final class CodeVetterUITests: XCTestCase {
       app.descendants(matching: .any)["performance-workspace"].waitForExistence(timeout: 2))
     XCTAssertTrue(app.buttons["Choose performance repository"].exists)
     XCTAssertTrue(app.popUpButtons["Performance adapter"].exists)
+    XCTAssertTrue(app.buttons["performance-scope-planner-resolve"].exists)
     let advancedSource = app.descendants(matching: .any)["advanced-performance-source-options"]
     XCTAssertTrue(advancedSource.exists)
     advancedSource.click()
@@ -278,8 +282,8 @@ final class CodeVetterUITests: XCTestCase {
     XCTAssertFalse(app.buttons["Plan"].isEnabled)
     XCTAssertTrue(app.buttons["Capture evidence"].exists)
     XCTAssertFalse(app.buttons["Capture evidence"].isEnabled)
-    XCTAssertTrue(app.staticTexts["No performance claim without admission."].exists)
-    XCTAssertTrue(app.staticTexts["Authority: codevetter performance"].exists)
+    XCTAssertTrue(app.staticTexts["Choose a workload, then plan the measurement."].exists)
+    XCTAssertTrue(app.staticTexts["Planning does not execute project code"].exists)
   }
 
   @MainActor

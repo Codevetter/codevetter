@@ -789,6 +789,7 @@ func reviewHandsExactChangeToTestingWithoutCarryingExecutionConsent() throws {
     )
   )
   let model = WorkbenchModel()
+  model.selectRepository(URL(fileURLWithPath: receipt.repoPath), persist: false)
   model.testingConfirmed = true
   model.testingPreviewURL = "https://preview.example.test"
   model.testingReceiptJSON = "stale receipt"
@@ -804,6 +805,14 @@ func reviewHandsExactChangeToTestingWithoutCarryingExecutionConsent() throws {
   #expect(!model.testingConfirmed)
   #expect(model.testingReceiptJSON.isEmpty)
   #expect(model.testingPreviewURL == "https://preview.example.test")
+
+  model.selectRepository(URL(fileURLWithPath: "/fixture/other"), persist: false)
+  model.testingPreviewURL = "https://other.example.test"
+  model.testingConfirmed = true
+  model.prepareTestingFromReview(receipt)
+  #expect(model.repositoryPath == receipt.repoPath)
+  #expect(model.testingPreviewURL.isEmpty)
+  #expect(!model.testingConfirmed)
 }
 
 @MainActor

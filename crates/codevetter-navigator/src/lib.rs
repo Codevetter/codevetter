@@ -1,4 +1,5 @@
 //! Versioned, read-only, in-process navigation. Every session pins its Git identity.
+mod branches;
 mod diff;
 mod git;
 mod github;
@@ -42,12 +43,32 @@ pub fn request(request: Value) -> Result<Value> {
         let cache = request["cache"]
             .as_str()
             .ok_or("Missing import cache location")?;
+        let comparison = if request["mergeBase"].as_bool() == Some(true) {
+            if input.starts_with("https:") {
+                return Err("Imported URLs retain their pinned comparison.".into());
+            }
+            Some(branches::comparison(
+                Path::new(input),
+                request["base"].as_str().ok_or("Choose a comparison base")?,
+                request["revision"]
+                    .as_str()
+                    .ok_or("Choose a review branch")?,
+            )?)
+        } else {
+            None
+        };
         let session = Session::open(
             id,
             input,
             Path::new(cache),
-            request["revision"].as_str(),
-            request["base"].as_str(),
+            comparison
+                .as_ref()
+                .map(|pair| pair.1.as_str())
+                .or(request["revision"].as_str()),
+            comparison
+                .as_ref()
+                .map(|pair| pair.0.as_str())
+                .or(request["base"].as_str()),
         )?;
         let result = serde_json::to_value(&session.snapshot).map_err(|e| e.to_string())?;
         sessions()
@@ -78,6 +99,7 @@ pub fn request(request: Value) -> Result<Value> {
     let path = request["path"].as_str().unwrap_or("");
     let query = request["query"].as_str().unwrap_or("");
     match operation {
+        "branches" => branches::list(session.root()),
         "index" => {
             session.start_index();
             Ok(json!({"started": true}))

@@ -185,8 +185,7 @@ struct PremiumDifferentialVerificationView: View {
           label: summary.classification, color: classificationColor(summary.classification))
         Button("Open in Runs") {
           model.showingDifferentialVerifier = false
-          model.section = .runs
-          model.loadRuns()
+          model.openRun(receipt.id)
         }.buttonStyle(.bordered)
         Button("New pair") { model.resetDifferentialVerification() }.buttonStyle(.bordered)
       }

@@ -49,6 +49,26 @@ MCP remains read-only: it can inspect evidence and prepare bounded review
 context, but it cannot start a review, execute tests, approve a fix, alter
 settings, or publish anything.
 
+## Unified Usage history
+
+The Usage refinement tracked in [#290](https://github.com/Codevetter/codevetter/issues/290)
+keeps the existing provider cards and combines history with model composition.
+Model and Project grouping share the same time window, day/week/month buckets,
+and Tokens/Cost/Cache reads selector. A neutral stacked timeline and its exact
+breakdown use one cached projection; selecting a bar or inspection period scopes
+the breakdown. Large histories fold older periods into an explicit Earlier bucket.
+
+Quota accents describe remaining allowance, while the separate even-use pace
+label compares that allowance with time remaining until reset. Saved, expired,
+invalid, and stale values remain neutral rather than asserting live status.
+Local cost is reported/estimated USD, not subscription spend or provider quota.
+
+Optional ccusage Claude project records enrich the canonical daily ledger only
+when attribution reconciles. Missing or inconsistent attribution stays visible
+as Unattributed, including Codex activity; repository identity is never guessed.
+The optional project scan has a five-second bound and cannot invalidate an
+otherwise usable report. This refinement is implemented locally, not released.
+
 ## Devin on the Usage desk
 
 Devin is indexed from its own SQLite session history and is never folded into
@@ -81,6 +101,22 @@ header Refresh button always forces both reads.
 ## Interaction policy
 
 ### Review and Explore navigation
+
+After opening a local repository in Review, the comparison bar exposes
+**Review branch** and **Compare against** using local and available remote-tracking
+refs. **Local changes** initially shows the worktree against HEAD; choosing two
+branches and **Show diff** resolves their merge-base/head without checkout or fetch.
+Pending selections cannot start a review. Refresh preserves the applied selection;
+opening another repository clears the previous comparison and verification plan.
+
+**Review change…** opens the existing setup with the exact displayed commit pair,
+review instructions, reviewer choice, **Plan**, and **Run review & checks**. The
+range is read-only there; **Change comparison** returns to the browser. Plan does
+not execute repository code. Executable verification still requires a clean
+checkout at the selected head: uncommitted changes remain inspectable, not silently
+converted into a different review range. Imported PR/commit comparisons stay pinned;
+repository/file URLs without a base remain source-only. The local repair is tracked
+in [#285](https://github.com/Codevetter/codevetter/issues/285), not yet released.
 
 The landing surface accepts public GitHub repository, PR, commit, branch, and
 file URLs, or a local repository. The Rust navigator pins commits and blobs;
@@ -119,6 +155,19 @@ is rejected. In-process benchmark timings do not establish keyboard-to-pixel
 latency or foreground interaction qualification.
 
 ### Verification policy
+
+Repository selection is shared across Explore, Review, Testing, Performance,
+and Settings. Choosing a different repository clears repository-specific setup,
+including preview URLs, comparison inputs, and performance targets; browsing
+opens the new source when resumed. Reselecting the same folder preserves setup.
+Unpack details beside source require both the repository and revision to match.
+
+Testing can copy the applied Review comparison; pending branch selections are
+not accepted. Browser execution still requires an explicit preview URL and
+fresh confirmation. Performance exposes target discovery before manual workload
+fields. Saved-result links select the originating run, or explain when it is
+outside the latest 50 saved runs. Settings refreshes the currently selected
+section's data.
 
 - Review findings are leads until executable evidence supports a verdict.
 - Watchers are opt-in and app-lifetime bounded; they do not run while the app

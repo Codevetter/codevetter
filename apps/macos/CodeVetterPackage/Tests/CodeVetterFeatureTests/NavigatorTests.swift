@@ -54,6 +54,7 @@ private func navigatorFixture() throws -> (URL, String, String) {
     "Initial source",
   ])
   let base = try git(["rev-parse", "HEAD"])
+  _ = try git(["branch", "release", base])
   try
     "export function validateSession(token: string) {\n  return token.length > 4;\n}\n\nexport const active = validateSession('hello');\n"
     .write(to: root.appendingPathComponent("src/session.ts"), atomically: true, encoding: .utf8)
@@ -92,6 +93,35 @@ private func navigatorFixture() throws -> (URL, String, String) {
     NavigatorRequest(operation: "close", session: snapshot.id))
 }
 
+@MainActor @Test func repositorySelectionOpensTheNewSourceWhenBrowsingResumes() async throws {
+  let (first, _, _) = try navigatorFixture()
+  let (second, _, _) = try navigatorFixture()
+  try "export const changed = true;\n".write(
+    to: second.appendingPathComponent("src/session.ts"), atomically: true, encoding: .utf8)
+  let model = WorkbenchModel()
+  func waitForSource() async throws {
+    let deadline = Date().addingTimeInterval(20)
+    while (model.navigator.opening || model.navigator.file == nil && model.navigator.diff == nil)
+      && model.navigator.issue == nil && Date() < deadline
+    {
+      try await Task.sleep(for: .milliseconds(20))
+    }
+    #expect(model.navigator.issue == nil)
+    #expect(model.navigator.file != nil || model.navigator.diff != nil)
+  }
+  model.selectRepository(first, persist: false)
+  model.openSelectedRepositoryIfNeeded(review: false)
+  try await waitForSource()
+  #expect(WorkbenchModel.sameRepository(model.repositoryPath, first.path))
+  model.selectRepository(second, persist: false)
+  #expect(model.navigator.snapshot == nil)
+  model.openSelectedRepositoryIfNeeded(review: true)
+  try await waitForSource()
+  #expect(WorkbenchModel.sameRepository(model.navigator.snapshot?.root ?? "", second.path))
+  #expect(model.navigator.presentation == "Diff")
+  model.navigator.showImport()
+}
+
 @MainActor @Test func navigatorModelOpensSourceAndNavigatesWithoutRevisionDrift() async throws {
   let (root, base, head) = try navigatorFixture()
   let model = NavigatorModel()
@@ -121,8 +151,65 @@ private func navigatorFixture() throws -> (URL, String, String) {
   #expect(model.quickPaths.contains("src/session.ts"))
 }
 
-@MainActor @Test func navigatorOffscreenReviewAndExplore() async throws {
+@MainActor @Test func navigatorBranchSelectionAndReviewHandoffStayBoundToDisplayedDiff() async throws {
   let (root, base, head) = try navigatorFixture()
+  let model = WorkbenchModel()
+  model.selectRepository(root, persist: false)
+  model.navigator.open(root.path, review: true)
+  let nav = model.navigator
+  func ready() async throws {
+    let deadline = Date().addingTimeInterval(20)
+    while (nav.opening || nav.branches == nil || nav.branchesLoading) && nav.issue == nil && Date() < deadline {
+      try await Task.sleep(for: .milliseconds(20))
+    }
+    #expect(nav.issue == nil)
+  }
+  try await ready()
+  #expect(nav.reviewHead == "local")
+  #expect(!nav.canPrepareReview)
+  #expect(nav.branches?.current == "refs/heads/main")
+  nav.reviewHead = "refs/heads/main"
+  nav.reviewBase = base
+  #expect(nav.comparisonPending)
+  #expect(!nav.canPrepareReview)
+  nav.applyComparison()
+  try await ready()
+  #expect(nav.snapshot?.base == base)
+  #expect(nav.snapshot?.head == head)
+  #expect(nav.canPrepareReview)
+  model.task = "Validate session length"
+  await model.prepareNavigatorReview()
+  #expect(model.change == "\(base)...\(head)")
+  #expect(model.task == "Validate session length")
+  #expect(model.reviewScopeIsPinned)
+  #expect(nav.showVerification)
+  nav.reviewBase = "pending-base"
+  #expect(!model.canStart)
+  #expect(!model.canExecuteReview)
+  nav.reviewBase = base
+  nav.refreshSource(review: true)
+  try await ready()
+  #expect(nav.snapshot?.base == base)
+  #expect(nav.snapshot?.head == head)
+  #expect(!nav.showVerification)
+  nav.reviewBase = "deleted-branch"
+  nav.applyComparison()
+  let deadline = Date().addingTimeInterval(10)
+  while nav.opening && Date() < deadline { try await Task.sleep(for: .milliseconds(20)) }
+  #expect(nav.issue != nil)
+  #expect(!nav.canPrepareReview)
+  let (other, _, _) = try navigatorFixture()
+  model.selectRepository(other, persist: false)
+  nav.open(other.path, review: true)
+  try await ready()
+  #expect(nav.reviewHead == "local")
+  #expect(model.change.isEmpty)
+  #expect(!model.reviewScopeIsPinned)
+  #expect(!nav.canPrepareReview)
+}
+
+@MainActor @Test func navigatorOffscreenReviewAndExplore() async throws {
+  let (root, _, _) = try navigatorFixture()
   let model = WorkbenchModel()
   let output = URL(fileURLWithPath: #filePath).deletingLastPathComponent()
     .deletingLastPathComponent()
@@ -143,7 +230,7 @@ private func navigatorFixture() throws -> (URL, String, String) {
     try #require(bitmap.representation(using: .png, properties: [:])).write(
       to: output.appendingPathComponent("landing-\(width).png"))
   }
-  model.navigator.open(root.path, revision: head, base: base, path: "src/session.ts", line: 2)
+  model.navigator.open(root.path, revision: "refs/heads/main", base: "refs/heads/release", path: "src/session.ts", line: 2, mergeBase: true)
   let deadline = Date().addingTimeInterval(20)
   while model.navigator.file == nil && model.navigator.issue == nil && Date() < deadline {
     try await Task.sleep(for: .milliseconds(20))
@@ -165,6 +252,25 @@ private func navigatorFixture() throws -> (URL, String, String) {
   try navigatorCapture(model, at: output.appendingPathComponent("review-unified.png"), width: 1280)
   model.navigator.split = true
   try navigatorCapture(model, at: output.appendingPathComponent("review-split.png"), width: 1440)
+  for width in [980, 1280, 1440] {
+    for dark in [true, false] {
+      try navigatorCapture(model, at: output.appendingPathComponent("scope-\(width)-\(dark ? "dark" : "light").png"), width: CGFloat(width), dark: dark)
+    }
+  }
+  for width in [390, 768, 1440] {
+    let host = NSHostingView(rootView: NavigatorReviewScopeBar(model: model)
+      .frame(width: CGFloat(width), height: 250, alignment: .topLeading)
+      .background(Color.black).preferredColorScheme(.dark))
+    host.appearance = NSAppearance(named: .darkAqua)
+    host.frame = NSRect(x: 0, y: 0, width: width, height: 250)
+    host.layoutSubtreeIfNeeded()
+    let bitmap = try #require(host.bitmapImageRepForCachingDisplay(in: host.bounds))
+    host.cacheDisplay(in: host.bounds, to: bitmap)
+    try #require(bitmap.representation(using: .png, properties: [:])).write(to: output.appendingPathComponent("scope-controls-\(width).png"))
+  }
+  await model.prepareNavigatorReview()
+  model.task = "Review session validation for regressions and verify that short tokens are rejected."
+  try navigatorCapture(model, at: output.appendingPathComponent("scope-review-setup.png"), width: 1280)
 }
 
 @MainActor @Test func navigatorWindowSizingRemainsOwnedByAppKit() {

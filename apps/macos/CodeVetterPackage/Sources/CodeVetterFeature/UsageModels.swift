@@ -130,6 +130,7 @@ public struct LocalUsagePeriod: Codable, Identifiable, Sendable {
   public let totals: LocalUsageTotals
   public let agents: [LocalUsageAgent]
   public let models: [LocalUsageModel]
+  public var projects: [LocalUsageProject]? = nil
 
   public var id: String { period }
 
@@ -139,6 +140,12 @@ public struct LocalUsagePeriod: Codable, Identifiable, Sendable {
       .filter { selectedAgents.contains($0.agent) }
       .reduce(.zero) { $0.adding($1.totals) }
   }
+}
+
+public struct LocalUsageProject: Codable, Sendable {
+  public let project: String
+  public let agent: String
+  public let totals: LocalUsageTotals
 }
 
 public struct LocalUsageSession: Codable, Identifiable, Sendable {

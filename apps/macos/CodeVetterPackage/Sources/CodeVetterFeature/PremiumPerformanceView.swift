@@ -21,7 +21,7 @@ struct PremiumPerformanceView: View {
       PremiumPageHeader(
         eyebrow: "Measured change",
         title: "Performance",
-        subtitle: "Admit one exact workload, capture observed evidence, and compare like with like"
+        subtitle: "Measure a repository test or benchmark and compare it with a matching baseline"
       ) {
         StatusPill(label: model.performanceState.rawValue, color: performanceStatusColor)
       }
@@ -82,15 +82,31 @@ struct PremiumPerformanceView: View {
             .buttonStyle(.plain)
             .accessibilityLabel("Choose performance repository")
 
+            PremiumScopePlanner(
+              title: "Find a test or benchmark",
+              subtitle: "Discover existing targets, then select one to fill the workload below.",
+              kind: $model.performanceScopeKind,
+              value: $model.performanceScopeValue,
+              plan: model.performanceDiscoveryPlan,
+              loading: model.performanceScopeLoading,
+              issue: model.performanceScopeIssue ?? model.performanceScopeInputIssue,
+              canResolve: model.canResolvePerformanceScope,
+              selectedCandidateID: selectedPerformanceCandidateID,
+              compact: true,
+              accessibilityID: "performance-scope-planner",
+              onResolve: model.resolvePerformanceScope,
+              onSelect: model.applyPerformanceScopeCandidate
+            )
+
             DisclosureGroup(isExpanded: $showAdvancedSource) {
               VStack(alignment: .leading, spacing: 14) {
                 VStack(alignment: .leading, spacing: 9) {
                   HStack {
                     PremiumFieldLabel("RECORDED RUN")
                     Spacer()
-                    Text("DIGEST VERIFIED")
+                    Text("CHECKED ON OPEN")
                       .font(.system(size: 10, weight: .bold, design: .monospaced))
-                      .foregroundStyle(EvidenceStyle.success)
+                      .foregroundStyle(.secondary)
                   }
                   HStack(spacing: 8) {
                     Image(systemName: "archivebox").foregroundStyle(EvidenceStyle.amberForeground)
@@ -112,28 +128,12 @@ struct PremiumPerformanceView: View {
                   }
                 }
 
-                PremiumScopePlanner(
-                  title: "Workload discovery",
-                  subtitle:
-                    "Turn one flow, exact change, or bounded portfolio into closed workload candidates.",
-                  kind: $model.performanceScopeKind,
-                  value: $model.performanceScopeValue,
-                  plan: model.performanceDiscoveryPlan,
-                  loading: model.performanceScopeLoading,
-                  issue: model.performanceScopeIssue ?? model.performanceScopeInputIssue,
-                  canResolve: model.canResolvePerformanceScope,
-                  selectedCandidateID: selectedPerformanceCandidateID,
-                  compact: true,
-                  accessibilityID: "performance-scope-planner",
-                  onResolve: model.resolvePerformanceScope,
-                  onSelect: model.applyPerformanceScopeCandidate
-                )
               }
               .padding(.top, 12)
             } label: {
               VStack(alignment: .leading, spacing: 3) {
-                Text("Advanced source options").font(.system(size: 11, weight: .semibold))
-                Text("Inspect a receipt or discover workloads automatically")
+                Text("Open a saved measurement").font(.system(size: 11, weight: .semibold))
+                Text("Inspect a previous run by its ID")
                   .font(.system(size: 10)).foregroundStyle(.secondary)
               }
             }
@@ -144,7 +144,7 @@ struct PremiumPerformanceView: View {
             .overlay { RoundedRectangle(cornerRadius: 11).stroke(EvidenceStyle.separator) }
 
             VStack(alignment: .leading, spacing: 7) {
-              PremiumFieldLabel("ADAPTER")
+              PremiumFieldLabel("TEST RUNNER")
               Picker("Performance adapter", selection: $model.performanceAdapter) {
                 ForEach(PerformanceAdapter.allCases) { adapter in
                   Text(adapter.label).tag(adapter)
@@ -160,7 +160,7 @@ struct PremiumPerformanceView: View {
             }
 
             PerformanceTextField(
-              label: "RELATIVE TARGET",
+              label: "TEST OR BENCHMARK FILE",
               icon: "scope",
               placeholder: "src/cart/cart.test.ts",
               text: $model.performanceTarget
@@ -196,7 +196,7 @@ struct PremiumPerformanceView: View {
           }
 
           Label(
-            "Local execution · Rust-owned admission · bounded cleanup",
+            "Planning checks the workload. Measuring executes it locally.",
             systemImage: "checkmark.shield"
           )
           .font(.system(size: 10, weight: .medium))
@@ -258,7 +258,7 @@ struct PremiumPerformanceView: View {
       HStack {
         VStack(alignment: .leading, spacing: 3) {
           Text(
-            isInspectingRecordedRun ? "RECORDED RUN INSPECTION" : "PERFORMANCE EVIDENCE LANE"
+            isInspectingRecordedRun ? "SAVED MEASUREMENT" : "PERFORMANCE RESULTS"
           )
           .font(.system(size: 10, weight: .bold, design: .monospaced))
           .tracking(1.1)
@@ -266,7 +266,7 @@ struct PremiumPerformanceView: View {
           Text(
             isInspectingRecordedRun
               ? "Stored receipt inspection"
-              : "Exact workload evidence"
+              : "Workload and measurements"
           )
           .font(.system(size: 17, weight: .semibold))
         }
@@ -343,19 +343,19 @@ struct PremiumPerformanceView: View {
         .font(.system(size: 30, weight: .light))
         .foregroundStyle(EvidenceStyle.amberForeground)
       VStack(spacing: 7) {
-        Text("No performance claim without admission.")
+        Text("Choose a workload, then plan the measurement.")
           .font(.system(size: 18, weight: .semibold))
         Text(
-          "Planning fingerprints the repository, diff, and exact target before project code runs. A blocked plan remains evidence—not a hidden failure."
+          "Discover a test or benchmark on the left, or enter its file. Plan checks whether it can be measured. Capture evidence runs it and saves the results."
         )
         .font(.system(size: 11))
         .foregroundStyle(.secondary)
         .multilineTextAlignment(.center)
         .frame(maxWidth: 430)
       }
-      Label("Authority: codevetter performance", systemImage: "checkmark.seal.fill")
+      Label("Planning does not execute project code", systemImage: "info.circle")
         .font(.system(size: 10, weight: .semibold, design: .monospaced))
-        .foregroundStyle(EvidenceStyle.success)
+        .foregroundStyle(.secondary)
     }
     .frame(maxWidth: .infinity, minHeight: 450)
     .padding(28)
@@ -412,7 +412,7 @@ private struct PerformanceEvidenceLane: View {
   var body: some View {
     HStack(spacing: 0) {
       step("01", "Scope", state: model.performanceInputIssue == nil ? .ready : .waiting)
-      step("02", "Admit", state: admissionState)
+      step("02", "Plan", state: admissionState)
       step("03", "Capture", state: captureState)
       step("04", "Compare", state: comparisonState)
     }
@@ -496,7 +496,7 @@ private struct PerformanceReceiptDesk: View {
           }
           Spacer()
           StatusPill(
-            label: plan.admitted ? "Admitted" : "Blocked",
+            label: plan.admitted ? "Ready to measure" : "Blocked",
             color: plan.admitted ? EvidenceStyle.success : EvidenceStyle.failure
           )
         }

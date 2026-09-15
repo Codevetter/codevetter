@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct PremiumScopePlanner: View {
+  @State private var showAllCandidates = false
   let title: String
   let subtitle: String
   @Binding var kind: EvidenceScopeKind
@@ -85,13 +86,13 @@ struct PremiumScopePlanner: View {
 
       if let plan {
         if plan.candidates.isEmpty {
-          Text("No closed runnable target matched this scope. CodeVetter did not invent one.")
+          Text("No supported test or benchmark was found for this scope.")
             .font(.system(size: 10, weight: .medium))
             .foregroundStyle(.secondary)
             .fixedSize(horizontal: false, vertical: true)
         } else {
           VStack(spacing: 7) {
-            ForEach(plan.candidates.prefix(compact ? 3 : 5)) { candidate in
+            ForEach(plan.candidates.prefix(showAllCandidates ? plan.candidates.count : (compact ? 3 : 5))) { candidate in
               Button {
                 onSelect(candidate)
               } label: {
@@ -135,6 +136,13 @@ struct PremiumScopePlanner: View {
                 }
               }
               .buttonStyle(.plain)
+            }
+            if plan.candidates.count > (compact ? 3 : 5) {
+              Button(showAllCandidates ? "Show fewer" : "Show all \(plan.candidates.count) targets") {
+                showAllCandidates.toggle()
+              }
+              .buttonStyle(.borderless)
+              .font(.system(size: 11))
             }
           }
         }

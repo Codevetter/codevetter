@@ -92,7 +92,7 @@ private struct PremiumRunsView: View {
       PremiumPageHeader(
         eyebrow: "Evidence ledger",
         title: "Runs",
-        subtitle: "Rust-persisted verification receipts and their recorded limitations"
+        subtitle: "Saved verification results, source identities, and limitations"
       ) {
         Menu {
           Button("All repositories") {
@@ -129,8 +129,8 @@ private struct PremiumRunsView: View {
           } else if model.runs.isEmpty, model.runsLoading {
             VStack(spacing: 10) {
               ProgressView().controlSize(.small)
-              Text("Reading Rust-persisted receipts…").font(.system(size: 12, weight: .medium))
-              Text("The ledger lists the newest 50 runs once the receipt projection returns.")
+              Text("Loading saved results…").font(.system(size: 12, weight: .medium))
+              Text("Showing the latest 50 saved runs.")
                 .font(.system(size: 10))
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
@@ -143,7 +143,7 @@ private struct PremiumRunsView: View {
               "No verification runs",
               systemImage: "checkmark.shield",
               description: Text(
-                "Local checks, previews, T-Rex PR checks, synthetic QA, warm, differential, and audience receipts will appear here."
+                "Results from Review and browser testing appear here after they are saved."
               )
             )
           } else {
@@ -215,9 +215,9 @@ private struct PremiumRunsView: View {
           .id(run.id)
         } else {
           ContentUnavailableView(
-            "Select a receipt",
+            "Select a run",
             systemImage: "doc.text.magnifyingglass",
-            description: Text("The canonical Rust receipt remains the source of truth.")
+            description: Text("Inspect its outcome, source, checks, and saved evidence.")
           )
           .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
@@ -720,6 +720,7 @@ private struct PremiumReviewView: View {
     ) { result in
       guard case .success(let urls) = result, let url = urls.first else { return }
       model.selectRepository(url)
+      model.navigator.open(url.path, review: true)
     }
     .fileImporter(
       isPresented: $model.choosingSpecs,
@@ -765,9 +766,19 @@ private struct PremiumReviewView: View {
             PremiumInput(
               label: "CHANGE", icon: "arrow.triangle.branch", placeholder: "main…HEAD",
               text: $model.change)
+              .disabled(model.reviewScopeIsPinned)
             PremiumInput(
-              label: "TASK", icon: "scope",
+              label: "REVIEW INSTRUCTIONS", icon: "scope",
               placeholder: "Describe the behavior this change must satisfy", text: $model.task)
+          }
+          if model.reviewScopeIsPinned {
+            HStack {
+              Text("Pinned to the diff you inspected. Plan does not run repository code.")
+                .font(.system(size: 10)).foregroundStyle(.secondary)
+              Spacer()
+              Button("Change comparison") { model.navigator.showVerification = false }
+                .buttonStyle(.borderless)
+            }
           }
 
           VStack(alignment: .leading, spacing: 7) {
@@ -817,7 +828,7 @@ private struct PremiumReviewView: View {
             .foregroundStyle(.secondary)
             .lineLimit(2)
           Spacer()
-          if model.isBusy {
+          if model.verificationState == .planning || model.verificationState == .running {
             Button("Cancel", role: .destructive) { model.cancel() }
               .buttonStyle(.bordered)
               .keyboardShortcut(.escape, modifiers: [])
@@ -828,7 +839,7 @@ private struct PremiumReviewView: View {
               .disabled(!model.canStart)
               .keyboardShortcut(.return, modifiers: [.command, .shift])
               .accessibilityIdentifier("review-plan")
-            Button("Execute proof") { model.execute() }
+            Button("Run review & checks") { model.execute() }
               .buttonStyle(PremiumPrimaryButtonStyle())
               .disabled(!model.canExecuteReview)
               .keyboardShortcut(.return, modifiers: [.command])
