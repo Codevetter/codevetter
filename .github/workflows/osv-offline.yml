@@ -85,7 +85,9 @@ jobs:
           OSV_SHA256: f9f25499a2c8cc367b3af45df2ea7eeca7fbccceab9c35079968f4b3652194be
           OSV_URL: https://github.com/google/osv-scanner/releases/download/v2.5.1/osv-scanner_linux_amd64
         run: |
-          curl --fail --silent --show-error --location "$OSV_URL" --output "$RUNNER_TEMP/$OSV_BINARY"
+          curl --fail --silent --show-error --location \
+            --retry 5 --retry-delay 2 --retry-all-errors \
+            "$OSV_URL" --output "$RUNNER_TEMP/$OSV_BINARY"
           echo "$OSV_SHA256  $RUNNER_TEMP/$OSV_BINARY" | sha256sum --check --strict
           chmod 0755 "$RUNNER_TEMP/$OSV_BINARY"
           mkdir -p "$RUNNER_TEMP/osv-bin"
