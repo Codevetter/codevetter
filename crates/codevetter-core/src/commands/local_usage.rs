@@ -14,6 +14,10 @@ use tokio::io::{AsyncRead, AsyncReadExt};
 use tokio::process::Command;
 use tokio::sync::Mutex;
 
+#[path = "local_usage_projects.rs"]
+mod projects;
+pub use projects::LocalUsageProject;
+
 const CCUSAGE_VERSION: &str = "20.0.20";
 const CACHE_TTL: Duration = Duration::from_secs(30);
 const EXECUTION_TIMEOUT: Duration = Duration::from_secs(30);
@@ -86,6 +90,8 @@ pub struct LocalUsagePeriod {
     pub totals: LocalUsageTotals,
     pub agents: Vec<LocalUsageAgent>,
     pub models: Vec<LocalUsageModel>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub projects: Vec<LocalUsageProject>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -538,7 +544,36 @@ async fn load_report(
         )
     })?;
     let stdout = run_ccusage(&binary, timezone, roots, ExecutionLimits::default()).await?;
-    normalize_report(&stdout, timezone, roots).map_err(|message| failure("invalid_report", message))
+    let mut report = normalize_report(&stdout, timezone, roots)
+        .map_err(|message| failure("invalid_report", message))?;
+    if report
+        .provenance
+        .detected_agents
+        .iter()
+        .any(|agent| agent == "claude")
+    {
+        // Optional enrichment cannot make otherwise usable accounting unavailable.
+        if let Ok(bytes) = run_ccusage_section(
+            &binary,
+            timezone,
+            roots,
+            ExecutionLimits {
+                timeout: Duration::from_secs(5),
+                ..ExecutionLimits::default()
+            },
+            true,
+        )
+        .await
+        {
+            if projects::attach(&mut report, &bytes).is_ok() {
+                let mut hash = Sha256::new();
+                hash.update(&stdout);
+                hash.update(&bytes);
+                report.provenance.source_fingerprint = format!("sha256:{:x}", hash.finalize());
+            }
+        }
+    }
+    Ok(report)
 }
 
 #[derive(Clone, Copy)]
@@ -564,25 +599,36 @@ async fn run_ccusage(
     roots: &[String],
     limits: ExecutionLimits,
 ) -> Result<Vec<u8>, LocalUsageFailure> {
+    run_ccusage_section(binary, timezone, roots, limits, false).await
+}
+
+async fn run_ccusage_section(
+    binary: &Path,
+    timezone: &str,
+    roots: &[String],
+    limits: ExecutionLimits,
+    projects: bool,
+) -> Result<Vec<u8>, LocalUsageFailure> {
     let config_path = std::env::temp_dir().join(format!(
-        "codevetter-ccusage-config-{}.json",
-        std::process::id()
+        "codevetter-ccusage-config-{}-{}.json",
+        std::process::id(),
+        projects
     ));
     std::fs::write(&config_path, b"{}")
         .map_err(|error| failure("config", format!("Create ccusage config: {error}")))?;
     let mut command = Command::new(binary);
-    command
-        .args([
+    if projects {
+        command.args(["claude", "daily", "--instances"]);
+    } else {
+        command.args([
             "daily",
-            "--json",
-            "--offline",
             "--sections",
             "daily,weekly,monthly,session",
             "--by-agent",
-            "--timezone",
-            timezone,
-            "--config",
-        ])
+        ]);
+    }
+    command
+        .args(["--json", "--offline", "--timezone", timezone, "--config"])
         .arg(&config_path)
         .arg("--no-color")
         .current_dir(std::env::temp_dir())
@@ -810,6 +856,7 @@ fn normalize_accounted_period(period: &RawPeriod) -> Result<LocalUsagePeriod, St
         totals,
         agents,
         models,
+        projects: Vec::new(),
     })
 }
 

@@ -5,6 +5,8 @@ private struct UsageProjectionCacheKey: Hashable {
   let agents: String
   let window: String
   let scale: String
+  let grouping: UsageGrouping
+  let metric: UsageMetric
 }
 
 public enum WorkbenchSection: String, CaseIterable, Hashable, Identifiable, Sendable {
@@ -56,6 +58,7 @@ public final class WorkbenchModel {
   public var selectedCapabilityID = "verification.local_check"
   public var repositoryPath = ""
   public var change = "main...HEAD"
+  var reviewScopeIsPinned = false
   public var task = ""
   public var reviewAgent = "claude"
   public var choosingRepository = false
@@ -88,7 +91,7 @@ public final class WorkbenchModel {
   public var fixAttemptLoading = false
   public var fixAttemptIssue: String?
   public var testingChangeKind: TrexChangeKind = .range
-  public var testingChange = "main...HEAD"
+  public var testingChange = ""
   public var testingPreviewURL = ""
   public var testingTargetRoute = ""
   public var testingTargetGoal = ""
@@ -181,7 +184,7 @@ public final class WorkbenchModel {
   public var performancePlanReceiptJSON = ""
   public var performanceResultReceipt: PerformanceRunReceipt?
   public var performanceResultReceiptJSON = ""
-  public var performanceScopeKind: EvidenceScopeKind = .flow
+  public var performanceScopeKind: EvidenceScopeKind = .codebase
   public var performanceScopeValue = ""
   public var performanceDiscoveryPlan: EvidenceScopePlan?
   public var performanceScopeLoading = false
@@ -198,6 +201,8 @@ public final class WorkbenchModel {
   public var providerQuotaLoading = false
   public var providerQuotaIssue: String?
   public var usageScale: UsageScale = .day
+  public var usageGrouping: UsageGrouping = .model
+  public var usageMetric: UsageMetric = .tokens
   public var usageWindow: UsageWindow = .thirtyDays
   public var usageSelectedAgents: Set<String> = []
   public var usageTimezone = TimeZone.current.identifier
@@ -321,6 +326,7 @@ public final class WorkbenchModel {
   private var rubricTask: Task<Void, Never>?
   private var memoryTask: Task<Void, Never>?
   private var runsTask: Task<Void, Never>?
+  private var runsRequestID = UUID()
 
   public init(
     runner: CodeVetterProcessRunner = CodeVetterProcessRunner(),
@@ -341,6 +347,9 @@ public final class WorkbenchModel {
       )
       registryIssue = error.localizedDescription
     }
+    navigator.didOpen = { [weak self] snapshot in
+      self?.selectRepository(URL(fileURLWithPath: snapshot.root), persist: false)
+    }
     if let restoredRepository = repositoryAccessStore?.restore() {
       selectRepository(restoredRepository, persist: false)
       statusMessage = "Restored the last repository. Ready to resolve the exact change."
@@ -356,6 +365,7 @@ public final class WorkbenchModel {
       && !change.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
       && !task.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
       && specIssue == nil
+      && (!reviewScopeIsPinned || navigator.reviewRange == change)
       && !isBusy
   }
 
@@ -616,9 +626,39 @@ public final class WorkbenchModel {
     let selectedURL =
       persist ? repositoryAccessStore?.remember(url) ?? url : url
     let selectedPath = selectedURL.path(percentEncoded: false)
+    guard !Self.sameRepository(repositoryPath, selectedPath) else { return }
+    let sameSource = navigatorContainsRepository(repositoryPath)
+      && navigatorContainsRepository(selectedPath)
     repositoryPath =
       selectedPath.count > 1 && selectedPath.hasSuffix("/")
       ? String(selectedPath.dropLast()) : selectedPath
+    // Materializing the displayed revision changes its local path, not its source identity.
+    if sameSource { return }
+    if !navigatorContainsRepository(repositoryPath) {
+      navigator.showImport()
+      navigator.input = repositoryPath
+    }
+    change = ""
+    task = ""
+    reviewScopeIsPinned = false
+    testingChangeKind = .range
+    testingChange = ""
+    testingPreviewURL = ""
+    testingScopeKind = .change
+    testingScopeValue = ""
+    scenarioSpecPath = ""
+    scenarioSpecSection = ""
+    scenarioRoutes = ""
+    scenarioReplacementApproved = false
+    differentialReference = "main"
+    differentialCandidateRevision = ""
+    trexWatcherBaseBranch = ""
+    performanceTarget = ""
+    performanceName = ""
+    performanceBaselineRepositoryPath = ""
+    performanceRecordedRunID = ""
+    performanceScopeKind = .codebase
+    performanceScopeValue = ""
     specPaths = []
     selectedRequirementIDs = []
     specIssue = nil
@@ -638,6 +678,16 @@ public final class WorkbenchModel {
     qaSelectedWorkflowID = nil
     qaSelectedTargetID = nil
     qaWorkspaceIssue = nil
+    qaWorkflowDraft.id = ""
+    qaWorkflowDraft.name = ""
+    qaWorkflowDraft.baseURL = ""
+    qaWorkflowDraft.repoSpecPath = ""
+    qaWorkflowDraft.goal = "Verify the selected user journey"
+    qaWorkflowDraft.targetRoute = "/"
+    qaWorkflowDraft.allowRemoteTarget = false
+    qaTargetName = ""
+    qaTargetRoute = "/"
+    qaTargetGoal = "Verify the selected user journey"
     statusMessage = "Ready to resolve the exact change and executable targets."
     verificationState = .ready
     testingStatusMessage = "Ready to bind this repository to an exact preview."
@@ -647,9 +697,73 @@ public final class WorkbenchModel {
     performanceState = .ready
   }
 
+  static func sameRepository(_ lhs: String, _ rhs: String) -> Bool {
+    guard !lhs.isEmpty, !rhs.isEmpty else { return false }
+    return URL(fileURLWithPath: lhs).resolvingSymlinksInPath().standardizedFileURL.pathComponents
+      == URL(fileURLWithPath: rhs).resolvingSymlinksInPath().standardizedFileURL.pathComponents
+  }
+
+  func navigatorContainsRepository(_ path: String) -> Bool {
+    guard let snapshot = navigator.snapshot else { return false }
+    return Self.sameRepository(path, snapshot.root)
+      || navigator.unpackRoot.map { Self.sameRepository(path, $0) } == true
+  }
+
+  func openSelectedRepositoryIfNeeded(review: Bool) {
+    guard navigator.snapshot == nil, !navigator.opening, !repositoryPath.isEmpty,
+      navigator.input == repositoryPath
+    else { return }
+    navigator.open(repositoryPath, review: review)
+  }
+
+  var hasMatchingUnpack: Bool {
+    guard let unpack = unpackSnapshot, let source = navigator.snapshot else { return false }
+    return unpack.commitSHA == source.head && navigatorContainsRepository(unpack.repoPath)
+  }
+
+  var canUseNavigatorComparisonForTesting: Bool {
+    navigator.reviewRange != nil && navigatorContainsRepository(repositoryPath) && !isBusy
+  }
+
+  func useNavigatorComparisonForTesting() {
+    guard canUseNavigatorComparisonForTesting, let range = navigator.reviewRange else { return }
+    testingChangeKind = .range
+    testingChange = range
+    testingScopeKind = .change
+    testingScopeValue = range
+    testingConfirmed = false
+    clearTestingProof()
+    testingScopePlan = nil
+    selectedTestingScopeCandidateID = nil
+    testingScopeIssue = nil
+    testingState = .ready
+    testingStatusMessage = "Review comparison copied. Add its deployed preview and confirm browser testing."
+  }
+
+  func prepareNavigatorReview() async {
+    guard let snapshot = navigator.snapshot, let range = navigator.reviewRange else { return }
+    do {
+      let root = navigator.input.hasPrefix("https:")
+        ? try await navigator.prepareUnpack() : snapshot.root
+      guard navigator.snapshot?.id == snapshot.id, navigator.reviewRange == range else { return }
+      let sameRepository = URL(fileURLWithPath: repositoryPath).resolvingSymlinksInPath().path
+        == URL(fileURLWithPath: root).resolvingSymlinksInPath().path
+      let instructions = task
+      selectRepository(URL(fileURLWithPath: root), persist: false)
+      change = range
+      task = sameRepository ? instructions : ""
+      reviewScopeIsPinned = true
+      statusMessage = "Comparison pinned to the displayed diff. Describe the expected behavior, then Plan. Execution requires a clean checkout at this head."
+      navigator.showVerification = true
+      section = .review
+    } catch {
+      navigator.issue = error.localizedDescription
+    }
+  }
+
   public func prepareTestingFromReview(_ receipt: VerificationReceipt) {
     section = .testing
-    repositoryPath = receipt.repoPath
+    selectRepository(URL(fileURLWithPath: receipt.repoPath), persist: false)
     testingChangeKind = receipt.source.kind.lowercased().contains("pull") ? .pullRequest : .range
     testingChange = receipt.source.input
     testingScopeKind = .change
@@ -2115,7 +2229,9 @@ public final class WorkbenchModel {
     let key = UsageProjectionCacheKey(
       agents: usageSelectedAgents.sorted().joined(separator: "\u{0}"),
       window: usageWindow.rawValue,
-      scale: usageScale.rawValue
+      scale: usageScale.rawValue,
+      grouping: usageGrouping,
+      metric: usageMetric
     )
     if let cached = usageProjectionCache[key] {
       return cached
@@ -2125,7 +2241,9 @@ public final class WorkbenchModel {
       selectedAgents: usageSelectedAgents,
       window: usageWindow,
       scale: usageScale,
-      referenceDate: usageProjectionReferenceDate
+      referenceDate: usageProjectionReferenceDate,
+      grouping: usageGrouping,
+      metric: usageMetric
     )
     if usageProjectionCache.count >= 32 {
       usageProjectionCache.removeAll(keepingCapacity: true)
@@ -2925,28 +3043,51 @@ public final class WorkbenchModel {
     }
   }
 
-  public func loadRuns() {
-    guard !runsLoading else { return }
+  public func openRun(_ id: String) {
+    section = .runs
+    runLedgerScope = .all
+    selectedRunID = id
+    loadRuns(selecting: id)
+  }
+
+  public func loadRuns(selecting requestedID: String? = nil) {
+    guard !runsLoading || requestedID != nil else { return }
+    runsTask?.cancel()
+    let requestID = UUID()
+    runsRequestID = requestID
     runsLoading = true
     runsIssue = nil
     runsTask = Task { [weak self] in
       guard let self else { return }
       defer {
-        runsLoading = false
-        runsTask = nil
+        if runsRequestID == requestID {
+          runsLoading = false
+          runsTask = nil
+        }
       }
       do {
         let loaded = try await runner.listRuns(
           repositoryPath: runLedgerScope == .currentRepository ? repositoryPath : nil,
           limit: 50
         )
-        runs = loaded
-        if selectedRunID == nil || !loaded.contains(where: { $0.id == selectedRunID }) {
-          selectedRunID = loaded.first?.id
-        }
+        guard runsRequestID == requestID, !Task.isCancelled else { return }
+        applyLoadedRuns(loaded, selecting: requestedID)
       } catch {
+        guard runsRequestID == requestID, !Task.isCancelled else { return }
         runsIssue = error.localizedDescription
       }
+    }
+  }
+
+  func applyLoadedRuns(_ loaded: [StoredVerificationRun], selecting requestedID: String? = nil) {
+    runs = loaded
+    if let requestedID {
+      selectedRunID = requestedID
+      if !loaded.contains(where: { $0.id == requestedID }) {
+        runsIssue = "Run \(requestedID) is not in the latest 50 saved runs. No other result was substituted."
+      }
+    } else if selectedRunID == nil || !loaded.contains(where: { $0.id == selectedRunID }) {
+      selectedRunID = loaded.first?.id
     }
   }
 

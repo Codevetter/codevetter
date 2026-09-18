@@ -245,8 +245,7 @@ struct PremiumWarmVerificationView: View {
         .buttonStyle(.bordered)
         Button("Open in Runs") {
           model.showingWarmVerifier = false
-          model.section = .runs
-          model.loadRuns()
+          model.openRun(receipt.id)
         }
         .buttonStyle(.bordered)
         Button("New proof") { model.resetWarmVerification() }.buttonStyle(.bordered)

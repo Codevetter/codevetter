@@ -1,29 +1,27 @@
 import AppKit
 import SwiftUI
 
-struct UsageTrendPoint: Identifiable, Sendable {
-  let period: String
-  let generatedTokens: UInt64
-
-  var id: String { period }
-}
-
 struct UsageViewProjection: Sendable {
   let totals: LocalUsageTotals
   let activeDays: Int
   let sessionCount: Int
   let recentSessions: [LocalUsageSession]
   let models: [LocalUsageModel]
-  let trend: [UsageTrendPoint]
+  let history: UsageHistoryProjection
 
   init(
     report: LocalUsageReport,
     selectedAgents: Set<String>,
     window: UsageWindow,
     scale: UsageScale,
-    referenceDate: Date = Date()
+    referenceDate: Date = Date(),
+    grouping: UsageGrouping = .model,
+    metric: UsageMetric = .tokens
   ) {
     let dayPeriods = report.periods(for: .day, window: window, referenceDate: referenceDate)
+    history = UsageHistoryProjection(
+      periods: dayPeriods, agents: selectedAgents,
+      scale: scale, grouping: grouping, metric: metric)
     var selectedTotals = LocalUsageTotals.zero
     var modelsByName: [String: LocalUsageModel] = [:]
     for period in dayPeriods {
@@ -49,27 +47,12 @@ struct UsageViewProjection: Sendable {
       window: window,
       referenceDate: referenceDate
     )
-    let trendLimit =
-      switch scale {
-      case .day: 180
-      case .week: 24
-      case .month: 18
-      }
-    let trendPeriods = report.periods(for: scale, window: window, referenceDate: referenceDate)
-      .suffix(trendLimit)
-
     totals = selectedTotals
     activeDays = dayPeriods.count
     sessionCount = matchingSessions.count
     recentSessions = Array(matchingSessions.prefix(8))
     models = modelsByName.values.sorted {
       $0.totals.generatedTokens > $1.totals.generatedTokens
-    }
-    trend = trendPeriods.map {
-      UsageTrendPoint(
-        period: $0.period,
-        generatedTokens: $0.totals(for: selectedAgents).generatedTokens
-      )
     }
   }
 }
@@ -201,7 +184,8 @@ struct PremiumUsageView: View {
     if let receipt = model.providerQuotaReceipt {
       HStack(alignment: .top, spacing: 12) {
         ForEach(receipt.providers) { provider in
-          ProviderAllowanceCard(provider: provider)
+          ProviderAllowanceCard(
+            provider: provider, isSaved: model.providerQuotaShowingSavedSnapshot)
         }
       }
     } else if model.providerQuotaLoading {
@@ -259,7 +243,6 @@ struct PremiumUsageView: View {
         metrics(report, projection: projection)
         adapterHealth(report)
         HStack(alignment: .top, spacing: 14) {
-          modelPanel(projection)
           sessionsPanel(projection)
         }
       }
@@ -367,22 +350,22 @@ struct PremiumUsageView: View {
 
   private func metrics(_ report: LocalUsageReport, projection: UsageViewProjection) -> some View {
     HStack(spacing: 8) {
-      UsageMetric(
+      UsageMetricTile(
         value: compact(projection.totals.generatedTokens),
         label: "GENERATED TOKENS",
         detail: model.usageWindow.description
       )
-      UsageMetric(
+      UsageMetricTile(
         value: compact(projection.totals.cacheReadTokens),
         label: "CACHE READ",
         detail: cacheShare(projection.totals)
       )
-      UsageMetric(
+      UsageMetricTile(
         value: currency(projection.totals.costUSD),
         label: "LOCAL LOG COST",
         detail: report.provenance.pricingComplete ? "priced models complete" : "pricing has gaps"
       )
-      UsageMetric(
+      UsageMetricTile(
         value: compact(UInt64(projection.sessionCount)),
         label: "SESSIONS",
         detail: "\(projection.activeDays) active days"
@@ -398,12 +381,12 @@ struct PremiumUsageView: View {
           PremiumFieldLabel("LOCAL HISTORY · NOT PROVIDER ALLOWANCE")
           Text("Historical usage")
             .font(.system(size: 15, weight: .semibold))
-          Text("Generated tokens from local agent logs · cache reads remain separate")
+          Text("Model and project breakdowns from local agent logs")
             .font(.system(size: 10))
             .foregroundStyle(.secondary)
         }
         Spacer()
-        VStack(alignment: .trailing, spacing: 6) {
+        HStack(spacing: 8) {
           UsageWindowSwitch(selection: $model.usageWindow, scale: $model.usageScale)
           UsageScaleSwitch(selection: $model.usageScale)
         }
@@ -433,13 +416,17 @@ struct PremiumUsageView: View {
           .accessibilityLabel("Filter \(agent.capitalized)")
           .accessibilityValue(selected ? "Included" : "Excluded")
         }
-      }
+        Spacer(minLength: 12)
+        Picker("Group", selection: $model.usageGrouping) {
+          ForEach(UsageGrouping.allCases) { Text($0.rawValue).tag($0) }
+        }.frame(maxWidth: 170).accessibilityLabel("Usage grouping")
+        Picker("Metric", selection: $model.usageMetric) {
+          ForEach(UsageMetric.allCases) { Text($0.rawValue).tag($0) }
+        }.frame(maxWidth: 190).accessibilityLabel("Usage metric")
+      }.controlSize(.small)
 
-      UsageTrendChart(
-        points: projection.trend,
-        scale: model.usageScale
-      )
-      .frame(height: 125)
+      UsageHistoryView(
+        history: projection.history, pricingComplete: report.provenance.pricingComplete)
     }
     .padding(16)
     .background(EvidenceStyle.surface, in: RoundedRectangle(cornerRadius: 14))
@@ -488,57 +475,6 @@ struct PremiumUsageView: View {
     .padding(18)
     .frame(minHeight: 286, alignment: .topLeading)
     .background(EvidenceStyle.inspector, in: RoundedRectangle(cornerRadius: 14))
-    .overlay { RoundedRectangle(cornerRadius: 14).stroke(EvidenceStyle.separator) }
-  }
-
-  private func modelPanel(_ projection: UsageViewProjection) -> some View {
-    VStack(alignment: .leading, spacing: 0) {
-      HStack {
-        VStack(alignment: .leading, spacing: 3) {
-          PremiumFieldLabel("MODEL MIX")
-          Text("Work by model").font(.system(size: 14, weight: .semibold))
-        }
-        Spacer()
-        Text("generated")
-          .font(.system(size: 10, design: .monospaced))
-          .foregroundStyle(.secondary)
-      }
-      .padding(16)
-      Divider()
-      let rows = projection.models
-      if rows.isEmpty {
-        Text("No model activity in this local report.")
-          .font(.system(size: 10))
-          .foregroundStyle(.secondary)
-          .padding(18)
-      } else {
-        ForEach(rows.prefix(8)) { row in
-          HStack(spacing: 10) {
-            Circle().fill(row.priced ? EvidenceStyle.success : EvidenceStyle.warning)
-              .frame(width: 6, height: 6)
-            Text(row.model)
-              .font(.system(size: 10, weight: .medium, design: .monospaced))
-              .lineLimit(1)
-            if row.fallback {
-              Text("FALLBACK")
-                .font(.system(size: 10, weight: .bold, design: .monospaced))
-                .foregroundStyle(EvidenceStyle.warning)
-            }
-            Spacer()
-            Text(compact(row.totals.generatedTokens))
-              .font(.system(size: 10, weight: .semibold, design: .monospaced))
-          }
-          .padding(.horizontal, 16)
-          .frame(height: 34)
-          .overlay(alignment: .bottom) {
-            Rectangle().fill(EvidenceStyle.separator).frame(height: 1)
-          }
-        }
-      }
-    }
-    .frame(maxWidth: .infinity, alignment: .topLeading)
-    .background(EvidenceStyle.surface, in: RoundedRectangle(cornerRadius: 14))
-    .clipShape(RoundedRectangle(cornerRadius: 14))
     .overlay { RoundedRectangle(cornerRadius: 14).stroke(EvidenceStyle.separator) }
   }
 
@@ -618,12 +554,38 @@ struct PremiumUsageView: View {
 
 private struct ProviderAllowanceCard: View {
   let provider: ProviderQuotaStatus
+  private let assessments: [UsageAllowanceState]
+
+  init(provider: ProviderQuotaStatus, isSaved: Bool = false) {
+    self.provider = provider
+    let now = Date()
+    self.assessments = provider.windows.map {
+      UsageAllowanceState(
+        window: $0, checkedAt: provider.checkedAt,
+        available: provider.isReady && !isSaved, now: now)
+    }
+  }
+
+  private func state(_ window: ProviderQuotaWindow) -> UsageAllowanceState {
+    assessments[provider.windows.firstIndex { $0.id == window.id } ?? 0]
+  }
+
+  private func color(_ level: UsageAllowanceState.Level) -> Color {
+    switch level {
+    case .exhausted, .low: EvidenceStyle.failure
+    case .watch: EvidenceStyle.warning
+    case .healthy: EvidenceStyle.success
+    case .unknown: .secondary
+    }
+  }
 
   private var accent: Color {
-    if visibleWindows.contains(where: { $0.remainingPercent <= 10 }) {
+    let levels = visibleWindows.map { state($0).level }
+    if levels.contains(.unknown) { return .secondary }
+    if levels.contains(.low) || levels.contains(.exhausted) {
       return EvidenceStyle.failure
     }
-    return provider.provider == "claude" ? EvidenceStyle.amberForeground : Color.secondary
+    return levels.contains(.watch) ? EvidenceStyle.warning : EvidenceStyle.success
   }
 
   private var displayName: String {
@@ -636,9 +598,11 @@ private struct ProviderAllowanceCard: View {
 
   private var availabilityLabel: String {
     guard isDisplayReady else { return "ALLOWANCE UNAVAILABLE" }
-    return visibleWindows.contains(where: { $0.remainingPercent <= 10 })
-      ? "ALLOWANCE LOW"
-      : "ALLOWANCE AVAILABLE"
+    let levels = visibleWindows.map { state($0).level }
+    if levels.contains(.unknown) { return "ALLOWANCE NOT CURRENT" }
+    if levels.contains(.exhausted) { return "ALLOWANCE EXHAUSTED" }
+    if levels.contains(.low) { return "ALLOWANCE LOW" }
+    return levels.contains(.watch) ? "WATCH ALLOWANCE" : "ALLOWANCE HEALTHY"
   }
 
   private var visibleWindows: [ProviderQuotaWindow] {
@@ -653,7 +617,7 @@ private struct ProviderAllowanceCard: View {
   }
 
   var body: some View {
-    VStack(alignment: .leading, spacing: 16) {
+    VStack(alignment: .leading, spacing: 12) {
       HStack(spacing: 9) {
         ProviderBrandMark(provider: provider.provider, accent: accent)
         VStack(alignment: .leading, spacing: 2) {
@@ -685,18 +649,20 @@ private struct ProviderAllowanceCard: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
 
-        HStack(spacing: 14) {
-          if let credits = provider.credits, let creditText = creditText(credits) {
-            Label(creditText, systemImage: "creditcard.fill")
+        if provider.credits != nil || provider.resetCredits != nil {
+          HStack(spacing: 14) {
+            if let credits = provider.credits, let creditText = creditText(credits) {
+              Label(creditText, systemImage: "creditcard.fill")
+            }
+            if let count = provider.resetCredits {
+              Label(
+                "\(count) full \(count == 1 ? "reset" : "resets") available",
+                systemImage: "arrow.counterclockwise.circle.fill")
+            }
           }
-          if let count = provider.resetCredits {
-            Label(
-              "\(count) full \(count == 1 ? "reset" : "resets") available",
-              systemImage: "arrow.counterclockwise.circle.fill")
-          }
+          .font(.caption.weight(.semibold))
+          .foregroundStyle(.secondary)
         }
-        .font(.caption.weight(.semibold))
-        .foregroundStyle(.secondary)
       } else {
         Text(provider.message ?? "Provider quota is unavailable.")
           .font(.caption)
@@ -704,7 +670,7 @@ private struct ProviderAllowanceCard: View {
           .fixedSize(horizontal: false, vertical: true)
       }
     }
-    .padding(20)
+    .padding(16)
     .frame(maxWidth: .infinity, minHeight: 172, alignment: .topLeading)
     .background(EvidenceStyle.surface, in: RoundedRectangle(cornerRadius: 14))
     .overlay { RoundedRectangle(cornerRadius: 14).stroke(EvidenceStyle.separator) }
@@ -713,28 +679,43 @@ private struct ProviderAllowanceCard: View {
   }
 
   private func allowanceValue(_ window: ProviderQuotaWindow) -> some View {
-    VStack(alignment: .leading, spacing: 4) {
+    let assessment = state(window)
+    return VStack(alignment: .leading, spacing: 4) {
       Text(window.label.replacingOccurrences(of: " window", with: "").uppercased())
         .font(.caption2.weight(.bold).monospaced())
         .tracking(0.55)
         .foregroundStyle(.secondary)
         .lineLimit(1)
-      Text("\(window.remainingPercent, specifier: "%.0f")%")
+      HStack(alignment: .firstTextBaseline, spacing: 5) {
+        Text(
+          window.remainingPercent.isFinite ? String(format: "%.0f%%", window.remainingPercent) : "—"
+        )
         .font(.system(size: 32, weight: .semibold, design: .rounded))
-        .foregroundStyle(window.remainingPercent <= 10 ? EvidenceStyle.failure : .primary)
-      Text("remaining")
-        .font(.caption)
-        .foregroundStyle(.secondary)
+        .foregroundStyle(color(assessment.level))
+        Text("remaining").font(.caption).foregroundStyle(.secondary)
+      }
       GeometryReader { geometry in
         ZStack(alignment: .leading) {
           Capsule().fill(Color.primary.opacity(0.07))
           Capsule()
-            .fill(window.remainingPercent <= 10 ? EvidenceStyle.failure : accent)
+            .fill(color(assessment.level))
             .frame(
-              width: geometry.size.width * max(0, min(window.remainingPercent / 100, 1)))
+              width: geometry.size.width
+                * (window.remainingPercent.isFinite
+                  ? max(0, min(window.remainingPercent / 100, 1)) : 0))
         }
       }
       .frame(height: 4)
+      Text(assessment.paceLabel)
+        .font(.system(size: 9))
+        .foregroundStyle(
+          assessment.paceDelta.map { $0 < -1 ? EvidenceStyle.warning : Color.secondary }
+            ?? .secondary
+        )
+        .fixedSize(horizontal: false, vertical: true)
+        .help(
+          "Remaining allowance compared with remaining time in the provider window. This is an even-use budget, not a forecast."
+        )
       if let reset = resetLabel(window) {
         Text(reset)
           .font(.caption2.monospaced())
@@ -746,7 +727,9 @@ private struct ProviderAllowanceCard: View {
     .accessibilityElement(children: .combine)
     .accessibilityLabel(
       [
-        "\(window.label), \(Int(window.remainingPercent.rounded())) percent remaining",
+        "\(window.label), \(window.remainingPercent.isFinite ? String(format: "%.0f", window.remainingPercent) : "unknown") percent remaining",
+        assessment.label,
+        assessment.paceLabel,
         resetLabel(window),
       ].compactMap { $0 }.joined(separator: ". "))
   }
@@ -814,7 +797,7 @@ private struct ProviderBrandMark: View {
   }
 }
 
-private struct UsageMetric: View {
+private struct UsageMetricTile: View {
   let value: String
   let label: String
   let detail: String
@@ -917,61 +900,6 @@ private struct UsageWindowSwitch: View {
     .overlay { RoundedRectangle(cornerRadius: 9).stroke(EvidenceStyle.separator) }
     .accessibilityElement(children: .contain)
     .accessibilityLabel("Usage time range")
-  }
-}
-
-private struct UsageTrendChart: View {
-  let points: [UsageTrendPoint]
-  let scale: UsageScale
-
-  var body: some View {
-    if points.isEmpty {
-      ContentUnavailableView("No local activity", systemImage: "chart.bar")
-    } else {
-      GeometryReader { geometry in
-        let values = points.map(\.generatedTokens)
-        let maximum = max(values.max() ?? 0, 1)
-        ZStack(alignment: .bottom) {
-          HStack(alignment: .bottom, spacing: scale == .day ? 3 : 7) {
-            ForEach(Array(zip(points.indices, points)), id: \.1.id) { index, point in
-              RoundedRectangle(cornerRadius: 3)
-                .fill(
-                  index == points.indices.last
-                    ? EvidenceStyle.amberForeground : Color.secondary.opacity(0.28)
-                )
-                .frame(
-                  height: max(
-                    3,
-                    (geometry.size.height - 22)
-                      * CGFloat(Double(point.generatedTokens) / Double(maximum))
-                  )
-                )
-                .help("\(point.period): \(compact(point.generatedTokens)) generated tokens")
-                .frame(maxWidth: .infinity)
-                .accessibilityElement(children: .ignore)
-                .accessibilityLabel(point.period)
-                .accessibilityValue("\(point.generatedTokens) generated tokens")
-            }
-          }
-          .padding(.bottom, 18)
-          .overlay(alignment: .bottom) {
-            Rectangle().fill(EvidenceStyle.separator).frame(height: 1).offset(y: -17)
-          }
-          HStack {
-            Text(shortLabel(points.first?.period ?? ""))
-            Spacer()
-            Text(shortLabel(points.last?.period ?? ""))
-          }
-          .font(.system(size: 10, design: .monospaced))
-          .foregroundStyle(.secondary)
-        }
-      }
-    }
-  }
-
-  private func shortLabel(_ value: String) -> String {
-    if value.count > 7 { return String(value.suffix(5)) }
-    return value
   }
 }
 
