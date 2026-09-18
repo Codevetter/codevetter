@@ -3,6 +3,17 @@
 
 AI software quality workbench for agent-generated code — desktop-first, local-first, and focused on finding bugs that normal AI review misses.
 
+**Verify AI-generated code with execution evidence, not another LLM opinion.** CodeVetter checks a coding agent's changes by actually exercising them — running builds, tests, and browser/API behavior through a deterministic Rust engine — then emits an inspectable evidence bundle and verdict you can replay. It runs locally on your Mac as a native desktop app, a CLI, and an MCP server: no hosted PR bot, no code leaving your machine, no model grading its own homework.
+
+## How it differs
+
+| | CodeVetter | Hosted AI reviewers (CodeRabbit, Greptile) | Merge-gate tools (Verdict, PatchDrill, ProofGate) | LLM-as-judge review |
+|---|---|---|---|---|
+| **Verdict based on** | Executed evidence — builds, tests, runtime behavior | A model reading the diff | Diff structure + declared claims | A second model's opinion |
+| **Where it runs** | Your Mac — app, CLI, MCP | Vendor cloud | Your CI / GitHub Actions | Wherever you run it |
+| **Your code leaves the machine** | Never | Yes | No | Depends on provider |
+| **Open source** | Yes (ISC) | Mostly no | Yes | Varies |
+
 ## Product Direction
 
 CodeVetter should end as a personal verification layer for AI-built software. The durable scope is:
