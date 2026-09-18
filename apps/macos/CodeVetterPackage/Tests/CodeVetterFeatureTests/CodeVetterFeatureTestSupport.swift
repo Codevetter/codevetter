@@ -299,7 +299,7 @@ func hundredRunLedgerDecodesAndRendersWithinTheNativeGate() throws {
     renderLedger(model)
   }
   var renderSamples = [UInt64]()
-  for _ in 0..<20 {
+  for _ in 0..<60 {
     let started = DispatchTime.now().uptimeNanoseconds
     renderLedger(model)
     renderSamples.append((DispatchTime.now().uptimeNanoseconds - started) / 1_000)
@@ -317,7 +317,9 @@ func hundredRunLedgerDecodesAndRendersWithinTheNativeGate() throws {
   print(
     "NATIVE_RUN_LEDGER_BENCHMARK_JSON "
       + "{\"decode_p95_us\":\(decodeP95),\"render_p95_us\":\(renderP95),"
-      + "\"runs\":100,\"selected_responses\":100,\"decode_samples\":100,\"render_samples\":20}"
+      + "\"runs\":100,\"selected_responses\":100,\"decode_samples\":100,\"render_samples\":\(renderSamples.count),"
+      + "\"render_samples_us\":\(renderSamples),"
+      + "\"hardware\":\(benchmarkHardwareJSON())}"
   )
   if let screenshotPath = ProcessInfo.processInfo.environment[
     "CODEVETTER_RUNS_SCREENSHOT_PATH"
@@ -892,11 +894,30 @@ func captureTrexWatcher(_ model: WorkbenchModel, at destination: URL) throws {
   try data.write(to: destination, options: .atomic)
 }
 
-func percentile95(_ values: [UInt64]) -> UInt64 {
+func percentile(_ values: [UInt64], _ quantile: Double) -> UInt64 {
   precondition(!values.isEmpty)
   let ordered = values.sorted()
-  let nearestRank = Int(ceil(Double(ordered.count) * 0.95))
+  let nearestRank = Int(ceil(Double(ordered.count) * quantile))
   return ordered[min(max(nearestRank - 1, 0), ordered.count - 1)]
+}
+
+func percentile95(_ values: [UInt64]) -> UInt64 {
+  percentile(values, 0.95)
+}
+
+/// Machine metadata attached to benchmark receipts so hosted runs can be
+/// compared across runner classes instead of treated as interchangeable.
+func benchmarkHardwareJSON() -> String {
+  var size = 0
+  sysctlbyname("hw.model", nil, &size, nil, 0)
+  var model = [CChar](repeating: 0, count: max(size, 1))
+  sysctlbyname("hw.model", &model, &size, nil, 0)
+  let machine = String(decoding: model.prefix { $0 != 0 }.map { UInt8(bitPattern: $0) }, as: UTF8.self)
+  let process = ProcessInfo.processInfo
+  let os = process.operatingSystemVersion
+  return "{\"model\":\"\(machine)\",\"cpu_count\":\(process.processorCount),"
+    + "\"memory_gb\":\(process.physicalMemory / (1_024 * 1_024 * 1_024)),"
+    + "\"os\":\"\(os.majorVersion).\(os.minorVersion).\(os.patchVersion)\"}"
 }
 
 func nativePerformanceGateEnabled() -> Bool {
