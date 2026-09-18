@@ -18,6 +18,10 @@ struct NavigatorWorkspaceView: View {
       } else {
         toolbar
         divider
+        if mode == .review {
+          NavigatorReviewScopeBar(model: model)
+          divider
+        }
         HStack(spacing: 0) {
           sidebar.frame(width: 240)
           Rectangle().fill(EvidenceStyle.separator).frame(width: 1)
@@ -32,6 +36,9 @@ struct NavigatorWorkspaceView: View {
       }
     }
     .background(EvidenceStyle.canvas)
+    .task {
+      model.openSelectedRepositoryIfNeeded(review: mode == .review)
+    }
     .sheet(isPresented: $nav.quickOpenPresented) { quickOpen }
     .sheet(isPresented: $nav.showFullUnpack) {
       PremiumUnpackView(model: model).frame(minWidth: 980, minHeight: 640)
@@ -64,8 +71,9 @@ struct NavigatorWorkspaceView: View {
       else { return }
       nav.automaticUnpackStarted = true
       do {
-        model.repositoryPath = try await nav.prepareUnpack()
+        let root = try await nav.prepareUnpack()
         guard !Task.isCancelled else { return }
+        model.selectRepository(URL(fileURLWithPath: root), persist: false)
         model.scanUnpackRepository()
       } catch { if !Task.isCancelled { nav.enrichmentIssue = error.localizedDescription } }
     }
@@ -76,8 +84,8 @@ struct NavigatorWorkspaceView: View {
       } else if snapshot.kind != "local" {
         model.section = .repository
       }
-      if snapshot.kind == "local" {
-        model.repositoryPath = snapshot.root
+      if !nav.input.hasPrefix("https:") {
+        model.selectRepository(URL(fileURLWithPath: snapshot.root), persist: false)
         model.loadUnpackSnapshots()
       }
     }
@@ -169,7 +177,7 @@ struct NavigatorWorkspaceView: View {
       Menu {
         Button("Open GitHub URL…") { nav.showImport() }
         Button("Open local repository…") { model.choosingRepository = true }
-        Button("Refresh source snapshot") { nav.open(review: mode == .review) }
+        Button("Refresh source snapshot") { nav.refreshSource(review: mode == .review) }
       } label: {
         Label(nav.snapshot?.label ?? "Repository", systemImage: "folder")
       }
@@ -189,11 +197,12 @@ struct NavigatorWorkspaceView: View {
       } label: {
         Label("Find file  ⌘P", systemImage: "magnifyingglass")
       }
-      Button {
-        nav.showVerification = true
-        model.section = .review
-      } label: {
-        Label("Evidence", systemImage: "checkmark.shield")
+      if mode != .review {
+        Button {
+          model.section = .review
+        } label: {
+          Label("Review change", systemImage: "checkmark.shield")
+        }
       }
       Button {
         inspectorVisible.toggle()
@@ -474,7 +483,9 @@ struct NavigatorWorkspaceView: View {
             ) {
               Task {
                 do {
-                  model.repositoryPath = try await nav.prepareUnpack()
+                  let root = try await nav.prepareUnpack()
+                  guard !Task.isCancelled else { return }
+                  model.selectRepository(URL(fileURLWithPath: root), persist: false)
                   model.scanUnpackRepository()
                 } catch { nav.enrichmentIssue = error.localizedDescription }
               }
@@ -486,7 +497,7 @@ struct NavigatorWorkspaceView: View {
               )
               .font(.system(size: 10)).foregroundStyle(.secondary)
             }
-            if model.unpackSnapshot != nil {
+            if model.hasMatchingUnpack {
               Button("Full Unpack details") { nav.showFullUnpack = true }.buttonStyle(.borderless)
                 .font(.system(size: 11))
             }
@@ -577,10 +588,7 @@ struct NavigatorWorkspaceView: View {
   }
 
   @ViewBuilder private var existingUnpack: some View {
-    if let snapshot = model.unpackSnapshot, let source = navigator.snapshot,
-      snapshot.commitSHA == source.head,
-      snapshot.repoPath == source.root || snapshot.repoPath == navigator.unpackRoot
-    {
+    if model.hasMatchingUnpack {
       if let report = model.unpackReport {
         if let overview = report.overview {
           Text(overview).font(.system(size: 11)).foregroundStyle(.secondary)

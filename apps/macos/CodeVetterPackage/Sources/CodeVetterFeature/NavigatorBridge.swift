@@ -18,6 +18,21 @@ struct NavigatorRequest: Encodable, Sendable {
   var line: Int?
   var column: Int?
   var server: String?
+  var mergeBase: Bool?
+}
+
+struct NavigatorBranch: Decodable, Identifiable, Sendable {
+  let reference: String
+  let name: String
+  let sha: String
+  var id: String { reference }
+}
+
+struct NavigatorBranches: Decodable, Sendable {
+  let branches: [NavigatorBranch]
+  let current: String?
+  let defaultBase: String?
+  let truncated: Bool
 }
 
 struct NavigatorEntry: Codable, Identifiable, Sendable {

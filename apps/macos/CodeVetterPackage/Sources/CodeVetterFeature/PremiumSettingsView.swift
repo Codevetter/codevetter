@@ -49,7 +49,7 @@ struct PremiumSettingsView: View {
       guard case .success(let urls) = result, let url = urls.first else { return }
       model.addHistoryRoot(url)
     }
-    .task(id: model.settingsSection) {
+    .task(id: "\(model.settingsSection.rawValue):\(model.repositoryPath)") {
       if model.settingsSection == .mcp, !model.repositoryPath.isEmpty,
         model.mcpSettingsReceipt == nil
       {
@@ -108,35 +108,26 @@ struct PremiumSettingsView: View {
 
   private var header: some View {
     PremiumPageHeader(
-      eyebrow: "Local control plane",
+      eyebrow: "Preferences and connections",
       title: "Settings",
-      subtitle: "Rust-persisted preferences with a deliberately non-secret native projection"
+      subtitle: "Manage local preferences, agent connections, and saved data"
     ) {
       if model.settingsSection == .capabilities {
         StatusPill(label: "Bundled registry", color: EvidenceStyle.success)
       } else {
         StatusPill(
-          label: model.opsLoading
-            ? "Reading aggregates"
-            : (model.settingsLoading ? "Reading preferences" : "Secrets excluded"),
-          color: (model.settingsIssue == nil && model.opsIssue == nil)
-            ? EvidenceStyle.success : EvidenceStyle.warning
+          label: model.selectedSettingsLoading
+            ? "Refreshing" : (model.selectedSettingsIssue == nil ? "Local settings" : "Needs attention"),
+          color: model.selectedSettingsIssue == nil ? .secondary : EvidenceStyle.warning
         )
         Button {
-          if model.settingsSection == .ops {
-            model.loadOpsStatus()
-          } else {
-            model.loadNativeSettings()
-          }
+          model.refreshSelectedSettings()
         } label: {
           Label("Refresh", systemImage: "arrow.clockwise")
         }
         .buttonStyle(.bordered)
-        .disabled(model.settingsLoading || model.opsLoading)
-        .accessibilityLabel(
-          model.settingsSection == .ops
-            ? "Refresh operational evidence" : "Refresh native settings"
-        )
+        .disabled(model.selectedSettingsLoading)
+        .accessibilityLabel("Refresh \(model.settingsSection.rawValue) settings")
       }
     }
   }
@@ -201,7 +192,7 @@ struct PremiumSettingsView: View {
       }
       Rectangle().fill(EvidenceStyle.separator).frame(height: 1)
       VStack(alignment: .leading, spacing: 6) {
-        Label("Rust owns persistence", systemImage: "lock.shield.fill")
+        Label("Saved on this Mac", systemImage: "lock.shield.fill")
           .foregroundStyle(EvidenceStyle.success)
         Text(
           "Swift receives declared values only. Credentials and provider tokens never enter this receipt."
@@ -232,8 +223,8 @@ struct PremiumSettingsView: View {
     {
       VStack(spacing: 12) {
         ProgressView().controlSize(.small).tint(EvidenceStyle.amber)
-        Text("Opening declared settings…").font(.system(size: 12, weight: .medium))
-        Text("No credential value is requested by this projection.")
+        Text("Loading settings…").font(.system(size: 12, weight: .medium))
+        Text("Secret values are not displayed here.")
           .font(.system(size: 10))
           .foregroundStyle(.secondary)
       }
@@ -1826,7 +1817,7 @@ struct PremiumSettingsView: View {
 
   private var projectionBoundary: some View {
     VStack(alignment: .leading, spacing: 8) {
-      PremiumFieldLabel("AUTHORITY BOUNDARY")
+      PremiumFieldLabel("COMMAND-LINE EQUIVALENT")
       Label(projectionCommand, systemImage: "terminal")
         .font(.system(size: 10, weight: .semibold, design: .monospaced))
       Text(projectionDetail)

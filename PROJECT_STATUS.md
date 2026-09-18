@@ -1,6 +1,6 @@
 # Project Status
 
-Last updated: 2026-09-06
+Last updated: 2026-09-15
 
 ## Why / What
 
@@ -36,6 +36,14 @@ profiling or production-load system should be added until external pull and a
 separately approved safety design justify renewed investment.
 
 ## Current verification repair
+
+- **v1.14.1 candidate:** owner-approved Usage cards/history, Review branch/base
+  controls, and Testing/Performance/Runs/Settings coherence repairs are ready
+  for hosted qualification. Local checks pass: 118 Swift tests, 15 navigator
+  tests, five isolated performance gates, and native Debug build. This release
+  keeps the existing visual system; the operator's Mac remains background-only.
+  See [surface behavior](docs/product/surfaces.md). Publication is pending the
+  protected signing, notarization, migration, and asset-manifest gates.
 
 - #285: Review/Explore is implemented in local source, with the primary import
   and semantic navigation flows foreground-checked. VoiceOver work is deferred

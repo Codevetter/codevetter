@@ -61,6 +61,75 @@ fn fixture() -> (tempfile::TempDir, String, String) {
 }
 
 #[test]
+fn branch_picker_resolves_merge_base_without_changing_checkout() {
+    let (dir, base, head) = fixture();
+    let root = dir.path();
+    let index = fs::read(root.join(".git/index")).unwrap();
+    git::git(root, &["update-ref", "refs/heads/feature/auth", &head]).unwrap();
+    let other = git::text(
+        root,
+        &[
+            "-c",
+            "user.name=Test",
+            "-c",
+            "user.email=test@example.invalid",
+            "commit-tree",
+            &format!("{base}^{{tree}}"),
+            "-p",
+            &base,
+            "-m",
+            "parallel base",
+        ],
+    )
+    .unwrap();
+    git::git(root, &["update-ref", "refs/remotes/origin/main", &other]).unwrap();
+    git::git(
+        root,
+        &[
+            "symbolic-ref",
+            "refs/remotes/origin/HEAD",
+            "refs/remotes/origin/main",
+        ],
+    )
+    .unwrap();
+    let catalog = branches::list(root).unwrap();
+    assert_eq!(catalog["current"], "refs/heads/main");
+    assert_eq!(catalog["default_base"], "refs/remotes/origin/main");
+    assert_eq!(catalog["branches"].as_array().unwrap().len(), 3);
+    let cache = tempfile::tempdir().unwrap();
+    let opened = request(
+        json!({"version":1,"operation":"open","input":root,"cache":cache.path(),
+        "revision":"refs/heads/feature/auth","base":"refs/remotes/origin/main","mergeBase":true}),
+    )
+    .unwrap();
+    assert_eq!(opened["head"], head);
+    assert_eq!(opened["base"], base);
+    assert_eq!(opened["kind"], "commit");
+    assert_eq!(git::text(root, &["rev-parse", "HEAD"]).unwrap(), head);
+    assert_eq!(fs::read(root.join(".git/index")).unwrap(), index);
+    assert!(branches::comparison(root, "missing", "HEAD").is_err());
+    assert!(branches::comparison(root, "main", "--help").is_err());
+    let orphan = git::text(
+        root,
+        &[
+            "-c",
+            "user.name=Test",
+            "-c",
+            "user.email=test@example.invalid",
+            "commit-tree",
+            &format!("{base}^{{tree}}"),
+            "-m",
+            "unrelated",
+        ],
+    )
+    .unwrap();
+    assert!(branches::comparison(root, &orphan, &head).is_err());
+    request(json!({"version":1,"operation":"close","session":opened["id"]})).unwrap();
+    git::git(root, &["update-ref", "--no-deref", "HEAD", &head]).unwrap();
+    assert!(branches::list(root).unwrap()["current"].is_null());
+}
+
+#[test]
 #[cfg(target_os = "macos")]
 fn semantic_native_alias_shadowing_unicode_and_revision() {
     let (dir, base, head) = fixture();

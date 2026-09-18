@@ -47,6 +47,26 @@ final class NavigatorModel {
   var historyBack: [(String, Int)] = []
   var historyForward: [(String, Int)] = []
   var refreshToken = UUID()
+  var branches: NavigatorBranches?
+  var branchesLoading = false
+  var branchesIssue: String?
+  var reviewHead = "local"
+  var reviewBase = ""
+  private(set) var appliedHead = "local"
+  private(set) var appliedBase = ""
+  private var appliedMergeBase = false
+  private var comparisonFailed = false
+  var comparisonPending: Bool {
+    reviewHead != appliedHead || reviewHead != "local" && reviewBase != appliedBase
+  }
+  var canPrepareReview: Bool {
+    snapshot?.base != nil && snapshot?.kind != "local" && !opening
+      && !comparisonPending && !comparisonFailed
+  }
+  var reviewRange: String? {
+    guard canPrepareReview, let snapshot, let base = snapshot.base else { return nil }
+    return "\(base)...\(snapshot.head)"
+  }
   private var epoch = UUID()
   private var selectionEpoch = UUID()
   private var queryEpoch = UUID()
@@ -55,6 +75,7 @@ final class NavigatorModel {
   private var diffCache: [String: NavigatorDiff] = [:]
   private var monitor: Task<Void, Never>?
   private let bridge: NavigatorBridge
+  var didOpen: ((NavigatorSnapshot) -> Void)?
 
   init(bridge: NavigatorBridge = NavigatorBridge()) { self.bridge = bridge }
 
@@ -71,7 +92,8 @@ final class NavigatorModel {
 
   func open(
     _ input: String? = nil, revision: String? = nil, base: String? = nil, path: String? = nil,
-    line: Int = 1, review: Bool = false
+    line: Int = 1, review: Bool = false, mergeBase: Bool = false,
+    preservingComparison: Bool = false
   ) {
     let value = (input ?? self.input).trimmingCharacters(in: .whitespacesAndNewlines)
     guard !value.isEmpty else {
@@ -79,6 +101,15 @@ final class NavigatorModel {
       return
     }
     self.input = value
+    if !preservingComparison {
+      branches = nil
+      branchesLoading = false
+      branchesIssue = nil
+      reviewHead = revision ?? "local"
+      reviewBase = base ?? ""
+    }
+    showVerification = false
+    comparisonFailed = false
     let token = UUID()
     epoch = token
     selectionEpoch = UUID()
@@ -95,13 +126,17 @@ final class NavigatorModel {
         .appendingPathComponent("CodeVetter/Navigator", isDirectory: true).path
         let opened: NavigatorSnapshot = try await bridge.call(
           NavigatorRequest(
-            operation: "open", input: value, cache: cache, revision: revision, base: base))
+            operation: "open", input: value, cache: cache, revision: revision, base: base,
+            mergeBase: mergeBase))
         guard epoch == token else {
           let _: NavigatorAcknowledgement? = try? await bridge.call(
             NavigatorRequest(operation: "close", session: opened.id))
           return
         }
         snapshot = opened
+        appliedHead = revision ?? "local"
+        appliedBase = base ?? ""
+        appliedMergeBase = mergeBase
         opening = false
         fileCache.removeAll()
         diffCache.removeAll()
@@ -128,6 +163,7 @@ final class NavigatorModel {
           ? "Diff" : "Source"
         expandedFolders = Set(
           opened.files.compactMap { $0.path.split(separator: "/").first.map(String.init) })
+        didOpen?(opened)
         select(path ?? opened.initialPath ?? "", line: path == nil ? opened.initialLine : line)
         if let previous {
           let _: NavigatorAcknowledgement? = try? await bridge.call(
@@ -136,14 +172,57 @@ final class NavigatorModel {
         // First requested file loads before bulk source enrichment begins.
         await loadCurrentFile()
         guard epoch == token else { return }
+        if !value.hasPrefix("https:") {
+          branchesLoading = true
+          do {
+            let catalog: NavigatorBranches = try await bridge.call(
+              NavigatorRequest(operation: "branches", session: opened.id))
+            guard epoch == token else { return }
+            branches = catalog
+            branchesIssue = nil
+            if reviewBase.isEmpty {
+              reviewBase = catalog.defaultBase ?? catalog.current ?? opened.head
+            }
+          } catch {
+            if epoch == token { branchesIssue = error.localizedDescription }
+          }
+          if epoch == token { branchesLoading = false }
+        }
+        guard epoch == token else { return }
         let _: NavigatorAcknowledgement = try await bridge.call(
           NavigatorRequest(operation: "index", session: opened.id))
         monitorIndex(id: opened.id, token: token)
       } catch {
         guard epoch == token else { return }
         opening = false
+        comparisonFailed = true
         issue = error.localizedDescription
       }
+    }
+  }
+
+  func applyComparison() {
+    guard let snapshot, !input.hasPrefix("https:"), !opening else { return }
+    if reviewHead == "local" {
+      open(snapshot.root, review: true, preservingComparison: true)
+    } else {
+      guard !reviewBase.isEmpty else { return }
+      open(
+        snapshot.root, revision: reviewHead, base: reviewBase, review: true,
+        mergeBase: true, preservingComparison: true)
+    }
+  }
+
+  func refreshSource(review: Bool) {
+    if input.hasPrefix("https:") {
+      open(review: review)
+    } else {
+      reviewHead = appliedHead
+      reviewBase = appliedBase
+      open(
+        revision: appliedHead == "local" ? nil : appliedHead,
+        base: appliedBase.isEmpty ? nil : appliedBase, review: review,
+        mergeBase: appliedMergeBase, preservingComparison: true)
     }
   }
 
@@ -157,10 +236,36 @@ final class NavigatorModel {
     epoch = UUID()
     selectionEpoch = UUID()
     queryEpoch = UUID()
+    windowEpoch = UUID()
     monitor?.cancel()
     snapshot = nil
     file = nil
     diff = nil
+    status = nil
+    overview = nil
+    history = nil
+    locations = NavigatorLocations()
+    selectedPath = ""
+    historyBack = []
+    historyForward = []
+    fileCache.removeAll()
+    diffCache.removeAll()
+    branches = nil
+    branchesLoading = false
+    branchesIssue = nil
+    reviewHead = "local"
+    reviewBase = ""
+    showVerification = false
+    showFullUnpack = false
+    unpackRoot = nil
+    automaticUnpackStarted = false
+    searchPresented = false
+    quickOpenPresented = false
+    searchQuery = ""
+    quickQuery = ""
+    quickPaths = []
+    issue = nil
+    enrichmentIssue = nil
     opening = false
     if let previous {
       Task {

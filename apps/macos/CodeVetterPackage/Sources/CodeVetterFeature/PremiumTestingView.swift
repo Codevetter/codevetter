@@ -19,7 +19,7 @@ struct PremiumTestingView: View {
       PremiumPageHeader(
         eyebrow: "Runtime evidence",
         title: "Testing",
-        subtitle: "Exercise the exact changed experience and preserve routes, journeys, and limits"
+        subtitle: "Test a deployed preview against an exact code change using read-only browser journeys"
       ) {
         StatusPill(label: model.testingState.rawValue, color: testingStatusColor)
       }
@@ -70,9 +70,9 @@ struct PremiumTestingView: View {
       ScrollView {
         VStack(alignment: .leading, spacing: 18) {
           VStack(alignment: .leading, spacing: 5) {
-            Text("Prove one changed experience")
+            Text("Test your deployed preview")
               .font(.system(size: 18, weight: .semibold))
-            Text("Choose the source and preview. CodeVetter resolves the rest before execution.")
+            Text("Choose a change and its preview URL. For repository checks without a deployed preview, use Review.")
               .font(.system(size: 11))
               .foregroundStyle(.secondary)
           }
@@ -99,6 +99,19 @@ struct PremiumTestingView: View {
           }
           .buttonStyle(.plain)
           .accessibilityLabel("Choose testing repository")
+
+          HStack(spacing: 12) {
+            Button("Use Review comparison") { model.useNavigatorComparisonForTesting() }
+              .disabled(!model.canUseNavigatorComparisonForTesting)
+            Button("Choose branches in Review…") {
+              model.navigator.showVerification = false
+              model.section = .review
+            }
+            .disabled(model.repositoryPath.isEmpty || model.isBusy)
+          }
+          .buttonStyle(.bordered)
+          Text("Reuse the applied Review comparison, or enter a Git range or pull request below.")
+            .font(.system(size: 11)).foregroundStyle(.secondary)
 
           HStack(alignment: .bottom, spacing: 14) {
             VStack(alignment: .leading, spacing: 8) {
@@ -158,7 +171,7 @@ struct PremiumTestingView: View {
               PremiumScopePlanner(
                 title: "Changed-scope planner",
                 subtitle:
-                  "Resolve this change, one user flow, or a bounded codebase portfolio into Rust-owned runnable targets before browser execution.",
+                  "Find existing test targets for this change, a user flow, or the repository before browser execution.",
                 kind: $model.testingScopeKind,
                 value: testingScopeValue,
                 plan: model.testingScopePlan,
@@ -252,14 +265,14 @@ struct PremiumTestingView: View {
   private var testingContractSummary: some View {
     HStack(spacing: 16) {
       VStack(alignment: .leading, spacing: 4) {
-        PremiumFieldLabel("RUST EXECUTION CONTRACT")
-        Text("Resolve → execute → persist")
+        PremiumFieldLabel("WHAT HAPPENS NEXT")
+        Text("Check preview identity → run journeys → save evidence")
           .font(.system(size: 12, weight: .semibold))
       }
       Spacer()
-      Label("codevetter trex", systemImage: "checkmark.seal.fill")
-        .font(.system(size: 10, weight: .semibold, design: .monospaced))
-        .foregroundStyle(EvidenceStyle.success)
+      Label("Read-only browser testing", systemImage: "safari")
+        .font(.system(size: 10, weight: .medium))
+        .foregroundStyle(.secondary)
     }
     .padding(15)
     .background(EvidenceStyle.inspector, in: RoundedRectangle(cornerRadius: 12))
@@ -332,7 +345,7 @@ struct PremiumTestingView: View {
     VStack(spacing: 0) {
       HStack(spacing: 16) {
         VStack(alignment: .leading, spacing: 4) {
-          Text("T-REX PREVIEW RECEIPT")
+          Text("PREVIEW TEST RESULTS")
             .font(.system(size: 10, weight: .bold, design: .monospaced))
             .tracking(1.1)
             .foregroundStyle(EvidenceStyle.amberForeground)
@@ -355,8 +368,7 @@ struct PremiumTestingView: View {
         }
         .buttonStyle(.bordered)
         Button("Open in Runs") {
-          model.section = .runs
-          model.loadRuns()
+          model.openRun(receipt.runID)
         }
         .buttonStyle(.bordered)
         Button("New test") { model.resetTesting() }
