@@ -1645,12 +1645,14 @@ func usagePeriod(
 func usageSession(
   _ id: String,
   agent: String,
-  activity: String?
+  activity: String?,
+  project: String? = nil
 ) -> LocalUsageSession {
   LocalUsageSession(
     sessionID: id,
     agent: agent,
     lastActivity: activity,
+    project: project,
     reasoningOutputTokens: 0,
     totals: localUsageTotals(10),
     models: []

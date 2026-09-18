@@ -3207,6 +3207,109 @@ func usageWindowsKeepChartTotalsModelsAndSessionsOnOneBoundary() throws {
 }
 
 @Test
+func unifiedUsageHistoryBuildsReconcilingModelAndProjectSeries() throws {
+  let reference = try #require(ISO8601DateFormatter().date(from: "2026-09-08T12:00:00Z"))
+  let claude = "claude"
+  let codex = "codex"
+  // 2026-09-08 is a Tuesday: its Monday-start week key is 2026-09-07, and
+  // 2026-09-01 belongs to the week opening 2026-08-31.
+  let report = LocalUsageReport(
+    status: .ready,
+    stale: false,
+    error: nil,
+    provenance: LocalUsageProvenance(
+      engine: "ccusage",
+      version: "20.0.20",
+      generatedAt: "2026-09-08T12:00:00Z",
+      timezone: "UTC",
+      window: "all",
+      detectedAgents: [claude, codex],
+      excludedAgents: [],
+      codexRoots: [],
+      sourceFingerprint: "sha256:fixture",
+      pricingComplete: true,
+      fallbackModels: [],
+      unpricedModels: []
+    ),
+    daily: [
+      usagePeriod("2026-09-08", agent: claude, generated: 10, model: "sonnet"),
+      usagePeriod("2026-09-08", agent: codex, generated: 40, model: "gpt-5.6"),
+      usagePeriod("2026-09-01", agent: claude, generated: 20, model: "opus"),
+    ],
+    weekly: [
+      usagePeriod("2026-08-31", agent: claude, generated: 20, model: "opus"),
+      usagePeriod("2026-09-07", agent: claude, generated: 50, model: "sonnet"),
+    ],
+    monthly: [],
+    sessions: [
+      usageSession(
+        "s1", agent: claude, activity: "2026-09-08T10:00:00Z",
+        project: "/Users/x/fleet/codevetter"),
+      usageSession(
+        "s2", agent: claude, activity: "2026-09-01T10:00:00Z",
+        project: "/Users/x/fleet/starboard"),
+      usageSession("s3", agent: codex, activity: "2026-09-08T11:00:00Z"),
+      // In-window but its week has no ccusage period row: counted in the
+      // breakdown, unchartable in the stacked series.
+      usageSession("s4", agent: claude, activity: "2026-08-20T10:00:00Z", project: "/x/app"),
+    ],
+    totals: .zero,
+    devin: nil
+  )
+
+  let projection = UsageViewProjection(
+    report: report,
+    selectedAgents: [claude, codex],
+    window: .thirtyDays,
+    scale: .week,
+    referenceDate: reference
+  )
+
+  #expect(projection.trendPeriodKeys == ["2026-08-31", "2026-09-07"])
+
+  // Model dimension reconciles with each weekly row's own model breakdown
+  // (the daily fixtures intentionally differ from the weekly ones).
+  let modelsByName = Dictionary(uniqueKeysWithValues: projection.modelSeries.map { ($0.name, $0) })
+  #expect(modelsByName.keys.sorted() == ["opus", "sonnet"])
+  #expect(modelsByName["opus"]?.points.map(\.tokens) == [20, 0])
+  #expect(modelsByName["sonnet"]?.points.map(\.tokens) == [0, 50])
+  #expect(projection.modelSeries.first?.name == "sonnet")
+
+  // Project dimension buckets sessions onto their last-activity week;
+  // unattributed sessions stay visible instead of disappearing.
+  let projectsByName = Dictionary(
+    uniqueKeysWithValues: projection.projectSeries.map { ($0.name, $0) })
+  #expect(projectsByName["codevetter"]?.points.map(\.tokens) == [0, 10])
+  #expect(projectsByName["starboard"]?.points.map(\.tokens) == [10, 0])
+  #expect(projectsByName["Unattributed"]?.points.map(\.tokens) == [0, 10])
+  #expect(projectsByName["codevetter"]?.detail == "/Users/x/fleet/codevetter")
+  #expect(projection.attributedSessionCount == 3)
+  #expect(projection.sessionCount == 4)
+
+  // Breakdown rows reconcile with every in-window session, including the
+  // session whose missing activity makes it unchartable.
+  let rowsByName = Dictionary(
+    uniqueKeysWithValues: projection.projectBreakdown.map { ($0.name, $0) })
+  #expect(rowsByName.count == 4)
+  #expect(rowsByName["app"]?.tokens == 10)
+  #expect(rowsByName["Unattributed"]?.tokens == 10)
+
+  // Agent filtering flows through both dimensions.
+  let claudeOnly = UsageViewProjection(
+    report: report,
+    selectedAgents: [claude],
+    window: .thirtyDays,
+    scale: .week,
+    referenceDate: reference
+  )
+  // Agent filtering removes the Codex session, so Unattributed disappears
+  // from the project dimension entirely.
+  #expect(!claudeOnly.projectBreakdown.contains { $0.name == "Unattributed" })
+  #expect(claudeOnly.projectSeries.map(\.name).sorted() == ["codevetter", "starboard"])
+  #expect(claudeOnly.projectBreakdown.map(\.name).sorted() == ["app", "codevetter", "starboard"])
+}
+
+@Test
 func devinUsageProjectsTheSelectedWindowWithoutJoiningCcusageTotals() throws {
   let payload = Data(
     """

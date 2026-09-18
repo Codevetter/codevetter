@@ -199,6 +199,10 @@ public final class WorkbenchModel {
   public var providerQuotaIssue: String?
   public var usageScale: UsageScale = .day
   public var usageWindow: UsageWindow = .thirtyDays
+  /// Unified history card controls — shared by the chart and the ranked
+  /// breakdown so both always describe the same filtered evidence.
+  public var usageDimension: UsageDimension = .model
+  public var usageMetric: UsageHistoryMetric = .tokens
   public var usageSelectedAgents: Set<String> = []
   public var usageTimezone = TimeZone.current.identifier
   public var usageLoading = false

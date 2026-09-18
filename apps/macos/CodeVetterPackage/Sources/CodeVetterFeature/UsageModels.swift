@@ -14,6 +14,25 @@ public enum UsageScale: String, CaseIterable, Identifiable, Sendable {
   public var id: String { rawValue }
 }
 
+/// Unified history-card breakdown dimension. Model comes from ccusage
+/// period breakdowns; Project comes from session working-directory
+/// attribution and keeps unreconciled activity visible as Unattributed.
+public enum UsageDimension: String, CaseIterable, Identifiable, Sendable {
+  case model = "Model"
+  case project = "Project"
+
+  public var id: String { rawValue }
+}
+
+/// Unified history-card metric. Cost is locally estimated from pinned
+/// pricing, never subscription spend.
+public enum UsageHistoryMetric: String, CaseIterable, Identifiable, Sendable {
+  case tokens = "Tokens"
+  case cost = "Cost"
+
+  public var id: String { rawValue }
+}
+
 public enum UsageWindow: String, CaseIterable, Identifiable, Sendable {
   case oneWeek = "1w"
   case thirtyDays = "30d"
@@ -145,6 +164,9 @@ public struct LocalUsageSession: Codable, Identifiable, Sendable {
   public let sessionID: String
   public let agent: String
   public let lastActivity: String?
+  /// Working directory recovered from the agent's own session storage.
+  /// `nil` means unsupported or unreconciled — render as Unattributed.
+  public let project: String?
   public let reasoningOutputTokens: UInt64
   public let totals: LocalUsageTotals
   public let models: [LocalUsageModel]
@@ -152,7 +174,7 @@ public struct LocalUsageSession: Codable, Identifiable, Sendable {
   public var id: String { "\(agent)\u{0}\(sessionID)" }
 
   enum CodingKeys: String, CodingKey {
-    case agent, totals, models
+    case agent, totals, models, project
     case sessionID = "session_id"
     case lastActivity = "last_activity"
     case reasoningOutputTokens = "reasoning_output_tokens"

@@ -8,6 +8,36 @@ struct UsageTrendPoint: Identifiable, Sendable {
   var id: String { period }
 }
 
+struct UsageSeriesPoint: Sendable {
+  var tokens: UInt64 = 0
+  var costUSD: Double = 0
+
+  func value(for metric: UsageHistoryMetric) -> Double {
+    metric == .tokens ? Double(tokens) : costUSD
+  }
+}
+
+/// One ranked entity (model or project) with per-period values aligned to the
+/// chart's period keys, so stacked bars and breakdown rows always reconcile.
+struct UsageTrendSeries: Identifiable, Sendable {
+  let name: String
+  let detail: String?
+  let points: [UsageSeriesPoint]
+
+  var id: String { name }
+  var totalTokens: UInt64 { points.reduce(0) { $0 + $1.tokens } }
+  var totalCostUSD: Double { points.reduce(0) { $0 + $1.costUSD } }
+}
+
+struct UsageBreakdownRow: Identifiable, Sendable {
+  let name: String
+  let detail: String?
+  let tokens: UInt64
+  let costUSD: Double
+
+  var id: String { name }
+}
+
 struct UsageViewProjection: Sendable {
   let totals: LocalUsageTotals
   let activeDays: Int
@@ -15,6 +45,13 @@ struct UsageViewProjection: Sendable {
   let recentSessions: [LocalUsageSession]
   let models: [LocalUsageModel]
   let trend: [UsageTrendPoint]
+  /// Period keys aligned with `trend` and every series' `points`.
+  let trendPeriodKeys: [String]
+  let modelSeries: [UsageTrendSeries]
+  let projectSeries: [UsageTrendSeries]
+  let projectBreakdown: [UsageBreakdownRow]
+  /// Sessions with a recovered project; the rest render as Unattributed.
+  let attributedSessionCount: Int
 
   init(
     report: LocalUsageReport,
@@ -71,6 +108,142 @@ struct UsageViewProjection: Sendable {
         generatedTokens: $0.totals(for: selectedAgents).generatedTokens
       )
     }
+    trendPeriodKeys = trendPeriods.map(\.period)
+
+    // Model dimension: per-period model totals restricted to selected agents,
+    // taken from the same normalized report as the chart — the breakdown and
+    // the stacked segments therefore reconcile exactly.
+    var modelAcc: [String: [UsageSeriesPoint]] = [:]
+    for (index, period) in trendPeriods.enumerated() {
+      for agent in period.agents where selectedAgents.contains(agent.agent) {
+        for item in agent.models {
+          var points = modelAcc[item.model]
+            ?? Array(repeating: UsageSeriesPoint(), count: trendPeriods.count)
+          points[index].tokens &+= item.totals.generatedTokens
+          points[index].costUSD += item.totals.costUSD
+          modelAcc[item.model] = points
+        }
+      }
+    }
+    modelSeries = modelAcc.map { name, points in
+      UsageTrendSeries(name: name, detail: nil, points: points)
+    }.sorted { $0.totalTokens > $1.totalTokens }
+
+    // Project dimension: ccusage does not emit per-period project rows, so
+    // sessions — which carry recovered project paths — are bucketed by their
+    // last-activity day into the visible scale periods. Session totals count
+    // once on that day only; they are never spread across a range. The day→
+    // period-key map is built once so 2.5k-session projections stay cheap.
+    var reportCalendar = Calendar(identifier: .gregorian)
+    reportCalendar.timeZone = TimeZone(identifier: report.provenance.timezone) ?? .current
+    var dayToPeriodIndex: [String: Int] = [:]
+    for (index, key) in trendPeriodKeys.enumerated() {
+      for day in Self.days(coveredBy: key, scale: scale, calendar: reportCalendar) {
+        dayToPeriodIndex[day] = index
+      }
+    }
+    let offsetSeconds = reportCalendar.timeZone.secondsFromGMT()
+    var projectAcc: [String: [UsageSeriesPoint]] = [:]
+    var projectBreakdownAcc: [String: (tokens: UInt64, costUSD: Double, detail: String?)] = [:]
+    var attributed = 0
+    for session in matchingSessions {
+      let project = session.project
+      if project != nil { attributed += 1 }
+      let name = Self.projectName(project)
+      let detail = Self.projectDetail(project)
+      var row = projectBreakdownAcc[name] ?? (0, 0, detail)
+      row.tokens &+= session.totals.generatedTokens
+      row.costUSD += session.totals.costUSD
+      projectBreakdownAcc[name] = row
+      guard let activity = session.lastActivity,
+            let day = Self.activityDay(activity, offsetSeconds: offsetSeconds, calendar: reportCalendar),
+            let index = dayToPeriodIndex[day] else {
+        continue
+      }
+      var points = projectAcc[name]
+        ?? Array(repeating: UsageSeriesPoint(), count: trendPeriods.count)
+      points[index].tokens &+= session.totals.generatedTokens
+      points[index].costUSD += session.totals.costUSD
+      projectAcc[name] = points
+    }
+    attributedSessionCount = attributed
+    projectSeries = projectAcc.map { name, points in
+      UsageTrendSeries(name: name, detail: projectBreakdownAcc[name]?.detail, points: points)
+    }.sorted { $0.totalTokens > $1.totalTokens }
+    projectBreakdown = projectBreakdownAcc.map { name, row in
+      UsageBreakdownRow(name: name, detail: row.detail, tokens: row.tokens, costUSD: row.costUSD)
+    }.sorted { $0.tokens > $1.tokens }
+  }
+
+  private static func projectName(_ project: String?) -> String {
+    guard let project, let last = project.split(separator: "/").last else {
+      return "Unattributed"
+    }
+    return String(last)
+  }
+
+  private static func projectDetail(_ project: String?) -> String? {
+    project
+  }
+
+  /// Expands a ccusage period key into the report-timezone `YYYY-MM-DD` days
+  /// it covers: the key itself for day, the seven days opening on the
+  /// Monday-start key for week, every day of `YYYY-MM` for month.
+  private static func days(coveredBy key: String, scale: UsageScale, calendar: Calendar) -> [String] {
+    switch scale {
+    case .day:
+      return key.count == 10 ? [key] : []
+    case .month:
+      guard key.count == 7 else { return [] }
+      return (1...31).compactMap { day in
+        let candidate = "\(key)-\(String(format: "%02d", day))"
+        return dayExists(candidate, calendar: calendar) ? candidate : nil
+      }
+    case .week:
+      guard key.count == 10, let start = date(forDay: key, calendar: calendar) else { return [] }
+      return (0..<7).compactMap { offset in
+        calendar.date(byAdding: .day, value: offset, to: start).map {
+          dayString($0, calendar: calendar)
+        }
+      }
+    }
+  }
+
+  /// Extracts the report-timezone day for an ISO `lastActivity` without a
+  /// full date parse: UTC day/time fields are sliced out and shifted by the
+  /// timezone offset, crossing a day boundary only when the shift demands it.
+  private static func activityDay(_ activity: String, offsetSeconds: Int, calendar: Calendar)
+    -> String?
+  {
+    guard activity.count >= 16 else { return nil }
+    let day = String(activity.prefix(10))
+    guard let utcDay = date(forDay: day, calendar: calendar),
+          let hour = Int(activity.dropFirst(11).prefix(2)),
+          let minute = Int(activity.dropFirst(14).prefix(2)) else { return nil }
+    let shifted = hour * 3600 + minute * 60 + offsetSeconds
+    let shiftDays = Int(floor(Double(shifted) / 86_400))
+    guard shiftDays != 0 else { return day }
+    return calendar.date(byAdding: .day, value: shiftDays, to: utcDay).map {
+      dayString($0, calendar: calendar)
+    }
+  }
+
+  private static func date(forDay day: String, calendar: Calendar) -> Date? {
+    var components = DateComponents()
+    components.year = Int(day.prefix(4))
+    components.month = Int(day.dropFirst(5).prefix(2))
+    components.day = Int(day.dropFirst(8).prefix(2))
+    return calendar.date(from: components)
+  }
+
+  private static func dayExists(_ day: String, calendar: Calendar) -> Bool {
+    guard let date = date(forDay: day, calendar: calendar) else { return false }
+    return dayString(date, calendar: calendar) == day
+  }
+
+  private static func dayString(_ date: Date, calendar: Calendar) -> String {
+    let parts = calendar.dateComponents([.year, .month, .day], from: date)
+    return String(format: "%04d-%02d-%02d", parts.year ?? 0, parts.month ?? 0, parts.day ?? 0)
   }
 }
 
@@ -398,9 +571,13 @@ struct PremiumUsageView: View {
           PremiumFieldLabel("LOCAL HISTORY · NOT PROVIDER ALLOWANCE")
           Text("Historical usage")
             .font(.system(size: 15, weight: .semibold))
-          Text("Generated tokens from local agent logs · cache reads remain separate")
-            .font(.system(size: 10))
-            .foregroundStyle(.secondary)
+          Text(
+            model.usageMetric == .tokens
+              ? "Generated tokens from local agent logs · cache reads remain separate"
+              : "Locally estimated cost from pinned pricing · not subscription spend"
+          )
+          .font(.system(size: 10))
+          .foregroundStyle(.secondary)
         }
         Spacer()
         VStack(alignment: .trailing, spacing: 6) {
@@ -433,13 +610,36 @@ struct PremiumUsageView: View {
           .accessibilityLabel("Filter \(agent.capitalized)")
           .accessibilityValue(selected ? "Included" : "Excluded")
         }
+        Spacer()
+        UsageOptionSwitch(selection: $model.usageDimension)
+        UsageOptionSwitch(selection: $model.usageMetric)
       }
 
-      UsageTrendChart(
-        points: projection.trend,
+      let series = model.usageDimension == .model ? projection.modelSeries : projection.projectSeries
+      if model.usageDimension == .project {
+        let attributed = projection.attributedSessionCount
+        Text(
+          "Project attribution covers \(attributed) of \(projection.sessionCount) sessions "
+            + "from agent working directories; the rest stay Unattributed."
+        )
+        .font(.system(size: 10))
+        .foregroundStyle(.secondary)
+      }
+
+      UsageStackedChart(
+        series: series,
+        periodKeys: projection.trendPeriodKeys,
+        metric: model.usageMetric,
         scale: model.usageScale
       )
-      .frame(height: 125)
+      .frame(height: 150)
+
+      if !series.isEmpty {
+        UsageBreakdownList(
+          series: series,
+          metric: model.usageMetric
+        )
+      }
     }
     .padding(16)
     .background(EvidenceStyle.surface, in: RoundedRectangle(cornerRadius: 14))
@@ -616,14 +816,29 @@ struct PremiumUsageView: View {
 
 }
 
+/// Allowance health bands approved for the unified Usage card: red at or
+/// under 20 percent remaining, yellow through 40, green above, with zero
+/// called out as exhausted. Pace is reported separately and only when the
+/// provider window's duration/reset metadata is trustworthy.
+private func allowanceHealth(_ remaining: Double) -> (label: String, color: Color) {
+  switch remaining {
+  case ..<Double.leastNonzeroMagnitude: ("Exhausted", EvidenceStyle.failure)
+  case ...20: ("Low", EvidenceStyle.failure)
+  case ...40: ("Watch", EvidenceStyle.warning)
+  default: ("Healthy", EvidenceStyle.success)
+  }
+}
+
 private struct ProviderAllowanceCard: View {
   let provider: ProviderQuotaStatus
 
   private var accent: Color {
-    if visibleWindows.contains(where: { $0.remainingPercent <= 10 }) {
-      return EvidenceStyle.failure
-    }
-    return provider.provider == "claude" ? EvidenceStyle.amberForeground : Color.secondary
+    guard isDisplayReady else { return Color.secondary }
+    return allowanceHealth(worstRemaining).color
+  }
+
+  private var worstRemaining: Double {
+    visibleWindows.map(\.remainingPercent).min() ?? 100
   }
 
   private var displayName: String {
@@ -636,9 +851,7 @@ private struct ProviderAllowanceCard: View {
 
   private var availabilityLabel: String {
     guard isDisplayReady else { return "ALLOWANCE UNAVAILABLE" }
-    return visibleWindows.contains(where: { $0.remainingPercent <= 10 })
-      ? "ALLOWANCE LOW"
-      : "ALLOWANCE AVAILABLE"
+    return "ALLOWANCE \(allowanceHealth(worstRemaining).label.uppercased())"
   }
 
   private var visibleWindows: [ProviderQuotaWindow] {
@@ -721,20 +934,31 @@ private struct ProviderAllowanceCard: View {
         .lineLimit(1)
       Text("\(window.remainingPercent, specifier: "%.0f")%")
         .font(.system(size: 32, weight: .semibold, design: .rounded))
-        .foregroundStyle(window.remainingPercent <= 10 ? EvidenceStyle.failure : .primary)
-      Text("remaining")
-        .font(.caption)
-        .foregroundStyle(.secondary)
+        .foregroundStyle(allowanceHealth(window.remainingPercent).color)
+      HStack(spacing: 5) {
+        Text("remaining")
+          .font(.caption)
+          .foregroundStyle(.secondary)
+        Text(allowanceHealth(window.remainingPercent).label)
+          .font(.caption2.weight(.bold).monospaced())
+          .foregroundStyle(allowanceHealth(window.remainingPercent).color)
+      }
       GeometryReader { geometry in
         ZStack(alignment: .leading) {
           Capsule().fill(Color.primary.opacity(0.07))
           Capsule()
-            .fill(window.remainingPercent <= 10 ? EvidenceStyle.failure : accent)
+            .fill(allowanceHealth(window.remainingPercent).color)
             .frame(
               width: geometry.size.width * max(0, min(window.remainingPercent / 100, 1)))
         }
       }
       .frame(height: 4)
+      if let pace = paceLabel(window) {
+        Text(pace)
+          .font(.caption2.monospaced())
+          .foregroundStyle(.secondary)
+          .lineLimit(1)
+      }
       if let reset = resetLabel(window) {
         Text(reset)
           .font(.caption2.monospaced())
@@ -759,6 +983,24 @@ private struct ProviderAllowanceCard: View {
       return "\(Int(remaining.rounded()))% credits"
     }
     return nil
+  }
+
+  /// Pace compares allowance remaining with the fraction of the provider
+  /// window still open — percentage points over or under an even-use rate,
+  /// never a spending forecast. Shown only when duration and reset metadata
+  /// are both trustworthy; otherwise pace stays silent rather than healthy.
+  private func paceLabel(_ window: ProviderQuotaWindow) -> String? {
+    guard let duration = window.windowDurationMinutes, duration > 0,
+          let resetsAt = window.resetsAtUnix else { return nil }
+    let now = Date().timeIntervalSince1970
+    let windowSeconds = Double(duration) * 60
+    let remaining = (Double(resetsAt) - now) / windowSeconds
+    guard remaining > 0, remaining <= 1 else { return nil }
+    let delta = window.remainingPercent - remaining * 100
+    if abs(delta) < 1 { return "On even-use pace" }
+    return delta > 0
+      ? "+\(Int(delta.rounded())) pts ahead of even pace"
+      : "\(Int(delta.rounded())) pts behind even pace"
   }
 
   private func resetLabel(_ window: ProviderQuotaWindow) -> String? {
@@ -920,37 +1162,130 @@ private struct UsageWindowSwitch: View {
   }
 }
 
-private struct UsageTrendChart: View {
-  let points: [UsageTrendPoint]
-  let scale: UsageScale
+/// Small segmented switch shared by the unified history card's dimension and
+/// metric toggles, matching the window/scale switch styling.
+private struct UsageOptionSwitch<Option: RawRepresentable & CaseIterable & Identifiable & Hashable>: View
+where Option.RawValue == String
+{
+  @Binding var selection: Option
 
   var body: some View {
-    if points.isEmpty {
+    HStack(spacing: 3) {
+      ForEach(Array(Option.allCases), id: \.self) { option in
+        Button {
+          selection = option
+        } label: {
+          Text(option.rawValue)
+            .font(.system(size: 10, weight: .semibold))
+            .foregroundStyle(
+              selection == option ? EvidenceStyle.amberForeground : Color.secondary
+            )
+            .premiumHitTarget(minWidth: 52, minHeight: 34)
+            .overlay(alignment: .bottom) {
+              Rectangle()
+                .fill(selection == option ? EvidenceStyle.amberForeground : Color.clear)
+                .frame(height: 2)
+            }
+        }
+        .buttonStyle(.plain)
+        .accessibilityValue(selection == option ? "Selected" : "")
+        .accessibilityAddTraits(selection == option ? .isSelected : [])
+      }
+    }
+    .padding(3)
+    .background(Color.primary.opacity(0.055), in: RoundedRectangle(cornerRadius: 9))
+    .overlay { RoundedRectangle(cornerRadius: 9).stroke(EvidenceStyle.separator) }
+  }
+}
+
+/// Restrained series palette for the unified history chart. Model identity
+/// stays in blue/lavender/neutral territory per the approved direction; quota
+/// semantics keep red/yellow/green exclusively for allowance.
+private let usageSeriesPalette: [Color] = [
+  Color(red: 0.43, green: 0.63, blue: 0.96),
+  Color(red: 0.62, green: 0.55, blue: 0.90),
+  Color(red: 0.36, green: 0.72, blue: 0.66),
+  Color(red: 0.85, green: 0.65, blue: 0.45),
+  Color(red: 0.60, green: 0.64, blue: 0.70),
+]
+
+private func usageSeriesColor(_ index: Int) -> Color {
+  usageSeriesPalette[index % usageSeriesPalette.count]
+}
+
+/// Stacked per-period bars sharing the exact series the ranked breakdown
+/// lists, so segments and row totals always reconcile. The top five entities
+/// render individually; the remainder collapse into Other.
+private struct UsageStackedChart: View {
+  let series: [UsageTrendSeries]
+  let periodKeys: [String]
+  let metric: UsageHistoryMetric
+  let scale: UsageScale
+
+  private var visibleSeries: [(name: String, points: [UsageSeriesPoint])] {
+    let head = series.prefix(5).map { ($0.name, $0.points) }
+    guard series.count > 5 else { return head }
+    var other = Array(repeating: UsageSeriesPoint(), count: periodKeys.count)
+    for tail in series.dropFirst(5) {
+      for (index, point) in tail.points.enumerated() {
+        other[index].tokens &+= point.tokens
+        other[index].costUSD += point.costUSD
+      }
+    }
+    return head + [("Other", other)]
+  }
+
+  private func color(for name: String, index: Int) -> Color {
+    if name == "Unattributed" || name == "Other" { return Color.secondary.opacity(0.35) }
+    return usageSeriesColor(index)
+  }
+
+  private func value(_ point: UsageSeriesPoint) -> Double {
+    point.value(for: metric)
+  }
+
+  private func format(_ value: Double) -> String {
+    metric == .tokens ? compact(UInt64(max(value, 0))) : currency(value)
+  }
+
+  var body: some View {
+    let visible = visibleSeries
+    if visible.isEmpty || periodKeys.isEmpty {
       ContentUnavailableView("No local activity", systemImage: "chart.bar")
     } else {
       GeometryReader { geometry in
-        let values = points.map(\.generatedTokens)
-        let maximum = max(values.max() ?? 0, 1)
+        let periodTotals = periodKeys.indices.map { index in
+          visible.reduce(0.0) { $0 + value($1.points[index]) }
+        }
+        let maximum = max(periodTotals.max() ?? 0, 1e-9)
         ZStack(alignment: .bottom) {
           HStack(alignment: .bottom, spacing: scale == .day ? 3 : 7) {
-            ForEach(Array(zip(points.indices, points)), id: \.1.id) { index, point in
-              RoundedRectangle(cornerRadius: 3)
-                .fill(
-                  index == points.indices.last
-                    ? EvidenceStyle.amberForeground : Color.secondary.opacity(0.28)
-                )
-                .frame(
-                  height: max(
-                    3,
-                    (geometry.size.height - 22)
-                      * CGFloat(Double(point.generatedTokens) / Double(maximum))
-                  )
-                )
-                .help("\(point.period): \(compact(point.generatedTokens)) generated tokens")
-                .frame(maxWidth: .infinity)
-                .accessibilityElement(children: .ignore)
-                .accessibilityLabel(point.period)
-                .accessibilityValue("\(point.generatedTokens) generated tokens")
+            ForEach(periodKeys.indices, id: \.self) { periodIndex in
+              VStack(spacing: 0) {
+                ForEach(visible.indices.reversed(), id: \.self) { seriesIndex in
+                  let share = value(visible[seriesIndex].points[periodIndex]) / maximum
+                  Rectangle()
+                    .fill(color(for: visible[seriesIndex].name, index: seriesIndex))
+                    .frame(
+                      height: max(
+                        share > 0 ? 2 : 0,
+                        (geometry.size.height - 22) * CGFloat(share)
+                      )
+                    )
+                }
+              }
+              .clipShape(RoundedRectangle(cornerRadius: 3))
+              .help(
+                "\(periodKeys[periodIndex]): "
+                  + visible
+                    .filter { value($0.points[periodIndex]) > 0 }
+                    .map { "\($0.name) \(format(value($0.points[periodIndex])))" }
+                    .joined(separator: " · ")
+              )
+              .frame(maxWidth: .infinity)
+              .accessibilityElement(children: .ignore)
+              .accessibilityLabel(periodKeys[periodIndex])
+              .accessibilityValue(format(periodTotals[periodIndex]))
             }
           }
           .padding(.bottom, 18)
@@ -958,9 +1293,9 @@ private struct UsageTrendChart: View {
             Rectangle().fill(EvidenceStyle.separator).frame(height: 1).offset(y: -17)
           }
           HStack {
-            Text(shortLabel(points.first?.period ?? ""))
+            Text(shortLabel(periodKeys.first ?? ""))
             Spacer()
-            Text(shortLabel(points.last?.period ?? ""))
+            Text(shortLabel(periodKeys.last ?? ""))
           }
           .font(.system(size: 10, design: .monospaced))
           .foregroundStyle(.secondary)
@@ -972,6 +1307,77 @@ private struct UsageTrendChart: View {
   private func shortLabel(_ value: String) -> String {
     if value.count > 7 { return String(value.suffix(5)) }
     return value
+  }
+}
+
+/// Ranked exact-value rows for the same series the chart stacks, with a share
+/// bar relative to the window total. Unknown project sessions stay visible as
+/// Unattributed rather than disappearing.
+private struct UsageBreakdownList: View {
+  let series: [UsageTrendSeries]
+  let metric: UsageHistoryMetric
+
+  private var grandTotal: Double {
+    series.reduce(0.0) { $0 + value($1) }
+  }
+
+  private func value(_ series: UsageTrendSeries) -> Double {
+    metric == .tokens ? Double(series.totalTokens) : series.totalCostUSD
+  }
+
+  private func format(_ value: Double) -> String {
+    metric == .tokens ? compact(UInt64(max(value, 0))) : currency(value)
+  }
+
+  var body: some View {
+    let total = max(grandTotal, 1e-9)
+    VStack(spacing: 0) {
+      ForEach(Array(series.prefix(8).enumerated()), id: \.element.id) { index, row in
+        HStack(spacing: 10) {
+          Circle()
+            .fill(row.name == "Unattributed" ? Color.secondary.opacity(0.35) : usageSeriesColor(index))
+            .frame(width: 6, height: 6)
+          VStack(alignment: .leading, spacing: 1) {
+            Text(row.name)
+              .font(.system(size: 10, weight: .medium, design: .monospaced))
+              .lineLimit(1)
+            if let detail = row.detail {
+              Text(detail)
+                .font(.system(size: 9, design: .monospaced))
+                .foregroundStyle(.tertiary)
+                .lineLimit(1)
+                .truncationMode(.middle)
+            }
+          }
+          GeometryReader { geometry in
+            ZStack(alignment: .leading) {
+              Capsule().fill(Color.primary.opacity(0.05))
+              Capsule()
+                .fill(row.name == "Unattributed" ? Color.secondary.opacity(0.3) : usageSeriesColor(index))
+                .frame(width: geometry.size.width * min(value(row) / total, 1))
+            }
+          }
+          .frame(width: 90, height: 3)
+          Text(String(format: "%.0f%%", value(row) / total * 100))
+            .font(.system(size: 9, design: .monospaced))
+            .foregroundStyle(.secondary)
+            .frame(width: 32, alignment: .trailing)
+          Text(format(value(row)))
+            .font(.system(size: 10, weight: .semibold, design: .monospaced))
+            .frame(minWidth: 52, alignment: .trailing)
+        }
+        .frame(height: row.detail == nil ? 30 : 38)
+        .overlay(alignment: .bottom) {
+          Rectangle().fill(EvidenceStyle.separator.opacity(0.6)).frame(height: 1)
+        }
+      }
+      if series.count > 8 {
+        Text("+ \(series.count - 8) more \(series.count - 8 == 1 ? "entry" : "entries")")
+          .font(.system(size: 9, design: .monospaced))
+          .foregroundStyle(.secondary)
+          .frame(height: 24)
+      }
+    }
   }
 }
 

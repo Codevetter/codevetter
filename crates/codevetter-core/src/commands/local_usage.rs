@@ -4,7 +4,7 @@ use chrono::{Duration as ChronoDuration, Local, NaiveDate, Utc};
 use rusqlite::Connection;
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
-use std::collections::BTreeSet;
+use std::collections::{BTreeMap, BTreeSet};
 use std::path::{Path, PathBuf};
 use std::process::Stdio;
 use std::sync::{Arc, OnceLock};
@@ -93,6 +93,10 @@ pub struct LocalUsageSession {
     pub session_id: String,
     pub agent: String,
     pub last_activity: Option<String>,
+    /// Working directory recovered from the agent's own session storage.
+    /// `None` means unsupported or unreconciled; render as Unattributed.
+    #[serde(default)]
+    pub project: Option<String>,
     pub reasoning_output_tokens: u64,
     pub totals: LocalUsageTotals,
     pub models: Vec<LocalUsageModel>,
@@ -704,7 +708,7 @@ fn normalize_report(
         .iter()
         .map(normalize_accounted_period)
         .collect::<Result<Vec<_>, _>>()?;
-    let sessions = raw
+    let mut sessions = raw
         .sessions
         .iter()
         .filter(|session| is_accounted_agent(&session.agent))
@@ -712,11 +716,13 @@ fn normalize_report(
             session_id: session.period.clone(),
             agent: session.agent.clone(),
             last_activity: session.metadata.last_activity.clone(),
+            project: None,
             reasoning_output_tokens: session.metadata.reasoning_output_tokens,
             totals: (&session.totals).into(),
             models: normalize_models(&session.model_breakdowns),
         })
         .collect::<Vec<_>>();
+    attribute_session_projects(&mut sessions, roots);
     let totals = daily
         .iter()
         .try_fold(LocalUsageTotals::default(), |totals, period| {
@@ -786,6 +792,148 @@ fn normalize_report(
         totals,
         devin: None,
     })
+}
+
+/// Attribute sessions to projects using each agent's own storage layout —
+/// the same files ccusage reads. Claude maps `~/.claude/projects/<slug>/
+/// <session>.jsonl` back to a decoded working directory; Codex rollouts
+/// record `cwd` in their session_meta line. Anything unreadable or unmatched
+/// stays `None` and renders as Unattributed rather than being guessed from
+/// the session id or model.
+fn attribute_session_projects(sessions: &mut [LocalUsageSession], roots: &[String]) {
+    let needed: BTreeSet<String> = sessions
+        .iter()
+        .map(|session| session.session_id.clone())
+        .collect();
+    if needed.is_empty() {
+        return;
+    }
+    let claude = claude_project_index(&needed);
+    let codex = codex_project_index(&needed, roots);
+    for session in sessions.iter_mut() {
+        session.project = match session.agent.as_str() {
+            "claude" => claude.get(&session.session_id).cloned(),
+            "codex" => codex.get(&session.session_id).cloned(),
+            _ => None,
+        };
+    }
+}
+
+fn claude_project_index(needed: &BTreeSet<String>) -> BTreeMap<String, String> {
+    let Some(projects) = std::env::var_os("HOME")
+        .map(PathBuf::from)
+        .map(|home| home.join(".claude").join("projects"))
+    else {
+        return BTreeMap::new();
+    };
+    claude_project_index_in(&projects, needed)
+}
+
+fn claude_project_index_in(
+    projects: &Path,
+    needed: &BTreeSet<String>,
+) -> BTreeMap<String, String> {
+    let mut index = BTreeMap::new();
+    let Ok(entries) = std::fs::read_dir(projects) else {
+        return index;
+    };
+    for entry in entries.flatten() {
+        let dir = entry.path();
+        if !dir.is_dir() {
+            continue;
+        }
+        let Some(slug) = dir.file_name().and_then(|name| name.to_str()) else {
+            continue;
+        };
+        let Ok(files) = std::fs::read_dir(&dir) else {
+            continue;
+        };
+        for file in files.flatten() {
+            let path = file.path();
+            if path.extension().and_then(|ext| ext.to_str()) != Some("jsonl") {
+                continue;
+            }
+            let Some(stem) = path.file_stem().and_then(|stem| stem.to_str()) else {
+                continue;
+            };
+            if needed.contains(stem) {
+                index.insert(stem.to_string(), decode_claude_project_slug(slug));
+            }
+        }
+    }
+    index
+}
+
+/// Claude encodes the working directory into the folder name by replacing
+/// `/` (and some other separators) with `-`. The mapping is lossy for names
+/// that already contain dashes, so the decoded path is a faithful label but
+/// not a guaranteed real path.
+fn decode_claude_project_slug(slug: &str) -> String {
+    let decoded = slug.replace('-', "/");
+    if decoded.starts_with('/') {
+        decoded
+    } else {
+        format!("/{decoded}")
+    }
+}
+
+fn codex_project_index(needed: &BTreeSet<String>, roots: &[String]) -> BTreeMap<String, String> {
+    let mut homes: Vec<PathBuf> = roots.iter().map(PathBuf::from).collect();
+    if homes.is_empty() {
+        if let Some(home) = std::env::var_os("HOME") {
+            homes.push(PathBuf::from(home).join(".codex"));
+        }
+    }
+    let mut index = BTreeMap::new();
+    for root in homes {
+        index.extend(scan_codex_rollouts(&root.join("sessions"), needed, 0));
+    }
+    index
+}
+
+fn scan_codex_rollouts(
+    dir: &Path,
+    needed: &BTreeSet<String>,
+    depth: u8,
+) -> BTreeMap<String, String> {
+    let mut index = BTreeMap::new();
+    if depth > 5 {
+        return index;
+    }
+    let Ok(entries) = std::fs::read_dir(dir) else {
+        return index;
+    };
+    for entry in entries.flatten() {
+        let path = entry.path();
+        if path.is_dir() {
+            index.extend(scan_codex_rollouts(&path, needed, depth + 1));
+            continue;
+        }
+        let Some(stem) = path.file_stem().and_then(|stem| stem.to_str()) else {
+            continue;
+        };
+        for id in needed {
+            if stem.ends_with(id.as_str()) {
+                if let Some(cwd) = codex_rollout_cwd(&path) {
+                    index.insert(id.clone(), cwd);
+                }
+            }
+        }
+    }
+    index
+}
+
+/// Codex rollout files start with a session_meta line carrying `cwd`; only
+/// the first line is read so large sessions stay cheap.
+fn codex_rollout_cwd(path: &Path) -> Option<String> {
+    let file = std::fs::File::open(path).ok()?;
+    let mut line = String::new();
+    std::io::BufRead::read_line(&mut std::io::BufReader::new(file), &mut line).ok()?;
+    let value: serde_json::Value = serde_json::from_str(line.trim()).ok()?;
+    value
+        .pointer("/payload/cwd")
+        .and_then(|cwd| cwd.as_str())
+        .map(str::to_string)
 }
 
 fn normalize_accounted_period(period: &RawPeriod) -> Result<LocalUsagePeriod, String> {
@@ -1074,6 +1222,104 @@ mod tests {
             .limitations
             .iter()
             .any(|limitation| limitation.contains("not live quota")));
+    }
+
+    #[test]
+    fn decodes_claude_project_slugs() {
+        assert_eq!(
+            decode_claude_project_slug("-Users-test-fleet-codevetter"),
+            "/Users/test/fleet/codevetter"
+        );
+        assert_eq!(decode_claude_project_slug("loose"), "/loose");
+    }
+
+    #[test]
+    fn attributes_claude_sessions_from_project_directories() {
+        let directory = TempDir::new().unwrap();
+        let project_dir = directory
+            .path()
+            .join("-Users-test-fleet-codevetter");
+        fs::create_dir_all(&project_dir).unwrap();
+        fs::write(project_dir.join("session-a.jsonl"), "{}").unwrap();
+        fs::write(project_dir.join("session-b.json"), "{}").unwrap();
+        let other = directory.path().join("-tmp-scratch");
+        fs::create_dir_all(&other).unwrap();
+        fs::write(other.join("session-c.jsonl"), "{}").unwrap();
+
+        let needed = BTreeSet::from(["session-a".to_string(), "missing".to_string()]);
+        let index = claude_project_index_in(directory.path(), &needed);
+
+        assert_eq!(
+            index.get("session-a").map(String::as_str),
+            Some("/Users/test/fleet/codevetter")
+        );
+        assert!(!index.contains_key("missing"));
+        assert!(!index.contains_key("session-b"));
+    }
+
+    #[test]
+    fn attributes_codex_sessions_from_rollout_cwd() {
+        let root = TempDir::new().unwrap();
+        let rollout_dir = root
+            .path()
+            .join("sessions")
+            .join("2026")
+            .join("09")
+            .join("15");
+        fs::create_dir_all(&rollout_dir).unwrap();
+        fs::write(
+            rollout_dir.join("rollout-2026-09-15T10-00-00-session-codex-1.jsonl"),
+            "{\"type\":\"session_meta\",\"payload\":{\"id\":\"session-codex-1\",\"cwd\":\"/work/fleet/starboard\"}}\n{\"type\":\"turn\"}\n",
+        )
+        .unwrap();
+        fs::write(
+            rollout_dir.join("rollout-2026-09-15T11-00-00-session-codex-2.jsonl"),
+            "not json\n",
+        )
+        .unwrap();
+
+        let needed = BTreeSet::from([
+            "session-codex-1".to_string(),
+            "session-codex-2".to_string(),
+            "session-codex-3".to_string(),
+        ]);
+        let roots = vec![root.path().to_string_lossy().to_string()];
+        let index = codex_project_index(&needed, &roots);
+
+        assert_eq!(
+            index.get("session-codex-1").map(String::as_str),
+            Some("/work/fleet/starboard")
+        );
+        assert!(!index.contains_key("session-codex-2"));
+        assert!(!index.contains_key("session-codex-3"));
+    }
+
+    #[test]
+    fn leaves_unmatched_sessions_unattributed() {
+        let directory = TempDir::new().unwrap();
+        let roots = vec![directory.path().to_string_lossy().to_string()];
+        let mut sessions = vec![
+            LocalUsageSession {
+                session_id: "unknown-1".into(),
+                agent: "claude".into(),
+                last_activity: None,
+                project: None,
+                reasoning_output_tokens: 0,
+                totals: LocalUsageTotals::default(),
+                models: vec![],
+            },
+            LocalUsageSession {
+                session_id: "unknown-2".into(),
+                agent: "grok".into(),
+                last_activity: None,
+                project: None,
+                reasoning_output_tokens: 0,
+                totals: LocalUsageTotals::default(),
+                models: vec![],
+            },
+        ];
+        attribute_session_projects(&mut sessions, &roots);
+        assert!(sessions.iter().all(|session| session.project.is_none()));
     }
 
     #[test]
