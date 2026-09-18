@@ -3069,7 +3069,7 @@ func largeUnpackProjectionDecodesAndRendersWithinTheNativeGate() throws {
 
   for _ in 0..<3 { renderUnpack(model) }
   var renderSamples = [UInt64]()
-  for _ in 0..<20 {
+  for _ in 0..<60 {
     let started = DispatchTime.now().uptimeNanoseconds
     renderUnpack(model)
     renderSamples.append((DispatchTime.now().uptimeNanoseconds - started) / 1_000)
@@ -3085,7 +3085,9 @@ func largeUnpackProjectionDecodesAndRendersWithinTheNativeGate() throws {
     "NATIVE_UNPACK_BENCHMARK_JSON "
       + "{\"decode_p95_us\":\(decodeP95),\"render_p95_us\":\(renderP95),"
       + "\"snapshots\":100,\"graph_nodes\":700,\"tree_rows\":1000,"
-      + "\"decode_samples\":100,\"render_samples\":20}"
+      + "\"decode_samples\":100,\"render_samples\":\(renderSamples.count),"
+      + "\"render_samples_us\":\(renderSamples),"
+      + "\"hardware\":\(benchmarkHardwareJSON())}"
   )
 
   if let screenshotPath = ProcessInfo.processInfo.environment[
@@ -3543,7 +3545,7 @@ func largeUsageReportDecodesAndRendersWithinTheNativeGate() throws {
   )
 
   var projectionSamples = [UInt64]()
-  for _ in 0..<20 {
+  for _ in 0..<60 {
     let started = DispatchTime.now().uptimeNanoseconds
     _ = UsageViewProjection(
       report: model.usageReport!,
@@ -3568,7 +3570,7 @@ func largeUsageReportDecodesAndRendersWithinTheNativeGate() throws {
   try snapshotStore.saveUsage(rawJSON: String(decoding: payload, as: UTF8.self))
   for _ in 0..<3 { _ = snapshotStore.restore() }
   var snapshotRestoreSamples = [UInt64]()
-  for _ in 0..<20 {
+  for _ in 0..<60 {
     let started = DispatchTime.now().uptimeNanoseconds
     let restored = snapshotStore.restore()
     snapshotRestoreSamples.append((DispatchTime.now().uptimeNanoseconds - started) / 1_000)
@@ -3579,8 +3581,11 @@ func largeUsageReportDecodesAndRendersWithinTheNativeGate() throws {
   renderUsage(model)
   model.usageScale = .day
   for _ in 0..<3 { renderUsage(model) }
+  // Sixty samples keep p95 meaningful on noisy hosted runners: with 20 samples
+  // the two slowest draws decide the gate; with 60 it takes four outliers to
+  // trip the same unchanged 50 ms budget.
   var renderSamples = [UInt64]()
-  for _ in 0..<20 {
+  for _ in 0..<60 {
     let started = DispatchTime.now().uptimeNanoseconds
     renderUsage(model)
     renderSamples.append((DispatchTime.now().uptimeNanoseconds - started) / 1_000)
@@ -3591,6 +3596,8 @@ func largeUsageReportDecodesAndRendersWithinTheNativeGate() throws {
   let cachedProjectionP95 = percentile95(cachedProjectionSamples)
   let snapshotRestoreP95 = percentile95(snapshotRestoreSamples)
   let renderP95 = percentile95(renderSamples)
+  let renderP50 = percentile(renderSamples, 0.50)
+  let renderMax = renderSamples.max() ?? 0
   if nativePerformanceGateEnabled() {
     #expect(decodeP95 < 30_000, "Large usage decoding must stay below 30 ms p95")
     #expect(projectionP95 < 50_000, "A cold Usage selection must stay below 50 ms p95")
@@ -3598,12 +3605,18 @@ func largeUsageReportDecodesAndRendersWithinTheNativeGate() throws {
     #expect(snapshotRestoreP95 < 50_000, "A saved Usage snapshot must restore below 50 ms p95")
     #expect(renderP95 < 50_000, "Large usage rendering must stay below 50 ms p95")
   }
+  // Raw samples and machine metadata make hosted repeatability auditable: a
+  // flat distribution at the budget is a real regression, while a lone tail
+  // spike on a specific runner class is measurement noise.
   print(
     "NATIVE_USAGE_BENCHMARK_JSON "
       + "{\"decode_p95_us\":\(decodeP95),\"projection_p95_us\":\(projectionP95),"
       + "\"cached_projection_p95_us\":\(cachedProjectionP95),\"render_p95_us\":\(renderP95),"
+      + "\"render_p50_us\":\(renderP50),\"render_max_us\":\(renderMax),"
       + "\"snapshot_restore_p95_us\":\(snapshotRestoreP95),"
-      + "\"daily_periods\":365,\"sessions\":\(sessionCount),\"decode_samples\":100,\"render_samples\":20}"
+      + "\"render_samples_us\":\(renderSamples),"
+      + "\"daily_periods\":365,\"sessions\":\(sessionCount),\"decode_samples\":100,\"render_samples\":\(renderSamples.count),"
+      + "\"hardware\":\(benchmarkHardwareJSON())}"
   )
 
   if let screenshotPath = ProcessInfo.processInfo.environment["CODEVETTER_USAGE_SCREENSHOT_PATH"] {
@@ -3906,7 +3919,7 @@ func hundredRowPerformanceReceiptDecodesAndRendersWithinTheNativeGate() throws {
 
   for _ in 0..<3 { renderPerformance(model) }
   var renderSamples = [UInt64]()
-  for _ in 0..<20 {
+  for _ in 0..<60 {
     let started = DispatchTime.now().uptimeNanoseconds
     renderPerformance(model)
     renderSamples.append((DispatchTime.now().uptimeNanoseconds - started) / 1_000)
@@ -3921,7 +3934,9 @@ func hundredRowPerformanceReceiptDecodesAndRendersWithinTheNativeGate() throws {
   print(
     "NATIVE_PERFORMANCE_BENCHMARK_JSON "
       + "{\"decode_p95_us\":\(decodeP95),\"render_p95_us\":\(renderP95),"
-      + "\"observed_rows\":100,\"decode_samples\":100,\"render_samples\":20}"
+      + "\"observed_rows\":100,\"decode_samples\":100,\"render_samples\":\(renderSamples.count),"
+      + "\"render_samples_us\":\(renderSamples),"
+      + "\"hardware\":\(benchmarkHardwareJSON())}"
   )
 
   if let screenshotPath = ProcessInfo.processInfo.environment[
@@ -4200,7 +4215,7 @@ func hundredJourneyTestingReceiptDecodesAndRendersWithinTheNativeGate() throws {
     renderTesting(model)
   }
   var renderSamples = [UInt64]()
-  for _ in 0..<20 {
+  for _ in 0..<60 {
     let started = DispatchTime.now().uptimeNanoseconds
     renderTesting(model)
     renderSamples.append((DispatchTime.now().uptimeNanoseconds - started) / 1_000)
@@ -4215,7 +4230,9 @@ func hundredJourneyTestingReceiptDecodesAndRendersWithinTheNativeGate() throws {
   print(
     "NATIVE_TESTING_BENCHMARK_JSON "
       + "{\"decode_p95_us\":\(decodeP95),\"render_p95_us\":\(renderP95),"
-      + "\"journeys\":100,\"changed_paths\":100,\"decode_samples\":100,\"render_samples\":20}"
+      + "\"journeys\":100,\"changed_paths\":100,\"decode_samples\":100,\"render_samples\":\(renderSamples.count),"
+      + "\"render_samples_us\":\(renderSamples),"
+      + "\"hardware\":\(benchmarkHardwareJSON())}"
   )
 
   if let screenshotPath = ProcessInfo.processInfo.environment[
