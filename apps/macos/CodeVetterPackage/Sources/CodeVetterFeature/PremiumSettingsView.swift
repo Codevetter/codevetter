@@ -190,6 +190,7 @@ struct PremiumSettingsView: View {
         }
         .padding(10)
       }
+      .accessibilityIdentifier("settings-section-rail")
       Rectangle().fill(EvidenceStyle.separator).frame(height: 1)
       VStack(alignment: .leading, spacing: 6) {
         Label("Saved on this Mac", systemImage: "lock.shield.fill")

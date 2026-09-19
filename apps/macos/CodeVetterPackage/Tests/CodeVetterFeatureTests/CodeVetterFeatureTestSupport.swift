@@ -905,6 +905,14 @@ func percentile95(_ values: [UInt64]) -> UInt64 {
   percentile(values, 0.95)
 }
 
+/// Diagnostic only: all acceptance limits remain based on elapsed wall time.
+func benchmarkProcessCPUTimeMicroseconds() -> UInt64 {
+  var usage = rusage()
+  guard getrusage(RUSAGE_SELF, &usage) == 0 else { return 0 }
+  return UInt64(usage.ru_utime.tv_sec + usage.ru_stime.tv_sec) * 1_000_000
+    + UInt64(usage.ru_utime.tv_usec + usage.ru_stime.tv_usec)
+}
+
 /// Machine metadata attached to benchmark receipts so hosted runs can be
 /// compared across runner classes instead of treated as interchangeable.
 func benchmarkHardwareJSON() -> String {
