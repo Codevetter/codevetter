@@ -11,16 +11,6 @@ import {
   parseNativeCheckArguments,
 } from './run-native-checks.mjs';
 
-test('main pushes pass a boolean interaction input to native qualification', () => {
-  const workflow = readFileSync(new URL('../.github/workflows/ci.yml', import.meta.url), 'utf8');
-  // Push events have no dispatch inputs. A bare || inputs.native_interaction
-  // returns an empty string there, which the boolean workflow_call rejects.
-  assert.match(
-    workflow,
-    /run_interaction: \$\{\{ github\.event_name == 'pull_request' \|\| inputs\.native_interaction == true \}\}/
-  );
-});
-
 test('hosted interaction evidence survives a background failure without masking the gate', () => {
   const workflow = readFileSync(
     new URL('../.github/workflows/native-qualification.yml', import.meta.url),

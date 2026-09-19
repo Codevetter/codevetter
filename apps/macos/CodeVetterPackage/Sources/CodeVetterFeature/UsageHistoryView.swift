@@ -69,15 +69,9 @@ struct UsageHistoryView: View {
       }
       GeometryReader { geometry in
         let buckets = history.buckets
-        let visibleSeries = history.visibleSeries
         let maximum = max(buckets.map(\.total).max() ?? 0, 1)
         let step = geometry.size.width / CGFloat(max(buckets.count, 1))
         Canvas { context, size in
-          // Batch disjoint bar segments by series instead of submitting a
-          // separate graphics operation for every period/series pair.
-          var seriesPaths = Array(repeating: Path(), count: visibleSeries.count)
-          var labels: [(String, CGPoint)] = []
-          var selectionOutline: Path?
           for fraction in [0.0, 0.5, 1.0] {
             let y = (size.height - 18) * fraction
             var path = Path()
@@ -89,33 +83,28 @@ struct UsageHistoryView: View {
             let width = max(1, min(42, step - (buckets.count > 60 ? 1 : 5)))
             let x = CGFloat(index) * step + (step - width) / 2
             var y = size.height - 18
-            for (seriesIndex, series) in visibleSeries.enumerated() {
+            for (seriesIndex, series) in history.visibleSeries.enumerated() {
               let height =
                 CGFloat(history.value(in: bucket, series: series) / maximum) * (size.height - 38)
               y -= height
-              seriesPaths[seriesIndex].addRect(
-                CGRect(x: x, y: y, width: width, height: height))
+              context.fill(
+                Path(CGRect(x: x, y: y, width: width, height: height)),
+                with: .color(tone(seriesIndex)))
             }
             if buckets.count <= 12 {
-              labels.append((history.metric.formatted(bucket.total),
-                CGPoint(x: x + width / 2, y: y - 9)))
+              context.draw(
+                Text(history.metric.formatted(bucket.total))
+                  .font(.system(size: 9)).foregroundColor(.secondary),
+                at: CGPoint(x: x + width / 2, y: y - 9))
             }
             if selectedPeriod == bucket.period {
-              selectionOutline = Path(CGRect(
-                x: x - 2, y: y - 2, width: width + 4,
-                height: size.height - 18 - y + 4))
+              context.stroke(
+                Path(
+                  CGRect(
+                    x: x - 2, y: y - 2, width: width + 4,
+                    height: size.height - 18 - y + 4)),
+                with: .color(EvidenceStyle.amberForeground), lineWidth: 1)
             }
-          }
-          for (index, path) in seriesPaths.enumerated() {
-            context.fill(path, with: .color(tone(index)))
-          }
-          // Keep annotations above the opaque fills, including the inner edge
-          // of the selected-period outline.
-          for (label, point) in labels {
-            context.draw(Text(label).font(.system(size: 9)).foregroundColor(.secondary), at: point)
-          }
-          if let selectionOutline {
-            context.stroke(selectionOutline, with: .color(EvidenceStyle.amberForeground), lineWidth: 1)
           }
         }
         .contentShape(Rectangle())
@@ -232,59 +221,25 @@ struct UsageHistoryView: View {
 /// A single subview tree responds to the actual proposal, including the first
 /// offscreen render. Geometry state updates arrive too late for first-frame layout.
 private struct UsageHistoryLayout: Layout {
-  struct Cache {
-    struct Measurement {
-      let horizontal: Bool
-      let chart: CGSize
-      let breakdown: CGSize
-    }
-
-    var measurements: [CGFloat: Measurement] = [:]
-  }
-
-  func makeCache(subviews: Subviews) -> Cache {
-    Cache()
-  }
-
-  func updateCache(_ cache: inout Cache, subviews: Subviews) {
-    cache = Cache()
-  }
-
-  func measurement(
-    for width: CGFloat, subviews: Subviews, cache: inout Cache
-  ) -> Cache.Measurement {
-    if let measurement = cache.measurements[width] {
-      return measurement
-    }
-    let horizontal = width >= 565
-    let chartWidth = horizontal ? width - 246 : width
-    let breakdownWidth = horizontal ? 205 : width
-    let measurement = Cache.Measurement(
-      horizontal: horizontal,
-      chart: subviews[0].sizeThatFits(.init(width: chartWidth, height: nil)),
-      breakdown: subviews[2].sizeThatFits(.init(width: breakdownWidth, height: nil)))
-    cache.measurements[width] = measurement
-    return measurement
-  }
-
-  func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout Cache) -> CGSize {
+  func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
     let width = proposal.width ?? 565
-    let measurement = measurement(for: width, subviews: subviews, cache: &cache)
-    return CGSize(width: width, height: measurement.horizontal
-      ? max(measurement.chart.height, measurement.breakdown.height)
-      : measurement.chart.height + 16 + measurement.breakdown.height)
+    let horizontal = width >= 565
+    let chart = subviews[0].sizeThatFits(.init(width: horizontal ? width - 246 : width, height: nil))
+    let breakdown = subviews[2].sizeThatFits(.init(width: horizontal ? 205 : width, height: nil))
+    return CGSize(width: width, height: horizontal ? max(chart.height, breakdown.height)
+      : chart.height + 16 + breakdown.height)
   }
 
-  func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout Cache) {
-    let measurement = measurement(for: bounds.width, subviews: subviews, cache: &cache)
-    let chartWidth = measurement.horizontal ? bounds.width - 246 : bounds.width
+  func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+    let horizontal = bounds.width >= 565
+    let chartWidth = horizontal ? bounds.width - 246 : bounds.width
+    let chart = subviews[0].sizeThatFits(.init(width: chartWidth, height: nil))
     subviews[0].place(at: bounds.origin, anchor: .topLeading,
-      proposal: .init(width: chartWidth, height: measurement.chart.height))
+      proposal: .init(width: chartWidth, height: chart.height))
     subviews[1].place(at: CGPoint(x: bounds.minX + chartWidth + 20, y: bounds.minY),
-      anchor: .topLeading, proposal: .init(width: measurement.horizontal ? 1 : 0,
-        height: measurement.horizontal ? bounds.height : 0))
-    subviews[2].place(at: CGPoint(x: measurement.horizontal ? bounds.minX + chartWidth + 41 : bounds.minX,
-      y: measurement.horizontal ? bounds.minY : bounds.minY + measurement.chart.height + 16), anchor: .topLeading,
-      proposal: .init(width: measurement.horizontal ? 205 : bounds.width, height: nil))
+      anchor: .topLeading, proposal: .init(width: horizontal ? 1 : 0, height: horizontal ? bounds.height : 0))
+    subviews[2].place(at: CGPoint(x: horizontal ? bounds.minX + chartWidth + 41 : bounds.minX,
+      y: horizontal ? bounds.minY : bounds.minY + chart.height + 16), anchor: .topLeading,
+      proposal: .init(width: horizontal ? 205 : bounds.width, height: nil))
   }
 }

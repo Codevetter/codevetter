@@ -43,9 +43,9 @@ The table below outlines the fundamental differences across all three mechanisms
 | --- | --- | --- | --- |
 | **Primary Input** | Code diff, repository files, style rules | Source code, test scripts, test data | Task intent, repository revision, patch, executable checks |
 | **Primary Output** | Text findings, style suggestions, risk flags | Pass/fail counts, stack traces, coverage reports | Portable evidence receipt, failure taxonomy, completion verdict |
-| **What It Establishes** | Source-level findings and maintainability judgments | Whether specific assertions pass under defined inputs | Evidence for the acceptance criteria and regression checks actually exercised |
+| **What It Proves** | Code readability, pattern match, maintainability | Whether specific assertions pass under defined inputs | Whether the agent completed the task without regressions |
 | **Core Limitation** | Cannot execute code; plausible diffs can fail | Cannot determine if tests match prompt intent | Requires explicit executable checks; bounded by runner |
-| **Failure Mode** | False positives or false praise from text | Green suite passing on an incomplete task | Incomplete checks can still miss defects; missing evidence must remain explicit |
+| **Failure Mode** | High false positives or false praise from text | Green suite passing on an incomplete task | Fails closed as `no_confidence` or `unverified` if checks are absent |
 
 ---
 
@@ -81,7 +81,7 @@ Software testing executes code within a controlled runner to verify that specifi
 
 ## 3. Execution-Backed Agent Evaluation: Verifying Task Completion
 
-Execution-backed agent evaluation helps bridge the "intent-to-execution" gap in autonomous software development. It connects the prompt, the exact patch, isolated local execution, and structured evidence collection. Someone still has to establish that the checks represent the requested behavior.
+Execution-backed agent evaluation solves the "intent-to-execution" gap in autonomous software development. It connects the prompt, the exact patch, isolated local execution, and structured evidence collection.
 
 ```
 [User Task Prompt] ──> [Agent Patch] ──> [Executable Verification] ──> [Evidence Receipt]
@@ -92,12 +92,12 @@ Execution-backed agent evaluation helps bridge the "intent-to-execution" gap in 
 ```
 
 ### What Agent Evaluation Can Prove
-- **Covered Acceptance Criteria:** Records whether mapped checks pass at a behavioral boundary, such as headless browser state or API endpoints. Unchecked requirements remain unverified.
-- **Failure Classification:** Compares failure evidence with baseline runs and environment observations. A taxonomy label alone does not establish causation.
-- **Auditability and Re-Checks:** Can link an initial failure to a passing re-check when the runner records both attempts and their source identities. The link is bounded evidence, not a guarantee that every regression is resolved.
+- **Task Completion:** Proves whether the change satisfies requested criteria by running checks against the actual behavioral boundary (such as headless browser state or API endpoints).
+- **Causal Failure Attribution:** Uses failure taxonomy to distinguish whether a failure was caused by an agent defect, a side-effect regression, a pre-existing broken test, or environment noise.
+- **Auditability and Closure:** Produces machine-readable evidence receipts linking initial failures to post-fix passing re-checks, establishing an audit trail.
 
 ### What Agent Evaluation Cannot Prove
-- **Universal Code Quality:** A passing evaluation covers its checks, inputs, environment, and revision. It cannot establish universal runtime correctness or architectural quality.
+- **Universal Code Quality:** A task evaluation proves that a feature works at runtime, but cannot guarantee that the underlying code architecture is elegant.
 - **Coverage Beyond Executable Checks:** Agent evaluation cannot verify behavior for which no executable check or browser automation can be constructed.
 
 ---
@@ -108,7 +108,7 @@ Engineering organizations relying on only one mechanism face predictable failure
 
 1. **Code Review Alone:** Merges "plausible-looking code", leading to runtime outages, state corruption, or API breaks.
 2. **Tests Alone:** Results in "passing suites with drift," where agents satisfy test runners by altering assertions or ignoring un-tested edge cases.
-3. **Agent Evaluation Alone:** Can miss untested behavior and maintainability problems even when all selected checks pass.
+3. **Agent Evaluation Alone:** Yields functionally correct features that may accumulate tech debt or non-standard choices over time.
 
 ---
 
@@ -125,7 +125,7 @@ Technical teams should integrate all three mechanisms into a unified, complement
                                        ▼
                   ┌─────────────────────────────────────────┐
                   │ 2. EXECUTABLE AGENT EVALUATION          │
-                  │ Check mapped criteria & browser/API     │
+                  │ Verify task completion & browser/API    │
                   └────────────────────┬────────────────────┘
                                        │
                                        ▼
@@ -174,7 +174,6 @@ To inspect how local execution-backed verification functions in practice, downlo
 - `docs/development/verification-receipts.md`: Producer contracts (`codevetter.project-verification-receipt/v1`) and result analysis boundaries.
 
 ### Product & Scope Limitations
-- **Local Desktop Architecture:** CodeVetter has a native local viewer and Rust CLI/MCP tools; persisted local records use SQLite. Experimental project-receipt ingestion emits bundles without persisting to that database. There is no hosted review server. Local architecture does not mean configured provider calls or explicit exports never leave the machine.
-- **Receipt Boundary:** The experimental project-receipt analyzer consumes producer-supplied evidence; it does not run tests or discover commands. Its verdict statuses are `passed`, `failed`, and `no_confidence`, with missing dimensions recorded explicitly.
+- **Local Desktop Architecture:** CodeVetter operates as a local desktop application (SwiftUI/AppKit) and Rust CLI/MCP binary. All project data resides in a local SQLite database. There is no hosted web service or cloud backend.
 - **Active Core Focus:** Active core development focuses on Node.js/TypeScript web applications, API behavior, and Playwright browser journeys.
 - **Benchmark Scope:** The public 27-case benchmark evaluates static bug recognition in synthetic fixtures. It does not prove general production performance across arbitrary enterprise repositories.

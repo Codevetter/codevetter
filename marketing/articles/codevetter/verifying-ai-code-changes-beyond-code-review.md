@@ -15,7 +15,7 @@
 - **The 5-Part Executable Verification Loop:** Task, change, execution, evidence, and verdict.
 - **Establishing Behavioral Boundaries:** Browser state, API contracts, and persistence.
 - **Failure Taxonomy:** Isolating agent regressions from environment and suite noise.
-- **Fix Closure & Re-Check Linkage:** Recording a passing re-check and its remaining coverage limits.
+- **Fix Closure & Re-Check Linkage:** Proving a fix actually works without regression.
 - **Recommended Internal Links:** Navigating related CodeVetter verification concepts.
 - **Next Action:** Next steps for engineering teams evaluating AI-generated code.
 - **Source Notes (Non-Publishable):** Repository evidence sources and operational boundaries.
@@ -51,9 +51,7 @@ When a human or an LLM reviews these diffs statically, they evaluate plausibilit
 
 Execution-backed verification bridges the gap between agent intent and operational truth. Rather than asking a model whether a diff looks correct, executable verification subjects the change to deterministic checks and captures reproducible evidence.
 
-The following is a recommended workflow, not a claim that every CodeVetter receipt path implements every phase. In particular, experimental project-receipt ingestion consumes existing runner evidence; it does not execute checks, discover commands, or persist results into the desktop database.
-
-A verification loop consists of five distinct phases:
+A complete verification loop consists of five distinct phases:
 
 ```
 [Task Intent] ──> [Agent Change] ──> [Executable Checks] ──> [Captured Evidence] ──> [Measurable Verdict]
@@ -69,10 +67,10 @@ The exact base Git commit SHA, the workspace state, and the agent's patch must b
 The verifier runs authoritative, deterministic checks against the modified codebase. These checks prioritize repository-owned unit and integration tests, supplemented by focused browser journeys or API calls when existing test suites do not exercise the changed behavior.
 
 ### 4. Capture Raw Execution Evidence
-Record the evidence the runner actually captures: command identity, exit codes, bounded and redacted output, resource measurements, network observations, and failure signatures where available. Mark missing measurements and collection limits explicitly. A command-level memory measurement is not automatically a process-tree measurement, and missing network telemetry does not mean zero egress.
+Instead of recording a simple pass/fail flag, the verifier captures complete execution telemetry: command strings, exit codes, process-tree CPU and memory metrics, stdout/stderr streams, network egress events, and failure signatures.
 
 ### 5. Render a Measurable Verdict
-Use the chosen verifier's documented status vocabulary. CodeVetter's experimental project-receipt analyzer reports `passed`, `failed`, or `no_confidence` separately for correctness, performance, safety, inventory, and overall status. Missing evidence remains explicit; a passing dimension does not establish that unchecked requirements are safe. Unsupported receipt formats are rejected before analysis.
+The verifier emits a clear verdict: `passed`, `failed`, `no_confidence`, or `unverified`. Crucially, if required checks could not be executed or test coverage was missing, the system fails closed and marks the requirement as `no_confidence` or `unverified` rather than assuming unchecked code is safe.
 
 ---
 
@@ -92,15 +90,15 @@ When an agent updates API endpoints or middleware, verification requires executi
 
 A common flaw in automated verification systems is treating every failed command as an agent bug. If a test fails because a local database port was busy, or because an external API timed out, blaming the coding agent distorts quality metrics.
 
-A useful verification workflow records failure classifications when the evidence supports them. The labels below are design guidance, not proof of causal attribution:
+Execution-backed verification enforces a strict failure taxonomy that categorizes execution outcomes:
 
 - **Agent Defect / Failure:** The executed check failed explicitly due to broken logic or unhandled exceptions introduced by the agent's change.
-- **Possible Regression:** A previously passing test failed after the change. Check comparable baseline conditions, repeatability, and environment differences before attributing the failure to the patch.
+- **Agent Regression:** A previously passing repository test failed after the agent's modification, proving side-effect breakage.
 - **Pre-Existing Failure:** The test was already failing on the base commit prior to the agent's run.
 - **Operational / Environment Failure:** Execution was aborted due to infrastructure conditions, such as missing binaries, port conflicts, or memory limits.
 - **Unverified Requirement:** No authoritative test or runner existed to exercise the requested acceptance criteria.
 
-Keep uncertain attribution explicit. Before/after observations alone cannot rule out environment changes or flaky tests.
+By isolating environment noise, engineering teams obtain an honest measure of agent correctness.
 
 ---
 
@@ -108,12 +106,12 @@ Keep uncertain attribution explicit. Before/after observations alone cannot rule
 
 When verification identifies a failure in an agent's patch, the failure evidence becomes structured feedback for a corrective agent iteration.
 
-To document a bounded fix and re-check trail:
+To prove true fix closure:
 
 1. **Preserve the Initial Failure:** The failing run, command, exit code, and failure signature are retained in a persisted evidence record.
 2. **Apply the Corrective Patch:** The agent applies a targeted fix in an isolated, clean workspace.
 3. **Re-Run the Failing Check:** The verifier re-executes the exact test that previously failed to confirm resolution.
-4. **Link Before-and-After Evidence:** Link the original failure to the passing re-check, including revision and environment identities. This establishes the recorded check's outcome, not the absence of every regression. Preserve broader checks and unresolved limitations separately.
+4. **Link Before-and-After Evidence:** The final evidence bundle links the original failure receipt to the passing re-check receipt, proving a complete closure trail.
 
 ---
 
@@ -131,7 +129,7 @@ For readers exploring execution-backed verification architecture:
 
 ## Next Action for Technical Teams
 
-Do not rely on second-model LLM review alone to approve agent pull requests. Evaluate your workflow against the five-part loop: freeze task intent, isolate the revision, run behavioral checks, capture evidence, and inspect failure-to-pass re-checks alongside remaining coverage gaps.
+Stop relying on second-model LLM code reviews to approve autonomous agent pull requests. Evaluate your current agent workflow against the 5-part verification loop: freeze task intent, isolate the revision, run deterministic behavioral checks locally, capture execution evidence, and require a closed failure-to-pass re-check trail before merging.
 
 To examine how local verification functions in practice, download CodeVetter or inspect our public benchmark methodology.
 

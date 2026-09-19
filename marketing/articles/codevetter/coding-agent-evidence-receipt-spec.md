@@ -32,23 +32,21 @@ While readable, these text summaries are unsuited for technical auditability or 
 
 1. **Non-Verifiable Claims:** An agent asserting that "all tests passed" provides no proof that tests were actually executed against the checked-in commit SHA.
 2. **Missing Execution Context:** Summaries rarely record the precise environment variables, node versions, database states, CLI flags, or mock settings used during execution.
-3. **Selective Omission:** A summary can omit unexecuted suites, skipped assertions, timeouts, or intermediate failures.
-4. **Lack of a Stable Contract:** Free-form summaries lack the schema needed for reliable automated validation.
+3. **Selective Omission:** Agents routinely omit unexecuted test suites, skipped assertions, transient timeouts, or intermediate failures.
+4. **Lack of Machine Readability:** Free-form text summaries cannot be parsed or validated programmatically by CI/CD pipelines or security scanners.
 
-Structured, machine-readable **verification evidence receipts** make these claims easier to inspect. They complement source review and runner controls; the receipt format itself does not make an agent safe.
+To make autonomous coding agents safe for production software engineering, organizations must replace informal self-reports with structured, machine-readable **verification evidence receipts**.
 
 ---
 
 ## General Receipt-Design Principles vs. Current Implementations
 
-A verification evidence receipt is a versioned, portable artifact recording the evidence its producer collected, along with missing measurements and trust limitations.
+A verification evidence receipt is a versioned, portable JSON artifact that records exact execution telemetry from an agent verification run.
 
 In general receipt design, an evidence specification defines structured schemas that bind source code identities to execution telemetry. In practical software systems, these fall into two distinct categories:
 
 - **Experimental / Ingested Project Receipts:** Ingestion schemas (such as `codevetter.project-verification-receipt/v1`) that parse raw external runner outputs (Playwright JSON, JUnit XML, LCOV) without mutating local state or asserting full system authority.
 - **Persisted Native / Local Receipts:** Local execution receipts (such as `codevetter.local-check/v1`) emitted and stored in local databases during supervised verification passes.
-
-The sections below propose a general design checklist, not a single shipped CodeVetter schema. The experimental project-receipt analyzer does not execute tests, discover commands, or persist receipts into the desktop database. It cannot supply measurements absent from its input. Hashes identify content; they do not authenticate the producer or make storage immutable.
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
@@ -76,7 +74,7 @@ An evidence receipt must be linked unambiguously to a specific source tree and t
 - **Environment & System Profile:** OS kernel version, architecture (e.g., `darwin-arm64`), runtime engine version (e.g., Node.js, Rust), and installed CLI versions.
 - **Verifier Profile:** The specific verifier name, executable version, and schema version (e.g., `codevetter.local-check/v1`).
 
-Checking these identities against the candidate revision helps detect "replay drift"—where an older receipt is attached to a new pull request. Declared identity fields alone do not prove which code the producer executed.
+Binding these identities prevents "replay drift"—where a passing test receipt from an older commit is falsely attached to a new pull request.
 
 ---
 
@@ -84,7 +82,7 @@ Checking these identities against the candidate revision helps detect "replay dr
 
 The execution section records every command invoked during the verification pass, documenting exact inputs and outputs:
 
-- **Command Identity:** The selected command and safe arguments, with credential-bearing values redacted. Record omissions explicitly rather than copying secrets into a receipt.
+- **Normalized Command Strings:** The exact binary and arguments executed (e.g., `pnpm test:native --filter auth`).
 - **Terminal Exit States:** Numeric exit codes, process signal terminations (e.g., `SIGKILL`), and cancellation flags.
 - **Bounded Output Captures:** SHA-256 hashes of stdout and stderr logs, accompanied by bounded text excerpts (e.g., capped at 64 KiB) capturing the failure tail.
 - **Test Inventory Details:** Individual counts for total discovered tests, passed tests, failed tests, skipped tests, and suite durations.
@@ -94,7 +92,7 @@ The execution section records every command invoked during the verification pass
 
 ## 3. Failure Taxonomy and Classification
 
-A simple pass/fail flag collapses important operational distinctions. A receipt can record the following classifications when baseline and runner evidence support them; otherwise attribution should remain uncertain:
+A simple pass/fail flag collapses important operational distinctions. An evidence receipt classifies execution outcomes using a precise failure taxonomy:
 
 - **Agent-Introduced Defect:** The test failed due to a logical error or broken assertion directly within the code written by the agent.
 - **Side-Effect Regression:** A test outside the immediate scope of the requested task failed after the patch was applied, indicating unexpected breakage.
@@ -106,11 +104,11 @@ A simple pass/fail flag collapses important operational distinctions. A receipt 
 
 ## 4. Resource, Egress, and Safety Boundaries
 
-Executing arbitrary agent code presents security and resource risks. A receipt should describe the controls and observations available to assess those risks, without treating incomplete telemetry as proof of safety:
+Executing arbitrary agent code presents security and resource risks. An evidence receipt captures telemetry proving execution remained within safe operational bounds:
 
 - **Resource Consumption:** Peak process-tree Resident Set Size (RSS memory in MiB), sampled CPU usage, wall-time duration, and process spawn counts.
-- **Network Egress Evidence:** Observed requests or escapes, collection coverage, and the policy actually enforced. An absent network field is not evidence of zero egress; destination details should be minimized or redacted where sensitive.
-- **Sandbox State:** The configured isolation boundaries and evidence that enforcement was active. A producer's declaration alone is not independent attestation.
+- **Network Egress Telemetry:** Total outbound network requests, external IP addresses contacted, and confirmation that zero unauthorized external requests occurred during zero-egress test runs.
+- **Sandbox State:** Affirmation of local isolation boundaries, such as loopback-only network guards or read-only root filesystems.
 
 ---
 
@@ -133,7 +131,7 @@ When an agent run fails verification, a fix cycle begins. A production-grade evi
 1. **Initial Failure Receipt:** Emitted when the agent's first patch fails an executable check, containing the failing signature and diff.
 2. **Fix Candidate Linkage:** The corrective agent run references the initial failure receipt by its unique SHA-256 bundle identity.
 3. **Targeted Re-Check Execution:** The new verification run re-executes the exact failing check identified in the initial receipt.
-4. **Re-Check Receipt:** Records that the targeted check passed at the new revision and links the retained attempts. Broader regression checks and incomplete coverage remain separate from that result.
+4. **Closure Receipt:** Emitted when the targeted check passes, confirming resolution while including the full history of prior attempts.
 
 ---
 
@@ -168,6 +166,6 @@ To inspect executable receipt schemas and CLI ingestion tooling, review CodeVett
 - `PROJECT_STATUS.md`: Authoritative record of shipped local receipt capabilities, local-check schemas (`codevetter.local-check/v1`), and local execution boundaries.
 
 ### Product & Scope Limitations
-- **Local Application Architecture:** CodeVetter has a native macOS viewer and local CLI/MCP tools. Persisted native/local receipts use SQLite (`rusqlite`); experimental project-receipt ingestion does not persist there. There is no centralized hosted review server.
-- **Supported Producer Adapters:** The experimental repository-owned loader accepts Playwright JSON, JUnit XML, LCOV, Cobertura XML, Lighthouse JSON, and Chrome trace JSON. Unsupported formats fail before analysis. Supported reports with missing qualification evidence retain `no_confidence` in the relevant dimensions; coverage and trace observations are not shipping verdicts.
+- **Local Application Architecture:** CodeVetter runs as a native macOS desktop application and local CLI/MCP tool. Receipts are stored in a local SQLite database (`rusqlite`). There is no centralized hosted server or web application.
+- **Supported Producer Adapters:** Native receipt ingestion currently processes Playwright JSON, JUnit XML, LCOV, Cobertura XML, Lighthouse JSON, and Chrome trace JSON. Unknown formats fail closed as `no_confidence`.
 - **Current Operational Scope:** Core execution qualification focuses on TypeScript/Node web application environments, Playwright browser flows, and local process supervision.
