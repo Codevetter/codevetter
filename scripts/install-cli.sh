@@ -21,7 +21,12 @@ for command in codevetter codevetter-mcp; do
   if [[ -e "$link" || -L "$link" ]]; then
     [[ -L "$link" ]] || fail "Existing command is not installer-owned: $link"
     target="$(readlink "$link")"
-    [[ "$target" = "$store/"*/CodeVetter.app/Contents/MacOS/"$command" ]] \
+    relative="${target#"$store/"}"
+    installed_version="${relative%%/*}"
+    [[ "$installed_version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] \
+      || fail "Existing symlink is not installer-owned: $link"
+    [[ "$target" = "$store/$installed_version/$command" \
+      || "$target" = "$store/$installed_version/CodeVetter.app/Contents/MacOS/$command" ]] \
       || fail "Existing symlink is not installer-owned: $link"
   fi
 done
@@ -68,8 +73,13 @@ mkdir "$destination"
 mv "$app" "$destination/CodeVetter.app"
 for command in codevetter codevetter-mcp; do
   link="$prefix/bin/$command"
+  # macOS current_exe preserves a symlink path. Execute the real bundle path
+  # so runtime resources and sibling MCP paths remain discoverable.
+  printf '#!/bin/bash\nexec %q "$@"\n' \
+    "$destination/CodeVetter.app/Contents/MacOS/$command" > "$destination/$command"
+  chmod 755 "$destination/$command"
   # Only links validated above may be replaced. Older version payloads stay intact.
-  ln -s "$destination/CodeVetter.app/Contents/MacOS/$command" "$stage/$command"
+  ln -s "$destination/$command" "$stage/$command"
   mv -f "$stage/$command" "$link"
 done
 printf 'Installed CodeVetter %s.\nCommands: %s/bin/codevetter and codevetter-mcp\n' "$version" "$prefix"
