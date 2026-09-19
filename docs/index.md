@@ -20,6 +20,7 @@ is only the presentation and search layer.
 
 - [overview.md](./product/overview.md) — what CodeVetter is, durable scope, capability matrix, strategy.
 - [capabilities.md](./product/capabilities.md) — UI, CLI, MCP, underlying-tool, and future-capability glossary.
+- [mcp-setup.md](./product/mcp-setup.md) — verified CLI installation and repository-scoped MCP onboarding.
 - [surfaces.md](./product/surfaces.md) — nav tabs, URL-only routes, removed surfaces.
 - [synthetic-user-qa.md](./product/synthetic-user-qa.md) — runtime proof layer for agent-written code.
 - [trex-change-preview.md](./product/trex-change-preview.md) — exact PR or commit-range verification against an existing preview.
