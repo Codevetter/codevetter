@@ -26,12 +26,7 @@ public enum UsageDimension: String, CaseIterable, Identifiable, Sendable {
 
 /// Unified history-card metric. Cost is locally estimated from pinned
 /// pricing, never subscription spend.
-public enum UsageHistoryMetric: String, CaseIterable, Identifiable, Sendable {
-  case tokens = "Tokens"
-  case cost = "Cost"
-
-  public var id: String { rawValue }
-}
+public typealias UsageHistoryMetric = UsageMetric
 
 public enum UsageWindow: String, CaseIterable, Identifiable, Sendable {
   case oneWeek = "1w"
@@ -185,6 +180,76 @@ public struct LocalUsageSession: Codable, Identifiable, Sendable {
     case sessionID = "session_id"
     case lastActivity = "last_activity"
     case reasoningOutputTokens = "reasoning_output_tokens"
+  }
+}
+
+// Reports contain thousands of totals objects. Decode their primitive fields
+// directly from nested containers instead of boxing another Decoder per object.
+// The primitive decoders and required/optional wire fields remain unchanged.
+extension LocalUsageTotals {
+  fileprivate init(container: KeyedDecodingContainer<CodingKeys>) throws {
+    self.init(
+      inputTokens: try container.decode(UInt64.self, forKey: .inputTokens),
+      cacheCreationTokens: try container.decode(UInt64.self, forKey: .cacheCreationTokens),
+      cacheReadTokens: try container.decode(UInt64.self, forKey: .cacheReadTokens),
+      outputTokens: try container.decode(UInt64.self, forKey: .outputTokens),
+      totalTokens: try container.decode(UInt64.self, forKey: .totalTokens),
+      costUSD: try container.decode(Double.self, forKey: .costUSD))
+  }
+}
+
+extension LocalUsageModel {
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: CodingKeys.self)
+    model = try c.decode(String.self, forKey: .model)
+    totals = try LocalUsageTotals(container: c.nestedContainer(keyedBy: LocalUsageTotals.CodingKeys.self, forKey: .totals))
+    fallback = try c.decode(Bool.self, forKey: .fallback)
+    priced = try c.decode(Bool.self, forKey: .priced)
+  }
+}
+
+extension LocalUsageAgent {
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: CodingKeys.self)
+    agent = try c.decode(String.self, forKey: .agent)
+    totals = try LocalUsageTotals(container: c.nestedContainer(keyedBy: LocalUsageTotals.CodingKeys.self, forKey: .totals))
+    models = try c.decode([LocalUsageModel].self, forKey: .models)
+  }
+}
+
+extension LocalUsagePeriod {
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: CodingKeys.self)
+    period = try c.decode(String.self, forKey: .period)
+    totals = try LocalUsageTotals(container: c.nestedContainer(keyedBy: LocalUsageTotals.CodingKeys.self, forKey: .totals))
+    agents = try c.decode([LocalUsageAgent].self, forKey: .agents)
+    models = try c.decode([LocalUsageModel].self, forKey: .models)
+    projects = try c.decodeIfPresent([LocalUsageProject].self, forKey: .projects)
+  }
+}
+
+extension LocalUsageProject {
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: CodingKeys.self)
+    project = try c.decode(String.self, forKey: .project)
+    agent = try c.decode(String.self, forKey: .agent)
+    totals = try LocalUsageTotals(container: c.nestedContainer(keyedBy: LocalUsageTotals.CodingKeys.self, forKey: .totals))
+  }
+}
+
+extension LocalUsageSession {
+  public init(from decoder: any Decoder) throws {
+    try self.init(container: decoder.container(keyedBy: CodingKeys.self))
+  }
+
+  fileprivate init(container c: KeyedDecodingContainer<CodingKeys>) throws {
+    sessionID = try c.decode(String.self, forKey: .sessionID)
+    agent = try c.decode(String.self, forKey: .agent)
+    lastActivity = try c.decodeIfPresent(String.self, forKey: .lastActivity)
+    project = try c.decodeIfPresent(String.self, forKey: .project)
+    reasoningOutputTokens = try c.decode(UInt64.self, forKey: .reasoningOutputTokens)
+    totals = try LocalUsageTotals(container: c.nestedContainer(keyedBy: LocalUsageTotals.CodingKeys.self, forKey: .totals))
+    models = try c.decode([LocalUsageModel].self, forKey: .models)
   }
 }
 
@@ -385,6 +450,29 @@ public struct LocalUsageReport: Codable, Sendable {
       guard let activity = usageTimestamp(raw) else { return false }
       return activity >= cutoff && activity <= referenceDate
     }
+  }
+}
+
+extension LocalUsageReport {
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: CodingKeys.self)
+    status = try c.decode(LocalUsageStatus.self, forKey: .status)
+    stale = try c.decode(Bool.self, forKey: .stale)
+    error = try c.decodeIfPresent(LocalUsageFailure.self, forKey: .error)
+    provenance = try c.decode(LocalUsageProvenance.self, forKey: .provenance)
+    daily = try c.decode([LocalUsagePeriod].self, forKey: .daily)
+    weekly = try c.decode([LocalUsagePeriod].self, forKey: .weekly)
+    monthly = try c.decode([LocalUsagePeriod].self, forKey: .monthly)
+    var items = try c.nestedUnkeyedContainer(forKey: .sessions)
+    var decoded = [LocalUsageSession]()
+    decoded.reserveCapacity(items.count ?? 0)
+    while !items.isAtEnd {
+      decoded.append(try LocalUsageSession(
+        container: items.nestedContainer(keyedBy: LocalUsageSession.CodingKeys.self)))
+    }
+    sessions = decoded
+    totals = try LocalUsageTotals(container: c.nestedContainer(keyedBy: LocalUsageTotals.CodingKeys.self, forKey: .totals))
+    devin = try c.decodeIfPresent(DevinUsageSummary.self, forKey: .devin)
   }
 }
 

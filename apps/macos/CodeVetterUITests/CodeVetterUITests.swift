@@ -245,21 +245,24 @@ final class CodeVetterUITests: XCTestCase {
       XCTAssertTrue(app.buttons[section].exists, "Missing settings section: \(section)")
     }
 
-    let mcpSection = app.buttons["Agent MCP"]
-    mcpSection.click()
-    assertSelected(mcpSection)
+    selectSettingsSection("mcp", in: app)
     XCTAssertTrue(app.buttons["Refresh mcp settings"].exists)
 
-    let usageSection = app.buttons["settings-section-usage"]
-    usageSection.click()
-    XCTAssertTrue(app.buttons["Refresh usage settings"].exists)
+    selectSettingsSection("usage", in: app)
+    XCTAssertTrue(app.buttons["Refresh usage settings"].waitForExistence(timeout: 5))
 
-    let rubricsSection = app.buttons["settings-section-rubrics"]
-    rubricsSection.click()
+    selectSettingsSection("rubrics", in: app)
     XCTAssertTrue(
       app.descendants(matching: .any)["rubric-settings-workspace"].waitForExistence(timeout: 5),
       "Rubrics workspace did not open"
     )
+
+    // Exercise both ends of the rail after content changes, not just rows that
+    // happen to be visible at launch. Selection must follow one real click.
+    selectSettingsSection("about", in: app)
+    XCTAssertTrue(app.buttons["Refresh about settings"].exists)
+    selectSettingsSection("general", in: app)
+    XCTAssertTrue(app.buttons["Refresh general settings"].exists)
   }
 
   @MainActor
@@ -291,6 +294,56 @@ final class CodeVetterUITests: XCTestCase {
     measure(metrics: [XCTApplicationLaunchMetric(waitUntilResponsive: true)]) {
       XCUIApplication().launch()
     }
+  }
+
+  @MainActor
+  private func selectSettingsSection(
+    _ section: String,
+    in app: XCUIApplication,
+    file: StaticString = #filePath,
+    line: UInt = #line
+  ) {
+    let rail = app.scrollViews["settings-section-rail"]
+    let button = app.buttons["settings-section-\(section)"]
+    guard rail.waitForExistence(timeout: 2), button.waitForExistence(timeout: 2) else {
+      XCTFail("Missing settings rail or section: \(section)", file: file, line: line)
+      return
+    }
+
+    // A row above this viewport can still have a screen coordinate inside the
+    // window header. Hosted XCTest clicked that point without auto-scrolling.
+    // Use real, bounded rail scrolling before a single click; never force state
+    // or retry a click that did not select its target.
+    for _ in 0..<8 {
+      let viewport = rail.frame
+      let target = button.frame
+      guard !viewport.isEmpty, !target.isEmpty else { break }
+      if viewport.contains(target) { break }
+      let distance = max(50, viewport.height * 0.7)
+      if target.minY < viewport.minY {
+        rail.scroll(byDeltaX: 0, deltaY: distance)
+      } else if target.maxY > viewport.maxY {
+        rail.scroll(byDeltaX: 0, deltaY: -distance)
+      } else {
+        break
+      }
+    }
+    guard !button.frame.isEmpty, rail.frame.contains(button.frame), button.isHittable else {
+      XCTFail(
+        "Settings section \(section) is not visible/hittable: button=\(button.frame), rail=\(rail.frame)",
+        file: file, line: line)
+      return
+    }
+    print("SETTINGS_RAIL_CLICK section=\(section) button=\(button.frame) rail=\(rail.frame)")
+    button.click()
+    assertSelected(button, file: file, line: line)
+    XCTAssertTrue(button.isHittable, "Selected section is not hittable: \(section)", file: file, line: line)
+    XCTAssertTrue(
+      !button.frame.isEmpty && rail.frame.intersects(button.frame),
+      "Selected section \(section) remains clipped: button=\(button.frame), rail=\(rail.frame)",
+      file: file, line: line
+    )
+    print("SETTINGS_RAIL_SELECTED section=\(section) button=\(button.frame) rail=\(rail.frame)")
   }
 
   @MainActor

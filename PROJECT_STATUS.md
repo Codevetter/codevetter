@@ -37,6 +37,14 @@ separately approved safety design justify renewed investment.
 
 ## Current verification repair
 
+- #296: reconcile the overlapping Usage implementations after the main-branch
+  merge. A single metric and grouping state now drives the approved bounded
+  Canvas history and exact-value breakdown. Period-level attribution and cache
+  reads are retained; whole-session totals are not substituted for daily
+  history. Native qualification now runs on main pushes as well as PRs so a
+  green Linux-only run cannot conceal a broken native merge. Qualification is
+  in progress; no new release is implied.
+
 - **v1.14.1 candidate:** owner-approved Usage cards/history, Review branch/base
   controls, and Testing/Performance/Runs/Settings coherence repairs are ready
   for hosted qualification. Local checks pass: 118 Swift tests, 15 navigator
