@@ -252,7 +252,8 @@ final class CodeVetterUITests: XCTestCase {
 
     let usageSection = app.buttons["settings-section-usage"]
     usageSection.click()
-    XCTAssertTrue(app.buttons["Refresh usage settings"].exists)
+    assertSelected(usageSection)
+    XCTAssertTrue(app.buttons["Refresh usage settings"].waitForExistence(timeout: 5))
 
     let rubricsSection = app.buttons["settings-section-rubrics"]
     rubricsSection.click()
