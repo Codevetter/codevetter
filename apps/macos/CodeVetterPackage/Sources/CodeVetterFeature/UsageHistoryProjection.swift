@@ -54,6 +54,9 @@ struct UsageHistoryBucket: Identifiable, Sendable {
 struct UsageHistoryProjection: Sendable {
   let series: [UsageHistorySeries]
   let buckets: [UsageHistoryBucket]
+  /// Values aligned with `buckets` and `visibleSeries` so the Canvas renderer
+  /// does not repeat dictionary aggregation while drawing the same projection.
+  let chartValues: [[Double]]
   let total: Double
   let unattributed: Double
   let grouping: UsageGrouping
@@ -102,10 +105,13 @@ struct UsageHistoryProjection: Sendable {
     }
     total = totals.values.reduce(0, +)
     unattributed = totals[Self.unknown] ?? 0
-    series = totals.map {
-      UsageHistorySeries(id: $0.key, label: labels[$0.key] ?? $0.key, value: $0.value)
+    var sortedSeries = [UsageHistorySeries]()
+    sortedSeries.reserveCapacity(totals.count)
+    for (id, value) in totals {
+      sortedSeries.append(UsageHistorySeries(id: id, label: labels[id] ?? id, value: value))
     }
-    .sorted { $0.value == $1.value ? $0.id < $1.id : $0.value > $1.value }
+    sortedSeries.sort { $0.value == $1.value ? $0.id < $1.id : $0.value > $1.value }
+    series = sortedSeries
     var points = grouped.keys.sorted().map { UsageHistoryBucket(period: $0, values: grouped[$0]!) }
     // Keep all totals while bounding render work, even for all-time daily history.
     if points.count > 180 {
@@ -116,9 +122,27 @@ struct UsageHistoryProjection: Sendable {
       points = [UsageHistoryBucket(period: "Earlier", values: earlier)] + points.suffix(179)
     }
     buckets = points
+
+    let renderedSeries = Self.visibleSeries(from: sortedSeries)
+    let primaryIDs = Set(Array(sortedSeries.prefix(4)).map { $0.id })
+    chartValues = points.map { bucket in
+      renderedSeries.map { item in
+        if item.id != Self.other {
+          return bucket.values[item.id] ?? 0
+        }
+        return bucket.values
+          .filter { !primaryIDs.contains($0.key) }
+          .values
+          .reduce(0, +)
+      }
+    }
   }
 
   var visibleSeries: [UsageHistorySeries] {
+    Self.visibleSeries(from: series)
+  }
+
+  private static func visibleSeries(from series: [UsageHistorySeries]) -> [UsageHistorySeries] {
     guard series.count > 5 else { return series }
     let first = Array(series.prefix(4))
     return first + [

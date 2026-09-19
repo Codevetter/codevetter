@@ -70,12 +70,13 @@ struct UsageHistoryView: View {
       GeometryReader { geometry in
         let buckets = history.buckets
         let visibleSeries = history.visibleSeries
+        let chartValues = history.chartValues
         let maximum = max(buckets.map(\.total).max() ?? 0, 1)
         let step = geometry.size.width / CGFloat(max(buckets.count, 1))
         Canvas { context, size in
           // Batch disjoint bar segments by series instead of submitting a
           // separate graphics operation for every period/series pair.
-          var seriesPaths = Array(repeating: Path(), count: visibleSeries.count)
+          let seriesPaths = (0..<visibleSeries.count).map { _ in CGMutablePath() }
           var labels: [(String, CGPoint)] = []
           var selectionOutline: Path?
           for fraction in [0.0, 0.5, 1.0] {
@@ -89,9 +90,9 @@ struct UsageHistoryView: View {
             let width = max(1, min(42, step - (buckets.count > 60 ? 1 : 5)))
             let x = CGFloat(index) * step + (step - width) / 2
             var y = size.height - 18
-            for (seriesIndex, series) in visibleSeries.enumerated() {
+            for seriesIndex in visibleSeries.indices {
               let height =
-                CGFloat(history.value(in: bucket, series: series) / maximum) * (size.height - 38)
+                CGFloat(chartValues[index][seriesIndex] / maximum) * (size.height - 38)
               y -= height
               seriesPaths[seriesIndex].addRect(
                 CGRect(x: x, y: y, width: width, height: height))
@@ -107,7 +108,7 @@ struct UsageHistoryView: View {
             }
           }
           for (index, path) in seriesPaths.enumerated() {
-            context.fill(path, with: .color(tone(index)))
+            context.fill(Path(path), with: .color(tone(index)))
           }
           // Keep annotations above the opaque fills, including the inner edge
           // of the selected-period outline.
