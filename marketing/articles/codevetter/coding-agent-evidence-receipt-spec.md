@@ -11,12 +11,12 @@
 ## Article Outline
 
 - **Introduction:** Why informal PR descriptions and self-reports fail auditability.
-- **The Purpose of an Evidence Receipt:** Establishing portable, integrity-checked evidence.
+- **General Receipt-Design Principles vs. Current Implementation:** Conceptual standards vs. production receipts.
 - **1. Identity & Scope Bindings:** Pinned repository, commit SHAs, task intent, and runner profile.
 - **2. Execution Records & Inventory:** Commands, exit codes, resource bounds, and output streams.
 - **3. Failure Taxonomy & Classification:** Categorizing regressions, environment noise, and pre-existing debt.
 - **4. Resource, Egress, & Safety Boundaries:** Monitoring memory, CPU, network calls, and sandbox constraints.
-- **5. Explicit Uncertainty & Coverage Bounds:** Marking unchecked requirements and missing test paths.
+- **5. Explicit Uncertainty & Coverage Bounds:** Marking unchecked requirements and `no_confidence` states.
 - **6. Fix Linkage & Closure Trails:** Re-check chaining from initial failure to final pass.
 - **Recommended Internal Links:** Navigating related CodeVetter technical documentation.
 - **Next Action:** Steps for implementing evidence receipts in your agent pipeline.
@@ -35,15 +35,18 @@ While readable, these text summaries are unsuited for technical auditability or 
 3. **Selective Omission:** Agents routinely omit unexecuted test suites, skipped assertions, transient timeouts, or intermediate failures.
 4. **Lack of Machine Readability:** Free-form text summaries cannot be parsed or validated programmatically by CI/CD pipelines or security scanners.
 
-To support safer autonomous coding workflows, organizations can replace informal self-reports with structured, machine-readable **verification evidence receipts**.
+To make autonomous coding agents safe for production software engineering, organizations must replace informal self-reports with structured, machine-readable **verification evidence receipts**.
 
 ---
 
-## The Structural Blueprint of a Verification Evidence Receipt
+## General Receipt-Design Principles vs. Current Implementations
 
-A verification evidence receipt is a versioned, portable JSON artifact that records the execution telemetry a producer supplies for an agent verification run. Hashes and validation can make its contents integrity-checkable, but they do not by themselves authenticate the producer or make local storage immutable.
+A verification evidence receipt is a versioned, portable JSON artifact that records exact execution telemetry from an agent verification run.
 
-The following is a proposed receipt design. The current experimental `codevetter.project-verification-receipt/v1` contract records a bounded subset of these dimensions and keeps missing evidence explicit; it does not by itself prove task completion.
+In general receipt design, an evidence specification defines structured schemas that bind source code identities to execution telemetry. In practical software systems, these fall into two distinct categories:
+
+- **Experimental / Ingested Project Receipts:** Ingestion schemas (such as `codevetter.project-verification-receipt/v1`) that parse raw external runner outputs (Playwright JSON, JUnit XML, LCOV) without mutating local state or asserting full system authority.
+- **Persisted Native / Local Receipts:** Local execution receipts (such as `codevetter.local-check/v1`) emitted and stored in local databases during supervised verification passes.
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
@@ -58,18 +61,18 @@ The following is a proposed receipt design. The current experimental `codevetter
 └─────────────────────────────────────────────────────────────────────────┘
 ```
 
-Below is a detailed breakdown of what each section of a robust evidence receipt specification should contain.
+Below is a detailed breakdown of what each section of a robust evidence receipt specification must contain.
 
 ---
 
 ## 1. Identity and Scope Bindings
 
-An evidence receipt must be linked unambiguously to a specific source tree and task description. The receipt begins by pinning immutable identity references:
+An evidence receipt must be linked unambiguously to a specific source tree and task description. The receipt begins by pinning identity references:
 
 - **Repository & Revision Identity:** Absolute Git commit SHA of the base repository, target branch, and exact SHA-256 digest of the agent's patch file.
-- **Task Intent Reference:** A unique task identifier, along with an immutable digest or text snapshot of the original prompt and acceptance criteria.
+- **Task Intent Reference:** A unique task identifier, along with a digest or text snapshot of the original prompt and acceptance criteria.
 - **Environment & System Profile:** OS kernel version, architecture (e.g., `darwin-arm64`), runtime engine version (e.g., Node.js, Rust), and installed CLI versions.
-- **Verifier Profile:** The specific verifier name, executable version, and schema version (e.g., `codevetter.project-verification-receipt/v1`).
+- **Verifier Profile:** The specific verifier name, executable version, and schema version (e.g., `codevetter.local-check/v1`).
 
 Binding these identities prevents "replay drift"—where a passing test receipt from an older commit is falsely attached to a new pull request.
 
@@ -101,11 +104,11 @@ A simple pass/fail flag collapses important operational distinctions. An evidenc
 
 ## 4. Resource, Egress, and Safety Boundaries
 
-Executing arbitrary agent code presents security and resource risks. An evidence receipt can record telemetry relevant to declared resource and safety bounds:
+Executing arbitrary agent code presents security and resource risks. An evidence receipt captures telemetry proving execution remained within safe operational bounds:
 
 - **Resource Consumption:** Peak process-tree Resident Set Size (RSS memory in MiB), sampled CPU usage, wall-time duration, and process spawn counts.
-- **Network Egress Telemetry:** Producer-supplied observations such as outbound request counts or network-escape indicators. If the producer does not supply network evidence, the receipt should leave that dimension missing rather than infer zero egress.
-- **Sandbox State:** Producer-supplied declarations or observations of isolation boundaries, such as loopback-only network guards or read-only root filesystems; a receipt should not treat an unverified declaration as an attestation.
+- **Network Egress Telemetry:** Total outbound network requests, external IP addresses contacted, and confirmation that zero unauthorized external requests occurred during zero-egress test runs.
+- **Sandbox State:** Affirmation of local isolation boundaries, such as loopback-only network guards or read-only root filesystems.
 
 ---
 
@@ -117,18 +120,18 @@ The limitations section records:
 
 - **Unverified Acceptance Criteria:** User requirements that could not be mapped to an executable check.
 - **Unexecuted Code Paths:** Files modified by the agent that were not exercised by any executed test runner (supported by LCOV or Cobertura XML reports).
-- **Incomplete Diagnostics:** Sections where telemetry collection was partial or failed due to tool limitations.
+- **`no_confidence` States:** Sections where telemetry collection was partial or where test reports lack revision-bound selection or resource measurements.
 
 ---
 
 ## 6. Fix Linkage and Closure Trails
 
-When an agent run fails verification, a fix cycle begins. A production-grade evidence design can support receipt linking to establish an auditable history of resolution:
+When an agent run fails verification, a fix cycle begins. A production-grade evidence receipt specification supports receipt chaining to establish an auditable history of resolution:
 
-1. **Initial Failure Receipt:** Records the first patch's failing signature and diff when an executable check fails.
-2. **Fix Candidate Linkage:** The corrective run references the initial receipt by its recorded bundle identity.
+1. **Initial Failure Receipt:** Emitted when the agent's first patch fails an executable check, containing the failing signature and diff.
+2. **Fix Candidate Linkage:** The corrective agent run references the initial failure receipt by its unique SHA-256 bundle identity.
 3. **Targeted Re-Check Execution:** The new verification run re-executes the exact failing check identified in the initial receipt.
-4. **Closure Receipt:** Records a passing targeted re-check and links the prior attempt, without treating the link as proof beyond the checks that ran.
+4. **Closure Receipt:** Emitted when the targeted check passes, confirming resolution while including the full history of prior attempts.
 
 ---
 
@@ -163,6 +166,6 @@ To inspect executable receipt schemas and CLI ingestion tooling, review CodeVett
 - `PROJECT_STATUS.md`: Authoritative record of shipped local receipt capabilities, local-check schemas (`codevetter.local-check/v1`), and local execution boundaries.
 
 ### Product & Scope Limitations
-- **Local Application Architecture:** CodeVetter runs as a native macOS desktop application and local CLI/MCP tool. The experimental project-receipt ingestion slice does not persist its normalized bundles into the desktop SQLite database; other Rust-owned native receipts use local SQLite. There is no centralized hosted server or web application.
-- **Supported Producer Adapters:** The experimental project-receipt loader accepts Playwright JSON, JUnit XML, LCOV, Cobertura XML, Lighthouse JSON, and Chrome trace JSON. Unsupported formats are rejected before analysis; accepted reports remain `no_confidence` for dimensions they cannot support.
+- **Local Application Architecture:** CodeVetter runs as a native macOS desktop application and local CLI/MCP tool. Receipts are stored in a local SQLite database (`rusqlite`). There is no centralized hosted server or web application.
+- **Supported Producer Adapters:** Native receipt ingestion currently processes Playwright JSON, JUnit XML, LCOV, Cobertura XML, Lighthouse JSON, and Chrome trace JSON. Unknown formats fail closed as `no_confidence`.
 - **Current Operational Scope:** Core execution qualification focuses on TypeScript/Node web application environments, Playwright browser flows, and local process supervision.

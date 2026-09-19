@@ -595,31 +595,6 @@ func workbenchNavigationShowsLabel(
   section != .settings && (showAllLabels || section == selectedSection)
 }
 
-@MainActor
-private enum PremiumTopBarMetrics {
-  private static let labelFont = NSFont.systemFont(ofSize: 11, weight: .semibold)
-  private static let symbolConfiguration = NSImage.SymbolConfiguration(
-    pointSize: 11, weight: .semibold)
-
-  static let fullNavigationWidth = navigationWidth(showLabels: true)
-
-  private static func navigationWidth(showLabels: Bool) -> CGFloat {
-    WorkbenchSection.allCases.reduce(0) { width, section in
-      let iconWidth = NSImage(
-        systemSymbolName: section.systemImage, accessibilityDescription: nil
-      )?.withSymbolConfiguration(symbolConfiguration)?.size.width ?? 11
-      let labelWidth = showLabels && section != .settings
-        ? (section.rawValue as NSString).size(withAttributes: [.font: labelFont]).width
-        : 0
-      let contentWidth = iconWidth + (labelWidth > 0 ? 6 : 0) + labelWidth
-      let horizontalPadding: CGFloat = labelWidth > 0 ? 18 : 16
-      let buttonWidth = max(
-        PremiumPageLayout.navigationControlHeight, contentWidth + horizontalPadding)
-      return width + buttonWidth
-    } + CGFloat(max(WorkbenchSection.allCases.count - 1, 0)) * 3
-  }
-}
-
 private struct PremiumTopBar: View {
   @Bindable var model: WorkbenchModel
 
@@ -632,14 +607,12 @@ private struct PremiumTopBar: View {
           .tracking(1.35)
       }
 
-      Spacer().frame(width: 8)
-      GeometryReader { geometry in
-        navigation(showLabels: geometry.size.width >= PremiumTopBarMetrics.fullNavigationWidth)
-          .frame(maxWidth: .infinity, alignment: .center)
+      Spacer(minLength: 8)
+      ViewThatFits(in: .horizontal) {
+        navigation(showLabels: true)
+        navigation(showLabels: false)
       }
-      .frame(minWidth: PremiumPageLayout.navigationControlHeight, maxWidth: .infinity)
-      .frame(height: PremiumPageLayout.navigationControlHeight)
-      Spacer().frame(width: 8)
+      Spacer(minLength: 8)
 
       HStack(spacing: 8) {
         Circle().fill(EvidenceStyle.success).frame(width: 6, height: 6)

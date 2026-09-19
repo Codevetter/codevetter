@@ -43,9 +43,9 @@ The table below outlines the fundamental differences across all three mechanisms
 | --- | --- | --- | --- |
 | **Primary Input** | Code diff, repository files, style rules | Source code, test scripts, test data | Task intent, repository revision, patch, executable checks |
 | **Primary Output** | Text findings, style suggestions, risk flags | Pass/fail counts, stack traces, coverage reports | Portable evidence receipt, failure taxonomy, completion verdict |
-| **What It Proves** | Code readability, pattern match, maintainability | Whether specific assertions pass under defined inputs | Whether selected checks support the requested task outcome, with regression evidence only where checks cover it |
+| **What It Proves** | Code readability, pattern match, maintainability | Whether specific assertions pass under defined inputs | Whether the agent completed the task without regressions |
 | **Core Limitation** | Cannot execute code; plausible diffs can fail | Cannot determine if tests match prompt intent | Requires explicit executable checks; bounded by runner |
-| **Failure Mode** | High false positives or false praise from text | Green suite passing on an incomplete task | Reports `no_confidence` when required evidence is absent or partial |
+| **Failure Mode** | High false positives or false praise from text | Green suite passing on an incomplete task | Fails closed as `no_confidence` or `unverified` if checks are absent |
 
 ---
 
@@ -92,12 +92,12 @@ Execution-backed agent evaluation solves the "intent-to-execution" gap in autono
 ```
 
 ### What Agent Evaluation Can Prove
-- **Task Completion Evidence:** Runs checks against the requested behavioral boundary (such as headless browser state or API endpoints) and records what those checks support.
-- **Failure Classification:** Uses a failure taxonomy to record whether an observed failure is classified as an agent defect, side-effect regression, pre-existing failure, or environment issue.
-- **Auditability and Closure:** Produces machine-readable evidence receipts that can link an initial failure to a post-fix re-check when both receipts and their identities are available, creating an auditable closure trail.
+- **Task Completion:** Proves whether the change satisfies requested criteria by running checks against the actual behavioral boundary (such as headless browser state or API endpoints).
+- **Causal Failure Attribution:** Uses failure taxonomy to distinguish whether a failure was caused by an agent defect, a side-effect regression, a pre-existing broken test, or environment noise.
+- **Auditability and Closure:** Produces machine-readable evidence receipts linking initial failures to post-fix passing re-checks, establishing an audit trail.
 
 ### What Agent Evaluation Cannot Prove
-- **Universal Code Quality:** A task evaluation provides evidence from selected runtime checks, but cannot guarantee that the underlying code architecture is elegant.
+- **Universal Code Quality:** A task evaluation proves that a feature works at runtime, but cannot guarantee that the underlying code architecture is elegant.
 - **Coverage Beyond Executable Checks:** Agent evaluation cannot verify behavior for which no executable check or browser automation can be constructed.
 
 ---
@@ -174,6 +174,6 @@ To inspect how local execution-backed verification functions in practice, downlo
 - `docs/development/verification-receipts.md`: Producer contracts (`codevetter.project-verification-receipt/v1`) and result analysis boundaries.
 
 ### Product & Scope Limitations
-- **Local Desktop Architecture:** CodeVetter operates as a local desktop application (SwiftUI/AppKit) and Rust CLI/MCP binary. Native application data resides in a local SQLite database; the experimental `codevetter.project-verification-receipt/v1` ingestion slice produces local artifacts and does not persist them into that desktop database. There is no hosted web service or cloud backend.
+- **Local Desktop Architecture:** CodeVetter operates as a local desktop application (SwiftUI/AppKit) and Rust CLI/MCP binary. All project data resides in a local SQLite database. There is no hosted web service or cloud backend.
 - **Active Core Focus:** Active core development focuses on Node.js/TypeScript web applications, API behavior, and Playwright browser journeys.
 - **Benchmark Scope:** The public 27-case benchmark evaluates static bug recognition in synthetic fixtures. It does not prove general production performance across arbitrary enterprise repositories.

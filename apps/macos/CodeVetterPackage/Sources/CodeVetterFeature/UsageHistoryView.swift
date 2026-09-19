@@ -69,15 +69,9 @@ struct UsageHistoryView: View {
       }
       GeometryReader { geometry in
         let buckets = history.buckets
-        let visibleSeries = history.visibleSeries
         let maximum = max(buckets.map(\.total).max() ?? 0, 1)
         let step = geometry.size.width / CGFloat(max(buckets.count, 1))
         Canvas { context, size in
-          // Batch disjoint bar segments by series instead of submitting a
-          // separate graphics operation for every period/series pair.
-          var seriesPaths = Array(repeating: Path(), count: visibleSeries.count)
-          var labels: [(String, CGPoint)] = []
-          var selectionOutline: Path?
           for fraction in [0.0, 0.5, 1.0] {
             let y = (size.height - 18) * fraction
             var path = Path()
@@ -89,33 +83,28 @@ struct UsageHistoryView: View {
             let width = max(1, min(42, step - (buckets.count > 60 ? 1 : 5)))
             let x = CGFloat(index) * step + (step - width) / 2
             var y = size.height - 18
-            for (seriesIndex, series) in visibleSeries.enumerated() {
+            for (seriesIndex, series) in history.visibleSeries.enumerated() {
               let height =
                 CGFloat(history.value(in: bucket, series: series) / maximum) * (size.height - 38)
               y -= height
-              seriesPaths[seriesIndex].addRect(
-                CGRect(x: x, y: y, width: width, height: height))
+              context.fill(
+                Path(CGRect(x: x, y: y, width: width, height: height)),
+                with: .color(tone(seriesIndex)))
             }
             if buckets.count <= 12 {
-              labels.append((history.metric.formatted(bucket.total),
-                CGPoint(x: x + width / 2, y: y - 9)))
+              context.draw(
+                Text(history.metric.formatted(bucket.total))
+                  .font(.system(size: 9)).foregroundColor(.secondary),
+                at: CGPoint(x: x + width / 2, y: y - 9))
             }
             if selectedPeriod == bucket.period {
-              selectionOutline = Path(CGRect(
-                x: x - 2, y: y - 2, width: width + 4,
-                height: size.height - 18 - y + 4))
+              context.stroke(
+                Path(
+                  CGRect(
+                    x: x - 2, y: y - 2, width: width + 4,
+                    height: size.height - 18 - y + 4)),
+                with: .color(EvidenceStyle.amberForeground), lineWidth: 1)
             }
-          }
-          for (index, path) in seriesPaths.enumerated() {
-            context.fill(path, with: .color(tone(index)))
-          }
-          // Keep annotations above the opaque fills, including the inner edge
-          // of the selected-period outline.
-          for (label, point) in labels {
-            context.draw(Text(label).font(.system(size: 9)).foregroundColor(.secondary), at: point)
-          }
-          if let selectionOutline {
-            context.stroke(selectionOutline, with: .color(EvidenceStyle.amberForeground), lineWidth: 1)
           }
         }
         .contentShape(Rectangle())
