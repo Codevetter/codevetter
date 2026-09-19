@@ -255,7 +255,7 @@ if (!fs.existsSync(privacyMarkdownFile) || !fs.existsSync(privacyHtmlFile)) {
 // retired to a 404. With the SDK never starting, the custom _phq queue was
 // never consumed and posthog.init threw, silently dropping every page_view.
 const landingHtml = fs.readFileSync(path.join(dist, 'index.html'), 'utf8');
-const analyticsScript = [...landingHtml.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/gi)]
+const analyticsScript = [...landingHtml.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script\s*>/gi)]
   .map((match) => match[1])
   .find((source) => source.includes('posthog.init('));
 if (!analyticsScript) {
