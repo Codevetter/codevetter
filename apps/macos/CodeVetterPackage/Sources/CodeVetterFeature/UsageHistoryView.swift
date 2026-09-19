@@ -232,25 +232,59 @@ struct UsageHistoryView: View {
 /// A single subview tree responds to the actual proposal, including the first
 /// offscreen render. Geometry state updates arrive too late for first-frame layout.
 private struct UsageHistoryLayout: Layout {
-  func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
-    let width = proposal.width ?? 565
-    let horizontal = width >= 565
-    let chart = subviews[0].sizeThatFits(.init(width: horizontal ? width - 246 : width, height: nil))
-    let breakdown = subviews[2].sizeThatFits(.init(width: horizontal ? 205 : width, height: nil))
-    return CGSize(width: width, height: horizontal ? max(chart.height, breakdown.height)
-      : chart.height + 16 + breakdown.height)
+  struct Cache {
+    struct Measurement {
+      let horizontal: Bool
+      let chart: CGSize
+      let breakdown: CGSize
+    }
+
+    var measurements: [CGFloat: Measurement] = [:]
   }
 
-  func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
-    let horizontal = bounds.width >= 565
-    let chartWidth = horizontal ? bounds.width - 246 : bounds.width
-    let chart = subviews[0].sizeThatFits(.init(width: chartWidth, height: nil))
+  func makeCache(subviews: Subviews) -> Cache {
+    Cache()
+  }
+
+  func updateCache(_ cache: inout Cache, subviews: Subviews) {
+    cache = Cache()
+  }
+
+  func measurement(
+    for width: CGFloat, subviews: Subviews, cache: inout Cache
+  ) -> Cache.Measurement {
+    if let measurement = cache.measurements[width] {
+      return measurement
+    }
+    let horizontal = width >= 565
+    let chartWidth = horizontal ? width - 246 : width
+    let breakdownWidth = horizontal ? 205 : width
+    let measurement = Cache.Measurement(
+      horizontal: horizontal,
+      chart: subviews[0].sizeThatFits(.init(width: chartWidth, height: nil)),
+      breakdown: subviews[2].sizeThatFits(.init(width: breakdownWidth, height: nil)))
+    cache.measurements[width] = measurement
+    return measurement
+  }
+
+  func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout Cache) -> CGSize {
+    let width = proposal.width ?? 565
+    let measurement = measurement(for: width, subviews: subviews, cache: &cache)
+    return CGSize(width: width, height: measurement.horizontal
+      ? max(measurement.chart.height, measurement.breakdown.height)
+      : measurement.chart.height + 16 + measurement.breakdown.height)
+  }
+
+  func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout Cache) {
+    let measurement = measurement(for: bounds.width, subviews: subviews, cache: &cache)
+    let chartWidth = measurement.horizontal ? bounds.width - 246 : bounds.width
     subviews[0].place(at: bounds.origin, anchor: .topLeading,
-      proposal: .init(width: chartWidth, height: chart.height))
+      proposal: .init(width: chartWidth, height: measurement.chart.height))
     subviews[1].place(at: CGPoint(x: bounds.minX + chartWidth + 20, y: bounds.minY),
-      anchor: .topLeading, proposal: .init(width: horizontal ? 1 : 0, height: horizontal ? bounds.height : 0))
-    subviews[2].place(at: CGPoint(x: horizontal ? bounds.minX + chartWidth + 41 : bounds.minX,
-      y: horizontal ? bounds.minY : bounds.minY + chart.height + 16), anchor: .topLeading,
-      proposal: .init(width: horizontal ? 205 : bounds.width, height: nil))
+      anchor: .topLeading, proposal: .init(width: measurement.horizontal ? 1 : 0,
+        height: measurement.horizontal ? bounds.height : 0))
+    subviews[2].place(at: CGPoint(x: measurement.horizontal ? bounds.minX + chartWidth + 41 : bounds.minX,
+      y: measurement.horizontal ? bounds.minY : bounds.minY + measurement.chart.height + 16), anchor: .topLeading,
+      proposal: .init(width: measurement.horizontal ? 205 : bounds.width, height: nil))
   }
 }
