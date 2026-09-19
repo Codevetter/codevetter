@@ -124,7 +124,7 @@ Usage:
   codevetter history-roots [--add <path> | --remove <path>] [--json]
   codevetter memories [--source <opaque-id> [--diff]] [--json]
   codevetter onboarding [--complete --default-adapter <codex|claude-code>] [--json]
-  codevetter mcp --repo <path> [--enable | --disable | --clear-audit] [--json]
+  codevetter mcp --repo <path> [--index-history] [--enable | --disable | --clear-audit] [--json]
   codevetter retention (--max-age-days <n> | --max-archive-mib <n>) [--json]
   codevetter retention (--apply <plan-id> | --checkpoint [--vacuum]) [--json]
   codevetter rubrics [--select <id> | --id <id> --name <name> --focus <text> --check <text>...] [--json]
@@ -402,6 +402,7 @@ struct QaArguments {
 #[derive(Debug, Clone, PartialEq, Eq)]
 struct McpArguments {
     repo_path: PathBuf,
+    index_history: bool,
     operation: McpSettingsOperation,
     output: OutputMode,
 }
@@ -657,7 +658,7 @@ async fn run() -> Result<i32, String> {
         CliCommand::Memories(arguments) => run_memories(arguments),
         CliCommand::Onboarding(arguments) => run_onboarding(arguments),
         CliCommand::Qa(arguments) => run_qa(arguments),
-        CliCommand::Mcp(arguments) => run_mcp(arguments),
+        CliCommand::Mcp(arguments) => run_mcp(arguments).await,
         CliCommand::Retention(arguments) => run_retention(arguments),
         CliCommand::Rubrics(arguments) => run_rubrics(arguments),
         CliCommand::Xray(arguments) => run_xray(arguments),
@@ -1244,10 +1245,19 @@ fn render_human_retention(receipt: &SessionRetentionReceipt) -> String {
     }
 }
 
-fn run_mcp(arguments: McpArguments) -> Result<i32, String> {
+async fn run_mcp(arguments: McpArguments) -> Result<i32, String> {
     let connection = db::init_db(default_app_data_dir()?)
         .map_err(|error| format!("open CodeVetter database: {error}"))?;
     let db = DbState(Arc::new(Mutex::new(connection)));
+    if arguments.index_history {
+        codevetter_core::commands::history_graph::backfill_history_graph_with_db(
+            arguments.repo_path.to_string_lossy().into_owned(),
+            Some(500),
+            tauri::AppHandle,
+            &db,
+        )
+        .await?;
+    }
     let receipt = run_mcp_settings_operation(
         arguments.repo_path.to_string_lossy().into_owned(),
         arguments.operation,
@@ -3742,12 +3752,14 @@ fn parse_onboarding(mut arguments: impl Iterator<Item = String>) -> Result<CliCo
 
 fn parse_mcp(mut arguments: impl Iterator<Item = String>) -> Result<CliCommand, String> {
     let mut repo_path = None;
+    let mut index_history = false;
     let mut operation = McpSettingsOperation::Read;
     let mut operation_set = false;
     let mut output = OutputMode::Human;
     while let Some(argument) = arguments.next() {
         match argument.as_str() {
             "--repo" => repo_path = Some(PathBuf::from(required_value(&mut arguments, "--repo")?)),
+            "--index-history" => index_history = true,
             "--enable" | "--disable" | "--clear-audit" => {
                 if operation_set {
                     return Err(
@@ -3766,8 +3778,17 @@ fn parse_mcp(mut arguments: impl Iterator<Item = String>) -> Result<CliCommand, 
             _ => return Err(format!("unknown mcp argument `{argument}`")),
         }
     }
+    if index_history
+        && matches!(
+            operation,
+            McpSettingsOperation::Disable | McpSettingsOperation::ClearAudit
+        )
+    {
+        return Err("--index-history cannot be combined with --disable or --clear-audit".into());
+    }
     Ok(CliCommand::Mcp(McpArguments {
         repo_path: repo_path.ok_or_else(|| "--repo is required".to_string())?,
+        index_history,
         operation,
         output,
     }))

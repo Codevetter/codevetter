@@ -122,7 +122,7 @@ jobs:
         run: |
           cargo test --manifest-path crates/codevetter-core/Cargo.toml --lib mcp
           cargo test --manifest-path crates/codevetter-core/Cargo.toml --bin codevetter-mcp
-          cargo test --manifest-path crates/codevetter-core/Cargo.toml --test mcp_stdio
+          cargo test --manifest-path crates/codevetter-core/Cargo.toml --features browser-agent --test mcp_stdio
           cargo test --manifest-path crates/codevetter-core/Cargo.toml --features browser-agent --bin codevetter
       - name: Read-only navigator engine
         run: |

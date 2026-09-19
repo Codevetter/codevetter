@@ -134,6 +134,16 @@ pub async fn backfill_history_graph(
     app: tauri::AppHandle,
     db: State<'_, DbState>,
 ) -> Result<HistoryBackfillResult, String> {
+    backfill_history_graph_with_db(repo_path, recent_commit_limit, app, db.inner()).await
+}
+
+/// The CLI uses the same bounded indexer without a graphical host or managed state.
+pub async fn backfill_history_graph_with_db(
+    repo_path: String,
+    recent_commit_limit: Option<usize>,
+    app: tauri::AppHandle,
+    db: &DbState,
+) -> Result<HistoryBackfillResult, String> {
     let root = canonical_repo_path(&repo_path)?;
     let canonical = root.to_string_lossy().to_string();
     let storage_key = history_storage_key(&canonical);
