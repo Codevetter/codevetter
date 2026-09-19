@@ -61,16 +61,16 @@ A complete verification loop consists of five distinct phases:
 Verification begins by binding the exact requested behavior and its acceptance boundaries. If the original task description is ambiguous, the verifier records that ambiguity explicitly rather than allowing the agent or evaluator to invent a friendly interpretation.
 
 ### 2. Bind the Repository Revision and Change
-The exact base Git commit SHA, the workspace state, and the agent's patch must be pinned together. Verification must run against an immutable revision so that external workspace drift cannot alter the outcome.
+The exact base Git commit SHA, workspace state, and agent patch should be pinned together. A runner should bind verification to that revision and isolate or reject workspace drift rather than treating a moving checkout as equivalent evidence.
 
 ### 3. Execute Bounded Behavioral Checks
 The verifier runs authoritative, deterministic checks against the modified codebase. These checks prioritize repository-owned unit and integration tests, supplemented by focused browser journeys or API calls when existing test suites do not exercise the changed behavior.
 
 ### 4. Capture Raw Execution Evidence
-Instead of recording a simple pass/fail flag, the verifier captures complete execution telemetry: command strings, exit codes, process-tree CPU and memory metrics, stdout/stderr streams, network egress events, and failure signatures.
+Instead of recording a simple pass/fail flag, the verifier captures the available execution telemetry: command strings, exit codes, process-tree CPU and memory metrics, bounded stdout/stderr evidence, network observations when supplied, and failure signatures. Missing fields remain explicit limitations.
 
 ### 5. Render a Measurable Verdict
-The verifier emits a clear verdict: `pass`, `fail`, or `unverified`. Crucially, if required checks could not be executed or test coverage was missing, the system fails closed and marks the requirement as `unverified` rather than assuming unchecked code is safe.
+The project receipt analyzer emits statuses such as `passed`, `failed`, and `no_confidence`. If required checks could not be executed or coverage evidence is missing, it keeps that dimension at `no_confidence` rather than assuming unchecked code is safe.
 
 ---
 
@@ -93,7 +93,7 @@ A common flaw in automated verification systems is treating every failed command
 Execution-backed verification enforces a strict failure taxonomy that categorizes execution outcomes:
 
 - **Agent Defect / Failure:** The executed check failed explicitly due to broken logic or unhandled exceptions introduced by the agent's change.
-- **Agent Regression:** A previously passing repository test failed after the agent's modification, proving side-effect breakage.
+- **Agent Regression:** A previously passing repository test failed after the agent's modification and is classified as a possible side-effect regression, subject to the receipt's identity and coverage limits.
 - **Pre-Existing Failure:** The test was already failing on the base commit prior to the agent's run.
 - **Operational / Environment Failure:** Execution was aborted due to infrastructure conditions, such as missing binaries, port conflicts, or memory limits.
 - **Unverified Requirement:** No authoritative test or runner existed to exercise the requested acceptance criteria.
@@ -106,12 +106,12 @@ By isolating environment noise, engineering teams obtain an honest measure of ag
 
 When verification identifies a failure in an agent's patch, the failure evidence becomes structured feedback for a corrective agent iteration.
 
-To prove true fix closure:
+To document fix closure for the checks that ran:
 
-1. **Preserve the Initial Failure:** The failing run, command, exit code, and failure signature are retained in an immutable evidence record.
+1. **Preserve the Initial Failure:** The failing run, command, exit code, and failure signature are retained in an evidence record with its stated identity and limitations.
 2. **Apply the Corrective Patch:** The agent applies a targeted fix in an isolated, clean workspace.
 3. **Re-Run the Failing Check:** The verifier re-executes the exact test that previously failed to confirm resolution.
-4. **Link Before-and-After Evidence:** The final evidence bundle links the original failure receipt to the passing re-check receipt, proving a complete closure trail.
+4. **Link Before-and-After Evidence:** The final evidence bundle can link the original failure receipt to the passing re-check receipt, documenting closure for the checks that ran.
 
 ---
 
