@@ -32,7 +32,7 @@ jobs:
   native-qualification:
     name: Native macOS qualification
     if: >-
-      github.event_name == 'pull_request' ||
+      github.event_name == 'pull_request' || github.event_name == 'push' ||
       (github.event_name == 'workflow_dispatch' && inputs.native_qualification)
     uses: ./.github/workflows/native-qualification.yml
     with:

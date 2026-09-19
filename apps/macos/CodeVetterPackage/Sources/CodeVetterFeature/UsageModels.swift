@@ -26,12 +26,7 @@ public enum UsageDimension: String, CaseIterable, Identifiable, Sendable {
 
 /// Unified history-card metric. Cost is locally estimated from pinned
 /// pricing, never subscription spend.
-public enum UsageHistoryMetric: String, CaseIterable, Identifiable, Sendable {
-  case tokens = "Tokens"
-  case cost = "Cost"
-
-  public var id: String { rawValue }
-}
+public typealias UsageHistoryMetric = UsageMetric
 
 public enum UsageWindow: String, CaseIterable, Identifiable, Sendable {
   case oneWeek = "1w"

@@ -157,11 +157,18 @@ private func allowanceWindow(_ remaining: Double, reset: Int64?, duration: UInt6
   let report = model.usageReport!
   #expect(model.usageProjection(for: report).history.grouping == .model)
   model.usageGrouping = .project
+  #expect(model.usageDimension == .project)
   model.usageMetric = .cost
   let p = model.usageProjection(for: report)
   #expect(p.history.grouping == .project)
   #expect(p.history.metric == .cost)
   #expect(p.history.total == UsageMetric.cost.value(p.totals))
+  model.usageDimension = .model
+  model.usageMetric = .cache
+  let cache = model.usageProjection(for: report)
+  #expect(cache.history.grouping == .model)
+  #expect(cache.history.metric == .cache)
+  #expect(cache.history.total == Double(cache.totals.cacheReadTokens))
 }
 
 @MainActor @Test func usageApprovedDirectionRendersOffscreen() throws {
