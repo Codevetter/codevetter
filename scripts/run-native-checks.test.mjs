@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import test from 'node:test';
 
 import {
@@ -9,6 +10,21 @@ import {
   nativeReleaseBuildSettings,
   parseNativeCheckArguments,
 } from './run-native-checks.mjs';
+
+test('hosted interaction evidence survives a background failure without masking the gate', () => {
+  const workflow = readFileSync(
+    new URL('../.github/workflows/native-qualification.yml', import.meta.url),
+    'utf8'
+  );
+  assert.match(workflow, /id: background\n\s+run: pnpm test:native:background/);
+  assert.ok(
+    workflow.includes(
+      "!cancelled() && inputs.run_interaction && (steps.background.outcome == 'success' || steps.background.outcome == 'failure')"
+    )
+  );
+  assert.doesNotMatch(workflow, /continue-on-error/);
+  assert.match(workflow, /pnpm test:native:ui -- --foreground --desktop-idle/);
+});
 
 test('native automation defaults to the non-activating background lane', () => {
   const parsed = parseNativeCheckArguments([]);

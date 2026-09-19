@@ -65,6 +65,7 @@ jobs:
             --out-root artifacts/native-owner-review-ci >> "$GITHUB_ENV"
 
       - name: Run background-safe native qualification
+        id: background
         run: pnpm test:native:background
 
       - name: Finalize deterministic owner-review packet
@@ -74,7 +75,9 @@ jobs:
           pnpm test:native-review-render
 
       - name: Run interaction qualification on isolated desktop
-        if: inputs.run_interaction
+        # Collect independent interaction evidence even when a performance gate
+        # fails. The background failure still fails the job; never mask it.
+        if: ${{ !cancelled() && inputs.run_interaction && (steps.background.outcome == 'success' || steps.background.outcome == 'failure') }}
         run: pnpm test:native:ui -- --foreground --desktop-idle
 
       - name: Build coverage-free Release application
