@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import vm from 'node:vm';
 
 const appRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const dist = path.resolve(appRoot, process.argv[2] ?? 'dist');
@@ -254,11 +255,65 @@ if (!fs.existsSync(privacyMarkdownFile) || !fs.existsSync(privacyHtmlFile)) {
 // retired to a 404. With the SDK never starting, the custom _phq queue was
 // never consumed and posthog.init threw, silently dropping every page_view.
 const landingHtml = fs.readFileSync(path.join(dist, 'index.html'), 'utf8');
-if (landingHtml.includes('us.i.posthog.com/array.js') || landingHtml.includes('_phq')) {
-  failures.push('PostHog loader uses the retired ingestion-path array.js');
-}
-if (!landingHtml.includes('-assets.i.posthog.com') || !landingHtml.includes('/static/array.js')) {
-  failures.push('PostHog loader does not use the canonical static assets host');
+const analyticsScript = [...landingHtml.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/gi)]
+  .map((match) => match[1])
+  .find((source) => source.includes('posthog.init('));
+if (!analyticsScript) {
+  failures.push('PostHog loader inline bootstrap is missing');
+} else {
+  const insertedScripts = [];
+  const document = {
+    createElement: () => ({}),
+    getElementsByTagName: () => [
+      { parentNode: { insertBefore: (script) => insertedScripts.push(script) } },
+    ],
+  };
+  const window = { document };
+  window.window = window;
+  try {
+    vm.runInNewContext(analyticsScript, window, { timeout: 1_000 });
+  } catch (error) {
+    failures.push(`PostHog loader bootstrap failed in a browser-like runtime: ${error.message}`);
+  }
+
+  if (insertedScripts.length !== 1) {
+    failures.push(
+      `PostHog loader inserted ${insertedScripts.length} scripts; expected exactly one`
+    );
+  } else {
+    const [script] = insertedScripts;
+    if (script.src !== 'https://us-assets.i.posthog.com/static/array.js') {
+      failures.push(`PostHog loader generated an unexpected script URL: ${script.src ?? 'none'}`);
+    }
+    if (
+      script.type !== 'text/javascript' ||
+      script.async !== true ||
+      script.crossOrigin !== 'anonymous'
+    ) {
+      failures.push('PostHog loader script is missing its async JavaScript CORS attributes');
+    }
+  }
+  const init = window.posthog?._i?.[0];
+  if (!init || init[0] !== 'phc_qgiAarw4Co4pw9fz3Fxj4UJaHmqzFetqs4JrXhGc35Nd') {
+    failures.push('PostHog loader did not queue the expected init call');
+  } else if (
+    init[1]?.api_host !== 'https://us.i.posthog.com' ||
+    init[1]?.capture_pageview !== false ||
+    init[1]?.autocapture !== false ||
+    typeof init[1]?.loaded !== 'function'
+  ) {
+    failures.push('PostHog loader queued incomplete init options');
+  } else {
+    const captures = [];
+    init[1].loaded({ capture: (...args) => captures.push(args) });
+    if (
+      captures.length !== 1 ||
+      captures[0][0] !== 'page_view' ||
+      captures[0][1]?.project_id !== 'codevetter'
+    ) {
+      failures.push('PostHog loader did not capture the expected page_view payload');
+    }
+  }
 }
 
 if (privacyProviderList) {
