@@ -3523,10 +3523,13 @@ func largeUsageReportDecodesAndRendersWithinTheNativeGate() throws {
     _ = try JSONDecoder().decode(LocalUsageReport.self, from: payload)
   }
   var decodeSamples = [UInt64]()
+  var decodeCPUSamples = [UInt64]()
   for _ in 0..<100 {
+    let cpuStarted = benchmarkProcessCPUTimeMicroseconds()
     let started = DispatchTime.now().uptimeNanoseconds
     _ = try JSONDecoder().decode(LocalUsageReport.self, from: payload)
     decodeSamples.append((DispatchTime.now().uptimeNanoseconds - started) / 1_000)
+    decodeCPUSamples.append(benchmarkProcessCPUTimeMicroseconds() - cpuStarted)
   }
 
   let model = WorkbenchModel()
@@ -3585,10 +3588,13 @@ func largeUsageReportDecodesAndRendersWithinTheNativeGate() throws {
   // the two slowest draws decide the gate; with 60 it takes four outliers to
   // trip the same unchanged 50 ms budget.
   var renderSamples = [UInt64]()
+  var renderCPUSamples = [UInt64]()
   for _ in 0..<60 {
+    let cpuStarted = benchmarkProcessCPUTimeMicroseconds()
     let started = DispatchTime.now().uptimeNanoseconds
     renderUsage(model)
     renderSamples.append((DispatchTime.now().uptimeNanoseconds - started) / 1_000)
+    renderCPUSamples.append(benchmarkProcessCPUTimeMicroseconds() - cpuStarted)
   }
 
   let decodeP95 = percentile95(decodeSamples)
@@ -3612,9 +3618,11 @@ func largeUsageReportDecodesAndRendersWithinTheNativeGate() throws {
     "NATIVE_USAGE_BENCHMARK_JSON "
       + "{\"decode_p95_us\":\(decodeP95),\"projection_p95_us\":\(projectionP95),"
       + "\"cached_projection_p95_us\":\(cachedProjectionP95),\"render_p95_us\":\(renderP95),"
+      + "\"decode_cpu_p95_us\":\(percentile95(decodeCPUSamples)),\"render_cpu_p95_us\":\(percentile95(renderCPUSamples)),"
       + "\"render_p50_us\":\(renderP50),\"render_max_us\":\(renderMax),"
       + "\"snapshot_restore_p95_us\":\(snapshotRestoreP95),"
       + "\"render_samples_us\":\(renderSamples),"
+      + "\"render_cpu_samples_us\":\(renderCPUSamples),"
       + "\"daily_periods\":365,\"sessions\":\(sessionCount),\"decode_samples\":100,\"render_samples\":\(renderSamples.count),"
       + "\"hardware\":\(benchmarkHardwareJSON())}"
   )

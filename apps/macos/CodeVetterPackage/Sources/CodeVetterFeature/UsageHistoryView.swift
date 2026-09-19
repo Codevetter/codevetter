@@ -26,16 +26,12 @@ struct UsageHistoryView: View {
         Text("No local activity in this time range.")
           .font(.callout).foregroundStyle(.secondary).frame(maxWidth: .infinity, minHeight: 145)
       } else {
-        ViewThatFits(in: .horizontal) {
-          HStack(alignment: .top, spacing: 20) {
-            chart.frame(minWidth: 320)
-            Divider()
-            breakdown.frame(width: 205)
-          }.frame(minWidth: 565)
-          VStack(alignment: .leading, spacing: 16) {
-            chart
-            breakdown
-          }
+        // Keep one chart/picker/breakdown tree. ViewThatFits instantiated both
+        // alternatives on every render, doubling the expensive native controls.
+        UsageHistoryLayout {
+          chart
+          Divider()
+          breakdown
         }
         if history.grouping == .project {
           Text(
@@ -138,11 +134,18 @@ struct UsageHistoryView: View {
         }
       }.frame(height: 156)
       HStack(spacing: 8) {
-        Picker("Inspect period", selection: $selectedPeriod) {
-          Text("Entire selected range").tag(String?.none)
-          ForEach(history.buckets) { Text($0.period).tag(Optional($0.period)) }
+        // Menu contents are built on demand; the native Picker eagerly creates
+        // every period item even when the inspection control is never opened.
+        Menu {
+          Button("Entire selected range") { selectedPeriod = nil }
+          ForEach(history.buckets) { bucket in
+            Button(bucket.period) { selectedPeriod = bucket.period }
+          }
+        } label: {
+          Text(selectedPeriod ?? "Entire selected range")
         }
-        .labelsHidden().frame(maxWidth: 210).accessibilityLabel("Inspect usage period")
+        .frame(maxWidth: 210).accessibilityLabel("Inspect usage period")
+        .accessibilityValue(selectedPeriod ?? "Entire selected range")
         Spacer(minLength: 0)
         Text("Select a bar for detail").font(.system(size: 9)).foregroundStyle(.secondary)
       }.controlSize(.mini)
@@ -212,5 +215,31 @@ struct UsageHistoryView: View {
     let dark: [Double] = [0.69, 0.55, 0.43, 0.34, 0.27]
     let light: [Double] = [0.30, 0.42, 0.53, 0.63, 0.72]
     return Color(white: (colorScheme == .dark ? dark : light)[min(index, 4)])
+  }
+}
+
+/// A single subview tree responds to the actual proposal, including the first
+/// offscreen render. Geometry state updates arrive too late for first-frame layout.
+private struct UsageHistoryLayout: Layout {
+  func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+    let width = proposal.width ?? 565
+    let horizontal = width >= 565
+    let chart = subviews[0].sizeThatFits(.init(width: horizontal ? width - 246 : width, height: nil))
+    let breakdown = subviews[2].sizeThatFits(.init(width: horizontal ? 205 : width, height: nil))
+    return CGSize(width: width, height: horizontal ? max(chart.height, breakdown.height)
+      : chart.height + 16 + breakdown.height)
+  }
+
+  func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+    let horizontal = bounds.width >= 565
+    let chartWidth = horizontal ? bounds.width - 246 : bounds.width
+    let chart = subviews[0].sizeThatFits(.init(width: chartWidth, height: nil))
+    subviews[0].place(at: bounds.origin, anchor: .topLeading,
+      proposal: .init(width: chartWidth, height: chart.height))
+    subviews[1].place(at: CGPoint(x: bounds.minX + chartWidth + 20, y: bounds.minY),
+      anchor: .topLeading, proposal: .init(width: horizontal ? 1 : 0, height: horizontal ? bounds.height : 0))
+    subviews[2].place(at: CGPoint(x: horizontal ? bounds.minX + chartWidth + 41 : bounds.minX,
+      y: horizontal ? bounds.minY : bounds.minY + chart.height + 16), anchor: .topLeading,
+      proposal: .init(width: horizontal ? 205 : bounds.width, height: nil))
   }
 }

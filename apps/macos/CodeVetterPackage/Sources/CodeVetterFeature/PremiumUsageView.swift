@@ -11,9 +11,14 @@ struct UsageTrendPoint: Identifiable, Sendable {
 struct UsageSeriesPoint: Sendable {
   var tokens: UInt64 = 0
   var costUSD: Double = 0
+  var cacheReadTokens: UInt64 = 0
 
   func value(for metric: UsageHistoryMetric) -> Double {
-    metric == .tokens ? Double(tokens) : costUSD
+    switch metric {
+    case .tokens: Double(tokens)
+    case .cost: costUSD
+    case .cache: Double(cacheReadTokens)
+    }
   }
 }
 
@@ -39,6 +44,7 @@ struct UsageBreakdownRow: Identifiable, Sendable {
 }
 
 struct UsageViewProjection: Sendable {
+  let history: UsageHistoryProjection
   let totals: LocalUsageTotals
   let activeDays: Int
   let sessionCount: Int
@@ -58,9 +64,14 @@ struct UsageViewProjection: Sendable {
     selectedAgents: Set<String>,
     window: UsageWindow,
     scale: UsageScale,
-    referenceDate: Date = Date()
+    referenceDate: Date = Date(),
+    grouping: UsageGrouping = .model,
+    metric: UsageMetric = .tokens
   ) {
     let dayPeriods = report.periods(for: .day, window: window, referenceDate: referenceDate)
+    history = UsageHistoryProjection(
+      periods: dayPeriods, agents: selectedAgents,
+      scale: scale, grouping: grouping, metric: metric)
     var selectedTotals = LocalUsageTotals.zero
     var modelsByName: [String: LocalUsageModel] = [:]
     for period in dayPeriods {
@@ -121,6 +132,7 @@ struct UsageViewProjection: Sendable {
             ?? Array(repeating: UsageSeriesPoint(), count: trendPeriods.count)
           points[index].tokens &+= item.totals.generatedTokens
           points[index].costUSD += item.totals.costUSD
+          points[index].cacheReadTokens &+= item.totals.cacheReadTokens
           modelAcc[item.model] = points
         }
       }
@@ -164,6 +176,7 @@ struct UsageViewProjection: Sendable {
         ?? Array(repeating: UsageSeriesPoint(), count: trendPeriods.count)
       points[index].tokens &+= session.totals.generatedTokens
       points[index].costUSD += session.totals.costUSD
+      points[index].cacheReadTokens &+= session.totals.cacheReadTokens
       projectAcc[name] = points
     }
     attributedSessionCount = attributed
@@ -540,22 +553,22 @@ struct PremiumUsageView: View {
 
   private func metrics(_ report: LocalUsageReport, projection: UsageViewProjection) -> some View {
     HStack(spacing: 8) {
-      UsageMetric(
+      UsageMetricCard(
         value: compact(projection.totals.generatedTokens),
         label: "GENERATED TOKENS",
         detail: model.usageWindow.description
       )
-      UsageMetric(
+      UsageMetricCard(
         value: compact(projection.totals.cacheReadTokens),
         label: "CACHE READ",
         detail: cacheShare(projection.totals)
       )
-      UsageMetric(
+      UsageMetricCard(
         value: currency(projection.totals.costUSD),
         label: "LOCAL LOG COST",
         detail: report.provenance.pricingComplete ? "priced models complete" : "pricing has gaps"
       )
-      UsageMetric(
+      UsageMetricCard(
         value: compact(UInt64(projection.sessionCount)),
         label: "SESSIONS",
         detail: "\(projection.activeDays) active days"
@@ -572,9 +585,7 @@ struct PremiumUsageView: View {
           Text("Historical usage")
             .font(.system(size: 15, weight: .semibold))
           Text(
-            model.usageMetric == .tokens
-              ? "Generated tokens from local agent logs · cache reads remain separate"
-              : "Locally estimated cost from pinned pricing · not subscription spend"
+            model.usageMetric.caption
           )
           .font(.system(size: 10))
           .foregroundStyle(.secondary)
@@ -615,31 +626,8 @@ struct PremiumUsageView: View {
         UsageOptionSwitch(selection: $model.usageMetric)
       }
 
-      let series = model.usageDimension == .model ? projection.modelSeries : projection.projectSeries
-      if model.usageDimension == .project {
-        let attributed = projection.attributedSessionCount
-        Text(
-          "Project attribution covers \(attributed) of \(projection.sessionCount) sessions "
-            + "from agent working directories; the rest stay Unattributed."
-        )
-        .font(.system(size: 10))
-        .foregroundStyle(.secondary)
-      }
-
-      UsageStackedChart(
-        series: series,
-        periodKeys: projection.trendPeriodKeys,
-        metric: model.usageMetric,
-        scale: model.usageScale
-      )
-      .frame(height: 150)
-
-      if !series.isEmpty {
-        UsageBreakdownList(
-          series: series,
-          metric: model.usageMetric
-        )
-      }
+      UsageHistoryView(
+        history: projection.history, pricingComplete: report.provenance.pricingComplete)
     }
     .padding(16)
     .background(EvidenceStyle.surface, in: RoundedRectangle(cornerRadius: 14))
@@ -1056,7 +1044,7 @@ private struct ProviderBrandMark: View {
   }
 }
 
-private struct UsageMetric: View {
+private struct UsageMetricCard: View {
   let value: String
   let label: String
   let detail: String
