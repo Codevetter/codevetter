@@ -94,6 +94,14 @@ private func usageHistoryFixture() -> LocalUsageReport {
       abs(p.visibleSeries.reduce(0) { $0 + p.value(in: bucket, series: $1) } - bucket.total)
         < 0.000_001)
   }
+  #expect(p.chartValues.count == p.buckets.count)
+  for (index, bucket) in p.buckets.enumerated() {
+    #expect(p.chartValues[index].count == p.visibleSeries.count)
+    for (seriesIndex, series) in p.visibleSeries.enumerated() {
+      #expect(
+        abs(p.chartValues[index][seriesIndex] - p.value(in: bucket, series: series)) < 0.000_001)
+    }
+  }
 }
 
 private func allowanceWindow(_ remaining: Double, reset: Int64?, duration: UInt64? = 10_080)
