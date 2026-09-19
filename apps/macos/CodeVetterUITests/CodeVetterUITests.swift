@@ -310,8 +310,30 @@ final class CodeVetterUITests: XCTestCase {
       return
     }
 
-    // Keep XCTest's real scroll-to-visible/click path under test. Do not mask
-    // stale accessibility geometry with coordinate clicks or blind retries.
+    // A row above this viewport can still have a screen coordinate inside the
+    // window header. Hosted XCTest clicked that point without auto-scrolling.
+    // Use real, bounded rail scrolling before a single click; never force state
+    // or retry a click that did not select its target.
+    for _ in 0..<8 {
+      let viewport = rail.frame
+      let target = button.frame
+      guard !viewport.isEmpty, !target.isEmpty else { break }
+      if viewport.contains(target) { break }
+      let distance = max(50, viewport.height * 0.7)
+      if target.minY < viewport.minY {
+        rail.scroll(byDeltaX: 0, deltaY: distance)
+      } else if target.maxY > viewport.maxY {
+        rail.scroll(byDeltaX: 0, deltaY: -distance)
+      } else {
+        break
+      }
+    }
+    guard !button.frame.isEmpty, rail.frame.contains(button.frame), button.isHittable else {
+      XCTFail(
+        "Settings section \(section) is not visible/hittable: button=\(button.frame), rail=\(rail.frame)",
+        file: file, line: line)
+      return
+    }
     print("SETTINGS_RAIL_CLICK section=\(section) button=\(button.frame) rail=\(rail.frame)")
     button.click()
     assertSelected(button, file: file, line: line)

@@ -138,9 +138,7 @@ struct PremiumSettingsView: View {
         .padding(16)
       Rectangle().fill(EvidenceStyle.separator).frame(height: 1)
       ScrollView {
-        // This small, fixed navigation tree must keep offscreen accessibility
-        // geometry current when moving between the top and bottom sections.
-        VStack(alignment: .leading, spacing: 14) {
+        LazyVStack(alignment: .leading, spacing: 14) {
           ForEach(Array(settingsGroups.enumerated()), id: \.offset) { _, group in
             VStack(alignment: .leading, spacing: 4) {
               Text(group.0.uppercased())
