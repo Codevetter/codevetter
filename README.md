@@ -70,6 +70,10 @@ Confirm this is an Apple-silicon Mac on macOS 14 or newer, download CodeVetter-<
 
 Use the signed, notarized DMG for a first install; the matching ZIP is the Sparkle update archive.
 
+For terminal use, the [CLI installer and MCP setup guide](docs/product/mcp-setup.md)
+verify and install the same signed payload without opening the desktop app.
+The guide distinguishes published behavior from the unreleased headless history-index option.
+
 ### Development Install
 
 ```bash

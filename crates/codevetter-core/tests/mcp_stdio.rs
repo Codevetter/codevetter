@@ -14,6 +14,74 @@ use std::{
 const RESPONSE_TIMEOUT: Duration = Duration::from_secs(5);
 
 #[test]
+#[cfg(feature = "browser-agent")]
+fn fresh_cli_history_index_enables_a_working_mcp_scope_without_the_app() {
+    let root = tempfile::tempdir().expect("fixture");
+    let repo = root.path().join("repo");
+    let data = root.path().join("fresh-data");
+    fs::create_dir(&repo).expect("repo");
+    git(&repo, &["init"]);
+    git(&repo, &["config", "user.email", "fixture@codevetter.local"]);
+    git(&repo, &["config", "user.name", "CodeVetter Fixture"]);
+    fs::write(repo.join("README.md"), "# Fresh MCP fixture\n").expect("file");
+    git(&repo, &["add", "README.md"]);
+    git(&repo, &["commit", "-m", "fixture"]);
+    let invoke = |flags: &[&str]| {
+        Command::new(env!("CARGO_BIN_EXE_codevetter"))
+            .args(["mcp", "--repo", repo.to_str().expect("repo path"), "--json"])
+            .args(flags)
+            .env("CODEVETTER_APP_DATA_DIR", &data)
+            .output()
+            .expect("CLI")
+    };
+    assert!(
+        !invoke(&["--enable"]).status.success(),
+        "Unindexed scope must remain disabled"
+    );
+    let indexed = invoke(&["--index-history"]);
+    assert!(
+        indexed.status.success(),
+        "{}",
+        String::from_utf8_lossy(&indexed.stderr)
+    );
+    let indexed: Value = serde_json::from_slice(&indexed.stdout).expect("index receipt");
+    assert_eq!(indexed["settings"]["indexed"], true);
+    assert_eq!(
+        indexed["settings"]["enabled"], false,
+        "Indexing is not access consent"
+    );
+    let enabled = invoke(&["--index-history", "--enable"]);
+    assert!(
+        enabled.status.success(),
+        "{}",
+        String::from_utf8_lossy(&enabled.stderr)
+    );
+    let enabled: Value = serde_json::from_slice(&enabled.stdout).expect("enable receipt");
+    let repo_id = enabled["settings"]["repo_id"]
+        .as_str()
+        .expect("opaque scope");
+    let mut sidecar = McpProcess::spawn(&data.join("codevetter.db"), repo_id);
+    let initialized = sidecar.request(json!({
+        "jsonrpc": "2.0", "id": 1, "method": "initialize",
+        "params": {"protocolVersion": "2025-11-25", "capabilities": {},
+            "clientInfo": {"name": "fresh-cli-fixture", "version": "1"}}
+    }));
+    assert_eq!(initialized["result"]["protocolVersion"], "2025-11-25");
+    sidecar.notify(json!({"jsonrpc": "2.0", "method": "notifications/initialized"}));
+    let tools = sidecar.request(json!({"jsonrpc": "2.0", "id": 2, "method": "tools/list"}));
+    assert!(tools["result"]["tools"].as_array().expect("tools").len() >= 28);
+    let catalog = sidecar.call_tool(3, "capability_catalog", json!({}));
+    assert_ne!(catalog["result"]["isError"], true, "{catalog}");
+    assert!(invoke(&["--disable"]).status.success());
+    let rejected = invoke(&["--index-history", "--disable"]);
+    assert!(
+        !rejected.status.success(),
+        "Contradictory operation must fail"
+    );
+    sidecar.close();
+}
+
+#[test]
 fn stdio_boundary_is_json_only_scoped_and_paginated() {
     let fixture = McpFixture::new();
     let connection = &fixture.connection;

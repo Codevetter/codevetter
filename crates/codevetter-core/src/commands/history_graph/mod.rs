@@ -591,9 +591,9 @@ pub mod state;
 mod storage;
 
 pub use api::{
-    add_history_annotation, backfill_history_graph, cancel_history_backfill,
-    explain_history_entity, get_history_graph_status, get_history_timeline,
-    list_history_annotations,
+    add_history_annotation, backfill_history_graph, backfill_history_graph_with_db,
+    cancel_history_backfill, explain_history_entity, get_history_graph_status,
+    get_history_timeline, list_history_annotations,
 };
 pub use catalog::load_history_revisions;
 pub use state::{
