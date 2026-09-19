@@ -249,6 +249,18 @@ if (!fs.existsSync(privacyMarkdownFile) || !fs.existsSync(privacyHtmlFile)) {
   }
 }
 
+// ── Analytics loader regression ────────────────────────────────────────────
+// The landing used to load https://us.i.posthog.com/array.js, which PostHog
+// retired to a 404. With the SDK never starting, the custom _phq queue was
+// never consumed and posthog.init threw, silently dropping every page_view.
+const landingHtml = fs.readFileSync(path.join(dist, 'index.html'), 'utf8');
+if (landingHtml.includes('us.i.posthog.com/array.js') || landingHtml.includes('_phq')) {
+  failures.push('PostHog loader uses the retired ingestion-path array.js');
+}
+if (!landingHtml.includes('-assets.i.posthog.com') || !landingHtml.includes('/static/array.js')) {
+  failures.push('PostHog loader does not use the canonical static assets host');
+}
+
 if (privacyProviderList) {
   const quotedProviders = /whichever provider \(([^)]+)\)/g;
   const walk = (dir) =>
