@@ -64,8 +64,8 @@ importers:
         version: 7.11.1(@biomejs/biome@2.5.1)
     optionalDependencies:
       '@tailwindcss/oxide-linux-x64-gnu':
-        specifier: ^4.2.4
-        version: 4.2.4
+        specifier: ^4.3.3
+        version: 4.3.3
       lightningcss-linux-x64-gnu:
         specifier: ^1.33.0
         version: 1.33.0
@@ -1370,6 +1370,13 @@ packages:
 
   '@tailwindcss/oxide-linux-x64-gnu@4.2.4':
     resolution: {integrity: sha512-7Mx25E4WTfnht0TVRTyC00j3i0M+EeFe7wguMDTlX4mRxafznw0CA8WJkFjWYH5BlgELd1kSjuU2JiPnNZbJDA==}
+    engines: {node: '>= 20'}
+    cpu: [x64]
+    os: [linux]
+    libc: [glibc]
+
+  '@tailwindcss/oxide-linux-x64-gnu@4.3.3':
+    resolution: {integrity: sha512-tx7us1muwOKAKWao2v/GaafFeQboE6aj88vC6ziN2NCGcRm8gWUhwjzg+YdVB1e4boAtdtma4L43onunI6NS4w==}
     engines: {node: '>= 20'}
     cpu: [x64]
     os: [linux]
@@ -3864,6 +3871,9 @@ snapshots:
     optional: true
 
   '@tailwindcss/oxide-linux-x64-gnu@4.2.4':
+    optional: true
+
+  '@tailwindcss/oxide-linux-x64-gnu@4.3.3':
     optional: true
 
   '@tailwindcss/oxide-linux-x64-musl@4.2.4':
