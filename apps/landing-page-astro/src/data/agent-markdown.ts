@@ -3,6 +3,7 @@ import results from '@/data/benchmark-results.json';
 import examples from '@/data/xray-examples.json';
 import docsIndexSource from '../../../../docs/index.md?raw';
 import { verificationContent } from '@/data/verification-content';
+import { articlesContent } from '@/data/articles-content';
 import { currentReleaseUrl, publishedRelease, updateSummary } from '@/data/release';
 import { privacyMarkdownBody, privacyPolicy } from '@/data/privacy';
 import {
@@ -255,7 +256,25 @@ ${examples.map((example) => `- [${example.title}](${SITE_URL}/xray/${example.id}
   docs: page('CodeVetter docs', '/docs/', docsIndex),
 };
 
+staticPages.articles = page(
+  'CodeVetter articles',
+  '/articles',
+  `Editorial articles on execution-backed coding-agent verification, reproducible evidence, and verification receipts.
+
+${Object.values(articlesContent)
+  .map((article) => `- [${article.title}](${SITE_URL}${article.path}) — ${article.description}`)
+  .join('\n')}`
+);
+
 for (const content of Object.values(verificationContent)) {
+  staticPages[content.path.replace(/^\//, '')] = page(
+    content.title,
+    content.path,
+    content.markdown
+  );
+}
+
+for (const content of Object.values(articlesContent)) {
   staticPages[content.path.replace(/^\//, '')] = page(
     content.title,
     content.path,

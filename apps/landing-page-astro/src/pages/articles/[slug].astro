@@ -1,0 +1,15 @@
+---
+import EditorialPage from '@/components/content/EditorialPage.astro';
+import { articlesContent } from '@/data/articles-content';
+
+export function getStaticPaths() {
+  return Object.values(articlesContent).map((content) => ({
+    params: { slug: content.path.split('/').pop() },
+    props: { content },
+  }));
+}
+
+const { content } = Astro.props;
+---
+
+<EditorialPage content={content} />

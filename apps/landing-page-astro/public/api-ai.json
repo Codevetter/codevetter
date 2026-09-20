@@ -170,6 +170,41 @@
       "description": "Comparison of CodeVetter with open-source agent-verification CLIs (Verdict, PatchDrill, ProofGate, evigate, didrun, verity)"
     },
     {
+      "id": "articles",
+      "url": "https://codevetter.com/articles",
+      "md": "https://codevetter.com/articles.md",
+      "kind": "static",
+      "description": "Index of editorial articles on execution-backed agent verification"
+    },
+    {
+      "id": "article-agent-evaluation-vs-tests-vs-code-review",
+      "url": "https://codevetter.com/articles/agent-evaluation-vs-tests-vs-code-review",
+      "md": "https://codevetter.com/articles/agent-evaluation-vs-tests-vs-code-review.md",
+      "kind": "static",
+      "description": "Proof boundaries of agent evaluation, software testing, and static code review"
+    },
+    {
+      "id": "article-coding-agent-evidence-receipt-spec",
+      "url": "https://codevetter.com/articles/coding-agent-evidence-receipt-spec",
+      "md": "https://codevetter.com/articles/coding-agent-evidence-receipt-spec.md",
+      "kind": "static",
+      "description": "What a machine-readable coding-agent evidence receipt should contain"
+    },
+    {
+      "id": "article-verifying-ai-code-changes-beyond-code-review",
+      "url": "https://codevetter.com/articles/verifying-ai-code-changes-beyond-code-review",
+      "md": "https://codevetter.com/articles/verifying-ai-code-changes-beyond-code-review.md",
+      "kind": "static",
+      "description": "Executable verification workflow beyond static AI code review"
+    },
+    {
+      "id": "article-why-reproducible-evidence-matters",
+      "url": "https://codevetter.com/articles/why-reproducible-evidence-matters-when-an-ai-agent-says-a-task-is-done",
+      "md": "https://codevetter.com/articles/why-reproducible-evidence-matters-when-an-ai-agent-says-a-task-is-done.md",
+      "kind": "static",
+      "description": "Why reproducible execution evidence outranks LLM-as-judge opinions"
+    },
+    {
       "id": "docs",
       "url": "https://codevetter.com/docs/",
       "md": "https://codevetter.com/docs.md",

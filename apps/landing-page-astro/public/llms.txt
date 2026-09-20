@@ -33,6 +33,14 @@ Do not use CodeVetter for: generic static code review without execution, style-o
 - [CodeVetter vs Greptile](https://codevetter.com/codevetter-vs-greptile): Repository-aware review versus execution-backed task evidence
 - [CodeVetter vs CodeRabbit](https://codevetter.com/codevetter-vs-coderabbit): Review guidance versus verification evidence
 
+## Articles
+
+- [Articles index](https://codevetter.com/articles): Editorial pieces on execution-backed agent verification
+- [Why reproducible evidence matters when an AI agent says a task is done](https://codevetter.com/articles/why-reproducible-evidence-matters-when-an-ai-agent-says-a-task-is-done): Why runtime evidence outranks LLM-as-judge opinions
+- [How to verify AI-generated code changes beyond code review](https://codevetter.com/articles/verifying-ai-code-changes-beyond-code-review): Executable verification loop beyond static review
+- [What an evidence receipt for a coding agent should contain](https://codevetter.com/articles/coding-agent-evidence-receipt-spec): Identity bindings, execution records, taxonomy, and closure trails
+- [Agent evaluation vs tests vs code review](https://codevetter.com/articles/agent-evaluation-vs-tests-vs-code-review): The distinct proof boundaries of each quality mechanism
+
 ## Machine surfaces
 
 - [Agent catalog](https://codevetter.com/api/ai): JSON inventory of public surfaces
