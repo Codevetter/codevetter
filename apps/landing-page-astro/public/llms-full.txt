@@ -52,6 +52,14 @@ Engineers evaluating or shipping coding-agent changes who need executable eviden
 - AI code review vs verification: https://codevetter.com/ai-code-review-vs-verification
 - Verification evidence bundle: https://codevetter.com/verification-evidence-bundle
 
+## Articles
+
+- Articles index: https://codevetter.com/articles
+- Why reproducible evidence matters when an AI agent says a task is done: https://codevetter.com/articles/why-reproducible-evidence-matters-when-an-ai-agent-says-a-task-is-done
+- How to verify AI-generated code changes beyond code review: https://codevetter.com/articles/verifying-ai-code-changes-beyond-code-review
+- What an evidence receipt for a coding agent should contain: https://codevetter.com/articles/coding-agent-evidence-receipt-spec
+- Agent evaluation vs tests vs code review: https://codevetter.com/articles/agent-evaluation-vs-tests-vs-code-review
+
 ## Machine surfaces
 
 - https://codevetter.com/.well-known/agent-skills/index.json
@@ -71,6 +79,11 @@ Engineers evaluating or shipping coding-agent changes who need executable eviden
 - https://codevetter.com/ai-code-review-vs-verification.md
 - https://codevetter.com/verification-evidence-bundle.md
 - https://codevetter.com/verify-ai-generated-code.md
+- https://codevetter.com/articles.md
+- https://codevetter.com/articles/agent-evaluation-vs-tests-vs-code-review.md
+- https://codevetter.com/articles/coding-agent-evidence-receipt-spec.md
+- https://codevetter.com/articles/verifying-ai-code-changes-beyond-code-review.md
+- https://codevetter.com/articles/why-reproducible-evidence-matters-when-an-ai-agent-says-a-task-is-done.md
 - https://codevetter.com/xray.md
 - https://codevetter.com/sitemap.xml
 - https://codevetter.com/sitemap-index.xml
