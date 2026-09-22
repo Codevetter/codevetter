@@ -33,7 +33,10 @@ const comparisons = pairs
         <li>
           <a href={`/unpack/${r.slug}`}>
             <strong>{r.repo}</strong>
-            <span>{r.stats.filesScanned} files · {r.languages[0]?.language ?? 'mixed'} · {r.commit.date}</span>
+            <span>
+              {r.sections ? 'full analysis' : 'scan · analysis soon'} · {r.stats.filesScanned} files
+              · {r.languages[0]?.language ?? 'mixed'} · {r.commit.date}
+            </span>
           </a>
         </li>
       ))}
