@@ -4,7 +4,7 @@
     "repo": "axios/axios",
     "name": "axios",
     "codevetterVersion": "codevetter 1.12.0",
-    "collectedAt": "2026-09-22T05:15:33.541Z",
+    "collectedAt": "2026-09-22T06:01:33.011Z",
     "commit": {
       "sha": "56a5f1acdc41965f464eb59bec6cc828113ba546",
       "date": "2026-09-16",
@@ -21,39 +21,55 @@
       {
         "language": "JavaScript",
         "files": 216,
-        "bytes": 1119522
+        "bytes": 1119522,
+        "codeShare": 88
       },
       {
         "language": "Markdown",
         "files": 160,
-        "bytes": 1215474
+        "bytes": 1215474,
+        "codeShare": null
       },
       {
         "language": "TypeScript",
         "files": 29,
-        "bytes": 107848
+        "bytes": 107848,
+        "codeShare": 12
       },
       {
         "language": "JSON",
         "files": 12,
-        "bytes": 176480
+        "bytes": 176480,
+        "codeShare": null
       },
       {
         "language": "YAML",
         "files": 10,
-        "bytes": 28787
+        "bytes": 28787,
+        "codeShare": null
       },
       {
         "language": "HTML",
         "files": 9,
-        "bytes": 41258
+        "bytes": 41258,
+        "codeShare": null
       },
       {
         "language": "CSS",
         "files": 1,
-        "bytes": 4285
+        "bytes": 4285,
+        "codeShare": null
       }
     ],
+    "sourceRoots": [
+      {
+        "path": "lib",
+        "file_count": 73,
+        "bytes": 253019
+      }
+    ],
+    "sourceLayout": null,
+    "probableEntry": "index.js",
     "manifest": {
       "path": "package.json",
       "name": "axios",
@@ -158,14 +174,14 @@
         "bytes": 17598
       },
       {
+        "path": ".husky",
+        "file_count": 1,
+        "bytes": 27
+      },
+      {
         "path": "scripts",
         "file_count": 1,
         "bytes": 633
-      },
-      {
-        "path": ".devcontainer",
-        "file_count": 1,
-        "bytes": 459
       }
     ],
     "docs": [
@@ -186,14 +202,14 @@
       "Vue"
     ],
     "health": {
-      "averageScore": 9.7,
-      "hotspotCount": 2,
+      "averageScore": 9.2,
+      "hotspotCount": 3,
       "filesAnalyzed": 92,
-      "summary": "Deterministic scan scored 92 source files across simple size, churn, structural, test-adjacency, and performance-risk signals. 2 hotspots surfaced; average score is 9.7/10. Treat these as review leads, not proof of a bug.",
+      "summary": "Deterministic scan scored 92 source files across simple size, churn, structural, test-adjacency, and performance-risk signals. 3 hotspots surfaced; average score is 9.2/10. Treat these as review leads, not proof of a bug.",
       "topFiles": [
         {
           "path": "lib/adapters/http.js",
-          "score": 5.9,
+          "score": 4.7,
           "lines": 1407,
           "findings": [
             "Large file",
@@ -202,7 +218,7 @@
         },
         {
           "path": "lib/adapters/fetch.js",
-          "score": 6.4,
+          "score": 5.2,
           "lines": 715,
           "findings": [
             "Large file",
@@ -211,7 +227,7 @@
         },
         {
           "path": "lib/core/Axios.js",
-          "score": 7.1,
+          "score": 5.9,
           "lines": 306,
           "findings": [
             "Deep nesting",
@@ -226,30 +242,52 @@
         "date": "2026-09-17",
         "subject": "fix(fetch): preserve response size errors across runtime wrappers (#11179)",
         "files": [
-          ".devcontainer/devcontainer.json",
-          ".github/FUNDING.yml",
-          ".github/ISSUE_TEMPLATE.md",
-          ".github/PULL_REQUEST_TEMPLATE.md",
-          ".github/copilot-instructions.md",
-          ".github/dependabot.yml",
-          ".github/workflows/bundle-size.yml",
-          ".github/workflows/lockfile-lint.yml",
-          ".github/workflows/moderator.yml",
-          ".github/workflows/publish.yml",
-          ".github/workflows/release-branch.yml",
-          ".github/workflows/run-ci.yml",
-          ".github/workflows/verify-build-reproducibility.yml",
-          ".github/workflows/zizmor.yml",
-          "AGENTS.md",
-          "CHANGELOG.md",
-          "CLAUDE.md",
-          "CODE_OF_CONDUCT.md",
-          "COLLABORATOR_GUIDE.md",
-          "CONTRIBUTING.md",
-          "CONTRIBUTORS.md",
-          "ECOSYSTEM.md",
-          "MIGRATION_GUIDE.md",
-          "PRE_RELEASE_CHANGELOG.md"
+          "PRE_RELEASE_CHANGELOG.md",
+          "PRE_RELEASE_DOCS.md",
+          "index.d.ts",
+          "lib/adapters/fetch.js",
+          "tests/browser/fetchResponseErrors.browser.test.js",
+          "tests/module/cjs/tests/helpers/cjs-fetch-types.ts",
+          "tests/module/esm/tests/helpers/esm-fetch-types.ts",
+          "tests/module/esm/tests/typings.module.test.js",
+          "tests/unit/adapters/fetch.test.js",
+          "tests/unit/adapters/http.test.js"
+        ]
+      },
+      {
+        "sha": "fbe2e8260c86",
+        "date": "2026-09-17",
+        "subject": "fix(types): expose the response default marker type (#11125)",
+        "files": [
+          "PRE_RELEASE_CHANGELOG.md",
+          "index.d.ts",
+          "tests/module/esm/tests/helpers/declaration-consumer.ts",
+          "tests/module/esm/tests/helpers/declaration-emit.ts",
+          "tests/module/esm/tests/ts.module.test.js",
+          "tests/module/esm/vitest.config.js"
+        ]
+      },
+      {
+        "sha": "ba0f3a0c568e",
+        "date": "2026-09-16",
+        "subject": "chore(deps-dev): bump the development_dependencies group with 4 updates (#11234)",
+        "files": []
+      },
+      {
+        "sha": "ed95c083f574",
+        "date": "2026-09-13",
+        "subject": "chore(deps): bump nanoid from 3.3.17 to 3.3.19 in /docs (#11230)",
+        "files": []
+      },
+      {
+        "sha": "dfa30a76dcae",
+        "date": "2026-09-14",
+        "subject": "docs: fix interceptor test links (#11228)",
+        "files": [
+          "docs/es/pages/advanced/interceptors.md",
+          "docs/fr/pages/advanced/interceptors.md",
+          "docs/pages/advanced/interceptors.md",
+          "docs/zh/pages/advanced/interceptors.md"
         ]
       }
     ],
@@ -257,18 +295,18 @@
       "status": "missing",
       "summary": "Repo does not expose enough local browser QA structure for a reliable Synthetic QA workflow yet."
     },
-    "readmePreview": "<h3 align=\"center\">💎 Platinum sponsors <br /></h3>\n<table align=\"center\">\n    <tr>\n        <td align=\"center\" width=\"50%\">\n            <a\n                href=\"https://thanks.dev/?utm_source&#x3D;axios&amp;utm_medium&#x3D;sponsorlist&amp;utm_campaign&#x3D;sponsorship\"\n          "
+    "readmePreview": "💎 Platinum sponsors We're passionate about making open source sustainable."
   },
   {
     "slug": "curl",
     "repo": "curl/curl",
     "name": "curl",
     "codevetterVersion": "codevetter 1.12.0",
-    "collectedAt": "2026-09-22T05:15:36.698Z",
+    "collectedAt": "2026-09-22T06:01:35.595Z",
     "commit": {
-      "sha": "53be819ca8291b591332aeeae480bd0ae0d08d24",
-      "date": "2026-09-21",
-      "subject": "escape: use hex-pair lookup in curl_easy_escape"
+      "sha": "c362f034692e05ecb4d33edb740ba64c63a20add",
+      "date": "2026-09-22",
+      "subject": "RELEASE-NOTES: synced"
     },
     "stats": {
       "filesScanned": 4000,
@@ -281,44 +319,66 @@
       {
         "language": "C",
         "files": 1043,
-        "bytes": 0
+        "bytes": 0,
+        "codeShare": 92
       },
       {
         "language": "Markdown",
         "files": 930,
-        "bytes": 0
+        "bytes": 0,
+        "codeShare": null
       },
       {
         "language": "Python",
         "files": 51,
-        "bytes": 0
+        "bytes": 0,
+        "codeShare": 5
       },
       {
         "language": "Shell",
         "files": 30,
-        "bytes": 0
+        "bytes": 0,
+        "codeShare": 3
       },
       {
         "language": "YAML",
         "files": 30,
-        "bytes": 0
+        "bytes": 0,
+        "codeShare": null
       },
       {
         "language": "C++",
         "files": 2,
-        "bytes": 0
+        "bytes": 0,
+        "codeShare": 0
       },
       {
         "language": "TOML",
         "files": 2,
-        "bytes": 0
+        "bytes": 0,
+        "codeShare": 0
       },
       {
         "language": "JSON",
         "files": 1,
-        "bytes": 0
+        "bytes": 0,
+        "codeShare": null
       }
     ],
+    "sourceRoots": [
+      {
+        "path": "lib",
+        "file_count": 393,
+        "bytes": 5576622
+      },
+      {
+        "path": "src",
+        "file_count": 96,
+        "bytes": 753605
+      }
+    ],
+    "sourceLayout": null,
+    "probableEntry": "lib/",
     "manifest": null,
     "entrypoints": [
       {
@@ -439,34 +499,43 @@
     },
     "history": [
       {
+        "sha": "c362f034692e",
+        "date": "2026-09-22",
+        "subject": "RELEASE-NOTES: synced",
+        "files": []
+      },
+      {
         "sha": "53be819ca829",
         "date": "2026-09-21",
         "subject": "escape: use hex-pair lookup in curl_easy_escape",
         "files": [
-          ".circleci/config.yml",
-          ".clang-tidy.yml",
-          ".github/CONTRIBUTING.md",
-          ".github/FUNDING.yml",
-          ".github/ISSUE_TEMPLATE/bug_report.yml",
-          ".github/ISSUE_TEMPLATE/config.yml",
-          ".github/ISSUE_TEMPLATE/docs.yml",
-          ".github/actions/pkg-install/action.yml",
-          ".github/dependabot.yml",
-          ".github/egress-firewall.yaml",
-          ".github/labeler.yml",
-          ".github/lock.yml",
-          ".github/pull_request_template.md",
-          ".github/scripts/pyspelling.yaml",
-          ".github/scripts/typos.toml",
-          ".github/scripts/yamlcheck.yaml",
-          ".github/stale.yml",
-          ".github/workflows/appveyor-status.yml",
-          ".github/workflows/checkdocs.yml",
-          ".github/workflows/checksrc.yml",
-          ".github/workflows/checkurls.yml",
-          ".github/workflows/codeql.yml",
-          ".github/workflows/configure-vs-cmake.yml",
-          ".github/workflows/curl-for-win.yml"
+          "lib/escape.c",
+          "tests/libtest/lib1396.c"
+        ]
+      },
+      {
+        "sha": "7934b5400f3e",
+        "date": "2026-09-18",
+        "subject": "capsule: reject a capsule that can never be buffered",
+        "files": [
+          "lib/vquic/capsule.c",
+          "tests/unit/unit3400.c"
+        ]
+      },
+      {
+        "sha": "3aa67d5e49b9",
+        "date": "2026-09-21",
+        "subject": "digest: quote the digest-uri param as well",
+        "files": [
+          "lib/vauth/digest.c"
+        ]
+      },
+      {
+        "sha": "ce359773039d",
+        "date": "2026-09-21",
+        "subject": "getinfo: make sure CURLINFO_REDIRECT_URL does not contain creds",
+        "files": [
+          "lib/http.c"
         ]
       }
     ],
@@ -474,14 +543,14 @@
       "status": "missing",
       "summary": "Repo does not expose enough local browser QA structure for a reliable Synthetic QA workflow yet."
     },
-    "readmePreview": "                                  _   _ ____  _\n                              ___| | | |  _ \\| |\n                             / __| | | | |_) | |\n                            | (__| |_| |  _ <| |___\n                             \\___|\\___/|_| \\_\\_____|\n\nREADME\n\n  Curl is a command "
+    "readmePreview": "| | | | \\| | / | | | | |) | | | (| || | <| | \\|\\/|| \\\\| README Curl is a command line tool for transferring data specified with URL syntax."
   },
   {
     "slug": "express",
     "repo": "expressjs/express",
     "name": "express",
     "codevetterVersion": "codevetter 1.12.0",
-    "collectedAt": "2026-09-22T05:15:33.318Z",
+    "collectedAt": "2026-09-22T06:01:32.384Z",
     "commit": {
       "sha": "9a34acf03cb818ff3f8bc40e44176e277a25cbb9",
       "date": "2026-09-15",
@@ -498,34 +567,95 @@
       {
         "language": "JavaScript",
         "files": 141,
-        "bytes": 548685
+        "bytes": 548685,
+        "codeShare": 100
       },
       {
         "language": "HTML",
         "files": 8,
-        "bytes": 1014
+        "bytes": 1014,
+        "codeShare": null
       },
       {
         "language": "YAML",
         "files": 7,
-        "bytes": 15296
+        "bytes": 15296,
+        "codeShare": null
       },
       {
         "language": "CSS",
         "files": 4,
-        "bytes": 601
+        "bytes": 601,
+        "codeShare": null
       },
       {
         "language": "Markdown",
         "files": 4,
-        "bytes": 139775
+        "bytes": 139775,
+        "codeShare": null
       },
       {
         "language": "JSON",
         "files": 1,
-        "bytes": 2731
+        "bytes": 2731,
+        "codeShare": null
       }
     ],
+    "sourceRoots": [
+      {
+        "path": "lib",
+        "file_count": 6,
+        "bytes": 62030
+      }
+    ],
+    "sourceLayout": {
+      "path": "lib",
+      "children": [
+        {
+          "name": "application.js",
+          "path": "lib/application.js",
+          "is_dir": false,
+          "file_count": 1,
+          "children": []
+        },
+        {
+          "name": "express.js",
+          "path": "lib/express.js",
+          "is_dir": false,
+          "file_count": 1,
+          "children": []
+        },
+        {
+          "name": "request.js",
+          "path": "lib/request.js",
+          "is_dir": false,
+          "file_count": 1,
+          "children": []
+        },
+        {
+          "name": "response.js",
+          "path": "lib/response.js",
+          "is_dir": false,
+          "file_count": 1,
+          "children": []
+        },
+        {
+          "name": "utils.js",
+          "path": "lib/utils.js",
+          "is_dir": false,
+          "file_count": 1,
+          "children": []
+        },
+        {
+          "name": "view.js",
+          "path": "lib/view.js",
+          "is_dir": false,
+          "file_count": 1,
+          "children": []
+        }
+      ]
+    },
+    "probableEntry": "index.js",
     "manifest": {
       "path": "package.json",
       "name": "express",
@@ -607,14 +737,14 @@
       "GitHub Actions"
     ],
     "health": {
-      "averageScore": 9.2,
-      "hotspotCount": 5,
+      "averageScore": 7.9,
+      "hotspotCount": 16,
       "filesAnalyzed": 96,
-      "summary": "Deterministic scan scored 96 source files across simple size, churn, structural, test-adjacency, and performance-risk signals. 5 hotspots surfaced; average score is 9.2/10. Treat these as review leads, not proof of a bug.",
+      "summary": "Deterministic scan scored 96 source files across simple size, churn, structural, test-adjacency, and performance-risk signals. 16 hotspots surfaced; average score is 7.9/10. Treat these as review leads, not proof of a bug.",
       "topFiles": [
         {
           "path": "test/app.router.js",
-          "score": 5.7,
+          "score": 4.5,
           "lines": 1217,
           "findings": [
             "Large file",
@@ -623,7 +753,7 @@
         },
         {
           "path": "test/express.urlencoded.js",
-          "score": 6.2,
+          "score": 5,
           "lines": 828,
           "findings": [
             "Large file",
@@ -632,7 +762,7 @@
         },
         {
           "path": "test/res.send.js",
-          "score": 6.2,
+          "score": 5,
           "lines": 635,
           "findings": [
             "Large file",
@@ -647,30 +777,43 @@
         "date": "2026-09-16",
         "subject": "fix(res.send): preserve ETag generation with Transfer-Encoding (#7459)",
         "files": [
-          ".eslintrc.yml",
-          ".github/dependabot.yml",
+          "lib/response.js",
+          "test/res.send.js"
+        ]
+      },
+      {
+        "sha": "3ce6d0eb86e9",
+        "date": "2026-09-13",
+        "subject": "ci: add npm staged publication with dist-tag support (#7464)",
+        "files": [
+          ".github/workflows/npm-publish.yml"
+        ]
+      },
+      {
+        "sha": "53d4a0d606c0",
+        "date": "2026-09-11",
+        "subject": "docs: fix capitalization of GitHub Discussions in Readme (#7426)",
+        "files": [
+          "Readme.md"
+        ]
+      },
+      {
+        "sha": "bed501c695a6",
+        "date": "2026-09-08",
+        "subject": "build(deps-dev): bump morgan from 1.11.0 to 1.12.0 (#7461)",
+        "files": [
+          "package.json"
+        ]
+      },
+      {
+        "sha": "4e65ec983d33",
+        "date": "2026-09-08",
+        "subject": "build(deps): bump the github-actions group with 5 updates (#7462)",
+        "files": [
           ".github/workflows/ci.yml",
           ".github/workflows/codeql.yml",
           ".github/workflows/legacy.yml",
-          ".github/workflows/npm-publish.yml",
-          ".github/workflows/scorecard.yml",
-          "History.md",
-          "Readme.md",
-          "examples/README.md",
-          "examples/auth/index.js",
-          "examples/content-negotiation/db.js",
-          "examples/content-negotiation/index.js",
-          "examples/content-negotiation/users.js",
-          "examples/cookie-sessions/index.js",
-          "examples/cookies/index.js",
-          "examples/downloads/index.js",
-          "examples/ejs/index.js",
-          "examples/error-pages/index.js",
-          "examples/error/index.js",
-          "examples/hello-world/index.js",
-          "examples/markdown/index.js",
-          "examples/markdown/views/index.md",
-          "examples/multi-router/controllers/api_v1.js"
+          ".github/workflows/scorecard.yml"
         ]
       }
     ],
@@ -678,14 +821,14 @@
       "status": "missing",
       "summary": "Repo does not expose enough local browser QA structure for a reliable Synthetic QA workflow yet."
     },
-    "readmePreview": "<a href=\"https://expressjs.com/\">\n  <picture>\n    <source media=\"(prefers-color-scheme: dark)\" srcset=\"https://expressjs.com/images/logos/logo-express-white.svg\">\n    <img alt=\"Express Logo\" src=\"https://expressjs.com/images/logos/logo-express-black.svg\" width=\"280\">\n  </picture>"
+    "readmePreview": "Fast, unopinionated, minimalist web framework for Node.js."
   },
   {
     "slug": "fastapi",
     "repo": "fastapi/fastapi",
     "name": "fastapi",
     "codevetterVersion": "codevetter 1.12.0",
-    "collectedAt": "2026-09-22T05:15:35.454Z",
+    "collectedAt": "2026-09-22T06:01:34.641Z",
     "commit": {
       "sha": "50113da16fec53b66b80d75e80a89296de4fa5a5",
       "date": "2026-09-01",
@@ -702,44 +845,61 @@
       {
         "language": "Markdown",
         "files": 1692,
-        "bytes": 12503344
+        "bytes": 12503344,
+        "codeShare": null
       },
       {
         "language": "Python",
         "files": 1138,
-        "bytes": 3972016
+        "bytes": 3972016,
+        "codeShare": 99
       },
       {
         "language": "YAML",
         "files": 42,
-        "bytes": 262400
+        "bytes": 262400,
+        "codeShare": null
       },
       {
         "language": "HTML",
         "files": 5,
-        "bytes": 8190
+        "bytes": 8190,
+        "codeShare": null
       },
       {
         "language": "Shell",
         "files": 5,
-        "bytes": 574
+        "bytes": 574,
+        "codeShare": 0
       },
       {
         "language": "JavaScript",
         "files": 4,
-        "bytes": 22183
+        "bytes": 22183,
+        "codeShare": 0
       },
       {
         "language": "CSS",
         "files": 3,
-        "bytes": 16064
+        "bytes": 16064,
+        "codeShare": null
       },
       {
         "language": "TOML",
         "files": 1,
-        "bytes": 11581
+        "bytes": 11581,
+        "codeShare": 0
       }
     ],
+    "sourceRoots": [
+      {
+        "path": "fastapi",
+        "file_count": 56,
+        "bytes": 789092
+      }
+    ],
+    "sourceLayout": null,
+    "probableEntry": "pyproject.toml",
     "manifest": {
       "path": "pyproject.toml",
       "name": "fastapi",
@@ -861,14 +1021,14 @@
       "Python"
     ],
     "health": {
-      "averageScore": 9,
-      "hotspotCount": 1,
+      "averageScore": 8.2,
+      "hotspotCount": 12,
       "filesAnalyzed": 96,
-      "summary": "Deterministic scan scored 96 source files across simple size, churn, structural, test-adjacency, and performance-risk signals. 1 hotspot surfaced; average score is 9.0/10. Treat these as review leads, not proof of a bug.",
+      "summary": "Deterministic scan scored 96 source files across simple size, churn, structural, test-adjacency, and performance-risk signals. 12 hotspots surfaced; average score is 8.2/10. Treat these as review leads, not proof of a bug.",
       "topFiles": [
         {
           "path": "scripts/docs.py",
-          "score": 5.9,
+          "score": 4.7,
           "lines": 919,
           "findings": [
             "Large file",
@@ -877,7 +1037,7 @@
         },
         {
           "path": "fastapi/routing.py",
-          "score": 6.6,
+          "score": 5.4,
           "lines": 1236,
           "findings": [
             "Large file",
@@ -886,7 +1046,7 @@
         },
         {
           "path": "fastapi/dependencies/utils.py",
-          "score": 6.6,
+          "score": 5.4,
           "lines": 1053,
           "findings": [
             "Large file",
@@ -901,30 +1061,37 @@
         "date": "2026-09-01",
         "subject": "📝 Update release notes",
         "files": [
-          ".github/DISCUSSION_TEMPLATE/questions.yml",
-          ".github/DISCUSSION_TEMPLATE/translations.yml",
-          ".github/ISSUE_TEMPLATE/config.yml",
-          ".github/ISSUE_TEMPLATE/privileged.yml",
-          ".github/dependabot.yml",
-          ".github/latest-changes.yml",
-          ".github/pr-push.yml",
-          ".github/pr-submit.yml",
-          ".github/workflows/add-to-project.yml",
-          ".github/workflows/build-docs.yml",
-          ".github/workflows/bump-pre-commit-hooks.yml",
-          ".github/workflows/create-draft-release.yml",
-          ".github/workflows/deploy-docs.yml",
-          ".github/workflows/detect-conflicts.yml",
-          ".github/workflows/guard-dependencies.yml",
-          ".github/workflows/issue-manager.yml",
-          ".github/workflows/label-approved.yml",
-          ".github/workflows/notify-translations.yml",
-          ".github/workflows/pre-commit.yml",
-          ".github/workflows/prepare-release.yml",
-          ".github/workflows/publish.yml",
-          ".github/workflows/smokeshow.yml",
-          ".github/workflows/sponsors.yml",
-          ".github/workflows/test-redistribute.yml"
+          "docs/en/docs/release-notes.md"
+        ]
+      },
+      {
+        "sha": "ad263df5a4a5",
+        "date": "2026-09-01",
+        "subject": "⬆ Bump the python-packages group across 1 directory with 15 updates (#16285)",
+        "files": [
+          "pyproject.toml"
+        ]
+      },
+      {
+        "sha": "965b72225a48",
+        "date": "2026-09-01",
+        "subject": "📝 Update release notes",
+        "files": [
+          "docs/en/docs/release-notes.md"
+        ]
+      },
+      {
+        "sha": "fcf472e93a26",
+        "date": "2026-09-01",
+        "subject": "⬆ Bump starlette from 1.3.1 to 1.6.0 (#16289)",
+        "files": []
+      },
+      {
+        "sha": "fc5f36b17d0d",
+        "date": "2026-09-01",
+        "subject": "📝 Update release notes",
+        "files": [
+          "docs/en/docs/release-notes.md"
         ]
       }
     ],
@@ -932,14 +1099,14 @@
       "status": "missing",
       "summary": "Repo does not expose enough local browser QA structure for a reliable Synthetic QA workflow yet."
     },
-    "readmePreview": "<p align=\"center\">\n  <a href=\"https://fastapi.tiangolo.com\"><img src=\"https://fastapi.tiangolo.com/img/logo-margin/logo-teal.png\" alt=\"FastAPI\"></a>\n</p>\n<p align=\"center\">\n    <em>FastAPI framework, high performance, easy to learn, fast to code, ready for production</em>\n</p>\n<p"
+    "readmePreview": "FastAPI framework, high performance, easy to learn, fast to code, ready for production --- Documentation: https://fastapi.tiangolo.com Source Code: https://github.com/fastapi/fastapi --- FastAPI is a modern, fast (high-performance), web framework for building"
   },
   {
     "slug": "flask",
     "repo": "pallets/flask",
     "name": "flask",
     "codevetterVersion": "codevetter 1.12.0",
-    "collectedAt": "2026-09-22T05:15:33.584Z",
+    "collectedAt": "2026-09-22T06:01:32.864Z",
     "commit": {
       "sha": "d73fa1cdcbd8b1465c151db8924ba58b1dd14e35",
       "date": "2026-09-08",
@@ -956,44 +1123,271 @@
       {
         "language": "Python",
         "files": 83,
-        "bytes": 589437
+        "bytes": 589437,
+        "codeShare": 91
       },
       {
         "language": "HTML",
         "files": 20,
-        "bytes": 10474
+        "bytes": 10474,
+        "codeShare": null
       },
       {
         "language": "YAML",
         "files": 8,
-        "bytes": 8503
+        "bytes": 8503,
+        "codeShare": null
       },
       {
         "language": "Markdown",
         "files": 6,
-        "bytes": 4671
+        "bytes": 4671,
+        "codeShare": null
       },
       {
         "language": "TOML",
         "files": 5,
-        "bytes": 8790
+        "bytes": 8790,
+        "codeShare": 5
       },
       {
         "language": "CSS",
         "files": 2,
-        "bytes": 1714
+        "bytes": 1714,
+        "codeShare": null
       },
       {
         "language": "JSON",
         "files": 2,
-        "bytes": 488
+        "bytes": 488,
+        "codeShare": null
       },
       {
         "language": "SQL",
         "files": 2,
-        "bytes": 892
+        "bytes": 892,
+        "codeShare": 2
       }
     ],
+    "sourceRoots": [
+      {
+        "path": "src",
+        "file_count": 26,
+        "bytes": 348482
+      }
+    ],
+    "sourceLayout": {
+      "path": "src",
+      "children": [
+        {
+          "name": "flask",
+          "path": "src/flask",
+          "is_dir": true,
+          "file_count": 26,
+          "children": [
+            {
+              "name": "json",
+              "path": "src/flask/json",
+              "is_dir": true,
+              "file_count": 3,
+              "children": [
+                {
+                  "name": "__init__.py",
+                  "path": "src/flask/json/__init__.py",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                },
+                {
+                  "name": "provider.py",
+                  "path": "src/flask/json/provider.py",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                },
+                {
+                  "name": "tag.py",
+                  "path": "src/flask/json/tag.py",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                }
+              ]
+            },
+            {
+              "name": "sansio",
+              "path": "src/flask/sansio",
+              "is_dir": true,
+              "file_count": 4,
+              "children": [
+                {
+                  "name": "README.md",
+                  "path": "src/flask/sansio/README.md",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                },
+                {
+                  "name": "app.py",
+                  "path": "src/flask/sansio/app.py",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                },
+                {
+                  "name": "blueprints.py",
+                  "path": "src/flask/sansio/blueprints.py",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                },
+                {
+                  "name": "scaffold.py",
+                  "path": "src/flask/sansio/scaffold.py",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                }
+              ]
+            },
+            {
+              "name": "__init__.py",
+              "path": "src/flask/__init__.py",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "__main__.py",
+              "path": "src/flask/__main__.py",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "app.py",
+              "path": "src/flask/app.py",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "blueprints.py",
+              "path": "src/flask/blueprints.py",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "cli.py",
+              "path": "src/flask/cli.py",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "config.py",
+              "path": "src/flask/config.py",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "ctx.py",
+              "path": "src/flask/ctx.py",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "debughelpers.py",
+              "path": "src/flask/debughelpers.py",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "globals.py",
+              "path": "src/flask/globals.py",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "helpers.py",
+              "path": "src/flask/helpers.py",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "logging.py",
+              "path": "src/flask/logging.py",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "py.typed",
+              "path": "src/flask/py.typed",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "sessions.py",
+              "path": "src/flask/sessions.py",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "signals.py",
+              "path": "src/flask/signals.py",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "templating.py",
+              "path": "src/flask/templating.py",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "testing.py",
+              "path": "src/flask/testing.py",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "typing.py",
+              "path": "src/flask/typing.py",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "views.py",
+              "path": "src/flask/views.py",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "wrappers.py",
+              "path": "src/flask/wrappers.py",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            }
+          ]
+        }
+      ]
+    },
+    "probableEntry": "pyproject.toml",
     "manifest": {
       "path": "pyproject.toml",
       "name": "flask",
@@ -1051,14 +1445,14 @@
       "Python"
     ],
     "health": {
-      "averageScore": 8.9,
-      "hotspotCount": 0,
+      "averageScore": 7.5,
+      "hotspotCount": 8,
       "filesAnalyzed": 35,
-      "summary": "Deterministic scan scored 35 source files across simple size, churn, structural, test-adjacency, and performance-risk signals. 0 hotspots surfaced; average score is 8.9/10. Treat these as review leads, not proof of a bug.",
+      "summary": "Deterministic scan scored 35 source files across simple size, churn, structural, test-adjacency, and performance-risk signals. 8 hotspots surfaced; average score is 7.5/10. Treat these as review leads, not proof of a bug.",
       "topFiles": [
         {
           "path": "src/flask/app.py",
-          "score": 6.9,
+          "score": 5.7,
           "lines": 1222,
           "findings": [
             "Large file",
@@ -1067,7 +1461,7 @@
         },
         {
           "path": "src/flask/cli.py",
-          "score": 6.9,
+          "score": 5.7,
           "lines": 1127,
           "findings": [
             "Large file",
@@ -1076,7 +1470,7 @@
         },
         {
           "path": "src/flask/sansio/app.py",
-          "score": 6.9,
+          "score": 5.7,
           "lines": 1013,
           "findings": [
             "Large file",
@@ -1090,46 +1484,45 @@
         "sha": "d73fa1cdcbd8",
         "date": "2026-09-08",
         "subject": "fix docs ref",
-        "files": [
-          ".devcontainer/devcontainer.json",
-          ".github/ISSUE_TEMPLATE/bug-report.md",
-          ".github/ISSUE_TEMPLATE/config.yml",
-          ".github/ISSUE_TEMPLATE/feature-request.md",
-          ".github/pull_request_template.md",
-          ".github/workflows/lock.yaml",
-          ".github/workflows/pre-commit.yaml",
-          ".github/workflows/publish.yaml",
-          ".github/workflows/tests.yaml",
-          ".github/workflows/zizmor.yaml",
-          ".pre-commit-config.yaml",
-          ".readthedocs.yaml",
-          "README.md",
-          "docs/Makefile",
-          "examples/celery/README.md",
-          "examples/celery/pyproject.toml",
-          "examples/javascript/pyproject.toml",
-          "examples/tutorial/flaskr/schema.sql",
-          "examples/tutorial/pyproject.toml",
-          "examples/tutorial/tests/data.sql",
-          "pyproject.toml",
-          "src/flask/sansio/README.md",
-          "tests/static/config.json",
-          "tests/static/config.toml"
-        ]
+        "files": []
+      },
+      {
+        "sha": "d318b6834711",
+        "date": "2026-08-16",
+        "subject": "explain seek",
+        "files": []
+      },
+      {
+        "sha": "2a8a38b051fc",
+        "date": "2026-08-11",
+        "subject": "support query in methodview",
+        "files": []
+      },
+      {
+        "sha": "d8eaaba82465",
+        "date": "2026-08-11",
+        "subject": "add `app.query` route decorator (#6133)",
+        "files": []
+      },
+      {
+        "sha": "89992954ec71",
+        "date": "2026-08-11",
+        "subject": "add app.query route decorator",
+        "files": []
       }
     ],
     "qaReadiness": {
       "status": "missing",
       "summary": "Repo does not expose enough local browser QA structure for a reliable Synthetic QA workflow yet."
     },
-    "readmePreview": "<div align=\"center\"><img src=\"https://raw.githubusercontent.com/pallets/flask/refs/heads/stable/docs/_static/flask-name.svg\" alt=\"\" height=\"150\"></div>\n\n# Flask\n\nFlask is a lightweight [WSGI] web application framework. It is designed\nto make getting started quick and easy, with t"
+    "readmePreview": "Flask Flask is a lightweight [WSGI] web application framework."
   },
   {
     "slug": "httpie",
     "repo": "httpie/cli",
     "name": "httpie",
     "codevetterVersion": "codevetter 1.12.0",
-    "collectedAt": "2026-09-22T05:15:33.545Z",
+    "collectedAt": "2026-09-22T06:01:32.788Z",
     "commit": {
       "sha": "5b604c37c6c67e18e7c3e9aee6c88a8c22b98345",
       "date": "2024-12-17",
@@ -1146,34 +1539,624 @@
       {
         "language": "Python",
         "files": 133,
-        "bytes": 587883
+        "bytes": 587883,
+        "codeShare": 96
       },
       {
         "language": "JSON",
         "files": 26,
-        "bytes": 25143
+        "bytes": 25143,
+        "codeShare": null
       },
       {
         "language": "Markdown",
         "files": 24,
-        "bytes": 151796
+        "bytes": 151796,
+        "codeShare": null
       },
       {
         "language": "YAML",
         "files": 19,
-        "bytes": 23125
+        "bytes": 23125,
+        "codeShare": null
       },
       {
         "language": "Shell",
         "files": 4,
-        "bytes": 1492
+        "bytes": 1492,
+        "codeShare": 3
       },
       {
         "language": "Ruby",
         "files": 2,
-        "bytes": 5356
+        "bytes": 5356,
+        "codeShare": 1
       }
     ],
+    "sourceRoots": [
+      {
+        "path": "httpie",
+        "file_count": 78,
+        "bytes": 302596
+      }
+    ],
+    "sourceLayout": {
+      "path": "httpie",
+      "children": [
+        {
+          "name": "cli",
+          "path": "httpie/cli",
+          "is_dir": true,
+          "file_count": 15,
+          "children": [
+            {
+              "name": "nested_json",
+              "path": "httpie/cli/nested_json",
+              "is_dir": true,
+              "file_count": 5,
+              "children": [
+                {
+                  "name": "__init__.py",
+                  "path": "httpie/cli/nested_json/__init__.py",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                },
+                {
+                  "name": "errors.py",
+                  "path": "httpie/cli/nested_json/errors.py",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                },
+                {
+                  "name": "interpret.py",
+                  "path": "httpie/cli/nested_json/interpret.py",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                },
+                {
+                  "name": "parse.py",
+                  "path": "httpie/cli/nested_json/parse.py",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                },
+                {
+                  "name": "tokens.py",
+                  "path": "httpie/cli/nested_json/tokens.py",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                }
+              ]
+            },
+            {
+              "name": "__init__.py",
+              "path": "httpie/cli/__init__.py",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "argparser.py",
+              "path": "httpie/cli/argparser.py",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "argtypes.py",
+              "path": "httpie/cli/argtypes.py",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "constants.py",
+              "path": "httpie/cli/constants.py",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "definition.py",
+              "path": "httpie/cli/definition.py",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "dicts.py",
+              "path": "httpie/cli/dicts.py",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "exceptions.py",
+              "path": "httpie/cli/exceptions.py",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "options.py",
+              "path": "httpie/cli/options.py",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "requestitems.py",
+              "path": "httpie/cli/requestitems.py",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "utils.py",
+              "path": "httpie/cli/utils.py",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            }
+          ]
+        },
+        {
+          "name": "internal",
+          "path": "httpie/internal",
+          "is_dir": true,
+          "file_count": 5,
+          "children": [
+            {
+              "name": "__build_channel__.py",
+              "path": "httpie/internal/__build_channel__.py",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "__init__.py",
+              "path": "httpie/internal/__init__.py",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "daemon_runner.py",
+              "path": "httpie/internal/daemon_runner.py",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "daemons.py",
+              "path": "httpie/internal/daemons.py",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "update_warnings.py",
+              "path": "httpie/internal/update_warnings.py",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            }
+          ]
+        },
+        {
+          "name": "legacy",
+          "path": "httpie/legacy",
+          "is_dir": true,
+          "file_count": 3,
+          "children": [
+            {
+              "name": "__init__.py",
+              "path": "httpie/legacy/__init__.py",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "v3_1_0_session_cookie_format.py",
+              "path": "httpie/legacy/v3_1_0_session_cookie_format.py",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "v3_2_0_session_header_format.py",
+              "path": "httpie/legacy/v3_2_0_session_header_format.py",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            }
+          ]
+        },
+        {
+          "name": "manager",
+          "path": "httpie/manager",
+          "is_dir": true,
+          "file_count": 10,
+          "children": [
+            {
+              "name": "tasks",
+              "path": "httpie/manager/tasks",
+              "is_dir": true,
+              "file_count": 5,
+              "children": [
+                {
+                  "name": "__init__.py",
+                  "path": "httpie/manager/tasks/__init__.py",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                },
+                {
+                  "name": "check_updates.py",
+                  "path": "httpie/manager/tasks/check_updates.py",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                },
+                {
+                  "name": "export_args.py",
+                  "path": "httpie/manager/tasks/export_args.py",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                },
+                {
+                  "name": "plugins.py",
+                  "path": "httpie/manager/tasks/plugins.py",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                },
+                {
+                  "name": "sessions.py",
+                  "path": "httpie/manager/tasks/sessions.py",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                }
+              ]
+            },
+            {
+              "name": "__init__.py",
+              "path": "httpie/manager/__init__.py",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "__main__.py",
+              "path": "httpie/manager/__main__.py",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "cli.py",
+              "path": "httpie/manager/cli.py",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "compat.py",
+              "path": "httpie/manager/compat.py",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "core.py",
+              "path": "httpie/manager/core.py",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            }
+          ]
+        },
+        {
+          "name": "output",
+          "path": "httpie/output",
+          "is_dir": true,
+          "file_count": 23,
+          "children": [
+            {
+              "name": "formatters",
+              "path": "httpie/output/formatters",
+              "is_dir": true,
+              "file_count": 5,
+              "children": [
+                {
+                  "name": "__init__.py",
+                  "path": "httpie/output/formatters/__init__.py",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                },
+                {
+                  "name": "colors.py",
+                  "path": "httpie/output/formatters/colors.py",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                },
+                {
+                  "name": "headers.py",
+                  "path": "httpie/output/formatters/headers.py",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                },
+                {
+                  "name": "json.py",
+                  "path": "httpie/output/formatters/json.py",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                },
+                {
+                  "name": "xml.py",
+                  "path": "httpie/output/formatters/xml.py",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                }
+              ]
+            },
+            {
+              "name": "lexers",
+              "path": "httpie/output/lexers",
+              "is_dir": true,
+              "file_count": 5,
+              "children": [
+                {
+                  "name": "__init__.py",
+                  "path": "httpie/output/lexers/__init__.py",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                },
+                {
+                  "name": "common.py",
+                  "path": "httpie/output/lexers/common.py",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                },
+                {
+                  "name": "http.py",
+                  "path": "httpie/output/lexers/http.py",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                },
+                {
+                  "name": "json.py",
+                  "path": "httpie/output/lexers/json.py",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                },
+                {
+                  "name": "metadata.py",
+                  "path": "httpie/output/lexers/metadata.py",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                }
+              ]
+            },
+            {
+              "name": "ui",
+              "path": "httpie/output/ui",
+              "is_dir": true,
+              "file_count": 7,
+              "children": [
+                {
+                  "name": "__init__.py",
+                  "path": "httpie/output/ui/__init__.py",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                },
+                {
+                  "name": "man_pages.py",
+                  "path": "httpie/output/ui/man_pages.py",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                },
+                {
+                  "name": "palette.py",
+                  "path": "httpie/output/ui/palette.py",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                },
+                {
+                  "name": "rich_help.py",
+                  "path": "httpie/output/ui/rich_help.py",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                },
+                {
+                  "name": "rich_palette.py",
+                  "path": "httpie/output/ui/rich_palette.py",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                },
+                {
+                  "name": "rich_progress.py",
+                  "path": "httpie/output/ui/rich_progress.py",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                },
+                {
+                  "name": "rich_utils.py",
+                  "path": "httpie/output/ui/rich_utils.py",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                }
+              ]
+            },
+            {
+              "name": "__init__.py",
+              "path": "httpie/output/__init__.py",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "models.py",
+              "path": "httpie/output/models.py",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "processing.py",
+              "path": "httpie/output/processing.py",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "streams.py",
+              "path": "httpie/output/streams.py",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "utils.py",
+              "path": "httpie/output/utils.py",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "writer.py",
+              "path": "httpie/output/writer.py",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            }
+          ]
+        },
+        {
+          "name": "plugins",
+          "path": "httpie/plugins",
+          "is_dir": true,
+          "file_count": 5,
+          "children": [
+            {
+              "name": "__init__.py",
+              "path": "httpie/plugins/__init__.py",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "base.py",
+              "path": "httpie/plugins/base.py",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "builtin.py",
+              "path": "httpie/plugins/builtin.py",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "manager.py",
+              "path": "httpie/plugins/manager.py",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "registry.py",
+              "path": "httpie/plugins/registry.py",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            }
+          ]
+        },
+        {
+          "name": "__init__.py",
+          "path": "httpie/__init__.py",
+          "is_dir": false,
+          "file_count": 1,
+          "children": []
+        },
+        {
+          "name": "__main__.py",
+          "path": "httpie/__main__.py",
+          "is_dir": false,
+          "file_count": 1,
+          "children": []
+        },
+        {
+          "name": "adapters.py",
+          "path": "httpie/adapters.py",
+          "is_dir": false,
+          "file_count": 1,
+          "children": []
+        },
+        {
+          "name": "client.py",
+          "path": "httpie/client.py",
+          "is_dir": false,
+          "file_count": 1,
+          "children": []
+        },
+        {
+          "name": "compat.py",
+          "path": "httpie/compat.py",
+          "is_dir": false,
+          "file_count": 1,
+          "children": []
+        },
+        {
+          "name": "config.py",
+          "path": "httpie/config.py",
+          "is_dir": false,
+          "file_count": 1,
+          "children": []
+        },
+        {
+          "name": "context.py",
+          "path": "httpie/context.py",
+          "is_dir": false,
+          "file_count": 1,
+          "children": []
+        },
+        {
+          "name": "cookies.py",
+          "path": "httpie/cookies.py",
+          "is_dir": false,
+          "file_count": 1,
+          "children": []
+        }
+      ]
+    },
+    "probableEntry": "setup.cfg",
     "manifest": null,
     "entrypoints": [
       {
@@ -1270,14 +2253,14 @@
       "GitHub Actions"
     ],
     "health": {
-      "averageScore": 9.1,
-      "hotspotCount": 0,
+      "averageScore": 8.1,
+      "hotspotCount": 7,
       "filesAnalyzed": 83,
-      "summary": "Deterministic scan scored 83 source files across simple size, churn, structural, test-adjacency, and performance-risk signals. 0 hotspots surfaced; average score is 9.1/10. Treat these as review leads, not proof of a bug.",
+      "summary": "Deterministic scan scored 83 source files across simple size, churn, structural, test-adjacency, and performance-risk signals. 7 hotspots surfaced; average score is 8.1/10. Treat these as review leads, not proof of a bug.",
       "topFiles": [
         {
           "path": "httpie/cli/definition.py",
-          "score": 6.9,
+          "score": 5.7,
           "lines": 956,
           "findings": [
             "Large file",
@@ -1286,20 +2269,20 @@
         },
         {
           "path": "httpie/client.py",
-          "score": 7.1,
+          "score": 5.9,
           "lines": 400,
           "findings": [
             "Deep nesting",
-            "No adjacent test signal"
+            "High churn"
           ]
         },
         {
-          "path": "httpie/cli/argparser.py",
-          "score": 7.4,
-          "lines": 613,
+          "path": "docs/contributors/fetch.py",
+          "score": 5.9,
+          "lines": 281,
           "findings": [
-            "Large file",
-            "Deep nesting"
+            "Deep nesting",
+            "High churn"
           ]
         }
       ]
@@ -1309,46 +2292,49 @@
         "sha": "5b604c37c6c6",
         "date": "2024-12-17",
         "subject": "Fix `https` behaviour in fish (#1611)",
+        "files": []
+      },
+      {
+        "sha": "2843b874c60b",
+        "date": "2024-11-01",
+        "subject": "[automated] Update generated content (#1607)",
+        "files": []
+      },
+      {
+        "sha": "2105caa49bae",
+        "date": "2024-11-01",
+        "subject": "3.2.4",
         "files": [
-          ".github/ISSUE_TEMPLATE/bug_report.md",
-          ".github/ISSUE_TEMPLATE/feature_request.md",
-          ".github/ISSUE_TEMPLATE/other.md",
-          ".github/dependabot.yml",
-          ".github/workflows/benchmark.yml",
-          ".github/workflows/code-style.yml",
-          ".github/workflows/content.yml",
-          ".github/workflows/coverage.yml",
-          ".github/workflows/docs-check-markdown.yml",
-          ".github/workflows/docs-deploy.yml",
-          ".github/workflows/release-brew.yml",
-          ".github/workflows/release-choco.yml",
-          ".github/workflows/release-linux-standalone.yml",
-          ".github/workflows/release-pypi.yml",
-          ".github/workflows/release-snap.yml",
-          ".github/workflows/stale.yml",
-          ".github/workflows/test-package-linux-snap.yml",
-          ".github/workflows/test-package-mac-brew.yml",
-          ".github/workflows/tests.yml",
-          ".packit.yaml",
-          "AUTHORS.md",
-          "CHANGELOG.md",
-          "CODE_OF_CONDUCT.md",
-          "CONTRIBUTING.md"
+          "CHANGELOG.md"
         ]
+      },
+      {
+        "sha": "8560d1196d78",
+        "date": "2024-11-01",
+        "subject": "Update test.yml",
+        "files": [
+          ".github/workflows/tests.yml"
+        ]
+      },
+      {
+        "sha": "2ef4a57d8c2a",
+        "date": "2024-11-01",
+        "subject": "Fix/refactor default cert loading",
+        "files": []
       }
     ],
     "qaReadiness": {
       "status": "missing",
       "summary": "Repo does not expose enough local browser QA structure for a reliable Synthetic QA workflow yet."
     },
-    "readmePreview": "<h2 align=\"center\">\n    <a href=\"https://httpie.io\" target=\"blank_\">\n        <img height=\"100\" alt=\"HTTPie\" src=\"https://raw.githubusercontent.com/httpie/cli/master/docs/httpie-logo.svg\" />\n    </a>\n    <br>\n    HTTPie CLI: human-friendly HTTP client for the API era\n</h2>\n\n<div a"
+    "readmePreview": "HTTPie CLI: human-friendly HTTP client for the API era HTTPie (pronounced aitch-tee-tee-pie) is a command-line HTTP client."
   },
   {
     "slug": "jsonwebtoken",
     "repo": "auth0/node-jsonwebtoken",
     "name": "jsonwebtoken",
     "codevetterVersion": "codevetter 1.12.0",
-    "collectedAt": "2026-09-22T05:15:33.259Z",
+    "collectedAt": "2026-09-22T06:01:32.384Z",
     "commit": {
       "sha": "b924272f29192e12926b5414546f7c5bfcc9579d",
       "date": "2026-06-25",
@@ -1365,24 +2351,97 @@
       {
         "language": "JavaScript",
         "files": 46,
-        "bytes": 153023
+        "bytes": 153023,
+        "codeShare": 100
       },
       {
         "language": "YAML",
         "files": 6,
-        "bytes": 6219
+        "bytes": 6219,
+        "codeShare": null
       },
       {
         "language": "JSON",
         "files": 5,
-        "bytes": 3151
+        "bytes": 3151,
+        "codeShare": null
       },
       {
         "language": "Markdown",
         "files": 2,
-        "bytes": 59304
+        "bytes": 59304,
+        "codeShare": null
       }
     ],
+    "sourceRoots": [
+      {
+        "path": "lib",
+        "file_count": 8,
+        "bytes": 4140
+      }
+    ],
+    "sourceLayout": {
+      "path": "lib",
+      "children": [
+        {
+          "name": "JsonWebTokenError.js",
+          "path": "lib/JsonWebTokenError.js",
+          "is_dir": false,
+          "file_count": 1,
+          "children": []
+        },
+        {
+          "name": "NotBeforeError.js",
+          "path": "lib/NotBeforeError.js",
+          "is_dir": false,
+          "file_count": 1,
+          "children": []
+        },
+        {
+          "name": "TokenExpiredError.js",
+          "path": "lib/TokenExpiredError.js",
+          "is_dir": false,
+          "file_count": 1,
+          "children": []
+        },
+        {
+          "name": "asymmetricKeyDetailsSupported.js",
+          "path": "lib/asymmetricKeyDetailsSupported.js",
+          "is_dir": false,
+          "file_count": 1,
+          "children": []
+        },
+        {
+          "name": "psSupported.js",
+          "path": "lib/psSupported.js",
+          "is_dir": false,
+          "file_count": 1,
+          "children": []
+        },
+        {
+          "name": "rsaPssKeyDetailsSupported.js",
+          "path": "lib/rsaPssKeyDetailsSupported.js",
+          "is_dir": false,
+          "file_count": 1,
+          "children": []
+        },
+        {
+          "name": "timespan.js",
+          "path": "lib/timespan.js",
+          "is_dir": false,
+          "file_count": 1,
+          "children": []
+        },
+        {
+          "name": "validateAsymmetricKey.js",
+          "path": "lib/validateAsymmetricKey.js",
+          "is_dir": false,
+          "file_count": 1,
+          "children": []
+        }
+      ]
+    },
+    "probableEntry": "index.js",
     "manifest": {
       "path": "package.json",
       "name": "jsonwebtoken",
@@ -1457,14 +2516,14 @@
         "bytes": 6153
       },
       {
-        "path": "bin",
-        "file_count": 1,
-        "bytes": 1419
-      },
-      {
         "path": ".husky",
         "file_count": 1,
         "bytes": 35
+      },
+      {
+        "path": "bin",
+        "file_count": 1,
+        "bytes": 1419
       }
     ],
     "docs": [
@@ -1474,14 +2533,14 @@
       "GitHub Actions"
     ],
     "health": {
-      "averageScore": 9.6,
+      "averageScore": 8.8,
       "hotspotCount": 0,
       "filesAnalyzed": 45,
-      "summary": "Deterministic scan scored 45 source files across simple size, churn, structural, test-adjacency, and performance-risk signals. 0 hotspots surfaced; average score is 9.6/10. Treat these as review leads, not proof of a bug.",
+      "summary": "Deterministic scan scored 45 source files across simple size, churn, structural, test-adjacency, and performance-risk signals. 0 hotspots surfaced; average score is 8.8/10. Treat these as review leads, not proof of a bug.",
       "topFiles": [
         {
           "path": "test/claim-aud.test.js",
-          "score": 7.9,
+          "score": 6.7,
           "lines": 436,
           "findings": [
             "Deep nesting",
@@ -1489,18 +2548,18 @@
           ]
         },
         {
-          "path": "test/claim-exp.test.js",
-          "score": 8.6,
-          "lines": 343,
+          "path": "test/claim-nbf.test.js",
+          "score": 6.7,
+          "lines": 339,
           "findings": [
             "Deep nesting",
             "Long function/block"
           ]
         },
         {
-          "path": "test/claim-nbf.test.js",
-          "score": 8.6,
-          "lines": 339,
+          "path": "test/claim-exp.test.js",
+          "score": 6.7,
+          "lines": 343,
           "findings": [
             "Deep nesting",
             "Long function/block"
@@ -1514,30 +2573,51 @@
         "date": "2026-06-25",
         "subject": "ci: replace npx changelog call with npm script and fix prepare-release workflow (#1037)",
         "files": [
+          ".github/workflows/prepare-release.yml",
+          "package.json"
+        ]
+      },
+      {
+        "sha": "02688b982132",
+        "date": "2026-05-01",
+        "subject": "ci: switch to conventionalcommits preset for semantic-release (#1020)",
+        "files": [
+          ".github/workflows/prepare-release.yml",
+          ".releaserc.json",
+          "package.json"
+        ]
+      },
+      {
+        "sha": "cf33b5f59a19",
+        "date": "2026-03-18",
+        "subject": "ci: add semantic-release automation (#1015)",
+        "files": [
           ".commitlintrc.json",
-          ".eslintrc.json",
           ".github/workflows/commitlint.yml",
           ".github/workflows/prepare-release.yml",
           ".github/workflows/release.yml",
           ".github/workflows/sca-scan.yml",
+          ".github/workflows/semgrep.yml",
           ".github/workflows/test.yml",
           ".releaserc.json",
+          "package.json"
+        ]
+      },
+      {
+        "sha": "2db36ae04eae",
+        "date": "2026-03-18",
+        "subject": "chore: add CODEOWNERS file (#1014)",
+        "files": []
+      },
+      {
+        "sha": "ed59e76ea37a",
+        "date": "2025-12-04",
+        "subject": "chore: bump jws to 4.0.1 (#1007)",
+        "files": [
+          ".circleci/config.yml",
+          ".github/workflows/test.yml",
           "CHANGELOG.md",
-          "README.md",
-          "decode.js",
-          "index.js",
-          "lib/JsonWebTokenError.js",
-          "lib/NotBeforeError.js",
-          "lib/TokenExpiredError.js",
-          "lib/asymmetricKeyDetailsSupported.js",
-          "lib/psSupported.js",
-          "lib/rsaPssKeyDetailsSupported.js",
-          "lib/timespan.js",
-          "lib/validateAsymmetricKey.js",
-          "opslevel.yml",
-          "package.json",
-          "sign.js",
-          "test/.eslintrc.json"
+          "package.json"
         ]
       }
     ],
@@ -1545,14 +2625,14 @@
       "status": "missing",
       "summary": "Repo does not expose enough local browser QA structure for a reliable Synthetic QA workflow yet."
     },
-    "readmePreview": "# jsonwebtoken\n\n| **Build**                                                                                                                               | **Dependency**                                                                                                         |\n|--"
+    "readmePreview": "jsonwebtoken | Build | Dependency | |-----------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------"
   },
   {
     "slug": "lodash",
     "repo": "lodash/lodash",
     "name": "lodash",
     "codevetterVersion": "codevetter 1.12.0",
-    "collectedAt": "2026-09-22T05:15:33.855Z",
+    "collectedAt": "2026-09-22T06:01:33.027Z",
     "commit": {
       "sha": "2b5e6f7399a7b48005140b5d5c6bc6c0e62919a8",
       "date": "2026-09-11",
@@ -1569,29 +2649,242 @@
       {
         "language": "JavaScript",
         "files": 27,
-        "bytes": 1543734
+        "bytes": 1543734,
+        "codeShare": 100
       },
       {
         "language": "YAML",
         "files": 8,
-        "bytes": 9925
+        "bytes": 9925,
+        "codeShare": null
       },
       {
         "language": "Markdown",
         "files": 7,
-        "bytes": 326770
+        "bytes": 326770,
+        "codeShare": null
       },
       {
         "language": "HTML",
         "files": 5,
-        "bytes": 35861
+        "bytes": 35861,
+        "codeShare": null
       },
       {
         "language": "JSON",
         "files": 2,
-        "bytes": 2347
+        "bytes": 2347,
+        "codeShare": null
       }
     ],
+    "sourceRoots": [
+      {
+        "path": "lib",
+        "file_count": 21,
+        "bytes": 31101
+      }
+    ],
+    "sourceLayout": {
+      "path": "lib",
+      "children": [
+        {
+          "name": "common",
+          "path": "lib/common",
+          "is_dir": true,
+          "file_count": 5,
+          "children": [
+            {
+              "name": "file.js",
+              "path": "lib/common/file.js",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "mapping.js",
+              "path": "lib/common/mapping.js",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "minify.js",
+              "path": "lib/common/minify.js",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "uglify.options.js",
+              "path": "lib/common/uglify.options.js",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "util.js",
+              "path": "lib/common/util.js",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            }
+          ]
+        },
+        {
+          "name": "fp",
+          "path": "lib/fp",
+          "is_dir": true,
+          "file_count": 12,
+          "children": [
+            {
+              "name": "template",
+              "path": "lib/fp/template",
+              "is_dir": true,
+              "file_count": 9,
+              "children": [
+                {
+                  "name": "doc",
+                  "path": "lib/fp/template/doc",
+                  "is_dir": true,
+                  "file_count": 1,
+                  "children": [
+                    {
+                      "name": "wiki.jst",
+                      "path": "lib/fp/template/doc/wiki.jst",
+                      "is_dir": false,
+                      "file_count": 1,
+                      "children": []
+                    }
+                  ]
+                },
+                {
+                  "name": "modules",
+                  "path": "lib/fp/template/modules",
+                  "is_dir": true,
+                  "file_count": 8,
+                  "children": [
+                    {
+                      "name": "_falseOptions.jst",
+                      "path": "lib/fp/template/modules/_falseOptions.jst",
+                      "is_dir": false,
+                      "file_count": 1,
+                      "children": []
+                    },
+                    {
+                      "name": "_util.jst",
+                      "path": "lib/fp/template/modules/_util.jst",
+                      "is_dir": false,
+                      "file_count": 1,
+                      "children": []
+                    },
+                    {
+                      "name": "alias.jst",
+                      "path": "lib/fp/template/modules/alias.jst",
+                      "is_dir": false,
+                      "file_count": 1,
+                      "children": []
+                    },
+                    {
+                      "name": "category.jst",
+                      "path": "lib/fp/template/modules/category.jst",
+                      "is_dir": false,
+                      "file_count": 1,
+                      "children": []
+                    },
+                    {
+                      "name": "convert.jst",
+                      "path": "lib/fp/template/modules/convert.jst",
+                      "is_dir": false,
+                      "file_count": 1,
+                      "children": []
+                    },
+                    {
+                      "name": "fp.jst",
+                      "path": "lib/fp/template/modules/fp.jst",
+                      "is_dir": false,
+                      "file_count": 1,
+                      "children": []
+                    },
+                    {
+                      "name": "module.jst",
+                      "path": "lib/fp/template/modules/module.jst",
+                      "is_dir": false,
+                      "file_count": 1,
+                      "children": []
+                    },
+                    {
+                      "name": "thru.jst",
+                      "path": "lib/fp/template/modules/thru.jst",
+                      "is_dir": false,
+                      "file_count": 1,
+                      "children": []
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "build-dist.js",
+              "path": "lib/fp/build-dist.js",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "build-doc.js",
+              "path": "lib/fp/build-doc.js",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "build-modules.js",
+              "path": "lib/fp/build-modules.js",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            }
+          ]
+        },
+        {
+          "name": "main",
+          "path": "lib/main",
+          "is_dir": true,
+          "file_count": 4,
+          "children": [
+            {
+              "name": "build-dist.js",
+              "path": "lib/main/build-dist.js",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "build-doc.js",
+              "path": "lib/main/build-doc.js",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "build-modules.js",
+              "path": "lib/main/build-modules.js",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "build-site.js",
+              "path": "lib/main/build-site.js",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            }
+          ]
+        }
+      ]
+    },
+    "probableEntry": "lib/",
     "manifest": {
       "path": "package.json",
       "name": "lodash",
@@ -1703,14 +2996,14 @@
       "GitHub Actions"
     ],
     "health": {
-      "averageScore": 9.4,
-      "hotspotCount": 1,
+      "averageScore": 8.7,
+      "hotspotCount": 5,
       "filesAnalyzed": 27,
-      "summary": "Deterministic scan scored 27 source files across simple size, churn, structural, test-adjacency, and performance-risk signals. 1 hotspot surfaced; average score is 9.4/10. Treat these as review leads, not proof of a bug.",
+      "summary": "Deterministic scan scored 27 source files across simple size, churn, structural, test-adjacency, and performance-risk signals. 5 hotspots surfaced; average score is 8.7/10. Treat these as review leads, not proof of a bug.",
       "topFiles": [
         {
           "path": "test/test.js",
-          "score": 6.2,
+          "score": 5,
           "lines": 2639,
           "findings": [
             "Large file",
@@ -1719,7 +3012,7 @@
         },
         {
           "path": "test/test-fp.js",
-          "score": 6.7,
+          "score": 5.5,
           "lines": 2322,
           "findings": [
             "Large file",
@@ -1728,7 +3021,7 @@
         },
         {
           "path": "perf/perf.js",
-          "score": 6.7,
+          "score": 5.5,
           "lines": 1978,
           "findings": [
             "Large file",
@@ -1743,7 +3036,6 @@
         "date": "2026-09-11",
         "subject": "ci: update actions to latest versions (#6279)",
         "files": [
-          ".github/CONTRIBUTING.md",
           ".github/workflows/browser-testing.yml",
           ".github/workflows/ci-bun.yml",
           ".github/workflows/ci-dist-sync.yml",
@@ -1751,22 +3043,41 @@
           ".github/workflows/ci-node.yml",
           ".github/workflows/codeql.yml",
           ".github/workflows/renovate.yml",
-          ".github/workflows/scorecards.yml",
-          ".markdown-doctest-setup.js",
-          "GOVERNANCE.md",
-          "README.md",
-          "SECURITY.md",
-          "dist/lodash.core.js",
-          "dist/lodash.fp.js",
+          ".github/workflows/scorecards.yml"
+        ]
+      },
+      {
+        "sha": "0f79302eaf53",
+        "date": "2026-09-09",
+        "subject": "ci: ossf/scorecard-action update to 2.4.4 (#6278)",
+        "files": [
+          ".github/workflows/scorecards.yml"
+        ]
+      },
+      {
+        "sha": "a666ba591064",
+        "date": "2026-07-03",
+        "subject": "docs: fix some minor docs inconsistencies (#6249)",
+        "files": [
           "dist/lodash.js",
-          "dist/mapping.fp.js",
+          "lodash.js"
+        ]
+      },
+      {
+        "sha": "9429a4ee0305",
+        "date": "2026-06-25",
+        "subject": "ci(playwright): fix browser test flake from test timeout shorter than assertion",
+        "files": [
+          "playwright.config.js"
+        ]
+      },
+      {
+        "sha": "be2b153da476",
+        "date": "2026-06-25",
+        "subject": "docs: clarify number-word behavior in startCase examples (#6224)",
+        "files": [
           "doc/README.md",
-          "fp/_baseConvert.js",
-          "fp/_convertBrowser.js",
-          "fp/_mapping.js",
-          "fp/placeholder.js",
-          "incident_response_plan.md",
-          "lib/common/file.js"
+          "test/test.js"
         ]
       }
     ],
@@ -1774,14 +3085,14 @@
       "status": "missing",
       "summary": "Repo does not expose enough local browser QA structure for a reliable Synthetic QA workflow yet."
     },
-    "readmePreview": "# lodash v4.18.1\n\n[Site](https://lodash.com/) |\n[Docs](https://lodash.com/docs) |\n[FP Guide](https://github.com/lodash/lodash/wiki/FP-Guide) |\n[Contributing](https://github.com/lodash/lodash/blob/main/.github/CONTRIBUTING.md) |\n[Wiki](https://github.com/lodash/lodash/wiki \"Change"
+    "readmePreview": "lodash v4.18.1 Site | Docs | FP Guide | Contributing | Wiki | Code of Conduct | Governance | Twitter | Chat [!IMPORTANT] As announced on the OpenJS Foundation blog, Lodash has received support from the Sovereign Tech Agency and will transition to the Feature-C"
   },
   {
     "slug": "redis",
     "repo": "redis/redis",
     "name": "redis",
     "codevetterVersion": "codevetter 1.12.0",
-    "collectedAt": "2026-09-22T05:15:34.273Z",
+    "collectedAt": "2026-09-22T06:01:33.468Z",
     "commit": {
       "sha": "c3215f019a4c11c35d438f241114e94730fe39e5",
       "date": "2026-09-22",
@@ -1798,44 +3109,61 @@
       {
         "language": "C",
         "files": 788,
-        "bytes": 13596998
+        "bytes": 13596998,
+        "codeShare": 82
       },
       {
         "language": "JSON",
         "files": 465,
-        "bytes": 879113
+        "bytes": 879113,
+        "codeShare": null
       },
       {
         "language": "Shell",
         "files": 83,
-        "bytes": 116827
+        "bytes": 116827,
+        "codeShare": 9
       },
       {
         "language": "Python",
         "files": 48,
-        "bytes": 256878
+        "bytes": 256878,
+        "codeShare": 5
       },
       {
         "language": "Markdown",
         "files": 27,
-        "bytes": 276270
+        "bytes": 276270,
+        "codeShare": null
       },
       {
         "language": "YAML",
         "files": 22,
-        "bytes": 140679
+        "bytes": 140679,
+        "codeShare": null
       },
       {
         "language": "Lua",
         "files": 20,
-        "bytes": 11887
+        "bytes": 11887,
+        "codeShare": 2
       },
       {
         "language": "Ruby",
         "files": 9,
-        "bytes": 23536
+        "bytes": 23536,
+        "codeShare": 1
       }
     ],
+    "sourceRoots": [
+      {
+        "path": "src",
+        "file_count": 693,
+        "bytes": 9866100
+      }
+    ],
+    "sourceLayout": null,
+    "probableEntry": "src/",
     "manifest": null,
     "entrypoints": [
       {
@@ -1926,9 +3254,9 @@
         "bytes": 77728
       },
       {
-        "path": ".config",
+        "path": "tools",
         "file_count": 1,
-        "bytes": 1711
+        "bytes": 18767
       }
     ],
     "docs": [
@@ -1939,36 +3267,36 @@
       "GitHub Actions"
     ],
     "health": {
-      "averageScore": 8.8,
-      "hotspotCount": 0,
+      "averageScore": 7.9,
+      "hotspotCount": 3,
       "filesAnalyzed": 23,
-      "summary": "Deterministic scan scored 23 source files across simple size, churn, structural, test-adjacency, and performance-risk signals. 0 hotspots surfaced; average score is 8.8/10. Treat these as review leads, not proof of a bug.",
+      "summary": "Deterministic scan scored 23 source files across simple size, churn, structural, test-adjacency, and performance-risk signals. 3 hotspots surfaced; average score is 7.9/10. Treat these as review leads, not proof of a bug.",
       "topFiles": [
         {
           "path": "tools/array-bench.py",
-          "score": 7.1,
+          "score": 5.9,
           "lines": 431,
           "findings": [
             "Deep nesting",
-            "No adjacent test signal"
-          ]
-        },
-        {
-          "path": "utils/generate-command-code.py",
-          "score": 7.4,
-          "lines": 635,
-          "findings": [
-            "Large file",
-            "Deep nesting"
+            "High churn"
           ]
         },
         {
           "path": "utils/req-res-log-validator.py",
-          "score": 7.8,
+          "score": 5.9,
           "lines": 364,
           "findings": [
             "Deep nesting",
-            "I/O inside loop"
+            "High churn"
+          ]
+        },
+        {
+          "path": "utils/generate-command-code.py",
+          "score": 6.2,
+          "lines": 635,
+          "findings": [
+            "Large file",
+            "Deep nesting"
           ]
         }
       ]
@@ -1979,30 +3307,37 @@
         "date": "2026-09-22",
         "subject": "CI remove unused redis_docs_sync workflow (#15816)",
         "files": [
-          ".config/typos.toml",
-          ".github/ISSUE_TEMPLATE/bug_report.md",
-          ".github/ISSUE_TEMPLATE/crash_report.md",
-          ".github/ISSUE_TEMPLATE/feature_request.md",
-          ".github/ISSUE_TEMPLATE/other_stuff.md",
-          ".github/ISSUE_TEMPLATE/question.md",
-          ".github/dependabot.yml",
-          ".github/workflows/ci.yml",
-          ".github/workflows/codecov.yml",
-          ".github/workflows/codeql-analysis.yml",
-          ".github/workflows/coverity.yml",
-          ".github/workflows/daily.yml",
-          ".github/workflows/external.yml",
-          ".github/workflows/modules-build-flow.yml",
-          ".github/workflows/post-release-automation.yml",
-          ".github/workflows/reply-schemas-linter.yml",
-          ".github/workflows/spell-check.yml",
-          "CODE_OF_CONDUCT.md",
-          "CONTRIBUTING.md",
-          "Makefile",
-          "README.md",
-          "SECURITY.md",
-          "TLS.md",
-          "codecov.yml"
+          ".github/workflows/redis_docs_sync.yaml"
+        ]
+      },
+      {
+        "sha": "0d6266f2deb9",
+        "date": "2026-09-21",
+        "subject": "Fix XTRIM leaving a 0-live stream node that RDB cannot load (#15815)",
+        "files": [
+          "src/t_stream.c"
+        ]
+      },
+      {
+        "sha": "62d1a5b930ed",
+        "date": "2026-09-20",
+        "subject": "Make ASM tests work with --single (#15636)",
+        "files": []
+      },
+      {
+        "sha": "5f08991bce47",
+        "date": "2026-09-20",
+        "subject": "Fix argument release race in the AOF duration test module (#15805)",
+        "files": [
+          "tests/modules/aofduration.c"
+        ]
+      },
+      {
+        "sha": "c00f920b2a3d",
+        "date": "2026-09-19",
+        "subject": "redis-cli: use CLIENT NO-TOUCH for key size analysis (#15817)",
+        "files": [
+          "src/redis-cli.c"
         ]
       }
     ],
@@ -2010,14 +3345,14 @@
       "status": "missing",
       "summary": "Repo does not expose enough local browser QA structure for a reliable Synthetic QA workflow yet."
     },
-    "readmePreview": "[![codecov](https://codecov.io/github/redis/redis/graph/badge.svg?token=6bVHb5fRuz)](https://codecov.io/github/redis/redis)\n\nThis document serves as both a quick start guide to Redis and a detailed resource for building it from source.\n\n- New to Redis? Start with [What is Redis]("
+    "readmePreview": "This document serves as both a quick start guide to Redis and a detailed resource for building it from source."
   },
   {
     "slug": "requests",
     "repo": "psf/requests",
     "name": "requests",
     "codevetterVersion": "codevetter 1.12.0",
-    "collectedAt": "2026-09-22T05:15:33.932Z",
+    "collectedAt": "2026-09-22T06:01:32.812Z",
     "commit": {
       "sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
       "date": "2026-09-21",
@@ -2034,34 +3369,201 @@
       {
         "language": "Python",
         "files": 37,
-        "bytes": 407127
+        "bytes": 407127,
+        "codeShare": 97
       },
       {
         "language": "Markdown",
         "files": 13,
-        "bytes": 81800
+        "bytes": 81800,
+        "codeShare": null
       },
       {
         "language": "YAML",
         "files": 12,
-        "bytes": 12921
+        "bytes": 12921,
+        "codeShare": null
       },
       {
         "language": "CSS",
         "files": 1,
-        "bytes": 287
+        "bytes": 287,
+        "codeShare": null
       },
       {
         "language": "HTML",
         "files": 1,
-        "bytes": 1361
+        "bytes": 1361,
+        "codeShare": null
       },
       {
         "language": "TOML",
         "files": 1,
-        "bytes": 3404
+        "bytes": 3404,
+        "codeShare": 3
       }
     ],
+    "sourceRoots": [
+      {
+        "path": "src",
+        "file_count": 20,
+        "bytes": 216088
+      }
+    ],
+    "sourceLayout": {
+      "path": "src",
+      "children": [
+        {
+          "name": "requests",
+          "path": "src/requests",
+          "is_dir": true,
+          "file_count": 20,
+          "children": [
+            {
+              "name": "__init__.py",
+              "path": "src/requests/__init__.py",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "__version__.py",
+              "path": "src/requests/__version__.py",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "_internal_utils.py",
+              "path": "src/requests/_internal_utils.py",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "_types.py",
+              "path": "src/requests/_types.py",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "adapters.py",
+              "path": "src/requests/adapters.py",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "api.py",
+              "path": "src/requests/api.py",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "auth.py",
+              "path": "src/requests/auth.py",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "certs.py",
+              "path": "src/requests/certs.py",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "compat.py",
+              "path": "src/requests/compat.py",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "cookies.py",
+              "path": "src/requests/cookies.py",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "exceptions.py",
+              "path": "src/requests/exceptions.py",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "help.py",
+              "path": "src/requests/help.py",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "hooks.py",
+              "path": "src/requests/hooks.py",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "models.py",
+              "path": "src/requests/models.py",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "packages.py",
+              "path": "src/requests/packages.py",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "py.typed",
+              "path": "src/requests/py.typed",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "sessions.py",
+              "path": "src/requests/sessions.py",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "status_codes.py",
+              "path": "src/requests/status_codes.py",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "structures.py",
+              "path": "src/requests/structures.py",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "utils.py",
+              "path": "src/requests/utils.py",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            }
+          ]
+        }
+      ]
+    },
+    "probableEntry": "setup.py",
     "manifest": {
       "path": "pyproject.toml",
       "name": "requests",
@@ -2155,14 +3657,14 @@
       "Python"
     ],
     "health": {
-      "averageScore": 8.8,
-      "hotspotCount": 0,
+      "averageScore": 7.7,
+      "hotspotCount": 5,
       "filesAnalyzed": 22,
-      "summary": "Deterministic scan scored 22 source files across simple size, churn, structural, test-adjacency, and performance-risk signals. 0 hotspots surfaced; average score is 8.8/10. Treat these as review leads, not proof of a bug.",
+      "summary": "Deterministic scan scored 22 source files across simple size, churn, structural, test-adjacency, and performance-risk signals. 5 hotspots surfaced; average score is 7.7/10. Treat these as review leads, not proof of a bug.",
       "topFiles": [
         {
           "path": "src/requests/models.py",
-          "score": 6.6,
+          "score": 5.4,
           "lines": 1184,
           "findings": [
             "Large file",
@@ -2171,7 +3673,7 @@
         },
         {
           "path": "src/requests/sessions.py",
-          "score": 6.6,
+          "score": 5.4,
           "lines": 920,
           "findings": [
             "Large file",
@@ -2180,7 +3682,7 @@
         },
         {
           "path": "src/requests/utils.py",
-          "score": 6.9,
+          "score": 5.7,
           "lines": 1155,
           "findings": [
             "Large file",
@@ -2195,30 +3697,39 @@
         "date": "2026-09-21",
         "subject": "Bump the actions group with 3 updates (#7628)",
         "files": [
-          ".github/AI_POLICY.md",
-          ".github/CODE_OF_CONDUCT.md",
-          ".github/CONTRIBUTING.md",
-          ".github/FUNDING.yml",
-          ".github/ISSUE_TEMPLATE.md",
-          ".github/ISSUE_TEMPLATE/Bug_report.md",
-          ".github/ISSUE_TEMPLATE/Custom.md",
-          ".github/ISSUE_TEMPLATE/Feature_request.md",
-          ".github/SECURITY.md",
-          ".github/dependabot.yml",
-          ".github/workflows/close-issues.yml",
-          ".github/workflows/codeql-analysis.yml",
-          ".github/workflows/lint.yml",
-          ".github/workflows/lock-issues.yml",
-          ".github/workflows/publish.yml",
-          ".github/workflows/run-tests.yml",
-          ".github/workflows/typecheck.yml",
-          ".github/workflows/zizmor.yml",
-          ".pre-commit-config.yaml",
-          ".readthedocs.yaml",
-          "HISTORY.md",
-          "Makefile",
-          "README.md",
-          "docs/Makefile"
+          ".github/workflows/codeql-analysis.yml"
+        ]
+      },
+      {
+        "sha": "dae7ef63b4df",
+        "date": "2026-09-02",
+        "subject": "Bump https://github.com/astral-sh/ruff-pre-commit (#7616)",
+        "files": [
+          ".pre-commit-config.yaml"
+        ]
+      },
+      {
+        "sha": "5460f467b02e",
+        "date": "2026-08-24",
+        "subject": "Update lock-issues.yml to latest dependencies (#7609)",
+        "files": [
+          ".github/workflows/lock-issues.yml"
+        ]
+      },
+      {
+        "sha": "6af0b94158bb",
+        "date": "2026-08-24",
+        "subject": "Bump https://github.com/astral-sh/ruff-pre-commit (#7608)",
+        "files": [
+          ".pre-commit-config.yaml"
+        ]
+      },
+      {
+        "sha": "8f8b212de8c2",
+        "date": "2026-08-17",
+        "subject": "Bump https://github.com/astral-sh/ruff-pre-commit (#7606)",
+        "files": [
+          ".pre-commit-config.yaml"
         ]
       }
     ],
@@ -2226,14 +3737,14 @@
       "status": "missing",
       "summary": "Repo does not expose enough local browser QA structure for a reliable Synthetic QA workflow yet."
     },
-    "readmePreview": "# Requests\n\n[![Version](https://img.shields.io/pypi/v/requests.svg?maxAge=86400)](https://pypi.org/project/requests/)\n[![Supported Versions](https://img.shields.io/pypi/pyversions/requests.svg)](https://pypi.org/project/requests)\n[![Downloads](https://static.pepy.tech/badge/reque"
+    "readmePreview": "Requests Requests is a simple, yet elegant, HTTP library."
   },
   {
     "slug": "ripgrep",
     "repo": "BurntSushi/ripgrep",
     "name": "ripgrep",
     "codevetterVersion": "codevetter 1.12.0",
-    "collectedAt": "2026-09-22T05:15:33.380Z",
+    "collectedAt": "2026-09-22T06:01:32.792Z",
     "commit": {
       "sha": "3fce3b5bb0236da2df6d99672afb8a719642eca7",
       "date": "2026-08-04",
@@ -2250,39 +3761,1357 @@
       {
         "language": "Rust",
         "files": 110,
-        "bytes": 1902104
+        "bytes": 1902104,
+        "codeShare": 85
       },
       {
         "language": "Markdown",
         "files": 23,
-        "bytes": 217094
+        "bytes": 217094,
+        "codeShare": null
       },
       {
         "language": "TOML",
         "files": 14,
-        "bytes": 14640
+        "bytes": 14640,
+        "codeShare": 11
       },
       {
         "language": "YAML",
         "files": 5,
-        "bytes": 26513
+        "bytes": 26513,
+        "codeShare": null
       },
       {
         "language": "Shell",
         "files": 3,
-        "bytes": 32257
+        "bytes": 32257,
+        "codeShare": 2
       },
       {
         "language": "Lua",
         "files": 1,
-        "bytes": 192
+        "bytes": 192,
+        "codeShare": 1
       },
       {
         "language": "Ruby",
         "files": 1,
-        "bytes": 804
+        "bytes": 804,
+        "codeShare": 1
       }
     ],
+    "sourceRoots": [
+      {
+        "path": "crates",
+        "file_count": 147,
+        "bytes": 1802084
+      },
+      {
+        "path": "pkg",
+        "file_count": 3,
+        "bytes": 2937
+      }
+    ],
+    "sourceLayout": {
+      "path": "crates",
+      "children": [
+        {
+          "name": "cli",
+          "path": "crates/cli",
+          "is_dir": true,
+          "file_count": 12,
+          "children": [
+            {
+              "name": "src",
+              "path": "crates/cli/src",
+              "is_dir": true,
+              "file_count": 8,
+              "children": [
+                {
+                  "name": "decompress.rs",
+                  "path": "crates/cli/src/decompress.rs",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                },
+                {
+                  "name": "escape.rs",
+                  "path": "crates/cli/src/escape.rs",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                },
+                {
+                  "name": "hostname.rs",
+                  "path": "crates/cli/src/hostname.rs",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                },
+                {
+                  "name": "human.rs",
+                  "path": "crates/cli/src/human.rs",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                },
+                {
+                  "name": "lib.rs",
+                  "path": "crates/cli/src/lib.rs",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                },
+                {
+                  "name": "pattern.rs",
+                  "path": "crates/cli/src/pattern.rs",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                },
+                {
+                  "name": "process.rs",
+                  "path": "crates/cli/src/process.rs",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                },
+                {
+                  "name": "wtr.rs",
+                  "path": "crates/cli/src/wtr.rs",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                }
+              ]
+            },
+            {
+              "name": "Cargo.toml",
+              "path": "crates/cli/Cargo.toml",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "LICENSE-MIT",
+              "path": "crates/cli/LICENSE-MIT",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "README.md",
+              "path": "crates/cli/README.md",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "UNLICENSE",
+              "path": "crates/cli/UNLICENSE",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            }
+          ]
+        },
+        {
+          "name": "core",
+          "path": "crates/core",
+          "is_dir": true,
+          "file_count": 30,
+          "children": [
+            {
+              "name": "flags",
+              "path": "crates/core/flags",
+              "is_dir": true,
+              "file_count": 21,
+              "children": [
+                {
+                  "name": "complete",
+                  "path": "crates/core/flags/complete",
+                  "is_dir": true,
+                  "file_count": 8,
+                  "children": [
+                    {
+                      "name": "bash.rs",
+                      "path": "crates/core/flags/complete/bash.rs",
+                      "is_dir": false,
+                      "file_count": 1,
+                      "children": []
+                    },
+                    {
+                      "name": "encodings.sh",
+                      "path": "crates/core/flags/complete/encodings.sh",
+                      "is_dir": false,
+                      "file_count": 1,
+                      "children": []
+                    },
+                    {
+                      "name": "fish.rs",
+                      "path": "crates/core/flags/complete/fish.rs",
+                      "is_dir": false,
+                      "file_count": 1,
+                      "children": []
+                    },
+                    {
+                      "name": "mod.rs",
+                      "path": "crates/core/flags/complete/mod.rs",
+                      "is_dir": false,
+                      "file_count": 1,
+                      "children": []
+                    },
+                    {
+                      "name": "powershell.rs",
+                      "path": "crates/core/flags/complete/powershell.rs",
+                      "is_dir": false,
+                      "file_count": 1,
+                      "children": []
+                    },
+                    {
+                      "name": "prelude.fish",
+                      "path": "crates/core/flags/complete/prelude.fish",
+                      "is_dir": false,
+                      "file_count": 1,
+                      "children": []
+                    },
+                    {
+                      "name": "rg.zsh",
+                      "path": "crates/core/flags/complete/rg.zsh",
+                      "is_dir": false,
+                      "file_count": 1,
+                      "children": []
+                    },
+                    {
+                      "name": "zsh.rs",
+                      "path": "crates/core/flags/complete/zsh.rs",
+                      "is_dir": false,
+                      "file_count": 1,
+                      "children": []
+                    }
+                  ]
+                },
+                {
+                  "name": "doc",
+                  "path": "crates/core/flags/doc",
+                  "is_dir": true,
+                  "file_count": 7,
+                  "children": [
+                    {
+                      "name": "help.rs",
+                      "path": "crates/core/flags/doc/help.rs",
+                      "is_dir": false,
+                      "file_count": 1,
+                      "children": []
+                    },
+                    {
+                      "name": "man.rs",
+                      "path": "crates/core/flags/doc/man.rs",
+                      "is_dir": false,
+                      "file_count": 1,
+                      "children": []
+                    },
+                    {
+                      "name": "mod.rs",
+                      "path": "crates/core/flags/doc/mod.rs",
+                      "is_dir": false,
+                      "file_count": 1,
+                      "children": []
+                    },
+                    {
+                      "name": "template.long.help",
+                      "path": "crates/core/flags/doc/template.long.help",
+                      "is_dir": false,
+                      "file_count": 1,
+                      "children": []
+                    },
+                    {
+                      "name": "template.rg.1",
+                      "path": "crates/core/flags/doc/template.rg.1",
+                      "is_dir": false,
+                      "file_count": 1,
+                      "children": []
+                    },
+                    {
+                      "name": "template.short.help",
+                      "path": "crates/core/flags/doc/template.short.help",
+                      "is_dir": false,
+                      "file_count": 1,
+                      "children": []
+                    },
+                    {
+                      "name": "version.rs",
+                      "path": "crates/core/flags/doc/version.rs",
+                      "is_dir": false,
+                      "file_count": 1,
+                      "children": []
+                    }
+                  ]
+                },
+                {
+                  "name": "config.rs",
+                  "path": "crates/core/flags/config.rs",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                },
+                {
+                  "name": "defs.rs",
+                  "path": "crates/core/flags/defs.rs",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                },
+                {
+                  "name": "hiargs.rs",
+                  "path": "crates/core/flags/hiargs.rs",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                },
+                {
+                  "name": "lowargs.rs",
+                  "path": "crates/core/flags/lowargs.rs",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                },
+                {
+                  "name": "mod.rs",
+                  "path": "crates/core/flags/mod.rs",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                },
+                {
+                  "name": "parse.rs",
+                  "path": "crates/core/flags/parse.rs",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                }
+              ]
+            },
+            {
+              "name": "index",
+              "path": "crates/core/index",
+              "is_dir": true,
+              "file_count": 3,
+              "children": [
+                {
+                  "name": "disabled.rs",
+                  "path": "crates/core/index/disabled.rs",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                },
+                {
+                  "name": "enabled.rs",
+                  "path": "crates/core/index/enabled.rs",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                },
+                {
+                  "name": "mod.rs",
+                  "path": "crates/core/index/mod.rs",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                }
+              ]
+            },
+            {
+              "name": "README.md",
+              "path": "crates/core/README.md",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "haystack.rs",
+              "path": "crates/core/haystack.rs",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "logger.rs",
+              "path": "crates/core/logger.rs",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "main.rs",
+              "path": "crates/core/main.rs",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "messages.rs",
+              "path": "crates/core/messages.rs",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "search.rs",
+              "path": "crates/core/search.rs",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            }
+          ]
+        },
+        {
+          "name": "globset",
+          "path": "crates/globset",
+          "is_dir": true,
+          "file_count": 11,
+          "children": [
+            {
+              "name": "benches",
+              "path": "crates/globset/benches",
+              "is_dir": true,
+              "file_count": 1,
+              "children": [
+                {
+                  "name": "bench.rs",
+                  "path": "crates/globset/benches/bench.rs",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                }
+              ]
+            },
+            {
+              "name": "src",
+              "path": "crates/globset/src",
+              "is_dir": true,
+              "file_count": 5,
+              "children": [
+                {
+                  "name": "fnv.rs",
+                  "path": "crates/globset/src/fnv.rs",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                },
+                {
+                  "name": "glob.rs",
+                  "path": "crates/globset/src/glob.rs",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                },
+                {
+                  "name": "lib.rs",
+                  "path": "crates/globset/src/lib.rs",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                },
+                {
+                  "name": "pathutil.rs",
+                  "path": "crates/globset/src/pathutil.rs",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                },
+                {
+                  "name": "serde_impl.rs",
+                  "path": "crates/globset/src/serde_impl.rs",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                }
+              ]
+            },
+            {
+              "name": "COPYING",
+              "path": "crates/globset/COPYING",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "Cargo.toml",
+              "path": "crates/globset/Cargo.toml",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "LICENSE-MIT",
+              "path": "crates/globset/LICENSE-MIT",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "README.md",
+              "path": "crates/globset/README.md",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "UNLICENSE",
+              "path": "crates/globset/UNLICENSE",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            }
+          ]
+        },
+        {
+          "name": "grep",
+          "path": "crates/grep",
+          "is_dir": true,
+          "file_count": 7,
+          "children": [
+            {
+              "name": "examples",
+              "path": "crates/grep/examples",
+              "is_dir": true,
+              "file_count": 1,
+              "children": [
+                {
+                  "name": "simplegrep.rs",
+                  "path": "crates/grep/examples/simplegrep.rs",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                }
+              ]
+            },
+            {
+              "name": "src",
+              "path": "crates/grep/src",
+              "is_dir": true,
+              "file_count": 1,
+              "children": [
+                {
+                  "name": "lib.rs",
+                  "path": "crates/grep/src/lib.rs",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                }
+              ]
+            },
+            {
+              "name": "COPYING",
+              "path": "crates/grep/COPYING",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "Cargo.toml",
+              "path": "crates/grep/Cargo.toml",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "LICENSE-MIT",
+              "path": "crates/grep/LICENSE-MIT",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "README.md",
+              "path": "crates/grep/README.md",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "UNLICENSE",
+              "path": "crates/grep/UNLICENSE",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            }
+          ]
+        },
+        {
+          "name": "ignore",
+          "path": "crates/ignore",
+          "is_dir": true,
+          "file_count": 19,
+          "children": [
+            {
+              "name": "examples",
+              "path": "crates/ignore/examples",
+              "is_dir": true,
+              "file_count": 1,
+              "children": [
+                {
+                  "name": "walk.rs",
+                  "path": "crates/ignore/examples/walk.rs",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                }
+              ]
+            },
+            {
+              "name": "src",
+              "path": "crates/ignore/src",
+              "is_dir": true,
+              "file_count": 9,
+              "children": [
+                {
+                  "name": "default_types.rs",
+                  "path": "crates/ignore/src/default_types.rs",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                },
+                {
+                  "name": "dir.rs",
+                  "path": "crates/ignore/src/dir.rs",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                },
+                {
+                  "name": "gitignore.rs",
+                  "path": "crates/ignore/src/gitignore.rs",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                },
+                {
+                  "name": "incremental.rs",
+                  "path": "crates/ignore/src/incremental.rs",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                },
+                {
+                  "name": "lib.rs",
+                  "path": "crates/ignore/src/lib.rs",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                },
+                {
+                  "name": "overrides.rs",
+                  "path": "crates/ignore/src/overrides.rs",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                },
+                {
+                  "name": "pathutil.rs",
+                  "path": "crates/ignore/src/pathutil.rs",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                },
+                {
+                  "name": "types.rs",
+                  "path": "crates/ignore/src/types.rs",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                },
+                {
+                  "name": "walk.rs",
+                  "path": "crates/ignore/src/walk.rs",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                }
+              ]
+            },
+            {
+              "name": "tests",
+              "path": "crates/ignore/tests",
+              "is_dir": true,
+              "file_count": 4,
+              "children": [
+                {
+                  "name": "gitignore_matched_path_or_any_parents_tests.gitignore",
+                  "path": "crates/ignore/tests/gitignore_matched_path_or_any_parents_tests.gitignore",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                },
+                {
+                  "name": "gitignore_matched_path_or_any_parents_tests.rs",
+                  "path": "crates/ignore/tests/gitignore_matched_path_or_any_parents_tests.rs",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                },
+                {
+                  "name": "gitignore_skip_bom.gitignore",
+                  "path": "crates/ignore/tests/gitignore_skip_bom.gitignore",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                },
+                {
+                  "name": "gitignore_skip_bom.rs",
+                  "path": "crates/ignore/tests/gitignore_skip_bom.rs",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                }
+              ]
+            },
+            {
+              "name": "COPYING",
+              "path": "crates/ignore/COPYING",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "Cargo.toml",
+              "path": "crates/ignore/Cargo.toml",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "LICENSE-MIT",
+              "path": "crates/ignore/LICENSE-MIT",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "README.md",
+              "path": "crates/ignore/README.md",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "UNLICENSE",
+              "path": "crates/ignore/UNLICENSE",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            }
+          ]
+        },
+        {
+          "name": "index",
+          "path": "crates/index",
+          "is_dir": true,
+          "file_count": 7,
+          "children": [
+            {
+              "name": "src",
+              "path": "crates/index/src",
+              "is_dir": true,
+              "file_count": 3,
+              "children": [
+                {
+                  "name": "index.rs",
+                  "path": "crates/index/src/index.rs",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                },
+                {
+                  "name": "lib.rs",
+                  "path": "crates/index/src/lib.rs",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                },
+                {
+                  "name": "literal.rs",
+                  "path": "crates/index/src/literal.rs",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                }
+              ]
+            },
+            {
+              "name": "Cargo.toml",
+              "path": "crates/index/Cargo.toml",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "LICENSE-MIT",
+              "path": "crates/index/LICENSE-MIT",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "README.md",
+              "path": "crates/index/README.md",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "UNLICENSE",
+              "path": "crates/index/UNLICENSE",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            }
+          ]
+        },
+        {
+          "name": "matcher",
+          "path": "crates/matcher",
+          "is_dir": true,
+          "file_count": 9,
+          "children": [
+            {
+              "name": "src",
+              "path": "crates/matcher/src",
+              "is_dir": true,
+              "file_count": 2,
+              "children": [
+                {
+                  "name": "interpolate.rs",
+                  "path": "crates/matcher/src/interpolate.rs",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                },
+                {
+                  "name": "lib.rs",
+                  "path": "crates/matcher/src/lib.rs",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                }
+              ]
+            },
+            {
+              "name": "tests",
+              "path": "crates/matcher/tests",
+              "is_dir": true,
+              "file_count": 3,
+              "children": [
+                {
+                  "name": "test_matcher.rs",
+                  "path": "crates/matcher/tests/test_matcher.rs",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                },
+                {
+                  "name": "tests.rs",
+                  "path": "crates/matcher/tests/tests.rs",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                },
+                {
+                  "name": "util.rs",
+                  "path": "crates/matcher/tests/util.rs",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                }
+              ]
+            },
+            {
+              "name": "Cargo.toml",
+              "path": "crates/matcher/Cargo.toml",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "LICENSE-MIT",
+              "path": "crates/matcher/LICENSE-MIT",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "README.md",
+              "path": "crates/matcher/README.md",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "UNLICENSE",
+              "path": "crates/matcher/UNLICENSE",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            }
+          ]
+        },
+        {
+          "name": "pcre2",
+          "path": "crates/pcre2",
+          "is_dir": true,
+          "file_count": 7,
+          "children": [
+            {
+              "name": "src",
+              "path": "crates/pcre2/src",
+              "is_dir": true,
+              "file_count": 3,
+              "children": [
+                {
+                  "name": "error.rs",
+                  "path": "crates/pcre2/src/error.rs",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                },
+                {
+                  "name": "lib.rs",
+                  "path": "crates/pcre2/src/lib.rs",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                },
+                {
+                  "name": "matcher.rs",
+                  "path": "crates/pcre2/src/matcher.rs",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                }
+              ]
+            },
+            {
+              "name": "Cargo.toml",
+              "path": "crates/pcre2/Cargo.toml",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "LICENSE-MIT",
+              "path": "crates/pcre2/LICENSE-MIT",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "README.md",
+              "path": "crates/pcre2/README.md",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "UNLICENSE",
+              "path": "crates/pcre2/UNLICENSE",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            }
+          ]
+        },
+        {
+          "name": "printer",
+          "path": "crates/printer",
+          "is_dir": true,
+          "file_count": 17,
+          "children": [
+            {
+              "name": "src",
+              "path": "crates/printer/src",
+              "is_dir": true,
+              "file_count": 13,
+              "children": [
+                {
+                  "name": "hyperlink",
+                  "path": "crates/printer/src/hyperlink",
+                  "is_dir": true,
+                  "file_count": 2,
+                  "children": [
+                    {
+                      "name": "aliases.rs",
+                      "path": "crates/printer/src/hyperlink/aliases.rs",
+                      "is_dir": false,
+                      "file_count": 1,
+                      "children": []
+                    },
+                    {
+                      "name": "mod.rs",
+                      "path": "crates/printer/src/hyperlink/mod.rs",
+                      "is_dir": false,
+                      "file_count": 1,
+                      "children": []
+                    }
+                  ]
+                },
+                {
+                  "name": "color.rs",
+                  "path": "crates/printer/src/color.rs",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                },
+                {
+                  "name": "counter.rs",
+                  "path": "crates/printer/src/counter.rs",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                },
+                {
+                  "name": "json.rs",
+                  "path": "crates/printer/src/json.rs",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                },
+                {
+                  "name": "jsont.rs",
+                  "path": "crates/printer/src/jsont.rs",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                },
+                {
+                  "name": "lib.rs",
+                  "path": "crates/printer/src/lib.rs",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                },
+                {
+                  "name": "macros.rs",
+                  "path": "crates/printer/src/macros.rs",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                },
+                {
+                  "name": "path.rs",
+                  "path": "crates/printer/src/path.rs",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                },
+                {
+                  "name": "standard.rs",
+                  "path": "crates/printer/src/standard.rs",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                },
+                {
+                  "name": "stats.rs",
+                  "path": "crates/printer/src/stats.rs",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                },
+                {
+                  "name": "summary.rs",
+                  "path": "crates/printer/src/summary.rs",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                },
+                {
+                  "name": "util.rs",
+                  "path": "crates/printer/src/util.rs",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                }
+              ]
+            },
+            {
+              "name": "Cargo.toml",
+              "path": "crates/printer/Cargo.toml",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "LICENSE-MIT",
+              "path": "crates/printer/LICENSE-MIT",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "README.md",
+              "path": "crates/printer/README.md",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "UNLICENSE",
+              "path": "crates/printer/UNLICENSE",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            }
+          ]
+        },
+        {
+          "name": "regex",
+          "path": "crates/regex",
+          "is_dir": true,
+          "file_count": 13,
+          "children": [
+            {
+              "name": "src",
+              "path": "crates/regex/src",
+              "is_dir": true,
+              "file_count": 9,
+              "children": [
+                {
+                  "name": "ast.rs",
+                  "path": "crates/regex/src/ast.rs",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                },
+                {
+                  "name": "ban.rs",
+                  "path": "crates/regex/src/ban.rs",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                },
+                {
+                  "name": "config.rs",
+                  "path": "crates/regex/src/config.rs",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                },
+                {
+                  "name": "error.rs",
+                  "path": "crates/regex/src/error.rs",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                },
+                {
+                  "name": "lib.rs",
+                  "path": "crates/regex/src/lib.rs",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                },
+                {
+                  "name": "literal.rs",
+                  "path": "crates/regex/src/literal.rs",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                },
+                {
+                  "name": "matcher.rs",
+                  "path": "crates/regex/src/matcher.rs",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                },
+                {
+                  "name": "non_matching.rs",
+                  "path": "crates/regex/src/non_matching.rs",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                },
+                {
+                  "name": "strip.rs",
+                  "path": "crates/regex/src/strip.rs",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                }
+              ]
+            },
+            {
+              "name": "Cargo.toml",
+              "path": "crates/regex/Cargo.toml",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "LICENSE-MIT",
+              "path": "crates/regex/LICENSE-MIT",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "README.md",
+              "path": "crates/regex/README.md",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "UNLICENSE",
+              "path": "crates/regex/UNLICENSE",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            }
+          ]
+        },
+        {
+          "name": "searcher",
+          "path": "crates/searcher",
+          "is_dir": true,
+          "file_count": 15,
+          "children": [
+            {
+              "name": "examples",
+              "path": "crates/searcher/examples",
+              "is_dir": true,
+              "file_count": 1,
+              "children": [
+                {
+                  "name": "search-stdin.rs",
+                  "path": "crates/searcher/examples/search-stdin.rs",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                }
+              ]
+            },
+            {
+              "name": "src",
+              "path": "crates/searcher/src",
+              "is_dir": true,
+              "file_count": 10,
+              "children": [
+                {
+                  "name": "searcher",
+                  "path": "crates/searcher/src/searcher",
+                  "is_dir": true,
+                  "file_count": 4,
+                  "children": [
+                    {
+                      "name": "core.rs",
+                      "path": "crates/searcher/src/searcher/core.rs",
+                      "is_dir": false,
+                      "file_count": 1,
+                      "children": []
+                    },
+                    {
+                      "name": "glue.rs",
+                      "path": "crates/searcher/src/searcher/glue.rs",
+                      "is_dir": false,
+                      "file_count": 1,
+                      "children": []
+                    },
+                    {
+                      "name": "mmap.rs",
+                      "path": "crates/searcher/src/searcher/mmap.rs",
+                      "is_dir": false,
+                      "file_count": 1,
+                      "children": []
+                    },
+                    {
+                      "name": "mod.rs",
+                      "path": "crates/searcher/src/searcher/mod.rs",
+                      "is_dir": false,
+                      "file_count": 1,
+                      "children": []
+                    }
+                  ]
+                },
+                {
+                  "name": "lib.rs",
+                  "path": "crates/searcher/src/lib.rs",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                },
+                {
+                  "name": "line_buffer.rs",
+                  "path": "crates/searcher/src/line_buffer.rs",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                },
+                {
+                  "name": "lines.rs",
+                  "path": "crates/searcher/src/lines.rs",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                },
+                {
+                  "name": "macros.rs",
+                  "path": "crates/searcher/src/macros.rs",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                },
+                {
+                  "name": "sink.rs",
+                  "path": "crates/searcher/src/sink.rs",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                },
+                {
+                  "name": "testutil.rs",
+                  "path": "crates/searcher/src/testutil.rs",
+                  "is_dir": false,
+                  "file_count": 1,
+                  "children": []
+                }
+              ]
+            },
+            {
+              "name": "Cargo.toml",
+              "path": "crates/searcher/Cargo.toml",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "LICENSE-MIT",
+              "path": "crates/searcher/LICENSE-MIT",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "README.md",
+              "path": "crates/searcher/README.md",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            },
+            {
+              "name": "UNLICENSE",
+              "path": "crates/searcher/UNLICENSE",
+              "is_dir": false,
+              "file_count": 1,
+              "children": []
+            }
+          ]
+        }
+      ]
+    },
+    "probableEntry": "Cargo.toml",
     "manifest": {
       "path": "Cargo.toml",
       "name": "integration",
@@ -2342,14 +5171,14 @@
         "bytes": 27102
       },
       {
-        "path": "fuzz",
-        "file_count": 4,
-        "bytes": 2557
-      },
-      {
         "path": "ci",
         "file_count": 4,
         "bytes": 5989
+      },
+      {
+        "path": "fuzz",
+        "file_count": 4,
+        "bytes": 2557
       },
       {
         "path": "pkg",
@@ -2371,14 +5200,14 @@
       "Rust"
     ],
     "health": {
-      "averageScore": 8.2,
-      "hotspotCount": 17,
+      "averageScore": 7.1,
+      "hotspotCount": 32,
       "filesAnalyzed": 93,
-      "summary": "Deterministic scan scored 93 source files across simple size, churn, structural, test-adjacency, and performance-risk signals. 17 hotspots surfaced; average score is 8.2/10. Treat these as review leads, not proof of a bug.",
+      "summary": "Deterministic scan scored 93 source files across simple size, churn, structural, test-adjacency, and performance-risk signals. 32 hotspots surfaced; average score is 7.1/10. Treat these as review leads, not proof of a bug.",
       "topFiles": [
         {
           "path": "crates/ignore/src/walk.rs",
-          "score": 5.2,
+          "score": 4,
           "lines": 2375,
           "findings": [
             "Large file",
@@ -2387,7 +5216,7 @@
         },
         {
           "path": "crates/ignore/src/incremental.rs",
-          "score": 5.2,
+          "score": 4,
           "lines": 1286,
           "findings": [
             "Large file",
@@ -2396,7 +5225,7 @@
         },
         {
           "path": "crates/ignore/src/gitignore.rs",
-          "score": 5.7,
+          "score": 4.5,
           "lines": 885,
           "findings": [
             "Large file",
@@ -2411,30 +5240,42 @@
         "date": "2026-08-04",
         "subject": "ignore-0.4.33",
         "files": [
-          ".cargo/config.toml",
-          ".github/FUNDING.yml",
-          ".github/ISSUE_TEMPLATE/bug_report.yml",
-          ".github/ISSUE_TEMPLATE/config.yml",
-          ".github/ISSUE_TEMPLATE/feature_request.md",
-          ".github/workflows/ci.yml",
-          ".github/workflows/release.yml",
-          "AI_POLICY.md",
-          "CHANGELOG.md",
-          "CONTRIBUTING.md",
-          "Cargo.toml",
-          "FAQ.md",
-          "GUIDE.md",
-          "README.md",
-          "RELEASE-CHECKLIST.md",
-          "benchsuite/runs/2020-10-14-archlinux-frink/README.md",
-          "benchsuite/runs/2022-12-16-archlinux-duff/README.md",
-          "build.rs",
-          "crates/cli/Cargo.toml",
-          "crates/cli/README.md",
-          "crates/cli/src/decompress.rs",
-          "crates/cli/src/escape.rs",
-          "crates/cli/src/hostname.rs",
-          "crates/cli/src/human.rs"
+          "crates/ignore/Cargo.toml"
+        ]
+      },
+      {
+        "sha": "5055264ae021",
+        "date": "2026-08-04",
+        "subject": "globset-0.4.20",
+        "files": [
+          "crates/globset/Cargo.toml"
+        ]
+      },
+      {
+        "sha": "020687a77d13",
+        "date": "2026-08-04",
+        "subject": "ignore,globset: increase pool capacity",
+        "files": [
+          "crates/globset/Cargo.toml",
+          "crates/ignore/Cargo.toml",
+          "crates/ignore/src/gitignore.rs",
+          "crates/ignore/src/types.rs"
+        ]
+      },
+      {
+        "sha": "7525479a9576",
+        "date": "2026-08-03",
+        "subject": "ci: fix binary discovery",
+        "files": [
+          "tests/util.rs"
+        ]
+      },
+      {
+        "sha": "5ed408e17ecc",
+        "date": "2026-08-03",
+        "subject": "ignore-0.4.32",
+        "files": [
+          "crates/ignore/Cargo.toml"
         ]
       }
     ],
@@ -2442,14 +5283,14 @@
       "status": "missing",
       "summary": "Repo does not expose enough local browser QA structure for a reliable Synthetic QA workflow yet."
     },
-    "readmePreview": "ripgrep (rg)\n------------\nripgrep is a line-oriented search tool that recursively searches the current\ndirectory for a regex pattern. By default, ripgrep will respect gitignore rules\nand automatically skip hidden files/directories and binary files. (To disable\nall automatic filte"
+    "readmePreview": "ripgrep (rg) ------------ ripgrep is a line-oriented search tool that recursively searches the current directory for a regex pattern."
   },
   {
     "slug": "sqlite",
     "repo": "sqlite/sqlite",
     "name": "sqlite",
     "codevetterVersion": "codevetter 1.12.0",
-    "collectedAt": "2026-09-22T05:15:37.718Z",
+    "collectedAt": "2026-09-22T06:01:37.709Z",
     "commit": {
       "sha": "fde3a84dddf35f4c19797c8afad04a44c596f4d8",
       "date": "2026-09-21",
@@ -2466,44 +5307,61 @@
       {
         "language": "C",
         "files": 357,
-        "bytes": 14560849
+        "bytes": 14560849,
+        "codeShare": 73
       },
       {
         "language": "Java",
         "files": 58,
-        "bytes": 471722
+        "bytes": 471722,
+        "codeShare": 12
       },
       {
         "language": "JavaScript",
         "files": 42,
-        "bytes": 1071813
+        "bytes": 1071813,
+        "codeShare": 9
       },
       {
         "language": "Markdown",
         "files": 27,
-        "bytes": 271989
+        "bytes": 271989,
+        "codeShare": null
       },
       {
         "language": "HTML",
         "files": 21,
-        "bytes": 158759
+        "bytes": 158759,
+        "codeShare": null
       },
       {
         "language": "SQL",
         "files": 14,
-        "bytes": 51083
+        "bytes": 51083,
+        "codeShare": 3
       },
       {
         "language": "Shell",
         "files": 14,
-        "bytes": 21239
+        "bytes": 21239,
+        "codeShare": 3
       },
       {
         "language": "C#",
         "files": 2,
-        "bytes": 23719
+        "bytes": 23719,
+        "codeShare": 0
       }
     ],
+    "sourceRoots": [
+      {
+        "path": "src",
+        "file_count": 154,
+        "bytes": 8624312
+      }
+    ],
+    "sourceLayout": null,
+    "probableEntry": "src/",
     "manifest": null,
     "entrypoints": [
       {
@@ -2566,14 +5424,14 @@
     ],
     "stackTags": [],
     "health": {
-      "averageScore": 9,
-      "hotspotCount": 12,
+      "averageScore": 7.7,
+      "hotspotCount": 24,
       "filesAnalyzed": 93,
-      "summary": "Deterministic scan scored 93 source files across simple size, churn, structural, test-adjacency, and performance-risk signals. 12 hotspots surfaced; average score is 9.0/10. Treat these as review leads, not proof of a bug.",
+      "summary": "Deterministic scan scored 93 source files across simple size, churn, structural, test-adjacency, and performance-risk signals. 24 hotspots surfaced; average score is 7.7/10. Treat these as review leads, not proof of a bug.",
       "topFiles": [
         {
           "path": "ext/wasm/api/sqlite3-opfs-async-proxy.c-pp.js",
-          "score": 5.9,
+          "score": 4.7,
           "lines": 978,
           "findings": [
             "Large file",
@@ -2582,7 +5440,7 @@
         },
         {
           "path": "ext/wasm/tester1.c-pp.js",
-          "score": 6.2,
+          "score": 5,
           "lines": 2129,
           "findings": [
             "Large file",
@@ -2590,9 +5448,9 @@
           ]
         },
         {
-          "path": "ext/wasm/api/sqlite3-vfs-kvvfs.c-pp.js",
-          "score": 6.2,
-          "lines": 2094,
+          "path": "ext/wasm/api/sqlite3-api-oo1.c-pp.js",
+          "score": 5,
+          "lines": 2050,
           "findings": [
             "Large file",
             "Deep nesting"
@@ -2606,30 +5464,38 @@
         "date": "2026-09-21",
         "subject": "Latest preprocessor for various cleanups and fixes. Duplicate the tester1 concurrency warning in the worker-based copy.",
         "files": [
-          "AGENTS.md",
-          "LICENSE.md",
-          "README.md",
-          "autosetup/README.md",
-          "autosetup/jimsh0.c",
-          "doc/compile-for-unix.md",
-          "doc/compile-for-windows.md",
-          "doc/json-enhancements.md",
-          "doc/jsonb.md",
-          "doc/tcl-extension-testing.md",
-          "doc/testrunner.md",
-          "doc/trusted-schema.md",
-          "doc/vdbesort-memory.md",
-          "doc/wal-lock.md",
-          "ext/README.md",
-          "ext/expert/README.md",
-          "ext/expert/expert.c",
-          "ext/expert/sqlite3expert.c",
-          "ext/expert/sqlite3expert.h",
-          "ext/expert/test_expert.c",
+          "ext/wasm/libcmpp.c"
+        ]
+      },
+      {
+        "sha": "5636f0f4a4c9",
+        "date": "2026-09-21",
+        "subject": "Fix potential buffer overreads in demo program ext/fts3/tool/fts3view.c. Bug [bugs:/info/2026-09-21T13:50:52Z | 2026-09-21T13:50:52Z].",
+        "files": [
+          "ext/fts3/tool/fts3view.c"
+        ]
+      },
+      {
+        "sha": "9fe7e4dd3127",
+        "date": "2026-09-21",
+        "subject": "Update sessionChangesetFindTable() so that it honors the contract defined in its header comment and always returns non-zero if the table is not found.",
+        "files": []
+      },
+      {
+        "sha": "3a81fb982969",
+        "date": "2026-09-21",
+        "subject": "Teach 'make libtcl' to honor the --disable-rpath configure flag. Addresses [forum:2026-09-21T10:24:56Z|forum post 2026-09-21T10:24:56Z].",
+        "files": [
+          "main.mk"
+        ]
+      },
+      {
+        "sha": "5f8b6a782de3",
+        "date": "2026-09-21",
+        "subject": "Fix truncation of 64-bit integer values passed to the fts3 snippet() function. Report [bugs:/info/2026-09-21T02:41:49Z | 2026-09-21T02:41:49Z].",
+        "files": [
           "ext/fts3/fts3.c",
-          "ext/fts3/fts3.h",
-          "ext/fts3/fts3Int.h",
-          "ext/fts3/fts3_aux.c"
+          "ext/fts3/fts3_snippet.c"
         ]
       }
     ],
@@ -2637,6 +5503,6 @@
       "status": "missing",
       "summary": "Repo does not expose enough local browser QA structure for a reliable Synthetic QA workflow yet."
     },
-    "readmePreview": "<h1 align=\"center\">SQLite Source Repository</h1>\n\nThis repository contains the complete source code for the\n[SQLite database engine](https://sqlite.org/) going back\nto 2000-05-29.  The tree includes many tests and some\ndocumentation, though additional tests and most documentation"
+    "readmePreview": "SQLite Source Repository This repository contains the complete source code for the SQLite database engine going back to 2000-05-29."
   }
 ]

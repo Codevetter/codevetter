@@ -3,7 +3,7 @@
   "repo": "axios/axios",
   "slug": "axios",
   "codevetter_version": "codevetter 1.12.0",
-  "collected_at": "2026-09-22T05:15:33.541Z",
+  "collected_at": "2026-09-22T06:01:33.011Z",
   "last_commit": {
     "sha": "56a5f1acdc41965f464eb59bec6cc828113ba546",
     "date": "2026-09-16",
@@ -11,11 +11,11 @@
   },
   "scan": {
     "schema_version": "codevetter.unpack-scan/v1",
-    "report_id": "6ab4d2ba-075a-42bb-b78f-b29a8f03fae7",
+    "report_id": "8c829dc4-1a7c-4af6-bb85-0d4ae9986f13",
     "status": "scan_only",
-    "created_at": "2026-09-22T05:15:33.533887+00:00",
+    "created_at": "2026-09-22T06:01:33.007088+00:00",
     "inventory": {
-      "repo_path": "/private/var/folders/9_/1109_2dd1qz6zyvmxb5zp8pc0000gn/T/unpack-pilot-41h614/axios",
+      "repo_path": "/private/var/folders/9_/1109_2dd1qz6zyvmxb5zp8pc0000gn/T/unpack-pilot-z2ZGY2/axios",
       "repo_name": "axios",
       "commit_sha": "56a5f1acdc41965f464eb59bec6cc828113ba546",
       "branch": "v1.x",
@@ -346,6 +346,11 @@
           "bytes": 17598
         },
         {
+          "path": ".husky",
+          "file_count": 1,
+          "bytes": 27
+        },
+        {
           "path": "scripts",
           "file_count": 1,
           "bytes": 633
@@ -354,11 +359,6 @@
           "path": ".devcontainer",
           "file_count": 1,
           "bytes": 459
-        },
-        {
-          "path": ".husky",
-          "file_count": 1,
-          "bytes": 27
         }
       ],
       "docs": [
@@ -7402,37 +7402,114 @@
       },
       "history_brief": {
         "schema_version": 2,
-        "summary": "Local history brief captured 1 recent commit, 0 decision markers, 12 test hints, and 0 co-change clusters for Repo Unpacked. Treat commit subjects as leads and rely on cited files for durable constraints.",
+        "summary": "Local history brief captured 12 recent commits, 0 decision markers, 12 test hints, and 8 co-change clusters for Repo Unpacked. Treat commit subjects as leads and rely on cited files for durable constraints.",
         "recent_commits": [
           {
             "sha": "56a5f1acdc41",
             "date": "2026-09-17",
             "subject": "fix(fetch): preserve response size errors across runtime wrappers (#11179)",
             "files": [
-              ".devcontainer/devcontainer.json",
-              ".github/FUNDING.yml",
-              ".github/ISSUE_TEMPLATE.md",
-              ".github/PULL_REQUEST_TEMPLATE.md",
-              ".github/copilot-instructions.md",
-              ".github/dependabot.yml",
-              ".github/workflows/bundle-size.yml",
-              ".github/workflows/lockfile-lint.yml",
-              ".github/workflows/moderator.yml",
-              ".github/workflows/publish.yml",
-              ".github/workflows/release-branch.yml",
-              ".github/workflows/run-ci.yml",
-              ".github/workflows/verify-build-reproducibility.yml",
-              ".github/workflows/zizmor.yml",
-              "AGENTS.md",
-              "CHANGELOG.md",
-              "CLAUDE.md",
-              "CODE_OF_CONDUCT.md",
-              "COLLABORATOR_GUIDE.md",
-              "CONTRIBUTING.md",
-              "CONTRIBUTORS.md",
-              "ECOSYSTEM.md",
-              "MIGRATION_GUIDE.md",
-              "PRE_RELEASE_CHANGELOG.md"
+              "PRE_RELEASE_CHANGELOG.md",
+              "PRE_RELEASE_DOCS.md",
+              "index.d.ts",
+              "lib/adapters/fetch.js",
+              "tests/browser/fetchResponseErrors.browser.test.js",
+              "tests/module/cjs/tests/helpers/cjs-fetch-types.ts",
+              "tests/module/esm/tests/helpers/esm-fetch-types.ts",
+              "tests/module/esm/tests/typings.module.test.js",
+              "tests/unit/adapters/fetch.test.js",
+              "tests/unit/adapters/http.test.js"
+            ]
+          },
+          {
+            "sha": "fbe2e8260c86",
+            "date": "2026-09-17",
+            "subject": "fix(types): expose the response default marker type (#11125)",
+            "files": [
+              "PRE_RELEASE_CHANGELOG.md",
+              "index.d.ts",
+              "tests/module/esm/tests/helpers/declaration-consumer.ts",
+              "tests/module/esm/tests/helpers/declaration-emit.ts",
+              "tests/module/esm/tests/ts.module.test.js",
+              "tests/module/esm/vitest.config.js"
+            ]
+          },
+          {
+            "sha": "ba0f3a0c568e",
+            "date": "2026-09-16",
+            "subject": "chore(deps-dev): bump the development_dependencies group with 4 updates (#11234)",
+            "files": []
+          },
+          {
+            "sha": "ed95c083f574",
+            "date": "2026-09-13",
+            "subject": "chore(deps): bump nanoid from 3.3.17 to 3.3.19 in /docs (#11230)",
+            "files": []
+          },
+          {
+            "sha": "dfa30a76dcae",
+            "date": "2026-09-14",
+            "subject": "docs: fix interceptor test links (#11228)",
+            "files": [
+              "docs/es/pages/advanced/interceptors.md",
+              "docs/fr/pages/advanced/interceptors.md",
+              "docs/pages/advanced/interceptors.md",
+              "docs/zh/pages/advanced/interceptors.md"
+            ]
+          },
+          {
+            "sha": "f8df2e2429a2",
+            "date": "2026-09-13",
+            "subject": "fix(fetch): apply the default cache mode only where the runtime accepts it (#11194)",
+            "files": [
+              "PRE_RELEASE_CHANGELOG.md",
+              "lib/adapters/fetch.js",
+              "tests/browser/fetchCache.browser.test.js",
+              "tests/unit/adapters/fetch.test.js"
+            ]
+          },
+          {
+            "sha": "18e7dfedf30c",
+            "date": "2026-09-10",
+            "subject": "docs: add HeroDevs as a permanent gold sponsor (#11222)",
+            "files": [
+              "README.md",
+              "docs/data/sponsors.json",
+              "docs/scripts/process-sponsors.js"
+            ]
+          },
+          {
+            "sha": "1226e6c53eeb",
+            "date": "2026-09-09",
+            "subject": "chore(deps-dev): bump js-yaml from 4.3.1 to 4.3.2 (#11221)",
+            "files": []
+          },
+          {
+            "sha": "9ecb985a6eaa",
+            "date": "2026-09-09",
+            "subject": "chore(deps): bump @vitest/mocker and vitest in /tests/smoke/esm (#11220)",
+            "files": [
+              "tests/smoke/esm/package.json"
+            ]
+          },
+          {
+            "sha": "d1f060dddebb",
+            "date": "2026-09-09",
+            "subject": "chore(deps-dev): bump js-yaml from 4.1.0 to 4.3.2 in /tests/smoke/cjs (#11218)",
+            "files": []
+          },
+          {
+            "sha": "aaf20baf1893",
+            "date": "2026-09-08",
+            "subject": "chore(deps-dev): bump the development_dependencies group with 3 updates (#11212)",
+            "files": []
+          },
+          {
+            "sha": "6598b71446db",
+            "date": "2026-09-08",
+            "subject": "chore(deps): bump zizmorcore/zizmor-action from 0.6.2 to 0.6.3 in the github-actions group (#11213)",
+            "files": [
+              ".github/workflows/zizmor.yml"
             ]
           }
         ],
@@ -7487,10 +7564,105 @@
             "reason": "package script `test:vitest:unit` is a likely verification command"
           }
         ],
-        "temporal_couplings": [],
+        "temporal_couplings": [
+          {
+            "files": [
+              "PRE_RELEASE_CHANGELOG.md",
+              "PRE_RELEASE_DOCS.md"
+            ],
+            "commit_count": 4,
+            "last_commit": "56a5f1acdc41",
+            "reason": "These files changed together in 4 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              "PRE_RELEASE_CHANGELOG.md",
+              "tests/unit/adapters/http.test.js"
+            ],
+            "commit_count": 4,
+            "last_commit": "56a5f1acdc41",
+            "reason": "These files changed together in 4 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              "PRE_RELEASE_CHANGELOG.md",
+              "index.d.ts"
+            ],
+            "commit_count": 3,
+            "last_commit": "56a5f1acdc41",
+            "reason": "These files changed together in 3 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              "PRE_RELEASE_CHANGELOG.md",
+              "lib/adapters/fetch.js"
+            ],
+            "commit_count": 3,
+            "last_commit": "56a5f1acdc41",
+            "reason": "These files changed together in 3 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              "PRE_RELEASE_CHANGELOG.md",
+              "lib/adapters/http.js"
+            ],
+            "commit_count": 3,
+            "last_commit": "e6824eec5fcf",
+            "reason": "These files changed together in 3 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              "PRE_RELEASE_CHANGELOG.md",
+              "lib/core/Axios.js"
+            ],
+            "commit_count": 3,
+            "last_commit": "e6824eec5fcf",
+            "reason": "These files changed together in 3 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              "PRE_RELEASE_CHANGELOG.md",
+              "tests/unit/adapters/fetch.test.js"
+            ],
+            "commit_count": 3,
+            "last_commit": "56a5f1acdc41",
+            "reason": "These files changed together in 3 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              "lib/adapters/fetch.js",
+              "tests/unit/adapters/fetch.test.js"
+            ],
+            "commit_count": 3,
+            "last_commit": "56a5f1acdc41",
+            "reason": "These files changed together in 3 recent commits; inspect both when either side moves."
+          }
+        ],
         "graph": {
           "schema_version": 2,
           "nodes": [
+            {
+              "id": "commit:1226e6c53eeb",
+              "kind": "commit",
+              "label": "chore(deps-dev): bump js-yaml from 4.3.1 to 4.3.2 (#11221)",
+              "path": null,
+              "detail": "2026-09-09",
+              "citations": [
+                "git:1226e6c53eeb"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:18e7dfedf30c",
+              "kind": "commit",
+              "label": "docs: add HeroDevs as a permanent gold sponsor (#11222)",
+              "path": null,
+              "detail": "2026-09-10",
+              "citations": [
+                "git:18e7dfedf30c"
+              ],
+              "trust": "git_observed"
+            },
             {
               "id": "commit:56a5f1acdc41",
               "kind": "commit",
@@ -7503,145 +7675,101 @@
               "trust": "git_observed"
             },
             {
-              "id": "file:-devcontainer-devcontainer-json",
-              "kind": "file",
-              "label": ".devcontainer/devcontainer.json",
-              "path": ".devcontainer/devcontainer.json",
-              "detail": "Changed in recent local git history",
+              "id": "commit:6598b71446db",
+              "kind": "commit",
+              "label": "chore(deps): bump zizmorcore/zizmor-action from 0.6.2 to 0.6.3 in the github-actions group (#11213)",
+              "path": null,
+              "detail": "2026-09-08",
               "citations": [
-                ".devcontainer/devcontainer.json"
+                "git:6598b71446db"
               ],
               "trust": "git_observed"
             },
             {
-              "id": "file:-github-copilot-instructions-md",
-              "kind": "file",
-              "label": ".github/copilot-instructions.md",
-              "path": ".github/copilot-instructions.md",
-              "detail": "Changed in recent local git history",
+              "id": "commit:9ecb985a6eaa",
+              "kind": "commit",
+              "label": "chore(deps): bump @vitest/mocker and vitest in /tests/smoke/esm (#11220)",
+              "path": null,
+              "detail": "2026-09-09",
               "citations": [
-                ".github/copilot-instructions.md"
+                "git:9ecb985a6eaa"
               ],
               "trust": "git_observed"
             },
             {
-              "id": "file:-github-dependabot-yml",
-              "kind": "file",
-              "label": ".github/dependabot.yml",
-              "path": ".github/dependabot.yml",
-              "detail": "Changed in recent local git history",
+              "id": "commit:aaf20baf1893",
+              "kind": "commit",
+              "label": "chore(deps-dev): bump the development_dependencies group with 3 updates (#11212)",
+              "path": null,
+              "detail": "2026-09-08",
               "citations": [
-                ".github/dependabot.yml"
+                "git:aaf20baf1893"
               ],
               "trust": "git_observed"
             },
             {
-              "id": "file:-github-funding-yml",
-              "kind": "file",
-              "label": ".github/FUNDING.yml",
-              "path": ".github/FUNDING.yml",
-              "detail": "Changed in recent local git history",
+              "id": "commit:ba0f3a0c568e",
+              "kind": "commit",
+              "label": "chore(deps-dev): bump the development_dependencies group with 4 updates (#11234)",
+              "path": null,
+              "detail": "2026-09-16",
               "citations": [
-                ".github/FUNDING.yml"
+                "git:ba0f3a0c568e"
               ],
               "trust": "git_observed"
             },
             {
-              "id": "file:-github-issue-template-md",
-              "kind": "file",
-              "label": ".github/ISSUE_TEMPLATE.md",
-              "path": ".github/ISSUE_TEMPLATE.md",
-              "detail": "Changed in recent local git history",
+              "id": "commit:d1f060dddebb",
+              "kind": "commit",
+              "label": "chore(deps-dev): bump js-yaml from 4.1.0 to 4.3.2 in /tests/smoke/cjs (#11218)",
+              "path": null,
+              "detail": "2026-09-09",
               "citations": [
-                ".github/ISSUE_TEMPLATE.md"
+                "git:d1f060dddebb"
               ],
               "trust": "git_observed"
             },
             {
-              "id": "file:-github-pull-request-template-md",
-              "kind": "file",
-              "label": ".github/PULL_REQUEST_TEMPLATE.md",
-              "path": ".github/PULL_REQUEST_TEMPLATE.md",
-              "detail": "Changed in recent local git history",
+              "id": "commit:dfa30a76dcae",
+              "kind": "commit",
+              "label": "docs: fix interceptor test links (#11228)",
+              "path": null,
+              "detail": "2026-09-14",
               "citations": [
-                ".github/PULL_REQUEST_TEMPLATE.md"
+                "git:dfa30a76dcae"
               ],
               "trust": "git_observed"
             },
             {
-              "id": "file:-github-workflows-bundle-size-yml",
-              "kind": "file",
-              "label": ".github/workflows/bundle-size.yml",
-              "path": ".github/workflows/bundle-size.yml",
-              "detail": "Changed in recent local git history",
+              "id": "commit:ed95c083f574",
+              "kind": "commit",
+              "label": "chore(deps): bump nanoid from 3.3.17 to 3.3.19 in /docs (#11230)",
+              "path": null,
+              "detail": "2026-09-13",
               "citations": [
-                ".github/workflows/bundle-size.yml"
+                "git:ed95c083f574"
               ],
               "trust": "git_observed"
             },
             {
-              "id": "file:-github-workflows-lockfile-lint-yml",
-              "kind": "file",
-              "label": ".github/workflows/lockfile-lint.yml",
-              "path": ".github/workflows/lockfile-lint.yml",
-              "detail": "Changed in recent local git history",
+              "id": "commit:f8df2e2429a2",
+              "kind": "commit",
+              "label": "fix(fetch): apply the default cache mode only where the runtime accepts it (#11194)",
+              "path": null,
+              "detail": "2026-09-13",
               "citations": [
-                ".github/workflows/lockfile-lint.yml"
+                "git:f8df2e2429a2"
               ],
               "trust": "git_observed"
             },
             {
-              "id": "file:-github-workflows-moderator-yml",
-              "kind": "file",
-              "label": ".github/workflows/moderator.yml",
-              "path": ".github/workflows/moderator.yml",
-              "detail": "Changed in recent local git history",
+              "id": "commit:fbe2e8260c86",
+              "kind": "commit",
+              "label": "fix(types): expose the response default marker type (#11125)",
+              "path": null,
+              "detail": "2026-09-17",
               "citations": [
-                ".github/workflows/moderator.yml"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:-github-workflows-publish-yml",
-              "kind": "file",
-              "label": ".github/workflows/publish.yml",
-              "path": ".github/workflows/publish.yml",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                ".github/workflows/publish.yml"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:-github-workflows-release-branch-yml",
-              "kind": "file",
-              "label": ".github/workflows/release-branch.yml",
-              "path": ".github/workflows/release-branch.yml",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                ".github/workflows/release-branch.yml"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:-github-workflows-run-ci-yml",
-              "kind": "file",
-              "label": ".github/workflows/run-ci.yml",
-              "path": ".github/workflows/run-ci.yml",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                ".github/workflows/run-ci.yml"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:-github-workflows-verify-build-reproducibility-yml",
-              "kind": "file",
-              "label": ".github/workflows/verify-build-reproducibility.yml",
-              "path": ".github/workflows/verify-build-reproducibility.yml",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                ".github/workflows/verify-build-reproducibility.yml"
+                "git:fbe2e8260c86"
               ],
               "trust": "git_observed"
             },
@@ -7657,101 +7785,112 @@
               "trust": "git_observed"
             },
             {
-              "id": "file:agents-md",
+              "id": "file:docs-data-sponsors-json",
               "kind": "file",
-              "label": "AGENTS.md",
-              "path": "AGENTS.md",
+              "label": "docs/data/sponsors.json",
+              "path": "docs/data/sponsors.json",
               "detail": "Changed in recent local git history",
               "citations": [
-                "AGENTS.md"
+                "docs/data/sponsors.json"
               ],
               "trust": "git_observed"
             },
             {
-              "id": "file:changelog-md",
+              "id": "file:docs-es-pages-advanced-interceptors-md",
               "kind": "file",
-              "label": "CHANGELOG.md",
-              "path": "CHANGELOG.md",
+              "label": "docs/es/pages/advanced/interceptors.md",
+              "path": "docs/es/pages/advanced/interceptors.md",
               "detail": "Changed in recent local git history",
               "citations": [
-                "CHANGELOG.md"
+                "docs/es/pages/advanced/interceptors.md"
               ],
               "trust": "git_observed"
             },
             {
-              "id": "file:claude-md",
+              "id": "file:docs-fr-pages-advanced-interceptors-md",
               "kind": "file",
-              "label": "CLAUDE.md",
-              "path": "CLAUDE.md",
+              "label": "docs/fr/pages/advanced/interceptors.md",
+              "path": "docs/fr/pages/advanced/interceptors.md",
               "detail": "Changed in recent local git history",
               "citations": [
-                "CLAUDE.md"
+                "docs/fr/pages/advanced/interceptors.md"
               ],
               "trust": "git_observed"
             },
             {
-              "id": "file:code-of-conduct-md",
+              "id": "file:docs-pages-advanced-interceptors-md",
               "kind": "file",
-              "label": "CODE_OF_CONDUCT.md",
-              "path": "CODE_OF_CONDUCT.md",
+              "label": "docs/pages/advanced/interceptors.md",
+              "path": "docs/pages/advanced/interceptors.md",
               "detail": "Changed in recent local git history",
               "citations": [
-                "CODE_OF_CONDUCT.md"
+                "docs/pages/advanced/interceptors.md"
               ],
               "trust": "git_observed"
             },
             {
-              "id": "file:collaborator-guide-md",
+              "id": "file:docs-scripts-process-sponsors-js",
               "kind": "file",
-              "label": "COLLABORATOR_GUIDE.md",
-              "path": "COLLABORATOR_GUIDE.md",
+              "label": "docs/scripts/process-sponsors.js",
+              "path": "docs/scripts/process-sponsors.js",
               "detail": "Changed in recent local git history",
               "citations": [
-                "COLLABORATOR_GUIDE.md"
+                "docs/scripts/process-sponsors.js"
               ],
               "trust": "git_observed"
             },
             {
-              "id": "file:contributing-md",
+              "id": "file:docs-zh-pages-advanced-interceptors-md",
               "kind": "file",
-              "label": "CONTRIBUTING.md",
-              "path": "CONTRIBUTING.md",
+              "label": "docs/zh/pages/advanced/interceptors.md",
+              "path": "docs/zh/pages/advanced/interceptors.md",
               "detail": "Changed in recent local git history",
               "citations": [
-                "CONTRIBUTING.md"
+                "docs/zh/pages/advanced/interceptors.md"
               ],
               "trust": "git_observed"
             },
             {
-              "id": "file:contributors-md",
+              "id": "file:index-d-ts",
               "kind": "file",
-              "label": "CONTRIBUTORS.md",
-              "path": "CONTRIBUTORS.md",
+              "label": "index.d.ts",
+              "path": "index.d.ts",
               "detail": "Changed in recent local git history",
               "citations": [
-                "CONTRIBUTORS.md"
+                "index.d.ts"
               ],
               "trust": "git_observed"
             },
             {
-              "id": "file:ecosystem-md",
+              "id": "file:lib-adapters-fetch-js",
               "kind": "file",
-              "label": "ECOSYSTEM.md",
-              "path": "ECOSYSTEM.md",
+              "label": "lib/adapters/fetch.js",
+              "path": "lib/adapters/fetch.js",
               "detail": "Changed in recent local git history",
               "citations": [
-                "ECOSYSTEM.md"
+                "lib/adapters/fetch.js"
               ],
               "trust": "git_observed"
             },
             {
-              "id": "file:migration-guide-md",
+              "id": "file:lib-adapters-http-js",
               "kind": "file",
-              "label": "MIGRATION_GUIDE.md",
-              "path": "MIGRATION_GUIDE.md",
-              "detail": "Changed in recent local git history",
+              "label": "lib/adapters/http.js",
+              "path": "lib/adapters/http.js",
+              "detail": "Recent co-change lead",
               "citations": [
-                "MIGRATION_GUIDE.md"
+                "lib/adapters/http.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:lib-core-axios-js",
+              "kind": "file",
+              "label": "lib/core/Axios.js",
+              "path": "lib/core/Axios.js",
+              "detail": "Recent co-change lead",
+              "citations": [
+                "lib/core/Axios.js"
               ],
               "trust": "git_observed"
             },
@@ -7774,6 +7913,160 @@
               "detail": "Changed in recent local git history",
               "citations": [
                 "PRE_RELEASE_CHANGELOG.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:pre-release-docs-md",
+              "kind": "file",
+              "label": "PRE_RELEASE_DOCS.md",
+              "path": "PRE_RELEASE_DOCS.md",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "PRE_RELEASE_DOCS.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:readme-md",
+              "kind": "file",
+              "label": "README.md",
+              "path": "README.md",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "README.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:tests-browser-fetchcache-browser-test-js",
+              "kind": "file",
+              "label": "tests/browser/fetchCache.browser.test.js",
+              "path": "tests/browser/fetchCache.browser.test.js",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "tests/browser/fetchCache.browser.test.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:tests-browser-fetchresponseerrors-browser-test-js",
+              "kind": "file",
+              "label": "tests/browser/fetchResponseErrors.browser.test.js",
+              "path": "tests/browser/fetchResponseErrors.browser.test.js",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "tests/browser/fetchResponseErrors.browser.test.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:tests-module-cjs-tests-helpers-cjs-fetch-types-ts",
+              "kind": "file",
+              "label": "tests/module/cjs/tests/helpers/cjs-fetch-types.ts",
+              "path": "tests/module/cjs/tests/helpers/cjs-fetch-types.ts",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "tests/module/cjs/tests/helpers/cjs-fetch-types.ts"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:tests-module-esm-tests-helpers-declaration-consumer-ts",
+              "kind": "file",
+              "label": "tests/module/esm/tests/helpers/declaration-consumer.ts",
+              "path": "tests/module/esm/tests/helpers/declaration-consumer.ts",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "tests/module/esm/tests/helpers/declaration-consumer.ts"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:tests-module-esm-tests-helpers-declaration-emit-ts",
+              "kind": "file",
+              "label": "tests/module/esm/tests/helpers/declaration-emit.ts",
+              "path": "tests/module/esm/tests/helpers/declaration-emit.ts",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "tests/module/esm/tests/helpers/declaration-emit.ts"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:tests-module-esm-tests-helpers-esm-fetch-types-ts",
+              "kind": "file",
+              "label": "tests/module/esm/tests/helpers/esm-fetch-types.ts",
+              "path": "tests/module/esm/tests/helpers/esm-fetch-types.ts",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "tests/module/esm/tests/helpers/esm-fetch-types.ts"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:tests-module-esm-tests-ts-module-test-js",
+              "kind": "file",
+              "label": "tests/module/esm/tests/ts.module.test.js",
+              "path": "tests/module/esm/tests/ts.module.test.js",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "tests/module/esm/tests/ts.module.test.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:tests-module-esm-tests-typings-module-test-js",
+              "kind": "file",
+              "label": "tests/module/esm/tests/typings.module.test.js",
+              "path": "tests/module/esm/tests/typings.module.test.js",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "tests/module/esm/tests/typings.module.test.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:tests-module-esm-vitest-config-js",
+              "kind": "file",
+              "label": "tests/module/esm/vitest.config.js",
+              "path": "tests/module/esm/vitest.config.js",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "tests/module/esm/vitest.config.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:tests-smoke-esm-package-json",
+              "kind": "file",
+              "label": "tests/smoke/esm/package.json",
+              "path": "tests/smoke/esm/package.json",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "tests/smoke/esm/package.json"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:tests-unit-adapters-fetch-test-js",
+              "kind": "file",
+              "label": "tests/unit/adapters/fetch.test.js",
+              "path": "tests/unit/adapters/fetch.test.js",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "tests/unit/adapters/fetch.test.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:tests-unit-adapters-http-test-js",
+              "kind": "file",
+              "label": "tests/unit/adapters/http.test.js",
+              "path": "tests/unit/adapters/http.test.js",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "tests/unit/adapters/http.test.js"
               ],
               "trust": "git_observed"
             },
@@ -7912,255 +8205,57 @@
           ],
           "edges": [
             {
-              "from": "commit:56a5f1acdc41",
-              "to": "file:-devcontainer-devcontainer-json",
+              "from": "commit:18e7dfedf30c",
+              "to": "file:docs-data-sponsors-json",
               "kind": "changed",
-              "evidence": "56a5f1acdc41 changed this file",
+              "evidence": "18e7dfedf30c changed this file",
               "citations": [
-                "git:56a5f1acdc41",
-                ".devcontainer/devcontainer.json"
+                "git:18e7dfedf30c",
+                "docs/data/sponsors.json"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:18e7dfedf30c",
+              "to": "file:docs-scripts-process-sponsors-js",
+              "kind": "changed",
+              "evidence": "18e7dfedf30c changed this file",
+              "citations": [
+                "git:18e7dfedf30c",
+                "docs/scripts/process-sponsors.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:18e7dfedf30c",
+              "to": "file:readme-md",
+              "kind": "changed",
+              "evidence": "18e7dfedf30c changed this file",
+              "citations": [
+                "git:18e7dfedf30c",
+                "README.md"
               ],
               "trust": "git_observed"
             },
             {
               "from": "commit:56a5f1acdc41",
-              "to": "file:-github-copilot-instructions-md",
+              "to": "file:index-d-ts",
               "kind": "changed",
               "evidence": "56a5f1acdc41 changed this file",
               "citations": [
                 "git:56a5f1acdc41",
-                ".github/copilot-instructions.md"
+                "index.d.ts"
               ],
               "trust": "git_observed"
             },
             {
               "from": "commit:56a5f1acdc41",
-              "to": "file:-github-dependabot-yml",
+              "to": "file:lib-adapters-fetch-js",
               "kind": "changed",
               "evidence": "56a5f1acdc41 changed this file",
               "citations": [
                 "git:56a5f1acdc41",
-                ".github/dependabot.yml"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:56a5f1acdc41",
-              "to": "file:-github-funding-yml",
-              "kind": "changed",
-              "evidence": "56a5f1acdc41 changed this file",
-              "citations": [
-                "git:56a5f1acdc41",
-                ".github/FUNDING.yml"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:56a5f1acdc41",
-              "to": "file:-github-issue-template-md",
-              "kind": "changed",
-              "evidence": "56a5f1acdc41 changed this file",
-              "citations": [
-                "git:56a5f1acdc41",
-                ".github/ISSUE_TEMPLATE.md"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:56a5f1acdc41",
-              "to": "file:-github-pull-request-template-md",
-              "kind": "changed",
-              "evidence": "56a5f1acdc41 changed this file",
-              "citations": [
-                "git:56a5f1acdc41",
-                ".github/PULL_REQUEST_TEMPLATE.md"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:56a5f1acdc41",
-              "to": "file:-github-workflows-bundle-size-yml",
-              "kind": "changed",
-              "evidence": "56a5f1acdc41 changed this file",
-              "citations": [
-                "git:56a5f1acdc41",
-                ".github/workflows/bundle-size.yml"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:56a5f1acdc41",
-              "to": "file:-github-workflows-lockfile-lint-yml",
-              "kind": "changed",
-              "evidence": "56a5f1acdc41 changed this file",
-              "citations": [
-                "git:56a5f1acdc41",
-                ".github/workflows/lockfile-lint.yml"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:56a5f1acdc41",
-              "to": "file:-github-workflows-moderator-yml",
-              "kind": "changed",
-              "evidence": "56a5f1acdc41 changed this file",
-              "citations": [
-                "git:56a5f1acdc41",
-                ".github/workflows/moderator.yml"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:56a5f1acdc41",
-              "to": "file:-github-workflows-publish-yml",
-              "kind": "changed",
-              "evidence": "56a5f1acdc41 changed this file",
-              "citations": [
-                "git:56a5f1acdc41",
-                ".github/workflows/publish.yml"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:56a5f1acdc41",
-              "to": "file:-github-workflows-release-branch-yml",
-              "kind": "changed",
-              "evidence": "56a5f1acdc41 changed this file",
-              "citations": [
-                "git:56a5f1acdc41",
-                ".github/workflows/release-branch.yml"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:56a5f1acdc41",
-              "to": "file:-github-workflows-run-ci-yml",
-              "kind": "changed",
-              "evidence": "56a5f1acdc41 changed this file",
-              "citations": [
-                "git:56a5f1acdc41",
-                ".github/workflows/run-ci.yml"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:56a5f1acdc41",
-              "to": "file:-github-workflows-verify-build-reproducibility-yml",
-              "kind": "changed",
-              "evidence": "56a5f1acdc41 changed this file",
-              "citations": [
-                "git:56a5f1acdc41",
-                ".github/workflows/verify-build-reproducibility.yml"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:56a5f1acdc41",
-              "to": "file:-github-workflows-zizmor-yml",
-              "kind": "changed",
-              "evidence": "56a5f1acdc41 changed this file",
-              "citations": [
-                "git:56a5f1acdc41",
-                ".github/workflows/zizmor.yml"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:56a5f1acdc41",
-              "to": "file:agents-md",
-              "kind": "changed",
-              "evidence": "56a5f1acdc41 changed this file",
-              "citations": [
-                "git:56a5f1acdc41",
-                "AGENTS.md"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:56a5f1acdc41",
-              "to": "file:changelog-md",
-              "kind": "changed",
-              "evidence": "56a5f1acdc41 changed this file",
-              "citations": [
-                "git:56a5f1acdc41",
-                "CHANGELOG.md"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:56a5f1acdc41",
-              "to": "file:claude-md",
-              "kind": "changed",
-              "evidence": "56a5f1acdc41 changed this file",
-              "citations": [
-                "git:56a5f1acdc41",
-                "CLAUDE.md"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:56a5f1acdc41",
-              "to": "file:code-of-conduct-md",
-              "kind": "changed",
-              "evidence": "56a5f1acdc41 changed this file",
-              "citations": [
-                "git:56a5f1acdc41",
-                "CODE_OF_CONDUCT.md"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:56a5f1acdc41",
-              "to": "file:collaborator-guide-md",
-              "kind": "changed",
-              "evidence": "56a5f1acdc41 changed this file",
-              "citations": [
-                "git:56a5f1acdc41",
-                "COLLABORATOR_GUIDE.md"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:56a5f1acdc41",
-              "to": "file:contributing-md",
-              "kind": "changed",
-              "evidence": "56a5f1acdc41 changed this file",
-              "citations": [
-                "git:56a5f1acdc41",
-                "CONTRIBUTING.md"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:56a5f1acdc41",
-              "to": "file:contributors-md",
-              "kind": "changed",
-              "evidence": "56a5f1acdc41 changed this file",
-              "citations": [
-                "git:56a5f1acdc41",
-                "CONTRIBUTORS.md"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:56a5f1acdc41",
-              "to": "file:ecosystem-md",
-              "kind": "changed",
-              "evidence": "56a5f1acdc41 changed this file",
-              "citations": [
-                "git:56a5f1acdc41",
-                "ECOSYSTEM.md"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:56a5f1acdc41",
-              "to": "file:migration-guide-md",
-              "kind": "changed",
-              "evidence": "56a5f1acdc41 changed this file",
-              "citations": [
-                "git:56a5f1acdc41",
-                "MIGRATION_GUIDE.md"
+                "lib/adapters/fetch.js"
               ],
               "trust": "git_observed"
             },
@@ -8174,6 +8269,269 @@
                 "PRE_RELEASE_CHANGELOG.md"
               ],
               "trust": "git_observed"
+            },
+            {
+              "from": "commit:56a5f1acdc41",
+              "to": "file:pre-release-docs-md",
+              "kind": "changed",
+              "evidence": "56a5f1acdc41 changed this file",
+              "citations": [
+                "git:56a5f1acdc41",
+                "PRE_RELEASE_DOCS.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:56a5f1acdc41",
+              "to": "file:tests-browser-fetchresponseerrors-browser-test-js",
+              "kind": "changed",
+              "evidence": "56a5f1acdc41 changed this file",
+              "citations": [
+                "git:56a5f1acdc41",
+                "tests/browser/fetchResponseErrors.browser.test.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:56a5f1acdc41",
+              "to": "file:tests-module-cjs-tests-helpers-cjs-fetch-types-ts",
+              "kind": "changed",
+              "evidence": "56a5f1acdc41 changed this file",
+              "citations": [
+                "git:56a5f1acdc41",
+                "tests/module/cjs/tests/helpers/cjs-fetch-types.ts"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:56a5f1acdc41",
+              "to": "file:tests-module-esm-tests-helpers-esm-fetch-types-ts",
+              "kind": "changed",
+              "evidence": "56a5f1acdc41 changed this file",
+              "citations": [
+                "git:56a5f1acdc41",
+                "tests/module/esm/tests/helpers/esm-fetch-types.ts"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:56a5f1acdc41",
+              "to": "file:tests-module-esm-tests-typings-module-test-js",
+              "kind": "changed",
+              "evidence": "56a5f1acdc41 changed this file",
+              "citations": [
+                "git:56a5f1acdc41",
+                "tests/module/esm/tests/typings.module.test.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:56a5f1acdc41",
+              "to": "file:tests-unit-adapters-fetch-test-js",
+              "kind": "changed",
+              "evidence": "56a5f1acdc41 changed this file",
+              "citations": [
+                "git:56a5f1acdc41",
+                "tests/unit/adapters/fetch.test.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:56a5f1acdc41",
+              "to": "file:tests-unit-adapters-http-test-js",
+              "kind": "changed",
+              "evidence": "56a5f1acdc41 changed this file",
+              "citations": [
+                "git:56a5f1acdc41",
+                "tests/unit/adapters/http.test.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:6598b71446db",
+              "to": "file:-github-workflows-zizmor-yml",
+              "kind": "changed",
+              "evidence": "6598b71446db changed this file",
+              "citations": [
+                "git:6598b71446db",
+                ".github/workflows/zizmor.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:9ecb985a6eaa",
+              "to": "file:tests-smoke-esm-package-json",
+              "kind": "changed",
+              "evidence": "9ecb985a6eaa changed this file",
+              "citations": [
+                "git:9ecb985a6eaa",
+                "tests/smoke/esm/package.json"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:dfa30a76dcae",
+              "to": "file:docs-es-pages-advanced-interceptors-md",
+              "kind": "changed",
+              "evidence": "dfa30a76dcae changed this file",
+              "citations": [
+                "git:dfa30a76dcae",
+                "docs/es/pages/advanced/interceptors.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:dfa30a76dcae",
+              "to": "file:docs-fr-pages-advanced-interceptors-md",
+              "kind": "changed",
+              "evidence": "dfa30a76dcae changed this file",
+              "citations": [
+                "git:dfa30a76dcae",
+                "docs/fr/pages/advanced/interceptors.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:dfa30a76dcae",
+              "to": "file:docs-pages-advanced-interceptors-md",
+              "kind": "changed",
+              "evidence": "dfa30a76dcae changed this file",
+              "citations": [
+                "git:dfa30a76dcae",
+                "docs/pages/advanced/interceptors.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:dfa30a76dcae",
+              "to": "file:docs-zh-pages-advanced-interceptors-md",
+              "kind": "changed",
+              "evidence": "dfa30a76dcae changed this file",
+              "citations": [
+                "git:dfa30a76dcae",
+                "docs/zh/pages/advanced/interceptors.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:f8df2e2429a2",
+              "to": "file:lib-adapters-fetch-js",
+              "kind": "changed",
+              "evidence": "f8df2e2429a2 changed this file",
+              "citations": [
+                "git:f8df2e2429a2",
+                "lib/adapters/fetch.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:f8df2e2429a2",
+              "to": "file:pre-release-changelog-md",
+              "kind": "changed",
+              "evidence": "f8df2e2429a2 changed this file",
+              "citations": [
+                "git:f8df2e2429a2",
+                "PRE_RELEASE_CHANGELOG.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:f8df2e2429a2",
+              "to": "file:tests-browser-fetchcache-browser-test-js",
+              "kind": "changed",
+              "evidence": "f8df2e2429a2 changed this file",
+              "citations": [
+                "git:f8df2e2429a2",
+                "tests/browser/fetchCache.browser.test.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:f8df2e2429a2",
+              "to": "file:tests-unit-adapters-fetch-test-js",
+              "kind": "changed",
+              "evidence": "f8df2e2429a2 changed this file",
+              "citations": [
+                "git:f8df2e2429a2",
+                "tests/unit/adapters/fetch.test.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:fbe2e8260c86",
+              "to": "file:index-d-ts",
+              "kind": "changed",
+              "evidence": "fbe2e8260c86 changed this file",
+              "citations": [
+                "git:fbe2e8260c86",
+                "index.d.ts"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:fbe2e8260c86",
+              "to": "file:pre-release-changelog-md",
+              "kind": "changed",
+              "evidence": "fbe2e8260c86 changed this file",
+              "citations": [
+                "git:fbe2e8260c86",
+                "PRE_RELEASE_CHANGELOG.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:fbe2e8260c86",
+              "to": "file:tests-module-esm-tests-helpers-declaration-consumer-ts",
+              "kind": "changed",
+              "evidence": "fbe2e8260c86 changed this file",
+              "citations": [
+                "git:fbe2e8260c86",
+                "tests/module/esm/tests/helpers/declaration-consumer.ts"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:fbe2e8260c86",
+              "to": "file:tests-module-esm-tests-helpers-declaration-emit-ts",
+              "kind": "changed",
+              "evidence": "fbe2e8260c86 changed this file",
+              "citations": [
+                "git:fbe2e8260c86",
+                "tests/module/esm/tests/helpers/declaration-emit.ts"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:fbe2e8260c86",
+              "to": "file:tests-module-esm-tests-ts-module-test-js",
+              "kind": "changed",
+              "evidence": "fbe2e8260c86 changed this file",
+              "citations": [
+                "git:fbe2e8260c86",
+                "tests/module/esm/tests/ts.module.test.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:fbe2e8260c86",
+              "to": "file:tests-module-esm-vitest-config-js",
+              "kind": "changed",
+              "evidence": "fbe2e8260c86 changed this file",
+              "citations": [
+                "git:fbe2e8260c86",
+                "tests/module/esm/vitest.config.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "file:lib-adapters-fetch-js",
+              "to": "file:tests-unit-adapters-fetch-test-js",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 3 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:56a5f1acdc41"
+              ],
+              "trust": "navigation_lead"
             },
             {
               "from": "file:package-json",
@@ -8294,12 +8652,90 @@
                 "package.json"
               ],
               "trust": "navigation_lead"
+            },
+            {
+              "from": "file:pre-release-changelog-md",
+              "to": "file:index-d-ts",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 3 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:56a5f1acdc41"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:pre-release-changelog-md",
+              "to": "file:lib-adapters-fetch-js",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 3 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:56a5f1acdc41"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:pre-release-changelog-md",
+              "to": "file:lib-adapters-http-js",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 3 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:e6824eec5fcf"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:pre-release-changelog-md",
+              "to": "file:lib-core-axios-js",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 3 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:e6824eec5fcf"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:pre-release-changelog-md",
+              "to": "file:pre-release-docs-md",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 4 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:56a5f1acdc41"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:pre-release-changelog-md",
+              "to": "file:tests-unit-adapters-fetch-test-js",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 3 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:56a5f1acdc41"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:pre-release-changelog-md",
+              "to": "file:tests-unit-adapters-http-test-js",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 4 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:56a5f1acdc41"
+              ],
+              "trust": "navigation_lead"
             }
           ],
           "truncated": false
         },
         "sources": [
           "package.json",
+          "PRE_RELEASE_CHANGELOG.md",
+          "PRE_RELEASE_DOCS.md",
+          "tests/unit/adapters/http.test.js",
+          "index.d.ts",
+          "lib/adapters/fetch.js",
+          "lib/adapters/http.js",
+          "lib/core/Axios.js",
+          "tests/unit/adapters/fetch.test.js",
           "docs/package.json",
           "tests/module/cjs/package.json",
           "tests/module/esm/package.json"
@@ -8308,19 +8744,19 @@
       },
       "repo_health": {
         "schema_version": 1,
-        "summary": "Deterministic scan scored 92 source files across simple size, churn, structural, test-adjacency, and performance-risk signals. 2 hotspots surfaced; average score is 9.7/10. Treat these as review leads, not proof of a bug.",
-        "average_score": 9.7,
-        "hotspot_count": 2,
+        "summary": "Deterministic scan scored 92 source files across simple size, churn, structural, test-adjacency, and performance-risk signals. 3 hotspots surfaced; average score is 9.2/10. Treat these as review leads, not proof of a bug.",
+        "average_score": 9.2,
+        "hotspot_count": 3,
         "files_analyzed": 92,
         "files_with_test_signal": 47,
         "top_files": [
           {
             "path": "lib/adapters/http.js",
-            "score": 5.9,
+            "score": 4.7,
             "bucket": "hotspot",
             "lines": 1407,
             "bytes": 52315,
-            "churn": 0,
+            "churn": 1596,
             "has_test_signal": true,
             "findings": [
               {
@@ -8354,6 +8790,16 @@
                 ]
               },
               {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 1596 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "lib/adapters/http.js"
+                ]
+              },
+              {
                 "id": "io_in_loop",
                 "label": "I/O inside loop",
                 "dimension": "performance",
@@ -8382,11 +8828,11 @@
           },
           {
             "path": "lib/adapters/fetch.js",
-            "score": 6.4,
+            "score": 5.2,
             "bucket": "hotspot",
             "lines": 715,
             "bytes": 22654,
-            "churn": 0,
+            "churn": 747,
             "has_test_signal": true,
             "findings": [
               {
@@ -8420,6 +8866,16 @@
                 ]
               },
               {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 747 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "lib/adapters/fetch.js"
+                ]
+              },
+              {
                 "id": "io_in_loop",
                 "label": "I/O inside loop",
                 "dimension": "performance",
@@ -8448,11 +8904,11 @@
           },
           {
             "path": "lib/core/Axios.js",
-            "score": 7.1,
-            "bucket": "watch",
+            "score": 5.9,
+            "bucket": "hotspot",
             "lines": 306,
             "bytes": 9039,
-            "churn": 0,
+            "churn": 350,
             "has_test_signal": true,
             "findings": [
               {
@@ -8471,6 +8927,16 @@
                 "dimension": "maintainability",
                 "severity": "medium",
                 "detail": "A brace-delimited block spans roughly 241 lines; consider extracting a helper when touching it.",
+                "sources": [
+                  "lib/core/Axios.js"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 350 changed lines in this file; combine review with history and tests.",
                 "sources": [
                   "lib/core/Axios.js"
                 ]
@@ -8504,11 +8970,11 @@
           },
           {
             "path": "lib/utils.js",
-            "score": 8.1,
-            "bucket": "healthy",
+            "score": 6.9,
+            "bucket": "watch",
             "lines": 1150,
             "bytes": 31018,
-            "churn": 0,
+            "churn": 1176,
             "has_test_signal": true,
             "findings": [
               {
@@ -8530,6 +8996,16 @@
                 "sources": [
                   "lib/utils.js"
                 ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 1176 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "lib/utils.js"
+                ]
               }
             ],
             "refactoring_targets": [
@@ -8539,11 +9015,11 @@
           },
           {
             "path": "lib/helpers/toFormData.js",
-            "score": 8.1,
-            "bucket": "healthy",
+            "score": 6.9,
+            "bucket": "watch",
             "lines": 279,
             "bytes": 7732,
-            "churn": 0,
+            "churn": 321,
             "has_test_signal": true,
             "findings": [
               {
@@ -8565,6 +9041,16 @@
                 "sources": [
                   "lib/helpers/toFormData.js"
                 ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 321 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "lib/helpers/toFormData.js"
+                ]
               }
             ],
             "refactoring_targets": [
@@ -8573,12 +9059,66 @@
             ]
           },
           {
+            "path": "docs/scripts/process-sponsors.js",
+            "score": 7.1,
+            "bucket": "watch",
+            "lines": 337,
+            "bytes": 8784,
+            "churn": 347,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "Maximum indentation depth is about 6; inspect branch-heavy paths before risky edits.",
+                "sources": [
+                  "docs/scripts/process-sponsors.js"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 347 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "docs/scripts/process-sponsors.js"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "docs/scripts/process-sponsors.js"
+                ]
+              },
+              {
+                "id": "io_boundary",
+                "label": "I/O or process boundary",
+                "dimension": "defect",
+                "severity": "low",
+                "detail": "File touches filesystem, network, database, or subprocess boundaries; changes need concrete runtime proof.",
+                "sources": [
+                  "docs/scripts/process-sponsors.js"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
             "path": "lib/adapters/xhr.js",
-            "score": 8.3,
-            "bucket": "healthy",
+            "score": 7.1,
+            "bucket": "watch",
             "lines": 277,
             "bytes": 9750,
-            "churn": 0,
+            "churn": 283,
             "has_test_signal": true,
             "findings": [
               {
@@ -8602,6 +9142,16 @@
                 ]
               },
               {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 283 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "lib/adapters/xhr.js"
+                ]
+              },
+              {
                 "id": "io_boundary",
                 "label": "I/O or process boundary",
                 "dimension": "defect",
@@ -8618,12 +9168,66 @@
             ]
           },
           {
+            "path": "lib/defaults/index.js",
+            "score": 7.1,
+            "bucket": "watch",
+            "lines": 178,
+            "bytes": 4977,
+            "churn": 180,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "Maximum indentation depth is about 7; inspect branch-heavy paths before risky edits.",
+                "sources": [
+                  "lib/defaults/index.js"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 180 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "lib/defaults/index.js"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "lib/defaults/index.js"
+                ]
+              },
+              {
+                "id": "io_boundary",
+                "label": "I/O or process boundary",
+                "dimension": "defect",
+                "severity": "low",
+                "detail": "File touches filesystem, network, database, or subprocess boundaries; changes need concrete runtime proof.",
+                "sources": [
+                  "lib/defaults/index.js"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
             "path": "index.d.ts",
-            "score": 8.6,
-            "bucket": "healthy",
+            "score": 7.4,
+            "bucket": "watch",
             "lines": 797,
             "bytes": 23841,
-            "churn": 0,
+            "churn": 799,
             "has_test_signal": false,
             "findings": [
               {
@@ -8632,6 +9236,16 @@
                 "dimension": "maintainability",
                 "severity": "medium",
                 "detail": "797 lines in one source file; changes here may be harder to review.",
+                "sources": [
+                  "index.d.ts"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 799 changed lines in this file; combine review with history and tests.",
                 "sources": [
                   "index.d.ts"
                 ]
@@ -8651,11 +9265,11 @@
           },
           {
             "path": "lib/core/AxiosHeaders.js",
-            "score": 8.6,
-            "bucket": "healthy",
+            "score": 7.4,
+            "bucket": "watch",
             "lines": 474,
             "bytes": 10338,
-            "churn": 0,
+            "churn": 474,
             "has_test_signal": true,
             "findings": [
               {
@@ -8677,6 +9291,16 @@
                 "sources": [
                   "lib/core/AxiosHeaders.js"
                 ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 474 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "lib/core/AxiosHeaders.js"
+                ]
               }
             ],
             "refactoring_targets": [
@@ -8684,80 +9308,12 @@
             ]
           },
           {
-            "path": "docs/scripts/process-sponsors.js",
-            "score": 9,
-            "bucket": "healthy",
-            "lines": 337,
-            "bytes": 8784,
-            "churn": 0,
-            "has_test_signal": false,
-            "findings": [
-              {
-                "id": "deep_nesting",
-                "label": "Deep nesting",
-                "dimension": "defect",
-                "severity": "medium",
-                "detail": "Maximum indentation depth is about 6; inspect branch-heavy paths before risky edits.",
-                "sources": [
-                  "docs/scripts/process-sponsors.js"
-                ]
-              },
-              {
-                "id": "io_boundary",
-                "label": "I/O or process boundary",
-                "dimension": "defect",
-                "severity": "low",
-                "detail": "File touches filesystem, network, database, or subprocess boundaries; changes need concrete runtime proof.",
-                "sources": [
-                  "docs/scripts/process-sponsors.js"
-                ]
-              }
-            ],
-            "refactoring_targets": [
-              "Flatten guard-heavy branches before adding behavior."
-            ]
-          },
-          {
-            "path": "lib/defaults/index.js",
-            "score": 9,
-            "bucket": "healthy",
-            "lines": 178,
-            "bytes": 4977,
-            "churn": 0,
-            "has_test_signal": false,
-            "findings": [
-              {
-                "id": "deep_nesting",
-                "label": "Deep nesting",
-                "dimension": "defect",
-                "severity": "medium",
-                "detail": "Maximum indentation depth is about 7; inspect branch-heavy paths before risky edits.",
-                "sources": [
-                  "lib/defaults/index.js"
-                ]
-              },
-              {
-                "id": "io_boundary",
-                "label": "I/O or process boundary",
-                "dimension": "defect",
-                "severity": "low",
-                "detail": "File touches filesystem, network, database, or subprocess boundaries; changes need concrete runtime proof.",
-                "sources": [
-                  "lib/defaults/index.js"
-                ]
-              }
-            ],
-            "refactoring_targets": [
-              "Flatten guard-heavy branches before adding behavior."
-            ]
-          },
-          {
             "path": "rollup.config.js",
-            "score": 9,
-            "bucket": "healthy",
+            "score": 7.6,
+            "bucket": "watch",
             "lines": 142,
             "bytes": 3345,
-            "churn": 0,
+            "churn": 142,
             "has_test_signal": false,
             "findings": [
               {
@@ -8766,6 +9322,26 @@
                 "dimension": "defect",
                 "severity": "medium",
                 "detail": "Maximum indentation depth is about 7; inspect branch-heavy paths before risky edits.",
+                "sources": [
+                  "rollup.config.js"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "Moderate churn",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "Recent git history shows 142 changed lines in this file; it is a change hotspot.",
+                "sources": [
+                  "rollup.config.js"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
                 "sources": [
                   "rollup.config.js"
                 ]
@@ -8786,22 +9362,42 @@
             ]
           },
           {
-            "path": "lib/core/dispatchRequest.js",
-            "score": 9,
-            "bucket": "healthy",
-            "lines": 95,
-            "bytes": 2991,
-            "churn": 0,
-            "has_test_signal": true,
+            "path": "gulpfile.js",
+            "score": 7.6,
+            "bucket": "watch",
+            "lines": 79,
+            "bytes": 2181,
+            "churn": 79,
+            "has_test_signal": false,
             "findings": [
               {
-                "id": "deep_nesting",
-                "label": "Deep nesting",
+                "id": "churn_hotspot",
+                "label": "Moderate churn",
                 "dimension": "defect",
                 "severity": "medium",
-                "detail": "Maximum indentation depth is about 7; inspect branch-heavy paths before risky edits.",
+                "detail": "Recent git history shows 79 changed lines in this file; it is a change hotspot.",
                 "sources": [
-                  "lib/core/dispatchRequest.js"
+                  "gulpfile.js"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "gulpfile.js"
+                ]
+              },
+              {
+                "id": "io_in_loop",
+                "label": "I/O inside loop",
+                "dimension": "performance",
+                "severity": "medium",
+                "detail": "Loop-shaped code appears near filesystem, subprocess, database, or network I/O; inspect for N+1 or repeated setup work.",
+                "sources": [
+                  "gulpfile.js"
                 ]
               },
               {
@@ -8811,12 +9407,12 @@
                 "severity": "low",
                 "detail": "File touches filesystem, network, database, or subprocess boundaries; changes need concrete runtime proof.",
                 "sources": [
-                  "lib/core/dispatchRequest.js"
+                  "gulpfile.js"
                 ]
               }
             ],
             "refactoring_targets": [
-              "Flatten guard-heavy branches before adding behavior."
+              "Hoist repeated I/O or batch loop work where behavior allows."
             ]
           }
         ],
@@ -11799,8 +12395,8 @@
     "profiles": [
       {
         "stage": "full_scan",
-        "total_ms": 43,
-        "peak_rss_bytes": 33193984,
+        "total_ms": 83,
+        "peak_rss_bytes": 33325056,
         "steps": [
           {
             "id": "git_metadata",
@@ -11812,7 +12408,7 @@
             "id": "file_walk",
             "label": "Parallel file walk",
             "ms": 7,
-            "pct": 16.27906976744186
+            "pct": 8.433734939759036
           },
           {
             "id": "languages",
@@ -11829,8 +12425,8 @@
           {
             "id": "docs",
             "label": "Doc previews",
-            "ms": 2,
-            "pct": 4.651162790697675
+            "ms": 4,
+            "pct": 4.819277108433735
           },
           {
             "id": "aggregates",
@@ -11848,25 +12444,25 @@
             "id": "source_previews",
             "label": "Source preview cache",
             "ms": 2,
-            "pct": 4.651162790697675
+            "pct": 2.4096385542168677
           },
           {
             "id": "repo_graph",
             "label": "Deterministic graph scan",
-            "ms": 7,
-            "pct": 16.27906976744186
+            "ms": 8,
+            "pct": 9.63855421686747
           },
           {
             "id": "history",
             "label": "Git history & decision scan",
-            "ms": 14,
-            "pct": 32.55813953488372
+            "ms": 15,
+            "pct": 18.072289156626507
           },
           {
             "id": "repo_health",
             "label": "Deterministic health scoring",
-            "ms": 7,
-            "pct": 16.27906976744186
+            "ms": 43,
+            "pct": 51.80722891566265
           },
           {
             "id": "dir_tree",
@@ -11878,8 +12474,8 @@
       },
       {
         "stage": "local_scan_persist",
-        "total_ms": 3,
-        "peak_rss_bytes": 34275328,
+        "total_ms": 1,
+        "peak_rss_bytes": 35438592,
         "steps": [
           {
             "id": "serialize",
@@ -11890,8 +12486,8 @@
           {
             "id": "db_insert",
             "label": "SQLite insert",
-            "ms": 2,
-            "pct": 66.66666666666666
+            "ms": 0,
+            "pct": 0
           },
           {
             "id": "touch_project",

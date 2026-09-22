@@ -3,26 +3,26 @@
   "repo": "curl/curl",
   "slug": "curl",
   "codevetter_version": "codevetter 1.12.0",
-  "collected_at": "2026-09-22T05:15:36.698Z",
+  "collected_at": "2026-09-22T06:01:35.595Z",
   "last_commit": {
-    "sha": "53be819ca8291b591332aeeae480bd0ae0d08d24",
-    "date": "2026-09-21",
-    "subject": "escape: use hex-pair lookup in curl_easy_escape"
+    "sha": "c362f034692e05ecb4d33edb740ba64c63a20add",
+    "date": "2026-09-22",
+    "subject": "RELEASE-NOTES: synced"
   },
   "scan": {
     "schema_version": "codevetter.unpack-scan/v1",
-    "report_id": "00f18e34-3e35-4e8f-86b7-d8b6fafeff45",
+    "report_id": "b47daa34-907a-4310-8a33-0c33607c7da3",
     "status": "scan_only",
-    "created_at": "2026-09-22T05:15:36.693181+00:00",
+    "created_at": "2026-09-22T06:01:35.590410+00:00",
     "inventory": {
-      "repo_path": "/private/var/folders/9_/1109_2dd1qz6zyvmxb5zp8pc0000gn/T/unpack-pilot-03MZ4M/curl",
+      "repo_path": "/private/var/folders/9_/1109_2dd1qz6zyvmxb5zp8pc0000gn/T/unpack-pilot-EFAfl3/curl",
       "repo_name": "curl",
-      "commit_sha": "53be819ca8291b591332aeeae480bd0ae0d08d24",
+      "commit_sha": "c362f034692e05ecb4d33edb740ba64c63a20add",
       "branch": "master",
       "remote_url": "https://github.com/curl/curl.git",
       "files_scanned": 4000,
       "files_skipped": 1,
-      "bytes_scanned": 14763229,
+      "bytes_scanned": 14765959,
       "max_files_hit": true,
       "estimated_total_files": 4538,
       "languages": [
@@ -5627,37 +5627,108 @@
       },
       "history_brief": {
         "schema_version": 2,
-        "summary": "Local history brief captured 1 recent commit, 0 decision markers, 12 test hints, and 0 co-change clusters for Repo Unpacked. Treat commit subjects as leads and rely on cited files for durable constraints.",
+        "summary": "Local history brief captured 12 recent commits, 0 decision markers, 12 test hints, and 0 co-change clusters for Repo Unpacked. Treat commit subjects as leads and rely on cited files for durable constraints.",
         "recent_commits": [
+          {
+            "sha": "c362f034692e",
+            "date": "2026-09-22",
+            "subject": "RELEASE-NOTES: synced",
+            "files": []
+          },
           {
             "sha": "53be819ca829",
             "date": "2026-09-21",
             "subject": "escape: use hex-pair lookup in curl_easy_escape",
             "files": [
-              ".circleci/config.yml",
-              ".clang-tidy.yml",
-              ".github/CONTRIBUTING.md",
-              ".github/FUNDING.yml",
-              ".github/ISSUE_TEMPLATE/bug_report.yml",
-              ".github/ISSUE_TEMPLATE/config.yml",
-              ".github/ISSUE_TEMPLATE/docs.yml",
-              ".github/actions/pkg-install/action.yml",
-              ".github/dependabot.yml",
-              ".github/egress-firewall.yaml",
-              ".github/labeler.yml",
-              ".github/lock.yml",
-              ".github/pull_request_template.md",
-              ".github/scripts/pyspelling.yaml",
-              ".github/scripts/typos.toml",
-              ".github/scripts/yamlcheck.yaml",
-              ".github/stale.yml",
-              ".github/workflows/appveyor-status.yml",
-              ".github/workflows/checkdocs.yml",
-              ".github/workflows/checksrc.yml",
-              ".github/workflows/checkurls.yml",
-              ".github/workflows/codeql.yml",
-              ".github/workflows/configure-vs-cmake.yml",
-              ".github/workflows/curl-for-win.yml"
+              "lib/escape.c",
+              "tests/libtest/lib1396.c"
+            ]
+          },
+          {
+            "sha": "7934b5400f3e",
+            "date": "2026-09-18",
+            "subject": "capsule: reject a capsule that can never be buffered",
+            "files": [
+              "lib/vquic/capsule.c",
+              "tests/unit/unit3400.c"
+            ]
+          },
+          {
+            "sha": "3aa67d5e49b9",
+            "date": "2026-09-21",
+            "subject": "digest: quote the digest-uri param as well",
+            "files": [
+              "lib/vauth/digest.c"
+            ]
+          },
+          {
+            "sha": "ce359773039d",
+            "date": "2026-09-21",
+            "subject": "getinfo: make sure CURLINFO_REDIRECT_URL does not contain creds",
+            "files": [
+              "lib/http.c"
+            ]
+          },
+          {
+            "sha": "557a52f21e37",
+            "date": "2026-09-21",
+            "subject": "http: only enable Negotiate/NTLM to allowed origins",
+            "files": [
+              "lib/http.c"
+            ]
+          },
+          {
+            "sha": "d1317b5d4a5c",
+            "date": "2026-09-21",
+            "subject": "parsedate: remove the unused leading three letters",
+            "files": [
+              "lib/parsedate.c",
+              "tests/libtest/lib517.c"
+            ]
+          },
+          {
+            "sha": "7a6bd027d0de",
+            "date": "2026-09-21",
+            "subject": "getinfo: make sure CURLINFO_EFFECTIVE_URL does not contain creds",
+            "files": [
+              "lib/getinfo.c",
+              "lib/transfer.c",
+              "lib/url.c",
+              "lib/urldata.h"
+            ]
+          },
+          {
+            "sha": "aad438d53569",
+            "date": "2026-09-21",
+            "subject": "mprintf: avoid scanning strings twice for unbounded %s",
+            "files": [
+              "lib/mprintf.c"
+            ]
+          },
+          {
+            "sha": "e0c8b4b45149",
+            "date": "2026-09-21",
+            "subject": "base64: avoid repeated input loads when encoding",
+            "files": [
+              "lib/curlx/base64.c",
+              "tests/unit/unit1302.c"
+            ]
+          },
+          {
+            "sha": "66c41484d064",
+            "date": "2026-09-21",
+            "subject": "CURLINFO_EFFECTIVE_URL.md: mention a short lifetime",
+            "files": [
+              "docs/libcurl/opts/CURLINFO_EFFECTIVE_URL.md"
+            ]
+          },
+          {
+            "sha": "1ac826a1e064",
+            "date": "2026-09-21",
+            "subject": "tool_doswin: recognize superscript numbers as reserved",
+            "files": [
+              "src/tool_doswin.c",
+              "tests/tunit/tool1604.c"
             ]
           }
         ],
@@ -5717,6 +5788,28 @@
           "schema_version": 2,
           "nodes": [
             {
+              "id": "commit:1ac826a1e064",
+              "kind": "commit",
+              "label": "tool_doswin: recognize superscript numbers as reserved",
+              "path": null,
+              "detail": "2026-09-21",
+              "citations": [
+                "git:1ac826a1e064"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:3aa67d5e49b9",
+              "kind": "commit",
+              "label": "digest: quote the digest-uri param as well",
+              "path": null,
+              "detail": "2026-09-21",
+              "citations": [
+                "git:3aa67d5e49b9"
+              ],
+              "trust": "git_observed"
+            },
+            {
               "id": "commit:53be819ca829",
               "kind": "commit",
               "label": "escape: use hex-pair lookup in curl_easy_escape",
@@ -5728,266 +5821,112 @@
               "trust": "git_observed"
             },
             {
-              "id": "file:-circleci-config-yml",
-              "kind": "file",
-              "label": ".circleci/config.yml",
-              "path": ".circleci/config.yml",
-              "detail": "Changed in recent local git history",
+              "id": "commit:557a52f21e37",
+              "kind": "commit",
+              "label": "http: only enable Negotiate/NTLM to allowed origins",
+              "path": null,
+              "detail": "2026-09-21",
               "citations": [
-                ".circleci/config.yml"
+                "git:557a52f21e37"
               ],
               "trust": "git_observed"
             },
             {
-              "id": "file:-clang-tidy-yml",
-              "kind": "file",
-              "label": ".clang-tidy.yml",
-              "path": ".clang-tidy.yml",
-              "detail": "Changed in recent local git history",
+              "id": "commit:66c41484d064",
+              "kind": "commit",
+              "label": "CURLINFO_EFFECTIVE_URL.md: mention a short lifetime",
+              "path": null,
+              "detail": "2026-09-21",
               "citations": [
-                ".clang-tidy.yml"
+                "git:66c41484d064"
               ],
               "trust": "git_observed"
             },
             {
-              "id": "file:-github-actions-pkg-install-action-yml",
-              "kind": "file",
-              "label": ".github/actions/pkg-install/action.yml",
-              "path": ".github/actions/pkg-install/action.yml",
-              "detail": "Changed in recent local git history",
+              "id": "commit:7934b5400f3e",
+              "kind": "commit",
+              "label": "capsule: reject a capsule that can never be buffered",
+              "path": null,
+              "detail": "2026-09-18",
               "citations": [
-                ".github/actions/pkg-install/action.yml"
+                "git:7934b5400f3e"
               ],
               "trust": "git_observed"
             },
             {
-              "id": "file:-github-contributing-md",
-              "kind": "file",
-              "label": ".github/CONTRIBUTING.md",
-              "path": ".github/CONTRIBUTING.md",
-              "detail": "Changed in recent local git history",
+              "id": "commit:7a6bd027d0de",
+              "kind": "commit",
+              "label": "getinfo: make sure CURLINFO_EFFECTIVE_URL does not contain creds",
+              "path": null,
+              "detail": "2026-09-21",
               "citations": [
-                ".github/CONTRIBUTING.md"
+                "git:7a6bd027d0de"
               ],
               "trust": "git_observed"
             },
             {
-              "id": "file:-github-dependabot-yml",
-              "kind": "file",
-              "label": ".github/dependabot.yml",
-              "path": ".github/dependabot.yml",
-              "detail": "Changed in recent local git history",
+              "id": "commit:aad438d53569",
+              "kind": "commit",
+              "label": "mprintf: avoid scanning strings twice for unbounded %s",
+              "path": null,
+              "detail": "2026-09-21",
               "citations": [
-                ".github/dependabot.yml"
+                "git:aad438d53569"
               ],
               "trust": "git_observed"
             },
             {
-              "id": "file:-github-egress-firewall-yaml",
-              "kind": "file",
-              "label": ".github/egress-firewall.yaml",
-              "path": ".github/egress-firewall.yaml",
-              "detail": "Changed in recent local git history",
+              "id": "commit:c362f034692e",
+              "kind": "commit",
+              "label": "RELEASE-NOTES: synced",
+              "path": null,
+              "detail": "2026-09-22",
               "citations": [
-                ".github/egress-firewall.yaml"
+                "git:c362f034692e"
               ],
               "trust": "git_observed"
             },
             {
-              "id": "file:-github-funding-yml",
-              "kind": "file",
-              "label": ".github/FUNDING.yml",
-              "path": ".github/FUNDING.yml",
-              "detail": "Changed in recent local git history",
+              "id": "commit:ce359773039d",
+              "kind": "commit",
+              "label": "getinfo: make sure CURLINFO_REDIRECT_URL does not contain creds",
+              "path": null,
+              "detail": "2026-09-21",
               "citations": [
-                ".github/FUNDING.yml"
+                "git:ce359773039d"
               ],
               "trust": "git_observed"
             },
             {
-              "id": "file:-github-issue-template-bug-report-yml",
-              "kind": "file",
-              "label": ".github/ISSUE_TEMPLATE/bug_report.yml",
-              "path": ".github/ISSUE_TEMPLATE/bug_report.yml",
-              "detail": "Changed in recent local git history",
+              "id": "commit:d1317b5d4a5c",
+              "kind": "commit",
+              "label": "parsedate: remove the unused leading three letters",
+              "path": null,
+              "detail": "2026-09-21",
               "citations": [
-                ".github/ISSUE_TEMPLATE/bug_report.yml"
+                "git:d1317b5d4a5c"
               ],
               "trust": "git_observed"
             },
             {
-              "id": "file:-github-issue-template-config-yml",
-              "kind": "file",
-              "label": ".github/ISSUE_TEMPLATE/config.yml",
-              "path": ".github/ISSUE_TEMPLATE/config.yml",
-              "detail": "Changed in recent local git history",
+              "id": "commit:e0c8b4b45149",
+              "kind": "commit",
+              "label": "base64: avoid repeated input loads when encoding",
+              "path": null,
+              "detail": "2026-09-21",
               "citations": [
-                ".github/ISSUE_TEMPLATE/config.yml"
+                "git:e0c8b4b45149"
               ],
               "trust": "git_observed"
             },
             {
-              "id": "file:-github-issue-template-docs-yml",
+              "id": "file:docs-libcurl-opts-curlinfo-effective-url-md",
               "kind": "file",
-              "label": ".github/ISSUE_TEMPLATE/docs.yml",
-              "path": ".github/ISSUE_TEMPLATE/docs.yml",
+              "label": "docs/libcurl/opts/CURLINFO_EFFECTIVE_URL.md",
+              "path": "docs/libcurl/opts/CURLINFO_EFFECTIVE_URL.md",
               "detail": "Changed in recent local git history",
               "citations": [
-                ".github/ISSUE_TEMPLATE/docs.yml"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:-github-labeler-yml",
-              "kind": "file",
-              "label": ".github/labeler.yml",
-              "path": ".github/labeler.yml",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                ".github/labeler.yml"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:-github-lock-yml",
-              "kind": "file",
-              "label": ".github/lock.yml",
-              "path": ".github/lock.yml",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                ".github/lock.yml"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:-github-pull-request-template-md",
-              "kind": "file",
-              "label": ".github/pull_request_template.md",
-              "path": ".github/pull_request_template.md",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                ".github/pull_request_template.md"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:-github-scripts-pyspelling-yaml",
-              "kind": "file",
-              "label": ".github/scripts/pyspelling.yaml",
-              "path": ".github/scripts/pyspelling.yaml",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                ".github/scripts/pyspelling.yaml"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:-github-scripts-typos-toml",
-              "kind": "file",
-              "label": ".github/scripts/typos.toml",
-              "path": ".github/scripts/typos.toml",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                ".github/scripts/typos.toml"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:-github-scripts-yamlcheck-yaml",
-              "kind": "file",
-              "label": ".github/scripts/yamlcheck.yaml",
-              "path": ".github/scripts/yamlcheck.yaml",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                ".github/scripts/yamlcheck.yaml"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:-github-stale-yml",
-              "kind": "file",
-              "label": ".github/stale.yml",
-              "path": ".github/stale.yml",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                ".github/stale.yml"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:-github-workflows-appveyor-status-yml",
-              "kind": "file",
-              "label": ".github/workflows/appveyor-status.yml",
-              "path": ".github/workflows/appveyor-status.yml",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                ".github/workflows/appveyor-status.yml"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:-github-workflows-checkdocs-yml",
-              "kind": "file",
-              "label": ".github/workflows/checkdocs.yml",
-              "path": ".github/workflows/checkdocs.yml",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                ".github/workflows/checkdocs.yml"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:-github-workflows-checksrc-yml",
-              "kind": "file",
-              "label": ".github/workflows/checksrc.yml",
-              "path": ".github/workflows/checksrc.yml",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                ".github/workflows/checksrc.yml"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:-github-workflows-checkurls-yml",
-              "kind": "file",
-              "label": ".github/workflows/checkurls.yml",
-              "path": ".github/workflows/checkurls.yml",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                ".github/workflows/checkurls.yml"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:-github-workflows-codeql-yml",
-              "kind": "file",
-              "label": ".github/workflows/codeql.yml",
-              "path": ".github/workflows/codeql.yml",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                ".github/workflows/codeql.yml"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:-github-workflows-configure-vs-cmake-yml",
-              "kind": "file",
-              "label": ".github/workflows/configure-vs-cmake.yml",
-              "path": ".github/workflows/configure-vs-cmake.yml",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                ".github/workflows/configure-vs-cmake.yml"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:-github-workflows-curl-for-win-yml",
-              "kind": "file",
-              "label": ".github/workflows/curl-for-win.yml",
-              "path": ".github/workflows/curl-for-win.yml",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                ".github/workflows/curl-for-win.yml"
+                "docs/libcurl/opts/CURLINFO_EFFECTIVE_URL.md"
               ],
               "trust": "git_observed"
             },
@@ -6034,6 +5973,138 @@
                 "docs/tests/TEST-SUITE.md"
               ],
               "trust": "source_backed"
+            },
+            {
+              "id": "file:lib-curlx-base64-c",
+              "kind": "file",
+              "label": "lib/curlx/base64.c",
+              "path": "lib/curlx/base64.c",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "lib/curlx/base64.c"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:lib-escape-c",
+              "kind": "file",
+              "label": "lib/escape.c",
+              "path": "lib/escape.c",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "lib/escape.c"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:lib-getinfo-c",
+              "kind": "file",
+              "label": "lib/getinfo.c",
+              "path": "lib/getinfo.c",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "lib/getinfo.c"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:lib-http-c",
+              "kind": "file",
+              "label": "lib/http.c",
+              "path": "lib/http.c",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "lib/http.c"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:lib-mprintf-c",
+              "kind": "file",
+              "label": "lib/mprintf.c",
+              "path": "lib/mprintf.c",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "lib/mprintf.c"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:lib-parsedate-c",
+              "kind": "file",
+              "label": "lib/parsedate.c",
+              "path": "lib/parsedate.c",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "lib/parsedate.c"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:lib-transfer-c",
+              "kind": "file",
+              "label": "lib/transfer.c",
+              "path": "lib/transfer.c",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "lib/transfer.c"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:lib-url-c",
+              "kind": "file",
+              "label": "lib/url.c",
+              "path": "lib/url.c",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "lib/url.c"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:lib-urldata-h",
+              "kind": "file",
+              "label": "lib/urldata.h",
+              "path": "lib/urldata.h",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "lib/urldata.h"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:lib-vauth-digest-c",
+              "kind": "file",
+              "label": "lib/vauth/digest.c",
+              "path": "lib/vauth/digest.c",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "lib/vauth/digest.c"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:lib-vquic-capsule-c",
+              "kind": "file",
+              "label": "lib/vquic/capsule.c",
+              "path": "lib/vquic/capsule.c",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "lib/vquic/capsule.c"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:src-tool-doswin-c",
+              "kind": "file",
+              "label": "src/tool_doswin.c",
+              "path": "src/tool_doswin.c",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "src/tool_doswin.c"
+              ],
+              "trust": "git_observed"
             },
             {
               "id": "file:tests--gitignore",
@@ -6113,6 +6184,28 @@
               "trust": "source_backed"
             },
             {
+              "id": "file:tests-libtest-lib1396-c",
+              "kind": "file",
+              "label": "tests/libtest/lib1396.c",
+              "path": "tests/libtest/lib1396.c",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "tests/libtest/lib1396.c"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:tests-libtest-lib517-c",
+              "kind": "file",
+              "label": "tests/libtest/lib517.c",
+              "path": "tests/libtest/lib517.c",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "tests/libtest/lib517.c"
+              ],
+              "trust": "git_observed"
+            },
+            {
               "id": "file:tests-makefile-am",
               "kind": "file",
               "label": "tests/Makefile.am",
@@ -6122,6 +6215,39 @@
                 "tests/Makefile.am"
               ],
               "trust": "source_backed"
+            },
+            {
+              "id": "file:tests-tunit-tool1604-c",
+              "kind": "file",
+              "label": "tests/tunit/tool1604.c",
+              "path": "tests/tunit/tool1604.c",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "tests/tunit/tool1604.c"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:tests-unit-unit1302-c",
+              "kind": "file",
+              "label": "tests/unit/unit1302.c",
+              "path": "tests/unit/unit1302.c",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "tests/unit/unit1302.c"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:tests-unit-unit3400-c",
+              "kind": "file",
+              "label": "tests/unit/unit3400.c",
+              "path": "tests/unit/unit3400.c",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "tests/unit/unit3400.c"
+              ],
+              "trust": "git_observed"
             },
             {
               "id": "test:docs-tests-ci-md-test-spec-file-anchors-expected-behavior",
@@ -6258,266 +6384,211 @@
           ],
           "edges": [
             {
-              "from": "commit:53be819ca829",
-              "to": "file:-circleci-config-yml",
+              "from": "commit:1ac826a1e064",
+              "to": "file:src-tool-doswin-c",
               "kind": "changed",
-              "evidence": "53be819ca829 changed this file",
+              "evidence": "1ac826a1e064 changed this file",
               "citations": [
-                "git:53be819ca829",
-                ".circleci/config.yml"
+                "git:1ac826a1e064",
+                "src/tool_doswin.c"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:1ac826a1e064",
+              "to": "file:tests-tunit-tool1604-c",
+              "kind": "changed",
+              "evidence": "1ac826a1e064 changed this file",
+              "citations": [
+                "git:1ac826a1e064",
+                "tests/tunit/tool1604.c"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:3aa67d5e49b9",
+              "to": "file:lib-vauth-digest-c",
+              "kind": "changed",
+              "evidence": "3aa67d5e49b9 changed this file",
+              "citations": [
+                "git:3aa67d5e49b9",
+                "lib/vauth/digest.c"
               ],
               "trust": "git_observed"
             },
             {
               "from": "commit:53be819ca829",
-              "to": "file:-clang-tidy-yml",
+              "to": "file:lib-escape-c",
               "kind": "changed",
               "evidence": "53be819ca829 changed this file",
               "citations": [
                 "git:53be819ca829",
-                ".clang-tidy.yml"
+                "lib/escape.c"
               ],
               "trust": "git_observed"
             },
             {
               "from": "commit:53be819ca829",
-              "to": "file:-github-actions-pkg-install-action-yml",
+              "to": "file:tests-libtest-lib1396-c",
               "kind": "changed",
               "evidence": "53be819ca829 changed this file",
               "citations": [
                 "git:53be819ca829",
-                ".github/actions/pkg-install/action.yml"
+                "tests/libtest/lib1396.c"
               ],
               "trust": "git_observed"
             },
             {
-              "from": "commit:53be819ca829",
-              "to": "file:-github-contributing-md",
+              "from": "commit:557a52f21e37",
+              "to": "file:lib-http-c",
               "kind": "changed",
-              "evidence": "53be819ca829 changed this file",
+              "evidence": "557a52f21e37 changed this file",
               "citations": [
-                "git:53be819ca829",
-                ".github/CONTRIBUTING.md"
+                "git:557a52f21e37",
+                "lib/http.c"
               ],
               "trust": "git_observed"
             },
             {
-              "from": "commit:53be819ca829",
-              "to": "file:-github-dependabot-yml",
+              "from": "commit:66c41484d064",
+              "to": "file:docs-libcurl-opts-curlinfo-effective-url-md",
               "kind": "changed",
-              "evidence": "53be819ca829 changed this file",
+              "evidence": "66c41484d064 changed this file",
               "citations": [
-                "git:53be819ca829",
-                ".github/dependabot.yml"
+                "git:66c41484d064",
+                "docs/libcurl/opts/CURLINFO_EFFECTIVE_URL.md"
               ],
               "trust": "git_observed"
             },
             {
-              "from": "commit:53be819ca829",
-              "to": "file:-github-egress-firewall-yaml",
+              "from": "commit:7934b5400f3e",
+              "to": "file:lib-vquic-capsule-c",
               "kind": "changed",
-              "evidence": "53be819ca829 changed this file",
+              "evidence": "7934b5400f3e changed this file",
               "citations": [
-                "git:53be819ca829",
-                ".github/egress-firewall.yaml"
+                "git:7934b5400f3e",
+                "lib/vquic/capsule.c"
               ],
               "trust": "git_observed"
             },
             {
-              "from": "commit:53be819ca829",
-              "to": "file:-github-funding-yml",
+              "from": "commit:7934b5400f3e",
+              "to": "file:tests-unit-unit3400-c",
               "kind": "changed",
-              "evidence": "53be819ca829 changed this file",
+              "evidence": "7934b5400f3e changed this file",
               "citations": [
-                "git:53be819ca829",
-                ".github/FUNDING.yml"
+                "git:7934b5400f3e",
+                "tests/unit/unit3400.c"
               ],
               "trust": "git_observed"
             },
             {
-              "from": "commit:53be819ca829",
-              "to": "file:-github-issue-template-bug-report-yml",
+              "from": "commit:7a6bd027d0de",
+              "to": "file:lib-getinfo-c",
               "kind": "changed",
-              "evidence": "53be819ca829 changed this file",
+              "evidence": "7a6bd027d0de changed this file",
               "citations": [
-                "git:53be819ca829",
-                ".github/ISSUE_TEMPLATE/bug_report.yml"
+                "git:7a6bd027d0de",
+                "lib/getinfo.c"
               ],
               "trust": "git_observed"
             },
             {
-              "from": "commit:53be819ca829",
-              "to": "file:-github-issue-template-config-yml",
+              "from": "commit:7a6bd027d0de",
+              "to": "file:lib-transfer-c",
               "kind": "changed",
-              "evidence": "53be819ca829 changed this file",
+              "evidence": "7a6bd027d0de changed this file",
               "citations": [
-                "git:53be819ca829",
-                ".github/ISSUE_TEMPLATE/config.yml"
+                "git:7a6bd027d0de",
+                "lib/transfer.c"
               ],
               "trust": "git_observed"
             },
             {
-              "from": "commit:53be819ca829",
-              "to": "file:-github-issue-template-docs-yml",
+              "from": "commit:7a6bd027d0de",
+              "to": "file:lib-url-c",
               "kind": "changed",
-              "evidence": "53be819ca829 changed this file",
+              "evidence": "7a6bd027d0de changed this file",
               "citations": [
-                "git:53be819ca829",
-                ".github/ISSUE_TEMPLATE/docs.yml"
+                "git:7a6bd027d0de",
+                "lib/url.c"
               ],
               "trust": "git_observed"
             },
             {
-              "from": "commit:53be819ca829",
-              "to": "file:-github-labeler-yml",
+              "from": "commit:7a6bd027d0de",
+              "to": "file:lib-urldata-h",
               "kind": "changed",
-              "evidence": "53be819ca829 changed this file",
+              "evidence": "7a6bd027d0de changed this file",
               "citations": [
-                "git:53be819ca829",
-                ".github/labeler.yml"
+                "git:7a6bd027d0de",
+                "lib/urldata.h"
               ],
               "trust": "git_observed"
             },
             {
-              "from": "commit:53be819ca829",
-              "to": "file:-github-lock-yml",
+              "from": "commit:aad438d53569",
+              "to": "file:lib-mprintf-c",
               "kind": "changed",
-              "evidence": "53be819ca829 changed this file",
+              "evidence": "aad438d53569 changed this file",
               "citations": [
-                "git:53be819ca829",
-                ".github/lock.yml"
+                "git:aad438d53569",
+                "lib/mprintf.c"
               ],
               "trust": "git_observed"
             },
             {
-              "from": "commit:53be819ca829",
-              "to": "file:-github-pull-request-template-md",
+              "from": "commit:ce359773039d",
+              "to": "file:lib-http-c",
               "kind": "changed",
-              "evidence": "53be819ca829 changed this file",
+              "evidence": "ce359773039d changed this file",
               "citations": [
-                "git:53be819ca829",
-                ".github/pull_request_template.md"
+                "git:ce359773039d",
+                "lib/http.c"
               ],
               "trust": "git_observed"
             },
             {
-              "from": "commit:53be819ca829",
-              "to": "file:-github-scripts-pyspelling-yaml",
+              "from": "commit:d1317b5d4a5c",
+              "to": "file:lib-parsedate-c",
               "kind": "changed",
-              "evidence": "53be819ca829 changed this file",
+              "evidence": "d1317b5d4a5c changed this file",
               "citations": [
-                "git:53be819ca829",
-                ".github/scripts/pyspelling.yaml"
+                "git:d1317b5d4a5c",
+                "lib/parsedate.c"
               ],
               "trust": "git_observed"
             },
             {
-              "from": "commit:53be819ca829",
-              "to": "file:-github-scripts-typos-toml",
+              "from": "commit:d1317b5d4a5c",
+              "to": "file:tests-libtest-lib517-c",
               "kind": "changed",
-              "evidence": "53be819ca829 changed this file",
+              "evidence": "d1317b5d4a5c changed this file",
               "citations": [
-                "git:53be819ca829",
-                ".github/scripts/typos.toml"
+                "git:d1317b5d4a5c",
+                "tests/libtest/lib517.c"
               ],
               "trust": "git_observed"
             },
             {
-              "from": "commit:53be819ca829",
-              "to": "file:-github-scripts-yamlcheck-yaml",
+              "from": "commit:e0c8b4b45149",
+              "to": "file:lib-curlx-base64-c",
               "kind": "changed",
-              "evidence": "53be819ca829 changed this file",
+              "evidence": "e0c8b4b45149 changed this file",
               "citations": [
-                "git:53be819ca829",
-                ".github/scripts/yamlcheck.yaml"
+                "git:e0c8b4b45149",
+                "lib/curlx/base64.c"
               ],
               "trust": "git_observed"
             },
             {
-              "from": "commit:53be819ca829",
-              "to": "file:-github-stale-yml",
+              "from": "commit:e0c8b4b45149",
+              "to": "file:tests-unit-unit1302-c",
               "kind": "changed",
-              "evidence": "53be819ca829 changed this file",
+              "evidence": "e0c8b4b45149 changed this file",
               "citations": [
-                "git:53be819ca829",
-                ".github/stale.yml"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:53be819ca829",
-              "to": "file:-github-workflows-appveyor-status-yml",
-              "kind": "changed",
-              "evidence": "53be819ca829 changed this file",
-              "citations": [
-                "git:53be819ca829",
-                ".github/workflows/appveyor-status.yml"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:53be819ca829",
-              "to": "file:-github-workflows-checkdocs-yml",
-              "kind": "changed",
-              "evidence": "53be819ca829 changed this file",
-              "citations": [
-                "git:53be819ca829",
-                ".github/workflows/checkdocs.yml"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:53be819ca829",
-              "to": "file:-github-workflows-checksrc-yml",
-              "kind": "changed",
-              "evidence": "53be819ca829 changed this file",
-              "citations": [
-                "git:53be819ca829",
-                ".github/workflows/checksrc.yml"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:53be819ca829",
-              "to": "file:-github-workflows-checkurls-yml",
-              "kind": "changed",
-              "evidence": "53be819ca829 changed this file",
-              "citations": [
-                "git:53be819ca829",
-                ".github/workflows/checkurls.yml"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:53be819ca829",
-              "to": "file:-github-workflows-codeql-yml",
-              "kind": "changed",
-              "evidence": "53be819ca829 changed this file",
-              "citations": [
-                "git:53be819ca829",
-                ".github/workflows/codeql.yml"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:53be819ca829",
-              "to": "file:-github-workflows-configure-vs-cmake-yml",
-              "kind": "changed",
-              "evidence": "53be819ca829 changed this file",
-              "citations": [
-                "git:53be819ca829",
-                ".github/workflows/configure-vs-cmake.yml"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:53be819ca829",
-              "to": "file:-github-workflows-curl-for-win-yml",
-              "kind": "changed",
-              "evidence": "53be819ca829 changed this file",
-              "citations": [
-                "git:53be819ca829",
-                ".github/workflows/curl-for-win.yml"
+                "git:e0c8b4b45149",
+                "tests/unit/unit1302.c"
               ],
               "trust": "git_observed"
             },
@@ -9617,8 +9688,8 @@
     "profiles": [
       {
         "stage": "full_scan",
-        "total_ms": 56,
-        "peak_rss_bytes": 33062912,
+        "total_ms": 136,
+        "peak_rss_bytes": 33423360,
         "steps": [
           {
             "id": "git_metadata",
@@ -9629,8 +9700,8 @@
           {
             "id": "file_walk",
             "label": "Parallel file walk",
-            "ms": 17,
-            "pct": 30.357142857142854
+            "ms": 16,
+            "pct": 11.76470588235294
           },
           {
             "id": "coverage",
@@ -9654,7 +9725,7 @@
             "id": "docs",
             "label": "Doc previews",
             "ms": 12,
-            "pct": 21.428571428571427
+            "pct": 8.823529411764707
           },
           {
             "id": "aggregates",
@@ -9666,31 +9737,31 @@
             "id": "entrypoints",
             "label": "Entrypoints, workspace units & QA readiness",
             "ms": 1,
-            "pct": 1.7857142857142856
+            "pct": 0.7352941176470588
           },
           {
             "id": "source_previews",
             "label": "Source preview cache",
             "ms": 2,
-            "pct": 3.571428571428571
+            "pct": 1.4705882352941175
           },
           {
             "id": "repo_graph",
             "label": "Deterministic graph scan",
             "ms": 3,
-            "pct": 5.357142857142857
+            "pct": 2.2058823529411766
           },
           {
             "id": "history",
             "label": "Git history & decision scan",
-            "ms": 9,
-            "pct": 16.071428571428573
+            "ms": 8,
+            "pct": 5.88235294117647
           },
           {
             "id": "repo_health",
             "label": "Deterministic health scoring",
-            "ms": 6,
-            "pct": 10.714285714285714
+            "ms": 89,
+            "pct": 65.44117647058823
           },
           {
             "id": "dir_tree",
@@ -9703,7 +9774,7 @@
       {
         "stage": "local_scan_persist",
         "total_ms": 1,
-        "peak_rss_bytes": 35192832,
+        "peak_rss_bytes": 35225600,
         "steps": [
           {
             "id": "serialize",
@@ -9714,8 +9785,8 @@
           {
             "id": "db_insert",
             "label": "SQLite insert",
-            "ms": 1,
-            "pct": 100
+            "ms": 0,
+            "pct": 0
           },
           {
             "id": "touch_project",

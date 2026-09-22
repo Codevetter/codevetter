@@ -3,7 +3,7 @@
   "repo": "auth0/node-jsonwebtoken",
   "slug": "jsonwebtoken",
   "codevetter_version": "codevetter 1.12.0",
-  "collected_at": "2026-09-22T05:15:33.259Z",
+  "collected_at": "2026-09-22T06:01:32.384Z",
   "last_commit": {
     "sha": "b924272f29192e12926b5414546f7c5bfcc9579d",
     "date": "2026-06-25",
@@ -11,11 +11,11 @@
   },
   "scan": {
     "schema_version": "codevetter.unpack-scan/v1",
-    "report_id": "237c254d-29f2-42a8-a4a3-240780ce74c2",
+    "report_id": "83419fa9-afc3-4ab6-917b-86755b0cdec6",
     "status": "scan_only",
-    "created_at": "2026-09-22T05:15:33.255891+00:00",
+    "created_at": "2026-09-22T06:01:32.378049+00:00",
     "inventory": {
-      "repo_path": "/private/var/folders/9_/1109_2dd1qz6zyvmxb5zp8pc0000gn/T/unpack-pilot-yJqmEz/jsonwebtoken",
+      "repo_path": "/private/var/folders/9_/1109_2dd1qz6zyvmxb5zp8pc0000gn/T/unpack-pilot-zVqgcS/jsonwebtoken",
       "repo_name": "jsonwebtoken",
       "commit_sha": "b924272f29192e12926b5414546f7c5bfcc9579d",
       "branch": "master",
@@ -142,14 +142,14 @@
           "bytes": 6153
         },
         {
-          "path": "bin",
-          "file_count": 1,
-          "bytes": 1419
-        },
-        {
           "path": ".husky",
           "file_count": 1,
           "bytes": 35
+        },
+        {
+          "path": "bin",
+          "file_count": 1,
+          "bytes": 1419
         }
       ],
       "docs": [
@@ -1157,37 +1157,128 @@
       },
       "history_brief": {
         "schema_version": 2,
-        "summary": "Local history brief captured 1 recent commit, 0 decision markers, 2 test hints, and 0 co-change clusters for Repo Unpacked. Treat commit subjects as leads and rely on cited files for durable constraints.",
+        "summary": "Local history brief captured 12 recent commits, 0 decision markers, 2 test hints, and 8 co-change clusters for Repo Unpacked. Treat commit subjects as leads and rely on cited files for durable constraints.",
         "recent_commits": [
           {
             "sha": "b924272f2919",
             "date": "2026-06-25",
             "subject": "ci: replace npx changelog call with npm script and fix prepare-release workflow (#1037)",
             "files": [
+              ".github/workflows/prepare-release.yml",
+              "package.json"
+            ]
+          },
+          {
+            "sha": "02688b982132",
+            "date": "2026-05-01",
+            "subject": "ci: switch to conventionalcommits preset for semantic-release (#1020)",
+            "files": [
+              ".github/workflows/prepare-release.yml",
+              ".releaserc.json",
+              "package.json"
+            ]
+          },
+          {
+            "sha": "cf33b5f59a19",
+            "date": "2026-03-18",
+            "subject": "ci: add semantic-release automation (#1015)",
+            "files": [
               ".commitlintrc.json",
-              ".eslintrc.json",
               ".github/workflows/commitlint.yml",
               ".github/workflows/prepare-release.yml",
               ".github/workflows/release.yml",
               ".github/workflows/sca-scan.yml",
+              ".github/workflows/semgrep.yml",
               ".github/workflows/test.yml",
               ".releaserc.json",
+              "package.json"
+            ]
+          },
+          {
+            "sha": "2db36ae04eae",
+            "date": "2026-03-18",
+            "subject": "chore: add CODEOWNERS file (#1014)",
+            "files": []
+          },
+          {
+            "sha": "ed59e76ea37a",
+            "date": "2025-12-04",
+            "subject": "chore: bump jws to 4.0.1 (#1007)",
+            "files": [
+              ".circleci/config.yml",
+              ".github/workflows/test.yml",
+              "CHANGELOG.md",
+              "package.json"
+            ]
+          },
+          {
+            "sha": "bc28861f1fa9",
+            "date": "2023-08-30",
+            "subject": "Release 9.0.2  (#935)",
+            "files": [
+              "CHANGELOG.md",
+              "package.json"
+            ]
+          },
+          {
+            "sha": "96b89060cfc1",
+            "date": "2023-08-30",
+            "subject": "refactor: use specific lodash packages (#933)",
+            "files": [
+              "package.json",
+              "sign.js"
+            ]
+          },
+          {
+            "sha": "ed35062239c0",
+            "date": "2023-08-30",
+            "subject": "security: Updating semver to 7.5.4 to resolve CVE-2022-25883 (#932)",
+            "files": [
+              "package.json"
+            ]
+          },
+          {
+            "sha": "84539b29e17f",
+            "date": "2023-07-05",
+            "subject": "Updating package version to 9.0.1 (#920)",
+            "files": [
+              "CHANGELOG.md",
+              "package.json"
+            ]
+          },
+          {
+            "sha": "a99fd4b473e2",
+            "date": "2023-04-03",
+            "subject": "fix(stubs): allow decode method to be stubbed (#876)",
+            "files": [
+              "index.js"
+            ]
+          },
+          {
+            "sha": "e1fa9dcc1205",
+            "date": "2022-12-21",
+            "subject": "Merge pull request from GHSA-8cf7-32gw-wr33",
+            "files": [
               "CHANGELOG.md",
               "README.md",
-              "decode.js",
-              "index.js",
-              "lib/JsonWebTokenError.js",
-              "lib/NotBeforeError.js",
-              "lib/TokenExpiredError.js",
               "lib/asymmetricKeyDetailsSupported.js",
-              "lib/psSupported.js",
               "lib/rsaPssKeyDetailsSupported.js",
-              "lib/timespan.js",
               "lib/validateAsymmetricKey.js",
-              "opslevel.yml",
               "package.json",
               "sign.js",
-              "test/.eslintrc.json"
+              "test/jwt.asymmetric_signing.tests.js",
+              "test/schema.tests.js",
+              "test/validateAsymmetricKey.tests.js",
+              "test/verify.tests.js",
+              "verify.js"
+            ]
+          },
+          {
+            "sha": "5eaedbf2b016",
+            "date": "2022-12-12",
+            "subject": "chore(ci): remove github test actions job (#861)",
+            "files": [
+              ".github/workflows/ci.yml"
             ]
           }
         ],
@@ -1202,10 +1293,149 @@
             "reason": "package script `test` is a likely verification command"
           }
         ],
-        "temporal_couplings": [],
+        "temporal_couplings": [
+          {
+            "files": [
+              "CHANGELOG.md",
+              "package.json"
+            ],
+            "commit_count": 7,
+            "last_commit": "ed59e76ea37a",
+            "reason": "These files changed together in 7 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              "README.md",
+              "verify.js"
+            ],
+            "commit_count": 5,
+            "last_commit": "e1fa9dcc1205",
+            "reason": "These files changed together in 5 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              "package.json",
+              "sign.js"
+            ],
+            "commit_count": 5,
+            "last_commit": "96b89060cfc1",
+            "reason": "These files changed together in 5 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              "test/schema.tests.js",
+              "verify.js"
+            ],
+            "commit_count": 4,
+            "last_commit": "e1fa9dcc1205",
+            "reason": "These files changed together in 4 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              ".github/workflows/prepare-release.yml",
+              "package.json"
+            ],
+            "commit_count": 3,
+            "last_commit": "b924272f2919",
+            "reason": "These files changed together in 3 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              "README.md",
+              "package.json"
+            ],
+            "commit_count": 3,
+            "last_commit": "e1fa9dcc1205",
+            "reason": "These files changed together in 3 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              "README.md",
+              "sign.js"
+            ],
+            "commit_count": 3,
+            "last_commit": "e1fa9dcc1205",
+            "reason": "These files changed together in 3 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              "README.md",
+              "test/schema.tests.js"
+            ],
+            "commit_count": 3,
+            "last_commit": "e1fa9dcc1205",
+            "reason": "These files changed together in 3 recent commits; inspect both when either side moves."
+          }
+        ],
         "graph": {
           "schema_version": 2,
           "nodes": [
+            {
+              "id": "commit:02688b982132",
+              "kind": "commit",
+              "label": "ci: switch to conventionalcommits preset for semantic-release (#1020)",
+              "path": null,
+              "detail": "2026-05-01",
+              "citations": [
+                "git:02688b982132"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:2db36ae04eae",
+              "kind": "commit",
+              "label": "chore: add CODEOWNERS file (#1014)",
+              "path": null,
+              "detail": "2026-03-18",
+              "citations": [
+                "git:2db36ae04eae"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:5eaedbf2b016",
+              "kind": "commit",
+              "label": "chore(ci): remove github test actions job (#861)",
+              "path": null,
+              "detail": "2022-12-12",
+              "citations": [
+                "git:5eaedbf2b016"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:84539b29e17f",
+              "kind": "commit",
+              "label": "Updating package version to 9.0.1 (#920)",
+              "path": null,
+              "detail": "2023-07-05",
+              "citations": [
+                "git:84539b29e17f"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:96b89060cfc1",
+              "kind": "commit",
+              "label": "refactor: use specific lodash packages (#933)",
+              "path": null,
+              "detail": "2023-08-30",
+              "citations": [
+                "git:96b89060cfc1"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:a99fd4b473e2",
+              "kind": "commit",
+              "label": "fix(stubs): allow decode method to be stubbed (#876)",
+              "path": null,
+              "detail": "2023-04-03",
+              "citations": [
+                "git:a99fd4b473e2"
+              ],
+              "trust": "git_observed"
+            },
             {
               "id": "commit:b924272f2919",
               "kind": "commit",
@@ -1214,6 +1444,72 @@
               "detail": "2026-06-25",
               "citations": [
                 "git:b924272f2919"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:bc28861f1fa9",
+              "kind": "commit",
+              "label": "Release 9.0.2  (#935)",
+              "path": null,
+              "detail": "2023-08-30",
+              "citations": [
+                "git:bc28861f1fa9"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:cf33b5f59a19",
+              "kind": "commit",
+              "label": "ci: add semantic-release automation (#1015)",
+              "path": null,
+              "detail": "2026-03-18",
+              "citations": [
+                "git:cf33b5f59a19"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:e1fa9dcc1205",
+              "kind": "commit",
+              "label": "Merge pull request from GHSA-8cf7-32gw-wr33",
+              "path": null,
+              "detail": "2022-12-21",
+              "citations": [
+                "git:e1fa9dcc1205"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:ed35062239c0",
+              "kind": "commit",
+              "label": "security: Updating semver to 7.5.4 to resolve CVE-2022-25883 (#932)",
+              "path": null,
+              "detail": "2023-08-30",
+              "citations": [
+                "git:ed35062239c0"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:ed59e76ea37a",
+              "kind": "commit",
+              "label": "chore: bump jws to 4.0.1 (#1007)",
+              "path": null,
+              "detail": "2025-12-04",
+              "citations": [
+                "git:ed59e76ea37a"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:-circleci-config-yml",
+              "kind": "file",
+              "label": ".circleci/config.yml",
+              "path": ".circleci/config.yml",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                ".circleci/config.yml"
               ],
               "trust": "git_observed"
             },
@@ -1229,13 +1525,13 @@
               "trust": "git_observed"
             },
             {
-              "id": "file:-eslintrc-json",
+              "id": "file:-github-workflows-ci-yml",
               "kind": "file",
-              "label": ".eslintrc.json",
-              "path": ".eslintrc.json",
+              "label": ".github/workflows/ci.yml",
+              "path": ".github/workflows/ci.yml",
               "detail": "Changed in recent local git history",
               "citations": [
-                ".eslintrc.json"
+                ".github/workflows/ci.yml"
               ],
               "trust": "git_observed"
             },
@@ -1284,6 +1580,17 @@
               "trust": "git_observed"
             },
             {
+              "id": "file:-github-workflows-semgrep-yml",
+              "kind": "file",
+              "label": ".github/workflows/semgrep.yml",
+              "path": ".github/workflows/semgrep.yml",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                ".github/workflows/semgrep.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
               "id": "file:-github-workflows-test-yml",
               "kind": "file",
               "label": ".github/workflows/test.yml",
@@ -1317,17 +1624,6 @@
               "trust": "git_observed"
             },
             {
-              "id": "file:decode-js",
-              "kind": "file",
-              "label": "decode.js",
-              "path": "decode.js",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                "decode.js"
-              ],
-              "trust": "git_observed"
-            },
-            {
               "id": "file:index-js",
               "kind": "file",
               "label": "index.js",
@@ -1350,39 +1646,6 @@
               "trust": "git_observed"
             },
             {
-              "id": "file:lib-jsonwebtokenerror-js",
-              "kind": "file",
-              "label": "lib/JsonWebTokenError.js",
-              "path": "lib/JsonWebTokenError.js",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                "lib/JsonWebTokenError.js"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:lib-notbeforeerror-js",
-              "kind": "file",
-              "label": "lib/NotBeforeError.js",
-              "path": "lib/NotBeforeError.js",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                "lib/NotBeforeError.js"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:lib-pssupported-js",
-              "kind": "file",
-              "label": "lib/psSupported.js",
-              "path": "lib/psSupported.js",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                "lib/psSupported.js"
-              ],
-              "trust": "git_observed"
-            },
-            {
               "id": "file:lib-rsapsskeydetailssupported-js",
               "kind": "file",
               "label": "lib/rsaPssKeyDetailsSupported.js",
@@ -1394,28 +1657,6 @@
               "trust": "git_observed"
             },
             {
-              "id": "file:lib-timespan-js",
-              "kind": "file",
-              "label": "lib/timespan.js",
-              "path": "lib/timespan.js",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                "lib/timespan.js"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:lib-tokenexpirederror-js",
-              "kind": "file",
-              "label": "lib/TokenExpiredError.js",
-              "path": "lib/TokenExpiredError.js",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                "lib/TokenExpiredError.js"
-              ],
-              "trust": "git_observed"
-            },
-            {
               "id": "file:lib-validateasymmetrickey-js",
               "kind": "file",
               "label": "lib/validateAsymmetricKey.js",
@@ -1423,17 +1664,6 @@
               "detail": "Changed in recent local git history",
               "citations": [
                 "lib/validateAsymmetricKey.js"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:opslevel-yml",
-              "kind": "file",
-              "label": "opslevel.yml",
-              "path": "opslevel.yml",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                "opslevel.yml"
               ],
               "trust": "git_observed"
             },
@@ -1471,13 +1701,57 @@
               "trust": "git_observed"
             },
             {
-              "id": "file:test--eslintrc-json",
+              "id": "file:test-jwt-asymmetric-signing-tests-js",
               "kind": "file",
-              "label": "test/.eslintrc.json",
-              "path": "test/.eslintrc.json",
+              "label": "test/jwt.asymmetric_signing.tests.js",
+              "path": "test/jwt.asymmetric_signing.tests.js",
               "detail": "Changed in recent local git history",
               "citations": [
-                "test/.eslintrc.json"
+                "test/jwt.asymmetric_signing.tests.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:test-schema-tests-js",
+              "kind": "file",
+              "label": "test/schema.tests.js",
+              "path": "test/schema.tests.js",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "test/schema.tests.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:test-validateasymmetrickey-tests-js",
+              "kind": "file",
+              "label": "test/validateAsymmetricKey.tests.js",
+              "path": "test/validateAsymmetricKey.tests.js",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "test/validateAsymmetricKey.tests.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:test-verify-tests-js",
+              "kind": "file",
+              "label": "test/verify.tests.js",
+              "path": "test/verify.tests.js",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "test/verify.tests.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:verify-js",
+              "kind": "file",
+              "label": "verify.js",
+              "path": "verify.js",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "verify.js"
               ],
               "trust": "git_observed"
             },
@@ -1506,35 +1780,101 @@
           ],
           "edges": [
             {
-              "from": "commit:b924272f2919",
-              "to": "file:-commitlintrc-json",
+              "from": "commit:02688b982132",
+              "to": "file:-github-workflows-prepare-release-yml",
               "kind": "changed",
-              "evidence": "b924272f2919 changed this file",
+              "evidence": "02688b982132 changed this file",
               "citations": [
-                "git:b924272f2919",
-                ".commitlintrc.json"
+                "git:02688b982132",
+                ".github/workflows/prepare-release.yml"
               ],
               "trust": "git_observed"
             },
             {
-              "from": "commit:b924272f2919",
-              "to": "file:-eslintrc-json",
+              "from": "commit:02688b982132",
+              "to": "file:-releaserc-json",
               "kind": "changed",
-              "evidence": "b924272f2919 changed this file",
+              "evidence": "02688b982132 changed this file",
               "citations": [
-                "git:b924272f2919",
-                ".eslintrc.json"
+                "git:02688b982132",
+                ".releaserc.json"
               ],
               "trust": "git_observed"
             },
             {
-              "from": "commit:b924272f2919",
-              "to": "file:-github-workflows-commitlint-yml",
+              "from": "commit:02688b982132",
+              "to": "file:package-json",
               "kind": "changed",
-              "evidence": "b924272f2919 changed this file",
+              "evidence": "02688b982132 changed this file",
               "citations": [
-                "git:b924272f2919",
-                ".github/workflows/commitlint.yml"
+                "git:02688b982132",
+                "package.json"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:5eaedbf2b016",
+              "to": "file:-github-workflows-ci-yml",
+              "kind": "changed",
+              "evidence": "5eaedbf2b016 changed this file",
+              "citations": [
+                "git:5eaedbf2b016",
+                ".github/workflows/ci.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:84539b29e17f",
+              "to": "file:changelog-md",
+              "kind": "changed",
+              "evidence": "84539b29e17f changed this file",
+              "citations": [
+                "git:84539b29e17f",
+                "CHANGELOG.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:84539b29e17f",
+              "to": "file:package-json",
+              "kind": "changed",
+              "evidence": "84539b29e17f changed this file",
+              "citations": [
+                "git:84539b29e17f",
+                "package.json"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:96b89060cfc1",
+              "to": "file:package-json",
+              "kind": "changed",
+              "evidence": "96b89060cfc1 changed this file",
+              "citations": [
+                "git:96b89060cfc1",
+                "package.json"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:96b89060cfc1",
+              "to": "file:sign-js",
+              "kind": "changed",
+              "evidence": "96b89060cfc1 changed this file",
+              "citations": [
+                "git:96b89060cfc1",
+                "sign.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:a99fd4b473e2",
+              "to": "file:index-js",
+              "kind": "changed",
+              "evidence": "a99fd4b473e2 changed this file",
+              "citations": [
+                "git:a99fd4b473e2",
+                "index.js"
               ],
               "trust": "git_observed"
             },
@@ -1551,182 +1891,6 @@
             },
             {
               "from": "commit:b924272f2919",
-              "to": "file:-github-workflows-release-yml",
-              "kind": "changed",
-              "evidence": "b924272f2919 changed this file",
-              "citations": [
-                "git:b924272f2919",
-                ".github/workflows/release.yml"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:b924272f2919",
-              "to": "file:-github-workflows-sca-scan-yml",
-              "kind": "changed",
-              "evidence": "b924272f2919 changed this file",
-              "citations": [
-                "git:b924272f2919",
-                ".github/workflows/sca-scan.yml"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:b924272f2919",
-              "to": "file:-github-workflows-test-yml",
-              "kind": "changed",
-              "evidence": "b924272f2919 changed this file",
-              "citations": [
-                "git:b924272f2919",
-                ".github/workflows/test.yml"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:b924272f2919",
-              "to": "file:-releaserc-json",
-              "kind": "changed",
-              "evidence": "b924272f2919 changed this file",
-              "citations": [
-                "git:b924272f2919",
-                ".releaserc.json"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:b924272f2919",
-              "to": "file:changelog-md",
-              "kind": "changed",
-              "evidence": "b924272f2919 changed this file",
-              "citations": [
-                "git:b924272f2919",
-                "CHANGELOG.md"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:b924272f2919",
-              "to": "file:decode-js",
-              "kind": "changed",
-              "evidence": "b924272f2919 changed this file",
-              "citations": [
-                "git:b924272f2919",
-                "decode.js"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:b924272f2919",
-              "to": "file:index-js",
-              "kind": "changed",
-              "evidence": "b924272f2919 changed this file",
-              "citations": [
-                "git:b924272f2919",
-                "index.js"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:b924272f2919",
-              "to": "file:lib-asymmetrickeydetailssupported-js",
-              "kind": "changed",
-              "evidence": "b924272f2919 changed this file",
-              "citations": [
-                "git:b924272f2919",
-                "lib/asymmetricKeyDetailsSupported.js"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:b924272f2919",
-              "to": "file:lib-jsonwebtokenerror-js",
-              "kind": "changed",
-              "evidence": "b924272f2919 changed this file",
-              "citations": [
-                "git:b924272f2919",
-                "lib/JsonWebTokenError.js"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:b924272f2919",
-              "to": "file:lib-notbeforeerror-js",
-              "kind": "changed",
-              "evidence": "b924272f2919 changed this file",
-              "citations": [
-                "git:b924272f2919",
-                "lib/NotBeforeError.js"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:b924272f2919",
-              "to": "file:lib-pssupported-js",
-              "kind": "changed",
-              "evidence": "b924272f2919 changed this file",
-              "citations": [
-                "git:b924272f2919",
-                "lib/psSupported.js"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:b924272f2919",
-              "to": "file:lib-rsapsskeydetailssupported-js",
-              "kind": "changed",
-              "evidence": "b924272f2919 changed this file",
-              "citations": [
-                "git:b924272f2919",
-                "lib/rsaPssKeyDetailsSupported.js"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:b924272f2919",
-              "to": "file:lib-timespan-js",
-              "kind": "changed",
-              "evidence": "b924272f2919 changed this file",
-              "citations": [
-                "git:b924272f2919",
-                "lib/timespan.js"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:b924272f2919",
-              "to": "file:lib-tokenexpirederror-js",
-              "kind": "changed",
-              "evidence": "b924272f2919 changed this file",
-              "citations": [
-                "git:b924272f2919",
-                "lib/TokenExpiredError.js"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:b924272f2919",
-              "to": "file:lib-validateasymmetrickey-js",
-              "kind": "changed",
-              "evidence": "b924272f2919 changed this file",
-              "citations": [
-                "git:b924272f2919",
-                "lib/validateAsymmetricKey.js"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:b924272f2919",
-              "to": "file:opslevel-yml",
-              "kind": "changed",
-              "evidence": "b924272f2919 changed this file",
-              "citations": [
-                "git:b924272f2919",
-                "opslevel.yml"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:b924272f2919",
               "to": "file:package-json",
               "kind": "changed",
               "evidence": "b924272f2919 changed this file",
@@ -1737,37 +1901,342 @@
               "trust": "git_observed"
             },
             {
-              "from": "commit:b924272f2919",
+              "from": "commit:bc28861f1fa9",
+              "to": "file:changelog-md",
+              "kind": "changed",
+              "evidence": "bc28861f1fa9 changed this file",
+              "citations": [
+                "git:bc28861f1fa9",
+                "CHANGELOG.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:bc28861f1fa9",
+              "to": "file:package-json",
+              "kind": "changed",
+              "evidence": "bc28861f1fa9 changed this file",
+              "citations": [
+                "git:bc28861f1fa9",
+                "package.json"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:cf33b5f59a19",
+              "to": "file:-commitlintrc-json",
+              "kind": "changed",
+              "evidence": "cf33b5f59a19 changed this file",
+              "citations": [
+                "git:cf33b5f59a19",
+                ".commitlintrc.json"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:cf33b5f59a19",
+              "to": "file:-github-workflows-commitlint-yml",
+              "kind": "changed",
+              "evidence": "cf33b5f59a19 changed this file",
+              "citations": [
+                "git:cf33b5f59a19",
+                ".github/workflows/commitlint.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:cf33b5f59a19",
+              "to": "file:-github-workflows-prepare-release-yml",
+              "kind": "changed",
+              "evidence": "cf33b5f59a19 changed this file",
+              "citations": [
+                "git:cf33b5f59a19",
+                ".github/workflows/prepare-release.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:cf33b5f59a19",
+              "to": "file:-github-workflows-release-yml",
+              "kind": "changed",
+              "evidence": "cf33b5f59a19 changed this file",
+              "citations": [
+                "git:cf33b5f59a19",
+                ".github/workflows/release.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:cf33b5f59a19",
+              "to": "file:-github-workflows-sca-scan-yml",
+              "kind": "changed",
+              "evidence": "cf33b5f59a19 changed this file",
+              "citations": [
+                "git:cf33b5f59a19",
+                ".github/workflows/sca-scan.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:cf33b5f59a19",
+              "to": "file:-github-workflows-semgrep-yml",
+              "kind": "changed",
+              "evidence": "cf33b5f59a19 changed this file",
+              "citations": [
+                "git:cf33b5f59a19",
+                ".github/workflows/semgrep.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:cf33b5f59a19",
+              "to": "file:-github-workflows-test-yml",
+              "kind": "changed",
+              "evidence": "cf33b5f59a19 changed this file",
+              "citations": [
+                "git:cf33b5f59a19",
+                ".github/workflows/test.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:cf33b5f59a19",
+              "to": "file:-releaserc-json",
+              "kind": "changed",
+              "evidence": "cf33b5f59a19 changed this file",
+              "citations": [
+                "git:cf33b5f59a19",
+                ".releaserc.json"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:cf33b5f59a19",
+              "to": "file:package-json",
+              "kind": "changed",
+              "evidence": "cf33b5f59a19 changed this file",
+              "citations": [
+                "git:cf33b5f59a19",
+                "package.json"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:e1fa9dcc1205",
+              "to": "file:changelog-md",
+              "kind": "changed",
+              "evidence": "e1fa9dcc1205 changed this file",
+              "citations": [
+                "git:e1fa9dcc1205",
+                "CHANGELOG.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:e1fa9dcc1205",
+              "to": "file:lib-asymmetrickeydetailssupported-js",
+              "kind": "changed",
+              "evidence": "e1fa9dcc1205 changed this file",
+              "citations": [
+                "git:e1fa9dcc1205",
+                "lib/asymmetricKeyDetailsSupported.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:e1fa9dcc1205",
+              "to": "file:lib-rsapsskeydetailssupported-js",
+              "kind": "changed",
+              "evidence": "e1fa9dcc1205 changed this file",
+              "citations": [
+                "git:e1fa9dcc1205",
+                "lib/rsaPssKeyDetailsSupported.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:e1fa9dcc1205",
+              "to": "file:lib-validateasymmetrickey-js",
+              "kind": "changed",
+              "evidence": "e1fa9dcc1205 changed this file",
+              "citations": [
+                "git:e1fa9dcc1205",
+                "lib/validateAsymmetricKey.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:e1fa9dcc1205",
+              "to": "file:package-json",
+              "kind": "changed",
+              "evidence": "e1fa9dcc1205 changed this file",
+              "citations": [
+                "git:e1fa9dcc1205",
+                "package.json"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:e1fa9dcc1205",
               "to": "file:readme-md",
               "kind": "changed",
-              "evidence": "b924272f2919 changed this file",
+              "evidence": "e1fa9dcc1205 changed this file",
               "citations": [
-                "git:b924272f2919",
+                "git:e1fa9dcc1205",
                 "README.md"
               ],
               "trust": "git_observed"
             },
             {
-              "from": "commit:b924272f2919",
+              "from": "commit:e1fa9dcc1205",
               "to": "file:sign-js",
               "kind": "changed",
-              "evidence": "b924272f2919 changed this file",
+              "evidence": "e1fa9dcc1205 changed this file",
               "citations": [
-                "git:b924272f2919",
+                "git:e1fa9dcc1205",
                 "sign.js"
               ],
               "trust": "git_observed"
             },
             {
-              "from": "commit:b924272f2919",
-              "to": "file:test--eslintrc-json",
+              "from": "commit:e1fa9dcc1205",
+              "to": "file:test-jwt-asymmetric-signing-tests-js",
               "kind": "changed",
-              "evidence": "b924272f2919 changed this file",
+              "evidence": "e1fa9dcc1205 changed this file",
               "citations": [
-                "git:b924272f2919",
-                "test/.eslintrc.json"
+                "git:e1fa9dcc1205",
+                "test/jwt.asymmetric_signing.tests.js"
               ],
               "trust": "git_observed"
+            },
+            {
+              "from": "commit:e1fa9dcc1205",
+              "to": "file:test-schema-tests-js",
+              "kind": "changed",
+              "evidence": "e1fa9dcc1205 changed this file",
+              "citations": [
+                "git:e1fa9dcc1205",
+                "test/schema.tests.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:e1fa9dcc1205",
+              "to": "file:test-validateasymmetrickey-tests-js",
+              "kind": "changed",
+              "evidence": "e1fa9dcc1205 changed this file",
+              "citations": [
+                "git:e1fa9dcc1205",
+                "test/validateAsymmetricKey.tests.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:e1fa9dcc1205",
+              "to": "file:test-verify-tests-js",
+              "kind": "changed",
+              "evidence": "e1fa9dcc1205 changed this file",
+              "citations": [
+                "git:e1fa9dcc1205",
+                "test/verify.tests.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:e1fa9dcc1205",
+              "to": "file:verify-js",
+              "kind": "changed",
+              "evidence": "e1fa9dcc1205 changed this file",
+              "citations": [
+                "git:e1fa9dcc1205",
+                "verify.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:ed35062239c0",
+              "to": "file:package-json",
+              "kind": "changed",
+              "evidence": "ed35062239c0 changed this file",
+              "citations": [
+                "git:ed35062239c0",
+                "package.json"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:ed59e76ea37a",
+              "to": "file:-circleci-config-yml",
+              "kind": "changed",
+              "evidence": "ed59e76ea37a changed this file",
+              "citations": [
+                "git:ed59e76ea37a",
+                ".circleci/config.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:ed59e76ea37a",
+              "to": "file:-github-workflows-test-yml",
+              "kind": "changed",
+              "evidence": "ed59e76ea37a changed this file",
+              "citations": [
+                "git:ed59e76ea37a",
+                ".github/workflows/test.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:ed59e76ea37a",
+              "to": "file:changelog-md",
+              "kind": "changed",
+              "evidence": "ed59e76ea37a changed this file",
+              "citations": [
+                "git:ed59e76ea37a",
+                "CHANGELOG.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:ed59e76ea37a",
+              "to": "file:package-json",
+              "kind": "changed",
+              "evidence": "ed59e76ea37a changed this file",
+              "citations": [
+                "git:ed59e76ea37a",
+                "package.json"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "file:-github-workflows-prepare-release-yml",
+              "to": "file:package-json",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 3 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:b924272f2919"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:changelog-md",
+              "to": "file:package-json",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 7 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:ed59e76ea37a"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:package-json",
+              "to": "file:sign-js",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 5 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:96b89060cfc1"
+              ],
+              "trust": "navigation_lead"
             },
             {
               "from": "file:package-json",
@@ -1788,30 +2257,86 @@
                 "package.json"
               ],
               "trust": "navigation_lead"
+            },
+            {
+              "from": "file:readme-md",
+              "to": "file:package-json",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 3 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:e1fa9dcc1205"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:readme-md",
+              "to": "file:sign-js",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 3 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:e1fa9dcc1205"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:readme-md",
+              "to": "file:test-schema-tests-js",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 3 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:e1fa9dcc1205"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:readme-md",
+              "to": "file:verify-js",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 5 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:e1fa9dcc1205"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:test-schema-tests-js",
+              "to": "file:verify-js",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 4 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:e1fa9dcc1205"
+              ],
+              "trust": "navigation_lead"
             }
           ],
           "truncated": false
         },
         "sources": [
-          "package.json"
+          "package.json",
+          "CHANGELOG.md",
+          "README.md",
+          "verify.js",
+          "sign.js",
+          "test/schema.tests.js",
+          ".github/workflows/prepare-release.yml"
         ],
         "truncated": false
       },
       "repo_health": {
         "schema_version": 1,
-        "summary": "Deterministic scan scored 45 source files across simple size, churn, structural, test-adjacency, and performance-risk signals. 0 hotspots surfaced; average score is 9.6/10. Treat these as review leads, not proof of a bug.",
-        "average_score": 9.6,
+        "summary": "Deterministic scan scored 45 source files across simple size, churn, structural, test-adjacency, and performance-risk signals. 0 hotspots surfaced; average score is 8.8/10. Treat these as review leads, not proof of a bug.",
+        "average_score": 8.8,
         "hotspot_count": 0,
         "files_analyzed": 45,
         "files_with_test_signal": 0,
         "top_files": [
           {
             "path": "test/claim-aud.test.js",
-            "score": 7.9,
+            "score": 6.7,
             "bucket": "watch",
             "lines": 436,
             "bytes": 17443,
-            "churn": 0,
+            "churn": 834,
             "has_test_signal": false,
             "findings": [
               {
@@ -1835,6 +2360,16 @@
                 ]
               },
               {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 834 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "test/claim-aud.test.js"
+                ]
+              },
+              {
                 "id": "untested_hotspot",
                 "label": "No adjacent test signal",
                 "dimension": "defect",
@@ -1851,47 +2386,12 @@
             ]
           },
           {
-            "path": "test/claim-exp.test.js",
-            "score": 8.6,
-            "bucket": "healthy",
-            "lines": 343,
-            "bytes": 11329,
-            "churn": 0,
-            "has_test_signal": false,
-            "findings": [
-              {
-                "id": "deep_nesting",
-                "label": "Deep nesting",
-                "dimension": "defect",
-                "severity": "medium",
-                "detail": "Maximum indentation depth is about 7; inspect branch-heavy paths before risky edits.",
-                "sources": [
-                  "test/claim-exp.test.js"
-                ]
-              },
-              {
-                "id": "long_block",
-                "label": "Long function/block",
-                "dimension": "maintainability",
-                "severity": "medium",
-                "detail": "A brace-delimited block spans roughly 326 lines; consider extracting a helper when touching it.",
-                "sources": [
-                  "test/claim-exp.test.js"
-                ]
-              }
-            ],
-            "refactoring_targets": [
-              "Split file or extract helper around the largest cohesive flow.",
-              "Flatten guard-heavy branches before adding behavior."
-            ]
-          },
-          {
             "path": "test/claim-nbf.test.js",
-            "score": 8.6,
-            "bucket": "healthy",
+            "score": 6.7,
+            "bucket": "watch",
             "lines": 339,
             "bytes": 11222,
-            "churn": 0,
+            "churn": 681,
             "has_test_signal": false,
             "findings": [
               {
@@ -1913,6 +2413,26 @@
                 "sources": [
                   "test/claim-nbf.test.js"
                 ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 681 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "test/claim-nbf.test.js"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "test/claim-nbf.test.js"
+                ]
               }
             ],
             "refactoring_targets": [
@@ -1921,12 +2441,12 @@
             ]
           },
           {
-            "path": "test/claim-iat.test.js",
-            "score": 8.6,
-            "bucket": "healthy",
-            "lines": 276,
-            "bytes": 8421,
-            "churn": 0,
+            "path": "test/claim-exp.test.js",
+            "score": 6.7,
+            "bucket": "watch",
+            "lines": 343,
+            "bytes": 11329,
+            "churn": 403,
             "has_test_signal": false,
             "findings": [
               {
@@ -1934,9 +2454,9 @@
                 "label": "Deep nesting",
                 "dimension": "defect",
                 "severity": "medium",
-                "detail": "Maximum indentation depth is about 6; inspect branch-heavy paths before risky edits.",
+                "detail": "Maximum indentation depth is about 7; inspect branch-heavy paths before risky edits.",
                 "sources": [
-                  "test/claim-iat.test.js"
+                  "test/claim-exp.test.js"
                 ]
               },
               {
@@ -1944,9 +2464,29 @@
                 "label": "Long function/block",
                 "dimension": "maintainability",
                 "severity": "medium",
-                "detail": "A brace-delimited block spans roughly 251 lines; consider extracting a helper when touching it.",
+                "detail": "A brace-delimited block spans roughly 326 lines; consider extracting a helper when touching it.",
                 "sources": [
-                  "test/claim-iat.test.js"
+                  "test/claim-exp.test.js"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 403 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "test/claim-exp.test.js"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "test/claim-exp.test.js"
                 ]
               }
             ],
@@ -1957,11 +2497,11 @@
           },
           {
             "path": "verify.js",
-            "score": 8.6,
-            "bucket": "healthy",
+            "score": 6.7,
+            "bucket": "watch",
             "lines": 263,
             "bytes": 8612,
-            "churn": 0,
+            "churn": 347,
             "has_test_signal": false,
             "findings": [
               {
@@ -1983,6 +2523,81 @@
                 "sources": [
                   "verify.js"
                 ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 347 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "verify.js"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "verify.js"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow.",
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "test/claim-iat.test.js",
+            "score": 6.7,
+            "bucket": "watch",
+            "lines": 276,
+            "bytes": 8421,
+            "churn": 308,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "Maximum indentation depth is about 6; inspect branch-heavy paths before risky edits.",
+                "sources": [
+                  "test/claim-iat.test.js"
+                ]
+              },
+              {
+                "id": "long_block",
+                "label": "Long function/block",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "A brace-delimited block spans roughly 251 lines; consider extracting a helper when touching it.",
+                "sources": [
+                  "test/claim-iat.test.js"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 308 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "test/claim-iat.test.js"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "test/claim-iat.test.js"
+                ]
               }
             ],
             "refactoring_targets": [
@@ -1992,11 +2607,11 @@
           },
           {
             "path": "test/claim-iss.test.js",
-            "score": 8.6,
-            "bucket": "healthy",
+            "score": 6.7,
+            "bucket": "watch",
             "lines": 205,
             "bytes": 7247,
-            "churn": 0,
+            "churn": 227,
             "has_test_signal": false,
             "findings": [
               {
@@ -2018,6 +2633,26 @@
                 "sources": [
                   "test/claim-iss.test.js"
                 ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 227 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "test/claim-iss.test.js"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "test/claim-iss.test.js"
+                ]
               }
             ],
             "refactoring_targets": [
@@ -2027,11 +2662,11 @@
           },
           {
             "path": "sign.js",
-            "score": 8.8,
-            "bucket": "healthy",
+            "score": 6.9,
+            "bucket": "watch",
             "lines": 253,
             "bytes": 9350,
-            "churn": 0,
+            "churn": 323,
             "has_test_signal": false,
             "findings": [
               {
@@ -2043,67 +2678,39 @@
                 "sources": [
                   "sign.js"
                 ]
-              }
-            ],
-            "refactoring_targets": [
-              "Flatten guard-heavy branches before adding behavior."
-            ]
-          },
-          {
-            "path": "test/validateAsymmetricKey.tests.js",
-            "score": 8.8,
-            "bucket": "healthy",
-            "lines": 142,
-            "bytes": 5387,
-            "churn": 0,
-            "has_test_signal": false,
-            "findings": [
+              },
               {
-                "id": "deep_nesting",
-                "label": "Deep nesting",
+                "id": "churn_hotspot",
+                "label": "High churn",
                 "dimension": "defect",
                 "severity": "high",
-                "detail": "Maximum indentation depth is about 10; deeply nested branches are bug-prone review targets.",
+                "detail": "Recent git history shows 323 changed lines in this file; combine review with history and tests.",
                 "sources": [
-                  "test/validateAsymmetricKey.tests.js"
+                  "sign.js"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "sign.js"
                 ]
               }
             ],
             "refactoring_targets": [
               "Flatten guard-heavy branches before adding behavior."
-            ]
-          },
-          {
-            "path": "test/verify.tests.js",
-            "score": 9.3,
-            "bucket": "healthy",
-            "lines": 301,
-            "bytes": 11151,
-            "churn": 0,
-            "has_test_signal": false,
-            "findings": [
-              {
-                "id": "long_block",
-                "label": "Long function/block",
-                "dimension": "maintainability",
-                "severity": "medium",
-                "detail": "A brace-delimited block spans roughly 291 lines; consider extracting a helper when touching it.",
-                "sources": [
-                  "test/verify.tests.js"
-                ]
-              }
-            ],
-            "refactoring_targets": [
-              "Split file or extract helper around the largest cohesive flow."
             ]
           },
           {
             "path": "test/jwt.asymmetric_signing.tests.js",
-            "score": 9.3,
-            "bucket": "healthy",
+            "score": 7.4,
+            "bucket": "watch",
             "lines": 208,
             "bytes": 7227,
-            "churn": 0,
+            "churn": 426,
             "has_test_signal": false,
             "findings": [
               {
@@ -2115,6 +2722,114 @@
                 "sources": [
                   "test/jwt.asymmetric_signing.tests.js"
                 ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 426 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "test/jwt.asymmetric_signing.tests.js"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "test/jwt.asymmetric_signing.tests.js"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "test/verify.tests.js",
+            "score": 7.4,
+            "bucket": "watch",
+            "lines": 301,
+            "bytes": 11151,
+            "churn": 411,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "long_block",
+                "label": "Long function/block",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "A brace-delimited block spans roughly 291 lines; consider extracting a helper when touching it.",
+                "sources": [
+                  "test/verify.tests.js"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 411 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "test/verify.tests.js"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "test/verify.tests.js"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow."
+            ]
+          },
+          {
+            "path": "test/validateAsymmetricKey.tests.js",
+            "score": 7.4,
+            "bucket": "watch",
+            "lines": 142,
+            "bytes": 5387,
+            "churn": 142,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 10; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "test/validateAsymmetricKey.tests.js"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "Moderate churn",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "Recent git history shows 142 changed lines in this file; it is a change hotspot.",
+                "sources": [
+                  "test/validateAsymmetricKey.tests.js"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "test/validateAsymmetricKey.tests.js"
+                ]
               }
             ],
             "refactoring_targets": [
@@ -2123,11 +2838,11 @@
           },
           {
             "path": "test/claim-jti.test.js",
-            "score": 9.3,
-            "bucket": "healthy",
+            "score": 7.9,
+            "bucket": "watch",
             "lines": 155,
             "bytes": 5150,
-            "churn": 0,
+            "churn": 169,
             "has_test_signal": false,
             "findings": [
               {
@@ -2139,6 +2854,26 @@
                 "sources": [
                   "test/claim-jti.test.js"
                 ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "Moderate churn",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "Recent git history shows 169 changed lines in this file; it is a change hotspot.",
+                "sources": [
+                  "test/claim-jti.test.js"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "test/claim-jti.test.js"
+                ]
               }
             ],
             "refactoring_targets": [
@@ -2147,11 +2882,11 @@
           },
           {
             "path": "test/claim-sub.tests.js",
-            "score": 9.3,
-            "bucket": "healthy",
+            "score": 7.9,
+            "bucket": "watch",
             "lines": 153,
             "bytes": 5098,
-            "churn": 0,
+            "churn": 167,
             "has_test_signal": false,
             "findings": [
               {
@@ -2160,6 +2895,26 @@
                 "dimension": "defect",
                 "severity": "medium",
                 "detail": "Maximum indentation depth is about 6; inspect branch-heavy paths before risky edits.",
+                "sources": [
+                  "test/claim-sub.tests.js"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "Moderate churn",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "Recent git history shows 167 changed lines in this file; it is a change hotspot.",
+                "sources": [
+                  "test/claim-sub.tests.js"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
                 "sources": [
                   "test/claim-sub.tests.js"
                 ]
@@ -2884,8 +3639,8 @@
     "profiles": [
       {
         "stage": "full_scan",
-        "total_ms": 27,
-        "peak_rss_bytes": 28868608,
+        "total_ms": 44,
+        "peak_rss_bytes": 29081600,
         "steps": [
           {
             "id": "git_metadata",
@@ -2896,8 +3651,8 @@
           {
             "id": "file_walk",
             "label": "Parallel file walk",
-            "ms": 5,
-            "pct": 18.51851851851852
+            "ms": 7,
+            "pct": 15.909090909090908
           },
           {
             "id": "languages",
@@ -2944,14 +3699,14 @@
           {
             "id": "history",
             "label": "Git history & decision scan",
-            "ms": 12,
-            "pct": 44.44444444444444
+            "ms": 14,
+            "pct": 31.818181818181817
           },
           {
             "id": "repo_health",
             "label": "Deterministic health scoring",
-            "ms": 7,
-            "pct": 25.925925925925924
+            "ms": 19,
+            "pct": 43.18181818181818
           },
           {
             "id": "dir_tree",
@@ -2963,14 +3718,14 @@
       },
       {
         "stage": "local_scan_persist",
-        "total_ms": 0,
-        "peak_rss_bytes": 29278208,
+        "total_ms": 3,
+        "peak_rss_bytes": 29605888,
         "steps": [
           {
             "id": "serialize",
             "label": "JSON serialize (inventory → SQLite)",
-            "ms": 0,
-            "pct": 0
+            "ms": 1,
+            "pct": 33.33333333333333
           },
           {
             "id": "db_insert",
@@ -2981,8 +3736,8 @@
           {
             "id": "touch_project",
             "label": "Update repo project metadata",
-            "ms": 0,
-            "pct": 0
+            "ms": 1,
+            "pct": 33.33333333333333
           }
         ]
       }

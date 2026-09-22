@@ -9,8 +9,6 @@ export function getStaticPaths() {
 }
 
 const { report } = Astro.props;
-const totalBytes = report.languages.reduce((sum, l) => sum + l.bytes, 0);
-const langShare = (bytes: number) => Math.round((bytes / Math.max(totalBytes, 1)) * 100);
 ---
 
 <Layout
@@ -40,14 +38,49 @@ const langShare = (bytes: number) => Math.round((bytes / Math.max(totalBytes, 1)
     <section>
       <h2>Languages</h2>
       <table>
-        <thead><tr><th>Language</th><th>Files</th><th>Share</th></tr></thead>
+        <thead><tr><th>Language</th><th>Files</th><th>Share of source</th></tr></thead>
         <tbody>
           {report.languages.map((l) => (
-            <tr><td>{l.language}</td><td>{l.files}</td><td>{langShare(l.bytes)}%</td></tr>
+            <tr><td>{l.language}</td><td>{l.files}</td><td>{l.codeShare === null ? 'docs/config' : `${l.codeShare}%`}</td></tr>
           ))}
         </tbody>
       </table>
     </section>
+
+    {report.probableEntry && (
+      <section>
+        <h2>Start reading here</h2>
+        <p>
+          Probable source entrypoint: <code>{report.probableEntry}</code> — inferred from the
+          directory tree and manifest, not the upstream docs.
+        </p>
+      </section>
+    )}
+
+    {report.sourceRoots.length > 0 && (
+      <section>
+        <h2>Source roots</h2>
+        <p>
+          {report.sourceRoots.map((r) => (
+            <span><code>{r.path}/</code> <span class="dim">({r.file_count} files)</span> </span>
+          ))}
+        </p>
+      </section>
+    )}
+
+    {report.sourceLayout && (
+      <section>
+        <h2>Source layout — <code>{report.sourceLayout.path}/</code></h2>
+        <table>
+          <thead><tr><th>Path</th><th>Files</th></tr></thead>
+          <tbody>
+            {report.sourceLayout.children.map((c) => (
+              <tr><td><code>{c.is_dir ? `${c.path}/` : c.path}</code></td><td>{c.file_count}</td></tr>
+            ))}
+          </tbody>
+        </table>
+      </section>
+    )}
 
     <section>
       <h2>Repository structure</h2>
@@ -80,7 +113,7 @@ const langShare = (bytes: number) => Math.round((bytes / Math.max(totalBytes, 1)
 
     {report.entrypoints.length > 0 && (
       <section>
-        <h2>Detected entrypoints</h2>
+        <h2>CI &amp; config entrypoints</h2>
         <ul>
           {report.entrypoints.map((e) => (
             <li><code>{e.path}</code> <span class="dim">— {e.reason}</span></li>

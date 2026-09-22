@@ -3,7 +3,7 @@
   "repo": "BurntSushi/ripgrep",
   "slug": "ripgrep",
   "codevetter_version": "codevetter 1.12.0",
-  "collected_at": "2026-09-22T05:15:33.380Z",
+  "collected_at": "2026-09-22T06:01:32.792Z",
   "last_commit": {
     "sha": "3fce3b5bb0236da2df6d99672afb8a719642eca7",
     "date": "2026-08-04",
@@ -11,11 +11,11 @@
   },
   "scan": {
     "schema_version": "codevetter.unpack-scan/v1",
-    "report_id": "5cf1c625-5b4d-43c4-85b1-bc1b8898fcbc",
+    "report_id": "e70bbae0-495e-42a9-852d-0a19c754f849",
     "status": "scan_only",
-    "created_at": "2026-09-22T05:15:33.376380+00:00",
+    "created_at": "2026-09-22T06:01:32.784322+00:00",
     "inventory": {
-      "repo_path": "/private/var/folders/9_/1109_2dd1qz6zyvmxb5zp8pc0000gn/T/unpack-pilot-d7s1XI/ripgrep",
+      "repo_path": "/private/var/folders/9_/1109_2dd1qz6zyvmxb5zp8pc0000gn/T/unpack-pilot-HdL7HZ/ripgrep",
       "repo_name": "ripgrep",
       "commit_sha": "3fce3b5bb0236da2df6d99672afb8a719642eca7",
       "branch": "master",
@@ -288,14 +288,14 @@
           "bytes": 27102
         },
         {
-          "path": "fuzz",
-          "file_count": 4,
-          "bytes": 2557
-        },
-        {
           "path": "ci",
           "file_count": 4,
           "bytes": 5989
+        },
+        {
+          "path": "fuzz",
+          "file_count": 4,
+          "bytes": 2557
         },
         {
           "path": "pkg",
@@ -3386,37 +3386,119 @@
       },
       "history_brief": {
         "schema_version": 2,
-        "summary": "Local history brief captured 1 recent commit, 0 decision markers, 12 test hints, and 0 co-change clusters for Repo Unpacked. Treat commit subjects as leads and rely on cited files for durable constraints.",
+        "summary": "Local history brief captured 12 recent commits, 0 decision markers, 12 test hints, and 8 co-change clusters for Repo Unpacked. Treat commit subjects as leads and rely on cited files for durable constraints.",
         "recent_commits": [
           {
             "sha": "3fce3b5bb023",
             "date": "2026-08-04",
             "subject": "ignore-0.4.33",
             "files": [
-              ".cargo/config.toml",
-              ".github/FUNDING.yml",
-              ".github/ISSUE_TEMPLATE/bug_report.yml",
-              ".github/ISSUE_TEMPLATE/config.yml",
-              ".github/ISSUE_TEMPLATE/feature_request.md",
-              ".github/workflows/ci.yml",
-              ".github/workflows/release.yml",
-              "AI_POLICY.md",
-              "CHANGELOG.md",
-              "CONTRIBUTING.md",
+              "crates/ignore/Cargo.toml"
+            ]
+          },
+          {
+            "sha": "5055264ae021",
+            "date": "2026-08-04",
+            "subject": "globset-0.4.20",
+            "files": [
+              "crates/globset/Cargo.toml"
+            ]
+          },
+          {
+            "sha": "020687a77d13",
+            "date": "2026-08-04",
+            "subject": "ignore,globset: increase pool capacity",
+            "files": [
+              "crates/globset/Cargo.toml",
+              "crates/ignore/Cargo.toml",
+              "crates/ignore/src/gitignore.rs",
+              "crates/ignore/src/types.rs"
+            ]
+          },
+          {
+            "sha": "7525479a9576",
+            "date": "2026-08-03",
+            "subject": "ci: fix binary discovery",
+            "files": [
+              "tests/util.rs"
+            ]
+          },
+          {
+            "sha": "5ed408e17ecc",
+            "date": "2026-08-03",
+            "subject": "ignore-0.4.32",
+            "files": [
+              "crates/ignore/Cargo.toml"
+            ]
+          },
+          {
+            "sha": "435f59fc4b43",
+            "date": "2026-07-29",
+            "subject": "ignore: skip loading unreachable ignore files",
+            "files": [
+              "crates/ignore/src/walk.rs"
+            ]
+          },
+          {
+            "sha": "dffd776a737d",
+            "date": "2026-07-29",
+            "subject": "ci: attest build provenance for release archives",
+            "files": [
+              ".github/workflows/release.yml"
+            ]
+          },
+          {
+            "sha": "f9c05a949d1a",
+            "date": "2026-07-24",
+            "subject": "index: remove incorrect README",
+            "files": [
+              "crates/index/README.md"
+            ]
+          },
+          {
+            "sha": "8372866810a1",
+            "date": "2026-07-22",
+            "subject": "index: add some initial indexing scaffolding",
+            "files": [
               "Cargo.toml",
-              "FAQ.md",
-              "GUIDE.md",
-              "README.md",
-              "RELEASE-CHECKLIST.md",
-              "benchsuite/runs/2020-10-14-archlinux-frink/README.md",
-              "benchsuite/runs/2022-12-16-archlinux-duff/README.md",
-              "build.rs",
-              "crates/cli/Cargo.toml",
-              "crates/cli/README.md",
-              "crates/cli/src/decompress.rs",
-              "crates/cli/src/escape.rs",
-              "crates/cli/src/hostname.rs",
-              "crates/cli/src/human.rs"
+              "crates/core/flags/hiargs.rs",
+              "crates/core/index.rs",
+              "crates/core/index/disabled.rs",
+              "crates/core/index/enabled.rs",
+              "crates/core/index/mod.rs",
+              "crates/core/main.rs",
+              "crates/index/src/index.rs",
+              "crates/index/src/lib.rs",
+              "tests/index/basic.rs",
+              "tests/index/disallowed.rs",
+              "tests/index/mod.rs"
+            ]
+          },
+          {
+            "sha": "d99ac34406f8",
+            "date": "2026-07-20",
+            "subject": "core: add `index` module",
+            "files": [
+              "crates/core/index.rs",
+              "crates/core/main.rs"
+            ]
+          },
+          {
+            "sha": "d57de83a944c",
+            "date": "2026-07-20",
+            "subject": "nvim: enable all Cargo features",
+            "files": []
+          },
+          {
+            "sha": "2ed0c006fee4",
+            "date": "2026-07-20",
+            "subject": "flags: disable many flags when indexing is enabled",
+            "files": [
+              "crates/core/flags/defs.rs",
+              "crates/core/flags/hiargs.rs",
+              "tests/index/disallowed.rs",
+              "tests/index/mod.rs",
+              "tests/tests.rs"
             ]
           }
         ],
@@ -3471,10 +3553,105 @@
             "reason": "test/spec file anchors expected behavior"
           }
         ],
-        "temporal_couplings": [],
+        "temporal_couplings": [
+          {
+            "files": [
+              ".github/workflows/ci.yml",
+              "Cargo.toml"
+            ],
+            "commit_count": 2,
+            "last_commit": "d958105d412b",
+            "reason": "These files changed together in 2 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              "Cargo.toml",
+              "crates/core/main.rs"
+            ],
+            "commit_count": 2,
+            "last_commit": "8372866810a1",
+            "reason": "These files changed together in 2 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              "Cargo.toml",
+              "crates/index/src/lib.rs"
+            ],
+            "commit_count": 2,
+            "last_commit": "8372866810a1",
+            "reason": "These files changed together in 2 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              "crates/core/flags/hiargs.rs",
+              "tests/index/disallowed.rs"
+            ],
+            "commit_count": 2,
+            "last_commit": "8372866810a1",
+            "reason": "These files changed together in 2 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              "crates/core/flags/hiargs.rs",
+              "tests/index/mod.rs"
+            ],
+            "commit_count": 2,
+            "last_commit": "8372866810a1",
+            "reason": "These files changed together in 2 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              "crates/core/index.rs",
+              "crates/core/main.rs"
+            ],
+            "commit_count": 2,
+            "last_commit": "8372866810a1",
+            "reason": "These files changed together in 2 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              "crates/globset/Cargo.toml",
+              "crates/ignore/Cargo.toml"
+            ],
+            "commit_count": 2,
+            "last_commit": "020687a77d13",
+            "reason": "These files changed together in 2 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              "tests/index/disallowed.rs",
+              "tests/index/mod.rs"
+            ],
+            "commit_count": 2,
+            "last_commit": "8372866810a1",
+            "reason": "These files changed together in 2 recent commits; inspect both when either side moves."
+          }
+        ],
         "graph": {
           "schema_version": 2,
           "nodes": [
+            {
+              "id": "commit:020687a77d13",
+              "kind": "commit",
+              "label": "ignore,globset: increase pool capacity",
+              "path": null,
+              "detail": "2026-08-04",
+              "citations": [
+                "git:020687a77d13"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:2ed0c006fee4",
+              "kind": "commit",
+              "label": "flags: disable many flags when indexing is enabled",
+              "path": null,
+              "detail": "2026-07-20",
+              "citations": [
+                "git:2ed0c006fee4"
+              ],
+              "trust": "git_observed"
+            },
             {
               "id": "commit:3fce3b5bb023",
               "kind": "commit",
@@ -3487,57 +3664,101 @@
               "trust": "git_observed"
             },
             {
-              "id": "file:-cargo-config-toml",
-              "kind": "file",
-              "label": ".cargo/config.toml",
-              "path": ".cargo/config.toml",
-              "detail": "Changed in recent local git history",
+              "id": "commit:435f59fc4b43",
+              "kind": "commit",
+              "label": "ignore: skip loading unreachable ignore files",
+              "path": null,
+              "detail": "2026-07-29",
               "citations": [
-                ".cargo/config.toml"
+                "git:435f59fc4b43"
               ],
               "trust": "git_observed"
             },
             {
-              "id": "file:-github-funding-yml",
-              "kind": "file",
-              "label": ".github/FUNDING.yml",
-              "path": ".github/FUNDING.yml",
-              "detail": "Changed in recent local git history",
+              "id": "commit:5055264ae021",
+              "kind": "commit",
+              "label": "globset-0.4.20",
+              "path": null,
+              "detail": "2026-08-04",
               "citations": [
-                ".github/FUNDING.yml"
+                "git:5055264ae021"
               ],
               "trust": "git_observed"
             },
             {
-              "id": "file:-github-issue-template-bug-report-yml",
-              "kind": "file",
-              "label": ".github/ISSUE_TEMPLATE/bug_report.yml",
-              "path": ".github/ISSUE_TEMPLATE/bug_report.yml",
-              "detail": "Changed in recent local git history",
+              "id": "commit:5ed408e17ecc",
+              "kind": "commit",
+              "label": "ignore-0.4.32",
+              "path": null,
+              "detail": "2026-08-03",
               "citations": [
-                ".github/ISSUE_TEMPLATE/bug_report.yml"
+                "git:5ed408e17ecc"
               ],
               "trust": "git_observed"
             },
             {
-              "id": "file:-github-issue-template-config-yml",
-              "kind": "file",
-              "label": ".github/ISSUE_TEMPLATE/config.yml",
-              "path": ".github/ISSUE_TEMPLATE/config.yml",
-              "detail": "Changed in recent local git history",
+              "id": "commit:7525479a9576",
+              "kind": "commit",
+              "label": "ci: fix binary discovery",
+              "path": null,
+              "detail": "2026-08-03",
               "citations": [
-                ".github/ISSUE_TEMPLATE/config.yml"
+                "git:7525479a9576"
               ],
               "trust": "git_observed"
             },
             {
-              "id": "file:-github-issue-template-feature-request-md",
-              "kind": "file",
-              "label": ".github/ISSUE_TEMPLATE/feature_request.md",
-              "path": ".github/ISSUE_TEMPLATE/feature_request.md",
-              "detail": "Changed in recent local git history",
+              "id": "commit:8372866810a1",
+              "kind": "commit",
+              "label": "index: add some initial indexing scaffolding",
+              "path": null,
+              "detail": "2026-07-22",
               "citations": [
-                ".github/ISSUE_TEMPLATE/feature_request.md"
+                "git:8372866810a1"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:d57de83a944c",
+              "kind": "commit",
+              "label": "nvim: enable all Cargo features",
+              "path": null,
+              "detail": "2026-07-20",
+              "citations": [
+                "git:d57de83a944c"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:d99ac34406f8",
+              "kind": "commit",
+              "label": "core: add `index` module",
+              "path": null,
+              "detail": "2026-07-20",
+              "citations": [
+                "git:d99ac34406f8"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:dffd776a737d",
+              "kind": "commit",
+              "label": "ci: attest build provenance for release archives",
+              "path": null,
+              "detail": "2026-07-29",
+              "citations": [
+                "git:dffd776a737d"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:f9c05a949d1a",
+              "kind": "commit",
+              "label": "index: remove incorrect README",
+              "path": null,
+              "detail": "2026-07-24",
+              "citations": [
+                "git:f9c05a949d1a"
               ],
               "trust": "git_observed"
             },
@@ -3546,7 +3767,7 @@
               "kind": "file",
               "label": ".github/workflows/ci.yml",
               "path": ".github/workflows/ci.yml",
-              "detail": "Changed in recent local git history",
+              "detail": "Recent co-change lead",
               "citations": [
                 ".github/workflows/ci.yml"
               ],
@@ -3564,50 +3785,6 @@
               "trust": "git_observed"
             },
             {
-              "id": "file:ai-policy-md",
-              "kind": "file",
-              "label": "AI_POLICY.md",
-              "path": "AI_POLICY.md",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                "AI_POLICY.md"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:benchsuite-runs-2020-10-14-archlinux-frink-readme-md",
-              "kind": "file",
-              "label": "benchsuite/runs/2020-10-14-archlinux-frink/README.md",
-              "path": "benchsuite/runs/2020-10-14-archlinux-frink/README.md",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                "benchsuite/runs/2020-10-14-archlinux-frink/README.md"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:benchsuite-runs-2022-12-16-archlinux-duff-readme-md",
-              "kind": "file",
-              "label": "benchsuite/runs/2022-12-16-archlinux-duff/README.md",
-              "path": "benchsuite/runs/2022-12-16-archlinux-duff/README.md",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                "benchsuite/runs/2022-12-16-archlinux-duff/README.md"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:build-rs",
-              "kind": "file",
-              "label": "build.rs",
-              "path": "build.rs",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                "build.rs"
-              ],
-              "trust": "git_observed"
-            },
-            {
               "id": "file:cargo-toml",
               "kind": "file",
               "label": "Cargo.toml",
@@ -3619,90 +3796,134 @@
               "trust": "git_observed"
             },
             {
-              "id": "file:changelog-md",
+              "id": "file:crates-core-flags-defs-rs",
               "kind": "file",
-              "label": "CHANGELOG.md",
-              "path": "CHANGELOG.md",
+              "label": "crates/core/flags/defs.rs",
+              "path": "crates/core/flags/defs.rs",
               "detail": "Changed in recent local git history",
               "citations": [
-                "CHANGELOG.md"
+                "crates/core/flags/defs.rs"
               ],
               "trust": "git_observed"
             },
             {
-              "id": "file:contributing-md",
+              "id": "file:crates-core-flags-hiargs-rs",
               "kind": "file",
-              "label": "CONTRIBUTING.md",
-              "path": "CONTRIBUTING.md",
+              "label": "crates/core/flags/hiargs.rs",
+              "path": "crates/core/flags/hiargs.rs",
               "detail": "Changed in recent local git history",
               "citations": [
-                "CONTRIBUTING.md"
+                "crates/core/flags/hiargs.rs"
               ],
               "trust": "git_observed"
             },
             {
-              "id": "file:crates-cli-cargo-toml",
+              "id": "file:crates-core-index-disabled-rs",
               "kind": "file",
-              "label": "crates/cli/Cargo.toml",
-              "path": "crates/cli/Cargo.toml",
+              "label": "crates/core/index/disabled.rs",
+              "path": "crates/core/index/disabled.rs",
               "detail": "Changed in recent local git history",
               "citations": [
-                "crates/cli/Cargo.toml"
+                "crates/core/index/disabled.rs"
               ],
               "trust": "git_observed"
             },
             {
-              "id": "file:crates-cli-readme-md",
+              "id": "file:crates-core-index-enabled-rs",
               "kind": "file",
-              "label": "crates/cli/README.md",
-              "path": "crates/cli/README.md",
+              "label": "crates/core/index/enabled.rs",
+              "path": "crates/core/index/enabled.rs",
               "detail": "Changed in recent local git history",
               "citations": [
-                "crates/cli/README.md"
+                "crates/core/index/enabled.rs"
               ],
               "trust": "git_observed"
             },
             {
-              "id": "file:crates-cli-src-decompress-rs",
+              "id": "file:crates-core-index-mod-rs",
               "kind": "file",
-              "label": "crates/cli/src/decompress.rs",
-              "path": "crates/cli/src/decompress.rs",
+              "label": "crates/core/index/mod.rs",
+              "path": "crates/core/index/mod.rs",
               "detail": "Changed in recent local git history",
               "citations": [
-                "crates/cli/src/decompress.rs"
+                "crates/core/index/mod.rs"
               ],
               "trust": "git_observed"
             },
             {
-              "id": "file:crates-cli-src-escape-rs",
+              "id": "file:crates-core-index-rs",
               "kind": "file",
-              "label": "crates/cli/src/escape.rs",
-              "path": "crates/cli/src/escape.rs",
+              "label": "crates/core/index.rs",
+              "path": "crates/core/index.rs",
               "detail": "Changed in recent local git history",
               "citations": [
-                "crates/cli/src/escape.rs"
+                "crates/core/index.rs"
               ],
               "trust": "git_observed"
             },
             {
-              "id": "file:crates-cli-src-hostname-rs",
+              "id": "file:crates-core-main-rs",
               "kind": "file",
-              "label": "crates/cli/src/hostname.rs",
-              "path": "crates/cli/src/hostname.rs",
+              "label": "crates/core/main.rs",
+              "path": "crates/core/main.rs",
               "detail": "Changed in recent local git history",
               "citations": [
-                "crates/cli/src/hostname.rs"
+                "crates/core/main.rs"
               ],
               "trust": "git_observed"
             },
             {
-              "id": "file:crates-cli-src-human-rs",
+              "id": "file:crates-globset-cargo-toml",
               "kind": "file",
-              "label": "crates/cli/src/human.rs",
-              "path": "crates/cli/src/human.rs",
+              "label": "crates/globset/Cargo.toml",
+              "path": "crates/globset/Cargo.toml",
               "detail": "Changed in recent local git history",
               "citations": [
-                "crates/cli/src/human.rs"
+                "crates/globset/Cargo.toml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:crates-ignore-cargo-toml",
+              "kind": "file",
+              "label": "crates/ignore/Cargo.toml",
+              "path": "crates/ignore/Cargo.toml",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "crates/ignore/Cargo.toml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:crates-ignore-src-gitignore-rs",
+              "kind": "file",
+              "label": "crates/ignore/src/gitignore.rs",
+              "path": "crates/ignore/src/gitignore.rs",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "crates/ignore/src/gitignore.rs"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:crates-ignore-src-types-rs",
+              "kind": "file",
+              "label": "crates/ignore/src/types.rs",
+              "path": "crates/ignore/src/types.rs",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "crates/ignore/src/types.rs"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:crates-ignore-src-walk-rs",
+              "kind": "file",
+              "label": "crates/ignore/src/walk.rs",
+              "path": "crates/ignore/src/walk.rs",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "crates/ignore/src/walk.rs"
               ],
               "trust": "git_observed"
             },
@@ -3751,6 +3972,39 @@
               "trust": "source_backed"
             },
             {
+              "id": "file:crates-index-readme-md",
+              "kind": "file",
+              "label": "crates/index/README.md",
+              "path": "crates/index/README.md",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "crates/index/README.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:crates-index-src-index-rs",
+              "kind": "file",
+              "label": "crates/index/src/index.rs",
+              "path": "crates/index/src/index.rs",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "crates/index/src/index.rs"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:crates-index-src-lib-rs",
+              "kind": "file",
+              "label": "crates/index/src/lib.rs",
+              "path": "crates/index/src/lib.rs",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "crates/index/src/lib.rs"
+              ],
+              "trust": "git_observed"
+            },
+            {
               "id": "file:crates-matcher-tests-test-matcher-rs",
               "kind": "file",
               "label": "crates/matcher/tests/test_matcher.rs",
@@ -3784,50 +4038,6 @@
               "trust": "source_backed"
             },
             {
-              "id": "file:faq-md",
-              "kind": "file",
-              "label": "FAQ.md",
-              "path": "FAQ.md",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                "FAQ.md"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:guide-md",
-              "kind": "file",
-              "label": "GUIDE.md",
-              "path": "GUIDE.md",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                "GUIDE.md"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:readme-md",
-              "kind": "file",
-              "label": "README.md",
-              "path": "README.md",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                "README.md"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:release-checklist-md",
-              "kind": "file",
-              "label": "RELEASE-CHECKLIST.md",
-              "path": "RELEASE-CHECKLIST.md",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                "RELEASE-CHECKLIST.md"
-              ],
-              "trust": "git_observed"
-            },
-            {
               "id": "file:tests-binary-rs",
               "kind": "file",
               "label": "tests/binary.rs",
@@ -3848,6 +4058,39 @@
                 "tests/feature.rs"
               ],
               "trust": "source_backed"
+            },
+            {
+              "id": "file:tests-index-basic-rs",
+              "kind": "file",
+              "label": "tests/index/basic.rs",
+              "path": "tests/index/basic.rs",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "tests/index/basic.rs"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:tests-index-disallowed-rs",
+              "kind": "file",
+              "label": "tests/index/disallowed.rs",
+              "path": "tests/index/disallowed.rs",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "tests/index/disallowed.rs"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:tests-index-mod-rs",
+              "kind": "file",
+              "label": "tests/index/mod.rs",
+              "path": "tests/index/mod.rs",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "tests/index/mod.rs"
+              ],
+              "trust": "git_observed"
             },
             {
               "id": "file:tests-misc-rs",
@@ -3872,15 +4115,26 @@
               "trust": "source_backed"
             },
             {
+              "id": "file:tests-tests-rs",
+              "kind": "file",
+              "label": "tests/tests.rs",
+              "path": "tests/tests.rs",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "tests/tests.rs"
+              ],
+              "trust": "git_observed"
+            },
+            {
               "id": "file:tests-util-rs",
               "kind": "file",
               "label": "tests/util.rs",
               "path": "tests/util.rs",
-              "detail": "Verification source",
+              "detail": "Changed in recent local git history",
               "citations": [
                 "tests/util.rs"
               ],
-              "trust": "source_backed"
+              "trust": "git_observed"
             },
             {
               "id": "test:crates-ignore-tests-gitignore-matched-path-or-any-parents-tests-gitignore-test-spec-file-anchors-expected-behavior",
@@ -4017,268 +4271,404 @@
           ],
           "edges": [
             {
-              "from": "commit:3fce3b5bb023",
-              "to": "file:-cargo-config-toml",
+              "from": "commit:020687a77d13",
+              "to": "file:crates-globset-cargo-toml",
               "kind": "changed",
-              "evidence": "3fce3b5bb023 changed this file",
+              "evidence": "020687a77d13 changed this file",
               "citations": [
-                "git:3fce3b5bb023",
-                ".cargo/config.toml"
+                "git:020687a77d13",
+                "crates/globset/Cargo.toml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:020687a77d13",
+              "to": "file:crates-ignore-cargo-toml",
+              "kind": "changed",
+              "evidence": "020687a77d13 changed this file",
+              "citations": [
+                "git:020687a77d13",
+                "crates/ignore/Cargo.toml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:020687a77d13",
+              "to": "file:crates-ignore-src-gitignore-rs",
+              "kind": "changed",
+              "evidence": "020687a77d13 changed this file",
+              "citations": [
+                "git:020687a77d13",
+                "crates/ignore/src/gitignore.rs"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:020687a77d13",
+              "to": "file:crates-ignore-src-types-rs",
+              "kind": "changed",
+              "evidence": "020687a77d13 changed this file",
+              "citations": [
+                "git:020687a77d13",
+                "crates/ignore/src/types.rs"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:2ed0c006fee4",
+              "to": "file:crates-core-flags-defs-rs",
+              "kind": "changed",
+              "evidence": "2ed0c006fee4 changed this file",
+              "citations": [
+                "git:2ed0c006fee4",
+                "crates/core/flags/defs.rs"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:2ed0c006fee4",
+              "to": "file:crates-core-flags-hiargs-rs",
+              "kind": "changed",
+              "evidence": "2ed0c006fee4 changed this file",
+              "citations": [
+                "git:2ed0c006fee4",
+                "crates/core/flags/hiargs.rs"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:2ed0c006fee4",
+              "to": "file:tests-index-disallowed-rs",
+              "kind": "changed",
+              "evidence": "2ed0c006fee4 changed this file",
+              "citations": [
+                "git:2ed0c006fee4",
+                "tests/index/disallowed.rs"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:2ed0c006fee4",
+              "to": "file:tests-index-mod-rs",
+              "kind": "changed",
+              "evidence": "2ed0c006fee4 changed this file",
+              "citations": [
+                "git:2ed0c006fee4",
+                "tests/index/mod.rs"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:2ed0c006fee4",
+              "to": "file:tests-tests-rs",
+              "kind": "changed",
+              "evidence": "2ed0c006fee4 changed this file",
+              "citations": [
+                "git:2ed0c006fee4",
+                "tests/tests.rs"
               ],
               "trust": "git_observed"
             },
             {
               "from": "commit:3fce3b5bb023",
-              "to": "file:-github-funding-yml",
+              "to": "file:crates-ignore-cargo-toml",
               "kind": "changed",
               "evidence": "3fce3b5bb023 changed this file",
               "citations": [
                 "git:3fce3b5bb023",
-                ".github/FUNDING.yml"
+                "crates/ignore/Cargo.toml"
               ],
               "trust": "git_observed"
             },
             {
-              "from": "commit:3fce3b5bb023",
-              "to": "file:-github-issue-template-bug-report-yml",
+              "from": "commit:435f59fc4b43",
+              "to": "file:crates-ignore-src-walk-rs",
               "kind": "changed",
-              "evidence": "3fce3b5bb023 changed this file",
+              "evidence": "435f59fc4b43 changed this file",
               "citations": [
-                "git:3fce3b5bb023",
-                ".github/ISSUE_TEMPLATE/bug_report.yml"
+                "git:435f59fc4b43",
+                "crates/ignore/src/walk.rs"
               ],
               "trust": "git_observed"
             },
             {
-              "from": "commit:3fce3b5bb023",
-              "to": "file:-github-issue-template-config-yml",
+              "from": "commit:5055264ae021",
+              "to": "file:crates-globset-cargo-toml",
               "kind": "changed",
-              "evidence": "3fce3b5bb023 changed this file",
+              "evidence": "5055264ae021 changed this file",
               "citations": [
-                "git:3fce3b5bb023",
-                ".github/ISSUE_TEMPLATE/config.yml"
+                "git:5055264ae021",
+                "crates/globset/Cargo.toml"
               ],
               "trust": "git_observed"
             },
             {
-              "from": "commit:3fce3b5bb023",
-              "to": "file:-github-issue-template-feature-request-md",
+              "from": "commit:5ed408e17ecc",
+              "to": "file:crates-ignore-cargo-toml",
               "kind": "changed",
-              "evidence": "3fce3b5bb023 changed this file",
+              "evidence": "5ed408e17ecc changed this file",
               "citations": [
-                "git:3fce3b5bb023",
-                ".github/ISSUE_TEMPLATE/feature_request.md"
+                "git:5ed408e17ecc",
+                "crates/ignore/Cargo.toml"
               ],
               "trust": "git_observed"
             },
             {
-              "from": "commit:3fce3b5bb023",
-              "to": "file:-github-workflows-ci-yml",
+              "from": "commit:7525479a9576",
+              "to": "file:tests-util-rs",
               "kind": "changed",
-              "evidence": "3fce3b5bb023 changed this file",
+              "evidence": "7525479a9576 changed this file",
               "citations": [
-                "git:3fce3b5bb023",
-                ".github/workflows/ci.yml"
+                "git:7525479a9576",
+                "tests/util.rs"
               ],
               "trust": "git_observed"
             },
             {
-              "from": "commit:3fce3b5bb023",
-              "to": "file:-github-workflows-release-yml",
-              "kind": "changed",
-              "evidence": "3fce3b5bb023 changed this file",
-              "citations": [
-                "git:3fce3b5bb023",
-                ".github/workflows/release.yml"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:3fce3b5bb023",
-              "to": "file:ai-policy-md",
-              "kind": "changed",
-              "evidence": "3fce3b5bb023 changed this file",
-              "citations": [
-                "git:3fce3b5bb023",
-                "AI_POLICY.md"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:3fce3b5bb023",
-              "to": "file:benchsuite-runs-2020-10-14-archlinux-frink-readme-md",
-              "kind": "changed",
-              "evidence": "3fce3b5bb023 changed this file",
-              "citations": [
-                "git:3fce3b5bb023",
-                "benchsuite/runs/2020-10-14-archlinux-frink/README.md"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:3fce3b5bb023",
-              "to": "file:benchsuite-runs-2022-12-16-archlinux-duff-readme-md",
-              "kind": "changed",
-              "evidence": "3fce3b5bb023 changed this file",
-              "citations": [
-                "git:3fce3b5bb023",
-                "benchsuite/runs/2022-12-16-archlinux-duff/README.md"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:3fce3b5bb023",
-              "to": "file:build-rs",
-              "kind": "changed",
-              "evidence": "3fce3b5bb023 changed this file",
-              "citations": [
-                "git:3fce3b5bb023",
-                "build.rs"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:3fce3b5bb023",
+              "from": "commit:8372866810a1",
               "to": "file:cargo-toml",
               "kind": "changed",
-              "evidence": "3fce3b5bb023 changed this file",
+              "evidence": "8372866810a1 changed this file",
               "citations": [
-                "git:3fce3b5bb023",
+                "git:8372866810a1",
                 "Cargo.toml"
               ],
               "trust": "git_observed"
             },
             {
-              "from": "commit:3fce3b5bb023",
-              "to": "file:changelog-md",
+              "from": "commit:8372866810a1",
+              "to": "file:crates-core-flags-hiargs-rs",
               "kind": "changed",
-              "evidence": "3fce3b5bb023 changed this file",
+              "evidence": "8372866810a1 changed this file",
               "citations": [
-                "git:3fce3b5bb023",
-                "CHANGELOG.md"
+                "git:8372866810a1",
+                "crates/core/flags/hiargs.rs"
               ],
               "trust": "git_observed"
             },
             {
-              "from": "commit:3fce3b5bb023",
-              "to": "file:contributing-md",
+              "from": "commit:8372866810a1",
+              "to": "file:crates-core-index-disabled-rs",
               "kind": "changed",
-              "evidence": "3fce3b5bb023 changed this file",
+              "evidence": "8372866810a1 changed this file",
               "citations": [
-                "git:3fce3b5bb023",
-                "CONTRIBUTING.md"
+                "git:8372866810a1",
+                "crates/core/index/disabled.rs"
               ],
               "trust": "git_observed"
             },
             {
-              "from": "commit:3fce3b5bb023",
-              "to": "file:crates-cli-cargo-toml",
+              "from": "commit:8372866810a1",
+              "to": "file:crates-core-index-enabled-rs",
               "kind": "changed",
-              "evidence": "3fce3b5bb023 changed this file",
+              "evidence": "8372866810a1 changed this file",
               "citations": [
-                "git:3fce3b5bb023",
-                "crates/cli/Cargo.toml"
+                "git:8372866810a1",
+                "crates/core/index/enabled.rs"
               ],
               "trust": "git_observed"
             },
             {
-              "from": "commit:3fce3b5bb023",
-              "to": "file:crates-cli-readme-md",
+              "from": "commit:8372866810a1",
+              "to": "file:crates-core-index-mod-rs",
               "kind": "changed",
-              "evidence": "3fce3b5bb023 changed this file",
+              "evidence": "8372866810a1 changed this file",
               "citations": [
-                "git:3fce3b5bb023",
-                "crates/cli/README.md"
+                "git:8372866810a1",
+                "crates/core/index/mod.rs"
               ],
               "trust": "git_observed"
             },
             {
-              "from": "commit:3fce3b5bb023",
-              "to": "file:crates-cli-src-decompress-rs",
+              "from": "commit:8372866810a1",
+              "to": "file:crates-core-index-rs",
               "kind": "changed",
-              "evidence": "3fce3b5bb023 changed this file",
+              "evidence": "8372866810a1 changed this file",
               "citations": [
-                "git:3fce3b5bb023",
-                "crates/cli/src/decompress.rs"
+                "git:8372866810a1",
+                "crates/core/index.rs"
               ],
               "trust": "git_observed"
             },
             {
-              "from": "commit:3fce3b5bb023",
-              "to": "file:crates-cli-src-escape-rs",
+              "from": "commit:8372866810a1",
+              "to": "file:crates-core-main-rs",
               "kind": "changed",
-              "evidence": "3fce3b5bb023 changed this file",
+              "evidence": "8372866810a1 changed this file",
               "citations": [
-                "git:3fce3b5bb023",
-                "crates/cli/src/escape.rs"
+                "git:8372866810a1",
+                "crates/core/main.rs"
               ],
               "trust": "git_observed"
             },
             {
-              "from": "commit:3fce3b5bb023",
-              "to": "file:crates-cli-src-hostname-rs",
+              "from": "commit:8372866810a1",
+              "to": "file:crates-index-src-index-rs",
               "kind": "changed",
-              "evidence": "3fce3b5bb023 changed this file",
+              "evidence": "8372866810a1 changed this file",
               "citations": [
-                "git:3fce3b5bb023",
-                "crates/cli/src/hostname.rs"
+                "git:8372866810a1",
+                "crates/index/src/index.rs"
               ],
               "trust": "git_observed"
             },
             {
-              "from": "commit:3fce3b5bb023",
-              "to": "file:crates-cli-src-human-rs",
+              "from": "commit:8372866810a1",
+              "to": "file:crates-index-src-lib-rs",
               "kind": "changed",
-              "evidence": "3fce3b5bb023 changed this file",
+              "evidence": "8372866810a1 changed this file",
               "citations": [
-                "git:3fce3b5bb023",
-                "crates/cli/src/human.rs"
+                "git:8372866810a1",
+                "crates/index/src/lib.rs"
               ],
               "trust": "git_observed"
             },
             {
-              "from": "commit:3fce3b5bb023",
-              "to": "file:faq-md",
+              "from": "commit:8372866810a1",
+              "to": "file:tests-index-basic-rs",
               "kind": "changed",
-              "evidence": "3fce3b5bb023 changed this file",
+              "evidence": "8372866810a1 changed this file",
               "citations": [
-                "git:3fce3b5bb023",
-                "FAQ.md"
+                "git:8372866810a1",
+                "tests/index/basic.rs"
               ],
               "trust": "git_observed"
             },
             {
-              "from": "commit:3fce3b5bb023",
-              "to": "file:guide-md",
+              "from": "commit:8372866810a1",
+              "to": "file:tests-index-disallowed-rs",
               "kind": "changed",
-              "evidence": "3fce3b5bb023 changed this file",
+              "evidence": "8372866810a1 changed this file",
               "citations": [
-                "git:3fce3b5bb023",
-                "GUIDE.md"
+                "git:8372866810a1",
+                "tests/index/disallowed.rs"
               ],
               "trust": "git_observed"
             },
             {
-              "from": "commit:3fce3b5bb023",
-              "to": "file:readme-md",
+              "from": "commit:8372866810a1",
+              "to": "file:tests-index-mod-rs",
               "kind": "changed",
-              "evidence": "3fce3b5bb023 changed this file",
+              "evidence": "8372866810a1 changed this file",
               "citations": [
-                "git:3fce3b5bb023",
-                "README.md"
+                "git:8372866810a1",
+                "tests/index/mod.rs"
               ],
               "trust": "git_observed"
             },
             {
-              "from": "commit:3fce3b5bb023",
-              "to": "file:release-checklist-md",
+              "from": "commit:d99ac34406f8",
+              "to": "file:crates-core-index-rs",
               "kind": "changed",
-              "evidence": "3fce3b5bb023 changed this file",
+              "evidence": "d99ac34406f8 changed this file",
               "citations": [
-                "git:3fce3b5bb023",
-                "RELEASE-CHECKLIST.md"
+                "git:d99ac34406f8",
+                "crates/core/index.rs"
               ],
               "trust": "git_observed"
+            },
+            {
+              "from": "commit:d99ac34406f8",
+              "to": "file:crates-core-main-rs",
+              "kind": "changed",
+              "evidence": "d99ac34406f8 changed this file",
+              "citations": [
+                "git:d99ac34406f8",
+                "crates/core/main.rs"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:dffd776a737d",
+              "to": "file:-github-workflows-release-yml",
+              "kind": "changed",
+              "evidence": "dffd776a737d changed this file",
+              "citations": [
+                "git:dffd776a737d",
+                ".github/workflows/release.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:f9c05a949d1a",
+              "to": "file:crates-index-readme-md",
+              "kind": "changed",
+              "evidence": "f9c05a949d1a changed this file",
+              "citations": [
+                "git:f9c05a949d1a",
+                "crates/index/README.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "file:-github-workflows-ci-yml",
+              "to": "file:cargo-toml",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 2 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:d958105d412b"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:cargo-toml",
+              "to": "file:crates-core-main-rs",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 2 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:8372866810a1"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:cargo-toml",
+              "to": "file:crates-index-src-lib-rs",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 2 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:8372866810a1"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:crates-core-flags-hiargs-rs",
+              "to": "file:tests-index-disallowed-rs",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 2 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:8372866810a1"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:crates-core-flags-hiargs-rs",
+              "to": "file:tests-index-mod-rs",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 2 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:8372866810a1"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:crates-core-index-rs",
+              "to": "file:crates-core-main-rs",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 2 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:8372866810a1"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:crates-globset-cargo-toml",
+              "to": "file:crates-ignore-cargo-toml",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 2 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:020687a77d13"
+              ],
+              "trust": "navigation_lead"
             },
             {
               "from": "file:crates-ignore-tests-gitignore-matched-path-or-any-parents-tests-gitignore",
@@ -4371,6 +4761,16 @@
               "trust": "navigation_lead"
             },
             {
+              "from": "file:tests-index-disallowed-rs",
+              "to": "file:tests-index-mod-rs",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 2 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:8372866810a1"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
               "from": "file:tests-misc-rs",
               "to": "test:tests-misc-rs-test-spec-file-anchors-expected-behavior",
               "kind": "verified_by",
@@ -4416,28 +4816,36 @@
           "tests/regression.rs",
           "tests/binary.rs",
           "tests/misc.rs",
+          ".github/workflows/ci.yml",
           "Cargo.toml",
+          "crates/core/main.rs",
+          "crates/index/src/lib.rs",
+          "crates/core/flags/hiargs.rs",
+          "tests/index/disallowed.rs",
+          "tests/index/mod.rs",
+          "crates/core/index.rs",
+          "crates/globset/Cargo.toml",
+          "crates/ignore/Cargo.toml",
           "fuzz/Cargo.toml",
-          "crates/cli/Cargo.toml",
-          "crates/globset/Cargo.toml"
+          "crates/cli/Cargo.toml"
         ],
         "truncated": true
       },
       "repo_health": {
         "schema_version": 1,
-        "summary": "Deterministic scan scored 93 source files across simple size, churn, structural, test-adjacency, and performance-risk signals. 17 hotspots surfaced; average score is 8.2/10. Treat these as review leads, not proof of a bug.",
-        "average_score": 8.2,
-        "hotspot_count": 17,
+        "summary": "Deterministic scan scored 93 source files across simple size, churn, structural, test-adjacency, and performance-risk signals. 32 hotspots surfaced; average score is 7.1/10. Treat these as review leads, not proof of a bug.",
+        "average_score": 7.1,
+        "hotspot_count": 32,
         "files_analyzed": 93,
         "files_with_test_signal": 3,
         "top_files": [
           {
             "path": "crates/ignore/src/walk.rs",
-            "score": 5.2,
+            "score": 4,
             "bucket": "hotspot",
             "lines": 2375,
             "bytes": 93443,
-            "churn": 0,
+            "churn": 2790,
             "has_test_signal": false,
             "findings": [
               {
@@ -4466,6 +4874,16 @@
                 "dimension": "maintainability",
                 "severity": "medium",
                 "detail": "A brace-delimited block spans roughly 565 lines; consider extracting a helper when touching it.",
+                "sources": [
+                  "crates/ignore/src/walk.rs"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 2790 changed lines in this file; combine review with history and tests.",
                 "sources": [
                   "crates/ignore/src/walk.rs"
                 ]
@@ -4509,11 +4927,11 @@
           },
           {
             "path": "crates/ignore/src/incremental.rs",
-            "score": 5.2,
+            "score": 4,
             "bucket": "hotspot",
             "lines": 1286,
             "bytes": 48097,
-            "churn": 0,
+            "churn": 1286,
             "has_test_signal": false,
             "findings": [
               {
@@ -4542,6 +4960,16 @@
                 "dimension": "maintainability",
                 "severity": "medium",
                 "detail": "A brace-delimited block spans roughly 346 lines; consider extracting a helper when touching it.",
+                "sources": [
+                  "crates/ignore/src/incremental.rs"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 1286 changed lines in this file; combine review with history and tests.",
                 "sources": [
                   "crates/ignore/src/incremental.rs"
                 ]
@@ -4585,11 +5013,11 @@
           },
           {
             "path": "crates/ignore/src/gitignore.rs",
-            "score": 5.7,
+            "score": 4.5,
             "bucket": "hotspot",
             "lines": 885,
             "bytes": 32332,
-            "churn": 0,
+            "churn": 943,
             "has_test_signal": false,
             "findings": [
               {
@@ -4618,6 +5046,16 @@
                 "dimension": "maintainability",
                 "severity": "medium",
                 "detail": "A brace-delimited block spans roughly 251 lines; consider extracting a helper when touching it.",
+                "sources": [
+                  "crates/ignore/src/gitignore.rs"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 943 changed lines in this file; combine review with history and tests.",
                 "sources": [
                   "crates/ignore/src/gitignore.rs"
                 ]
@@ -4661,11 +5099,11 @@
           },
           {
             "path": "crates/ignore/src/dir.rs",
-            "score": 5.9,
+            "score": 4.7,
             "bucket": "hotspot",
             "lines": 1613,
             "bytes": 58367,
-            "churn": 0,
+            "churn": 1621,
             "has_test_signal": false,
             "findings": [
               {
@@ -4699,6 +5137,16 @@
                 ]
               },
               {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 1621 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "crates/ignore/src/dir.rs"
+                ]
+              },
+              {
                 "id": "untested_hotspot",
                 "label": "No adjacent test signal",
                 "dimension": "defect",
@@ -4726,11 +5174,11 @@
           },
           {
             "path": "crates/core/flags/hiargs.rs",
-            "score": 5.9,
+            "score": 4.7,
             "bucket": "hotspot",
             "lines": 1516,
             "bytes": 58570,
-            "churn": 0,
+            "churn": 1516,
             "has_test_signal": false,
             "findings": [
               {
@@ -4764,6 +5212,16 @@
                 ]
               },
               {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 1516 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "crates/core/flags/hiargs.rs"
+                ]
+              },
+              {
                 "id": "untested_hotspot",
                 "label": "No adjacent test signal",
                 "dimension": "defect",
@@ -4791,11 +5249,11 @@
           },
           {
             "path": "crates/searcher/src/searcher/mod.rs",
-            "score": 5.9,
+            "score": 4.7,
             "bucket": "hotspot",
             "lines": 1088,
             "bytes": 41168,
-            "churn": 0,
+            "churn": 1092,
             "has_test_signal": false,
             "findings": [
               {
@@ -4829,6 +5287,16 @@
                 ]
               },
               {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 1092 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "crates/searcher/src/searcher/mod.rs"
+                ]
+              },
+              {
                 "id": "untested_hotspot",
                 "label": "No adjacent test signal",
                 "dimension": "defect",
@@ -4856,11 +5324,11 @@
           },
           {
             "path": "crates/printer/src/standard.rs",
-            "score": 6.2,
+            "score": 5,
             "bucket": "hotspot",
             "lines": 2286,
             "bytes": 136288,
-            "churn": 0,
+            "churn": 3987,
             "has_test_signal": false,
             "findings": [
               {
@@ -4894,6 +5362,16 @@
                 ]
               },
               {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 3987 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "crates/printer/src/standard.rs"
+                ]
+              },
+              {
                 "id": "untested_hotspot",
                 "label": "No adjacent test signal",
                 "dimension": "defect",
@@ -4911,11 +5389,11 @@
           },
           {
             "path": "crates/globset/src/glob.rs",
-            "score": 6.2,
+            "score": 5,
             "bucket": "hotspot",
             "lines": 1686,
             "bytes": 60771,
-            "churn": 0,
+            "churn": 1688,
             "has_test_signal": false,
             "findings": [
               {
@@ -4949,6 +5427,16 @@
                 ]
               },
               {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 1688 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "crates/globset/src/glob.rs"
+                ]
+              },
+              {
                 "id": "untested_hotspot",
                 "label": "No adjacent test signal",
                 "dimension": "defect",
@@ -4966,11 +5454,11 @@
           },
           {
             "path": "crates/searcher/src/searcher/glue.rs",
-            "score": 6.2,
+            "score": 5,
             "bucket": "hotspot",
             "lines": 1549,
             "bytes": 49949,
-            "churn": 0,
+            "churn": 1549,
             "has_test_signal": false,
             "findings": [
               {
@@ -5004,6 +5492,16 @@
                 ]
               },
               {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 1549 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "crates/searcher/src/searcher/glue.rs"
+                ]
+              },
+              {
                 "id": "untested_hotspot",
                 "label": "No adjacent test signal",
                 "dimension": "defect",
@@ -5021,11 +5519,11 @@
           },
           {
             "path": "crates/matcher/src/lib.rs",
-            "score": 6.2,
+            "score": 5,
             "bucket": "hotspot",
             "lines": 1379,
             "bytes": 46637,
-            "churn": 0,
+            "churn": 1379,
             "has_test_signal": false,
             "findings": [
               {
@@ -5059,6 +5557,16 @@
                 ]
               },
               {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 1379 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "crates/matcher/src/lib.rs"
+                ]
+              },
+              {
                 "id": "untested_hotspot",
                 "label": "No adjacent test signal",
                 "dimension": "defect",
@@ -5076,11 +5584,11 @@
           },
           {
             "path": "crates/globset/src/lib.rs",
-            "score": 6.2,
+            "score": 5,
             "bucket": "hotspot",
             "lines": 1307,
             "bytes": 40673,
-            "churn": 0,
+            "churn": 1327,
             "has_test_signal": false,
             "findings": [
               {
@@ -5114,6 +5622,16 @@
                 ]
               },
               {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 1327 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "crates/globset/src/lib.rs"
+                ]
+              },
+              {
                 "id": "untested_hotspot",
                 "label": "No adjacent test signal",
                 "dimension": "defect",
@@ -5131,11 +5649,11 @@
           },
           {
             "path": "crates/printer/src/hyperlink/mod.rs",
-            "score": 6.2,
+            "score": 5,
             "bucket": "hotspot",
             "lines": 1165,
             "bytes": 41177,
-            "churn": 0,
+            "churn": 1165,
             "has_test_signal": false,
             "findings": [
               {
@@ -5164,6 +5682,16 @@
                 "dimension": "maintainability",
                 "severity": "medium",
                 "detail": "A brace-delimited block spans roughly 217 lines; consider extracting a helper when touching it.",
+                "sources": [
+                  "crates/printer/src/hyperlink/mod.rs"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 1165 changed lines in this file; combine review with history and tests.",
                 "sources": [
                   "crates/printer/src/hyperlink/mod.rs"
                 ]
@@ -7418,8 +7946,8 @@
     "profiles": [
       {
         "stage": "full_scan",
-        "total_ms": 41,
-        "peak_rss_bytes": 32047104,
+        "total_ms": 71,
+        "peak_rss_bytes": 32112640,
         "steps": [
           {
             "id": "git_metadata",
@@ -7430,8 +7958,8 @@
           {
             "id": "file_walk",
             "label": "Parallel file walk",
-            "ms": 7,
-            "pct": 17.073170731707318
+            "ms": 8,
+            "pct": 11.267605633802818
           },
           {
             "id": "languages",
@@ -7467,25 +7995,25 @@
             "id": "source_previews",
             "label": "Source preview cache",
             "ms": 1,
-            "pct": 2.4390243902439024
+            "pct": 1.4084507042253522
           },
           {
             "id": "repo_graph",
             "label": "Deterministic graph scan",
-            "ms": 7,
-            "pct": 17.073170731707318
+            "ms": 8,
+            "pct": 11.267605633802818
           },
           {
             "id": "history",
             "label": "Git history & decision scan",
-            "ms": 14,
-            "pct": 34.146341463414636
+            "ms": 16,
+            "pct": 22.535211267605636
           },
           {
             "id": "repo_health",
             "label": "Deterministic health scoring",
-            "ms": 9,
-            "pct": 21.951219512195124
+            "ms": 34,
+            "pct": 47.88732394366197
           },
           {
             "id": "dir_tree",
@@ -7497,8 +8025,8 @@
       },
       {
         "stage": "local_scan_persist",
-        "total_ms": 0,
-        "peak_rss_bytes": 32620544,
+        "total_ms": 5,
+        "peak_rss_bytes": 32358400,
         "steps": [
           {
             "id": "serialize",
@@ -7509,8 +8037,8 @@
           {
             "id": "db_insert",
             "label": "SQLite insert",
-            "ms": 0,
-            "pct": 0
+            "ms": 5,
+            "pct": 100
           },
           {
             "id": "touch_project",

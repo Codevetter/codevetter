@@ -3,7 +3,7 @@
   "repo": "lodash/lodash",
   "slug": "lodash",
   "codevetter_version": "codevetter 1.12.0",
-  "collected_at": "2026-09-22T05:15:33.855Z",
+  "collected_at": "2026-09-22T06:01:33.027Z",
   "last_commit": {
     "sha": "2b5e6f7399a7b48005140b5d5c6bc6c0e62919a8",
     "date": "2026-09-11",
@@ -11,11 +11,11 @@
   },
   "scan": {
     "schema_version": "codevetter.unpack-scan/v1",
-    "report_id": "41232035-2d7f-4ec2-90c9-b3b6317e00ae",
+    "report_id": "4d6bd8ae-69ab-4bfb-9707-89e41fdde94e",
     "status": "scan_only",
-    "created_at": "2026-09-22T05:15:33.852362+00:00",
+    "created_at": "2026-09-22T06:01:33.023676+00:00",
     "inventory": {
-      "repo_path": "/private/var/folders/9_/1109_2dd1qz6zyvmxb5zp8pc0000gn/T/unpack-pilot-4GEWaF/lodash",
+      "repo_path": "/private/var/folders/9_/1109_2dd1qz6zyvmxb5zp8pc0000gn/T/unpack-pilot-tKZfQF/lodash",
       "repo_name": "lodash",
       "commit_sha": "2b5e6f7399a7b48005140b5d5c6bc6c0e62919a8",
       "branch": "main",
@@ -1395,14 +1395,13 @@
       },
       "history_brief": {
         "schema_version": 2,
-        "summary": "Local history brief captured 1 recent commit, 0 decision markers, 6 test hints, and 0 co-change clusters for Repo Unpacked. Treat commit subjects as leads and rely on cited files for durable constraints.",
+        "summary": "Local history brief captured 12 recent commits, 0 decision markers, 6 test hints, and 8 co-change clusters for Repo Unpacked. Treat commit subjects as leads and rely on cited files for durable constraints.",
         "recent_commits": [
           {
             "sha": "2b5e6f7399a7",
             "date": "2026-09-11",
             "subject": "ci: update actions to latest versions (#6279)",
             "files": [
-              ".github/CONTRIBUTING.md",
               ".github/workflows/browser-testing.yml",
               ".github/workflows/ci-bun.yml",
               ".github/workflows/ci-dist-sync.yml",
@@ -1410,22 +1409,107 @@
               ".github/workflows/ci-node.yml",
               ".github/workflows/codeql.yml",
               ".github/workflows/renovate.yml",
-              ".github/workflows/scorecards.yml",
-              ".markdown-doctest-setup.js",
-              "GOVERNANCE.md",
-              "README.md",
-              "SECURITY.md",
-              "dist/lodash.core.js",
-              "dist/lodash.fp.js",
+              ".github/workflows/scorecards.yml"
+            ]
+          },
+          {
+            "sha": "0f79302eaf53",
+            "date": "2026-09-09",
+            "subject": "ci: ossf/scorecard-action update to 2.4.4 (#6278)",
+            "files": [
+              ".github/workflows/scorecards.yml"
+            ]
+          },
+          {
+            "sha": "a666ba591064",
+            "date": "2026-07-03",
+            "subject": "docs: fix some minor docs inconsistencies (#6249)",
+            "files": [
               "dist/lodash.js",
-              "dist/mapping.fp.js",
+              "lodash.js"
+            ]
+          },
+          {
+            "sha": "9429a4ee0305",
+            "date": "2026-06-25",
+            "subject": "ci(playwright): fix browser test flake from test timeout shorter than assertion",
+            "files": [
+              "playwright.config.js"
+            ]
+          },
+          {
+            "sha": "be2b153da476",
+            "date": "2026-06-25",
+            "subject": "docs: clarify number-word behavior in startCase examples (#6224)",
+            "files": [
               "doc/README.md",
-              "fp/_baseConvert.js",
-              "fp/_convertBrowser.js",
-              "fp/_mapping.js",
-              "fp/placeholder.js",
-              "incident_response_plan.md",
-              "lib/common/file.js"
+              "test/test.js"
+            ]
+          },
+          {
+            "sha": "0add4cd5e8fd",
+            "date": "2026-06-26",
+            "subject": "docs: fix typo contributing link in README (#6196)",
+            "files": [
+              "README.md"
+            ]
+          },
+          {
+            "sha": "d9bad111b5b9",
+            "date": "2026-06-25",
+            "subject": "docs: fix Chrome sandboxing-eval link in README",
+            "files": [
+              "doc/README.md"
+            ]
+          },
+          {
+            "sha": "9646df1207b1",
+            "date": "2026-06-26",
+            "subject": "test: add tests for Number constants on isNumber (#5987)",
+            "files": [
+              "test/test.js"
+            ]
+          },
+          {
+            "sha": "7fc486e838dd",
+            "date": "2026-06-26",
+            "subject": "test: add test for chunk with empty array (#5994)",
+            "files": [
+              "test/test.js"
+            ]
+          },
+          {
+            "sha": "a02353279093",
+            "date": "2026-05-07",
+            "subject": "chore(ci): sha pin the actions (#6209)",
+            "files": [
+              ".github/workflows/browser-testing.yml",
+              ".github/workflows/ci-bun.yml",
+              ".github/workflows/ci-dist-sync.yml",
+              ".github/workflows/ci-docs.yml",
+              ".github/workflows/ci-node.yml",
+              ".github/workflows/renovate.yml"
+            ]
+          },
+          {
+            "sha": "3a546c4fe6c1",
+            "date": "2026-04-22",
+            "subject": "docs: add threat model exclusions for common report patterns (#6203)",
+            "files": [
+              "threat-model.md"
+            ]
+          },
+          {
+            "sha": "cb0b9b921252",
+            "date": "2026-04-01",
+            "subject": "release(patch): bump main to 4.18.1 (#6177)",
+            "files": [
+              "README.md",
+              "dist/lodash.core.js",
+              "dist/lodash.js",
+              "doc/README.md",
+              "lodash.js",
+              "package.json"
             ]
           }
         ],
@@ -1456,10 +1540,105 @@
             "reason": "package script `test:main` is a likely verification command"
           }
         ],
-        "temporal_couplings": [],
+        "temporal_couplings": [
+          {
+            "files": [
+              "dist/lodash.js",
+              "lodash.js"
+            ],
+            "commit_count": 14,
+            "last_commit": "a666ba591064",
+            "reason": "These files changed together in 14 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              "lodash.js",
+              "test/test.js"
+            ],
+            "commit_count": 7,
+            "last_commit": "75535f57883b",
+            "reason": "These files changed together in 7 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              "dist/lodash.js",
+              "doc/README.md"
+            ],
+            "commit_count": 6,
+            "last_commit": "cb0b9b921252",
+            "reason": "These files changed together in 6 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              "doc/README.md",
+              "lodash.js"
+            ],
+            "commit_count": 6,
+            "last_commit": "cb0b9b921252",
+            "reason": "These files changed together in 6 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              "README.md",
+              "dist/lodash.core.js"
+            ],
+            "commit_count": 5,
+            "last_commit": "cb0b9b921252",
+            "reason": "These files changed together in 5 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              "README.md",
+              "dist/lodash.js"
+            ],
+            "commit_count": 5,
+            "last_commit": "cb0b9b921252",
+            "reason": "These files changed together in 5 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              "README.md",
+              "doc/README.md"
+            ],
+            "commit_count": 5,
+            "last_commit": "cb0b9b921252",
+            "reason": "These files changed together in 5 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              "README.md",
+              "lodash.js"
+            ],
+            "commit_count": 5,
+            "last_commit": "cb0b9b921252",
+            "reason": "These files changed together in 5 recent commits; inspect both when either side moves."
+          }
+        ],
         "graph": {
           "schema_version": 2,
           "nodes": [
+            {
+              "id": "commit:0add4cd5e8fd",
+              "kind": "commit",
+              "label": "docs: fix typo contributing link in README (#6196)",
+              "path": null,
+              "detail": "2026-06-26",
+              "citations": [
+                "git:0add4cd5e8fd"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:0f79302eaf53",
+              "kind": "commit",
+              "label": "ci: ossf/scorecard-action update to 2.4.4 (#6278)",
+              "path": null,
+              "detail": "2026-09-09",
+              "citations": [
+                "git:0f79302eaf53"
+              ],
+              "trust": "git_observed"
+            },
             {
               "id": "commit:2b5e6f7399a7",
               "kind": "commit",
@@ -1472,13 +1651,101 @@
               "trust": "git_observed"
             },
             {
-              "id": "file:-github-contributing-md",
-              "kind": "file",
-              "label": ".github/CONTRIBUTING.md",
-              "path": ".github/CONTRIBUTING.md",
-              "detail": "Changed in recent local git history",
+              "id": "commit:3a546c4fe6c1",
+              "kind": "commit",
+              "label": "docs: add threat model exclusions for common report patterns (#6203)",
+              "path": null,
+              "detail": "2026-04-22",
               "citations": [
-                ".github/CONTRIBUTING.md"
+                "git:3a546c4fe6c1"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:7fc486e838dd",
+              "kind": "commit",
+              "label": "test: add test for chunk with empty array (#5994)",
+              "path": null,
+              "detail": "2026-06-26",
+              "citations": [
+                "git:7fc486e838dd"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:9429a4ee0305",
+              "kind": "commit",
+              "label": "ci(playwright): fix browser test flake from test timeout shorter than assertion",
+              "path": null,
+              "detail": "2026-06-25",
+              "citations": [
+                "git:9429a4ee0305"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:9646df1207b1",
+              "kind": "commit",
+              "label": "test: add tests for Number constants on isNumber (#5987)",
+              "path": null,
+              "detail": "2026-06-26",
+              "citations": [
+                "git:9646df1207b1"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:a02353279093",
+              "kind": "commit",
+              "label": "chore(ci): sha pin the actions (#6209)",
+              "path": null,
+              "detail": "2026-05-07",
+              "citations": [
+                "git:a02353279093"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:a666ba591064",
+              "kind": "commit",
+              "label": "docs: fix some minor docs inconsistencies (#6249)",
+              "path": null,
+              "detail": "2026-07-03",
+              "citations": [
+                "git:a666ba591064"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:be2b153da476",
+              "kind": "commit",
+              "label": "docs: clarify number-word behavior in startCase examples (#6224)",
+              "path": null,
+              "detail": "2026-06-25",
+              "citations": [
+                "git:be2b153da476"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:cb0b9b921252",
+              "kind": "commit",
+              "label": "release(patch): bump main to 4.18.1 (#6177)",
+              "path": null,
+              "detail": "2026-04-01",
+              "citations": [
+                "git:cb0b9b921252"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:d9bad111b5b9",
+              "kind": "commit",
+              "label": "docs: fix Chrome sandboxing-eval link in README",
+              "path": null,
+              "detail": "2026-06-25",
+              "citations": [
+                "git:d9bad111b5b9"
               ],
               "trust": "git_observed"
             },
@@ -1571,17 +1838,6 @@
               "trust": "git_observed"
             },
             {
-              "id": "file:-markdown-doctest-setup-js",
-              "kind": "file",
-              "label": ".markdown-doctest-setup.js",
-              "path": ".markdown-doctest-setup.js",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                ".markdown-doctest-setup.js"
-              ],
-              "trust": "git_observed"
-            },
-            {
               "id": "file:dist-lodash-core-js",
               "kind": "file",
               "label": "dist/lodash.core.js",
@@ -1589,17 +1845,6 @@
               "detail": "Changed in recent local git history",
               "citations": [
                 "dist/lodash.core.js"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:dist-lodash-fp-js",
-              "kind": "file",
-              "label": "dist/lodash.fp.js",
-              "path": "dist/lodash.fp.js",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                "dist/lodash.fp.js"
               ],
               "trust": "git_observed"
             },
@@ -1615,17 +1860,6 @@
               "trust": "git_observed"
             },
             {
-              "id": "file:dist-mapping-fp-js",
-              "kind": "file",
-              "label": "dist/mapping.fp.js",
-              "path": "dist/mapping.fp.js",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                "dist/mapping.fp.js"
-              ],
-              "trust": "git_observed"
-            },
-            {
               "id": "file:doc-readme-md",
               "kind": "file",
               "label": "doc/README.md",
@@ -1637,79 +1871,13 @@
               "trust": "git_observed"
             },
             {
-              "id": "file:fp--baseconvert-js",
+              "id": "file:lodash-js",
               "kind": "file",
-              "label": "fp/_baseConvert.js",
-              "path": "fp/_baseConvert.js",
+              "label": "lodash.js",
+              "path": "lodash.js",
               "detail": "Changed in recent local git history",
               "citations": [
-                "fp/_baseConvert.js"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:fp--convertbrowser-js",
-              "kind": "file",
-              "label": "fp/_convertBrowser.js",
-              "path": "fp/_convertBrowser.js",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                "fp/_convertBrowser.js"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:fp--mapping-js",
-              "kind": "file",
-              "label": "fp/_mapping.js",
-              "path": "fp/_mapping.js",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                "fp/_mapping.js"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:fp-placeholder-js",
-              "kind": "file",
-              "label": "fp/placeholder.js",
-              "path": "fp/placeholder.js",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                "fp/placeholder.js"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:governance-md",
-              "kind": "file",
-              "label": "GOVERNANCE.md",
-              "path": "GOVERNANCE.md",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                "GOVERNANCE.md"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:incident-response-plan-md",
-              "kind": "file",
-              "label": "incident_response_plan.md",
-              "path": "incident_response_plan.md",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                "incident_response_plan.md"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:lib-common-file-js",
-              "kind": "file",
-              "label": "lib/common/file.js",
-              "path": "lib/common/file.js",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                "lib/common/file.js"
+                "lodash.js"
               ],
               "trust": "git_observed"
             },
@@ -1718,11 +1886,22 @@
               "kind": "file",
               "label": "package.json",
               "path": "package.json",
-              "detail": "Verification source",
+              "detail": "Changed in recent local git history",
               "citations": [
                 "package.json"
               ],
-              "trust": "source_backed"
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:playwright-config-js",
+              "kind": "file",
+              "label": "playwright.config.js",
+              "path": "playwright.config.js",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "playwright.config.js"
+              ],
+              "trust": "git_observed"
             },
             {
               "id": "file:readme-md",
@@ -1736,13 +1915,24 @@
               "trust": "git_observed"
             },
             {
-              "id": "file:security-md",
+              "id": "file:test-test-js",
               "kind": "file",
-              "label": "SECURITY.md",
-              "path": "SECURITY.md",
+              "label": "test/test.js",
+              "path": "test/test.js",
               "detail": "Changed in recent local git history",
               "citations": [
-                "SECURITY.md"
+                "test/test.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:threat-model-md",
+              "kind": "file",
+              "label": "threat-model.md",
+              "path": "threat-model.md",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "threat-model.md"
               ],
               "trust": "git_observed"
             },
@@ -1815,13 +2005,24 @@
           ],
           "edges": [
             {
-              "from": "commit:2b5e6f7399a7",
-              "to": "file:-github-contributing-md",
+              "from": "commit:0add4cd5e8fd",
+              "to": "file:readme-md",
               "kind": "changed",
-              "evidence": "2b5e6f7399a7 changed this file",
+              "evidence": "0add4cd5e8fd changed this file",
               "citations": [
-                "git:2b5e6f7399a7",
-                ".github/CONTRIBUTING.md"
+                "git:0add4cd5e8fd",
+                "README.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:0f79302eaf53",
+              "to": "file:-github-workflows-scorecards-yml",
+              "kind": "changed",
+              "evidence": "0f79302eaf53 changed this file",
+              "citations": [
+                "git:0f79302eaf53",
+                ".github/workflows/scorecards.yml"
               ],
               "trust": "git_observed"
             },
@@ -1914,169 +2115,275 @@
               "trust": "git_observed"
             },
             {
-              "from": "commit:2b5e6f7399a7",
-              "to": "file:-markdown-doctest-setup-js",
+              "from": "commit:3a546c4fe6c1",
+              "to": "file:threat-model-md",
               "kind": "changed",
-              "evidence": "2b5e6f7399a7 changed this file",
+              "evidence": "3a546c4fe6c1 changed this file",
               "citations": [
-                "git:2b5e6f7399a7",
-                ".markdown-doctest-setup.js"
+                "git:3a546c4fe6c1",
+                "threat-model.md"
               ],
               "trust": "git_observed"
             },
             {
-              "from": "commit:2b5e6f7399a7",
-              "to": "file:dist-lodash-core-js",
+              "from": "commit:7fc486e838dd",
+              "to": "file:test-test-js",
               "kind": "changed",
-              "evidence": "2b5e6f7399a7 changed this file",
+              "evidence": "7fc486e838dd changed this file",
               "citations": [
-                "git:2b5e6f7399a7",
-                "dist/lodash.core.js"
+                "git:7fc486e838dd",
+                "test/test.js"
               ],
               "trust": "git_observed"
             },
             {
-              "from": "commit:2b5e6f7399a7",
-              "to": "file:dist-lodash-fp-js",
+              "from": "commit:9429a4ee0305",
+              "to": "file:playwright-config-js",
               "kind": "changed",
-              "evidence": "2b5e6f7399a7 changed this file",
+              "evidence": "9429a4ee0305 changed this file",
               "citations": [
-                "git:2b5e6f7399a7",
-                "dist/lodash.fp.js"
+                "git:9429a4ee0305",
+                "playwright.config.js"
               ],
               "trust": "git_observed"
             },
             {
-              "from": "commit:2b5e6f7399a7",
+              "from": "commit:9646df1207b1",
+              "to": "file:test-test-js",
+              "kind": "changed",
+              "evidence": "9646df1207b1 changed this file",
+              "citations": [
+                "git:9646df1207b1",
+                "test/test.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:a02353279093",
+              "to": "file:-github-workflows-browser-testing-yml",
+              "kind": "changed",
+              "evidence": "a02353279093 changed this file",
+              "citations": [
+                "git:a02353279093",
+                ".github/workflows/browser-testing.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:a02353279093",
+              "to": "file:-github-workflows-ci-bun-yml",
+              "kind": "changed",
+              "evidence": "a02353279093 changed this file",
+              "citations": [
+                "git:a02353279093",
+                ".github/workflows/ci-bun.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:a02353279093",
+              "to": "file:-github-workflows-ci-dist-sync-yml",
+              "kind": "changed",
+              "evidence": "a02353279093 changed this file",
+              "citations": [
+                "git:a02353279093",
+                ".github/workflows/ci-dist-sync.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:a02353279093",
+              "to": "file:-github-workflows-ci-docs-yml",
+              "kind": "changed",
+              "evidence": "a02353279093 changed this file",
+              "citations": [
+                "git:a02353279093",
+                ".github/workflows/ci-docs.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:a02353279093",
+              "to": "file:-github-workflows-ci-node-yml",
+              "kind": "changed",
+              "evidence": "a02353279093 changed this file",
+              "citations": [
+                "git:a02353279093",
+                ".github/workflows/ci-node.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:a02353279093",
+              "to": "file:-github-workflows-renovate-yml",
+              "kind": "changed",
+              "evidence": "a02353279093 changed this file",
+              "citations": [
+                "git:a02353279093",
+                ".github/workflows/renovate.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:a666ba591064",
               "to": "file:dist-lodash-js",
               "kind": "changed",
-              "evidence": "2b5e6f7399a7 changed this file",
+              "evidence": "a666ba591064 changed this file",
               "citations": [
-                "git:2b5e6f7399a7",
+                "git:a666ba591064",
                 "dist/lodash.js"
               ],
               "trust": "git_observed"
             },
             {
-              "from": "commit:2b5e6f7399a7",
-              "to": "file:dist-mapping-fp-js",
+              "from": "commit:a666ba591064",
+              "to": "file:lodash-js",
               "kind": "changed",
-              "evidence": "2b5e6f7399a7 changed this file",
+              "evidence": "a666ba591064 changed this file",
               "citations": [
-                "git:2b5e6f7399a7",
-                "dist/mapping.fp.js"
+                "git:a666ba591064",
+                "lodash.js"
               ],
               "trust": "git_observed"
             },
             {
-              "from": "commit:2b5e6f7399a7",
+              "from": "commit:be2b153da476",
               "to": "file:doc-readme-md",
               "kind": "changed",
-              "evidence": "2b5e6f7399a7 changed this file",
+              "evidence": "be2b153da476 changed this file",
               "citations": [
-                "git:2b5e6f7399a7",
+                "git:be2b153da476",
                 "doc/README.md"
               ],
               "trust": "git_observed"
             },
             {
-              "from": "commit:2b5e6f7399a7",
-              "to": "file:fp--baseconvert-js",
+              "from": "commit:be2b153da476",
+              "to": "file:test-test-js",
               "kind": "changed",
-              "evidence": "2b5e6f7399a7 changed this file",
+              "evidence": "be2b153da476 changed this file",
               "citations": [
-                "git:2b5e6f7399a7",
-                "fp/_baseConvert.js"
+                "git:be2b153da476",
+                "test/test.js"
               ],
               "trust": "git_observed"
             },
             {
-              "from": "commit:2b5e6f7399a7",
-              "to": "file:fp--convertbrowser-js",
+              "from": "commit:cb0b9b921252",
+              "to": "file:dist-lodash-core-js",
               "kind": "changed",
-              "evidence": "2b5e6f7399a7 changed this file",
+              "evidence": "cb0b9b921252 changed this file",
               "citations": [
-                "git:2b5e6f7399a7",
-                "fp/_convertBrowser.js"
+                "git:cb0b9b921252",
+                "dist/lodash.core.js"
               ],
               "trust": "git_observed"
             },
             {
-              "from": "commit:2b5e6f7399a7",
-              "to": "file:fp--mapping-js",
+              "from": "commit:cb0b9b921252",
+              "to": "file:dist-lodash-js",
               "kind": "changed",
-              "evidence": "2b5e6f7399a7 changed this file",
+              "evidence": "cb0b9b921252 changed this file",
               "citations": [
-                "git:2b5e6f7399a7",
-                "fp/_mapping.js"
+                "git:cb0b9b921252",
+                "dist/lodash.js"
               ],
               "trust": "git_observed"
             },
             {
-              "from": "commit:2b5e6f7399a7",
-              "to": "file:fp-placeholder-js",
+              "from": "commit:cb0b9b921252",
+              "to": "file:doc-readme-md",
               "kind": "changed",
-              "evidence": "2b5e6f7399a7 changed this file",
+              "evidence": "cb0b9b921252 changed this file",
               "citations": [
-                "git:2b5e6f7399a7",
-                "fp/placeholder.js"
+                "git:cb0b9b921252",
+                "doc/README.md"
               ],
               "trust": "git_observed"
             },
             {
-              "from": "commit:2b5e6f7399a7",
-              "to": "file:governance-md",
+              "from": "commit:cb0b9b921252",
+              "to": "file:lodash-js",
               "kind": "changed",
-              "evidence": "2b5e6f7399a7 changed this file",
+              "evidence": "cb0b9b921252 changed this file",
               "citations": [
-                "git:2b5e6f7399a7",
-                "GOVERNANCE.md"
+                "git:cb0b9b921252",
+                "lodash.js"
               ],
               "trust": "git_observed"
             },
             {
-              "from": "commit:2b5e6f7399a7",
-              "to": "file:incident-response-plan-md",
+              "from": "commit:cb0b9b921252",
+              "to": "file:package-json",
               "kind": "changed",
-              "evidence": "2b5e6f7399a7 changed this file",
+              "evidence": "cb0b9b921252 changed this file",
               "citations": [
-                "git:2b5e6f7399a7",
-                "incident_response_plan.md"
+                "git:cb0b9b921252",
+                "package.json"
               ],
               "trust": "git_observed"
             },
             {
-              "from": "commit:2b5e6f7399a7",
-              "to": "file:lib-common-file-js",
-              "kind": "changed",
-              "evidence": "2b5e6f7399a7 changed this file",
-              "citations": [
-                "git:2b5e6f7399a7",
-                "lib/common/file.js"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:2b5e6f7399a7",
+              "from": "commit:cb0b9b921252",
               "to": "file:readme-md",
               "kind": "changed",
-              "evidence": "2b5e6f7399a7 changed this file",
+              "evidence": "cb0b9b921252 changed this file",
               "citations": [
-                "git:2b5e6f7399a7",
+                "git:cb0b9b921252",
                 "README.md"
               ],
               "trust": "git_observed"
             },
             {
-              "from": "commit:2b5e6f7399a7",
-              "to": "file:security-md",
+              "from": "commit:d9bad111b5b9",
+              "to": "file:doc-readme-md",
               "kind": "changed",
-              "evidence": "2b5e6f7399a7 changed this file",
+              "evidence": "d9bad111b5b9 changed this file",
               "citations": [
-                "git:2b5e6f7399a7",
-                "SECURITY.md"
+                "git:d9bad111b5b9",
+                "doc/README.md"
               ],
               "trust": "git_observed"
+            },
+            {
+              "from": "file:dist-lodash-js",
+              "to": "file:doc-readme-md",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 6 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:cb0b9b921252"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:dist-lodash-js",
+              "to": "file:lodash-js",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 14 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:a666ba591064"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:doc-readme-md",
+              "to": "file:lodash-js",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 6 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:cb0b9b921252"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:lodash-js",
+              "to": "file:test-test-js",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 7 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:75535f57883b"
+              ],
+              "trust": "navigation_lead"
             },
             {
               "from": "file:package-json",
@@ -2137,30 +2444,76 @@
                 "package.json"
               ],
               "trust": "navigation_lead"
+            },
+            {
+              "from": "file:readme-md",
+              "to": "file:dist-lodash-core-js",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 5 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:cb0b9b921252"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:readme-md",
+              "to": "file:dist-lodash-js",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 5 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:cb0b9b921252"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:readme-md",
+              "to": "file:doc-readme-md",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 5 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:cb0b9b921252"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:readme-md",
+              "to": "file:lodash-js",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 5 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:cb0b9b921252"
+              ],
+              "trust": "navigation_lead"
             }
           ],
           "truncated": false
         },
         "sources": [
-          "package.json"
+          "package.json",
+          "dist/lodash.js",
+          "lodash.js",
+          "test/test.js",
+          "doc/README.md",
+          "README.md",
+          "dist/lodash.core.js"
         ],
         "truncated": false
       },
       "repo_health": {
         "schema_version": 1,
-        "summary": "Deterministic scan scored 27 source files across simple size, churn, structural, test-adjacency, and performance-risk signals. 1 hotspot surfaced; average score is 9.4/10. Treat these as review leads, not proof of a bug.",
-        "average_score": 9.4,
-        "hotspot_count": 1,
+        "summary": "Deterministic scan scored 27 source files across simple size, churn, structural, test-adjacency, and performance-risk signals. 5 hotspots surfaced; average score is 8.7/10. Treat these as review leads, not proof of a bug.",
+        "average_score": 8.7,
+        "hotspot_count": 5,
         "files_analyzed": 27,
         "files_with_test_signal": 0,
         "top_files": [
           {
             "path": "test/test.js",
-            "score": 6.2,
+            "score": 5,
             "bucket": "hotspot",
             "lines": 2639,
             "bytes": 814532,
-            "churn": 0,
+            "churn": 27312,
             "has_test_signal": false,
             "findings": [
               {
@@ -2194,6 +2547,16 @@
                 ]
               },
               {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 27312 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "test/test.js"
+                ]
+              },
+              {
                 "id": "untested_hotspot",
                 "label": "No adjacent test signal",
                 "dimension": "defect",
@@ -2211,11 +2574,11 @@
           },
           {
             "path": "test/test-fp.js",
-            "score": 6.7,
-            "bucket": "watch",
+            "score": 5.5,
+            "bucket": "hotspot",
             "lines": 2322,
             "bytes": 65357,
-            "churn": 0,
+            "churn": 2322,
             "has_test_signal": false,
             "findings": [
               {
@@ -2249,6 +2612,16 @@
                 ]
               },
               {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 2322 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "test/test-fp.js"
+                ]
+              },
+              {
                 "id": "untested_hotspot",
                 "label": "No adjacent test signal",
                 "dimension": "defect",
@@ -2266,11 +2639,11 @@
           },
           {
             "path": "perf/perf.js",
-            "score": 6.7,
-            "bucket": "watch",
+            "score": 5.5,
+            "bucket": "hotspot",
             "lines": 1978,
             "bytes": 56316,
-            "churn": 0,
+            "churn": 1978,
             "has_test_signal": false,
             "findings": [
               {
@@ -2304,6 +2677,16 @@
                 ]
               },
               {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 1978 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "perf/perf.js"
+                ]
+              },
+              {
                 "id": "untested_hotspot",
                 "label": "No adjacent test signal",
                 "dimension": "defect",
@@ -2321,11 +2704,11 @@
           },
           {
             "path": "fp/_baseConvert.js",
-            "score": 7.2,
-            "bucket": "watch",
+            "score": 6,
+            "bucket": "hotspot",
             "lines": 569,
             "bytes": 16414,
-            "churn": 0,
+            "churn": 569,
             "has_test_signal": false,
             "findings": [
               {
@@ -2359,6 +2742,16 @@
                 ]
               },
               {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 569 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "fp/_baseConvert.js"
+                ]
+              },
+              {
                 "id": "untested_hotspot",
                 "label": "No adjacent test signal",
                 "dimension": "defect",
@@ -2376,11 +2769,11 @@
           },
           {
             "path": "lodash.js",
-            "score": 7.4,
-            "bucket": "watch",
+            "score": 6.2,
+            "bucket": "hotspot",
             "lines": 2541,
             "bytes": 545953,
-            "churn": 0,
+            "churn": 17353,
             "has_test_signal": false,
             "findings": [
               {
@@ -2404,6 +2797,16 @@
                 ]
               },
               {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 17353 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "lodash.js"
+                ]
+              },
+              {
                 "id": "untested_hotspot",
                 "label": "No adjacent test signal",
                 "dimension": "defect",
@@ -2420,93 +2823,227 @@
             ]
           },
           {
-            "path": "playwright.config.js",
-            "score": 9.3,
-            "bucket": "healthy",
-            "lines": 31,
-            "bytes": 1010,
-            "churn": 0,
-            "has_test_signal": false,
-            "findings": [
-              {
-                "id": "deep_nesting",
-                "label": "Deep nesting",
-                "dimension": "defect",
-                "severity": "medium",
-                "detail": "Maximum indentation depth is about 6; inspect branch-heavy paths before risky edits.",
-                "sources": [
-                  "playwright.config.js"
-                ]
-              }
-            ],
-            "refactoring_targets": [
-              "Flatten guard-heavy branches before adding behavior."
-            ]
-          },
-          {
             "path": "fp/_mapping.js",
-            "score": 10,
+            "score": 8.1,
             "bucket": "healthy",
             "lines": 358,
             "bytes": 9955,
-            "churn": 0,
+            "churn": 358,
             "has_test_signal": false,
-            "findings": [],
+            "findings": [
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 358 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "fp/_mapping.js"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "fp/_mapping.js"
+                ]
+              }
+            ],
             "refactoring_targets": []
           },
           {
             "path": "lib/main/build-site.js",
-            "score": 10,
+            "score": 8.1,
             "bucket": "healthy",
             "lines": 239,
             "bytes": 6554,
-            "churn": 0,
+            "churn": 247,
             "has_test_signal": false,
-            "findings": [],
+            "findings": [
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 247 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "lib/main/build-site.js"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "lib/main/build-site.js"
+                ]
+              }
+            ],
             "refactoring_targets": []
           },
           {
             "path": "test/asset/test-ui.js",
-            "score": 10,
+            "score": 8.6,
             "bucket": "healthy",
             "lines": 155,
             "bytes": 5178,
-            "churn": 0,
+            "churn": 155,
             "has_test_signal": false,
-            "findings": [],
+            "findings": [
+              {
+                "id": "churn_hotspot",
+                "label": "Moderate churn",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "Recent git history shows 155 changed lines in this file; it is a change hotspot.",
+                "sources": [
+                  "test/asset/test-ui.js"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "test/asset/test-ui.js"
+                ]
+              }
+            ],
             "refactoring_targets": []
           },
           {
             "path": "lib/fp/build-modules.js",
-            "score": 10,
+            "score": 8.6,
             "bucket": "healthy",
             "lines": 150,
             "bytes": 3640,
-            "churn": 0,
+            "churn": 150,
             "has_test_signal": false,
-            "findings": [],
+            "findings": [
+              {
+                "id": "churn_hotspot",
+                "label": "Moderate churn",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "Recent git history shows 150 changed lines in this file; it is a change hotspot.",
+                "sources": [
+                  "lib/fp/build-modules.js"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "lib/fp/build-modules.js"
+                ]
+              }
+            ],
             "refactoring_targets": []
           },
           {
             "path": "perf/asset/perf-ui.js",
-            "score": 10,
+            "score": 8.6,
             "bucket": "healthy",
             "lines": 112,
             "bytes": 3500,
-            "churn": 0,
+            "churn": 112,
             "has_test_signal": false,
-            "findings": [],
+            "findings": [
+              {
+                "id": "churn_hotspot",
+                "label": "Moderate churn",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "Recent git history shows 112 changed lines in this file; it is a change hotspot.",
+                "sources": [
+                  "perf/asset/perf-ui.js"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "perf/asset/perf-ui.js"
+                ]
+              }
+            ],
             "refactoring_targets": []
           },
           {
             "path": "lib/main/build-doc.js",
-            "score": 10,
+            "score": 8.6,
             "bucket": "healthy",
             "lines": 83,
             "bytes": 2312,
-            "churn": 0,
+            "churn": 83,
             "has_test_signal": false,
-            "findings": [],
+            "findings": [
+              {
+                "id": "churn_hotspot",
+                "label": "Moderate churn",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "Recent git history shows 83 changed lines in this file; it is a change hotspot.",
+                "sources": [
+                  "lib/main/build-doc.js"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "lib/main/build-doc.js"
+                ]
+              }
+            ],
+            "refactoring_targets": []
+          },
+          {
+            "path": "lib/fp/build-doc.js",
+            "score": 8.6,
+            "bucket": "healthy",
+            "lines": 78,
+            "bytes": 2029,
+            "churn": 78,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "churn_hotspot",
+                "label": "Moderate churn",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "Recent git history shows 78 changed lines in this file; it is a change hotspot.",
+                "sources": [
+                  "lib/fp/build-doc.js"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "lib/fp/build-doc.js"
+                ]
+              }
+            ],
             "refactoring_targets": []
           }
         ],
@@ -3168,8 +3705,8 @@
     "profiles": [
       {
         "stage": "full_scan",
-        "total_ms": 29,
-        "peak_rss_bytes": 29065216,
+        "total_ms": 103,
+        "peak_rss_bytes": 25968640,
         "steps": [
           {
             "id": "git_metadata",
@@ -3181,7 +3718,7 @@
             "id": "file_walk",
             "label": "Parallel file walk",
             "ms": 6,
-            "pct": 20.689655172413794
+            "pct": 5.825242718446602
           },
           {
             "id": "languages",
@@ -3222,20 +3759,20 @@
           {
             "id": "repo_graph",
             "label": "Deterministic graph scan",
-            "ms": 2,
-            "pct": 6.896551724137931
+            "ms": 1,
+            "pct": 0.9708737864077669
           },
           {
             "id": "history",
             "label": "Git history & decision scan",
-            "ms": 13,
-            "pct": 44.827586206896555
+            "ms": 17,
+            "pct": 16.50485436893204
           },
           {
             "id": "repo_health",
             "label": "Deterministic health scoring",
-            "ms": 7,
-            "pct": 24.137931034482758
+            "ms": 77,
+            "pct": 74.75728155339806
           },
           {
             "id": "dir_tree",
@@ -3248,7 +3785,7 @@
       {
         "stage": "local_scan_persist",
         "total_ms": 0,
-        "peak_rss_bytes": 29442048,
+        "peak_rss_bytes": 25968640,
         "steps": [
           {
             "id": "serialize",

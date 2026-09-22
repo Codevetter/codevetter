@@ -33,7 +33,7 @@ const work = mkdtempSync(join(tmpdir(), 'unpack-pilot-'));
 try {
   execFileSync(
     'git',
-    ['clone', '--depth', '1', `https://github.com/${repo}.git`, join(work, slug)],
+    ['clone', '--depth', '50', `https://github.com/${repo}.git`, join(work, slug)],
     {
       stdio: 'pipe',
     }

@@ -3,7 +3,7 @@
   "repo": "psf/requests",
   "slug": "requests",
   "codevetter_version": "codevetter 1.12.0",
-  "collected_at": "2026-09-22T05:15:33.932Z",
+  "collected_at": "2026-09-22T06:01:32.812Z",
   "last_commit": {
     "sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
     "date": "2026-09-21",
@@ -11,11 +11,11 @@
   },
   "scan": {
     "schema_version": "codevetter.unpack-scan/v1",
-    "report_id": "ef229df2-8a76-4631-a0d8-7651a58806dc",
+    "report_id": "4206f4d5-6869-4bdc-8150-3c9bccba06cd",
     "status": "scan_only",
-    "created_at": "2026-09-22T05:15:33.929642+00:00",
+    "created_at": "2026-09-22T06:01:32.807047+00:00",
     "inventory": {
-      "repo_path": "/private/var/folders/9_/1109_2dd1qz6zyvmxb5zp8pc0000gn/T/unpack-pilot-P26pP7/requests",
+      "repo_path": "/private/var/folders/9_/1109_2dd1qz6zyvmxb5zp8pc0000gn/T/unpack-pilot-kUXNQS/requests",
       "repo_name": "requests",
       "commit_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
       "branch": "main",
@@ -1233,37 +1233,106 @@
       },
       "history_brief": {
         "schema_version": 2,
-        "summary": "Local history brief captured 1 recent commit, 0 decision markers, 12 test hints, and 0 co-change clusters for Repo Unpacked. Treat commit subjects as leads and rely on cited files for durable constraints.",
+        "summary": "Local history brief captured 12 recent commits, 0 decision markers, 12 test hints, and 8 co-change clusters for Repo Unpacked. Treat commit subjects as leads and rely on cited files for durable constraints.",
         "recent_commits": [
           {
             "sha": "611c6162cbc4",
             "date": "2026-09-21",
             "subject": "Bump the actions group with 3 updates (#7628)",
             "files": [
-              ".github/AI_POLICY.md",
-              ".github/CODE_OF_CONDUCT.md",
-              ".github/CONTRIBUTING.md",
-              ".github/FUNDING.yml",
-              ".github/ISSUE_TEMPLATE.md",
-              ".github/ISSUE_TEMPLATE/Bug_report.md",
-              ".github/ISSUE_TEMPLATE/Custom.md",
-              ".github/ISSUE_TEMPLATE/Feature_request.md",
-              ".github/SECURITY.md",
-              ".github/dependabot.yml",
-              ".github/workflows/close-issues.yml",
-              ".github/workflows/codeql-analysis.yml",
+              ".github/workflows/codeql-analysis.yml"
+            ]
+          },
+          {
+            "sha": "dae7ef63b4df",
+            "date": "2026-09-02",
+            "subject": "Bump https://github.com/astral-sh/ruff-pre-commit (#7616)",
+            "files": [
+              ".pre-commit-config.yaml"
+            ]
+          },
+          {
+            "sha": "5460f467b02e",
+            "date": "2026-08-24",
+            "subject": "Update lock-issues.yml to latest dependencies (#7609)",
+            "files": [
+              ".github/workflows/lock-issues.yml"
+            ]
+          },
+          {
+            "sha": "6af0b94158bb",
+            "date": "2026-08-24",
+            "subject": "Bump https://github.com/astral-sh/ruff-pre-commit (#7608)",
+            "files": [
+              ".pre-commit-config.yaml"
+            ]
+          },
+          {
+            "sha": "8f8b212de8c2",
+            "date": "2026-08-17",
+            "subject": "Bump https://github.com/astral-sh/ruff-pre-commit (#7606)",
+            "files": [
+              ".pre-commit-config.yaml"
+            ]
+          },
+          {
+            "sha": "806835628897",
+            "date": "2026-08-11",
+            "subject": "Bump https://github.com/astral-sh/ruff-pre-commit (#7603)",
+            "files": [
+              ".pre-commit-config.yaml"
+            ]
+          },
+          {
+            "sha": "1f6589ec3a1e",
+            "date": "2026-08-03",
+            "subject": "Bump https://github.com/astral-sh/ruff-pre-commit (#7598)",
+            "files": [
+              ".pre-commit-config.yaml"
+            ]
+          },
+          {
+            "sha": "414f0513c338",
+            "date": "2026-07-27",
+            "subject": "Bump the actions group with 2 updates (#7596)",
+            "files": [
               ".github/workflows/lint.yml",
-              ".github/workflows/lock-issues.yml",
               ".github/workflows/publish.yml",
               ".github/workflows/run-tests.yml",
               ".github/workflows/typecheck.yml",
-              ".github/workflows/zizmor.yml",
-              ".pre-commit-config.yaml",
-              ".readthedocs.yaml",
-              "HISTORY.md",
-              "Makefile",
-              "README.md",
-              "docs/Makefile"
+              ".github/workflows/zizmor.yml"
+            ]
+          },
+          {
+            "sha": "ded32878c009",
+            "date": "2026-07-27",
+            "subject": "Bump https://github.com/astral-sh/ruff-pre-commit (#7597)",
+            "files": [
+              ".pre-commit-config.yaml"
+            ]
+          },
+          {
+            "sha": "69f84847045b",
+            "date": "2026-07-20",
+            "subject": "Bump the actions group with 3 updates (#7591)",
+            "files": [
+              ".github/workflows/codeql-analysis.yml"
+            ]
+          },
+          {
+            "sha": "b17c61b618b1",
+            "date": "2026-07-20",
+            "subject": "Bump https://github.com/astral-sh/ruff-pre-commit (#7590)",
+            "files": [
+              ".pre-commit-config.yaml"
+            ]
+          },
+          {
+            "sha": "f361ead047be",
+            "date": "2026-07-09",
+            "subject": "Bump https://github.com/astral-sh/ruff-pre-commit (#7562)",
+            "files": [
+              ".pre-commit-config.yaml"
             ]
           }
         ],
@@ -1318,10 +1387,116 @@
             "reason": "test/spec file anchors expected behavior"
           }
         ],
-        "temporal_couplings": [],
+        "temporal_couplings": [
+          {
+            "files": [
+              ".github/workflows/lint.yml",
+              ".github/workflows/publish.yml"
+            ],
+            "commit_count": 3,
+            "last_commit": "414f0513c338",
+            "reason": "These files changed together in 3 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              ".github/workflows/lint.yml",
+              ".github/workflows/run-tests.yml"
+            ],
+            "commit_count": 3,
+            "last_commit": "414f0513c338",
+            "reason": "These files changed together in 3 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              ".github/workflows/lint.yml",
+              ".github/workflows/typecheck.yml"
+            ],
+            "commit_count": 3,
+            "last_commit": "414f0513c338",
+            "reason": "These files changed together in 3 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              ".github/workflows/publish.yml",
+              ".github/workflows/run-tests.yml"
+            ],
+            "commit_count": 3,
+            "last_commit": "414f0513c338",
+            "reason": "These files changed together in 3 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              ".github/workflows/publish.yml",
+              ".github/workflows/typecheck.yml"
+            ],
+            "commit_count": 3,
+            "last_commit": "414f0513c338",
+            "reason": "These files changed together in 3 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              ".github/workflows/run-tests.yml",
+              ".github/workflows/typecheck.yml"
+            ],
+            "commit_count": 3,
+            "last_commit": "414f0513c338",
+            "reason": "These files changed together in 3 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              ".github/workflows/lint.yml",
+              ".github/workflows/zizmor.yml"
+            ],
+            "commit_count": 2,
+            "last_commit": "414f0513c338",
+            "reason": "These files changed together in 2 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              ".github/workflows/publish.yml",
+              ".github/workflows/zizmor.yml"
+            ],
+            "commit_count": 2,
+            "last_commit": "414f0513c338",
+            "reason": "These files changed together in 2 recent commits; inspect both when either side moves."
+          }
+        ],
         "graph": {
           "schema_version": 2,
           "nodes": [
+            {
+              "id": "commit:1f6589ec3a1e",
+              "kind": "commit",
+              "label": "Bump https://github.com/astral-sh/ruff-pre-commit (#7598)",
+              "path": null,
+              "detail": "2026-08-03",
+              "citations": [
+                "git:1f6589ec3a1e"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:414f0513c338",
+              "kind": "commit",
+              "label": "Bump the actions group with 2 updates (#7596)",
+              "path": null,
+              "detail": "2026-07-27",
+              "citations": [
+                "git:414f0513c338"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:5460f467b02e",
+              "kind": "commit",
+              "label": "Update lock-issues.yml to latest dependencies (#7609)",
+              "path": null,
+              "detail": "2026-08-24",
+              "citations": [
+                "git:5460f467b02e"
+              ],
+              "trust": "git_observed"
+            },
             {
               "id": "commit:611c6162cbc4",
               "kind": "commit",
@@ -1334,123 +1509,90 @@
               "trust": "git_observed"
             },
             {
-              "id": "file:-github-ai-policy-md",
-              "kind": "file",
-              "label": ".github/AI_POLICY.md",
-              "path": ".github/AI_POLICY.md",
-              "detail": "Changed in recent local git history",
+              "id": "commit:69f84847045b",
+              "kind": "commit",
+              "label": "Bump the actions group with 3 updates (#7591)",
+              "path": null,
+              "detail": "2026-07-20",
               "citations": [
-                ".github/AI_POLICY.md"
+                "git:69f84847045b"
               ],
               "trust": "git_observed"
             },
             {
-              "id": "file:-github-code-of-conduct-md",
-              "kind": "file",
-              "label": ".github/CODE_OF_CONDUCT.md",
-              "path": ".github/CODE_OF_CONDUCT.md",
-              "detail": "Changed in recent local git history",
+              "id": "commit:6af0b94158bb",
+              "kind": "commit",
+              "label": "Bump https://github.com/astral-sh/ruff-pre-commit (#7608)",
+              "path": null,
+              "detail": "2026-08-24",
               "citations": [
-                ".github/CODE_OF_CONDUCT.md"
+                "git:6af0b94158bb"
               ],
               "trust": "git_observed"
             },
             {
-              "id": "file:-github-contributing-md",
-              "kind": "file",
-              "label": ".github/CONTRIBUTING.md",
-              "path": ".github/CONTRIBUTING.md",
-              "detail": "Changed in recent local git history",
+              "id": "commit:806835628897",
+              "kind": "commit",
+              "label": "Bump https://github.com/astral-sh/ruff-pre-commit (#7603)",
+              "path": null,
+              "detail": "2026-08-11",
               "citations": [
-                ".github/CONTRIBUTING.md"
+                "git:806835628897"
               ],
               "trust": "git_observed"
             },
             {
-              "id": "file:-github-dependabot-yml",
-              "kind": "file",
-              "label": ".github/dependabot.yml",
-              "path": ".github/dependabot.yml",
-              "detail": "Changed in recent local git history",
+              "id": "commit:8f8b212de8c2",
+              "kind": "commit",
+              "label": "Bump https://github.com/astral-sh/ruff-pre-commit (#7606)",
+              "path": null,
+              "detail": "2026-08-17",
               "citations": [
-                ".github/dependabot.yml"
+                "git:8f8b212de8c2"
               ],
               "trust": "git_observed"
             },
             {
-              "id": "file:-github-funding-yml",
-              "kind": "file",
-              "label": ".github/FUNDING.yml",
-              "path": ".github/FUNDING.yml",
-              "detail": "Changed in recent local git history",
+              "id": "commit:b17c61b618b1",
+              "kind": "commit",
+              "label": "Bump https://github.com/astral-sh/ruff-pre-commit (#7590)",
+              "path": null,
+              "detail": "2026-07-20",
               "citations": [
-                ".github/FUNDING.yml"
+                "git:b17c61b618b1"
               ],
               "trust": "git_observed"
             },
             {
-              "id": "file:-github-issue-template-bug-report-md",
-              "kind": "file",
-              "label": ".github/ISSUE_TEMPLATE/Bug_report.md",
-              "path": ".github/ISSUE_TEMPLATE/Bug_report.md",
-              "detail": "Changed in recent local git history",
+              "id": "commit:dae7ef63b4df",
+              "kind": "commit",
+              "label": "Bump https://github.com/astral-sh/ruff-pre-commit (#7616)",
+              "path": null,
+              "detail": "2026-09-02",
               "citations": [
-                ".github/ISSUE_TEMPLATE/Bug_report.md"
+                "git:dae7ef63b4df"
               ],
               "trust": "git_observed"
             },
             {
-              "id": "file:-github-issue-template-custom-md",
-              "kind": "file",
-              "label": ".github/ISSUE_TEMPLATE/Custom.md",
-              "path": ".github/ISSUE_TEMPLATE/Custom.md",
-              "detail": "Changed in recent local git history",
+              "id": "commit:ded32878c009",
+              "kind": "commit",
+              "label": "Bump https://github.com/astral-sh/ruff-pre-commit (#7597)",
+              "path": null,
+              "detail": "2026-07-27",
               "citations": [
-                ".github/ISSUE_TEMPLATE/Custom.md"
+                "git:ded32878c009"
               ],
               "trust": "git_observed"
             },
             {
-              "id": "file:-github-issue-template-feature-request-md",
-              "kind": "file",
-              "label": ".github/ISSUE_TEMPLATE/Feature_request.md",
-              "path": ".github/ISSUE_TEMPLATE/Feature_request.md",
-              "detail": "Changed in recent local git history",
+              "id": "commit:f361ead047be",
+              "kind": "commit",
+              "label": "Bump https://github.com/astral-sh/ruff-pre-commit (#7562)",
+              "path": null,
+              "detail": "2026-07-09",
               "citations": [
-                ".github/ISSUE_TEMPLATE/Feature_request.md"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:-github-issue-template-md",
-              "kind": "file",
-              "label": ".github/ISSUE_TEMPLATE.md",
-              "path": ".github/ISSUE_TEMPLATE.md",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                ".github/ISSUE_TEMPLATE.md"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:-github-security-md",
-              "kind": "file",
-              "label": ".github/SECURITY.md",
-              "path": ".github/SECURITY.md",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                ".github/SECURITY.md"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:-github-workflows-close-issues-yml",
-              "kind": "file",
-              "label": ".github/workflows/close-issues.yml",
-              "path": ".github/workflows/close-issues.yml",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                ".github/workflows/close-issues.yml"
+                "git:f361ead047be"
               ],
               "trust": "git_observed"
             },
@@ -1539,61 +1681,6 @@
               "detail": "Changed in recent local git history",
               "citations": [
                 ".pre-commit-config.yaml"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:-readthedocs-yaml",
-              "kind": "file",
-              "label": ".readthedocs.yaml",
-              "path": ".readthedocs.yaml",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                ".readthedocs.yaml"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:docs-makefile",
-              "kind": "file",
-              "label": "docs/Makefile",
-              "path": "docs/Makefile",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                "docs/Makefile"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:history-md",
-              "kind": "file",
-              "label": "HISTORY.md",
-              "path": "HISTORY.md",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                "HISTORY.md"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:makefile",
-              "kind": "file",
-              "label": "Makefile",
-              "path": "Makefile",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                "Makefile"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:readme-md",
-              "kind": "file",
-              "label": "README.md",
-              "path": "README.md",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                "README.md"
               ],
               "trust": "git_observed"
             },
@@ -1864,123 +1951,79 @@
           ],
           "edges": [
             {
-              "from": "commit:611c6162cbc4",
-              "to": "file:-github-ai-policy-md",
+              "from": "commit:1f6589ec3a1e",
+              "to": "file:-pre-commit-config-yaml",
               "kind": "changed",
-              "evidence": "611c6162cbc4 changed this file",
+              "evidence": "1f6589ec3a1e changed this file",
               "citations": [
-                "git:611c6162cbc4",
-                ".github/AI_POLICY.md"
+                "git:1f6589ec3a1e",
+                ".pre-commit-config.yaml"
               ],
               "trust": "git_observed"
             },
             {
-              "from": "commit:611c6162cbc4",
-              "to": "file:-github-code-of-conduct-md",
+              "from": "commit:414f0513c338",
+              "to": "file:-github-workflows-lint-yml",
               "kind": "changed",
-              "evidence": "611c6162cbc4 changed this file",
+              "evidence": "414f0513c338 changed this file",
               "citations": [
-                "git:611c6162cbc4",
-                ".github/CODE_OF_CONDUCT.md"
+                "git:414f0513c338",
+                ".github/workflows/lint.yml"
               ],
               "trust": "git_observed"
             },
             {
-              "from": "commit:611c6162cbc4",
-              "to": "file:-github-contributing-md",
+              "from": "commit:414f0513c338",
+              "to": "file:-github-workflows-publish-yml",
               "kind": "changed",
-              "evidence": "611c6162cbc4 changed this file",
+              "evidence": "414f0513c338 changed this file",
               "citations": [
-                "git:611c6162cbc4",
-                ".github/CONTRIBUTING.md"
+                "git:414f0513c338",
+                ".github/workflows/publish.yml"
               ],
               "trust": "git_observed"
             },
             {
-              "from": "commit:611c6162cbc4",
-              "to": "file:-github-dependabot-yml",
+              "from": "commit:414f0513c338",
+              "to": "file:-github-workflows-run-tests-yml",
               "kind": "changed",
-              "evidence": "611c6162cbc4 changed this file",
+              "evidence": "414f0513c338 changed this file",
               "citations": [
-                "git:611c6162cbc4",
-                ".github/dependabot.yml"
+                "git:414f0513c338",
+                ".github/workflows/run-tests.yml"
               ],
               "trust": "git_observed"
             },
             {
-              "from": "commit:611c6162cbc4",
-              "to": "file:-github-funding-yml",
+              "from": "commit:414f0513c338",
+              "to": "file:-github-workflows-typecheck-yml",
               "kind": "changed",
-              "evidence": "611c6162cbc4 changed this file",
+              "evidence": "414f0513c338 changed this file",
               "citations": [
-                "git:611c6162cbc4",
-                ".github/FUNDING.yml"
+                "git:414f0513c338",
+                ".github/workflows/typecheck.yml"
               ],
               "trust": "git_observed"
             },
             {
-              "from": "commit:611c6162cbc4",
-              "to": "file:-github-issue-template-bug-report-md",
+              "from": "commit:414f0513c338",
+              "to": "file:-github-workflows-zizmor-yml",
               "kind": "changed",
-              "evidence": "611c6162cbc4 changed this file",
+              "evidence": "414f0513c338 changed this file",
               "citations": [
-                "git:611c6162cbc4",
-                ".github/ISSUE_TEMPLATE/Bug_report.md"
+                "git:414f0513c338",
+                ".github/workflows/zizmor.yml"
               ],
               "trust": "git_observed"
             },
             {
-              "from": "commit:611c6162cbc4",
-              "to": "file:-github-issue-template-custom-md",
+              "from": "commit:5460f467b02e",
+              "to": "file:-github-workflows-lock-issues-yml",
               "kind": "changed",
-              "evidence": "611c6162cbc4 changed this file",
+              "evidence": "5460f467b02e changed this file",
               "citations": [
-                "git:611c6162cbc4",
-                ".github/ISSUE_TEMPLATE/Custom.md"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:611c6162cbc4",
-              "to": "file:-github-issue-template-feature-request-md",
-              "kind": "changed",
-              "evidence": "611c6162cbc4 changed this file",
-              "citations": [
-                "git:611c6162cbc4",
-                ".github/ISSUE_TEMPLATE/Feature_request.md"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:611c6162cbc4",
-              "to": "file:-github-issue-template-md",
-              "kind": "changed",
-              "evidence": "611c6162cbc4 changed this file",
-              "citations": [
-                "git:611c6162cbc4",
-                ".github/ISSUE_TEMPLATE.md"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:611c6162cbc4",
-              "to": "file:-github-security-md",
-              "kind": "changed",
-              "evidence": "611c6162cbc4 changed this file",
-              "citations": [
-                "git:611c6162cbc4",
-                ".github/SECURITY.md"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:611c6162cbc4",
-              "to": "file:-github-workflows-close-issues-yml",
-              "kind": "changed",
-              "evidence": "611c6162cbc4 changed this file",
-              "citations": [
-                "git:611c6162cbc4",
-                ".github/workflows/close-issues.yml"
+                "git:5460f467b02e",
+                ".github/workflows/lock-issues.yml"
               ],
               "trust": "git_observed"
             },
@@ -1996,136 +2039,172 @@
               "trust": "git_observed"
             },
             {
-              "from": "commit:611c6162cbc4",
-              "to": "file:-github-workflows-lint-yml",
+              "from": "commit:69f84847045b",
+              "to": "file:-github-workflows-codeql-analysis-yml",
               "kind": "changed",
-              "evidence": "611c6162cbc4 changed this file",
+              "evidence": "69f84847045b changed this file",
               "citations": [
-                "git:611c6162cbc4",
-                ".github/workflows/lint.yml"
+                "git:69f84847045b",
+                ".github/workflows/codeql-analysis.yml"
               ],
               "trust": "git_observed"
             },
             {
-              "from": "commit:611c6162cbc4",
-              "to": "file:-github-workflows-lock-issues-yml",
-              "kind": "changed",
-              "evidence": "611c6162cbc4 changed this file",
-              "citations": [
-                "git:611c6162cbc4",
-                ".github/workflows/lock-issues.yml"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:611c6162cbc4",
-              "to": "file:-github-workflows-publish-yml",
-              "kind": "changed",
-              "evidence": "611c6162cbc4 changed this file",
-              "citations": [
-                "git:611c6162cbc4",
-                ".github/workflows/publish.yml"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:611c6162cbc4",
-              "to": "file:-github-workflows-run-tests-yml",
-              "kind": "changed",
-              "evidence": "611c6162cbc4 changed this file",
-              "citations": [
-                "git:611c6162cbc4",
-                ".github/workflows/run-tests.yml"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:611c6162cbc4",
-              "to": "file:-github-workflows-typecheck-yml",
-              "kind": "changed",
-              "evidence": "611c6162cbc4 changed this file",
-              "citations": [
-                "git:611c6162cbc4",
-                ".github/workflows/typecheck.yml"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:611c6162cbc4",
-              "to": "file:-github-workflows-zizmor-yml",
-              "kind": "changed",
-              "evidence": "611c6162cbc4 changed this file",
-              "citations": [
-                "git:611c6162cbc4",
-                ".github/workflows/zizmor.yml"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:611c6162cbc4",
+              "from": "commit:6af0b94158bb",
               "to": "file:-pre-commit-config-yaml",
               "kind": "changed",
-              "evidence": "611c6162cbc4 changed this file",
+              "evidence": "6af0b94158bb changed this file",
               "citations": [
-                "git:611c6162cbc4",
+                "git:6af0b94158bb",
                 ".pre-commit-config.yaml"
               ],
               "trust": "git_observed"
             },
             {
-              "from": "commit:611c6162cbc4",
-              "to": "file:-readthedocs-yaml",
+              "from": "commit:806835628897",
+              "to": "file:-pre-commit-config-yaml",
               "kind": "changed",
-              "evidence": "611c6162cbc4 changed this file",
+              "evidence": "806835628897 changed this file",
               "citations": [
-                "git:611c6162cbc4",
-                ".readthedocs.yaml"
+                "git:806835628897",
+                ".pre-commit-config.yaml"
               ],
               "trust": "git_observed"
             },
             {
-              "from": "commit:611c6162cbc4",
-              "to": "file:docs-makefile",
+              "from": "commit:8f8b212de8c2",
+              "to": "file:-pre-commit-config-yaml",
               "kind": "changed",
-              "evidence": "611c6162cbc4 changed this file",
+              "evidence": "8f8b212de8c2 changed this file",
               "citations": [
-                "git:611c6162cbc4",
-                "docs/Makefile"
+                "git:8f8b212de8c2",
+                ".pre-commit-config.yaml"
               ],
               "trust": "git_observed"
             },
             {
-              "from": "commit:611c6162cbc4",
-              "to": "file:history-md",
+              "from": "commit:b17c61b618b1",
+              "to": "file:-pre-commit-config-yaml",
               "kind": "changed",
-              "evidence": "611c6162cbc4 changed this file",
+              "evidence": "b17c61b618b1 changed this file",
               "citations": [
-                "git:611c6162cbc4",
-                "HISTORY.md"
+                "git:b17c61b618b1",
+                ".pre-commit-config.yaml"
               ],
               "trust": "git_observed"
             },
             {
-              "from": "commit:611c6162cbc4",
-              "to": "file:makefile",
+              "from": "commit:dae7ef63b4df",
+              "to": "file:-pre-commit-config-yaml",
               "kind": "changed",
-              "evidence": "611c6162cbc4 changed this file",
+              "evidence": "dae7ef63b4df changed this file",
               "citations": [
-                "git:611c6162cbc4",
-                "Makefile"
+                "git:dae7ef63b4df",
+                ".pre-commit-config.yaml"
               ],
               "trust": "git_observed"
             },
             {
-              "from": "commit:611c6162cbc4",
-              "to": "file:readme-md",
+              "from": "commit:ded32878c009",
+              "to": "file:-pre-commit-config-yaml",
               "kind": "changed",
-              "evidence": "611c6162cbc4 changed this file",
+              "evidence": "ded32878c009 changed this file",
               "citations": [
-                "git:611c6162cbc4",
-                "README.md"
+                "git:ded32878c009",
+                ".pre-commit-config.yaml"
               ],
               "trust": "git_observed"
+            },
+            {
+              "from": "commit:f361ead047be",
+              "to": "file:-pre-commit-config-yaml",
+              "kind": "changed",
+              "evidence": "f361ead047be changed this file",
+              "citations": [
+                "git:f361ead047be",
+                ".pre-commit-config.yaml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "file:-github-workflows-lint-yml",
+              "to": "file:-github-workflows-publish-yml",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 3 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:414f0513c338"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:-github-workflows-lint-yml",
+              "to": "file:-github-workflows-run-tests-yml",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 3 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:414f0513c338"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:-github-workflows-lint-yml",
+              "to": "file:-github-workflows-typecheck-yml",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 3 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:414f0513c338"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:-github-workflows-lint-yml",
+              "to": "file:-github-workflows-zizmor-yml",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 2 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:414f0513c338"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:-github-workflows-publish-yml",
+              "to": "file:-github-workflows-run-tests-yml",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 3 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:414f0513c338"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:-github-workflows-publish-yml",
+              "to": "file:-github-workflows-typecheck-yml",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 3 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:414f0513c338"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:-github-workflows-publish-yml",
+              "to": "file:-github-workflows-zizmor-yml",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 2 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:414f0513c338"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:-github-workflows-run-tests-yml",
+              "to": "file:-github-workflows-typecheck-yml",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 3 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:414f0513c338"
+              ],
+              "trust": "navigation_lead"
             },
             {
               "from": "file:tests---init---py",
@@ -2263,25 +2342,30 @@
           "tests/test_hooks.py",
           "tests/certs/valid/ca",
           "tests/certs/valid/server/server.key",
+          ".github/workflows/lint.yml",
+          ".github/workflows/publish.yml",
+          ".github/workflows/run-tests.yml",
+          ".github/workflows/typecheck.yml",
+          ".github/workflows/zizmor.yml",
           "pyproject.toml"
         ],
         "truncated": true
       },
       "repo_health": {
         "schema_version": 1,
-        "summary": "Deterministic scan scored 22 source files across simple size, churn, structural, test-adjacency, and performance-risk signals. 0 hotspots surfaced; average score is 8.8/10. Treat these as review leads, not proof of a bug.",
-        "average_score": 8.8,
-        "hotspot_count": 0,
+        "summary": "Deterministic scan scored 22 source files across simple size, churn, structural, test-adjacency, and performance-risk signals. 5 hotspots surfaced; average score is 7.7/10. Treat these as review leads, not proof of a bug.",
+        "average_score": 7.7,
+        "hotspot_count": 5,
         "files_analyzed": 22,
         "files_with_test_signal": 1,
         "top_files": [
           {
             "path": "src/requests/models.py",
-            "score": 6.6,
-            "bucket": "watch",
+            "score": 5.4,
+            "bucket": "hotspot",
             "lines": 1184,
             "bytes": 41462,
-            "churn": 0,
+            "churn": 1232,
             "has_test_signal": false,
             "findings": [
               {
@@ -2300,6 +2384,16 @@
                 "dimension": "defect",
                 "severity": "high",
                 "detail": "Maximum indentation depth is about 16; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "src/requests/models.py"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 1232 changed lines in this file; combine review with history and tests.",
                 "sources": [
                   "src/requests/models.py"
                 ]
@@ -2332,11 +2426,11 @@
           },
           {
             "path": "src/requests/sessions.py",
-            "score": 6.6,
-            "bucket": "watch",
+            "score": 5.4,
+            "bucket": "hotspot",
             "lines": 920,
             "bytes": 34072,
-            "churn": 0,
+            "churn": 940,
             "has_test_signal": false,
             "findings": [
               {
@@ -2355,6 +2449,16 @@
                 "dimension": "defect",
                 "severity": "high",
                 "detail": "Maximum indentation depth is about 10; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "src/requests/sessions.py"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 940 changed lines in this file; combine review with history and tests.",
                 "sources": [
                   "src/requests/sessions.py"
                 ]
@@ -2387,11 +2491,11 @@
           },
           {
             "path": "src/requests/utils.py",
-            "score": 6.9,
-            "bucket": "watch",
+            "score": 5.7,
+            "bucket": "hotspot",
             "lines": 1155,
             "bytes": 36061,
-            "churn": 0,
+            "churn": 1179,
             "has_test_signal": false,
             "findings": [
               {
@@ -2415,6 +2519,16 @@
                 ]
               },
               {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 1179 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "src/requests/utils.py"
+                ]
+              },
+              {
                 "id": "untested_hotspot",
                 "label": "No adjacent test signal",
                 "dimension": "defect",
@@ -2432,11 +2546,11 @@
           },
           {
             "path": "src/requests/cookies.py",
-            "score": 7.1,
-            "bucket": "watch",
+            "score": 5.9,
+            "bucket": "hotspot",
             "lines": 625,
             "bytes": 21504,
-            "churn": 0,
+            "churn": 627,
             "has_test_signal": false,
             "findings": [
               {
@@ -2455,6 +2569,16 @@
                 "dimension": "defect",
                 "severity": "high",
                 "detail": "Maximum indentation depth is about 16; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "src/requests/cookies.py"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 627 changed lines in this file; combine review with history and tests.",
                 "sources": [
                   "src/requests/cookies.py"
                 ]
@@ -2486,11 +2610,11 @@
           },
           {
             "path": "src/requests/adapters.py",
-            "score": 7.4,
-            "bucket": "watch",
+            "score": 6.2,
+            "bucket": "hotspot",
             "lines": 748,
             "bytes": 27992,
-            "churn": 0,
+            "churn": 756,
             "has_test_signal": false,
             "findings": [
               {
@@ -2514,6 +2638,16 @@
                 ]
               },
               {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 756 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "src/requests/adapters.py"
+                ]
+              },
+              {
                 "id": "untested_hotspot",
                 "label": "No adjacent test signal",
                 "dimension": "defect",
@@ -2530,11 +2664,11 @@
           },
           {
             "path": "src/requests/auth.py",
-            "score": 8.8,
-            "bucket": "healthy",
+            "score": 6.9,
+            "bucket": "watch",
             "lines": 354,
             "bytes": 12107,
-            "churn": 0,
+            "churn": 360,
             "has_test_signal": false,
             "findings": [
               {
@@ -2546,125 +2680,25 @@
                 "sources": [
                   "src/requests/auth.py"
                 ]
-              }
-            ],
-            "refactoring_targets": [
-              "Flatten guard-heavy branches before adding behavior."
-            ]
-          },
-          {
-            "path": "src/requests/help.py",
-            "score": 8.8,
-            "bucket": "healthy",
-            "lines": 132,
-            "bytes": 4068,
-            "churn": 0,
-            "has_test_signal": false,
-            "findings": [
+              },
               {
-                "id": "deep_nesting",
-                "label": "Deep nesting",
+                "id": "churn_hotspot",
+                "label": "High churn",
                 "dimension": "defect",
                 "severity": "high",
-                "detail": "Maximum indentation depth is about 8; deeply nested branches are bug-prone review targets.",
+                "detail": "Recent git history shows 360 changed lines in this file; combine review with history and tests.",
                 "sources": [
-                  "src/requests/help.py"
+                  "src/requests/auth.py"
                 ]
-              }
-            ],
-            "refactoring_targets": [
-              "Flatten guard-heavy branches before adding behavior."
-            ]
-          },
-          {
-            "path": "src/requests/structures.py",
-            "score": 8.8,
-            "bucket": "healthy",
-            "lines": 130,
-            "bytes": 4134,
-            "churn": 0,
-            "has_test_signal": false,
-            "findings": [
+              },
               {
-                "id": "deep_nesting",
-                "label": "Deep nesting",
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
                 "dimension": "defect",
-                "severity": "high",
-                "detail": "Maximum indentation depth is about 8; deeply nested branches are bug-prone review targets.",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
                 "sources": [
-                  "src/requests/structures.py"
-                ]
-              }
-            ],
-            "refactoring_targets": [
-              "Flatten guard-heavy branches before adding behavior."
-            ]
-          },
-          {
-            "path": "src/requests/status_codes.py",
-            "score": 8.8,
-            "bucket": "healthy",
-            "lines": 128,
-            "bytes": 4351,
-            "churn": 0,
-            "has_test_signal": false,
-            "findings": [
-              {
-                "id": "deep_nesting",
-                "label": "Deep nesting",
-                "dimension": "defect",
-                "severity": "high",
-                "detail": "Maximum indentation depth is about 8; deeply nested branches are bug-prone review targets.",
-                "sources": [
-                  "src/requests/status_codes.py"
-                ]
-              }
-            ],
-            "refactoring_targets": [
-              "Flatten guard-heavy branches before adding behavior."
-            ]
-          },
-          {
-            "path": "src/requests/compat.py",
-            "score": 8.8,
-            "bucket": "healthy",
-            "lines": 115,
-            "bytes": 2494,
-            "churn": 0,
-            "has_test_signal": false,
-            "findings": [
-              {
-                "id": "deep_nesting",
-                "label": "Deep nesting",
-                "dimension": "defect",
-                "severity": "high",
-                "detail": "Maximum indentation depth is about 8; deeply nested branches are bug-prone review targets.",
-                "sources": [
-                  "src/requests/compat.py"
-                ]
-              }
-            ],
-            "refactoring_targets": [
-              "Flatten guard-heavy branches before adding behavior."
-            ]
-          },
-          {
-            "path": "src/requests/hooks.py",
-            "score": 8.8,
-            "bucket": "healthy",
-            "lines": 48,
-            "bytes": 1138,
-            "churn": 0,
-            "has_test_signal": false,
-            "findings": [
-              {
-                "id": "deep_nesting",
-                "label": "Deep nesting",
-                "dimension": "defect",
-                "severity": "high",
-                "detail": "Maximum indentation depth is about 8; deeply nested branches are bug-prone review targets.",
-                "sources": [
-                  "src/requests/hooks.py"
+                  "src/requests/auth.py"
                 ]
               }
             ],
@@ -2674,11 +2708,11 @@
           },
           {
             "path": "src/requests/api.py",
-            "score": 9,
-            "bucket": "healthy",
+            "score": 7.1,
+            "bucket": "watch",
             "lines": 180,
             "bytes": 7152,
-            "churn": 0,
+            "churn": 180,
             "has_test_signal": false,
             "findings": [
               {
@@ -2692,6 +2726,26 @@
                 ]
               },
               {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 180 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "src/requests/api.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "src/requests/api.py"
+                ]
+              },
+              {
                 "id": "io_boundary",
                 "label": "I/O or process boundary",
                 "dimension": "defect",
@@ -2699,6 +2753,226 @@
                 "detail": "File touches filesystem, network, database, or subprocess boundaries; changes need concrete runtime proof.",
                 "sources": [
                   "src/requests/api.py"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "src/requests/__init__.py",
+            "score": 7.4,
+            "bucket": "watch",
+            "lines": 219,
+            "bytes": 5637,
+            "churn": 233,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "Maximum indentation depth is about 6; inspect branch-heavy paths before risky edits.",
+                "sources": [
+                  "src/requests/__init__.py"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 233 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "src/requests/__init__.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "src/requests/__init__.py"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "src/requests/help.py",
+            "score": 7.4,
+            "bucket": "watch",
+            "lines": 132,
+            "bytes": 4068,
+            "churn": 146,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 8; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "src/requests/help.py"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "Moderate churn",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "Recent git history shows 146 changed lines in this file; it is a change hotspot.",
+                "sources": [
+                  "src/requests/help.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "src/requests/help.py"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "src/requests/structures.py",
+            "score": 7.4,
+            "bucket": "watch",
+            "lines": 130,
+            "bytes": 4134,
+            "churn": 130,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 8; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "src/requests/structures.py"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "Moderate churn",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "Recent git history shows 130 changed lines in this file; it is a change hotspot.",
+                "sources": [
+                  "src/requests/structures.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "src/requests/structures.py"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "src/requests/status_codes.py",
+            "score": 7.4,
+            "bucket": "watch",
+            "lines": 128,
+            "bytes": 4351,
+            "churn": 128,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 8; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "src/requests/status_codes.py"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "Moderate churn",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "Recent git history shows 128 changed lines in this file; it is a change hotspot.",
+                "sources": [
+                  "src/requests/status_codes.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "src/requests/status_codes.py"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "src/requests/compat.py",
+            "score": 7.4,
+            "bucket": "watch",
+            "lines": 115,
+            "bytes": 2494,
+            "churn": 123,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 8; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "src/requests/compat.py"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "Moderate churn",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "Recent git history shows 123 changed lines in this file; it is a change hotspot.",
+                "sources": [
+                  "src/requests/compat.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "src/requests/compat.py"
                 ]
               }
             ],
@@ -3847,8 +4121,8 @@
     "profiles": [
       {
         "stage": "full_scan",
-        "total_ms": 28,
-        "peak_rss_bytes": 29147136,
+        "total_ms": 56,
+        "peak_rss_bytes": 29048832,
         "steps": [
           {
             "id": "git_metadata",
@@ -3859,8 +4133,8 @@
           {
             "id": "file_walk",
             "label": "Parallel file walk",
-            "ms": 6,
-            "pct": 21.428571428571427
+            "ms": 8,
+            "pct": 14.285714285714285
           },
           {
             "id": "languages",
@@ -3907,14 +4181,14 @@
           {
             "id": "history",
             "label": "Git history & decision scan",
-            "ms": 13,
-            "pct": 46.42857142857143
+            "ms": 15,
+            "pct": 26.785714285714285
           },
           {
             "id": "repo_health",
             "label": "Deterministic health scoring",
-            "ms": 7,
-            "pct": 25
+            "ms": 32,
+            "pct": 57.14285714285714
           },
           {
             "id": "dir_tree",
@@ -3926,8 +4200,8 @@
       },
       {
         "stage": "local_scan_persist",
-        "total_ms": 0,
-        "peak_rss_bytes": 29573120,
+        "total_ms": 3,
+        "peak_rss_bytes": 29360128,
         "steps": [
           {
             "id": "serialize",
@@ -3938,8 +4212,8 @@
           {
             "id": "db_insert",
             "label": "SQLite insert",
-            "ms": 0,
-            "pct": 0
+            "ms": 2,
+            "pct": 66.66666666666666
           },
           {
             "id": "touch_project",
