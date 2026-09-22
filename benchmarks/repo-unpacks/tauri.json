@@ -18373,7 +18373,7 @@
         "steps": [
           {
             "id": "serialize",
-            "label": "JSON serialize (inventory \u2192 SQLite)",
+            "label": "JSON serialize (inventory → SQLite)",
             "ms": 0,
             "pct": 0
           },
@@ -18392,5 +18392,875 @@
         ]
       }
     ]
+  },
+  "report": {
+    "overview": "Tauri v2 is a Rust monorepo containing the full toolchain for building desktop and mobile applications that pair a system webview frontend (any HTML/JS/CSS framework) with a Rust backend: the `tauri` core runtime crate, compile-time codegen/macros that embed config, assets and ACLs, a `cargo-tauri` CLI (also shipped as `@tauri-apps/cli` via napi), a bundler producing OS installers, the `@tauri-apps/api` TypeScript package, and a WebDriver intermediary (`tauri-driver`) for e2e testing. Its distinctive traits are compile-time embedding of `tauri.conf.json`, frontend assets and capability-based ACLs into the binary, a capability/permission system that gates every IPC command, and reliance on the OS webview (via the TAO/WRY crates) instead of a bundled runtime.",
+    "system_map": {
+      "summary": "The repo is a Cargo workspace plus a pnpm workspace. The hub is crates/tauri (the `tauri` crate, v2.11.5), which depends on tauri-runtime (trait layer), tauri-runtime-wry (default WRY/TAO-based runtime), tauri-utils (config/ACL/assets), tauri-codegen + tauri-macros (compile-time codegen) and tauri-build (build-script API). Tooling lives in crates/tauri-cli (the `cargo-tauri` binary), crates/tauri-bundler (installer packaging), crates/tauri-driver (WebDriver proxy), and packages/api + packages/cli (the npm-facing JS). Mobile (Android/iOS) support is split between CLI subcommands and Kotlin/Swift glue under crates/tauri/mobile.",
+      "claims": [
+        {
+          "claim": "The root Cargo.toml workspace lists 14 published crates under crates/ plus packages/cli, integration tests (crates/tests/restart, crates/tests/acl), bench apps and examples; workspace release profile uses panic=\"abort\", lto and opt-level \"s\".",
+          "sources": [
+            "Cargo.toml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "crates/tauri is the core crate: its lib.rs declares modules app, async_runtime, event, ipc, manager, pattern, plugin, protocol, resources, webview, window, menu, path, process, scope, state, tray and vibrancy, and re-exports Builder/App/AppHandle plus the `command`, `generate_handler` and `generate_context` macros.",
+          "sources": [
+            "crates/tauri/src/lib.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The runtime is abstracted behind the `Runtime`/`RuntimeHandle` traits in crates/tauri-runtime; the default implementation is `tauri::Wry` = `tauri_runtime_wry::Wry<EventLoopMessage>` gated behind the `wry` cargo feature, so a custom runtime can be substituted by disabling the feature.",
+          "sources": [
+            "crates/tauri/src/lib.rs",
+            "crates/tauri-runtime/src/lib.rs",
+            "crates/tauri-runtime-wry/src/lib.rs",
+            "ARCHITECTURE.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "App configuration is resolved at compile time: `generate_context!`/`tauri_build_context!` produce a `Context<R>` carrying the parsed Config, embedded assets, window/tray icons, PackageInfo, the security `Pattern` and a `RuntimeAuthority` built from resolved ACLs.",
+          "sources": [
+            "crates/tauri/src/lib.rs",
+            "crates/tauri-codegen/src/context.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The `cargo-tauri` binary entrypoint (crates/tauri-cli/src/main.rs) strips a leading `tauri` cargo-subcommand arg, derives bin_name, and calls `tauri_cli::run`; it only supports macOS, Linux and Windows and exits 1 elsewhere.",
+          "sources": [
+            "crates/tauri-cli/src/main.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "tauri_cli::run parses a clap `Cli` with subcommand enum Commands (init, dev, build, bundle, android, ios, migrate, info, add, remove, plugin, icon, signer, completions, permission, capability, inspect) and dispatches each to a module under crates/tauri-cli/src/.",
+          "sources": [
+            "crates/tauri-cli/src/lib.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The npm package @tauri-apps/cli is a thin napi-rs wrapper: packages/cli/src/lib.rs exposes a `run` napi function that spawns a thread, catches panics, and calls `tauri_cli::try_run`, reporting back through a ThreadsafeFunction callback.",
+          "sources": [
+            "packages/cli/src/lib.rs",
+            "packages/cli/index.js"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "@tauri-apps/api (packages/api) is a TypeScript library with modules core, event, window, webview, webviewWindow, menu, tray, path, app, dpi, image and mocks, all communicating with Rust through `window.__TAURI_INTERNALS__.invoke`.",
+          "sources": [
+            "packages/api/src/core.ts",
+            "packages/api/src/event.ts",
+            "packages/api/package.json"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "tauri-driver is a standalone binary that spawns the platform's native WebDriver server and runs an intermediary WebDriver node (modules cli, server, webdriver) on Linux and Windows only; it exits on other platforms.",
+          "sources": [
+            "crates/tauri-driver/src/main.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "tauri-bundler maps bundle target strings to a PackageType enum covering deb, rpm, appimage, dmg, app, msi, nsis, ios and updater artifacts, and is invoked by the CLI through `tauri_bundler::bundle_project(&settings)`.",
+          "sources": [
+            "crates/tauri-bundler/src/bundle/settings.rs",
+            "crates/tauri-cli/src/bundle.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "crates/tauri-plugin provides the plugin-authoring SDK with a `build` feature (permission/global-API-script/android/ios path registration via `Builder`) and a `runtime` feature, re-exported as `pub use build::*` / `pub use runtime::*`.",
+          "sources": [
+            "crates/tauri-plugin/src/lib.rs",
+            "crates/tauri-plugin/src/build/mod.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The JS/TS workspace is driven by pnpm (pnpm-workspace.yaml) with root scripts `build`, `build:api`, `build:cli`, `test`, `test:api-e2e`; Rust builds/tests run via cargo with toolchain 1.90 in CI.",
+          "sources": [
+            "package.json",
+            "pnpm-workspace.yaml",
+            ".github/workflows/test-core.yml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Mobile support spans crates/tauri-cli/src/mobile (android/ios subcommand trees), Kotlin sources under crates/tauri/mobile, the `mobile_entry_point` macro and the `android_binding!` macro that glues Java PluginManager callbacks (handlePluginResponse, sendChannelData) into Rust.",
+          "sources": [
+            "crates/tauri-cli/src/mobile/mod.rs",
+            "crates/tauri/src/lib.rs",
+            "crates/tauri/mobile/android/src/main/java/app/tauri/PathPlugin.kt"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "feature_catalog": {
+      "summary": "User-facing surface has three layers: the Rust API (Builder, windows, webviews, menus, tray, events, state, plugins, custom protocols), the JS API (invoke, Channel, events, window/webview/menu/tray/path/image modules), and the `cargo-tauri` CLI covering the whole project lifecycle (init, dev with hot-reload, build, bundle, icon, signer, plugin scaffolding, ACL permission/capability helpers, migrate, inspect, info). Bundling supports all major OS installer formats, and the repo ships example apps plus a WebDriver driver for automation.",
+      "claims": [
+        {
+          "claim": "`tauri dev` runs the configured `build.beforeDevCommand` via `sh -c` (or `cmd /S /C` on Windows) in the frontend dir, then waits up to ~180s for the devUrl TCP port before starting the app.",
+          "sources": [
+            "crates/tauri-cli/src/dev.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "When `build.devUrl` is unset and `build.frontendDist` points at an existing directory, `tauri dev` starts a built-in static file dev server (default port 1430, env TAURI_CLI_PORT) and injects its URL into the merged config.",
+          "sources": [
+            "crates/tauri-cli/src/dev.rs",
+            "crates/tauri-cli/src/dev/builtin_dev_server.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`tauri dev` watches the src-tauri dir plus workspace dependency paths and `build.additionalWatchFolders` with a 1-second debounced notify watcher, rebuilding the app on Rust changes.",
+          "sources": [
+            "crates/tauri-cli/src/interface/rust.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`tauri build` runs beforeBuildCommand, compiles via the configured runner (default cargo), then computes bundler settings and calls `tauri_bundler::bundle_project` to emit installers per the `bundle` config.",
+          "sources": [
+            "crates/tauri-cli/src/build.rs",
+            "crates/tauri-cli/src/bundle.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The CLI exposes project scaffolding (`init` writing src-tauri/tauri.conf.json, `plugin init/new`), icon generation (`icon`), updater key handling (`signer generate/sign`), v1→v2 `migrate`, environment diagnostics (`info`), and ACL helpers (`permission`, `capability`, `inspect`).",
+          "sources": [
+            "crates/tauri-cli/src/lib.rs",
+            "crates/tauri-cli/src/init.rs",
+            "crates/tauri-cli/src/icon.rs",
+            "crates/tauri-cli/src/signer/mod.rs",
+            "crates/tauri-cli/src/migrate/mod.rs",
+            "crates/tauri-cli/src/info/mod.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Windowing features include multiwindow/multiwebview creation via `WebviewWindowBuilder::new(app, label, WebviewUrl)`, drag-drop events, `on_new_window` handlers, document-title hooks, and vibrancy effects — exercised by examples/api, examples/multiwindow and examples/multiwebview.",
+          "sources": [
+            "examples/api/src-tauri/src/lib.rs",
+            "crates/tauri/src/webview/webview_window.rs",
+            "examples/README.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Desktop menu and tray systems live in crates/tauri/src/menu and crates/tauri/src/tray (tray behind the `tray-icon` feature auto-enabled by trayIcon config), with global listeners via `Builder::on_menu_event`/`on_tray_icon_event`.",
+          "sources": [
+            "crates/tauri/src/menu/mod.rs",
+            "crates/tauri/src/tray/mod.rs",
+            "crates/tauri/src/app.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The JS event API (`listen`, `emit`, `once`) targets EventTarget kinds Any/AnyLabel/App/Window/Webview/WebviewWindow and is implemented over plugin commands `plugin:event|listen`/`unlisten`/`emit`; built-in `tauri://` events (resize, move, close-requested, drag-drop, theme-changed, ...) are enumerated in TauriEvent.",
+          "sources": [
+            "packages/api/src/event.ts",
+            "crates/tauri/src/event/plugin.rs",
+            "crates/tauri/src/event/listener.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "IPC offers `invoke()` for request/response commands, `Channel` for ordered streaming (messages carry an index, out-of-order messages are buffered client-side), and `Resource` handles wrapping the Rust `ResourceTable` closed via `plugin:resources|close`.",
+          "sources": [
+            "packages/api/src/core.ts",
+            "crates/tauri/src/ipc/channel.rs",
+            "crates/tauri/src/resources/mod.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The `asset:` custom protocol serves arbitrary filesystem files gated by the FsScope, with SafePathBuf validation, magic-byte mime sniffing, HEAD support and single/multi-range (206, multipart/byteranges) responses capped at 1000KiB per range.",
+          "sources": [
+            "crates/tauri/src/protocol/asset.rs",
+            "crates/tauri/src/scope/fs.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Apps can register custom URI scheme protocols (`UriSchemeProtocol` handler registered through the WebviewManager's `register_uri_scheme_protocol`) and use the Isolation security pattern, which encrypts IPC payloads through a sandboxed iframe.",
+          "sources": [
+            "crates/tauri/src/manager/webview.rs",
+            "crates/tauri/src/protocol/isolation.rs",
+            "crates/tauri/scripts/isolation.js"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Mobile features: `tauri android`/`tauri ios` CLI subcommands (ios only compiled on macOS), `#[tauri::mobile_entry_point]` for lib entry, and Kotlin-side PluginManager bridged by the `android_binding!` macro.",
+          "sources": [
+            "crates/tauri-cli/src/lib.rs",
+            "crates/tauri-cli/src/mobile/mod.rs",
+            "crates/tauri/src/lib.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The `test` cargo feature exposes `tauri::test` with `mock_app()`/`mock_context()` and a MockRuntime so apps and internals can be unit-tested without a real OS webview.",
+          "sources": [
+            "crates/tauri/src/test/mod.rs",
+            "crates/tauri/src/test/mock_runtime.rs",
+            "crates/tauri/src/lib.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "End-to-end WebDriver testing is a first-class feature: tauri-driver proxies native drivers and packages/api-e2e runs wdio specs against examples/api, with Android/iOS variants via appium.",
+          "sources": [
+            "crates/tauri-driver/src/main.rs",
+            "packages/api-e2e/package.json"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "data_flow": {
+      "summary": "Configuration flows from tauri.conf.json (json/json5/toml, plus platform-specific overlay files) through tauri-build/tauri-codegen into a compiled `Context` carrying embedded assets, CSP hashes and resolved ACLs. At runtime the `AppManager` owns config, assets, plugins, state, listeners and the `RuntimeAuthority`; webview requests travel over postMessage or the `ipc://` custom protocol, get parsed into `InvokeRequest`s, authorized against the ACL and origin, then dispatched to plugin handlers or the app's `invoke_handler`, with responses returned via JS eval or a Channel. File access flows through the `asset:` protocol gated by FsScope, and dev-mode traffic can be proxied through the custom protocol on mobile.",
+      "claims": [
+        {
+          "claim": "Config input boundary: tauri-utils accepts tauri.conf.json, tauri.conf.json5 and Tauri.toml plus per-platform overlays (tauri.macos.conf.json, Tauri.windows.toml, ...) listed in EXTENSIONS_SUPPORTED/platform file-name tables.",
+          "sources": [
+            "crates/tauri-utils/src/config/parse.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "At build time tauri-build's `build()` reads the config, writes ACL manifests (acl-manifests.json) and capabilities into OUT_DIR, copies sidecar binaries and resources, and emits cargo rerun-if-changed directives.",
+          "sources": [
+            "crates/tauri-build/src/lib.rs",
+            "crates/tauri-build/src/acl.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "tauri-codegen's `context_codegen` embeds frontendDist assets via EmbeddedAssets, injects CSP nonces and sha256 script hashes into HTML, resolves plugin manifests + capabilities into a `Resolved` ACL, and emits a `Context::new` token stream executed on a dedicated 8MiB-stack thread.",
+          "sources": [
+            "crates/tauri-codegen/src/context.rs",
+            "crates/tauri-codegen/src/embedded_assets.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Runtime state owner: `AppManager<R>` holds `runtime_authority: Mutex<RuntimeAuthority>`, window/webview/menu/tray sub-managers, `plugins: Mutex<PluginStore>`, `listeners: Listeners`, `state: Arc<StateManager>`, `config`, `assets`, `pattern`, `resources_table` and the per-run `invoke_key`.",
+          "sources": [
+            "crates/tauri/src/manager/mod.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "postMessage IPC path: `handle_ipc_message` deserializes a JSON Message {cmd, callback, error, payload, options, __TAURI_INVOKE_KEY__}, optionally decrypting an Isolation payload, builds an `InvokeRequest`, and calls `webview.on_message`.",
+          "sources": [
+            "crates/tauri/src/ipc/protocol.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Custom-protocol IPC path: `ipc://localhost/<cmd>` POST requests carry the command in the URI path and callback/error/invoke-key/origin in headers (Tauri-Callback, Tauri-Error, Tauri-Invoke-Key, Origin); `parse_invoke_request` rejects requests missing any of them.",
+          "sources": [
+            "crates/tauri/src/ipc/protocol.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Authorization: `Webview::on_message` first compares `request.invoke_key` to the manager's generated key (128-bit Z85 via `generate_invoke_key`), then calls `runtime_authority.resolve_access(cmd, window_label, webview_label, Origin::Local|Remote{url})` before dispatching.",
+          "sources": [
+            "crates/tauri/src/webview/mod.rs",
+            "crates/tauri/src/lib.rs",
+            "crates/tauri/src/ipc/authority.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Dispatch: commands prefixed `plugin:` are split on `|` into (plugin, command) and routed to `manager.run_plugin_invoke_handler`; otherwise the app-level `invoke_handler: Box<InvokeHandler>` (built by `generate_handler!`) gets the `Invoke` with resolver + acl attached.",
+          "sources": [
+            "crates/tauri/src/webview/mod.rs",
+            "crates/tauri/src/ipc/mod.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Response boundary: InvokeResponse::Ok(Json|Raw)/Err is serialized by `ipc::format_callback` into a JS snippet executed with `webview.eval`, or — for non-Apple platforms when allowed — sent through a `Channel` keyed by the callback id; errors always go through eval.",
+          "sources": [
+            "crates/tauri/src/ipc/protocol.rs",
+            "crates/tauri/src/ipc/format_callback.rs",
+            "crates/tauri/src/ipc/channel.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "JS serialization boundary: `process-ipc-message-fn.js` JSON-stringifies payloads with a replacer that converts Map/Uint8Array/ArrayBuffer and invokes `__TAURI_TO_IPC_KEY__` on objects implementing it (e.g. Channel serializes to `__CHANNEL__:<id>`); binary bodies become application/octet-stream.",
+          "sources": [
+            "crates/tauri/scripts/process-ipc-message-fn.js",
+            "packages/api/src/core.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Asset serving: `protocol::tauri::get` resolves `tauri://localhost/<path>` against `manager.get_asset` returning embedded bytes + mime + CSP header; under `cfg(all(dev, mobile))` the same handler proxies requests to the dev server with reqwest and a response cache.",
+          "sources": [
+            "crates/tauri/src/protocol/tauri.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Event flow: Rust `emit` goes through `Listeners` (event/listener.rs) which serializes payloads to all matching webviews; JS `listen` registers via `plugin:event|listen` and unregisters through `window.__TAURI_EVENT_PLUGIN_INTERNALS__.unregisterListener` + `plugin:event|unlisten`.",
+          "sources": [
+            "crates/tauri/src/event/listener.rs",
+            "crates/tauri/src/event/plugin.rs",
+            "packages/api/src/event.ts"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "behavior_traces": {
+      "summary": "Three flows were traced end-to-end. (1) App startup: user main → Builder → build(Context) → runtime event loop → Ready → setup hook → windows/webviews created. (2) IPC invoke: JS invoke() → injected ipc.js → postMessage or ipc:// POST → parse → invoke_key check → ACL resolve → plugin or app handler → eval/Channel response. (3) CLI dev: cargo-tauri → Commands::Dev → config load → beforeDevCommand spawn → dev-server wait → cargo run under a file watcher that rebuilds on change.",
+      "claims": [
+        {
+          "claim": "Startup trace: `main()` calls `api_lib::run()` → `run_app(tauri::Builder::default(), ...)` chains `.plugin(tauri_plugin_log...)`, `.plugin(tauri_plugin_sample::init())`, `.setup(...)` → `.run(tauri::generate_context!())`.",
+          "sources": [
+            "examples/api/src-tauri/src/main.rs",
+            "examples/api/src-tauri/src/lib.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Startup trace (cont.): `App::run` sets the event-loop main_thread_id and calls `runtime.run(make_run_event_loop_callback)`; on `RuntimeRunEvent::Ready` the stored `setup(&mut app)` hook runs (panic on error), then `on_event_loop_event` translates the runtime event into a public `RunEvent` delivered to the user callback.",
+          "sources": [
+            "crates/tauri/src/app.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Startup trace (cont.): during build, `Builder` fields are seeded — `invoke_key` from `crate::generate_invoke_key()`, `invoke_initialization_script` rendered from the `scripts/ipc-protocol.js` template with process_ipc_message_fn, os_name and FETCH_CHANNEL_DATA_COMMAND.",
+          "sources": [
+            "crates/tauri/src/app.rs",
+            "crates/tauri/scripts/ipc-protocol.js"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Context generation trace: build.rs `tauri_build::build()` → codegen `context_codegen(ContextData)` reads acl-manifests.json/capabilities.json from OUT_DIR, calls `Resolved::resolve(&acl, capabilities, target)`, embeds assets/icons, and the app includes the result via `tauri::generate_context!` or `tauri_build_context!` (OUT_DIR/tauri-build-context.rs).",
+          "sources": [
+            "crates/tauri-codegen/src/context.rs",
+            "crates/tauri-build/src/lib.rs",
+            "crates/tauri/src/lib.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Invoke trace (JS side): `invoke(cmd, args)` → `window.__TAURI_INTERNALS__.invoke` (injected by scripts/ipc.js + ipc-protocol.js) → `process_ipc_message_fn` serializes args to JSON or octet-stream → postMessage or `ipc://` fetch with Tauri-* headers.",
+          "sources": [
+            "packages/api/src/core.ts",
+            "crates/tauri/scripts/ipc.js",
+            "crates/tauri/scripts/process-ipc-message-fn.js"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Invoke trace (Rust side): `message_handler` → `handle_ipc_message` → deserialize `Message` → `webview.on_message(request, responder)` → verify `invoke_key` → build `InvokeResolver`/`InvokeMessage` → `runtime_authority.resolve_access` → if `plugin:` command, `run_plugin_invoke_handler`; else the app `invoke_handler` → responder callback → `format_callback` → `webview.eval` or `Channel::send`.",
+          "sources": [
+            "crates/tauri/src/ipc/protocol.rs",
+            "crates/tauri/src/webview/mod.rs",
+            "crates/tauri/src/ipc/mod.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "ACL denial trace: when the command is a plugin command, the app has an ACL manifest, or the origin is remote, and `invoke.acl` is none, the resolver rejects — debug builds use `resolve_access_message` for a detailed reason, release builds send \"Command <cmd> not allowed by ACL\".",
+          "sources": [
+            "crates/tauri/src/webview/mod.rs",
+            "crates/tauri/src/ipc/authority.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Asset request trace: `asset://localhost/<encoded>` → `get_response` → percent-decode path → `SafePathBuf::new` validation (403 on failure) → `scope.is_allowed` (403) → `tokio::fs::File::open` → mime sniff of first 8KiB → full body, HEAD, or range response.",
+          "sources": [
+            "crates/tauri/src/protocol/asset.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Dev flow trace: `main` → `tauri_cli::run` → `Commands::Dev` → `dev::command` → `command_internal` resolves Target + `get_config` → `AppInterface::new` → `dev::setup` spawns beforeDevCommand as a SharedChild, optionally starts the builtin dev server, and polls the devUrl TCP socket (90 attempts × 2s) → `interface.dev` → rust.rs `run_dev`/`run_dev_watcher`.",
+          "sources": [
+            "crates/tauri-cli/src/main.rs",
+            "crates/tauri-cli/src/lib.rs",
+            "crates/tauri-cli/src/dev.rs",
+            "crates/tauri-cli/src/interface/rust.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Dev teardown trace: `on_app_exit` decides whether to exit or keep watching; `kill_before_dev_process` writes kill-children.sh to the temp dir on Unix (or runs a PowerShell Kill-Tree on Windows) then kills the beforeDevCommand child.",
+          "sources": [
+            "crates/tauri-cli/src/dev.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Build/bundle trace: `Commands::Build` → `build::command` → `get_config` + AppInterface → cargo release build via the interface → `get_bundler_settings` → `tauri_bundler::bundle_project` → updater-enabled bundles post-processed for signatures.",
+          "sources": [
+            "crates/tauri-cli/src/build.rs",
+            "crates/tauri-cli/src/bundle.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Exit/restart trace: `AppHandle::restart`/`request_restart` set `manager.restart_on_exit`; on `RuntimeRunEvent::Exit` the callback runs user handler → `cleanup_before_exit()` → `crate::process::restart(&self.env())` when the flag is set; ExitRequested can be vetoed via `ExitRequestApi::prevent_exit` unless code == RESTART_EXIT_CODE (i32::MAX).",
+          "sources": [
+            "crates/tauri/src/app.rs",
+            "crates/tauri/src/process.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Plugin lifecycle trace: `Builder::plugin` stores into `PluginStore`; during setup each plugin's `initialize(app, config)` runs; hooks `window_created`, `webview_created`, `on_navigation`, `on_page_load`, `on_event` fire at their lifecycle points, and `cleanup_before_exit` hooks run before process exit.",
+          "sources": [
+            "crates/tauri/src/plugin.rs",
+            "crates/tauri/src/app.rs"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "testing_signals": {
+      "summary": "Testing is layered: inline Rust unit tests behind `#[cfg(test)]` in core modules, a mock runtime (`tauri::test`, `test` feature) enabling headless App tests, insta snapshot tests for ACL resolution in crates/tests/acl, a real-binary CLI integration test, WebdriverIO e2e specs in packages/api-e2e that run against examples/api via tauri-driver, vitest tests for the JS CLI package, and bench apps for CI benchmarking. Coverage is strongest around ACL/config parsing and IPC request parsing; the wry runtime and bundler are largely exercised only through e2e and examples.",
+      "claims": [
+        {
+          "claim": "Unit tests live inline: crates/tauri/src/ipc/protocol.rs has a `parse_invoke_request` test building a real `AppManager<Wry>` via `generate_context!(\"test/fixture/src-tauri/tauri.conf.json\")`; authority.rs has ~10 `resolve_access`/`resolve_access_message` tests; asset.rs tests multi-range responses.",
+          "sources": [
+            "crates/tauri/src/ipc/protocol.rs",
+            "crates/tauri/src/ipc/authority.rs",
+            "crates/tauri/src/protocol/asset.rs",
+            "crates/tauri/test/fixture/src-tauri/tauri.conf.json"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The `test` cargo feature enables `tauri::test` with `mock_app() -> App<MockRuntime>` and `mock_context`, so command/event code can be tested without a webview.",
+          "sources": [
+            "crates/tauri/src/test/mod.rs",
+            "crates/tauri/src/test/mock_runtime.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "crates/tests/acl is a dedicated integration crate: `resolve_acl` iterates fixtures/capabilities/*, builds plugin manifests from fixtures/plugins via `tauri_utils::acl::build::define_permissions`, resolves with `Resolved::resolve`, and asserts insta debug snapshots (per-target snapshots for platform-specific permissions).",
+          "sources": [
+            "crates/tests/acl/src/lib.rs",
+            "crates/tests/acl/fixtures/capabilities/basic-ping/cap.toml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "crates/tests/restart is a workspace integration binary exercising the app restart path.",
+          "sources": [
+            "crates/tests/restart/src/main.rs",
+            "Cargo.toml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "crates/tauri-cli/tests/init.rs is a real-process test: it locates the built `cargo-tauri` binary next to the test executable, runs `init --app-name testapp --frontend-dist ../dist --dev-url http://localhost:3000` in a tempdir, and asserts src-tauri/tauri.conf.json was created.",
+          "sources": [
+            "crates/tauri-cli/tests/init.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "packages/api-e2e runs WebdriverIO + mocha specs (app, core, dpi, event, image, menu, path, tray, webview, webviewWindow, window) against the examples/api app, with wdio.android.conf.ts/wdio.ios.conf.ts variants using appium.",
+          "sources": [
+            "packages/api-e2e/package.json",
+            "packages/api-e2e/test/specs/app.spec.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The JS CLI package has vitest tests under packages/cli/__tests__ (template.spec.ts); the core TS API package has no colocated unit tests — its coverage comes from api-e2e.",
+          "sources": [
+            "packages/cli/__tests__/template.spec.ts",
+            "packages/api/package.json"
+          ],
+          "kind": "inference"
+        },
+        {
+          "claim": "CI coverage: test-core.yml runs `cargo test` on windows-latest, ubuntu-latest and macos-14 with toolchain 1.90; separate workflows cover CLI (test-cli-rs.yml, test-cli-js.yml), e2e (test-api-e2e.yml, test-api-e2e-mobile.yml, test-android.yml), lint (lint-rust.yml, lint-js.yml), fmt, udeps, audit and supply-chain.",
+          "sources": [
+            ".github/workflows/test-core.yml",
+            ".github/workflows/test-cli-rs.yml",
+            ".github/workflows/test-api-e2e.yml",
+            ".github/workflows/lint-rust.yml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Benchmarks live in bench/ with three fixture apps (helloworld, cpu_intensive, files_transfer) built in CI via bench.yml.",
+          "sources": [
+            "bench/tests/helloworld/src-tauri/src/main.rs",
+            "bench/tests/cpu_intensive/src-tauri/src/main.rs",
+            ".github/workflows/bench.yml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Gap: crates/tauri-runtime-wry (the actual OS window/webview glue) and crates/tauri-bundler have little visible unit-test surface in-repo; correctness leans on api-e2e, examples and manual QA.",
+          "sources": [
+            "crates/tauri-runtime-wry/src/lib.rs",
+            "crates/tauri-bundler/src/bundle.rs"
+          ],
+          "kind": "inference"
+        },
+        {
+          "claim": "check-generated-files.yml enforces that generated artifacts (e.g. CLI templates/schema) are regenerated and committed, a common CI failure source when editing templates or config schema.",
+          "sources": [
+            ".github/workflows/check-generated-files.yml"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "risk_map": {
+      "summary": "The highest-stakes code is the IPC authorization boundary: invoke_key verification, ACL resolution, remote-origin rejection, and eval-based response delivery all sit on the webview↔Rust seam. The `asset:` protocol touches the filesystem and relies entirely on scope checks. The CLI executes config-supplied shell commands and writes a predictable-path kill script. Several cross-language invariants (serialization key names, `plugin:` command syntax, JNI symbol names, JS template placeholders) are maintained only by comments, and the workspace release profile aborts on panic.",
+      "claims": [
+        {
+          "claim": "ACL gatekeeping in `Webview::on_message` is the central security boundary: plugin commands, apps with an ACL manifest, and any non-local origin all require a resolved ACL entry or the invoke is rejected — a regression here silently opens commands to remote content.",
+          "sources": [
+            "crates/tauri/src/webview/mod.rs",
+            "crates/tauri/src/ipc/authority.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "invoke_key is generated per-process (128-bit Z85) and injected into init scripts; on mismatch `on_message` logs/eprintln and returns silently — no user-visible error, which can mask attacks or bugs.",
+          "sources": [
+            "crates/tauri/src/lib.rs",
+            "crates/tauri/src/webview/mod.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Responses are delivered by `webview.eval` of JS built by `format_callback`; any serialization gap there is an injection vector inside the webview context.",
+          "sources": [
+            "crates/tauri/src/ipc/protocol.rs",
+            "crates/tauri/src/ipc/format_callback.rs"
+          ],
+          "kind": "inference"
+        },
+        {
+          "claim": "The `asset:` protocol opens arbitrary paths from the filesystem with only `SafePathBuf` validation and `scope.is_allowed`; it sniffs mime types and serves range requests — scope misconfiguration exposes host files to the webview.",
+          "sources": [
+            "crates/tauri/src/protocol/asset.rs",
+            "crates/tauri/src/scope/fs.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The ipc custom-protocol handler sets `Access-Control-Allow-Origin: *` on every response (and `Access-Control-Allow-Headers: *` on OPTIONS), relying on the invoke_key + ACL rather than origin restriction.",
+          "sources": [
+            "crates/tauri/src/ipc/protocol.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`tauri dev` executes `build.beforeDevCommand`/`beforeBuildCommand` through `sh -c`/`cmd /S /C` — a shell-out of config-provided strings — and writes a fixed-name script `tauri-stop-dev-processes.sh` into the shared temp dir with mode 0o770.",
+          "sources": [
+            "crates/tauri-cli/src/dev.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The Isolation pattern decrypts IPC payloads (`crypto_keys.decrypt`) inside `handle_ipc_message`/`parse_invoke_request`; its correctness depends on iframe-origin checks in scripts/isolation.js and codegen injecting `__TAURI_ISOLATION_HOOK__`, which panics the build if absent.",
+          "sources": [
+            "crates/tauri/src/ipc/protocol.rs",
+            "crates/tauri/scripts/isolation.js",
+            "crates/tauri-codegen/src/context.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Cross-language invariants are comment-enforced: `__TAURI_TO_IPC_KEY__` must match across core.ts, ipc.js and process-ipc-message-fn.js, and the Java `Java_app_tauri_plugin_PluginManager_handlePluginResponse` symbol is checked by the CLI — silent breakage risk on rename.",
+          "sources": [
+            "packages/api/src/core.ts",
+            "crates/tauri/scripts/process-ipc-message-fn.js",
+            "crates/tauri/scripts/ipc.js",
+            "crates/tauri/src/lib.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`dynamic-acl` is a default feature enabling `Manager::add_capability` — runtime ACL mutation means permissions can broaden after startup, which complicates security review of an app built on this framework.",
+          "sources": [
+            "crates/tauri/src/lib.rs",
+            "crates/tauri/Cargo.toml",
+            "crates/tauri/src/ipc/authority.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Feature `process-relaunch-dangerous-allow-symlink-macos` is documented in lib.rs as dangerous; combined with `process::restart` in the exit path it is a self-reexec surface.",
+          "sources": [
+            "crates/tauri/src/lib.rs",
+            "crates/tauri/src/process.rs",
+            "crates/tauri/src/app.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Build-time panics: context_codegen `panic!`s when frontendDist doesn't exist or the isolation dir lacks `__TAURI_ISOLATION_HOOK__`, and `Resolved::resolve(...).expect(\"failed to resolve ACL\")` aborts compilation — config errors surface as rustc panics, not diagnostics.",
+          "sources": [
+            "crates/tauri-codegen/src/context.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Blast-radius hotspots: `crates/tauri-utils` config/ACL types are consumed by tauri, tauri-build, tauri-codegen, tauri-cli and tauri-plugin simultaneously — a schema change ripples through five crates plus generated schema files guarded by check-generated-files.yml.",
+          "sources": [
+            "crates/tauri-utils/src/config.rs",
+            "crates/tauri-utils/src/acl/manifest.rs",
+            ".github/workflows/check-generated-files.yml"
+          ],
+          "kind": "inference"
+        },
+        {
+          "claim": "The workspace release profile sets `panic = \"abort\"`, so any panic in a shipped app (including in plugin code or the asset protocol task spawns) terminates the process without unwind.",
+          "sources": [
+            "Cargo.toml"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "extension_points": {
+      "summary": "Tauri is designed for extension at several layers: Rust commands registered through `generate_handler!`/`#[command]`, full plugins implementing the `Plugin` trait (with the companion `tauri-plugin` build crate emitting permissions, global API scripts and mobile glue), custom URI scheme protocols, Builder lifecycle hooks (setup, page-load, menu/tray/window/webview events, channel interceptor), custom `Assets` providers, a swappable `Runtime` trait, capability/permission JSON+TOML files composing ACLs, `State` injection for shared data, and JS-side extension via `Channel`, `Resource` and the `__TAURI_TO_IPC_KEY__` serialization hook.",
+      "claims": [
+        {
+          "claim": "The `Plugin<R>` trait is the primary extension interface: implementors provide `name()` plus optional `initialize`, `initialization_script`/`initialization_script_2`, `window_created`, `webview_created`, `on_navigation` (veto navigation), `on_page_load`, `on_event` and a cleanup hook.",
+          "sources": [
+            "crates/tauri/src/plugin.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Plugins are attached via `Builder::plugin`/`AppHandle::plugin`/`plugin_boxed` and stored in `PluginStore`; commands addressed as `plugin:<name>|<command>` are routed to the plugin's invoke handler by `run_plugin_invoke_handler`.",
+          "sources": [
+            "crates/tauri/src/app.rs",
+            "crates/tauri/src/webview/mod.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "App commands are registered with `#[tauri::command]` fns collected by `tauri::generate_handler![...]` into the `InvokeHandler` passed to `Builder::invoke_handler` — the command table macro lives in tauri-macros/src/command (wrapper.rs + handler.rs).",
+          "sources": [
+            "crates/tauri-macros/src/command/wrapper.rs",
+            "crates/tauri-macros/src/command/handler.rs",
+            "examples/api/src-tauri/src/cmd.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Plugin build-time integration: `tauri_plugin::build::Builder::new(commands)` accepts `global_scope_schema`, `global_api_script_path`, `android_path`, `ios_path` and emits artifacts (permissions, api scripts, mobile code) consumed by tauri-build/context_codegen via OUT_DIR files.",
+          "sources": [
+            "crates/tauri-plugin/src/build/mod.rs",
+            "crates/tauri-codegen/src/context.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Custom URI scheme protocols plug in through `UriSchemeProtocol` handlers registered on the WebviewManager (`register_uri_scheme_protocol`), with `UriSchemeContext`/`UriSchemeResponder` exposed for async responses.",
+          "sources": [
+            "crates/tauri/src/manager/webview.rs",
+            "crates/tauri/src/app.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Builder hooks are extension points: `setup`, `on_page_load`, `on_menu_event`, `on_tray_icon_event`, `on_window_event`, `on_webview_event`, `invoke_system` and `channel_interceptor` all accept user closures stored on the Builder struct.",
+          "sources": [
+            "crates/tauri/src/app.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The `Assets<R>` trait abstracts asset retrieval (`get`, `iter`, `csp_hashes`); ContextData accepts a custom `assets` Expr so embedders can replace EmbeddedAssets entirely.",
+          "sources": [
+            "crates/tauri/src/lib.rs",
+            "crates/tauri-codegen/src/context.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The `Runtime`/`RuntimeHandle` traits (wrapping tauri-runtime) let apps swap the webview backend; `Builder` is generic over `R: Runtime` and `wry` is just the default via `default_runtime` macro.",
+          "sources": [
+            "crates/tauri/src/lib.rs",
+            "crates/tauri-runtime/src/lib.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "ACL extension: apps declare capabilities JSON (and plugin permission TOML via `define_permissions`) that `get_capabilities` + `Resolved::resolve` merge at codegen time; `dynamic-acl` additionally permits runtime `add_capability`.",
+          "sources": [
+            "crates/tauri-codegen/src/context.rs",
+            "crates/tauri-utils/src/acl/capability.rs",
+            "crates/tauri-utils/src/acl/resolved.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Shared state plugs into commands through `app.manage(...)` (StateManager) and the `State<'_, T>` command arg extractor; resources use `ResourceTable` with rid handles exposed to JS as the `Resource` class.",
+          "sources": [
+            "crates/tauri/src/state.rs",
+            "crates/tauri/src/resources/mod.rs",
+            "packages/api/src/core.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The CLI itself is extensible by adding a `Commands` variant + module in crates/tauri-cli/src, and `tauri plugin init/new` scaffolds new plugins from crates/tauri-cli/templates.",
+          "sources": [
+            "crates/tauri-cli/src/lib.rs",
+            "crates/tauri-cli/src/plugin/mod.rs",
+            "crates/tauri-cli/templates/app/src-tauri/src/main.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "JS-side custom serialization: any object implementing `[SERIALIZE_TO_IPC_FN]` (`__TAURI_TO_IPC_KEY__`) controls its IPC representation — the mechanism `Channel` uses to serialize itself as `__CHANNEL__:<id>`.",
+          "sources": [
+            "packages/api/src/core.ts",
+            "crates/tauri/scripts/process-ipc-message-fn.js"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_handoff": {
+      "summary": "Start with ARCHITECTURE.md, then crates/tauri/src/lib.rs for the module map and feature flags. Most edits land in crates/tauri/src (runtime), crates/tauri-utils (config/ACL schema), crates/tauri-cli/src (commands), or packages/api/src (JS API). Respect the cfg matrix (desktop/mobile/dev custom cfgs), keep cross-language constants in sync, add a .changes changefile for any user-visible change, and regenerate committed artifacts before pushing. Test with cargo test per-crate plus pnpm-level JS checks; e2e needs the examples/api app and tauri-driver.",
+      "claims": [
+        {
+          "claim": "First reads: ARCHITECTURE.md (component map), crates/tauri/src/lib.rs (module layout + feature docs), crates/tauri/src/app.rs (Builder/App lifecycle), crates/tauri/src/ipc/protocol.rs + webview/mod.rs on_message (IPC security boundary).",
+          "sources": [
+            "ARCHITECTURE.md",
+            "crates/tauri/src/lib.rs",
+            "crates/tauri/src/app.rs",
+            "crates/tauri/src/webview/mod.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Use either `tauri-build` + `tauri_build_context!` or `generate_context!` — never both; lib.rs warns they generate the same code and duplicate work.",
+          "sources": [
+            "crates/tauri/src/lib.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "When touching IPC serialization keep `__TAURI_TO_IPC_KEY__`/`__TAURI_INVOKE_KEY__` consistent across packages/api/src/core.ts, crates/tauri/scripts/ipc.js and crates/tauri/scripts/process-ipc-message-fn.js — the files carry mutual-sync comments.",
+          "sources": [
+            "packages/api/src/core.ts",
+            "crates/tauri/scripts/ipc.js",
+            "crates/tauri/scripts/process-ipc-message-fn.js"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Every user-facing change needs a changefile markdown in .changes/ (covector-driven releases via covector-version-or-publish.yml); the dir already holds ~114 pending change files.",
+          "sources": [
+            ".changes/config.json",
+            ".github/workflows/covector-version-or-publish.yml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Generated files (schema, templates) are CI-verified — after editing tauri-utils config types or CLI templates run the generators or check-generated-files.yml fails.",
+          "sources": [
+            ".github/workflows/check-generated-files.yml",
+            "crates/tauri-schema-generator/Cargo.toml"
+          ],
+          "kind": "inference"
+        },
+        {
+          "claim": "Custom cfgs `dev`, `desktop`, `mobile` are pervasive (e.g. `#[cfg(dev)]`, `#[cfg(all(desktop, feature = \"tray-icon\"))]`); these are set by tauri-build at compile time, not standard cargo features — grep for `cfg(` before assuming a block compiles.",
+          "sources": [
+            "crates/tauri/src/lib.rs",
+            "crates/tauri/src/manager/mod.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Feature `custom-protocol` is set by the CLI during production builds and makes `is_dev()` false; conversely `cfg(dev)` paths (e.g. config_parent, mobile dev-server proxying) only compile in dev builds.",
+          "sources": [
+            "crates/tauri/src/lib.rs",
+            "crates/tauri/src/protocol/tauri.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Run `cargo test -p tauri -p tauri-utils` plus `cargo test -p acl-tests`-style integration crates and `pnpm test`/`pnpm eslint:check` for JS; fmt is enforced by .github/workflows/fmt.yml (prettier + rustfmt.toml) and clippy lints are configured in the workspace Cargo.toml.",
+          "sources": [
+            "Cargo.toml",
+            "rustfmt.toml",
+            ".github/workflows/fmt.yml",
+            "package.json"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Trap: `App::run_iteration` is deprecated because it busy-loops; use `run_return`. Setup-hook failures panic (\"Failed to setup app\") rather than returning errors.",
+          "sources": [
+            "crates/tauri/src/app.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Trap: plugin store is locked during the `cleanup_before_exit` hook — calling `AppHandle::remove_plugin`/`plugin` inside it deadlocks, per the Plugin trait docs.",
+          "sources": [
+            "crates/tauri/src/plugin.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The workspace patches crates-io `schemars_derive` to a tauri-apps fork to preserve docstring newlines in generated schemas; don't bump schemars casually.",
+          "sources": [
+            "Cargo.toml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Safe edit boundaries: adding a CLI subcommand = new module + Commands enum arm in crates/tauri-cli/src/lib.rs; adding a JS API = packages/api/src module + index export; adding a core feature = crates/tauri/src module + feature flag in crates/tauri/Cargo.toml + docs in lib.rs header.",
+          "sources": [
+            "crates/tauri-cli/src/lib.rs",
+            "packages/api/src/index.ts",
+            "crates/tauri/Cargo.toml",
+            "crates/tauri/src/lib.rs"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_prompt": "You are working in the Tauri v2 monorepo (github.com/tauri-apps/tauri, branch dev). It contains the Rust framework `tauri` plus its toolchain: tauri-runtime/tauri-runtime-wry (webview abstraction over WRY/TAO), tauri-utils (config schema, ACL types, assets), tauri-codegen + tauri-macros (compile-time codegen), tauri-build (build-script API), tauri-plugin (plugin SDK), tauri-bundler (installers: deb/rpm/appimage/dmg/app/msi/nsis/updater), tauri-cli (the `cargo-tauri` binary), tauri-driver (WebDriver intermediary), and JS packages api (@tauri-apps/api) and cli (@tauri-apps/cli, a napi wrapper over tauri_cli::try_run).\n\nArchitecture: apps call `tauri::Builder::default().plugin(...).invoke_handler(generate_handler![...]).setup(...).run(generate_context!())`. At compile time, tauri-build/tauri-codegen parse tauri.conf.json (json/json5/toml + platform overlays), embed frontendDist assets with CSP nonce/hash injection, resolve plugin manifests + capabilities into a `RuntimeAuthority`, and emit a `Context`. At runtime `AppManager` owns config, assets, plugins, state, listeners and the per-process `invoke_key` (128-bit Z85).\n\nIPC: JS `invoke()` → `__TAURI_INTERNALS__.invoke` (injected via crates/tauri/scripts) → postMessage or `ipc://localhost/<cmd>` POST → `handle_ipc_message`/`parse_invoke_request` → `Webview::on_message` verifies invoke_key, resolves ACL via `RuntimeAuthority::resolve_access`, then routes `plugin:<name>|<cmd>` to the plugin store or the app invoke_handler. Responses go back via `format_callback` + `webview.eval` or a Channel. Remote origins are denied unless a capability grants `remote` context.\n\nKey files: crates/tauri/src/lib.rs (features/modules), app.rs (Builder/run loop), webview/mod.rs (on_message), ipc/protocol.rs + ipc/authority.rs (parse + ACL), protocol/tauri.rs + protocol/asset.rs (asset serving, FsScope), manager/mod.rs (AppManager), plugin.rs (Plugin trait), crates/tauri-cli/src/lib.rs (Commands enum) + dev.rs + interface/rust.rs (dev/build runners), crates/tauri-codegen/src/context.rs, packages/api/src/core.ts (invoke/Channel/Resource).\n\nRules/traps: (1) keep `__TAURI_TO_IPC_KEY__` synced across core.ts, ipc.js, process-ipc-message-fn.js; (2) don't use generate_context! and tauri-build together; (3) custom cfgs dev/desktop/mobile are set by tauri-build — not cargo features; (4) `custom-protocol` feature = production; (5) every user-facing change needs a .changes/*.md changefile (covector); (6) generated schema/template files are CI-checked (check-generated-files.yml); (7) release profile is panic=abort; (8) plugin store locks during cleanup_before_exit — don't call plugin APIs there.\n\nTesting: `cargo test -p tauri -p tauri-utils` (mock runtime via `test` feature), `cargo test` in crates/tests/acl (insta snapshots), crates/tauri-cli/tests/init.rs (real binary), `pnpm test`/`pnpm eslint:check`/`pnpm ts:check` for JS, and `pnpm test:api-e2e` (wdio + tauri-driver against examples/api) for full e2e. CI: test-core.yml matrix on Windows/Linux/macOS, toolchain 1.90. Formatting: rustfmt.toml + prettier (`pnpm format:check`)."
+  },
+  "analysis": {
+    "agent": "devin",
+    "model": "swe-2",
+    "runtime_ms": null,
+    "cost_usd": null,
+    "collected_at": "2026-09-22T16:03:32.237Z"
   }
 }

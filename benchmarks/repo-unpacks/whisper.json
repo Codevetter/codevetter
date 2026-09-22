@@ -110,7 +110,7 @@
         {
           "path": "README.md",
           "bytes": 8246,
-          "preview": "# Whisper\n\n[[Blog]](https://openai.com/blog/whisper)\n[[Paper]](https://arxiv.org/abs/2212.04356)\n[[Model card]](https://github.com/openai/whisper/blob/main/model-card.md)\n[[Colab example]](https://colab.research.google.com/github/openai/whisper/blob/master/notebooks/LibriSpeech.ipynb)\n\nWhisper is a general-purpose speech recognition model. It is trained on a large dataset of diverse audio and is also a multitasking model that can perform multilingual speech recognition, speech translation, and language identification.\n\n\n## Approach\n\n![Approach](https://raw.githubusercontent.com/openai/whisper/main/approach.png)\n\nA Transformer sequence-to-sequence model is trained on various speech processing tasks, including multilingual speech recognition, speech translation, spoken language identification, and voice activity detection. These tasks are jointly represented as a sequence of tokens to be predicted by the decoder, allowing a single model to replace many stages of a traditional speech-processing pipeline. The multitask training format uses a set of special tokens that serve as task specifiers or classification targets.\n\n\n## Setup\n\nWe used Python 3.9.9 and [PyTorch](https://pytorch.org/) 1.10.1 to train and test our models, but the codebase is expected to be compatible with Python 3.8-3.11 and recent PyTorch versions. The codebase also depends on a few Python packages, most notably [OpenAI's tiktoken](https://github.com/openai/tiktoken) for their fast tokenizer implementation. You can download and install (or update to) the latest release of Whisper with the following command:\n\n    pip install -U openai-whisper\n\nAlternatively, the following command will pull and install the latest commit from this repository, along with its Python dependencies:\n\n    pip install git+https://github.com/openai/whisper.git \n\nTo update the package to the latest version of this repository, please run:\n\n    pip install --upgrade --no-deps --force-reinstall git+https://github.com/openai/whisper.git\n\nIt also requires the command-line tool [`ffmpeg`](https://ffmpeg.org/) to be installed on your system, which is available from most package managers:\n\n```bash\n# on Ubuntu or Debian\nsudo apt update && sudo apt install ffmpeg\n\n# on Arch Linux\nsudo pacman -S ffmpeg\n\n# on MacOS using Homebrew (https://brew.sh/)\nbrew install ffmpeg\n\n# on Windows using Chocolatey (https://chocolatey.org/)\nchoco install ffmpeg\n\n# on Windows using Scoop (https://scoop.sh/)\nscoop install ffmpeg\n```\n\nYou may need [`rust`](http://rust-lang.org) installed as well, in case [tiktoken](https://github.com/openai/tiktoken) does not provide a pre-built wheel for your platform. If you see installation errors during the `pip install` command above, please follow the [Getting started page](https://www.rust-lang.org/learn/get-started) to install Rust development environment. Additionally, you may need to configure the `PATH` environment variable, e.g. `export PATH=\"$HOME/.cargo/bin:$PATH\"`. If the installation fails with `No module named 'setuptools_rust'`, you need to install `setuptools_rust`, e.g. by running:\n\n```bash\npip install setuptools-rust\n```\n\n\n## Available models and languages\n\nThere are six model sizes, four with English-only versions, offering speed and accuracy tradeoffs.\nBelow are the names of the available models and their approximate memory requirements and inference speed relative to the large model.\nThe relative speeds below are measured by transcribing English speech on a A100, and the real-world speed may vary significantly depending on many factors including the language, the speaking speed, and the available hardware.\n\n|  Size  | Parameters | English-only model | Multilingual model | Required VRAM | Relative speed |\n|:------:|:----------:|:------------------:|:------------------:|:-------------:|:--------------:|\n|  tiny  |    39 M    |     `tiny.en`      |       `tiny`       |     ~1 GB     |      ~10x      |\n|  base  |    74 M    |     `base.en`      |       `base`       |     ~1 GB     |      ~7x       |\n| small  |   244 M    |     `small.en`     |      `small`       |     ~2 GB     |      ~4x       |\n| medium |   769 M    |    `medium.en`     |      `medium`      |     ~5 GB     |      ~2x       |\n| large  |   1550 M   |        N/A         |      `large`       |    ~10 GB     |       1x       |\n| turbo  |   809 M    |        N/A         |      `turbo`       |     ~6 GB     |      ~8x       |\n\nThe `.en` models for English-only applications tend to perform better, especially for the `tiny.en` and `base.en` models. We observed that the difference becomes less significant for the `small.en` and `medium.en` models.\nAdditionally, the `turbo` model is an optimized version of `large-v3` that offers faster transcription speed with a minimal degradation in accuracy.\n\nWhisper's performance varies widely depending on the language. The figure below shows a performance breakdown of `large-v3` and `large-v2` models by language, using WERs (word error rates) or CER (character error rates, shown in *Italic*) evaluated on the Common Voice 15 and Fleurs datasets. Additional WER/CER metrics corresponding to the other models and datasets can be found in Appendix D.1, D.2, and D.4 of [the paper](https://arxiv.org/abs/2212.04356), as well as the BLEU (Bilingual Evaluation Understudy) scores for translation in Appendix D.3.\n\n![WER breakdown by language](https://github.com/openai/whisper/assets/266841/f4619d66-1058-4005-8f67-a9d811b77c62)\n\n## Command-line usage\n\nThe following command will transcribe speech in audio files, using the `turbo` model:\n\n```bash\nwhisper audio.flac audio.mp3 audio.wav --model turbo\n```\n\nThe default setting (which selects the `turbo` model) works well for transcribing English. However, **the `turbo` model is not trained for translation tasks**. If you need to **translate non-English speech into English**, use one of the **multilingual models** (`tiny`, `base`, `small`, `medium`, `large`) instead of `turbo`. \n\nFor example, to transcribe an audio file containing non-English speech, you can specify the language:\n\n```bash\nwhisper japanese.wav --language Japanese\n```\n\nTo **translate** speech into English, use:\n\n```bash\nwhisper japanese.wav --model medium --language Japanese --task translate\n```\n\n> **Note:** The `turbo` model will return the original language even if `--task translate` is specified. Use `medium` or `large` for the best translation results.\n\nRun the following to view all available options:\n\n```bash\nwhisper --help\n```\n\nSee [tokenizer.py](https://github.com/openai/whisper/blob/main/whisper/tokenizer.py) for the list of all available languages.\n\n\n## Python usage\n\nTranscription can also be performed within Python: \n\n```python\nimport whisper\n\nmodel = whisper.load_model(\"turbo\")\nresult = model.transcribe(\"audio.mp3\")\nprint(result[\"text\"])\n```\n\nInternally, the `transcribe()` method reads the entire file and processes the audio with a sliding 30-second window, performing autoregressive sequence-to-sequence predictions on each window.\n\nBelow is an example usage of `whisper.detect_language()` and `whisper.decode()` which provide lower-level access to the model.\n\n```python\nimport whisper\n\nmodel = whisper.load_model(\"turbo\")\n\n# load audio and pad/trim it to fit 30 seconds\naudio = whisper.load_audio(\"audio.mp3\")\naudio = whisper.pad_or_trim(audio)\n\n# make log-Mel spectrogram and move to the same device as the model\nmel = whisper.log_mel_spectrogram(audio, n_mels=model.dims.n_mels).to(model.device)\n\n# detect the spoken language\n_, probs = model.detect_language(mel)\nprint(f\"Detected language: {max(probs, key=probs.get)}\")\n\n# decode the audio\noptions = whisper.DecodingOptions()\nresult = whisper.decode(model, mel, options)\n\n# print the recognized text\nprint(result.text)\n```\n\n## More examples\n\nPlease use the [\ud83d\ude4c Show and tell](https://github.com/openai/whisper/discussions/categories/show-and-tell) category in Discussions for sharing more example usages of Whisper and third-party extensions such as web demos, integrations with other tools, ports for different platforms, etc.\n\n\n## License\n\nWhisper's code and model weights are released under the MIT License. See [LICENSE](https://github.com/o"
+          "preview": "# Whisper\n\n[[Blog]](https://openai.com/blog/whisper)\n[[Paper]](https://arxiv.org/abs/2212.04356)\n[[Model card]](https://github.com/openai/whisper/blob/main/model-card.md)\n[[Colab example]](https://colab.research.google.com/github/openai/whisper/blob/master/notebooks/LibriSpeech.ipynb)\n\nWhisper is a general-purpose speech recognition model. It is trained on a large dataset of diverse audio and is also a multitasking model that can perform multilingual speech recognition, speech translation, and language identification.\n\n\n## Approach\n\n![Approach](https://raw.githubusercontent.com/openai/whisper/main/approach.png)\n\nA Transformer sequence-to-sequence model is trained on various speech processing tasks, including multilingual speech recognition, speech translation, spoken language identification, and voice activity detection. These tasks are jointly represented as a sequence of tokens to be predicted by the decoder, allowing a single model to replace many stages of a traditional speech-processing pipeline. The multitask training format uses a set of special tokens that serve as task specifiers or classification targets.\n\n\n## Setup\n\nWe used Python 3.9.9 and [PyTorch](https://pytorch.org/) 1.10.1 to train and test our models, but the codebase is expected to be compatible with Python 3.8-3.11 and recent PyTorch versions. The codebase also depends on a few Python packages, most notably [OpenAI's tiktoken](https://github.com/openai/tiktoken) for their fast tokenizer implementation. You can download and install (or update to) the latest release of Whisper with the following command:\n\n    pip install -U openai-whisper\n\nAlternatively, the following command will pull and install the latest commit from this repository, along with its Python dependencies:\n\n    pip install git+https://github.com/openai/whisper.git \n\nTo update the package to the latest version of this repository, please run:\n\n    pip install --upgrade --no-deps --force-reinstall git+https://github.com/openai/whisper.git\n\nIt also requires the command-line tool [`ffmpeg`](https://ffmpeg.org/) to be installed on your system, which is available from most package managers:\n\n```bash\n# on Ubuntu or Debian\nsudo apt update && sudo apt install ffmpeg\n\n# on Arch Linux\nsudo pacman -S ffmpeg\n\n# on MacOS using Homebrew (https://brew.sh/)\nbrew install ffmpeg\n\n# on Windows using Chocolatey (https://chocolatey.org/)\nchoco install ffmpeg\n\n# on Windows using Scoop (https://scoop.sh/)\nscoop install ffmpeg\n```\n\nYou may need [`rust`](http://rust-lang.org) installed as well, in case [tiktoken](https://github.com/openai/tiktoken) does not provide a pre-built wheel for your platform. If you see installation errors during the `pip install` command above, please follow the [Getting started page](https://www.rust-lang.org/learn/get-started) to install Rust development environment. Additionally, you may need to configure the `PATH` environment variable, e.g. `export PATH=\"$HOME/.cargo/bin:$PATH\"`. If the installation fails with `No module named 'setuptools_rust'`, you need to install `setuptools_rust`, e.g. by running:\n\n```bash\npip install setuptools-rust\n```\n\n\n## Available models and languages\n\nThere are six model sizes, four with English-only versions, offering speed and accuracy tradeoffs.\nBelow are the names of the available models and their approximate memory requirements and inference speed relative to the large model.\nThe relative speeds below are measured by transcribing English speech on a A100, and the real-world speed may vary significantly depending on many factors including the language, the speaking speed, and the available hardware.\n\n|  Size  | Parameters | English-only model | Multilingual model | Required VRAM | Relative speed |\n|:------:|:----------:|:------------------:|:------------------:|:-------------:|:--------------:|\n|  tiny  |    39 M    |     `tiny.en`      |       `tiny`       |     ~1 GB     |      ~10x      |\n|  base  |    74 M    |     `base.en`      |       `base`       |     ~1 GB     |      ~7x       |\n| small  |   244 M    |     `small.en`     |      `small`       |     ~2 GB     |      ~4x       |\n| medium |   769 M    |    `medium.en`     |      `medium`      |     ~5 GB     |      ~2x       |\n| large  |   1550 M   |        N/A         |      `large`       |    ~10 GB     |       1x       |\n| turbo  |   809 M    |        N/A         |      `turbo`       |     ~6 GB     |      ~8x       |\n\nThe `.en` models for English-only applications tend to perform better, especially for the `tiny.en` and `base.en` models. We observed that the difference becomes less significant for the `small.en` and `medium.en` models.\nAdditionally, the `turbo` model is an optimized version of `large-v3` that offers faster transcription speed with a minimal degradation in accuracy.\n\nWhisper's performance varies widely depending on the language. The figure below shows a performance breakdown of `large-v3` and `large-v2` models by language, using WERs (word error rates) or CER (character error rates, shown in *Italic*) evaluated on the Common Voice 15 and Fleurs datasets. Additional WER/CER metrics corresponding to the other models and datasets can be found in Appendix D.1, D.2, and D.4 of [the paper](https://arxiv.org/abs/2212.04356), as well as the BLEU (Bilingual Evaluation Understudy) scores for translation in Appendix D.3.\n\n![WER breakdown by language](https://github.com/openai/whisper/assets/266841/f4619d66-1058-4005-8f67-a9d811b77c62)\n\n## Command-line usage\n\nThe following command will transcribe speech in audio files, using the `turbo` model:\n\n```bash\nwhisper audio.flac audio.mp3 audio.wav --model turbo\n```\n\nThe default setting (which selects the `turbo` model) works well for transcribing English. However, **the `turbo` model is not trained for translation tasks**. If you need to **translate non-English speech into English**, use one of the **multilingual models** (`tiny`, `base`, `small`, `medium`, `large`) instead of `turbo`. \n\nFor example, to transcribe an audio file containing non-English speech, you can specify the language:\n\n```bash\nwhisper japanese.wav --language Japanese\n```\n\nTo **translate** speech into English, use:\n\n```bash\nwhisper japanese.wav --model medium --language Japanese --task translate\n```\n\n> **Note:** The `turbo` model will return the original language even if `--task translate` is specified. Use `medium` or `large` for the best translation results.\n\nRun the following to view all available options:\n\n```bash\nwhisper --help\n```\n\nSee [tokenizer.py](https://github.com/openai/whisper/blob/main/whisper/tokenizer.py) for the list of all available languages.\n\n\n## Python usage\n\nTranscription can also be performed within Python: \n\n```python\nimport whisper\n\nmodel = whisper.load_model(\"turbo\")\nresult = model.transcribe(\"audio.mp3\")\nprint(result[\"text\"])\n```\n\nInternally, the `transcribe()` method reads the entire file and processes the audio with a sliding 30-second window, performing autoregressive sequence-to-sequence predictions on each window.\n\nBelow is an example usage of `whisper.detect_language()` and `whisper.decode()` which provide lower-level access to the model.\n\n```python\nimport whisper\n\nmodel = whisper.load_model(\"turbo\")\n\n# load audio and pad/trim it to fit 30 seconds\naudio = whisper.load_audio(\"audio.mp3\")\naudio = whisper.pad_or_trim(audio)\n\n# make log-Mel spectrogram and move to the same device as the model\nmel = whisper.log_mel_spectrogram(audio, n_mels=model.dims.n_mels).to(model.device)\n\n# detect the spoken language\n_, probs = model.detect_language(mel)\nprint(f\"Detected language: {max(probs, key=probs.get)}\")\n\n# decode the audio\noptions = whisper.DecodingOptions()\nresult = whisper.decode(model, mel, options)\n\n# print the recognized text\nprint(result.text)\n```\n\n## More examples\n\nPlease use the [🙌 Show and tell](https://github.com/openai/whisper/discussions/categories/show-and-tell) category in Discussions for sharing more example usages of Whisper and third-party extensions such as web demos, integrations with other tools, ports for different platforms, etc.\n\n\n## License\n\nWhisper's code and model weights are released under the MIT License. See [LICENSE](https://github.com/o"
         }
       ],
       "config_files": [],
@@ -509,7 +509,7 @@
           {
             "sha": "1f8fc975d3f6",
             "date": "2025-06-26",
-            "subject": "Fix: Update torch.load to use weights_only=True to prevent security w\u2026 (#2451)",
+            "subject": "Fix: Update torch.load to use weights_only=True to prevent security w… (#2451)",
             "files": []
           },
           {
@@ -606,7 +606,7 @@
             {
               "id": "commit:1f8fc975d3f6",
               "kind": "commit",
-              "label": "Fix: Update torch.load to use weights_only=True to prevent security w\u2026 (#2451)",
+              "label": "Fix: Update torch.load to use weights_only=True to prevent security w… (#2451)",
               "path": null,
               "detail": "2025-06-26",
               "citations": [
@@ -2189,7 +2189,7 @@
         "steps": [
           {
             "id": "serialize",
-            "label": "JSON serialize (inventory \u2192 SQLite)",
+            "label": "JSON serialize (inventory → SQLite)",
             "ms": 0,
             "pct": 0
           },
@@ -2208,5 +2208,767 @@
         ]
       }
     ]
+  },
+  "report": {
+    "overview": "OpenAI Whisper is a general-purpose speech-recognition library (Python + PyTorch) that ships both a `whisper` CLI and an importable `whisper` package. It downloads pretrained encoder-decoder Transformer checkpoints (tiny through large-v3-turbo) from OpenAI's CDN with SHA256 verification, decodes arbitrary audio to 16 kHz mono via an ffmpeg subprocess, converts it to log-Mel spectrograms, and runs an autoregressive seq2seq decoder over 30-second sliding windows. A single multitask model performs multilingual transcription, X→English translation, language identification, and (via cross-attention DTW) word-level timestamp alignment, emitting results as txt/vtt/srt/tsv/json/jsonl.",
+    "system_map": {
+      "summary": "The repo is a single flat Python package, `whisper/`, plus a `tests/` pytest suite, GitHub Actions CI, and evaluation docs/notebooks. The CLI entrypoint `whisper.transcribe:cli` (also reachable via `python -m whisper`) parses ~30 argparse options, loads a checkpoint through `load_model` in `whisper/__init__.py`, and runs `transcribe()`. Checkpoints are runtime downloads from openaipublic.azureedge.net, verified by a SHA256 embedded in the URL and cached under ~/.cache/whisper. The model itself is a standard Transformer encoder/decoder defined in model.py; decoding.py implements the sampling engine (greedy/beam, logit filters, KV-cache hooks); audio.py, tokenizer.py, timing.py, utils.py, and triton_ops.py cover the audio pipeline, BPE vocab, DTW alignment, output writers, and optional CUDA kernels respectively.",
+      "claims": [
+        {
+          "claim": "The console script `whisper` maps to `whisper.transcribe:cli` in pyproject `[project.scripts]`, and `whisper/__main__.py` calls the same `cli()` function, so `whisper` and `python -m whisper` are equivalent entrypoints.",
+          "sources": [
+            "pyproject.toml#L35",
+            "whisper/__main__.py",
+            "whisper/transcribe.py#L517"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The package is organized as flat modules under whisper/: audio.py (mel pipeline), model.py (nn.Modules), decoding.py (sampling engine), tokenizer.py (tiktoken wrapper), timing.py (DTW alignment), transcribe.py (orchestration + CLI), utils.py (writers/helpers), normalizers/ (evaluation text normalization), triton_ops.py (CUDA kernels).",
+          "sources": [
+            "whisper/audio.py",
+            "whisper/model.py",
+            "whisper/decoding.py",
+            "whisper/tokenizer.py",
+            "whisper/timing.py",
+            "whisper/transcribe.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "whisper/__init__.py is the public API surface: it re-exports load_audio, log_mel_spectrogram, pad_or_trim, decode, detect_language, DecodingOptions, DecodingResult, Whisper, ModelDimensions, transcribe, and __version__, and holds the _MODELS download-URL table plus load_model().",
+          "sources": [
+            "whisper/__init__.py#L11-32"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Model weights are downloaded at runtime from openaipublic.azureedge.net URLs in _MODELS; the expected SHA256 is the second-to-last URL path segment, checked both before reuse of a cached file and after download, defaulting to $XDG_CACHE_HOME/whisper or ~/.cache/whisper.",
+          "sources": [
+            "whisper/__init__.py#L17-95"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Whisper is a conventional encoder-decoder Transformer: AudioEncoder applies two Conv1d layers (second stride 2), adds sinusoidal positional embeddings, then ResidualAttentionBlocks; TextDecoder uses learned positional embeddings, cross-attention blocks, a causal mask buffer, and tied output logits computed against token_embedding.weight.",
+          "sources": [
+            "whisper/model.py#L181-256"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "ffmpeg is a hard external dependency: load_audio() spawns `ffmpeg -nostdin -threads 0 -i <file> -f s16le -ac 1 -acodec pcm_s16le -ar 16000 -` and parses stdout as int16 scaled to float32.",
+          "sources": [
+            "whisper/audio.py#L42-62",
+            "README.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Declared dependencies are more-itertools, numba, numpy, tiktoken, torch, tqdm, and triton>=2 (Linux x86_64 only); Python >=3.8 is required.",
+          "sources": [
+            "pyproject.toml#L24-32",
+            "requirements.txt"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Binary assets ship inside the package: whisper/assets/gpt2.tiktoken and multilingual.tiktoken BPE vocab files, mel_filters.npz (80- and 128-band filterbanks), and normalizers/english.json (UK→US spelling map), all declared in MANIFEST.in.",
+          "sources": [
+            "MANIFEST.in",
+            "whisper/tokenizer.py#L330-336",
+            "whisper/audio.py#L105",
+            "whisper/normalizers/english.py#L460-461"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The Whisper class binds module-level functions as class attributes (`transcribe = transcribe_function`, `decode = decode_function`, `detect_language = detect_language_function`), so `model.transcribe(...)`, `model.decode(...)`, and `model.detect_language(...)` work without separate methods.",
+          "sources": [
+            "whisper/model.py#L350-352",
+            "whisper/__init__.py#L12-14"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Optional GPU acceleration lives in triton_ops.py (Triton JIT kernels for DTW and median filter); callers in timing.py wrap kernel launches in try/except and fall back to numba-JIT CPU implementations with a warning.",
+          "sources": [
+            "whisper/triton_ops.py",
+            "whisper/timing.py#L36-54",
+            "whisper/timing.py#L141-151"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Distribution is the PyPI package `openai-whisper` with dynamic version read from whisper/version.py (__version__ = \"20250625\"); python-publish.yml triggers on commits to main whose message matches `^Release <v>` and uploads via twine.",
+          "sources": [
+            "pyproject.toml#L7-42",
+            "whisper/version.py",
+            ".github/workflows/python-publish.yml#L12-37"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Build/test: `pip install .[dev]` installs setuptools-built package plus pytest/black/flake8/isort/scipy; CI runs pre-commit then `pytest -k 'not test_transcribe or test_transcribe[tiny] or test_transcribe[tiny.en]' -m 'not requires_cuda'` on a 9-cell Python×PyTorch matrix.",
+          "sources": [
+            "pyproject.toml#L33",
+            ".github/workflows/test.yml#L39-79"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "feature_catalog": {
+      "summary": "User-facing surface is (a) the `whisper` CLI, (b) the Python API (load_model, transcribe, decode, detect_language), and (c) six output formats. Core capabilities: multilingual transcription across 99 languages, X→English translation, automatic language detection, word-level timestamps via attention-based DTW, clip selection, prompt conditioning, and two search strategies (greedy/best-of-N vs beam search). Auxiliary features include text normalizers for evaluation and a hallucination-silence skip heuristic.",
+      "claims": [
+        {
+          "claim": "The CLI accepts one or more audio paths plus ~30 flags including --model (default `turbo`), --task, --language, --output_dir/-o, --output_format/-f (txt|vtt|srt|tsv|json|jsonl|all), --verbose, --fp16, and --threads.",
+          "sources": [
+            "whisper/transcribe.py#L528-566"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Python API: `whisper.load_model(name)` returns a Whisper on cuda-if-available; `model.transcribe(path)` returns {text, segments, language}; lower-level `whisper.decode(model, mel, options)` and `whisper.detect_language(model, mel)` are exported.",
+          "sources": [
+            "whisper/__init__.py#L103-161",
+            "whisper/__init__.py#L11-14",
+            "README.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Thirteen model names are available — tiny/base/small/medium each with a `.en` English-only variant, large-v1/v2/v3, `large` (alias of large-v3), and large-v3-turbo/`turbo` — all mapped to CDN URLs in _MODELS.",
+          "sources": [
+            "whisper/__init__.py#L17-32",
+            "README.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Tasks: `transcribe` (same-language ASR) and `translate` (X→English) are selected via --task and encoded as <|transcribe|>/<|translate|> special tokens in the SOT sequence; `lang_id` is a third internal task that short-circuits after language detection.",
+          "sources": [
+            "whisper/transcribe.py#L537",
+            "whisper/tokenizer.py#L155-159",
+            "whisper/decoding.py#L723-731"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Automatic language detection: when --language is omitted on a multilingual model, transcribe() runs model.detect_language() on the first 30 s mel segment and picks argmax over per-language probabilities.",
+          "sources": [
+            "whisper/transcribe.py#L143-157",
+            "whisper/decoding.py#L18-77"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Six output writers exist — WriteTXT, WriteVTT, WriteSRT, WriteTSV, WriteJSON, WriteJSONL — selected by name through the get_writer() registry; `all` instantiates every writer.",
+          "sources": [
+            "whisper/utils.py#L109-329"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Word-level timestamps (--word_timestamps) align tokens to audio via cross-attention weights + dynamic time warping; supporting flags --highlight_words (underline in srt/vtt), --max_line_width, --max_line_count, --max_words_per_line control subtitle reflow in SubtitlesWriter.iterate_result.",
+          "sources": [
+            "whisper/transcribe.py#L557-563",
+            "whisper/timing.py#L163-242",
+            "whisper/utils.py#L119-235"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Search strategies: temperature==0 uses BeamSearchDecoder (--beam_size, --patience, --length_penalty); temperature>0 uses GreedyDecoder with sampling and --best_of candidates; MaximumLikelihoodRanker picks the final hypothesis.",
+          "sources": [
+            "whisper/decoding.py#L272-404",
+            "whisper/decoding.py#L546-551",
+            "whisper/transcribe.py#L540-544"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Fallback ladder: transcribe() accepts a temperature tuple (CLI builds it via --temperature_increment_on_fallback) and retries each 30 s window at higher temperatures when compression_ratio_threshold or logprob_threshold fails; no_speech_threshold can instead mark the window silent.",
+          "sources": [
+            "whisper/transcribe.py#L184-224",
+            "whisper/transcribe.py#L584-588"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "--clip_timestamps accepts comma-separated start,end pairs (seconds) restricting transcription to those ranges; --hallucination_silence_threshold skips long silences around anomalous word segments when word_timestamps is on.",
+          "sources": [
+            "whisper/transcribe.py#L565-566",
+            "whisper/transcribe.py#L168-177",
+            "whisper/transcribe.py#L418-471"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Prompt conditioning: --initial_prompt seeds the first window, --carry_initial_prompt prepends it to every window, and --condition_on_previous_text feeds prior output tokens as prompt for the next window.",
+          "sources": [
+            "whisper/transcribe.py#L547-550",
+            "whisper/transcribe.py#L238-244",
+            "whisper/transcribe.py#L288-293"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Language support covers 99 languages enumerated in LANGUAGES (tokenized as <|en|>…<|yue|> specials) plus alias resolution in TO_LANGUAGE_CODE (e.g. burmese→my, mandarin→zh).",
+          "sources": [
+            "whisper/tokenizer.py#L10-128",
+            "whisper/tokenizer.py#L340-350"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Evaluation normalizers: BasicTextNormalizer (lowercase, strip bracketed content, NFKD symbol/diacritic removal) and EnglishTextNormalizer (contractions, number words→digits via EnglishNumberNormalizer, UK→US spelling via EnglishSpellingNormalizer) for WER scoring.",
+          "sources": [
+            "whisper/normalizers/basic.py#L60-80",
+            "whisper/normalizers/english.py#L12-21",
+            "whisper/normalizers/english.py#L467-552"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "data_flow": {
+      "summary": "Audio enters as a file path (decoded by an ffmpeg subprocess to 16 kHz mono float32) or a NumPy/Torch waveform, then becomes a log-Mel spectrogram (80 or 128 bins, STFT n_fft=400 hop=160) padded with 30 s of silence. The mel tensor feeds AudioEncoder once per 30 s window; DecodingTask autoregressively produces tokens under logit filters and a KV cache, with timestamp tokens (>=tokenizer.timestamp_begin, 0.02 s each) delimiting segments. Segments accumulate in all_segments/all_tokens; optional word-level alignment runs a second decoder pass capturing cross-attention weights through forward hooks. The final dict {text, segments, language} returns to the caller and is serialized by ResultWriter subclasses into output_dir.",
+      "claims": [
+        {
+          "claim": "Input boundary: transcribe() accepts str path | np.ndarray | torch.Tensor; only the str path hits load_audio(), which shells out to ffmpeg and returns float32 mono 16 kHz scaled by /32768.",
+          "sources": [
+            "whisper/transcribe.py#L38-40",
+            "whisper/audio.py#L25-62",
+            "whisper/audio.py#L138-141"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Waveform→mel: log_mel_spectrogram computes torch.stft (N_FFT=400, HOP_LENGTH=160), squares magnitudes, applies a cached mel filterbank from assets/mel_filters.npz, then log10-clamps to [max-8, max] and rescales to [-1,1]-ish; transcribe() pads N_SAMPLES (480k) so window slicing stays in bounds.",
+          "sources": [
+            "whisper/audio.py#L91-157",
+            "whisper/transcribe.py#L138-141"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Mel→features: AudioEncoder conv1 (n_mels→n_state, k=3) + conv2 (stride 2, halving 3000 frames to n_audio_ctx=1500), adds sinusoidal positional_embedding, runs n_audio_layer residual attention blocks; DecodingTask._get_audio_features skips the encoder if the input is already (n_audio_ctx, n_audio_state).",
+          "sources": [
+            "whisper/model.py#L181-211",
+            "whisper/decoding.py#L644-664"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Tokens: get_encoding() builds a tiktoken.Encoding from assets/{gpt2,multilingual}.tiktoken plus specials — eot, sot, one token per language, translate/transcribe, sot_prev, sot_lm, nospeech, notimestamps, and 1501 timestamp tokens <|0.00|>…<|30.00|>.",
+          "sources": [
+            "whisper/tokenizer.py#L330-363"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The SOT prefix per decode is sot_sequence (+ optional <|notimestamps|>) plus optional prompt tokens behind <|startofprev|> and optional prefix tokens, assembled in DecodingTask._get_initial_tokens.",
+          "sources": [
+            "whisper/decoding.py#L587-613",
+            "whisper/tokenizer.py#L151-159"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Per-step decode: _main_loop calls inference.logits() (feeding only the last token after the first pass thanks to KV-cache hooks), captures no_speech_prob at the sot index on step 0, applies each LogitFilter in place, then decoder.update() picks the next token until EOT or n_ctx.",
+          "sources": [
+            "whisper/decoding.py#L680-710",
+            "whisper/decoding.py#L155-163"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "KV caching: Whisper.install_kv_cache_hooks registers forward hooks on every decoder MultiHeadAttention key/value module, appending outputs to a dict cache; BeamSearchDecoder calls inference.rearrange_kv_cache(source_indices) to keep cache aligned with surviving beams.",
+          "sources": [
+            "whisper/model.py#L317-348",
+            "whisper/decoding.py#L144-177",
+            "whisper/decoding.py#L364-365"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Segment boundaries come from timestamp tokens: consecutive timestamp pairs slice tokens into segments with start/end = (token - timestamp_begin) * 0.02 s + window time_offset; a single trailing timestamp means silence for the remainder and fast-forwards the seek.",
+          "sources": [
+            "whisper/transcribe.py#L339-399",
+            "whisper/audio.py#L20-22"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Word alignment is a second decoder pass: find_alignment hooks each decoder block's cross_attn to capture QK matrices, runs model() under disable_sdpa, stacks weights at model.alignment_heads indices, median-filters, and runs DTW against token positions to produce WordTiming(word, tokens, start, end, probability).",
+          "sources": [
+            "whisper/timing.py#L163-242",
+            "whisper/model.py#L285-292"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Result shape: each segment dict carries seek, start, end, text, tokens, temperature, avg_logprob, compression_ratio, no_speech_prob (+words when enabled); transcribe() returns {text: tokenizer.decode(all_tokens minus initial prompt), segments, language}.",
+          "sources": [
+            "whisper/transcribe.py#L246-261",
+            "whisper/transcribe.py#L510-514"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Output boundary: ResultWriter.__call__ writes `<audio basename>.<extension>` under output_dir in utf-8; subtitle writers (VTT/SRT) reflow words via iterate_result using get_start/get_end, long-pause (>3 s) breaks, and <u> highlighting.",
+          "sources": [
+            "whisper/utils.py#L85-107",
+            "whisper/utils.py#L119-235"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Prompt state: all_tokens grows with emitted tokens; decode_options['prompt'] is all_tokens[prompt_reset_since:] (or initial_prompt_tokens + tail when carry_initial_prompt), and prompt_reset_since is reset to len(all_tokens) when condition_on_previous_text is off or temperature exceeded 0.5.",
+          "sources": [
+            "whisper/transcribe.py#L288-293",
+            "whisper/transcribe.py#L499-505"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "behavior_traces": {
+      "summary": "Three end-to-end flows were traced. (1) CLI startup: cli() → argparse → load_model → per-file transcribe → writer. (2) Model loading: name → _MODELS URL or local path → _download with SHA256 → torch.load → Whisper(dims) → set_alignment_heads. (3) Transcription: mel → language detect → per-window decode_with_fallback → DecodingTask.run (encoder → language → _main_loop → finalize → rank) → timestamp segmentation → optional word-level DTW alignment → result dict → file writers.",
+      "claims": [
+        {
+          "claim": "CLI flow: whisper/__main__.py → transcribe.cli() → argparse (~30 args, valid_model_name validates against available_models() or file existence) → os.makedirs(output_dir) → .en-model language guard → temperature ladder built from --temperature_increment_on_fallback → load_model(model_name, device, download_root=model_dir) → get_writer(output_format, output_dir) → for each audio: transcribe(model, path, temperature=..., **args) then writer(result, audio_path, **writer_args).",
+          "sources": [
+            "whisper/__main__.py",
+            "whisper/transcribe.py#L517-619",
+            "whisper/__init__.py#L98-100"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CLI resilience: each file's transcribe+write is wrapped in try/except that prints the traceback and `Skipping <path> due to ...`, so one bad file doesn't abort the batch.",
+          "sources": [
+            "whisper/transcribe.py#L613-619"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Model-load flow: load_model picks device (cuda if available) and download_root (~/.cache/whisper or $XDG_CACHE_HOME/whisper) → _download(url, root, in_memory) creates root, checks existing file's SHA256 (re-downloads on mismatch with a warning), streams via urllib with tqdm progress, verifies hash again post-download → torch.load(weights_only=True on torch>=1.13) → ModelDimensions(**checkpoint['dims']) → Whisper(dims) → load_state_dict → set_alignment_heads for official models.",
+          "sources": [
+            "whisper/__init__.py#L103-161"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Transcribe flow (in order): dtype/fp16 resolution with CPU-fp16 downgrade warning → log_mel_spectrogram(audio, n_mels, padding=N_SAMPLES) → language detection via model.detect_language on first 30 s when unset → get_tokenizer → clip_timestamps → seek_clips pairs → while clip_idx < len(seek_clips): slice mel_segment, pad_or_trim, build prompt, decode_with_fallback → split tokens on consecutive timestamps into new_segment dicts → optional add_word_timestamps → append to all_segments/all_tokens → return dict.",
+          "sources": [
+            "whisper/transcribe.py#L127-177",
+            "whisper/transcribe.py#L263-514"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "decode_with_fallback retries the window at each temperature in the ladder, dropping beam_size/patience when t>0 and best_of when t==0, and marks failure when compression_ratio > 2.4 or avg_logprob < -1.0 — unless no_speech_prob > 0.6 together with low logprob, which instead classifies the segment as silence.",
+          "sources": [
+            "whisper/transcribe.py#L184-224",
+            "whisper/transcribe.py#L298-310"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "DecodingTask.run order: decoder.reset() → _get_audio_features (encoder forward, fp16 cast) → tokens = initial_tokens repeated per audio → _detect_language (optionally writes language token into sot_index+1, short-circuits for task='lang_id') → repeat_interleave by n_group (beam_size or best_of) → _main_loop → reshape (n_audio, n_group) → decoder.finalize → slice tokens between sample_begin and first EOT → sequence_ranker.rank → build DecodingResult list with avg_logprob, no_speech_prob, compression_ratio.",
+          "sources": [
+            "whisper/decoding.py#L712-789"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Word-timestamp flow: add_word_timestamps → find_alignment (hooks on cross_attn capture QK, model() under disable_sdpa, weights over alignment_heads → median_filter → mean → dtw(-matrix) → split_to_word_tokens → WordTiming list) → sentence-boundary duration clamp → merge_punctuations → distribute words into segment['words'] with seek-derived time_offset and segment start/end reconciliation heuristics.",
+          "sources": [
+            "whisper/timing.py#L163-242",
+            "whisper/timing.py#L279-388"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Persistence flow: writer(result, audio_path) → ResultWriter.__call__ → output_path = output_dir/<basename>.<ext> → open utf-8 → write_result; format 'all' returns a closure invoking all six writers; subtitle writers produce `start --> end\\ntext` blocks via iterate_result.",
+          "sources": [
+            "whisper/utils.py#L85-107",
+            "whisper/utils.py#L238-263",
+            "whisper/utils.py#L306-329"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Word-anomaly / hallucination-skip flow inside the seek loop: is_segment_anomaly scores words (prob<0.15, duration<0.133 s or >2 s) on the first 8 non-punctuation words; when hallucination_silence_threshold is set and an anomalous segment is surrounded by silence, the seek jumps past it and trailing current_segments are dropped.",
+          "sources": [
+            "whisper/transcribe.py#L315-337",
+            "whisper/transcribe.py#L418-471"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "testing_signals": {
+      "summary": "Tests use pytest in tests/ (5 modules + conftest registering a `requires_cuda` marker and a `random` seed fixture). Coverage is good for the numeric utilities (dtw, median_filter vs scipy), normalizers (extensive assertions), and tokenizer edge cases, plus one end-to-end transcription test parametrized over all 13 model checkpoints against tests/jfk.flac. Major gaps: no coverage of the CLI, output writers, beam search, logit filters, model download, or the transcribe seek-loop heuristics. CI runs pre-commit (black/isort/flake8) and a 9-cell Python×PyTorch matrix on CPU-only torch wheels.",
+      "claims": [
+        {
+          "claim": "Test framework is pytest; conftest.py registers the `requires_cuda` marker and provides a `random` fixture seeding both `random` and `numpy.random` to 42.",
+          "sources": [
+            "tests/conftest.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "test_transcribe parametrizes over every name in whisper.available_models() (13 checkpoints, downloaded on demand), transcribes tests/jfk.flac with word_timestamps=True, asserts 'my fellow americans' etc., tokenizer decode round-trip, and that the word 'Americans' brackets t≈1.8 s.",
+          "sources": [
+            "tests/test_transcribe.py",
+            "tests/jfk.flac"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "test_audio verifies load_audio returns a 1-D waveform of ~10-12 s with std in (0,1) and that log_mel_spectrogram from array equals from-file, with mel dynamic range ≤ 2.0.",
+          "sources": [
+            "tests/test_audio.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "test_timing checks dtw_cpu against a manually constructed optimal path, median_filter against scipy.ndimage.median_filter on 4 shapes × widths {3,5,7,13}, and CUDA equivalence for both kernels gated behind requires_cuda.",
+          "sources": [
+            "tests/test_timing.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "test_normalizer exercises EnglishNumberNormalizer and EnglishTextNormalizer with ~70 assertions (ordinals, currency, 'double oh seven', 'and a half', contractions, titles) and EnglishSpellingNormalizer mappings.",
+          "sources": [
+            "tests/test_normalizer.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "test_tokenizer covers sot_sequence membership, language-token/code parity, multilingual vs gpt2 encode/decode round-trip on Korean text, and split_tokens_on_unicode on a partial-UTF8 French sequence; note the `multilingual` parametrize value is ignored — the test always calls get_tokenizer(multilingual=False).",
+          "sources": [
+            "tests/test_tokenizer.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CI (test.yml) runs a pre-commit job (black, isort, flake8, whitespace hooks) then a matrix over Python 3.8–3.13 × torch 1.10.1–2.5.1 with CPU wheels, conda-installed ffmpeg, invoking `pytest --durations=0 -vv -k 'not test_transcribe or test_transcribe[tiny] or test_transcribe[tiny.en]' -m 'not requires_cuda'`.",
+          "sources": [
+            ".github/workflows/test.yml",
+            ".pre-commit-config.yaml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Untested surface: cli() argument parsing and validation, all six ResultWriter formats, BeamSearchDecoder, every LogitFilter, _download SHA256 logic, and the hallucination-silence heuristics have no tests.",
+          "sources": [
+            "tests/",
+            "whisper/transcribe.py#L517-619",
+            "whisper/utils.py#L306-329",
+            "whisper/decoding.py#L301-505"
+          ],
+          "kind": "inference"
+        },
+        {
+          "claim": "Dev extras (black, flake8, isort, pytest, scipy) are declared in pyproject [project.optional-dependencies].dev; scipy is only needed by test_timing's reference comparison.",
+          "sources": [
+            "pyproject.toml#L33",
+            "tests/test_timing.py#L3"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "risk_map": {
+      "summary": "Highest-risk areas are (1) the `transcribe()` seek loop — a deliberately flattened, heuristic-heavy control flow the authors flag as obscure; (2) runtime code paths that execute or load external artifacts (ffmpeg subprocess, torch.load of checkpoint files, Triton JIT source patching); and (3) fragile fallbacks — numba JIT at import, the missing `regex` dependency, and silent error swallowing in the CLI. There is also a real latent bug in `_get_audio_features` returning a TypeError object instead of raising it.",
+      "claims": [
+        {
+          "claim": "load_audio passes the user-supplied file path to an ffmpeg subprocess (list-form argv, no shell injection, but any local path incl. URLs/devices reaches ffmpeg); a CalledProcessError surfaces as RuntimeError with stderr.",
+          "sources": [
+            "whisper/audio.py#L42-62"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Checkpoint loading calls torch.load(weights_only=True) only when torch>=1.13; on older versions any local checkpoint path passed to load_model gets full pickle deserialization — arbitrary code execution risk for untrusted .pt files.",
+          "sources": [
+            "whisper/__init__.py#L139-151"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Model download integrity relies on the SHA256 embedded in the URL path segment, verified before reuse and after download — but the URL itself is plain CDN state; a bad cached file triggers re-download, not a hard failure.",
+          "sources": [
+            "whisper/__init__.py#L54-95"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The transcribe() main loop is acknowledged-fragile: an in-code comment says 'This loop is obscurely flattened to make the diff readable', and the seek is mutated by ~6 different mechanisms (segment_size fast-forward, last_timestamp seek, word-end seek, anomaly skips), making regressions easy and coverage nonexistent.",
+          "sources": [
+            "whisper/transcribe.py#L267-280",
+            "whisper/transcribe.py#L344-471"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "DecodingTask._get_audio_features returns `TypeError(...)` as a value instead of raising it — a dead-branch bug where a dtype mismatch would propagate a TypeError object as audio_features.",
+          "sources": [
+            "whisper/decoding.py#L656-662"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "triton_ops generates the median-filter kernel by string-replacing LOAD_ALL_ROWS_HERE/BUBBLESORT_HERE placeholders inside a @triton.jit function's source, then mutating kernel.src/_unsafe_update_src — brittle across Triton versions; timing.py wraps calls in try/except (RuntimeError, CalledProcessError) with slow-path fallback.",
+          "sources": [
+            "whisper/triton_ops.py#L43-103",
+            "whisper/timing.py#L36-54"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "normalizers/basic.py imports the third-party `regex` package, which is absent from both pyproject dependencies and requirements.txt — importing whisper.normalizers.basic fails on a clean install unless regex arrives transitively.",
+          "sources": [
+            "whisper/normalizers/basic.py#L4",
+            "pyproject.toml#L24-32",
+            "requirements.txt"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "numba is a hard dependency imported at module top of timing.py and JIT-compiles dtw_cpu/backtrace at first call — first-call latency plus platform fragility for a function used only when word_timestamps is on.",
+          "sources": [
+            "whisper/timing.py#L7",
+            "whisper/timing.py#L57-105"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The CLI catches all exceptions per audio file and merely prints 'Skipping ...' — a fully-failed batch still exits 0, which can silently produce empty output directories in scripted pipelines.",
+          "sources": [
+            "whisper/transcribe.py#L613-619"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Default suppress_tokens='-1' expands to tokenizer.non_speech_tokens (music notes, brackets, symbols) plus all special/task tokens — a hard-coded suppression list that can mask legitimately-decoded characters, and any bug there degrades output quality rather than erroring.",
+          "sources": [
+            "whisper/decoding.py#L615-642",
+            "whisper/tokenizer.py#L241-275"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "ApplyTimestampRules enforces timestamp/text alternation and monotonicity by in-place -inf masking per batch row; combined with the 'timestamp probability beats best text token' rule, subtle logic errors would produce shifted or looping timestamps rather than failures.",
+          "sources": [
+            "whisper/decoding.py#L441-505"
+          ],
+          "kind": "inference"
+        },
+        {
+          "claim": "get_tokenizer/get_encoding/median_kernel are lru_cache'd singletons, so Tokenizer instances are shared process-wide; they are effectively immutable in practice, but any future mutability would leak state across calls.",
+          "sources": [
+            "whisper/tokenizer.py#L330-331",
+            "whisper/tokenizer.py#L366-367",
+            "whisper/triton_ops.py#L43-44"
+          ],
+          "kind": "inference"
+        }
+      ]
+    },
+    "extension_points": {
+      "summary": "Extension is mostly class-substitution rather than plugin registration: the get_writer() dict is a mini-registry for output formats; TokenDecoder, LogitFilter, SequenceRanker, and Inference are abstract seams inside DecodingTask; new checkpoints plug in via _MODELS/_ALIGNMENT_HEADS or by path; DecodingOptions is the frozen config dataclass every knob flows through. There is no dynamic plugin discovery — all seams require editing source.",
+      "claims": [
+        {
+          "claim": "Output formats: subclass ResultWriter (set `extension`, implement write_result) and add it to the `writers` dict in get_writer() — the CLI's --output_format choices list in transcribe.py must also be updated.",
+          "sources": [
+            "whisper/utils.py#L85-106",
+            "whisper/utils.py#L306-329",
+            "whisper/transcribe.py#L534"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Search strategies: implement TokenDecoder (reset/update/finalize) — GreedyDecoder and BeamSearchDecoder are the built-ins — and select it in DecodingTask.__init__ where `options.beam_size is not None` chooses between them.",
+          "sources": [
+            "whisper/decoding.py#L216-270",
+            "whisper/decoding.py#L272-404",
+            "whisper/decoding.py#L546-551"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Logit-level policies: implement LogitFilter.apply(logits, tokens) and append to DecodingTask.logit_filters, currently populated with SuppressBlank, SuppressTokens, and ApplyTimestampRules.",
+          "sources": [
+            "whisper/decoding.py#L407-420",
+            "whisper/decoding.py#L553-570"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Reranking: SequenceRanker.rank(tokens, sum_logprobs) → indices; MaximumLikelihoodRanker (length-normalized or Google-NMT penalty) is the only implementation, assigned in DecodingTask.__init__.",
+          "sources": [
+            "whisper/decoding.py#L179-213",
+            "whisper/decoding.py#L543"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Inference backend: Inference defines logits() / rearrange_kv_cache() / cleanup_caching(); PyTorchInference implements it via KV-cache forward hooks — an alternative (e.g. compiled or batched backend) would subclass Inference and be wired in DecodingTask.__init__.",
+          "sources": [
+            "whisper/decoding.py#L130-177",
+            "whisper/decoding.py#L540"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New official models: add a CDN URL to _MODELS and a base85 gzip'd (n_layers × n_heads) mask to _ALIGNMENT_HEADS in __init__.py; unofficial/fine-tuned checkpoints work without changes by passing a file path to load_model.",
+          "sources": [
+            "whisper/__init__.py#L17-51",
+            "whisper/__init__.py#L136-145",
+            "whisper/model.py#L285-292"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "DecodingOptions is the single frozen config dataclass for a decode (task, language, temperature, beam/best_of, prompt/prefix, suppress_tokens, timestamps, fp16); transcribe() forwards **decode_options straight into DecodingOptions(**kwargs), so new CLI/API knobs route through it.",
+          "sources": [
+            "whisper/decoding.py#L80-115",
+            "whisper/transcribe.py#L200"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Languages are table-driven via LANGUAGES and TO_LANGUAGE_CODE, but special tokens are baked into the .tiktoken vocab — new languages can't be added without retraining; only aliases are cheap to extend.",
+          "sources": [
+            "whisper/tokenizer.py#L10-128",
+            "whisper/tokenizer.py#L340-350"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Accelerator backends: timing.py dispatches CUDA vs CPU implementations by trying the triton path inside try/except — the established pattern for adding a new kernel backend to median_filter and dtw.",
+          "sources": [
+            "whisper/timing.py#L36-54",
+            "whisper/timing.py#L141-151"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Normalizers are composable: EnglishTextNormalizer wires an ignore_patterns regex, a replacers dict, EnglishNumberNormalizer, and EnglishSpellingNormalizer(json map) — a new locale would follow the same class shape and export through normalizers/__init__.py.",
+          "sources": [
+            "whisper/normalizers/english.py#L467-552",
+            "whisper/normalizers/__init__.py",
+            "whisper/normalizers/basic.py#L60-80"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_handoff": {
+      "summary": "Small, flat, readable codebase (~3.7k LOC of Python). Before editing, read whisper/transcribe.py (orchestrator+CLI), whisper/decoding.py (engine), and whisper/model.py (nn defs). Style is enforced by pre-commit (black/isort/flake8) in CI. Tests need ffmpeg and network for model downloads; the fastest local check is `pytest -k 'not test_transcribe'`. Known traps: a return-instead-of-raise bug in _get_audio_features, an undeclared `regex` dependency, Whisper binding free functions as class attributes, and the deliberately convoluted seek loop in transcribe().",
+      "claims": [
+        {
+          "claim": "Read-first files: transcribe.py (623 lines, orchestration + cli()), decoding.py (826 lines, DecodingTask/DecodingOptions/decoders/filters), model.py (352 lines, Whisper/AudioEncoder/TextDecoder), __init__.py (load_model + _MODELS), tokenizer.py (vocab + specials).",
+          "sources": [
+            "whisper/transcribe.py",
+            "whisper/decoding.py",
+            "whisper/model.py",
+            "whisper/__init__.py",
+            "whisper/tokenizer.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Formatting is enforced: black + isort (profile=black, line_length=88, trailing comma, multi_line_output=3) + flake8 (--max-line-length 88, ignore E203,E501,W503,W504) via .pre-commit-config.yaml, run as the gating CI job.",
+          "sources": [
+            ".pre-commit-config.yaml",
+            "pyproject.toml#L48-54",
+            ".github/workflows/test.yml#L11-38"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Test invocation: `pip install .[dev]` (pulls pytest+scipy) then `pytest`; ffmpeg must be on PATH; test_transcribe downloads checkpoints (~GBs) so `pytest -k 'not test_transcribe'` mirrors most of CI's fast path; CUDA tests are behind the requires_cuda marker.",
+          "sources": [
+            ".github/workflows/test.yml#L73-79",
+            "tests/test_transcribe.py",
+            "tests/conftest.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Releases: bump whisper/version.py __version__ (date-based, e.g. \"20250625\") and push a commit titled 'Release <version>' to main — python-publish.yml regex-matches the message, tags v<version>, builds sdist, and uploads to PyPI with TWINE secrets.",
+          "sources": [
+            "whisper/version.py",
+            ".github/workflows/python-publish.yml#L12-37"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Trap: Whisper binds transcribe/decode/detect_language as class attributes pointing at module-level functions — renaming those functions or changing their signatures breaks the model.method() API used in README examples.",
+          "sources": [
+            "whisper/model.py#L350-352",
+            "README.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Trap: DecodingTask._verify_options rejects incompatible combos (beam_size+best_of, best_of at T=0, patience without beam_size, length_penalty outside [0,1]) — new CLI flags must respect these invariants.",
+          "sources": [
+            "whisper/decoding.py#L572-585"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Trap: tokenizer.decode() silently drops all tokens >= timestamp_begin; use decode_with_timestamps() (renders <|1.08|>) when debugging timestamp/token issues.",
+          "sources": [
+            "whisper/tokenizer.py#L164-173"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Trap: fp16 is default-on but unsupported on CPU — transcribe() downgrades to fp32 with a warning, and DecodingOptions.fp16 controls the mel cast in _get_audio_features; keep both consistent when changing dtype logic.",
+          "sources": [
+            "whisper/transcribe.py#L127-136",
+            "whisper/decoding.py#L644-656"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Trap: binary assets (assets/*.tiktoken, assets/mel_filters.npz, normalizers/english.json) load via os.path.dirname(__file__) — restructuring the package requires updating MANIFEST.in and these loaders together.",
+          "sources": [
+            "whisper/tokenizer.py#L332",
+            "whisper/audio.py#L105",
+            "whisper/normalizers/english.py#L460-461",
+            "MANIFEST.in"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Safe-edit boundaries: utils.py writers and normalizers/ are low-risk leaf modules; audio.py constants (SAMPLE_RATE=16000, N_FRAMES=3000, hop=160) are load-bearing for timestamp math everywhere; the transcribe() seek loop and timing.py heuristics are the blast-radius hotspots.",
+          "sources": [
+            "whisper/utils.py",
+            "whisper/audio.py#L12-22",
+            "whisper/transcribe.py#L263-471",
+            "whisper/timing.py"
+          ],
+          "kind": "inference"
+        }
+      ]
+    },
+    "agent_prompt": "You are working on openai/whisper (OpenAI's Whisper ASR), a small flat Python package at whisper/ (~3.7k LOC) distributed on PyPI as `openai-whisper`, plus a `whisper` CLI.\n\nArchitecture: `whisper/__init__.py` holds the public API — `_MODELS` maps 13 model names (tiny..large-v3-turbo) to CDN URLs, and `load_model()` downloads checkpoints (SHA256-verified via the URL path, cached in ~/.cache/whisper or $XDG_CACHE_HOME/whisper), torch.load's them, builds `Whisper(ModelDimensions)` and installs alignment heads. `whisper/model.py` defines a vanilla encoder-decoder Transformer (AudioEncoder: 2 convs + sinusoidal PE + attention blocks; TextDecoder: cross-attention blocks + tied output embedding). The `Whisper` class binds module functions as attributes (`model.transcribe`, `model.decode`, `model.detect_language`) — do not rename them.\n\nPipeline: `whisper/audio.py` `load_audio()` shells out to ffmpeg (16 kHz mono s16le → float32); `log_mel_spectrogram` does STFT (n_fft=400, hop=160) + mel filterbank from assets/mel_filters.npz (80 or 128 bins). `whisper/transcribe.py` `transcribe()` pads 30 s, detects language if unset, then loops over 30 s windows: `decode_with_fallback` retries at increasing temperatures when compression_ratio/logprob thresholds fail, `DecodingTask` (in whisper/decoding.py) runs the encoder once then autoregressive decode with KV-cache hooks, LogitFilters (SuppressBlank/SuppressTokens/ApplyTimestampRules), and GreedyDecoder or BeamSearchDecoder. Timestamp tokens (>=tokenizer.timestamp_begin, 0.02 s each) delimit segments. Optional `word_timestamps` runs `timing.add_word_timestamps`: a second decoder pass capturing cross-attention weights via hooks, median-filter + DTW (numba CPU or triton CUDA). Results are dicts {text, segments, language}; writers in whisper/utils.py emit txt/vtt/srt/tsv/json/jsonl via the `get_writer` registry.\n\nTokenizer: `whisper/tokenizer.py` builds tiktoken encodings from assets/{gpt2,multilingual}.tiktoken with specials — sot, per-language tokens (99 langs in LANGUAGES), translate/transcribe, sot_prev, nospeech, notimestamps, <|0.00|>..<|30.00|>. `decode()` strips timestamp tokens; use `decode_with_timestamps()` for debugging.\n\nConventions: black + isort (line 88, trailing commas) + flake8 via pre-commit, enforced as a gating CI job in .github/workflows/test.yml. Tests are pytest in tests/; run `pytest -k 'not test_transcribe'` for the fast path — test_transcribe downloads all checkpoints and needs ffmpeg + network; requires_cuda tests are skipped in CI.\n\nTraps: (1) the seek loop in transcribe.py is deliberately 'obscurely flattened' — change it carefully; (2) `_get_audio_features` returns a TypeError object instead of raising (latent bug); (3) normalizers/basic.py imports `regex`, which is NOT in pyproject deps; (4) torch.load uses weights_only=True only on torch>=1.13 — arbitrary .pt paths are a pickle risk; (5) CLI catches per-file exceptions and exits 0 even when every file fails; (6) binary assets load via __file__ paths listed in MANIFEST.in. Releases: bump whisper/version.py and push a 'Release X.Y.Z' commit; python-publish.yml publishes automatically."
+  },
+  "analysis": {
+    "agent": "devin",
+    "model": "swe-2",
+    "runtime_ms": null,
+    "cost_usd": null,
+    "collected_at": "2026-09-22T16:03:32.407Z"
   }
 }

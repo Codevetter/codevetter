@@ -106,7 +106,7 @@
         {
           "path": "README.md",
           "bytes": 8139,
-          "preview": "> [!WARNING]\n> **This GitHub repo (<https://github.com/Genymobile/scrcpy>) is the only official\nsource for the project. Do not download releases from random websites, even if\ntheir name contains `scrcpy`.**\n\n# scrcpy (v4.1)\n\n<img src=\"app/data/scrcpy.svg\" width=\"128\" height=\"128\" alt=\"scrcpy\" align=\"right\" />\n\n_pronounced \"**scr**een **c**o**py**\"_\n\nThis application mirrors Android devices (video and audio) connected via USB or\n[TCP/IP](doc/connection.md#tcpip-wireless) and allows control using the\ncomputer's keyboard and mouse. It does not require _root_ access or an app\ninstalled on the device. It works on _Linux_, _Windows_, and _macOS_.\n\n[![Linux](https://img.shields.io/badge/Linux-download-orange?style=for-the-badge&logo=linux)](doc/linux.md)&nbsp;\n[![Windows](https://img.shields.io/badge/Windows-download-blue?style=for-the-badge&logo=windows)](doc/windows.md)&nbsp;\n[![macOS](https://img.shields.io/badge/macOS-download-brightgreen?style=for-the-badge&logo=apple)](doc/macos.md)&nbsp;\n\n![screenshot](assets/screenshot-debian-600.jpg)\n\nIt focuses on:\n\n - **lightness**: native, displays only the device screen\n - **performance**: 30~120fps, depending on the device\n - **quality**: 1920\u00d71080 or above\n - **low latency**: [35~70ms][lowlatency]\n - **low startup time**: ~1 second to display the first image\n - **non-intrusiveness**: nothing is left installed on the Android device\n - **user benefits**: no account, no ads, no internet required\n - **freedom**: free and open source software\n\n[lowlatency]: https://github.com/Genymobile/scrcpy/pull/646\n\nIts features include:\n - [audio forwarding](doc/audio.md) (Android 11+)\n - [recording](doc/recording.md)\n - [virtual display](doc/virtual-display.md)\n - mirroring with [Android device screen off](doc/device.md#turn-screen-off)\n - [copy-paste](doc/control.md#copy-paste) in both directions\n - [configurable quality](doc/video.md)\n - [camera mirroring](doc/camera.md) (Android 12+)\n - [mirroring as a webcam (V4L2)](doc/v4l2.md) (Linux-only)\n - physical [keyboard][hid-keyboard] and [mouse][hid-mouse] simulation (HID)\n - [gamepad](doc/gamepad.md) support\n - [OTG mode](doc/otg.md)\n - and more\u2026\n\n[hid-keyboard]: doc/keyboard.md#physical-keyboard-simulation\n[hid-mouse]: doc/mouse.md#physical-mouse-simulation\n\n## Prerequisites\n\nThe Android device requires at least API 21 (Android 5.0).\n\n[Audio forwarding](doc/audio.md) is supported for API >= 30 (Android 11+).\n\nMake sure you [enabled USB debugging][enable-adb] on your device(s).\n\n[enable-adb]: https://developer.android.com/studio/debug/dev-options#enable\n\nOn some devices (especially Xiaomi), you might get the following error:\n\n```\nInjecting input events requires the caller (or the source of the instrumentation, if any) to have the INJECT_EVENTS permission.\n```\n\nIn that case, you need to enable [an additional option][control] `USB debugging\n(Security Settings)` (this is an item different from `USB debugging`) to control\nit using a keyboard and mouse. Rebooting the device is necessary once this\noption is set.\n\n[control]: https://github.com/Genymobile/scrcpy/issues/70#issuecomment-373286323\n\nNote that USB debugging is not required to run scrcpy in [OTG mode](doc/otg.md).\n\n\n## Get the app\n\n - [Linux](doc/linux.md)\n - [Windows](doc/windows.md) (read [how to run](doc/windows.md#run))\n - [macOS](doc/macos.md)\n\n\n## Must-know tips\n\n - [Reducing resolution](doc/video.md#size) may greatly improve performance\n   (`scrcpy -m1024`)\n - [_Right-click_](doc/mouse.md#mouse-bindings) triggers `BACK`\n - [_Middle-click_](doc/mouse.md#mouse-bindings) triggers `HOME`\n - <kbd>Alt</kbd>+<kbd>f</kbd> toggles [fullscreen](doc/window.md#fullscreen)\n - There are many other [shortcuts](doc/shortcuts.md)\n\n\n## Usage examples\n\nThere are a lot of options, [documented](#user-documentation) in separate pages.\nHere are just some common examples.\n\n - Capture the screen in H.265 (better quality), limit the size to 1920, limit\n   the frame rate to 60fps, disable audio, and control the device by simulating\n   a physical keyboard:\n\n    ```bash\n    scrcpy --video-codec=h265 --max-size=1920 --max-fps=60 --no-audio --keyboard=uhid\n    scrcpy --video-codec=h265 -m1920 --max-fps=60 --no-audio -K  # short version\n    ```\n\n - Start VLC in a new virtual display (separate from the device display):\n\n    ```bash\n    scrcpy --new-display=1920x1080 --start-app=org.videolan.vlc\n    ```\n\n - Start VLC in a new _flex_ display using H.265 with a bitrate of 16 Mbps,\n   while keeping the display active so it does not turn off:\n\n    ```bash\n    scrcpy --new-display -x --keep-active --start-app=org.videolan.vlc --video-codec=h265 -b16M\n    ```\n\n - Record the device camera in H.265 at 1920x1080 (and microphone) to an MP4\n   file:\n\n    ```bash\n    scrcpy --video-source=camera --video-codec=h265 --camera-size=1920x1080 --record=file.mp4\n    ```\n\n - Capture the device front camera and expose it as a webcam on the computer (on\n   Linux):\n\n    ```bash\n    scrcpy --video-source=camera --camera-size=1920x1080 --camera-facing=front --v4l2-sink=/dev/video2 --no-playback\n    ```\n\n - Control the device without mirroring by simulating a physical keyboard and\n   mouse (USB debugging not required):\n\n    ```bash\n    scrcpy --otg\n    ```\n\n - Control the device using gamepads plugged into the computer:\n\n    ```bash\n    scrcpy --gamepad=uhid\n    scrcpy -G  # short version\n    ```\n\n## User documentation\n\nThe application provides a lot of features and configuration options. They are\ndocumented in the following pages:\n\n - [Connection](doc/connection.md)\n - [Video](doc/video.md)\n - [Audio](doc/audio.md)\n - [Control](doc/control.md)\n - [Keyboard](doc/keyboard.md)\n - [Mouse](doc/mouse.md)\n - [Gamepad](doc/gamepad.md)\n - [Device](doc/device.md)\n - [Window](doc/window.md)\n - [Recording](doc/recording.md)\n - [Virtual display](doc/virtual-display.md)\n - [Tunnels](doc/tunnels.md)\n - [OTG](doc/otg.md)\n - [Camera](doc/camera.md)\n - [Video4Linux](doc/v4l2.md)\n - [Shortcuts](doc/shortcuts.md)\n\n\n## Resources\n\n - [FAQ](FAQ.md)\n - [Translations][wiki] (not necessarily up to date)\n - [Build instructions](doc/build.md)\n - [Developers](doc/develop.md)\n - [Verify release signatures](doc/verify-release.md)\n\n[wiki]: https://github.com/Genymobile/scrcpy/wiki\n\n\n## Articles\n\n- [Introducing scrcpy][article-intro]\n- [Scrcpy now works wirelessly][article-tcpip]\n- [Scrcpy 2.0, with audio][article-scrcpy2]\n\n[article-intro]: https://blog.rom1v.com/2018/03/introducing-scrcpy/\n[article-tcpip]: https://www.genymotion.com/blog/open-source-project-scrcpy-now-works-wirelessly/\n[article-scrcpy2]: https://blog.rom1v.com/2023/03/scrcpy-2-0-with-audio/\n\n## Contact\n\nYou can open an [issue] for bug reports, feature requests or general questions.\n\nFor bug reports, please read the [FAQ](FAQ.md) first, you might find a solution\nto your problem immediately.\n\n[issue]: https://github.com/Genymobile/scrcpy/issues\n\nYou can also use:\n\n - Reddit: [`r/scrcpy`](https://www.reddit.com/r/scrcpy)\n - BlueSky: [`@scrcpy.bsky.social`](https://bsky.app/profile/scrcpy.bsky.social)\n - Twitter: [`@scrcpy_app`](https://twitter.com/scrcpy_app)\n\n\n## Donate\n\nI'm [@rom1v](https://github.com/rom1v), the author and maintainer of _scrcpy_.\n\nIf you appreciate this application, you can [support my open source\nwork][donate]:\n - [GitHub Sponsors](https://github.com/sponsors/rom1v)\n - [Liberapay](https://liberapay.com/rom1v/)\n - [PayPal](https://paypal.me/rom2v)\n\n[donate]: https://blog.rom1v.com/about/#support-my-open-source-work\n\n## License\n\n    Copyright (C) 2018 Genymobile\n    Copyright (C) 2018-2026 Romain Vimont\n\n    Licensed under the Apache License, Version 2.0 (the \"License\");\n    you may not use this file except in compliance with the License.\n    You may obtain a copy of the License at\n\n        http://www.apache.org/licenses/LICENSE-2.0\n\n    Unless required by applicable law or agreed to in writing, software\n    distributed under the License is distributed on an \"AS IS\" BASIS,\n    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n    See the License for the specific language governing permissions and\n    limitations under the License.\n"
+          "preview": "> [!WARNING]\n> **This GitHub repo (<https://github.com/Genymobile/scrcpy>) is the only official\nsource for the project. Do not download releases from random websites, even if\ntheir name contains `scrcpy`.**\n\n# scrcpy (v4.1)\n\n<img src=\"app/data/scrcpy.svg\" width=\"128\" height=\"128\" alt=\"scrcpy\" align=\"right\" />\n\n_pronounced \"**scr**een **c**o**py**\"_\n\nThis application mirrors Android devices (video and audio) connected via USB or\n[TCP/IP](doc/connection.md#tcpip-wireless) and allows control using the\ncomputer's keyboard and mouse. It does not require _root_ access or an app\ninstalled on the device. It works on _Linux_, _Windows_, and _macOS_.\n\n[![Linux](https://img.shields.io/badge/Linux-download-orange?style=for-the-badge&logo=linux)](doc/linux.md)&nbsp;\n[![Windows](https://img.shields.io/badge/Windows-download-blue?style=for-the-badge&logo=windows)](doc/windows.md)&nbsp;\n[![macOS](https://img.shields.io/badge/macOS-download-brightgreen?style=for-the-badge&logo=apple)](doc/macos.md)&nbsp;\n\n![screenshot](assets/screenshot-debian-600.jpg)\n\nIt focuses on:\n\n - **lightness**: native, displays only the device screen\n - **performance**: 30~120fps, depending on the device\n - **quality**: 1920×1080 or above\n - **low latency**: [35~70ms][lowlatency]\n - **low startup time**: ~1 second to display the first image\n - **non-intrusiveness**: nothing is left installed on the Android device\n - **user benefits**: no account, no ads, no internet required\n - **freedom**: free and open source software\n\n[lowlatency]: https://github.com/Genymobile/scrcpy/pull/646\n\nIts features include:\n - [audio forwarding](doc/audio.md) (Android 11+)\n - [recording](doc/recording.md)\n - [virtual display](doc/virtual-display.md)\n - mirroring with [Android device screen off](doc/device.md#turn-screen-off)\n - [copy-paste](doc/control.md#copy-paste) in both directions\n - [configurable quality](doc/video.md)\n - [camera mirroring](doc/camera.md) (Android 12+)\n - [mirroring as a webcam (V4L2)](doc/v4l2.md) (Linux-only)\n - physical [keyboard][hid-keyboard] and [mouse][hid-mouse] simulation (HID)\n - [gamepad](doc/gamepad.md) support\n - [OTG mode](doc/otg.md)\n - and more…\n\n[hid-keyboard]: doc/keyboard.md#physical-keyboard-simulation\n[hid-mouse]: doc/mouse.md#physical-mouse-simulation\n\n## Prerequisites\n\nThe Android device requires at least API 21 (Android 5.0).\n\n[Audio forwarding](doc/audio.md) is supported for API >= 30 (Android 11+).\n\nMake sure you [enabled USB debugging][enable-adb] on your device(s).\n\n[enable-adb]: https://developer.android.com/studio/debug/dev-options#enable\n\nOn some devices (especially Xiaomi), you might get the following error:\n\n```\nInjecting input events requires the caller (or the source of the instrumentation, if any) to have the INJECT_EVENTS permission.\n```\n\nIn that case, you need to enable [an additional option][control] `USB debugging\n(Security Settings)` (this is an item different from `USB debugging`) to control\nit using a keyboard and mouse. Rebooting the device is necessary once this\noption is set.\n\n[control]: https://github.com/Genymobile/scrcpy/issues/70#issuecomment-373286323\n\nNote that USB debugging is not required to run scrcpy in [OTG mode](doc/otg.md).\n\n\n## Get the app\n\n - [Linux](doc/linux.md)\n - [Windows](doc/windows.md) (read [how to run](doc/windows.md#run))\n - [macOS](doc/macos.md)\n\n\n## Must-know tips\n\n - [Reducing resolution](doc/video.md#size) may greatly improve performance\n   (`scrcpy -m1024`)\n - [_Right-click_](doc/mouse.md#mouse-bindings) triggers `BACK`\n - [_Middle-click_](doc/mouse.md#mouse-bindings) triggers `HOME`\n - <kbd>Alt</kbd>+<kbd>f</kbd> toggles [fullscreen](doc/window.md#fullscreen)\n - There are many other [shortcuts](doc/shortcuts.md)\n\n\n## Usage examples\n\nThere are a lot of options, [documented](#user-documentation) in separate pages.\nHere are just some common examples.\n\n - Capture the screen in H.265 (better quality), limit the size to 1920, limit\n   the frame rate to 60fps, disable audio, and control the device by simulating\n   a physical keyboard:\n\n    ```bash\n    scrcpy --video-codec=h265 --max-size=1920 --max-fps=60 --no-audio --keyboard=uhid\n    scrcpy --video-codec=h265 -m1920 --max-fps=60 --no-audio -K  # short version\n    ```\n\n - Start VLC in a new virtual display (separate from the device display):\n\n    ```bash\n    scrcpy --new-display=1920x1080 --start-app=org.videolan.vlc\n    ```\n\n - Start VLC in a new _flex_ display using H.265 with a bitrate of 16 Mbps,\n   while keeping the display active so it does not turn off:\n\n    ```bash\n    scrcpy --new-display -x --keep-active --start-app=org.videolan.vlc --video-codec=h265 -b16M\n    ```\n\n - Record the device camera in H.265 at 1920x1080 (and microphone) to an MP4\n   file:\n\n    ```bash\n    scrcpy --video-source=camera --video-codec=h265 --camera-size=1920x1080 --record=file.mp4\n    ```\n\n - Capture the device front camera and expose it as a webcam on the computer (on\n   Linux):\n\n    ```bash\n    scrcpy --video-source=camera --camera-size=1920x1080 --camera-facing=front --v4l2-sink=/dev/video2 --no-playback\n    ```\n\n - Control the device without mirroring by simulating a physical keyboard and\n   mouse (USB debugging not required):\n\n    ```bash\n    scrcpy --otg\n    ```\n\n - Control the device using gamepads plugged into the computer:\n\n    ```bash\n    scrcpy --gamepad=uhid\n    scrcpy -G  # short version\n    ```\n\n## User documentation\n\nThe application provides a lot of features and configuration options. They are\ndocumented in the following pages:\n\n - [Connection](doc/connection.md)\n - [Video](doc/video.md)\n - [Audio](doc/audio.md)\n - [Control](doc/control.md)\n - [Keyboard](doc/keyboard.md)\n - [Mouse](doc/mouse.md)\n - [Gamepad](doc/gamepad.md)\n - [Device](doc/device.md)\n - [Window](doc/window.md)\n - [Recording](doc/recording.md)\n - [Virtual display](doc/virtual-display.md)\n - [Tunnels](doc/tunnels.md)\n - [OTG](doc/otg.md)\n - [Camera](doc/camera.md)\n - [Video4Linux](doc/v4l2.md)\n - [Shortcuts](doc/shortcuts.md)\n\n\n## Resources\n\n - [FAQ](FAQ.md)\n - [Translations][wiki] (not necessarily up to date)\n - [Build instructions](doc/build.md)\n - [Developers](doc/develop.md)\n - [Verify release signatures](doc/verify-release.md)\n\n[wiki]: https://github.com/Genymobile/scrcpy/wiki\n\n\n## Articles\n\n- [Introducing scrcpy][article-intro]\n- [Scrcpy now works wirelessly][article-tcpip]\n- [Scrcpy 2.0, with audio][article-scrcpy2]\n\n[article-intro]: https://blog.rom1v.com/2018/03/introducing-scrcpy/\n[article-tcpip]: https://www.genymotion.com/blog/open-source-project-scrcpy-now-works-wirelessly/\n[article-scrcpy2]: https://blog.rom1v.com/2023/03/scrcpy-2-0-with-audio/\n\n## Contact\n\nYou can open an [issue] for bug reports, feature requests or general questions.\n\nFor bug reports, please read the [FAQ](FAQ.md) first, you might find a solution\nto your problem immediately.\n\n[issue]: https://github.com/Genymobile/scrcpy/issues\n\nYou can also use:\n\n - Reddit: [`r/scrcpy`](https://www.reddit.com/r/scrcpy)\n - BlueSky: [`@scrcpy.bsky.social`](https://bsky.app/profile/scrcpy.bsky.social)\n - Twitter: [`@scrcpy_app`](https://twitter.com/scrcpy_app)\n\n\n## Donate\n\nI'm [@rom1v](https://github.com/rom1v), the author and maintainer of _scrcpy_.\n\nIf you appreciate this application, you can [support my open source\nwork][donate]:\n - [GitHub Sponsors](https://github.com/sponsors/rom1v)\n - [Liberapay](https://liberapay.com/rom1v/)\n - [PayPal](https://paypal.me/rom2v)\n\n[donate]: https://blog.rom1v.com/about/#support-my-open-source-work\n\n## License\n\n    Copyright (C) 2018 Genymobile\n    Copyright (C) 2018-2026 Romain Vimont\n\n    Licensed under the Apache License, Version 2.0 (the \"License\");\n    you may not use this file except in compliance with the License.\n    You may obtain a copy of the License at\n\n        http://www.apache.org/licenses/LICENSE-2.0\n\n    Unless required by applicable law or agreed to in writing, software\n    distributed under the License is distributed on an \"AS IS\" BASIS,\n    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n    See the License for the specific language governing permissions and\n    limitations under the License.\n"
         }
       ],
       "config_files": [],
@@ -18896,7 +18896,7 @@
         "steps": [
           {
             "id": "serialize",
-            "label": "JSON serialize (inventory \u2192 SQLite)",
+            "label": "JSON serialize (inventory → SQLite)",
             "ms": 0,
             "pct": 0
           },
@@ -18915,5 +18915,854 @@
         ]
       }
     ]
+  },
+  "report": {
+    "overview": "scrcpy is a two-process Android screen-mirroring and remote-control tool: a native C/SDL3+FFmpeg client (app/) runs on Linux/Windows/macOS and pushes a Java 'server' (server/) onto the device via adb, where it is executed with app_process to capture and encode screen/camera video and device audio. Streams travel over up to three sockets (video, audio, control) tunnelled through adb, while a bidirectional control channel injects keyboard/mouse/gamepad events and syncs the clipboard. It is designed for low latency (~35-70ms), no root, and nothing permanently installed on the device.",
+    "system_map": {
+      "summary": "The repo contains two deployables: the 'scrcpy' client binary in C (app/src) built by Meson, and 'scrcpy-server', an Android Java program (server/) built by Gradle into a dexed jar pushed to /data/local/tmp and run via app_process. The client entrypoint is app/src/main.c -> scrcpy() in app/src/scrcpy.c, which owns a single static struct aggregating server connection, screen, audio player, demuxers, decoders, recorder, controller and optional USB/V4L2 subsystems. The server entrypoint is Server.main -> internalMain -> scrcpy() in Server.java, which wires AsyncProcessors (Controller, audio encoder/recorder, SurfaceEncoder) onto sockets opened through DesktopConnection. Communication is over adb-tunnelled TCP/local sockets (adb reverse by default, forward with --force-adb-forward). CI/release is driven by .github/workflows/release.yml calling scripts in release/.",
+      "claims": [
+        {
+          "claim": "The system is split into a host client (C, app/src) and an on-device server (Java, server/src); the client pushes the server and starts it, then they communicate over 1-3 sockets for video, audio and control.",
+          "sources": [
+            "doc/develop.md",
+            "app/src/scrcpy.c",
+            "server/src/main/java/com/genymobile/scrcpy/Server.java"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Client entrypoint: main() in app/src/main.c converts Windows UTF-16 argv to UTF-8, calls main_scrcpy() which runs scrcpy_parse_args() then either scrcpy() or scrcpy_otg() (when built with HAVE_USB and --otg is passed).",
+          "sources": [
+            "app/src/main.c#L27-175",
+            "app/src/usb/scrcpy_otg.c"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "scrcpy() in app/src/scrcpy.c is the client orchestrator: it fills a static 'struct scrcpy' containing sc_server, sc_screen, sc_audio_player, two sc_demuxer, two sc_decoder, sc_recorder, sc_video_regulator, sc_controller and sc_file_pusher, plus unions of SDK/UHID/AOA input backends.",
+          "sources": [
+            "app/src/scrcpy.c#L51-95",
+            "app/src/scrcpy.c#L320-425"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The client pushes the server jar to /data/local/tmp/scrcpy-server.jar and executes 'adb -s <serial> shell CLASSPATH=<jar> app_process / com.genymobile.scrcpy.Server <version> key=value...' in execute_server().",
+          "sources": [
+            "app/src/server.c#L18-21",
+            "app/src/server.c#L208-262"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Server-side entry: Server.main -> internalMain drops root privileges to uid 2000 (shell), installs a main Looper via reflection on Looper.sMainLooper (quitAllowed), then Options.parse() validates the client version arg before scrcpy() opens DesktopConnection and starts AsyncProcessors.",
+          "sources": [
+            "server/src/main/java/com/genymobile/scrcpy/Server.java#L197-291",
+            "server/src/main/java/com/genymobile/scrcpy/Options.java#L322-335"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The control protocol version is tied to the app version: the client passes SCRCPY_VERSION as argv[1] and Options.parse() throws IllegalArgumentException if it differs from BuildConfig.VERSION_NAME.",
+          "sources": [
+            "app/src/server.c#L253",
+            "server/src/main/java/com/genymobile/scrcpy/Options.java#L328-332"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "DesktopConnection.open() creates/connects LocalSocket(s) named 'scrcpy_%08x' (scid) — listening with LocalServerSocket in tunnel-forward mode, connecting otherwise — for video, audio and control channels, optionally writing a dummy byte so the client detects a dead tunnel.",
+          "sources": [
+            "server/src/main/java/com/genymobile/scrcpy/device/DesktopConnection.java#L47-116",
+            "app/src/server.c#L489-539"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Client dependencies are FFmpeg (libavformat, libavcodec, libavutil, libswresample), SDL3 >= 3.2.0, optionally libavdevice (V4L2) and libusb-1.0 (USB/HID/OTG); on Windows it links mingw32 and ws2_32.",
+          "sources": [
+            "app/meson.build#L125-144"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Build system: root meson.build declares project 'scrcpy' v4.1 (C11) with options compile_app/compile_server/prebuilt_server/portable/static/server_debugger/v4l2/usb; the server is produced by a Meson custom_target invoking server/scripts/build-wrapper.sh (Gradle) unless prebuilt_server is set.",
+          "sources": [
+            "meson.build",
+            "meson_options.txt",
+            "server/meson.build#L1-25"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "scrcpy-server is an Android Gradle module (com.android.application plugin, compileSdk 36, minSdk 21, targetSdk 36) with JUnit testImplementation and a checkstyle config applied from config/android-checkstyle.gradle.",
+          "sources": [
+            "server/build.gradle",
+            "config/android-checkstyle.gradle"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Threading model: one dedicated thread per socket direction — run_server (adb process + tunnel), run_demuxer per stream, run_controller + receiver for control, run_file_pusher — coordinated through SDL events posted to the main thread event_loop().",
+          "sources": [
+            "app/src/scrcpy.c#L116-153",
+            "app/src/server.c#L964-1189",
+            "app/src/demuxer.c#L176-355",
+            "app/src/controller.c#L162-217"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Release pipeline: .github/workflows/release.yml (workflow_dispatch) tests server+client, builds server jar and client dists for linux-x86_64/win32/win64/macos aarch64+x86_64, then packages and checksums them via release/*.sh scripts.",
+          "sources": [
+            ".github/workflows/release.yml",
+            "release/test_client.sh",
+            "release/test_server.sh"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "feature_catalog": {
+      "summary": "Feature surface is almost entirely CLI-driven: cli.c defines a table of ~100 long options (many with short forms) parsed via getopt_long into scrcpy_options. Major features: video mirroring (display or camera, five codecs), audio forwarding (four codecs, many sources), input control via three injection modes (SDK/UHID/AOA), screen recording to several container formats, virtual/flex displays, app launching, file push and APK install by drag-and-drop, clipboard autosync, TCP/IP wireless setup, OTG mode without adb debugging, V4L2 webcam sink, and --list-* introspection commands executed server-side.",
+      "claims": [
+        {
+          "claim": "The full CLI surface is a static 'struct sc_option options[]' table in cli.c (~100 entries: --video-codec, --audio-source, --record, --new-display, --otg, --v4l2-sink, --tcpip, --keyboard, --mouse, --gamepad, --start-app, --list-*, etc.) fed to getopt_long by parse_args_with_getopt().",
+          "sources": [
+            "app/src/cli.c#L149-220",
+            "app/src/cli.c#L2492-2498",
+            "app/src/cli.c#L3561-3568"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Video codecs h264/h265/av1/vp8/vp9 and audio codecs opus/aac/flac/raw are selectable; sc_server_get_codec_name() maps them to server param strings and the demuxer maps wire codec ids to AVCodecID.",
+          "sources": [
+            "app/src/server.c#L105-130",
+            "app/src/demuxer.c#L19-58"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Audio sources include output, playback, mic and mic variants (mic-unprocessed, mic-camcorder, mic-voice-recognition, mic-voice-communication, voice-call[-uplink|-downlink], voice-performance); server-side they map to AudioDirectCapture or AudioPlaybackCapture.",
+          "sources": [
+            "app/src/server.c#L147-176",
+            "server/src/main/java/com/genymobile/scrcpy/Server.java#L119-137"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Recording (--record) supports mp4, m4a, aac, mkv, mka, opus, flac and wav containers via FFmpeg muxers, with per-stream PTS rescaling and monotonic-PTS fixing.",
+          "sources": [
+            "app/src/recorder.c#L64-120"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Input injection has three backends per device class: SDK (injectInputEvent via controller), UHID (virtual HID devices created on-device) and AOA over USB (HAVE_USB builds); the union members keyboard_sdk/uhid/aoa, mouse_sdk/uhid/aoa and gamepad_uhid/aoa are selected by --keyboard/--mouse/--gamepad modes.",
+          "sources": [
+            "app/src/scrcpy.c#L609-738",
+            "app/src/uhid/keyboard_uhid.c",
+            "app/src/usb/keyboard_aoa.c"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Virtual display features: --new-display creates a NewDisplayCapture, --start-app sends SC_CONTROL_MSG_TYPE_START_APP, --display-ime-policy/vd_system_decorations/vd_destroy_content/flex_display tune it; requires Android 10+.",
+          "sources": [
+            "server/src/main/java/com/genymobile/scrcpy/Server.java#L139-160",
+            "server/src/main/java/com/genymobile/scrcpy/Server.java#L77-86",
+            "app/src/control_msg.h#L29-53"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "OTG mode (--otg) runs scrcpy_otg() which drives keyboard/mouse/gamepad over Android Open Accessory HID without adb debugging.",
+          "sources": [
+            "app/src/main.c#L101-105",
+            "app/src/usb/scrcpy_otg.c"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "V4L2 sink (--v4l2-sink, Linux-only HAVE_V4L2) registers avdevice and pipes decoded frames to a /dev/videoN device through sc_v4l2_sink with an optional v4l2_regulator buffer.",
+          "sources": [
+            "app/src/scrcpy.c#L812-829",
+            "app/src/main.c#L83-87",
+            "meson_options.txt"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Clipboard autosync is bidirectional: the server registers a primaryClipChanged listener sending DeviceMessage clipboard updates, and the client receiver applies them via SDL_SetClipboardText.",
+          "sources": [
+            "server/src/main/java/com/genymobile/scrcpy/control/Controller.java#L144-163",
+            "app/src/receiver.c#L40-60",
+            "app/src/device_msg.h#L14-35"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "File drop/APK install: sc_file_pusher runs a thread draining a request queue — 'adb push' files to push_target (default /sdcard/Download/) then sends SC_CONTROL_MSG_TYPE_SCAN_FILE so the device media-scans them, or 'adb install' for APKs.",
+          "sources": [
+            "app/src/file_pusher.c#L12-180"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "--tcpip automates wireless setup: get device IP via getprop, 'adb tcpip 5555', poll service.adb.tcp.port until enabled, then 'adb connect ip:port'; '--tcpip=+addr' disconnects first.",
+          "sources": [
+            "app/src/server.c#L783-953"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "--list-encoders/--list-displays/--list-cameras/--list-camera-sizes/--list-apps run a short-lived server invocation that prints LogUtils-built lists instead of mirroring.",
+          "sources": [
+            "server/src/main/java/com/genymobile/scrcpy/Server.java#L247-269",
+            "app/src/server.c#L443-457",
+            "app/src/server.c#L1060-1072"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Camera mirroring (--video-source=camera, Android 12+) uses CameraCapture with facing/size/ar/fps/high-speed/torch/zoom options, and control messages CAMERA_SET_TORCH/ZOOM_IN/ZOOM_OUT are dispatched to the capture.",
+          "sources": [
+            "server/src/main/java/com/genymobile/scrcpy/Server.java#L72-75",
+            "server/src/main/java/com/genymobile/scrcpy/control/Controller.java#L422-438",
+            "app/src/server.c#L345-373"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Device-control extras: --turn-screen-off sends SET_DISPLAY_POWER after setup, --stay-awake, --power-off-on-close, --no-power-on, --keep-active (4s simulated user activity thread), and --kill-adb-on-close kills the whole adb server.",
+          "sources": [
+            "app/src/scrcpy.c#L849-859",
+            "server/src/main/java/com/genymobile/scrcpy/control/Controller.java#L229-271",
+            "app/src/server.c#L955-962"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "data_flow": {
+      "summary": "Outbound (device->host): capture (screen/camera/mic) -> MediaCodec encoder -> Streamer writes a 4-byte codec id then 12-byte frame/session headers + raw packets onto the video/audio sockets -> client demuxer threads parse headers into AVPackets -> packet_source fans out to sinks (decoder -> screen/v4l2, recorder). Inbound (host->device): SDL input events -> processors build sc_control_msg -> controller queue -> serialized onto the control socket -> ControlMessageReader -> Controller.handleEvent -> Device/InputManager injection or UHID writes. The control socket is also used device->client for DeviceMessages (clipboard, ack, UHID output).",
+      "claims": [
+        {
+          "claim": "Wire format: each stream starts with a 4-byte codec id (ASCII like 'h264'); then video gets a 12-byte session header (MSB set, width/height) and each media packet is a 12-byte header (64-bit PTS+flags: bit62 config, bit61 keyframe; 32-bit size) followed by raw packet data.",
+          "sources": [
+            "app/src/demuxer.c#L12-138",
+            "server/src/main/java/com/genymobile/scrcpy/device/Streamer.java#L17-124"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Server video pipeline: SurfaceCapture (ScreenCapture / NewDisplayCapture / CameraCapture) feeds a Surface into SurfaceEncoder wrapping MediaCodec; encoded buffers go through Streamer.writePacket() to the video FileDescriptor.",
+          "sources": [
+            "server/src/main/java/com/genymobile/scrcpy/Server.java#L139-160",
+            "server/src/main/java/com/genymobile/scrcpy/device/Streamer.java#L68-89"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Server audio pipeline: AudioCapture (AudioDirectCapture for mic-family sources, AudioPlaybackCapture otherwise) is encoded by AudioEncoder or sent raw by AudioRawRecorder through a Streamer onto the audio fd.",
+          "sources": [
+            "server/src/main/java/com/genymobile/scrcpy/Server.java#L119-137",
+            "server/src/main/java/com/genymobile/scrcpy/audio/AudioEncoder.java"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Client demuxer run_demuxer() reads the codec id (0 = stream disabled by device, 1 = config error), opens an AVCodecContext (LOW_DELAY, YUV420P for video, stereo 48kHz for audio), then loops pushing session updates and merged packets to all packet_source sinks.",
+          "sources": [
+            "app/src/demuxer.c#L176-355"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "H.264/H.265 config packets are merged into the following media packet by sc_packet_merger before dispatch; other codecs pass through.",
+          "sources": [
+            "app/src/demuxer.c#L284-344",
+            "app/src/packet_merger.c"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Sink fan-out is wired in scrcpy(): video_demuxer.packet_source -> video_decoder.packet_sink -> (optional video_regulator) -> screen.frame_sink and/or v4l2_sink; both demuxers also feed recorder.packet_sinks when --record is set.",
+          "sources": [
+            "app/src/scrcpy.c#L532-589",
+            "app/src/scrcpy.c#L792-829"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Control uplink: sc_controller_push_msg() enqueues sc_control_msg (limit SC_CONTROL_MSG_QUEUE_LIMIT=60; only UHID_CREATE/UHID_DESTROY are non-droppable), run_controller serializes with sc_control_msg_serialize() into a static buffer and net_send_all()s to the control socket; RESIZE_DISPLAY is coalesced via a separate field.",
+          "sources": [
+            "app/src/controller.c#L7-217",
+            "app/src/control_msg.c#L358-366"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Control downlink: ControlMessageReader.read() parses the same type byte + big-endian fields into ControlMessage objects, then Controller.handleEvent() dispatches to injectKeycode/injectTouch/injectScroll/clipboard/UHID/camera actions.",
+          "sources": [
+            "server/src/main/java/com/genymobile/scrcpy/control/ControlMessageReader.java#L25-70",
+            "server/src/main/java/com/genymobile/scrcpy/control/Controller.java#L321-441"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Device->client messages (clipboard text, clipboard ack, UHID output) are serialized by DeviceMessageWriter/DeviceMessageSender onto the control socket and deserialized in the client receiver thread, which schedules SDL clipboard writes on the main thread.",
+          "sources": [
+            "app/src/device_msg.h#L14-45",
+            "app/src/receiver.c",
+            "server/src/main/java/com/genymobile/scrcpy/control/DeviceMessageSender.java"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Handshake metadata: the server sends a fixed 64-byte device name on the first connected socket (sendDeviceMeta), read by client device_read_info() into sc_server_info for use as the window title.",
+          "sources": [
+            "server/src/main/java/com/genymobile/scrcpy/device/DesktopConnection.java#L155-165",
+            "app/src/server.c#L596-610"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Options flow: CLI -> scrcpy_options -> sc_server_params -> execute_server() renders 'key=value' args (with VALIDATE_STRING against shell metacharacters) -> Server Options.parse() switch reconstructs typed Options.",
+          "sources": [
+            "app/src/server.c#L256-458",
+            "server/src/main/java/com/genymobile/scrcpy/Options.java#L336-574"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Recorder muxing: packet sinks reference AVPackets into a queue; the recorder thread writes them with av_interleaved_write_frame() after rescaling from SCRCPY_TIME_BASE (1/1e6 us) to each stream's time_base, fixing non-monotonic PTS.",
+          "sources": [
+            "app/src/recorder.c#L21-120"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Session identity: client generates a 31-bit random scid per run; the device socket name 'scrcpy_%08x' lets multiple scrcpy instances coexist on one device.",
+          "sources": [
+            "app/src/scrcpy.c#L276-283",
+            "server/src/main/java/com/genymobile/scrcpy/device/DesktopConnection.java#L47-54"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "behavior_traces": {
+      "summary": "Three end-to-end flows were traced. (1) Startup: CLI parse -> SDL init -> server thread does adb start-server, device selection, push, tunnel open, app_process exec, socket handshake, device meta read -> demuxer/decoder/screen init -> SDL event loop. (2) Input: SDL key/mouse event -> input_manager/keyboard_sdk/mouse_sdk -> sc_control_msg -> controller queue -> serialized write -> server ControlMessageReader -> Controller.handleEvent -> Device.injectEvent or UhidManager. (3) Shutdown/disconnect: SDL_QUIT or demuxer EOS -> sc_server_stop interrupts sockets -> adb process watchdog (1s grace then SIGKILL) -> threads joined in careful order (demuxers before screen destroy).",
+      "claims": [
+        {
+          "claim": "Startup order in main_scrcpy(): parse args -> set log level -> optional terminal title -> net_init() -> sc_main_thread_init() -> scrcpy(&opts); scrcpy() then SDL_Init(EVENTS) -> sc_server_init + sc_sdl_set_hints -> sc_server_start.",
+          "sources": [
+            "app/src/main.c#L27-126",
+            "app/src/scrcpy.c#L320-449"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Server-connection trace (run_server thread): sc_adb_start_server -> sc_adb_select_device (serial/-e/-d/$ANDROID_SERIAL) -> optional TCP/IP switch -> push_server -> sc_adb_tunnel_open -> execute_server -> sc_process_observer_init -> sc_server_connect_to -> cbs->on_connected.",
+          "sources": [
+            "app/src/server.c#L964-1122"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Tunnel connect: in reverse mode the client accept()s video then audio then control sockets on the adb-forwarded local socket; in forward mode it connect()s with retry (100 attempts x 100ms) and a dummy-byte read to detect dead tunnels; control socket gets TCP_NODELAY.",
+          "sources": [
+            "app/src/server.c#L489-714",
+            "server/src/main/java/com/genymobile/scrcpy/device/DesktopConnection.java#L56-116"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Post-connect init order in scrcpy(): file_pusher -> video/audio demuxer init -> decoders attached as packet sinks -> recorder init+start -> controller configure/start -> screen init -> demuxer start -> optional screen-off msg, timeout, start-app msg -> event_loop().",
+          "sources": [
+            "app/src/scrcpy.c#L521-906"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Server-side startup: Server.scrcpy() applies Workarounds, opens DesktopConnection, sends device meta, creates Controller (control), audio capture+encoder, SurfaceCapture+SurfaceEncoder, then starts each AsyncProcessor and blocks in Looper.loop() until Completion counts them down or a fatal error quits the looper.",
+          "sources": [
+            "server/src/main/java/com/genymobile/scrcpy/Server.java#L71-195"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Keyboard trace: SDL key event -> sc_input_manager (shortcut_mods decide local shortcut vs device key) -> keyboard_sdk builds INJECT_KEYCODE/INJECT_TEXT msgs -> sc_controller_push_msg -> run_controller -> sc_control_msg_serialize -> socket -> ControlMessageReader.parseInjectKeycode -> Controller.injectKeycode -> Device.injectEvent(ASYNC).",
+          "sources": [
+            "app/src/input_manager.c#L61-106",
+            "app/src/keyboard_sdk.c",
+            "app/src/controller.c#L95-160",
+            "server/src/main/java/com/genymobile/scrcpy/control/ControlMessageReader.java#L72-78",
+            "server/src/main/java/com/genymobile/scrcpy/control/Controller.java#L443-468"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Clipboard device->host trace: ClipboardManager.addPrimaryClipChangedListener -> Device.getClipboardText -> DeviceMessageSender.send -> control socket -> client receiver thread -> sc_device_msg_deserialize -> task_set_clipboard on main thread -> SDL_SetClipboardText.",
+          "sources": [
+            "server/src/main/java/com/genymobile/scrcpy/control/Controller.java#L146-159",
+            "app/src/receiver.c#L40-60",
+            "app/src/device_msg.h#L14-35"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Event loop dispatch: SC_EVENT_DEVICE_DISCONNECTED/CONTROLLER_ERROR/DEMUXER_ERROR/RECORDER_ERROR/AOA_OPEN_ERROR/TIME_LIMIT_REACHED map to exit codes; all other events (including SC_EVENT_NEW_FRAME, SC_EVENT_OPEN_WINDOW pushed by screen) go to sc_screen_handle_event().",
+          "sources": [
+            "app/src/scrcpy.c#L116-153",
+            "app/src/screen.c#L1130-1262"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Demuxer end-of-stream posts SC_EVENT_DEVICE_DISCONNECTED (EOS) or SC_EVENT_DEMUXER_ERROR; audio demuxer tolerates DISABLED unless --require-audio; video DISABLED is asserted impossible.",
+          "sources": [
+            "app/src/scrcpy.c#L193-225"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Shutdown: event_loop returns -> sc_main_thread_stop drains pending runnables -> sc_server_stop sets stopped + interrupts -> run_server net_interrupt()s the three sockets, waits 1s WATCHDOG_DELAY then sc_process_terminate -> demuxers/screen/controller joined in dependency order (screen destroyed only after demuxer join).",
+          "sources": [
+            "app/src/scrcpy.c#L906-1035",
+            "app/src/server.c#L1131-1171"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Recording trace: --record -> sc_recorder_init + start before demuxer start; demuxer packet_source pushes AVPacket refs into recorder sinks; recorder thread dequeues, rescales PTS, writes via av_interleaved_write_frame; on_ended failure posts SC_EVENT_RECORDER_ERROR.",
+          "sources": [
+            "app/src/scrcpy.c#L564-589",
+            "app/src/recorder.c#L40-120",
+            "app/src/scrcpy.c#L182-191"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "UHID input trace (e.g. --keyboard=uhid): sc_keyboard_uhid_init registers a virtual device; key events -> HID report -> UHID_INPUT control msg -> server UhidManager.writeInput -> /dev/uhid; device output reports come back as DEVICE_MSG_TYPE_UHID_OUTPUT handled by receiver -> uhid_output task.",
+          "sources": [
+            "app/src/uhid/keyboard_uhid.c",
+            "app/src/uhid/uhid_output.c",
+            "server/src/main/java/com/genymobile/scrcpy/control/Controller.java#L398-406",
+            "app/src/receiver.c#L14-18"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "testing_signals": {
+      "summary": "Client tests are 12 assert-based C programs in app/tests, each compiled as a Meson test() executable — but only when buildtype=debug so asserts execute. They cover adb parsing, binary helpers, CLI parsing, control-message serialization, device-message deserialization, orientation parsing, string/strbuf/vecdeque/vector containers and Windows command building. Server tests are JUnit4 in server/src/test covering ControlMessageReader, DeviceMessageWriter, CodecOptions, BinarySearch, Binary, CommandParser and StringUtils. CI runs release/test_server.sh (gradle test) and release/test_client.sh (meson test) plus a build-without-gradle check; there is no end-to-end socket-protocol or UI test coverage.",
+      "claims": [
+        {
+          "claim": "app/tests contains 12 test files (test_adb_parser, test_audiobuf, test_binary, test_cli, test_command_windows, test_control_msg_serialize, test_device_msg_deserialize, test_orientation, test_str, test_strbuf, test_vecdeque, test_vector) registered as meson test() targets.",
+          "sources": [
+            "app/meson.build#L222-298"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Tests are only built when get_option('buildtype') == 'debug', because the tests are plain assert()-based programs compiled with -DSC_TEST.",
+          "sources": [
+            "app/meson.build#L224-297",
+            "app/tests/test_control_msg_serialize.c#L9-32"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Serialization is tested at the byte level: test_control_msg_serialize asserts exact serialized layouts (e.g. INJECT_KEYCODE == 14 bytes with specific keycode/metastate encoding).",
+          "sources": [
+            "app/tests/test_control_msg_serialize.c#L9-52"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Server unit tests (JUnit 4.13.2) live in server/src/test/java under control/, model/, util/: ControlMessageReaderTest, DeviceMessageWriterTest, CodecOptionsTest, BinarySearchTest, BinaryTest, CommandParserTest, StringUtilsTest.",
+          "sources": [
+            "server/build.gradle",
+            "server/src/test/java/com/genymobile/scrcpy/control/ControlMessageReaderTest.java"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CI job test-scrcpy-server runs release/test_server.sh on ubuntu-latest with JDK 17 (zulu) using native gradle.",
+          "sources": [
+            ".github/workflows/release.yml#L14-29"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CI job test-client installs meson/ffmpeg/SDL deps (SDL3 built by app/deps/sdl.sh since it is not packaged in Ubuntu) and runs release/test_client.sh.",
+          "sources": [
+            ".github/workflows/release.yml#L69-98",
+            "release/test_client.sh"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "A dedicated CI job builds the server without Gradle via server/build_without_gradle.sh, keeping the manual javac/d8 path tested.",
+          "sources": [
+            ".github/workflows/release.yml#L54-67",
+            "server/build_without_gradle.sh"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Both sides test the same protocol independently (client serializer tests vs server reader tests) but no test exercises a real socket round-trip between client and server; protocol drift would only be caught manually.",
+          "sources": [
+            "app/tests/test_control_msg_serialize.c",
+            "server/src/test/java/com/genymobile/scrcpy/control/ControlMessageReaderTest.java"
+          ],
+          "kind": "inference"
+        },
+        {
+          "claim": "No tests exist for demuxer, decoder, recorder, screen, server.c, adb process management or any SDL/audio playback path — the largest files (cli.c, screen.c, recorder.c, server.c) are exercised only manually or via release scripts.",
+          "sources": [
+            "app/meson.build#L225-297"
+          ],
+          "kind": "inference"
+        },
+        {
+          "claim": "test_cli compiles the real cli.c+options.c, so option-table regressions (missing longopt, bad argdesc) are caught in CI.",
+          "sources": [
+            "app/meson.build#L242-251",
+            "app/tests/test_cli.c"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "risk_map": {
+      "summary": "The riskiest areas are: (1) shell-injection-adjacent code — server params are interpolated into an 'adb shell ... app_process' command line and only mitigated by a denylist VALIDATE_STRING, with an explicit comment that args are not properly escaped on Windows; (2) heavy reflection into private Android APIs (Workarounds, FakeContext, wrappers) which can break per Android release; (3) fragile lifecycle ordering — a large goto-cleanup chain in scrcpy() and static buffers/structs; (4) privileged-environment handling (root uid drop, killing the adb server, writing to /data/local/tmp and /sdcard); and (5) untested protocol duality where the same wire format is hand-maintained in C and Java.",
+      "claims": [
+        {
+          "claim": "Server parameter values are appended verbatim to an adb shell command line; validate_string() only rejects a denylist of shell metacharacters (' ;'\"*$?&`#\\|<>[]{}()!~\\r\\n') and the comment admits proper escaping does not exist on Windows (sys/win/process.c).",
+          "sources": [
+            "app/src/server.c#L193-206"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The command array in execute_server() is a fixed 'const char *cmd[128]' filled by ADD_PARAM macros — adding server options without bound checks could overflow it (only ~60 slots used today).",
+          "sources": [
+            "app/src/server.c#L216-262"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "SCRCPY_SERVER_PATH env var overrides the pushed server jar; a malicious local env could push an arbitrary jar executed as shell (uid 2000) on the device.",
+          "sources": [
+            "app/src/server.c#L26-54"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "If run as root, the server silently drops to uid 2000 via Os.setuid — a comment notes copy-paste breaks as root; failure is only a warning (best-effort privilege drop).",
+          "sources": [
+            "server/src/main/java/com/genymobile/scrcpy/Server.java#L279-290"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Workarounds uses reflection over private/blocked Android APIs (@SuppressLint PrivateApi/BlockedPrivateApi/SoonBlockedPrivateApi) e.g. ActivityThread internals and fake Context — each new Android version can silently break capture/audio.",
+          "sources": [
+            "server/src/main/java/com/genymobile/scrcpy/Workarounds.java#L1-30",
+            "server/src/main/java/com/genymobile/scrcpy/FakeContext.java"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "prepareMainLooper() uses reflection on the private static field Looper.sMainLooper — an AOSP-internal implementation detail that could change.",
+          "sources": [
+            "server/src/main/java/com/genymobile/scrcpy/Server.java#L197-210"
+          ],
+          "kind": "inference"
+        },
+        {
+          "claim": "--kill-adb-on-close terminates the entire adb server (sc_adb_kill_server), which has a wide blast radius: it disrupts every other adb session/tool on the machine.",
+          "sources": [
+            "app/src/server.c#L955-962"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The control queue silently drops input events beyond 60 pending messages except UHID_CREATE/UHID_DESTROY; under socket backpressure users lose keystrokes with only a verbose-level trace.",
+          "sources": [
+            "app/src/controller.c#L7-8",
+            "app/src/controller.c#L95-126",
+            "app/src/control_msg.c#L358-366"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "scrcpy() uses a single static 'struct scrcpy' (memset to 42 in debug to catch uninit) and a long goto-based cleanup ladder — adding init steps without updating the teardown ordering risks use-after-free, e.g. screen must be destroyed only after video demuxer join.",
+          "sources": [
+            "app/src/scrcpy.c#L322-360",
+            "app/src/scrcpy.c#L1002-1008"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The wire protocol is implemented twice by hand (control_msg.c/h + demuxer.c vs ControlMessage*.java + Streamer.java); nothing enforces parity except matching constants like SC_CONTROL_MSG_MAX_SIZE == MESSAGE_MAX_SIZE == 256k.",
+          "sources": [
+            "app/src/control_msg.h#L15-21",
+            "server/src/main/java/com/genymobile/scrcpy/control/ControlMessageReader.java#L14-17"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Device reads trust the peer: device_read_info() force-NUL-terminates the 64-byte name ('in case the client sends garbage') but packet sizes drive av_new_packet allocations of up to 4GB-1 declared bytes before any cap check.",
+          "sources": [
+            "app/src/server.c#L596-610",
+            "app/src/demuxer.c#L141-160"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "File push writes to device paths: server jar to /data/local/tmp (world-writable staging area) and user files to /sdcard/Download/ by default; SCAN_FILE messages point the device media scanner at pushed paths.",
+          "sources": [
+            "app/src/server.c#L21",
+            "app/src/file_pusher.c#L12",
+            "app/src/file_pusher.c#L115-131"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Version skew is hard-failed: server refuses to run if client version != BuildConfig.VERSION_NAME, so mismatched server jars fail loudly rather than silently misbehaving.",
+          "sources": [
+            "server/src/main/java/com/genymobile/scrcpy/Options.java#L328-332"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "extension_points": {
+      "summary": "Extension is deliberately table-driven. Client CLI: add an OPT_* enum + options[] row + case in the getopt switch + field in scrcpy_options. Server options: mirror the param as an ADD_PARAM in execute_server() and a case in Options.parse(). New control messages require a coordinated change in enum sc_control_msg_type, sc_control_msg_serialize/is_droppable/destroy/log, ControlMessage type constants, ControlMessageReader parsing and Controller.handleEvent dispatch. New media sinks plug into the packet_source/packet_sink and frame_source/frame_sink trait interfaces; new input modalities implement key/mouse/gamepad processor interfaces (SDK/UHID/AOA are the three existing backends). Server-side work units implement AsyncProcessor; captures implement SurfaceCapture; audio sources implement AudioCapture.",
+      "claims": [
+        {
+          "claim": "Adding a CLI option = new OPT_* enum entry + a row in the static options[] table (shortopt/longopt/argdesc/optional_arg/text) + handling in parse_args_with_getopt's switch; undocumented options are supported by leaving .text NULL.",
+          "sources": [
+            "app/src/cli.c#L22-149",
+            "app/src/cli.c#L1431"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Client->server option plumbing is a three-step mirror: sc_server_params field -> ADD_PARAM(\"key=value\") in execute_server() -> case \"key\" in Options.parse() switch.",
+          "sources": [
+            "app/src/scrcpy.c#L365-425",
+            "app/src/server.c#L269-458",
+            "server/src/main/java/com/genymobile/scrcpy/Options.java#L336-574"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New control message types must be added symmetrically: enum sc_control_msg_type + serialize/log/droppable/destroy cases client-side, and ControlMessage.TYPE_* + ControlMessageReader.read() case + Controller.handleEvent dispatch server-side.",
+          "sources": [
+            "app/src/control_msg.h#L29-53",
+            "app/src/control_msg.c#L103-211",
+            "server/src/main/java/com/genymobile/scrcpy/control/ControlMessageReader.java#L25-70",
+            "server/src/main/java/com/genymobile/scrcpy/control/Controller.java#L333-441"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The trait/ directory defines generic producer/consumer interfaces (packet_source/packet_sink for AVPackets, frame_source/frame_sink for AVFrames); recorder, decoders, screen, v4l2_sink and regulators all plug in via *_add_sink without knowing each other.",
+          "sources": [
+            "app/src/trait/packet_source.h",
+            "app/src/trait/frame_source.h",
+            "app/src/scrcpy.c#L555-589"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Input backends implement narrow processor interfaces (sc_key_processor, sc_mouse_processor, sc_gamepad_processor in trait/); scrcpy.c picks sdk/uhid/aoa implementations into union members and passes them to the screen as kp/mp/gp.",
+          "sources": [
+            "app/src/trait/key_processor.h",
+            "app/src/trait/mouse_processor.h",
+            "app/src/trait/gamepad_processor.h",
+            "app/src/scrcpy.c#L706-766"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Server capture sources implement SurfaceCapture — ScreenCapture, NewDisplayCapture, CameraCapture — selected by videoSource/newDisplay in Server.scrcpy() and attached to SurfaceEncoder.",
+          "sources": [
+            "server/src/main/java/com/genymobile/scrcpy/Server.java#L139-155",
+            "server/src/main/java/com/genymobile/scrcpy/video/SurfaceCapture.java"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Audio capture is pluggable via AudioCapture implementations AudioDirectCapture and AudioPlaybackCapture chosen by AudioSource.isDirect().",
+          "sources": [
+            "server/src/main/java/com/genymobile/scrcpy/Server.java#L119-127",
+            "server/src/main/java/com/genymobile/scrcpy/audio/AudioCapture.java"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Server-side background work implements the AsyncProcessor interface (start/stop/join + TerminationListener); Server keeps a List<AsyncProcessor> it starts and joins uniformly.",
+          "sources": [
+            "server/src/main/java/com/genymobile/scrcpy/AsyncProcessor.java",
+            "server/src/main/java/com/genymobile/scrcpy/Server.java#L103-195"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Adding a codec means extending enum sc_codec, sc_server_get_codec_name, the demuxer SC_CODEC_ID_* mapping to AVCodecID, and the server-side VideoCodec/AudioCodec enums with matching wire ids.",
+          "sources": [
+            "app/src/server.c#L105-130",
+            "app/src/demuxer.c#L19-58",
+            "server/src/main/java/com/genymobile/scrcpy/video/VideoCodec.java"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Custom SDL event types (SC_EVENT_*) in events.h + sc_push_event provide the extension mechanism for cross-thread signaling into the main event loop.",
+          "sources": [
+            "app/src/events.h",
+            "app/src/scrcpy.c#L116-153"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Recording formats extend enum sc_record_format -> sc_recorder_get_format_name() mapping to FFmpeg muxer names (mp4/matroska/opus/flac/wav).",
+          "sources": [
+            "app/src/recorder.c#L64-83"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Feature flags compile out whole subsystems: HAVE_USB gates OTG/AOA code, HAVE_V4L2 gates the webcam sink, SERVER_DEBUGGER adds jdwp flags to the app_process command.",
+          "sources": [
+            "app/meson.build#L104-119",
+            "app/src/server.c#L225-249",
+            "meson_options.txt"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_handoff": {
+      "summary": "Build with meson+ninja (tests only exist in debug buildtype); the server needs the Android SDK via Gradle or can be skipped with -Dprebuilt_server=path. The code is dense C11 with an sc_ prefix convention, callback-struct vtables, vecdeque containers, and a strict init/start/stop/join/destroy lifecycle; every thread posts SDL events rather than touching shared UI state. The single most important invariant is that the C wire protocol and the Java wire protocol are manually kept in sync — always change both sides. Read doc/develop.md, app/src/scrcpy.c, app/src/server.c and Server.java before editing anything cross-cutting.",
+      "claims": [
+        {
+          "claim": "Read first: doc/develop.md (architecture overview), app/src/scrcpy.c (wiring of all components), app/src/server.c (adb/tunnel/exec logic), server/.../Server.java + Options.java (server lifecycle and params), app/src/control_msg.h + ControlMessageReader.java (protocol contract).",
+          "sources": [
+            "doc/develop.md",
+            "app/src/scrcpy.c",
+            "app/src/server.c",
+            "server/src/main/java/com/genymobile/scrcpy/Server.java",
+            "app/src/control_msg.h"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Build/test commands: 'meson setup builddir && ninja -C builddir'; tests need -Dbuildtype=debug then 'meson test -C builddir'; run helper './run builddir <args>'; server alone via server/build_without_gradle.sh or gradle; CI equivalents are release/test_client.sh and release/test_server.sh.",
+          "sources": [
+            "app/meson.build#L224-297",
+            "run",
+            "server/build_without_gradle.sh",
+            "release/test_client.sh",
+            "release/test_server.sh"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Convention: every subsystem exposes sc_<name>_init/start/stop/join/destroy and a cbs struct of function pointers (on_ended, on_connected, ...); follow this exact lifecycle when adding components — teardown order in scrcpy() is load-bearing.",
+          "sources": [
+            "app/src/scrcpy.c#L337-360",
+            "app/src/scrcpy.c#L914-1035"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Any protocol change must be applied twice: enum/serialize in app/src/control_msg.[ch] AND ControlMessage/ControlMessageReader server-side; same for stream headers (demuxer.c vs Streamer.java) and device messages (device_msg.c vs DeviceMessageWriter).",
+          "sources": [
+            "app/src/control_msg.c",
+            "server/src/main/java/com/genymobile/scrcpy/control/ControlMessageReader.java",
+            "app/src/demuxer.c#L72-138",
+            "server/src/main/java/com/genymobile/scrcpy/device/Streamer.java#L17-124"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "When adding a server parameter you MUST also update VALIDATE_STRING usage if the value is user-controlled — values are interpolated into an adb shell command and are deliberately restricted from containing shell metacharacters.",
+          "sources": [
+            "app/src/server.c#L193-206",
+            "app/src/server.c#L305-337"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "SCRCPY_SERVER_PATH (env) and devenv SCRCPY_SERVER_PATH let devs point the client at a locally-built server jar; PORTABLE builds instead look for scrcpy-server next to the binary.",
+          "sources": [
+            "app/src/server.c#L26-54",
+            "server/meson.build#L27-31"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "assert() is used as a real correctness mechanism client-side and is compiled out in release (b_ndebug=if-release) — never put side effects in asserts; debug builds memset the scrcpy struct to 42 to catch missed initializations.",
+          "sources": [
+            "meson.build#L7",
+            "app/src/scrcpy.c#L322-327"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Threads never call SDL functions off the main thread; they sc_push_event(SC_EVENT_*) and the event_loop dispatches — keep this rule or races in SDL will follow (comment at sc_sdl_set_hints).",
+          "sources": [
+            "app/src/scrcpy.c#L440-442",
+            "app/src/events.h",
+            "app/src/receiver.c#L40-60"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Windows-specific traps: argv arrives UTF-16 and is converted to UTF-8 in main(); process spawning lives in sys/win/process.c and does not shell-escape args; stdout/stderr are unbuffered for logging.",
+          "sources": [
+            "app/src/main.c#L29-34",
+            "app/src/main.c#L128-175",
+            "app/src/server.c#L195-200"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "cli.c is ~3600 lines but highly regular — never hand-edit getopt strings; the optstring and longopts are generated from the options[] table by sc_getopt_adapter_create_optstring().",
+          "sources": [
+            "app/src/cli.c#L1268-1364",
+            "app/src/cli.c#L3561-3568"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Safe edit boundaries: util/ helpers and trait/ interfaces are self-contained; adding a feature typically means options.c default + cli.c row + server.c ADD_PARAM + Options.java case + a Server.java wiring line — touch all five or the flag silently does nothing.",
+          "sources": [
+            "app/src/options.c",
+            "app/src/cli.c#L149-220",
+            "app/src/server.c#L269-458",
+            "server/src/main/java/com/genymobile/scrcpy/Options.java#L336-574",
+            "server/src/main/java/com/genymobile/scrcpy/Server.java#L71-195"
+          ],
+          "kind": "inference"
+        }
+      ]
+    },
+    "agent_prompt": "You are working on scrcpy (github.com/Genymobile/scrcpy), a two-process Android mirroring/control tool. Layout: app/ is the native client in C11 (SDL3 + FFmpeg, built by Meson), server/ is an Android Java program (Gradle, compileSdk 36, minSdk 21) that is pushed to /data/local/tmp/scrcpy-server.jar and executed via 'adb shell CLASSPATH=... app_process / com.genymobile.scrcpy.Server <version> key=value...'. Communication uses up to three adb-tunnelled sockets: video, audio, control. Read doc/develop.md first.\n\nKey client files: app/src/main.c (entry, UTF-16 argv handling on Windows), app/src/scrcpy.c (orchestrator — owns a static struct scrcpy with server/screen/demuxers/decoders/recorder/controller; long goto-based init/teardown ladder whose ordering is load-bearing), app/src/cli.c (~3600 lines; all options declared in a static struct sc_option options[] table, parsed via getopt_long), app/src/server.c (adb process mgmt, tunnel open, option serialization via ADD_PARAM + VALIDATE_STRING), app/src/demuxer.c (wire format: 4-byte codec id, 12-byte headers, PTS+flags), app/src/controller.c + control_msg.[ch] (input serialization, 60-msg queue, UHID msgs non-droppable), app/src/receiver.c + device_msg.[ch] (device->client msgs incl. clipboard). Key server files: Server.java (main -> internalMain -> scrcpy; drops root to uid 2000; reflection-installs main Looper; starts AsyncProcessors then Looper.loop), Options.java (key=value parser; rejects version mismatch), device/DesktopConnection.java (LocalSocket setup, dummy byte, device meta), device/Streamer.java (packet writer), control/Controller.java + ControlMessageReader.java (dispatch to Device.injectEvent/clipboard/UHID/camera).\n\nCRITICAL RULE: the wire protocol is implemented twice (C and Java). Any change to control_msg.h/control_msg.c, demuxer.c headers, or device_msg must be mirrored in ControlMessage.java/ControlMessageReader.java, Streamer.java, DeviceMessageWriter.java. Adding a feature means touching: cli.c options table + parse switch, options.c default, scrcpy.c params, server.c ADD_PARAM (with VALIDATE_STRING for user strings — params go into a shell command unescaped on Windows), Options.java case, then wiring in Server.java/scrcpy().\n\nConventions: sc_ prefix, *_init/start/stop/join/destroy lifecycle, cbs callback structs, vecdeque containers, LOGD/LOGI/LOGW/LOGE, asserts that compile out in release (no side effects in asserts). Threads signal the main loop only via sc_push_event(SC_EVENT_*). Build: 'meson setup build && ninja -C build'; tests only build with -Dbuildtype=debug ('meson test -C build'); server via Gradle or -Dprebuilt_server=<jar> to skip the SDK; './run build <args>' to execute. CI (.github/workflows/release.yml) runs release/test_client.sh, release/test_server.sh and a build_without_gradle.sh check — run equivalents before submitting."
+  },
+  "analysis": {
+    "agent": "devin",
+    "model": "swe-2",
+    "runtime_ms": null,
+    "cost_usd": null,
+    "collected_at": "2026-09-22T16:03:32.165Z"
   }
 }

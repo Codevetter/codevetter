@@ -1127,7 +1127,7 @@
         {
           "path": "AGENTS.md",
           "bytes": 6066,
-          "preview": "# React Native\n\nA framework for building native applications using React.\n\n## Repo structure\n\nReact Native is a monorepo: the `react-native` package, the packages published alongside it, and the apps and tooling used to develop them.\n\n| Path | Contents |\n| --- | --- |\n| `packages/react-native/Libraries` | JavaScript source (Flow) \u2014 the legacy location, with code gradually moving to `src/private` |\n| `packages/react-native/src/private` | JavaScript source (Flow) |\n| `packages/react-native/ReactCommon` | Shared C++ \u2014 Fabric renderer, TurboModules, JSI, Yoga, `jsinspector-modern` |\n| `packages/react-native/ReactAndroid` | Android runtime (Kotlin, Java, JNI) |\n| `packages/react-native/{React,ReactApple}` | Apple runtime (Objective-C++, Swift) |\n| `packages/rn-tester` | RNTester \u2014 test app showcasing each core component and API, plus a `Playground` scratch surface |\n| `packages/*` | Other published packages \u2014 Metro config, Codegen, ESLint config, dev-middleware, React Native DevTools frontend |\n| `private/*` | Unpublished \u2014 the `helloworld` sample app, the `react-native-fantom` test runner |\n| `scripts/*` | Repository tooling \u2014 build, test, release, and CI scripts |\n\nArchitecture notes live in `__docs__` directories beside the code they describe, indexed by [`__docs__/README.md`](__docs__/README.md). Treat them as reference for the subsystem you are working in, not as required reading.\n\n## Environment\n\n- Yarn v1, pinned via `packageManager`. Run commands from the repository root.\n- JavaScript work \u2014 lint, type checks, Jest, Metro \u2014 needs only Node and Yarn, on any platform.\n- Native builds need a platform toolchain: Xcode with CocoaPods or Swift Package Manager for iOS (macOS only), and the Android SDK and NDK with Gradle for Android. See [Building from source](https://reactnative.dev/contributing/how-to-build-from-source).\n\n## Common commands\n\n| Command | Purpose |\n| --- | --- |\n| `yarn test <path>` | Jest unit tests, found in `__tests__` directories |\n| `yarn fantom <path>` | [Fantom](private/react-native-fantom/__docs__/README.md) integration tests, named `*-itest.js` \u2014 builds a native tester on first run |\n| `yarn lint` | ESLint (`--max-warnings 0`) |\n| `yarn flow-check` | Flow |\n| `yarn format` | Format JavaScript/TypeScript, C/C++/Objective-C/protobuf, Kotlin, Java, Python, and Swift sources |\n| `yarn format-check` | Check all repository formatting without changing files |\n| `yarn format-<language>` | Format one language: `javascript`, `cpp`, `kotlin`, `java`, `python`, or `swift` |\n| `yarn format-check-<language>` | Check one language without changing files |\n\nJavaScript CI is the `lint`, `test_js`, and `build_js_types` jobs in [`.github/workflows/test-all.yml`](.github/workflows/test-all.yml); Fantom and the native platforms have their own jobs.\n\nThe formatting command uses pinned npm packages for Kotlin and Java and installs pinned Ruff through Python. To format every language, install a JDK with Java 17 or newer, Python 3 with pip, and a Swift 6.3 or newer toolchain in addition to Node and Yarn. Each language wrapper checks its own requirements and prints installation guidance when something is missing; `yarn format` then skips that language and continues formatting the others. Swift formatting accepts either `swift-format` or `swift format` from the installed toolchain.\n\n### Verification: Running RNTester\n\nNeeded only for changes that have to be seen running, such as user interface behavior.\n\n`yarn start` serves [RNTester](packages/rn-tester/README.md) over Metro at `http://localhost:8081`; `yarn android` builds and installs it on Android. Check the bundler with `curl \"http://localhost:8081/js/RNTesterApp.bundle?platform=ios&dev=true\"`.\n\n## Gotchas\n\n- `yarn install` dirties the working tree: a `preinstall` hook (`scripts/try-set-hermes-compiler-prebuilt.js`) resolves the `hermes-compiler` placeholder in `packages/react-native/package.json` (`0.0.0` \u2192 a real version) and touches `yarn.lock`. Expected \u2014 do not commit it.\n- Metro cannot bundle until codegen is built once \u2014 `yarn --cwd packages/react-native-codegen build`. Without it, bundling fails with `Cannot find module '@react-native/codegen/lib/parsers/flow/parser'`. Every other package runs from source \u2014 `yarn build` is not needed for development (see [`scripts/build/README.md`](scripts/build/README.md)).\n\n## Generated code\n\nNever hand-edit generated output \u2014 change the source and regenerate. CI validates the committed snapshots.\n\n- Native modules and components are declared by JavaScript specs (`Native*.js`, `*NativeComponent.js`); their native counterparts are generated at build time.\n- Feature flags are declared in `packages/react-native/scripts/featureflags/ReactNativeFeatureFlags.config.js`; `yarn featureflags` regenerates the JavaScript, Java, and C++ accessors.\n- JavaScript sources are typed with Flow, and the public API is exported from `packages/react-native/index.js`. TypeScript types are generated from those sources, and `packages/react-native/ReactNativeApi.d.ts` is a committed snapshot of that API \u2014 run `yarn build-types` to regenerate both whenever the public API changes, then `yarn test-generated-typescript` to type-check the result.\n- The public native API is snapshotted as well: C++ under `scripts/cxx-api` (`yarn cxx-api-build`), and Android in `packages/react-native/ReactAndroid/api/ReactAndroid.api`.\n- `CHANGELOG.md` is compiled at release time from pull request descriptions.\n\n## Contributing guidelines\n\n- Keep each change focused \u2014 no unrelated refactors, formatting, or dependency updates.\n- Complete the pull request template \u2014 the motivation and the user-visible effect, and a [changelog entry](https://reactnative.dev/contributing/changelogs-in-pull-requests) with its category and type tags.\n- In the test plan, give the exact commands you ran and their results, plus screenshots or a video for user-interface changes. Say which checks you could not run.\n\nThe full process is on [reactnative.dev](https://reactnative.dev/contributing/overview).\n"
+          "preview": "# React Native\n\nA framework for building native applications using React.\n\n## Repo structure\n\nReact Native is a monorepo: the `react-native` package, the packages published alongside it, and the apps and tooling used to develop them.\n\n| Path | Contents |\n| --- | --- |\n| `packages/react-native/Libraries` | JavaScript source (Flow) — the legacy location, with code gradually moving to `src/private` |\n| `packages/react-native/src/private` | JavaScript source (Flow) |\n| `packages/react-native/ReactCommon` | Shared C++ — Fabric renderer, TurboModules, JSI, Yoga, `jsinspector-modern` |\n| `packages/react-native/ReactAndroid` | Android runtime (Kotlin, Java, JNI) |\n| `packages/react-native/{React,ReactApple}` | Apple runtime (Objective-C++, Swift) |\n| `packages/rn-tester` | RNTester — test app showcasing each core component and API, plus a `Playground` scratch surface |\n| `packages/*` | Other published packages — Metro config, Codegen, ESLint config, dev-middleware, React Native DevTools frontend |\n| `private/*` | Unpublished — the `helloworld` sample app, the `react-native-fantom` test runner |\n| `scripts/*` | Repository tooling — build, test, release, and CI scripts |\n\nArchitecture notes live in `__docs__` directories beside the code they describe, indexed by [`__docs__/README.md`](__docs__/README.md). Treat them as reference for the subsystem you are working in, not as required reading.\n\n## Environment\n\n- Yarn v1, pinned via `packageManager`. Run commands from the repository root.\n- JavaScript work — lint, type checks, Jest, Metro — needs only Node and Yarn, on any platform.\n- Native builds need a platform toolchain: Xcode with CocoaPods or Swift Package Manager for iOS (macOS only), and the Android SDK and NDK with Gradle for Android. See [Building from source](https://reactnative.dev/contributing/how-to-build-from-source).\n\n## Common commands\n\n| Command | Purpose |\n| --- | --- |\n| `yarn test <path>` | Jest unit tests, found in `__tests__` directories |\n| `yarn fantom <path>` | [Fantom](private/react-native-fantom/__docs__/README.md) integration tests, named `*-itest.js` — builds a native tester on first run |\n| `yarn lint` | ESLint (`--max-warnings 0`) |\n| `yarn flow-check` | Flow |\n| `yarn format` | Format JavaScript/TypeScript, C/C++/Objective-C/protobuf, Kotlin, Java, Python, and Swift sources |\n| `yarn format-check` | Check all repository formatting without changing files |\n| `yarn format-<language>` | Format one language: `javascript`, `cpp`, `kotlin`, `java`, `python`, or `swift` |\n| `yarn format-check-<language>` | Check one language without changing files |\n\nJavaScript CI is the `lint`, `test_js`, and `build_js_types` jobs in [`.github/workflows/test-all.yml`](.github/workflows/test-all.yml); Fantom and the native platforms have their own jobs.\n\nThe formatting command uses pinned npm packages for Kotlin and Java and installs pinned Ruff through Python. To format every language, install a JDK with Java 17 or newer, Python 3 with pip, and a Swift 6.3 or newer toolchain in addition to Node and Yarn. Each language wrapper checks its own requirements and prints installation guidance when something is missing; `yarn format` then skips that language and continues formatting the others. Swift formatting accepts either `swift-format` or `swift format` from the installed toolchain.\n\n### Verification: Running RNTester\n\nNeeded only for changes that have to be seen running, such as user interface behavior.\n\n`yarn start` serves [RNTester](packages/rn-tester/README.md) over Metro at `http://localhost:8081`; `yarn android` builds and installs it on Android. Check the bundler with `curl \"http://localhost:8081/js/RNTesterApp.bundle?platform=ios&dev=true\"`.\n\n## Gotchas\n\n- `yarn install` dirties the working tree: a `preinstall` hook (`scripts/try-set-hermes-compiler-prebuilt.js`) resolves the `hermes-compiler` placeholder in `packages/react-native/package.json` (`0.0.0` → a real version) and touches `yarn.lock`. Expected — do not commit it.\n- Metro cannot bundle until codegen is built once — `yarn --cwd packages/react-native-codegen build`. Without it, bundling fails with `Cannot find module '@react-native/codegen/lib/parsers/flow/parser'`. Every other package runs from source — `yarn build` is not needed for development (see [`scripts/build/README.md`](scripts/build/README.md)).\n\n## Generated code\n\nNever hand-edit generated output — change the source and regenerate. CI validates the committed snapshots.\n\n- Native modules and components are declared by JavaScript specs (`Native*.js`, `*NativeComponent.js`); their native counterparts are generated at build time.\n- Feature flags are declared in `packages/react-native/scripts/featureflags/ReactNativeFeatureFlags.config.js`; `yarn featureflags` regenerates the JavaScript, Java, and C++ accessors.\n- JavaScript sources are typed with Flow, and the public API is exported from `packages/react-native/index.js`. TypeScript types are generated from those sources, and `packages/react-native/ReactNativeApi.d.ts` is a committed snapshot of that API — run `yarn build-types` to regenerate both whenever the public API changes, then `yarn test-generated-typescript` to type-check the result.\n- The public native API is snapshotted as well: C++ under `scripts/cxx-api` (`yarn cxx-api-build`), and Android in `packages/react-native/ReactAndroid/api/ReactAndroid.api`.\n- `CHANGELOG.md` is compiled at release time from pull request descriptions.\n\n## Contributing guidelines\n\n- Keep each change focused — no unrelated refactors, formatting, or dependency updates.\n- Complete the pull request template — the motivation and the user-visible effect, and a [changelog entry](https://reactnative.dev/contributing/changelogs-in-pull-requests) with its category and type tags.\n- In the test plan, give the exact commands you ran and their results, plus screenshots or a video for user-interface changes. Say which checks you could not run.\n\nThe full process is on [reactnative.dev](https://reactnative.dev/contributing/overview).\n"
         },
         {
           "path": "CONTRIBUTING.md",
@@ -1137,7 +1137,7 @@
         {
           "path": "README.md",
           "bytes": 6204,
-          "preview": "<p align=\"center\">\n   <picture>\n      <source media=\"(prefers-color-scheme: dark)\" srcset=\"https://reactnative.dev/react-native-dark.svg\">\n      <source media=\"(prefers-color-scheme: light)\" srcset=\"https://reactnative.dev/react-native-light.svg\">\n      <img alt=\"React Native logo\" src=\"https://reactnative.dev/react-native-light.svg\" height=\"80\">\n    </picture>\n</p>\n\n<p align=\"center\">\n  <strong>Learn once, write anywhere:</strong><br>\n  Create native apps for Android, iOS, and more using React\n</p>\n\n<p align=\"center\">\n  <a href=\"./LICENSE\"><img src=\"https://img.shields.io/badge/license-MIT-blue.svg\" alt=\"React Native is released under the MIT license\" /></a>\n  <a href=\"https://www.npmjs.com/package/react-native\"><img src=\"https://img.shields.io/npm/v/react-native.svg?color=blue\" alt=\"Current npm package version\" /></a>\n  <a href=\"https://www.npmjs.com/package/react-native\"><img src=\"https://img.shields.io/npm/dm/react-native.svg\" alt=\"Monthly npm downloads\" /></a>\n  <a href=\"https://twitter.com/intent/follow?screen_name=reactnative\"><img src=\"https://img.shields.io/badge/Follow_@reactnative-black?logo=x&logoColor=white\" alt=\"Follow @reactnative on X\" /></a>\n</p>\n\n<h4 align=\"center\">\n  <a href=\"https://reactnative.dev/docs/environment-setup\">Getting Started</a>\n  <span> \u00b7 </span>\n  <a href=\"https://reactnative.dev/docs/tutorial\">Learn the Basics</a>\n  <span> \u00b7 </span>\n  <a href=\"https://reactnative.dev/showcase\">Showcase</a>\n  <span> \u00b7 </span>\n  <a href=\"https://reactnative.dev/docs/contributing\">Contribute</a>\n  <span> \u00b7 </span>\n  <a href=\"https://reactnative.dev/help\">Community</a>\n  <span> \u00b7 </span>\n  <a href=\"./.github/SUPPORT.md\">Support</a>\n</h4>\n\n# React Native\n\nReact Native lets you build native apps using [React](https://react.dev/). Written\nin JavaScript, rendered with native code.\n\n- **Native UI.** React Native primitives render to native platform UI, meaning your app\n  uses the same native platform APIs other apps do. Gestures, text scaling, and\n  accessibility behave the way users expect on each OS.\n- **React, everywhere.** Declarative UI, components, hooks, and Suspense, reused\n  across Android, iOS, and [other platforms](https://reactnative.dev/docs/out-of-tree-platforms).\n- **Developer Velocity.** See local changes in seconds. Changes to JavaScript code are applied with Fast Refresh, without rebuilding the native app.\n- **Extend it yourself.** Native Modules let you call platform code directly from JavaScript, synchronously and type-safe \u2014 or reach for [thousands of existing libraries](https://reactnative.directory/).\n\nReact Native is developed and supported by many companies and individual core contributors. Find out more on the [React Foundation website](https://react.foundation/).\n\n## Building your first React Native app\n\nFollow the [Getting Started guide](https://reactnative.dev/docs/environment-setup) for a new app, or [Integration with Existing Apps](https://reactnative.dev/docs/integration-with-existing-apps) to adopt React Native incrementally.\n\n### Using a Framework\n\nWe believe that the best way to experience React Native is through a Framework, a toolbox with all the necessary APIs to let you build production ready apps. [Expo](https://docs.expo.dev/get-started/set-up-your-environment/) is a production-grade React Native Framework, with file-based routing, a standard library of native modules, and much more.\n\nTo create a new Expo project, run the following in your terminal:\n\n    npx create-expo-app@latest\n\nThen follow the rest of [Expo's getting started guide](https://docs.expo.dev/get-started/set-up-your-environment/) to start building.\n\n### Without a Framework\n\nYou can also use React Native without a Framework, however we've found that most developers benefit from one \u2014 navigation, native dependencies, and platform tooling are problems the ecosystem has already solved. If a Framework doesn't suit your app, follow [Getting Started Without a Framework](https://reactnative.dev/docs/getting-started-without-a-framework).\n\n## Documentation\n\nThe full documentation for React Native can be found on our [website](https://reactnative.dev/docs/getting-started).\n\n- [Introduction](https://reactnative.dev/docs/getting-started)\n- [Getting Started](https://reactnative.dev/docs/environment-setup)\n- [Learn the Basics](https://reactnative.dev/docs/tutorial)\n- [Components and APIs](https://reactnative.dev/docs/components-and-apis)\n- [UI & Interaction](https://reactnative.dev/docs/style)\n- [Native Modules](https://reactnative.dev/docs/native-platform)\n- [Debugging](https://reactnative.dev/docs/debugging)\n- [Upgrading](https://reactnative.dev/docs/upgrading)\n- [Architecture](https://reactnative.dev/architecture/overview)\n\nThe source for the React Native docs and website is hosted on a separate repository, [**react/react-native-website**](https://github.com/react/react-native-website).\n\n## Contributing\n\nThe main purpose of this repository is to continue evolving React Native core. We want to make contributing to this project as easy and transparent as possible, and we are grateful to the community for contributing bug fixes and improvements. Read below to learn how you can take part in improving React Native.\n\n### [Code of Conduct](https://code.fb.com/codeofconduct/)\n\nMeta has adopted a Code of Conduct that we expect project participants to adhere to.\nPlease read the [full text](https://code.fb.com/codeofconduct/) so that you can understand what actions will and will not be tolerated.\n\n### [Contributing Guide](https://reactnative.dev/docs/contributing)\n\nRead our [**Contributing Guide**](https://reactnative.dev/docs/contributing) to learn about our development process, how to propose bugfixes and improvements, and how to build and test your changes to React Native.\n\n### Discussions\n\nLarger discussions and proposals are discussed in [**react-native-community/discussions-and-proposals**](https://github.com/react-native-community/discussions-and-proposals).\n\nReact Native releases are discussed in [**reactwg/react-native-releases**](https://github.com/reactwg/react-native-releases/discussions).\n\n## License\n\nReact Native is MIT licensed, as found in the [LICENSE](./LICENSE) file.\n"
+          "preview": "<p align=\"center\">\n   <picture>\n      <source media=\"(prefers-color-scheme: dark)\" srcset=\"https://reactnative.dev/react-native-dark.svg\">\n      <source media=\"(prefers-color-scheme: light)\" srcset=\"https://reactnative.dev/react-native-light.svg\">\n      <img alt=\"React Native logo\" src=\"https://reactnative.dev/react-native-light.svg\" height=\"80\">\n    </picture>\n</p>\n\n<p align=\"center\">\n  <strong>Learn once, write anywhere:</strong><br>\n  Create native apps for Android, iOS, and more using React\n</p>\n\n<p align=\"center\">\n  <a href=\"./LICENSE\"><img src=\"https://img.shields.io/badge/license-MIT-blue.svg\" alt=\"React Native is released under the MIT license\" /></a>\n  <a href=\"https://www.npmjs.com/package/react-native\"><img src=\"https://img.shields.io/npm/v/react-native.svg?color=blue\" alt=\"Current npm package version\" /></a>\n  <a href=\"https://www.npmjs.com/package/react-native\"><img src=\"https://img.shields.io/npm/dm/react-native.svg\" alt=\"Monthly npm downloads\" /></a>\n  <a href=\"https://twitter.com/intent/follow?screen_name=reactnative\"><img src=\"https://img.shields.io/badge/Follow_@reactnative-black?logo=x&logoColor=white\" alt=\"Follow @reactnative on X\" /></a>\n</p>\n\n<h4 align=\"center\">\n  <a href=\"https://reactnative.dev/docs/environment-setup\">Getting Started</a>\n  <span> · </span>\n  <a href=\"https://reactnative.dev/docs/tutorial\">Learn the Basics</a>\n  <span> · </span>\n  <a href=\"https://reactnative.dev/showcase\">Showcase</a>\n  <span> · </span>\n  <a href=\"https://reactnative.dev/docs/contributing\">Contribute</a>\n  <span> · </span>\n  <a href=\"https://reactnative.dev/help\">Community</a>\n  <span> · </span>\n  <a href=\"./.github/SUPPORT.md\">Support</a>\n</h4>\n\n# React Native\n\nReact Native lets you build native apps using [React](https://react.dev/). Written\nin JavaScript, rendered with native code.\n\n- **Native UI.** React Native primitives render to native platform UI, meaning your app\n  uses the same native platform APIs other apps do. Gestures, text scaling, and\n  accessibility behave the way users expect on each OS.\n- **React, everywhere.** Declarative UI, components, hooks, and Suspense, reused\n  across Android, iOS, and [other platforms](https://reactnative.dev/docs/out-of-tree-platforms).\n- **Developer Velocity.** See local changes in seconds. Changes to JavaScript code are applied with Fast Refresh, without rebuilding the native app.\n- **Extend it yourself.** Native Modules let you call platform code directly from JavaScript, synchronously and type-safe — or reach for [thousands of existing libraries](https://reactnative.directory/).\n\nReact Native is developed and supported by many companies and individual core contributors. Find out more on the [React Foundation website](https://react.foundation/).\n\n## Building your first React Native app\n\nFollow the [Getting Started guide](https://reactnative.dev/docs/environment-setup) for a new app, or [Integration with Existing Apps](https://reactnative.dev/docs/integration-with-existing-apps) to adopt React Native incrementally.\n\n### Using a Framework\n\nWe believe that the best way to experience React Native is through a Framework, a toolbox with all the necessary APIs to let you build production ready apps. [Expo](https://docs.expo.dev/get-started/set-up-your-environment/) is a production-grade React Native Framework, with file-based routing, a standard library of native modules, and much more.\n\nTo create a new Expo project, run the following in your terminal:\n\n    npx create-expo-app@latest\n\nThen follow the rest of [Expo's getting started guide](https://docs.expo.dev/get-started/set-up-your-environment/) to start building.\n\n### Without a Framework\n\nYou can also use React Native without a Framework, however we've found that most developers benefit from one — navigation, native dependencies, and platform tooling are problems the ecosystem has already solved. If a Framework doesn't suit your app, follow [Getting Started Without a Framework](https://reactnative.dev/docs/getting-started-without-a-framework).\n\n## Documentation\n\nThe full documentation for React Native can be found on our [website](https://reactnative.dev/docs/getting-started).\n\n- [Introduction](https://reactnative.dev/docs/getting-started)\n- [Getting Started](https://reactnative.dev/docs/environment-setup)\n- [Learn the Basics](https://reactnative.dev/docs/tutorial)\n- [Components and APIs](https://reactnative.dev/docs/components-and-apis)\n- [UI & Interaction](https://reactnative.dev/docs/style)\n- [Native Modules](https://reactnative.dev/docs/native-platform)\n- [Debugging](https://reactnative.dev/docs/debugging)\n- [Upgrading](https://reactnative.dev/docs/upgrading)\n- [Architecture](https://reactnative.dev/architecture/overview)\n\nThe source for the React Native docs and website is hosted on a separate repository, [**react/react-native-website**](https://github.com/react/react-native-website).\n\n## Contributing\n\nThe main purpose of this repository is to continue evolving React Native core. We want to make contributing to this project as easy and transparent as possible, and we are grateful to the community for contributing bug fixes and improvements. Read below to learn how you can take part in improving React Native.\n\n### [Code of Conduct](https://code.fb.com/codeofconduct/)\n\nMeta has adopted a Code of Conduct that we expect project participants to adhere to.\nPlease read the [full text](https://code.fb.com/codeofconduct/) so that you can understand what actions will and will not be tolerated.\n\n### [Contributing Guide](https://reactnative.dev/docs/contributing)\n\nRead our [**Contributing Guide**](https://reactnative.dev/docs/contributing) to learn about our development process, how to propose bugfixes and improvements, and how to build and test your changes to React Native.\n\n### Discussions\n\nLarger discussions and proposals are discussed in [**react-native-community/discussions-and-proposals**](https://github.com/react-native-community/discussions-and-proposals).\n\nReact Native releases are discussed in [**reactwg/react-native-releases**](https://github.com/reactwg/react-native-releases/discussions).\n\n## License\n\nReact Native is MIT licensed, as found in the [LICENSE](./LICENSE) file.\n"
         }
       ],
       "config_files": [
@@ -19094,7 +19094,7 @@
         "steps": [
           {
             "id": "serialize",
-            "label": "JSON serialize (inventory \u2192 SQLite)",
+            "label": "JSON serialize (inventory → SQLite)",
             "ms": 0,
             "pct": 0
           },
@@ -19113,5 +19113,928 @@
         ]
       }
     ]
+  },
+  "report": {
+    "overview": "React Native is a Yarn-workspaces monorepo that produces the `react-native` npm package plus ~25 sibling packages (@react-native/codegen, dev-middleware, community-cli-plugin, metro-config, gradle-plugin, debugger-frontend, etc.). It implements a React renderer for iOS and Android: Flow-typed JavaScript in packages/react-native (legacy `Libraries/` being migrated to `src/private/`), a shared C++ core in ReactCommon (Fabric renderer, TurboModules, JSI, Hermes glue, Yoga layout, jsinspector-modern), and platform runtimes in ReactAndroid (Kotlin/Java) and React/ReactApple (Objective-C++/Swift). Its distinctive machinery is a codegen pipeline that generates type-safe native bindings from `Native*.js`/`*NativeComponent.js` specs, a feature-flag system generated across JS/Java/C++, and Fantom, a headless integration test runner that executes JS on Hermes against real C++ Fabric with a mock host platform.",
+    "system_map": {
+      "summary": "Yarn v1 workspaces monorepo rooted at package.json (@react-native/monorepo). The flagship artifact is packages/react-native, which ships the JS public API (index.js lazy getters), the C++ core (ReactCommon), the Android runtime (ReactAndroid, Gradle), and the Apple runtime (React + ReactApple, CocoaPods podspecs + SwiftPM Package.swift). Tooling packages around it provide the dev server CLI (@react-native/community-cli-plugin), CDP inspector proxy (@react-native/dev-middleware), Metro defaults (@react-native/metro-config), codegen (@react-native/codegen), and the Gradle plugin. Repo-local test surfaces live in packages/rn-tester, private/helloworld, and private/react-native-fantom. CI is orchestrated by .github/workflows/test-all.yml.",
+      "claims": [
+        {
+          "claim": "Root package.json is private workspace root '@react-native/monorepo' v1000.0.0, pinned to yarn@1.22.22, with workspaces packages/*, packages/react-native-test-library/* and private/* (excluding private/helloworld).",
+          "sources": [
+            "package.json#L1-57"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The published `react-native` package lives in packages/react-native: bin 'react-native' -> cli.js, main ./index.js, and an exports map exposing ./setup-env, ./react-private-interface, ./unstable-internals-do-not-use, ./asset-registry, deep ./Libraries/* imports, and conditional 'types' -> ./types_generated/index.d.ts.",
+          "sources": [
+            "packages/react-native/package.json#L26-64"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "JavaScript source is split between the legacy location packages/react-native/Libraries and the newer packages/react-native/src/private; AGENTS.md documents the gradual migration, and index.js imports from both trees.",
+          "sources": [
+            "AGENTS.md",
+            "packages/react-native/index.js",
+            "packages/react-native/src/private/setup/setUpDefaultReactNativeEnvironment.js"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The shared C++ core lives in packages/react-native/ReactCommon and includes react/renderer (Fabric: uimanager, mounting, scheduler, runtimescheduler, components, dom), react/nativemodule (TurboModules), jsi, jsiexecutor, hermes, yoga (layout engine), jsinspector-modern (CDP stack), callinvoker and cxxreact.",
+          "sources": [
+            "packages/react-native/ReactCommon",
+            "packages/react-native/ReactCommon/react/renderer",
+            "packages/react-native/ReactCommon/jsinspector-modern",
+            "__docs__/README.md#L40-71"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The Android runtime is packages/react-native/ReactAndroid (Kotlin/Java/JNI): bridgeless entry is com.facebook.react.runtime.ReactHostImpl (manages a ReactInstance with Bolts Tasks); the legacy ReactNativeHost->ReactInstanceManager path still exists but is @Deprecated and logged as LegacyArchitecture.",
+          "sources": [
+            "packages/react-native/ReactAndroid/src/main/java/com/facebook/react/runtime/ReactHostImpl.kt#L86-120",
+            "packages/react-native/ReactAndroid/src/main/java/com/facebook/react/ReactNativeHost.kt#L34-60",
+            "packages/react-native/ReactAndroid/src/main/java/com/facebook/react/ReactActivityDelegate.java#L87-100"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The iOS runtime is packages/react-native/React and ReactApple (Objective-C++/Swift); RCTReactNativeFactory is the modern factory entry (initWithDelegate:releaseLevel: sets feature flags, creates RCTRootViewFactory, installs the third-party Fabric components provider), with RCTAppDelegate/RCTDefaultReactNativeFactoryDelegate as app-level glue.",
+          "sources": [
+            "packages/react-native/Libraries/AppDelegate/RCTReactNativeFactory.mm#L72-100",
+            "packages/react-native/Libraries/AppDelegate/RCTAppDelegate.mm",
+            "packages/react-native/Libraries/AppDelegate/RCTDefaultReactNativeFactoryDelegate.mm"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "iOS distribution is via CocoaPods podspecs (React.podspec, React-Core.podspec, React-Core-prebuilt.podspec, React-Fabric.podspec) plus third-party-podspecs, and SwiftPM via packages/react-native/Package.swift with scripts under scripts/spm.",
+          "sources": [
+            "packages/react-native/React.podspec",
+            "packages/react-native/React-Core.podspec",
+            "packages/react-native/React-Core-prebuilt.podspec",
+            "packages/react-native/Package.swift",
+            "packages/react-native/third-party-podspecs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Android build is Gradle: root build.gradle.kts/settings.gradle.kts plus packages/gradle-plugin (react-native-gradle-plugin with tasks like GenerateCodegenArtifactsTask, GenerateCodegenSchemaTask, BundleHermesCTask, and a settings-plugin ReactSettingsPlugin).",
+          "sources": [
+            "build.gradle.kts",
+            "settings.gradle.kts",
+            "packages/gradle-plugin/react-native-gradle-plugin/src/main/kotlin/com/facebook/react/tasks/GenerateCodegenArtifactsTask.kt",
+            "packages/gradle-plugin/settings-plugin/src/main/kotlin/com/facebook/react/ReactSettingsPlugin.kt"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The dev-toolchain packages are @react-native/community-cli-plugin (start/bundle/codegen/spm commands), @react-native/dev-middleware (createDevMiddleware + InspectorProxy CDP WebSocket proxy), @react-native/metro-config (getDefaultConfig), @react-native/react-native-babel-preset / babel-transformer, and @react-native/debugger-frontend + @react-native/debugger-shell for React Native DevTools.",
+          "sources": [
+            "packages/community-cli-plugin/src/index.flow.js#L11-19",
+            "packages/dev-middleware/src/createDevMiddleware.js#L87-146",
+            "packages/metro-config/src/index.flow.js#L54-105",
+            "packages/debugger-frontend/package.json",
+            "packages/debugger-shell/package.json"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Repo-facing apps and runners: packages/rn-tester ('@react-native/tester' — RNTester showcase app with Podfile, RNTesterUnitTests, IntegrationTests), private/helloworld (minimal app, excluded from workspaces), and private/react-native-fantom (headless Hermes/Fabric test runner).",
+          "sources": [
+            "packages/rn-tester/package.json",
+            "packages/rn-tester/README.md",
+            "private/helloworld/index.js",
+            "private/react-native-fantom/__docs__/README.md#L17-60"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Primary commands from repo root: yarn test (jest), yarn fantom (scripts/fantom.sh), yarn lint (eslint --max-warnings 0), yarn flow-check, yarn format[-lang], yarn build (scripts/build/build.js compiles packages' src->dist via Babel + flow-api-translator), yarn build-android (./gradlew :packages:react-native:ReactAndroid:build), yarn test-ios (scripts/objc-test.sh).",
+          "sources": [
+            "package.json#L7-51",
+            "scripts/build/build.js#L44-70",
+            "scripts/fantom.sh",
+            "scripts/objc-test.sh"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Release machinery lives in scripts/releases (set-version.js, prepare-ios-prebuilds.js, dotslash asset upload) and GitHub workflows publish-npm.yml / create-release.yml; test-all.yml's build_npm_package job produces the tarball gating publish.",
+          "sources": [
+            "scripts/releases/set-version.js",
+            ".github/workflows/publish-npm.yml",
+            ".github/workflows/create-release.yml",
+            ".github/workflows/test-all.yml#L409-414"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Public API surface is snapshotted in three places: ReactNativeApi.d.ts (generated TS types snapshot), packages/react-native/ReactAndroid/api/ReactAndroid.api (Kotlin public API), and scripts/cxx-api/api-snapshots (C++ API parsed by python -m scripts.cxx-api.parser).",
+          "sources": [
+            "packages/react-native/ReactNativeApi.d.ts",
+            "packages/react-native/ReactAndroid/api/ReactAndroid.api",
+            "scripts/cxx-api",
+            "package.json#L13-14"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "feature_catalog": {
+      "summary": "User-facing surface = the react-native package's JS API (components + imperative APIs + hooks), the `react-native` CLI commands (start/bundle/codegen/spm via community-cli-plugin), the dev-middleware debugging endpoints, Web-platform APIs (observers, performance), and the published support packages (jest-preset, eslint configs, babel preset, metro-config). Deprecated APIs are still exported behind warnOnce() warnings; several experimental APIs ship under unstable_/experimental_ prefixes.",
+      "claims": [
+        {
+          "claim": "Core components exported lazily via getters in index.js: View, Text, TextInput, Image, ScrollView, FlatList, SectionList, VirtualizedList, VirtualizedSectionList, Modal, Pressable, TouchableHighlight/NativeFeedback/Opacity/WithoutFeedback, Switch, RefreshControl, StatusBar, KeyboardAvoidingView, Button, ActivityIndicator.",
+          "sources": [
+            "packages/react-native/index.js#L32-211",
+            "packages/react-native/Libraries/Components/View/View.js",
+            "packages/react-native/Libraries/Lists/VirtualizedList.js"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Imperative/manager APIs exported: AppRegistry, AppState, Animated, Appearance, BackHandler, DeviceEventEmitter, DeviceInfo, DevMenu, DevSettings, Dimensions, Keyboard, LayoutAnimation, Linking, LogBox, NativeAppEventEmitter, NativeComponentRegistry, NativeEventEmitter, NativeModules, Networking, PanResponder, PermissionsAndroid, PixelRatio, Platform, Settings, Share, StyleSheet, Systrace, ToastAndroid, TurboModuleRegistry, UIManager, Vibration, plus codegenNativeCommands/codegenNativeComponent/requireNativeComponent helpers.",
+          "sources": [
+            "packages/react-native/index.js#L212-414"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Deprecated-but-still-exported APIs emit warnOnce() on first access: DrawerLayoutAndroid, ImageBackground, SafeAreaView, InputAccessoryView, ProgressBarAndroid, Clipboard, PushNotificationIOS, UTFSequence — each message points at the community package that replaces it.",
+          "sources": [
+            "packages/react-native/index.js#L41-133",
+            "packages/react-native/index.js#L243-338",
+            "packages/react-native/index.js#L396-405"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "InteractionManager was removed from core: in __DEV__ a definedProperty getter on the export throws an invariant directing users to requestIdleCallback.",
+          "sources": [
+            "packages/react-native/index.js#L431-447"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Experimental exports ship behind unstable_/experimental_ prefixes: unstable_VirtualView, unstable_VirtualArray, unstable_createVirtualCollectionView, unstable_VirtualColumn/Row/Generators, unstable_NativeText, unstable_NativeView, unstable_TextAncestorContext, experimental_LayoutConformance, unstable_batchedUpdates.",
+          "sources": [
+            "packages/react-native/index.js#L91-103",
+            "packages/react-native/index.js#L180-210",
+            "packages/react-native/index.js#L375-377"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Hooks exported: useAnimatedValue, useAnimatedValueXY, useAnimatedColor, useColorScheme, usePressability, useWindowDimensions.",
+          "sources": [
+            "packages/react-native/index.js#L378-395"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CLI commands come from @react-native/community-cli-plugin: 'start' (dev server: --port/--host/--https/--key/--cert/--watchFolders/--reset-cache/--no-interactive/--client-logs), 'bundle' (--entry-file/--platform/--dev/--minify/--bundle-output/--sourcemap-output/--assets-dest/--asset-catalog-dest/--unstable-transform-profile), 'codegen' (--path/--platform/--outputPath/--source), and 'spm'.",
+          "sources": [
+            "packages/community-cli-plugin/src/index.flow.js#L11-19",
+            "packages/community-cli-plugin/src/commands/start.js#L16-105",
+            "packages/community-cli-plugin/src/commands/bundle/index.js#L26-132",
+            "packages/community-cli-plugin/src/commands/codegen.js#L20-60"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Dev middleware mounts '/open-debugger' (openDebuggerMiddleware), serves the React Native DevTools frontend statically at '/debugger-frontend' from @react-native/debugger-frontend, and forwards everything else to InspectorProxy which owns WebSocket endpoints '/inspector/device' and '/inspector/debug' for CDP traffic.",
+          "sources": [
+            "packages/dev-middleware/src/createDevMiddleware.js#L115-146",
+            "packages/dev-middleware/src/inspector-proxy/InspectorProxy.js#L42-43",
+            "packages/dev-middleware/src/inspector-proxy/InspectorProxy.js#L233-238"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Web-platform APIs are implemented under src/private/webapis (IntersectionObserver, MutationObserver, ResizeObserver, performance) and installed at startup only when the corresponding ReactNativeFeatureFlags accessor returns true (enableIntersectionObserverByDefault/enableMutationObserverByDefault/enableResizeObserverByDefault).",
+          "sources": [
+            "packages/react-native/src/private/setup/setUpDefaultReactNativeEnvironment.js#L45-62",
+            "packages/react-native/src/private/setup/setUpIntersectionObserver.js",
+            "packages/react-native/src/private/setup/setUpMutationObserver.js",
+            "packages/react-native/src/private/setup/setUpResizeObserver.js",
+            "packages/react-native/src/private/webapis"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Networking surface: setUpXHR installs fetch/XMLHttpRequest polyfills at init; RCTNetworking is the native HTTP module; WebSocket has its own module; whatwg-fetch and ws are runtime dependencies of the react-native package.",
+          "sources": [
+            "packages/react-native/Libraries/Core/setUpXHR.js",
+            "packages/react-native/Libraries/Network/RCTNetworking.js",
+            "packages/react-native/package.json#L180-182"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Developer-experience features: LogBox (installed in DEV via LogBox.install() during env setup), DevMenu/DevSettings native-backed modules, HMRClient for Fast Refresh, and React DevTools wiring via setUpReactDevTools and react-devtools-core dependency.",
+          "sources": [
+            "packages/react-native/src/private/setup/setUpDefaultReactNativeEnvironment.js#L27-41",
+            "packages/react-native/Libraries/LogBox/LogBox.js",
+            "packages/react-native/Libraries/Utilities/HMRClient.js",
+            "packages/react-native/package.json#L173-174"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Consumer-facing support packages published from the monorepo: @react-native/jest-preset, @react-native/eslint-config + eslint-plugin-react-native + eslint-plugin-specs, @react-native/metro-config, @react-native/babel-preset + babel-transformer, @react-native/normalize-color(s), @react-native/polyfills, @react-native/assets-registry/asset-utils, @react-native/virtualized-lists, @react-native/typescript-config.",
+          "sources": [
+            "packages/jest-preset/package.json",
+            "packages/eslint-plugin-react-native/package.json",
+            "packages/eslint-plugin-specs/package.json",
+            "packages/metro-config/package.json",
+            "packages/react-native-babel-preset/package.json",
+            "packages/normalize-color/package.json",
+            "packages/polyfills/package.json",
+            "packages/assets-registry/package.json",
+            "packages/virtualized-lists/package.json"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "RNTester (packages/rn-tester, '@react-native/tester') is the manual-verification app showcasing components/APIs incl. custom module examples (NativeCxxModuleExample, ReportFullyDrawnViewNativeComponent); private/helloworld is the minimal template app; Fantom exposes a test API (Fantom.createRoot/runTask/scrollTo/installTimerMock) plus a REPL via yarn fantom-cli.",
+          "sources": [
+            "packages/rn-tester/package.json",
+            "packages/rn-tester/NativeCxxModuleExample/NativeCxxModuleExample.js",
+            "private/helloworld/index.js",
+            "private/react-native-fantom/__docs__/README.md#L31-50",
+            "private/react-native-fantom/__docs__/README.md#L117-157",
+            "scripts/fantom-cli.sh"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "data_flow": {
+      "summary": "End-to-end: Metro prepends react-native/setup-env to every bundle; setUpDefaultReactNativeEnvironment installs globals then requires AppRegistry; the native side calls AppRegistry.runApplication which resolves the registered runnable and renders through RendererProxy into ReactFabric; Fabric commits to the C++ shadow tree (ReactCommon/react/renderer) and mounts to platform views. Native capabilities are reached through TurboModuleRegistry (__turboModuleProxy with BatchedBridge fallback); native-to-JS calls go through BatchedBridge callFunctionReturnFlushedQueue and DeviceEventEmitter. Native interfaces are declared as JS specs that codegen turns into C++/ObjC++/Java at build time. Feature flags are authored once and generated into JS/Java/C++ accessors.",
+      "claims": [
+        {
+          "claim": "Metro serializer getModulesRunBeforeMainModule injects 'react-native/setup-env' before the app entry on every bundle; InitializeCore.js is kept as a deprecated alias that simply requires ../../src/setup-env so it stays in the module graph.",
+          "sources": [
+            "packages/metro-config/src/index.flow.js#L61-66",
+            "packages/react-native/Libraries/Core/InitializeCore.js#L25-37",
+            "packages/react-native/src/setup-env.js#L22"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "setUpDefaultReactNativeEnvironment runs a fixed require order — setUpGlobals, setUpDOM, setUpPerformance, polyfillPromise, setUpTimers, [DEV] setUpReactDevTools, setUpErrorHandling, setUpRegeneratorRuntime, setUpXHR, setUpAlert, setUpNavigator, setUpBatchedBridge, setUpSegmentFetcher, [DEV] checkNativeVersion/setUpDeveloperTools/LogBox.install — then requires AppRegistry and conditionally installs the three observers. A module-level `initialized` flag makes it idempotent.",
+          "sources": [
+            "packages/react-native/src/private/setup/setUpDefaultReactNativeEnvironment.js#L11-62"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "App launch data flow: JS calls AppRegistry.registerComponent(appKey, provider) which stores a runnable in the `runnables` map; native invokes runApplication(appKey, appParameters) over the bridge; the runnable calls renderApplication which wraps RootComponent in AppContainer (plus optional React.unstable_Activity wrapper) and calls Renderer.renderElement with createRootTag(rootTag).",
+          "sources": [
+            "packages/react-native/Libraries/ReactNative/AppRegistryImpl.js#L92-120",
+            "packages/react-native/Libraries/ReactNative/AppRegistryImpl.js#L197",
+            "packages/react-native/Libraries/ReactNative/renderApplication.js#L39-92"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "RendererProxy re-exports RendererImplementation, which resolves to Libraries/Renderer/implementations/ReactFabric-{dev,prod,profiling}.js; the proxy indirection exists so bundles can swap the Fabric renderer variant (profiling vs production) at runtime.",
+          "sources": [
+            "packages/react-native/Libraries/ReactNative/RendererProxy.js",
+            "packages/react-native/Libraries/ReactNative/RendererImplementation.js",
+            "packages/react-native/Libraries/Renderer/implementations/ReactFabric-prod.js"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "TurboModule resolution: TurboModuleRegistry.get/getEnforcing first calls global.__turboModuleProxy(name); on miss it falls back to NativeModules[name] (the BatchedBridge-generated module object); getEnforcing throws an invariant naming the module when neither yields a result.",
+          "sources": [
+            "packages/react-native/Libraries/TurboModule/TurboModuleRegistry.js#L17-47"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Legacy-bridge module calls: NativeModules.genModule builds each method via genMethod (typed 'async'|'promise'|'sync' from the ModuleConfig tuple [name, constants, methods, promiseMethodIDs, syncMethodIDs]) which enqueues onto BatchedBridge/MessageQueue.enqueueNativeCall; RCT/RK prefixes must already be stripped natively (invariant).",
+          "sources": [
+            "packages/react-native/Libraries/BatchedBridge/NativeModules.js#L18-80",
+            "packages/react-native/Libraries/BatchedBridge/MessageQueue.js#L243",
+            "packages/react-native/Libraries/BatchedBridge/MessageQueue.js#L402"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Native -> JS direction: registerCallableModule exposes JS modules to native through BatchedBridge (AppRegistry itself is registered this way at module load, alongside global.RN$AppRegistry); RCTDeviceEventEmitter/NativeAppEventEmitter deliver native events into JS.",
+          "sources": [
+            "packages/react-native/Libraries/ReactNative/AppRegistry.js#L15-27",
+            "packages/react-native/Libraries/Core/registerCallableModule.js",
+            "packages/react-native/Libraries/EventEmitter/RCTDeviceEventEmitter.js"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Codegen flow: `Native*.js` and `*NativeComponent.js` spec files -> @react-native/codegen parsers (flow/typescript) -> CodegenSchema -> RNCodegen.generate -> LIBRARY_GENERATORS buckets (componentsIOS, componentsAndroid, modulesIOS, modulesAndroid, modulesCxx, descriptors, events, props, states, shadow-nodes, tests) -> writeMapToFiles or checkFilesForChanges (verify mode when test:true).",
+          "sources": [
+            "packages/react-native-codegen/src/generators/RNCodegen.js#L125-188",
+            "packages/react-native-codegen/src/generators/RNCodegen.js#L196-238",
+            "packages/react-native-codegen/src/parsers/parser.js",
+            "packages/react-native-codegen/src/cli/combine/combine-js-to-schema-cli.js"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Codegen is invoked three ways: `react-native codegen` CLI -> scripts/codegen/generate-artifacts-executor.execute(path, platform, outputPath, source); Android Gradle via GenerateCodegenSchemaTask + GenerateCodegenArtifactsTask in the react-native-gradle-plugin; iOS via scripts/generate-codegen-artifacts.js inside the pod build phases.",
+          "sources": [
+            "packages/community-cli-plugin/src/commands/codegen.js#L44-60",
+            "packages/react-native/scripts/codegen/generate-artifacts-executor/index.js",
+            "packages/gradle-plugin/react-native-gradle-plugin/src/main/kotlin/com/facebook/react/tasks/GenerateCodegenArtifactsTask.kt",
+            "packages/react-native/scripts/generate-codegen-artifacts.js"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Feature flags: ReactNativeFeatureFlags.config.js is the single source of truth (common/jsOnly scopes, defaultValue, metadata.purpose, expectedReleaseValue, ossReleaseStage); `yarn featureflags` regenerates the JS (src/private/featureflags/ReactNativeFeatureFlags.js), Java and C++ accessors, which gate behavior like the observers at env setup.",
+          "sources": [
+            "packages/react-native/scripts/featureflags/ReactNativeFeatureFlags.config.js#L15-58",
+            "packages/react-native/scripts/featureflags/index.js",
+            "packages/react-native/src/private/featureflags/ReactNativeFeatureFlags.js",
+            "packages/react-native/src/private/setup/setUpDefaultReactNativeEnvironment.js#L45-62"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Type pipeline: Flow-typed JS sources -> `yarn build-types` (scripts/js-api using flow-api-translator) -> per-module .d.ts in types_generated/ (generated at build time, referenced by the exports 'types' condition) plus the committed whole-API snapshot ReactNativeApi.d.ts; `yarn test-generated-typescript` type-checks the result against __typetests__.",
+          "sources": [
+            "package.json#L11",
+            "scripts/js-api/config.js#L30",
+            "packages/react-native/package.json#L30-35",
+            "packages/react-native/ReactNativeApi.d.ts",
+            "package.json#L44-45"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "UI commit path: ReactFabric renderElement -> C++ shadow tree under ReactCommon/react/renderer (uimanager/scheduler/mounting/runtimescheduler) -> platform mount: Android FabricUIManager (com.facebook.react.fabric) and iOS RCTComponentViewFactory/RCTMountingManager; the JS FabricUIManager.js module is the JS-side handle.",
+          "sources": [
+            "packages/react-native/Libraries/ReactNative/FabricUIManager.js",
+            "packages/react-native/ReactCommon/react/renderer",
+            "packages/react-native/ReactAndroid/src/main/java/com/facebook/react/runtime/ReactHostImpl.kt#L56-57",
+            "__docs__/README.md#L45-53"
+          ],
+          "kind": "inference"
+        }
+      ]
+    },
+    "behavior_traces": {
+      "summary": "Three flows were traced end-to-end: (A) JS environment init -> app registration -> first render; (B) `react-native start` dev-server boot from the bin shim through Metro.runServer; (C) a TurboModule/native call plus codegen generation. Ordered function calls are named in each claim.",
+      "claims": [
+        {
+          "claim": "Startup A1: Metro bundle -> serializer.getModulesRunBeforeMainModule() returns ['react-native/setup-env'] -> setup-env.js calls setUpDefaultReactNativeEnvironment() once (idempotent via `initialized` flag).",
+          "sources": [
+            "packages/metro-config/src/index.flow.js#L61-66",
+            "packages/react-native/src/setup-env.js#L22",
+            "packages/react-native/src/private/setup/setUpDefaultReactNativeEnvironment.js#L11-20"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Startup A2 (ordered): setUpGlobals -> setUpDOM -> setUpPerformance -> polyfillPromise -> setUpTimers -> [__DEV__] setUpReactDevTools -> setUpErrorHandling -> setUpRegeneratorRuntime -> setUpXHR -> setUpAlert -> setUpNavigator -> setUpBatchedBridge -> setUpSegmentFetcher -> [__DEV__] checkNativeVersion, setUpDeveloperTools, LogBox.install() -> require(AppRegistry) -> flag-gated setUpIntersectionObserver/setUpMutationObserver/setUpResizeObserver.",
+          "sources": [
+            "packages/react-native/src/private/setup/setUpDefaultReactNativeEnvironment.js#L22-62"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Startup A3: AppRegistry module load registers the 'LogBox' surface component, sets global.RN$AppRegistry, and registerCallableModule('AppRegistry', AppRegistry) so native can invoke runApplication over the bridge; user code's registerComponent(appKey, provider) stores runnables[appKey] = (appParameters, displayMode) => renderApplication({...}).",
+          "sources": [
+            "packages/react-native/Libraries/ReactNative/AppRegistry.js#L11-27",
+            "packages/react-native/Libraries/ReactNative/AppRegistryImpl.js#L92-120"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Startup A4: native calls runApplication -> runnable fires renderApplication -> invariant(rootTag) -> builds <AppContainer rootTag WrapperComponent rootViewStyle initialProps internal_excludeLogBox><RootComponent .../></AppContainer> -> optional DEV debugName wrapper via getCachedComponentWithDebugName -> optional React.unstable_Activity wrapper when useOffscreen -> Renderer.renderElement({element, rootTag: createRootTag(rootTag)}).",
+          "sources": [
+            "packages/react-native/Libraries/ReactNative/renderApplication.js#L39-92",
+            "packages/react-native/Libraries/ReactNative/AppRegistryImpl.js#L97-115"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Startup A5 (platform): Android ReactActivityDelegate resolves ReactHost (bridgeless) -> ReactHostImpl lazily creates the ReactInstance guarded by Bolts Tasks; the deprecated path builds ReactInstanceManager via ReactNativeHost.getBaseReactInstanceManagerBuilder().setJSMainModulePath(...).addPackage(each getPackages()).build(). iOS: RCTReactNativeFactory.initWithDelegate:releaseLevel: -> _setUpFeatureFlags -> applyDefaultColorSpace -> createRCTRootViewFactory -> startReactNativeWithModuleName:inWindow:.",
+          "sources": [
+            "packages/react-native/ReactAndroid/src/main/java/com/facebook/react/ReactActivityDelegate.java#L87-100",
+            "packages/react-native/ReactAndroid/src/main/java/com/facebook/react/ReactNativeHost.kt#L79-121",
+            "packages/react-native/ReactAndroid/src/main/java/com/facebook/react/runtime/ReactHostImpl.kt#L86-120",
+            "packages/react-native/Libraries/AppDelegate/RCTReactNativeFactory.mm#L76-100"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Dev server B1: `react-native` bin -> cli.js -> findCommunityCli() resolves '@react-native-community/cli' from process.cwd() (supports pnpm-style isolated node_modules) -> cli.run('react-native'); when required as a library, a missing community CLI is silently tolerated.",
+          "sources": [
+            "packages/react-native/cli.js#L24-32",
+            "packages/react-native/cli.js#L67-91"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Dev server B2: community CLI loads react-native.config.js which pushes bundleCommand, startCommand, codegenCommand, spmCommand from @react-native/community-cli-plugin and dynamically resolves @react-native-community/cli-platform-{android,ios} for platform project/dependency config.",
+          "sources": [
+            "packages/react-native/react-native.config.js#L34-70",
+            "packages/react-native/react-native.config.js#L72-100"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Dev server B3 (ordered inside runDevServer): loadMetroConfig(cliConfig, {...flags}) -> isDevServerRunning(devServerUrl, projectRoot) returning 'matched_server_running'|'port_taken' -> build TerminalReporter (or --custom-log-reporter-path) -> loadCommunityMiddleware().createCommunityMiddleware({host, port, watchFolders}) -> createDevMiddleware({serverBaseUrl, logger}) -> Metro.runServer(metroConfig, {host, secure, secureCert, secureKey, unstable_extraMiddleware: [communityMiddleware, middleware], websocketEndpoints: merged}) -> eventsSocketEndpoint.reportEvent wired into the reporter -> version.logIfUpdateAvailable.",
+          "sources": [
+            "packages/community-cli-plugin/src/dev-server/runDevServer.js#L46-166",
+            "packages/dev-middleware/src/createDevMiddleware.js#L87-146"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Dev server B4 (key handlers): when interactive, 'initialize_done' triggers attachKeyHandlers({devServerUrl, messageSocket, reporter}) so pressing keys (e.g. open debugger via OpenDebuggerKeyboardHandler) talks to the dev middleware over the message socket.",
+          "sources": [
+            "packages/community-cli-plugin/src/dev-server/runDevServer.js#L134-146",
+            "packages/community-cli-plugin/src/dev-server/attachKeyHandlers.js",
+            "packages/community-cli-plugin/src/dev-server/OpenDebuggerKeyboardHandler.js"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Native call C1: a spec module like NativeDevSettings re-exports the typed interface from src/private/specs_DEPRECATED/modules; callers do TurboModuleRegistry.getEnforcing('DevSettings') -> global.__turboModuleProxy('DevSettings') (JSI-installed proxy) -> fallback NativeModules['DevSettings'] -> invariant throw 'Verify that a module by this name is registered in the native binary.'",
+          "sources": [
+            "packages/react-native/Libraries/NativeModules/specs/NativeDevSettings.js",
+            "packages/react-native/Libraries/TurboModule/TurboModuleRegistry.js#L19-47",
+            "packages/react-native/src/private/specs_DEPRECATED/modules"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Codegen C2 (ordered): `react-native codegen` -> require.resolve('react-native/scripts/codegen/generate-artifacts-executor/index') -> .execute(path, platform, outputPath, source) -> parsers produce schemas (combine-js-to-schema-cli merges per-library schemas) -> RNCodegen.generate validates each schema via SchemaValidator.validate then fans out to the requested LIBRARY_GENERATORS -> checkOrWriteFiles writes output dirs or diffs in test mode.",
+          "sources": [
+            "packages/community-cli-plugin/src/commands/codegen.js#L44-60",
+            "packages/react-native/scripts/codegen/generate-artifacts-executor/index.js",
+            "packages/react-native-codegen/src/cli/combine/combine-js-to-schema-cli.js",
+            "packages/react-native-codegen/src/generators/RNCodegen.js#L241-308"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Bundle flow (release): `react-native bundle` -> buildBundle (unstable_buildBundleWithConfig exported for embedders) -> Metro bundle build -> saveAssets writes resolved asset files per platform (getAssetDestPathAndroid / getAssetDestPathIOS / assetCatalogIOS / filterPlatformAssetScales); Metro's transformer.assetRegistryPath is 'react-native/asset-registry' so asset requires become registry calls.",
+          "sources": [
+            "packages/community-cli-plugin/src/commands/bundle/index.js#L26-60",
+            "packages/community-cli-plugin/src/commands/bundle/buildBundle.js",
+            "packages/community-cli-plugin/src/commands/bundle/saveAssets.js",
+            "packages/community-cli-plugin/src/commands/bundle/assetCatalogIOS.js",
+            "packages/metro-config/src/index.flow.js#L85-89"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "testing_signals": {
+      "summary": "Two JS test systems: Jest 29 unit tests in __tests__/*-test.js (custom preprocessor + haste resolver that strips `exports`, ios/android platforms, fake timers globally) and Fantom *-itest.js integration tests that run JS on Hermes against the real C++ Fabric/mounting stack with a mock host platform — Fantom files must live under packages/react-native. Native testing: Gradle test task for ReactAndroid, scripts/objc-test.sh + RNTesterUnitTests/RCTTest for iOS. CI in test-all.yml gates on lint, test_js, build_js_types, Fantom (with two retry rounds), Android/iOS builds, helloworld e2e, RNTester e2e and Maestro cloud runs.",
+      "claims": [
+        {
+          "claim": "Jest config: testRegex '/__tests__/.*-test(\\.fb)?\\.js$' (the .fb suffix runs Meta-internal tests), haste platforms ['ios','android'] default ios, fakeTimers enabled globally (modern), testEnvironment node, coverage collected from packages/react-native/Libraries/**/*.js and src/**/*.js.",
+          "sources": [
+            "jest.config.js"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Jest resolution diverges deliberately from Metro: a custom resolver (packages/jest-preset/jest/resolver.js) strips package.json `exports`, so moduleNameMapper aliases map 'react-native/setup-env', 'react-native/react-private-interface' and 'react-native/unstable-internals-do-not-use' to their src/ files; all sources transform through jest/preprocessor.js.",
+          "sources": [
+            "jest.config.js#L24-38",
+            "packages/jest-preset/jest/resolver.js",
+            "jest/preprocessor.js"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Roughly 234 *-test.js files exist under __tests__ dirs (find count) — concentrated in packages/react-native/Libraries and src/private plus per-package suites (community-cli-plugin, dev-middleware, codegen generators/parsers __tests__).",
+          "sources": [
+            "jest.config.js#L44-52",
+            "packages/react-native-codegen/src/generators/__tests__",
+            "packages/dev-middleware/src/__tests__"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Fantom (~202 *-itest.js files) is the integration/benchmark runner: tests execute on Hermes with the real C++ Fabric renderer, TurboModules and bridgeless runtime against a mock host platform; API = Fantom.createRoot/runTask/scrollTo/installTimerMock on a deterministic virtual clock; docblock pragmas @fantom_flags, @fantom_mode, @fantom_native_opt, @fantom_js_opt, @fantom_js_bytecode generate test-matrix variants including wildcard '*'.",
+          "sources": [
+            "private/react-native-fantom/__docs__/README.md#L17-60",
+            "private/react-native-fantom/__docs__/README.md#L284-351",
+            "private/react-native-fantom/src/index.js",
+            "scripts/fantom.sh"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Fantom asserts real layout: examples show root.getRenderedOutput({includeLayoutMetrics:true}).toJSX() producing <rn-view layoutMetrics-frame=.../> and element.getBoundingClientRect() returning Yoga-computed metrics — capabilities Jest can't provide; mounting instructions are inspectable via root.takeMountingManagerLogs().",
+          "sources": [
+            "private/react-native-fantom/__docs__/README.md#L31-50",
+            "private/react-native-fantom/__docs__/README.md#L224-274",
+            "packages/react-native/Libraries/Components/View/__tests__/View-itest.js"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CI Fantom path: test-all.yml job build_fantom_runner (8-core-ubuntu container reactnativecommunity/react-native-android) then run_fantom_tests uses ./.github/workflows/fantom-tests.yml with two automatic retry rounds (run_fantom_tests_retry_1/2, second round sets fail-on-error: true).",
+          "sources": [
+            ".github/workflows/test-all.yml#L295-336",
+            ".github/workflows/fantom-tests.yml",
+            ".github/actions/build-fantom-runner"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "E2E coverage: e2e-android-rntester.yml / e2e-ios-rntester.yml / e2e-*-templateapp.yml run RNTester and template apps on emulators/simulators; test_maestro_cloud_{android,ios} push rntester release builds to Maestro Cloud on main pushes and same-repo PRs; helloworld e2e jobs (test_android_helloworld, test_ios_helloworld) validate the template path.",
+          "sources": [
+            ".github/workflows/test-all.yml#L364-407",
+            ".github/workflows/test-all.yml#L445-548",
+            ".github/workflows/e2e-android-rntester.yml",
+            ".github/workflows/maestro-cloud-rntester.yml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Native unit tests: `yarn test-android` runs ./gradlew :packages:react-native:ReactAndroid:test (JUnit/Robolectric under ReactAndroid/src/test); `yarn test-ios` runs scripts/objc-test.sh against packages/rn-tester's RNTesterUnitTests and RCTTest infrastructure.",
+          "sources": [
+            "package.json#L39-43",
+            "scripts/objc-test.sh",
+            "packages/rn-tester/RNTesterUnitTests",
+            "packages/rn-tester/RCTTest"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Type/API regression gates: `yarn flow-check` (flow full-check, flow-bin 0.332), `yarn test-generated-typescript` (tsc -p __typetests__/tsconfig.json), js-api-diff job via scripts/js-api/diff-api-snapshot (workflow api-changes.yml), and validate-cxx-api-snapshots.yml for the C++ API snapshots.",
+          "sources": [
+            "package.json#L15-16",
+            "package.json#L44-45",
+            ".github/workflows/api-changes.yml",
+            ".github/workflows/validate-cxx-api-snapshots.yml",
+            "scripts/cxx-api/api-snapshots"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Lint/format gates: `yarn lint` = eslint --max-warnings 0; `yarn format-check` fans out to prettier (js/md/yaml), clang-format (cpp), format-kotlin/format-java/format-python/format-swift scripts, each with pinned toolchain packages; shellcheck runs via .github/workflow-scripts/analyze_scripts.sh; markdownlint via lint-markdown.",
+          "sources": [
+            "package.json#L17-36",
+            "scripts/clang-format.js",
+            "scripts/format-kotlin.js",
+            "scripts/format-swift.js"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Uncovered/soft spots: testPathIgnorePatterns excludes sdks/hermes and Libraries/Renderer implementations from Jest; Fantom is limited to packages/react-native internals (no app-level testing); C++ sampling profiler (FANTOM_PROFILE_CPP) and JS/C++ debugging (FANTOM_DEBUG_JS/CPP) only work on Meta infrastructure.",
+          "sources": [
+            "jest.config.js#L45-52",
+            "private/react-native-fantom/__docs__/README.md#L15-16",
+            "private/react-native-fantom/__docs__/README.md#L369-396",
+            "private/react-native-fantom/__docs__/README.md#L479-493"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "risk_map": {
+      "summary": "Dominant risk is the long-running architecture migration: legacy bridge (ReactNativeHost/ReactInstanceManager, BatchedBridge/MessageQueue, runtime codegenNativeComponent fallback) coexists with bridgeless ReactHost + TurboModule proxy, so behavior diverges by mode. Generated-code drift is a second axis — feature flags, TS types, codegen output, and three committed API snapshots all fail CI if not regenerated. The dev-middleware WebSocket inspector endpoints are a security-sensitive surface when the dev server is exposed beyond localhost. Several foot-guns exist for tooling: preinstall mutates yarn.lock, Jest resolution diverges from Metro, and cli.js silently tolerates a missing community CLI.",
+      "claims": [
+        {
+          "claim": "Legacy/new architecture split: ReactNativeHost is @Deprecated and logs LegacyArchitectureLogLevel.ERROR; ReactActivityDelegate.getReactNativeHost() is deprecated in favor of ReactHost; code paths still branch on global.RN$Bridgeless (e.g. codegenNativeComponent warns that runtime fallback 'will be an error in the future').",
+          "sources": [
+            "packages/react-native/ReactAndroid/src/main/java/com/facebook/react/ReactNativeHost.kt#L34-39",
+            "packages/react-native/ReactAndroid/src/main/java/com/facebook/react/ReactActivityDelegate.java#L87-100",
+            "packages/react-native/Libraries/Utilities/codegenNativeComponent.js#L42-46"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Runtime/type surface drift: index.js header warns 'Keep this file in sync with index.js.flow' — the runtime getters (incl. the untyped 'Touchable' re-export kept for a react-native-svg call site) can diverge from the declared public API, only caught by generated-types tests.",
+          "sources": [
+            "packages/react-native/index.js#L19-25",
+            "packages/react-native/index.js#L415-429",
+            "packages/react-native/index.js.flow"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Dev-middleware attack surface: InspectorProxy opens unauthenticated WebSocket endpoints '/inspector/device' and '/inspector/debug' proxying full CDP control of connected apps, plus '/open-debugger' which launches local applications via the tool launcher; `start --host`/`--https`/`--cert`/`--key` options determine exposure — dangerous if bound to a non-localhost interface.",
+          "sources": [
+            "packages/dev-middleware/src/inspector-proxy/InspectorProxy.js#L42-43",
+            "packages/dev-middleware/src/inspector-proxy/InspectorProxy.js#L233-253",
+            "packages/dev-middleware/src/createDevMiddleware.js#L115-140",
+            "packages/community-cli-plugin/src/commands/start.js#L74-86"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Dynamic resolution fragility: cli.js and react-native.config.js use require.resolve(..., {paths: [process.cwd()]}) for @react-native-community/* packages — correct under pnpm/isolated layouts but silently degrades (empty config, exit(1) with a warning) when the community CLI isn't installed; a module-scope try/catch swallows the missing dependency when cli.js is imported rather than executed.",
+          "sources": [
+            "packages/react-native/cli.js#L24-40",
+            "packages/react-native/cli.js#L79-91",
+            "packages/react-native/react-native.config.js#L24-70"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "preinstall side effect: `yarn install` runs scripts/try-set-hermes-compiler-prebuilt.js which rewrites the hermes-compiler placeholder ('0.0.0') in packages/react-native/package.json and dirties yarn.lock — documented as expected, but it will pollute diffs and confuse automated installs.",
+          "sources": [
+            "package.json#L35",
+            "scripts/try-set-hermes-compiler-prebuilt.js",
+            "packages/react-native/package.json#L165",
+            "AGENTS.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Generated-artifact drift is CI-enforced: codegen output, feature-flag accessors (yarn featureflags), types_generated + ReactNativeApi.d.ts (yarn build-types), scripts/cxx-api/api-snapshots (yarn cxx-api-build/--validate), and ReactAndroid/api/ReactAndroid.api are all regenerated-or-fail; hand-edits get reverted by CI validation.",
+          "sources": [
+            "AGENTS.md",
+            "packages/react-native-codegen/src/generators/RNCodegen.js#L215-238",
+            "packages/react-native/ReactNativeApi.d.ts",
+            "packages/react-native/ReactAndroid/api/ReactAndroid.api",
+            "scripts/cxx-api/api-snapshots",
+            ".github/workflows/validate-cxx-api-snapshots.yml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Metro bundling hard-depends on a one-time codegen build: without `yarn --cwd packages/react-native-codegen build`, bundling fails with 'Cannot find module @react-native/codegen/lib/parsers/flow/parser' — a documented bootstrap trap for fresh clones.",
+          "sources": [
+            "AGENTS.md",
+            "packages/react-native-codegen/src/parsers/flow/parser.js"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Jest fidelity gap: the custom resolver strips `exports` and moduleNameMapper hardcodes subpath aliases, so unit tests exercise a different module-resolution graph than Metro/Node — code relying on export conditions (e.g. types_generated, react-native-legacy-deep-imports) is untested by Jest.",
+          "sources": [
+            "jest.config.js#L24-38",
+            "packages/react-native/package.json#L30-63"
+          ],
+          "kind": "inference"
+        },
+        {
+          "claim": "DEV-only behavior divergence: LogBox.install, checkNativeVersion, setUpReactDevTools, InteractionManager-throwing getter, warnOnce deprecation banners, and the RN$Bridgeless codegen warning only run under __DEV__, so prod bundles take meaningfully different code paths (incl. AppContainer-dev vs AppContainer-prod and ReactFabric-dev/-prod/-profiling variants).",
+          "sources": [
+            "packages/react-native/src/private/setup/setUpDefaultReactNativeEnvironment.js#L27-41",
+            "packages/react-native/index.js#L431-447",
+            "packages/react-native/Libraries/ReactNative/AppContainer-dev.js",
+            "packages/react-native/Libraries/Renderer/implementations/ReactFabric-prod.js"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Ecosystem-coupled deprecations: exports for Clipboard, PushNotificationIOS, SafeAreaView, ProgressBarAndroid, DrawerLayoutAndroid, ImageBackground, UTFSequence remain (warnOnce) alongside legacy deep imports './Libraries/*' — removal is a breaking change deferred across releases; InteractionManager already throws in DEV.",
+          "sources": [
+            "packages/react-native/index.js#L41-133",
+            "packages/react-native/index.js#L243-338",
+            "packages/react-native/package.json#L36-44",
+            "packages/react-native/index.js#L431-447"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Fantom operational limits: debugging (FANTOM_DEBUG_JS/FANTOM_DEBUG_CPP) is Meta-internal only; FANTOM_PROFILE_CPP needs perf and is banned on CI; runTask() cannot be nested (throws); only a subset of the Jest global API is implemented (no test.each) — contributors must work within these limits or file gaps.",
+          "sources": [
+            "private/react-native-fantom/__docs__/README.md#L276-283",
+            "private/react-native-fantom/__docs__/README.md#L369-396",
+            "private/react-native-fantom/__docs__/README.md#L479-493"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Large monorepo coupling: the scanned tree is ~3998 files with the file walk capped (1008 skipped); a single change can trigger lint -> build_fantom_runner -> run_fantom_tests (x3 retries) -> build_android -> e2e -> maestro -> build_npm_package chains in test-all.yml, so blast radius of even small changes is expensive CI-wise.",
+          "sources": [
+            ".github/workflows/test-all.yml#L295-414",
+            ".github/workflows/test-all.yml#L39-90"
+          ],
+          "kind": "inference"
+        }
+      ]
+    },
+    "extension_points": {
+      "summary": "Extension happens at well-defined seams: JS spec files (Native*.js / *NativeComponent.js) + codegenConfig libraries in package.json feed codegen; TurboModuleRegistry and codegenNativeComponent/requireNativeComponent are the runtime registration points; AppRegistry.registerComponent(+setWrapperComponentProvider/setRootViewStyleProvider) registers root surfaces; community-cli-plugin exports composable Command objects (with unstable_createBundleCommandParser for custom parsers); createDevMiddleware exposes unstable_* hooks; metro-config exposes getDefaultConfig/mergeConfig/setFrameworkDefaults; the Gradle ReactExtension DSL and iOS RCTReactNativeFactoryDelegate/RCTDependencyProvider are the native wiring points; the feature-flag config and Fantom pragmas are repo-internal extension points.",
+      "claims": [
+        {
+          "claim": "New TurboModule: author a `Native<Name>.js` spec (typed interface extending TurboModule) and fetch it with TurboModuleRegistry.getEnforcing('<Name>'); the react-native package's own specs are declared in package.json codegenConfig.libraries (FBReactNativeSpec, jsSrcsDir 'src', per-module ios unstableRequiresMainQueueSetup flags).",
+          "sources": [
+            "packages/react-native/package.json#L184-215",
+            "packages/react-native/Libraries/TurboModule/TurboModuleRegistry.js#L35-47",
+            "packages/react-native/Libraries/NativeModules/specs/NativeDevSettings.js"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New Fabric component: author a `*NativeComponent.js` spec consumed by codegenNativeComponent (options: interfaceOnly, paperComponentName, paperComponentNameDeprecated, excludedPlatforms); codegenNativeCommands generates the imperative command dispatchers; requireNativeComponent remains the runtime lookup.",
+          "sources": [
+            "packages/react-native/Libraries/Utilities/codegenNativeComponent.js#L19-51",
+            "packages/react-native/Libraries/Utilities/codegenNativeCommands.js",
+            "packages/react-native/Libraries/ReactNative/requireNativeComponent.js",
+            "packages/react-native/Libraries/Components/View/ViewNativeComponent.js"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "App registration seams: AppRegistry.registerComponent/registerConfig/registerRunnable; setWrapperComponentProvider wraps every root component; setRootViewStyleProvider injects root view styles; registerCallableModule exposes a JS module to native callers via BatchedBridge.",
+          "sources": [
+            "packages/react-native/Libraries/ReactNative/AppRegistryImpl.js#L47-60",
+            "packages/react-native/Libraries/ReactNative/AppRegistryImpl.js#L65-120",
+            "packages/react-native/Libraries/Core/registerCallableModule.js"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CLI extension: @react-native/community-cli-plugin exports Command objects (bundleCommand, startCommand, codegenCommand, spmCommand) that any CLI config can register; unstable_createBundleCommandParser(additionalOptions) builds a commander parser with the base bundle options plus caller-supplied ones; unstable_buildBundleWithConfig lets embedders invoke bundling programmatically.",
+          "sources": [
+            "packages/community-cli-plugin/src/index.flow.js#L11-19",
+            "packages/community-cli-plugin/src/commands/bundle/index.js#L157-171"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Dev-middleware hooks: createDevMiddleware accepts unstable_eventReporter (structured event sink), unstable_experiments (enableOpenDebuggerRedirect, enableNetworkInspector, enableStandaloneFuseboxShell), unstable_toolLauncher (custom app launcher for the debugger frontend), unstable_customInspectorMessageHandler (per device/debugger-pair CDP handler), unstable_trackInspectorProxyEventLoopPerf.",
+          "sources": [
+            "packages/dev-middleware/src/createDevMiddleware.js#L27-95",
+            "packages/dev-middleware/src/createDevMiddleware.js#L148-154"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Metro config extension: getDefaultConfig(projectRoot) merges Metro defaults + reactNativeDefaults + frameworkDefaults; frameworks inject config via setFrameworkDefaults(); mergeConfig is re-exported for user overrides; resolver sets resolverMainFields ['react-native','browser','main'], platforms ['android','ios'], unstable_conditionNames ['react-native'].",
+          "sources": [
+            "packages/metro-config/src/index.flow.js#L44-105"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Android app wiring: subclass DefaultReactNativeHost/ReactNativeHost and return extra ReactPackage instances from getPackages(); ReactActivityDelegate exposes getLaunchOptions/createRootView overrides; the react-native-gradle-plugin exposes a `react {}` DSL (ReactExtension) plus settings-plugin ReactSettingsPlugin for autolinking.",
+          "sources": [
+            "packages/react-native/ReactAndroid/src/main/java/com/facebook/react/ReactNativeHost.kt#L191-197",
+            "packages/react-native/ReactAndroid/src/main/java/com/facebook/react/ReactActivityDelegate.java#L64-85",
+            "packages/react-native/ReactAndroid/src/main/java/com/facebook/react/ReactPackage.kt",
+            "packages/gradle-plugin/react-native-gradle-plugin/src/main/kotlin/com/facebook/react/ReactExtension.kt"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "iOS app wiring: RCTReactNativeFactory takes an RCTReactNativeFactoryDelegate (RCTDefaultReactNativeFactoryDelegate provided); RCTDependencyProvider supplies autolinked dependencies; third-party Fabric components register through RCTComponentViewFactory's thirdPartyFabricComponentsProvider which the factory sets to itself.",
+          "sources": [
+            "packages/react-native/Libraries/AppDelegate/RCTReactNativeFactory.mm#L76-95",
+            "packages/react-native/Libraries/AppDelegate/RCTDefaultReactNativeFactoryDelegate.mm",
+            "packages/react-native/Libraries/AppDelegate/RCTDependencyProvider.h"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Feature-flag extension: add a definition (common|jsOnly scope, defaultValue, metadata{description,purpose,expectedReleaseValue,dateAdded}, ossReleaseStage, optional skipNativeAPI) in ReactNativeFeatureFlags.config.js and run `yarn featureflags` to regenerate JS/Java/C++ accessors; Fantom tests override flags via @fantom_flags pragmas.",
+          "sources": [
+            "packages/react-native/scripts/featureflags/ReactNativeFeatureFlags.config.js#L15-58",
+            "packages/react-native/scripts/featureflags/index.js",
+            "private/react-native-fantom/__docs__/README.md#L296-330"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Consumer-facing presets: @react-native/jest-preset packages the preprocessor/resolver/setup for app tests; eslint-config-react-native + eslint-plugin-react-native + eslint-plugin-specs package the lint surface; @react-native/typescript-config ships tsconfig bases; babel-preset + metro-babel-transformer are the transform seam.",
+          "sources": [
+            "packages/jest-preset/package.json",
+            "packages/jest-preset/jest/resolver.js",
+            "packages/eslint-plugin-react-native/package.json",
+            "packages/eslint-plugin-specs/package.json",
+            "packages/typescript-config",
+            "packages/react-native-babel-preset/package.json",
+            "packages/react-native-babel-transformer/package.json"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_handoff": {
+      "summary": "Start with AGENTS.md — it is the canonical contributor doc (repo layout, commands, gotchas). JS is Flow; expect paired .js/.js.flow files and code split between Libraries/ (legacy) and src/private/ (target). Verify with yarn test / yarn fantom / yarn lint / yarn flow-check; build @react-native/codegen once before Metro works. Never hand-edit generated artifacts — regenerate via yarn featureflags / yarn build-types / codegen and keep index.js in sync with index.js.flow. Respect the committed API snapshots (ReactNativeApi.d.ts, ReactAndroid.api, scripts/cxx-api) and the yarn.lock churn from the preinstall hook.",
+      "claims": [
+        {
+          "claim": "AGENTS.md is the authoritative onboarding doc: it maps every top-level dir, lists yarn commands, documents the codegen-build prerequisite and the preinstall yarn.lock dirtying — read it before editing.",
+          "sources": [
+            "AGENTS.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "JS edits go in packages/react-native/src/private for new code (Libraries/ is the legacy location being migrated); all JS is Flow-typed (@flow strict/strict-local pragmas) and many public modules have a .js.flow twin that must be kept in sync (e.g. index.js vs index.js.flow).",
+          "sources": [
+            "AGENTS.md",
+            "packages/react-native/index.js#L19-25",
+            "packages/react-native/index.js.flow",
+            "packages/react-native/src/private"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Verification ladder for a JS change: yarn test <path> (Jest, -test.js files in __tests__), yarn fantom <path> (integration, -itest.js — first run builds the native tester), yarn lint (zero warnings allowed), yarn flow-check, yarn format-check-javascript.",
+          "sources": [
+            "package.json#L34-47",
+            "jest.config.js#L44-52",
+            "private/react-native-fantom/__docs__/README.md#L102-113",
+            "AGENTS.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Bootstrap trap: Metro cannot bundle until codegen is built once — run `yarn --cwd packages/react-native-codegen build`; every other package runs from source so `yarn build` is otherwise unnecessary for development.",
+          "sources": [
+            "AGENTS.md",
+            "scripts/build/build.js#L52-65"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Generated code rule: never hand-edit generated output — native specs produce bindings at build time; feature flags regenerate via `yarn featureflags`; TS types via `yarn build-types` + snapshot ReactNativeApi.d.ts; C++ API via `yarn cxx-api-build`; Android API surface is committed at ReactAndroid/api/ReactAndroid.api. CI validates all of them.",
+          "sources": [
+            "AGENTS.md",
+            "packages/react-native/ReactNativeApi.d.ts",
+            "packages/react-native/ReactAndroid/api/ReactAndroid.api",
+            "scripts/cxx-api/api-snapshots",
+            "package.json#L11-14"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Test placement conventions: Jest tests live in __tests__/ dirs as *-test.js; Fantom integration tests use *-itest.js and must live inside packages/react-native (Fantom is scoped to RN internals); benchmarks use *-benchmark-itest.js; prefer public-API imports ('react-native') over internals in Fantom tests.",
+          "sources": [
+            "jest.config.js#L44-52",
+            "private/react-native-fantom/__docs__/README.md#L64-100",
+            "private/react-native-fantom/__docs__/README.md#L181-220"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Safe edit boundaries: tooling packages (community-cli-plugin, dev-middleware, metro-config, codegen) are self-contained with their own __tests__; runtime JS changes should respect __DEV__ gating and warnOnce/invariant patterns; native changes require the matching platform toolchain (Xcode+CocoaPods for iOS, Android SDK+NDK+Gradle).",
+          "sources": [
+            "AGENTS.md",
+            "packages/dev-middleware/src/__tests__",
+            "packages/react-native/index.js#L431-447",
+            "packages/react-native/Libraries/ReactNative/AppContainer-dev.js"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Known traps: `yarn install` dirties yarn.lock (preinstall hermes-compiler rewrite — do not commit); Jest moduleNameMapper aliases exist only for setup-env/react-private-interface/unstable-internals-do-not-use — new subpath exports need mapper entries or Jest resolution breaks.",
+          "sources": [
+            "AGENTS.md",
+            "jest.config.js#L28-38",
+            "scripts/try-set-hermes-compiler-prebuilt.js"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Runtime verification loop: `yarn start` serves RNTester via Metro on http://localhost:8081 (RCT_METRO_PORT overrides); `yarn android` builds+installs it; sanity-check the bundler with curl 'http://localhost:8081/js/RNTesterApp.bundle?platform=ios&dev=true'.",
+          "sources": [
+            "AGENTS.md",
+            "packages/metro-config/src/index.flow.js#L74-76",
+            "packages/rn-tester/README.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Architecture docs live in __docs__/ directories beside the code they describe (indexed by root __docs__/README.md) — e.g. feature flags, inspector proxy protocol, runtime scheduler event loop, intersection/mutation observers; treat them as reference for the subsystem being edited.",
+          "sources": [
+            "__docs__/README.md#L1-13",
+            "__docs__/README.md#L40-99",
+            "packages/react-native/src/private/featureflags/__docs__/README.md",
+            "packages/dev-middleware/src/inspector-proxy/__docs__/README.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "PR conventions: keep changes focused (no unrelated refactors/formatting), complete the changelog category/type tags in the PR template (CHANGELOG.md is compiled at release from PR descriptions), and state exact test commands run plus screenshots for UI changes.",
+          "sources": [
+            "AGENTS.md",
+            "CONTRIBUTING.md",
+            "CHANGELOG.md"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_prompt": "You are working in the React Native monorepo (github.com/react/react-native), a Yarn v1 workspaces repo. READ AGENTS.md FIRST — it is the canonical map.\n\nLayout: the published `react-native` package is packages/react-native. Its JavaScript is Flow-typed and lives in two places: Libraries/ (legacy, migrating) and src/private/ (new code). The shared C++ core is ReactCommon/ (Fabric renderer under react/renderer, TurboModules under react/nativemodule, JSI, Hermes glue, Yoga layout, jsinspector-modern for CDP). Android runtime: ReactAndroid/ (Kotlin/Java; bridgeless entry = com.facebook.react.runtime.ReactHostImpl; legacy ReactNativeHost/ReactInstanceManager is deprecated). Apple runtime: React/ + ReactApple/ (ObjC++/Swift; entry = Libraries/AppDelegate/RCTReactNativeFactory + RCTAppDelegate). Sibling published packages in packages/: community-cli-plugin (start/bundle/codegen/spm commands), dev-middleware (InspectorProxy CDP websockets), metro-config, react-native-codegen, gradle-plugin, babel-preset/transformer, jest-preset, eslint packages, debugger-frontend/shell. Test apps: packages/rn-tester and private/helloworld. private/react-native-fantom is the headless integration test runner.\n\nKey flows: (1) Every Metro bundle prepends 'react-native/setup-env' -> setUpDefaultReactNativeEnvironment() installs globals/timers/XHR/error handling/LogBox in a fixed order, then requires AppRegistry. Apps call AppRegistry.registerComponent(appKey, provider); native calls runApplication -> renderApplication -> AppContainer -> RendererProxy.renderElement -> ReactFabric. (2) `react-native` CLI is a thin shim resolving @react-native-community/cli; the `start` command -> runDevServer -> loadMetroConfig -> createDevMiddleware -> Metro.runServer with /inspector/device + /inspector/debug websocket endpoints. (3) Native modules/components are declared as JS specs (Native*.js, *NativeComponent.js); @react-native/codegen parses them to a schema and generates C++/ObjC++/Java via RNCodegen LIBRARY_GENERATORS. Runtime lookup: TurboModuleRegistry.getEnforcing -> global.__turboModuleProxy -> NativeModules fallback.\n\nCommands (from repo root): yarn test <path> (Jest *-test.js in __tests__), yarn fantom <path> (*-itest.js; first run builds a native tester; use @fantom_flags/@fantom_mode pragmas), yarn lint (zero warnings), yarn flow-check, yarn format / format-check-<lang>, yarn build-android, yarn test-ios.\n\nHard rules: (a) Never hand-edit generated files — feature flags (edit scripts/featureflags/ReactNativeFeatureFlags.config.js then `yarn featureflags`), TypeScript types (`yarn build-types`, snapshot ReactNativeApi.d.ts), codegen output, scripts/cxx-api snapshots, ReactAndroid/api/ReactAndroid.api. (b) Keep index.js runtime exports in sync with index.js.flow; regenerate types after public API changes. (c) Build codegen once before bundling: `yarn --cwd packages/react-native-codegen build`. (d) `yarn install` dirties yarn.lock via the preinstall hermes-compiler hook — expected, don't commit it. (e) Fantom tests must live inside packages/react-native and can't nest Fantom.runTask(). (f) Gate dev-only code behind __DEV__; use warnOnce for deprecations."
+  },
+  "analysis": {
+    "agent": "devin",
+    "model": "swe-2",
+    "runtime_ms": null,
+    "cost_usd": null,
+    "collected_at": "2026-09-22T16:03:32.044Z"
   }
 }

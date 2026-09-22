@@ -131,6 +131,13 @@ if (!existsSync(join(cloneDir, '.git'))) {
   process.exit(1);
 }
 
+const emitPrompt = rest.indexOf('--emit-prompt');
+if (emitPrompt >= 0) {
+  writeFileSync(rest[emitPrompt + 1], prompt, 'utf8');
+  console.log(`prompt written to ${rest[emitPrompt + 1]}`);
+  process.exit(0);
+}
+
 console.log(
   `analyzing ${record.repo} at ${headSha.slice(0, 7)} via ${agent} (this takes minutes)…`
 );

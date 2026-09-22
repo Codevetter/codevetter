@@ -8907,7 +8907,7 @@
         "steps": [
           {
             "id": "serialize",
-            "label": "JSON serialize (inventory \u2192 SQLite)",
+            "label": "JSON serialize (inventory → SQLite)",
             "ms": 0,
             "pct": 0
           },
@@ -8926,5 +8926,911 @@
         ]
       }
     ]
+  },
+  "report": {
+    "overview": "This is the golang/go repository — the complete source of the Go programming language toolchain. It contains the standard library and runtime under src/, the cmd/ suite of tools (go command, compiler, linker, assembler, cgo, vet, gofmt, pprof, trace, and the cmd/dist bootstrap/test orchestrator), a ~2000-file black-box regression corpus under test/, frozen public-API manifests under api/, and per-release notes under doc/. The system is self-hosting: building requires an existing Go toolchain (GOROOT_BOOTSTRAP >= Go 1.26.0), which first compiles cmd/dist, and dist then bootstraps toolchain1 (asm/cgo/compile/link) and a go_bootstrap binary that rebuilds everything else.",
+    "system_map": {
+      "summary": "The repo is the entire Go distribution: src/ holds the standard library (module 'std'), the runtime, and all toolchain commands under src/cmd/ (module 'cmd'). The build is bootstrapped: src/make.bash compiles src/cmd/dist with a pre-existing Go (GOROOT_BOOTSTRAP), then 'dist bootstrap' builds the compiler/linker/asm and a go_bootstrap binary which rebuilds the full tree. The go command (src/cmd/go) is the user-facing front end dispatching to ~20 subcommands; compilation flows through cmd/compile (frontend+SSA backend) and cmd/link. Tests are orchestrated by 'go tool dist test' (src/cmd/dist/test.go) plus the cmd/internal/testdir harness for the test/ corpus. API stability is enforced by golden manifests in api/ checked by src/cmd/api tests.",
+      "claims": [
+        {
+          "claim": "The repo is the Go toolchain itself: src/ contains the stdlib (module 'std', go 1.28) with vendored deps golang.org/x/crypto, x/net, x/sys, x/text; cmd/ is a separate module 'cmd' with its own vendor tree.",
+          "sources": [
+            "src/go.mod",
+            "src/cmd/go.mod",
+            "src/vendor/modules.txt",
+            "src/cmd/vendor/modules.txt"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Building from source runs src/make.bash from $GOROOT/src, which locates GOROOT_BOOTSTRAP (a Go tree >= 1.26.0, bootgo=1.26.0), builds ./cmd/dist with it, then executes './cmd/dist/dist bootstrap -a'.",
+          "sources": [
+            "src/make.bash#L67-220",
+            "src/cmd/dist/doc.go"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "cmd/dist's cmdbootstrap() pins GOPATH to $GOROOT/pkg/obj/gopath, sets GOPROXY=off and GOCACHE=$GOROOT/pkg/obj/go-build, forces GOEXPERIMENT=none for toolchain1, then calls bootstrapBuildTools() to build cmd/asm, cmd/cgo, cmd/compile, cmd/link, cmd/preprofile and go_bootstrap.",
+          "sources": [
+            "src/cmd/dist/build.go#L923-1029",
+            "src/cmd/dist/buildtool.go#L203"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "make.bash refuses to run on Windows (use make.bat), rejects gold linker 2.20, warns about SELinux execstack policy, and forbids GOROOT_BOOTSTRAP == GOROOT.",
+          "sources": [
+            "src/make.bash#L88-129",
+            "src/make.bash#L188-192"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The go command entrypoint src/cmd/go/main.go registers all subcommands into base.Go.Commands in init(), then in main() runs telemetry setup, handleChdirFlag, toolchain.Select, flag parsing, lookupCmd, and invoke(cmd, args).",
+          "sources": [
+            "src/cmd/go/main.go#L50-221",
+            "src/cmd/go/internal/base/base.go#L28-125"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "base.Command is the universal command abstraction: fields Run, UsageLine, Short, Long, Flag, CustomFlags, Commands; Runnable() is Run != nil; help topics are non-runnable Commands.",
+          "sources": [
+            "src/cmd/go/internal/base/base.go#L26-125"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The compiler binary cmd/compile/main.go selects a per-architecture initializer from the archInits map (386, amd64, arm, arm64, loong64, mips*, ppc64*, riscv64, s390x, wasm) keyed on buildcfg.GOARCH, then calls gc.Main(archInit).",
+          "sources": [
+            "src/cmd/compile/main.go#L28-58"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The linker cmd/link/internal/ld parses a large flag surface (-o, -buildid, -race/-msan/-asan, -linkmode via extld, -checklinkname, -randlayout, -k field tracking) and supports internal linking or delegation to an external linker.",
+          "sources": [
+            "src/cmd/link/internal/ld/main.go#L57-120"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The runtime scheduler in src/runtime/proc.go implements the G/M/P model (goroutines, OS threads, processors) with distributed per-P run queues, a global run queue, spinning-thread protocol (m.spinning, sched.nmspinning) and work stealing in findRunnable.",
+          "sources": [
+            "src/runtime/proc.go#L25-118",
+            "src/runtime/proc.go#L4151-4247"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The GC in src/runtime/mgc.go is a concurrent, non-generational, non-compacting mark-and-sweep with a hybrid write barrier, per-P size-segregated allocation, and a GC rate governed by GOGC (default 100).",
+          "sources": [
+            "src/runtime/mgc.go#L5-118"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Build configuration is centralized in internal/buildcfg: GOARCH/GOOS plus micro-arch levels GOAMD64/GOARM64/GORISCV64 etc., GO_LDSO, GOFIPS140, and buildcfg.Check() exits tools on invalid values.",
+          "sources": [
+            "src/internal/buildcfg/cfg.go#L22-120"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "go.env at repo root seeds defaults GOPROXY=https://proxy.golang.org,direct, GOSUMDB=sum.golang.org, GOTOOLCHAIN=auto — the checksum DB and auto toolchain download are on by default.",
+          "sources": [
+            "go.env"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Test execution is orchestrated by cmd/dist's 'dist test' subcommand (tester struct with race/msan/asan/compile-only modes, -run regexp, JSON output), invoked by run.bash as '../bin/go tool dist test -rebuild'.",
+          "sources": [
+            "src/cmd/dist/test.go#L27-140",
+            "src/run.bash#L34-60"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "api/ contains frozen per-release API manifests (go1.txt..go1.27.txt, except.txt) plus a mutable api/next; src/cmd/api tests walk the stdlib API and compare against these files to enforce Go 1 compatibility.",
+          "sources": [
+            "api/README",
+            "api/go1.txt",
+            "src/cmd/api/main_test.go",
+            "src/cmd/api/api_test.go"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "feature_catalog": {
+      "summary": "User-facing surface is dominated by the 'go' command: build/install/run/test/list/doc/env/clean/fmt/fix/generate/get/mod/vet/version/work/tool/telemetry/bug plus ~18 help topics. Inside that, the big subsystems are the module system (modload/modfetch/mvs/vcs), the parallel action-graph build engine with content-hash caching (work.Builder), cgo/SWIG foreign-function builds, coverage instrumentation, PGO, FIPS-140 crypto mode, toolchain auto-switching, and opt-in telemetry. Separate binaries ship gofmt, vet, pprof, trace, cover, covdata, test2json, asm, link, compile, cgo, nm, objdump, pack, addr2line, buildid, dist, distpack, preprofile, relnote.",
+      "claims": [
+        {
+          "claim": "go subcommands registered in main.go init(): bug, build, clean, doc, env, fix, fmt, generate, get, install, list, mod, run, telemetry, test, tool, version, vet, work — plus help topics (buildconstraint, buildjson, buildmode, c, cache, environment, filetype, goauth, gopath, goproxy, importpath, module-auth, modules, packages, private, testflag, testfunc, vcs).",
+          "sources": [
+            "src/cmd/go/main.go#L50-92"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "'go mod' has subcommands download, edit, graph, init, tidy, vendor, verify, why (one file each under cmd/go/internal/modcmd); 'go work' has edit, init, sync, use, vendor.",
+          "sources": [
+            "src/cmd/go/internal/modcmd/mod.go",
+            "src/cmd/go/internal/modcmd/tidy.go",
+            "src/cmd/go/internal/workcmd/init.go",
+            "src/cmd/go/internal/workcmd/use.go"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "GOTOOLCHAIN auto-switching: toolchain.Select() runs early in main, reads go.mod/go.work toolchain lines, downloads golang.org/toolchain v0.0.1-<version>.<goos>-<goarch> modules and re-execs the target binary, bounded by maxSwitch=100 loop detection via GOTOOLCHAIN_INTERNAL_SWITCH_COUNT.",
+          "sources": [
+            "src/cmd/go/internal/toolchain/select.go#L37-119",
+            "src/cmd/go/main.go#L106"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The build engine work.Builder.Do executes a depth-first-prioritized action DAG with content-hash caching (buildActionID via sha256), trimming the default build cache on completion.",
+          "sources": [
+            "src/cmd/go/internal/work/exec.go#L56-120",
+            "src/cmd/go/internal/work/exec.go#L265"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "cgo support: exec.go contains runCgo, processCgoOutputs, dynimport, swig/swigOne/swigVersionCheck, and C compiler invocation helpers (gcc, gxx, gfortran, gccld, PkgconfigCmd) honoring CGO flags and pkg-config.",
+          "sources": [
+            "src/cmd/go/internal/work/exec.go#L2280-4100"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Coverage: runCover/cover/writeCoverPkgInputs instrument packages during 'go test -cover'/'go build -cover', producing covmeta files consumed by cmd/cover and cmd/covdata.",
+          "sources": [
+            "src/cmd/go/internal/work/exec.go#L495-585",
+            "src/cmd/go/internal/work/exec.go#L2569-2666"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Vet is wired into 'go test': buildVetConfig/vet actions run analysis passes (golang.org/x/tools/go/analysis) as part of the test action graph.",
+          "sources": [
+            "src/cmd/go/internal/work/exec.go#L1588-1690",
+            "src/cmd/go/internal/vet"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "PGO: compiler flag -pgo loads a profile via pgoir.New in gc.Main, feeding weighted call graphs into interleaved.DevirtualizeAndInlinePackage.",
+          "sources": [
+            "src/cmd/compile/internal/gc/main.go#L239-260"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "FIPS 140 support: GOFIPS140 env var validated in buildcfg (off/latest/inprocess/certified/v1.Y.Z), fips140 package in cmd/go, crypto implementation under src/crypto/internal/fips140 with GOFIPS140 zip shipping in the distribution.",
+          "sources": [
+            "src/internal/buildcfg/cfg.go#L81-120",
+            "src/cmd/go/internal/fips140",
+            "src/crypto/internal/fips140",
+            "src/cmd/go/internal/modfetch/fetch.go#L73-95"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Telemetry: opt-in counters via cmd/internal/telemetry/counter (counter.Open, counter.Inc, CountFlags) throughout main.go and the compiler, managed by 'go telemetry' and a sidecar child/parent upload model (telemetry.MaybeChild/MaybeParent).",
+          "sources": [
+            "src/cmd/go/main.go#L96-114",
+            "src/cmd/go/internal/telemetrycmd/telemetry.go",
+            "src/cmd/internal/telemetry/counter"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "'go generate' scans //go:generate directives; test flag defs are generated: cmd/go/internal/test/genflags.go generates flagdefs.go shared between go test and vet.",
+          "sources": [
+            "src/cmd/go/internal/generate",
+            "src/cmd/go/internal/test/genflags.go",
+            "src/cmd/go/internal/test/flagdefs.go"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Standalone tools shipped under src/cmd: asm, cgo, compile, link, gofmt, vet, pprof, trace, cover, covdata, test2json, nm, objdump, pack, addr2line, buildid, fix, api, dist, distpack, export, preprofile, relnote.",
+          "sources": [
+            "src/cmd/gofmt/gofmt.go",
+            "src/cmd/vet/main.go",
+            "src/cmd/dist/doc.go",
+            "src/cmd/pprof"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The stdlib itself is a feature surface of ~150 packages under src/ including net/http, crypto/tls, os/exec, plugin, embed, testing, runtime/trace, and newer ones like simd, weak, unique, arena, structs, uuid.",
+          "sources": [
+            "src/go.mod",
+            "src/plugin",
+            "src/simd"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Runtime GODEBUG compatibility settings are user-facing knobs documented in doc/godebug.md and registered in internal/godebugs/table.go; removed settings cause a fatal at startup.",
+          "sources": [
+            "doc/godebug.md",
+            "src/internal/godebugs/table.go",
+            "src/runtime/proc.go#L220-225"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "data_flow": {
+      "summary": "End-to-end: user args → cmd/go/main → toolchain.Select (may re-exec a downloaded toolchain) → load.Package resolution via go.mod/go.work → modload computes the build list with MVS, fetching modules through modfetch (GOPROXY → zip → sumdb/go.sum verify → modcache) or vcs direct → work.Builder builds an action DAG (compile/cgo/cover/vet/link actions) keyed by sha256 action IDs against the build cache → cmd/compile turns source through noder/typecheck/inline/escape/walk into SSA and object files → cmd/link consumes objects+importcfg and emits the binary. At runtime, compiled binaries start in runtime.main which enables GC and runs init tasks before main.main.",
+      "claims": [
+        {
+          "claim": "Package loading produces load.Package structs; PackagePublic fields are declared part of the go command's public API for 'go list -json' and must stay in sync with list.go.",
+          "sources": [
+            "src/cmd/go/internal/load/pkg.go#L57-80"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Module graph resolution: modload.Init loads go.mod/go.work, LoadPackages resolves import patterns to modules; the toolchain module itself is special-cased (ErrToolchain on Download).",
+          "sources": [
+            "src/cmd/go/internal/modload/init.go#L524",
+            "src/cmd/go/internal/modload/load.go#L245",
+            "src/cmd/go/internal/modfetch/fetch.go#L38-71"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Module fetch path: Fetcher.Download → downloadCache.Do (dedup) → download → checkMod verifies against go.sum and the checksum database → unzip into GOMODCACHE; a TooNewError is raised if the module's go directive exceeds the local toolchain.",
+          "sources": [
+            "src/cmd/go/internal/modfetch/fetch.go#L40-110"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Non-proxy resolution goes through cmd/go/internal/vcs: vcsList = [hg, git, svn, fossil], each a Cmd describing binary name, schemes, root-detection; IsSecure gates insecure schemes (https/git+ssh/svn+ssh/ssh allowed; GIT_ALLOW_PROTOCOL overrides for git).",
+          "sources": [
+            "src/cmd/go/internal/vcs/vcs.go#L35-140"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Build action graph: Builder.Do assigns DFS post-order priorities, each action's cache key is buildActionID hashing inputs/flags/toolchain IDs; cache hits short-circuit compile steps; cgo, cover, vet, link are distinct action types.",
+          "sources": [
+            "src/cmd/go/internal/work/exec.go#L76-120",
+            "src/cmd/go/internal/work/exec.go#L265-390"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Compiler pipeline in gc.Main: noder.LoadPackage (parse+typecheck via types2 machinery) → bloop markings → interleaved.DevirtualizeAndInlinePackage (with optional PGO profile) → loopvar capture fixes → pkginit.MakeTask → escape.Funcs → rewriteresults/slice transforms → enqueueFunc→compileFunctions→SSA backend → dumpobj writes the object file.",
+          "sources": [
+            "src/cmd/compile/internal/gc/main.go#L218-400"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The SSA backend pass list is a static ordered table `passes` in ssacompile/compile.go run by ssa.Compile; phases are checked for ordering violations and support per-pass debug flags via -d=ssa/...",
+          "sources": [
+            "src/cmd/compile/internal/ssacompile/compile.go#L413-480",
+            "src/cmd/compile/internal/ssacompile/compile.go#L66-90"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Link flow: Builder.link writes an importcfg (writeLinkImportcfg), invokes cmd/link which loads goobj objects via cmd/internal/goobj, performs deadcode elimination/address layout, and stamps a buildid; external link mode delegates to extld.",
+          "sources": [
+            "src/cmd/go/internal/work/exec.go#L2104-2168",
+            "src/cmd/link/internal/ld/main.go#L57-120",
+            "src/cmd/internal/goobj"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Runtime startup data flow: runtime.main (on g0/m0) → doInit(runtime_inittasks) → gcenable() → doInit over each moduledata's inittasks (linker-computed init graph) → close(mainInitDoneChan) → main_main() i.e. user's main.",
+          "sources": [
+            "src/runtime/proc.go#L153-290"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Goroutine lifecycle: newproc/newproc1 creates a g, runqput places it on a P run queue or runnext, wakep may unpark an M; schedule→findRunnable→execute→gogo runs it; timers and netpoll feed the same queues.",
+          "sources": [
+            "src/runtime/proc.go#L5335-5353",
+            "src/runtime/proc.go#L4151-4247"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "GC cycle data flow: sweep termination STW → concurrent mark with write barrier shading and mutator assists → distributed termination detection (gcMarkDone) → mark termination STW → concurrent sweep; heap goal driven by GOGC.",
+          "sources": [
+            "src/runtime/mgc.go#L24-118"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "go test data flow: runTest → builderTest constructs buildAction/runAction/printAction triples; a generated testmain binary runs and its output is piped through test2json for -json reporting.",
+          "sources": [
+            "src/cmd/go/internal/test/test.go#L694",
+            "src/cmd/go/internal/test/test.go#L1143",
+            "src/cmd/test2json"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Telemetry data flow: counters are written to a counter file opened at startup (skipped for 'go telemetry off'); MaybeParent spawns the upload sidecar; CountFlags records flag usage patterns.",
+          "sources": [
+            "src/cmd/go/main.go#L98-114",
+            "src/cmd/go/main.go#L223-256"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "API check data flow: cmd/api tests walk each stdlib package's exported API via go/ast and compare against golden lines in api/go1*.txt + api/next, with per-feature proposal issue annotations required since go1.19.",
+          "sources": [
+            "api/README",
+            "src/cmd/api/api_test.go#L36-101"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "behavior_traces": {
+      "summary": "Four flows were walked end-to-end. (1) Source bootstrap: make.bash → dist → bootstrapBuildTools → go_bootstrap rebuild. (2) 'go build': main → toolchain.Select → lookupCmd → invoke → load → Builder.Do. (3) Module fetch with integrity checks. (4) Runtime program startup and the scheduler loop. Test orchestration via run.bash → dist test → testdir is a fifth traced path.",
+      "claims": [
+        {
+          "claim": "BOOTSTRAP trace: src/make.bash → check env (Windows, gold ld, SELinux) → locate GOROOT_BOOTSTRAP → 'go build -o cmd/dist/dist ./cmd/dist' → 'dist env -p' → 'dist bootstrap -a' → cmdbootstrap() → setup()+writeGeneratedFiles() → checkCC()+bootstrapBuildTools() → go_bootstrap rebuilds std+cmd; the dist binary is deleted afterward.",
+          "sources": [
+            "src/make.bash#L131-220",
+            "src/cmd/dist/build.go#L923-1030",
+            "src/cmd/dist/buildtool.go#L203"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "'go build' trace: main() → telemetry.MaybeChild/counter.Open → handleChdirFlag (-C must be first) → toolchain.Select (may download+re-exec newer toolchain) → flag.Parse → lookupCmd(args) → invoke() → buildcfg.Check → envcmd.MkEnv applied → cmd.Run → runBuild → load.PackagesAndTests → Builder.Do(root).",
+          "sources": [
+            "src/cmd/go/main.go#L98-220",
+            "src/cmd/go/main.go#L290-342",
+            "src/cmd/go/main.go#L383-411"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Compile action trace: Builder.buildObject → resolve inputs → (cgo path: runCgo→processCgoOutputs→ccompile/dynimport) → run 'compile' tool with importcfg → cacheObjdirFile stores outputs under the action ID → link action writes final binary.",
+          "sources": [
+            "src/cmd/go/internal/work/exec.go#L909-1078",
+            "src/cmd/go/internal/work/exec.go#L3381-3600",
+            "src/cmd/go/internal/work/exec.go#L2104"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Module download trace: Fetcher.Download → checkCacheDir → downloadCache.Do → DownloadDir probe → download (proxy via GOPROXY or VCS fallback) → checkMod (go.sum + sumdb/dirhash verification) → TooNewError check on module's go directive → extracted dir under GOMODCACHE.",
+          "sources": [
+            "src/cmd/go/internal/modfetch/fetch.go#L40-110"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Runtime startup trace: rt0/schedinit (asm + runtime1) → mstart/mstart0/mstart1 → runtime.main on main goroutine: set maxstacksize (1GB/64-bit) → newm(sysmon) → lockOSThread → nanotime → doInit(runtime_inittasks) → gcenable → defaultGOMAXPROCSUpdateEnable → cgo init checks (_cgo_notify_runtime_init_done, startTemplateThread) → doInit per-module inittasks → unlockOSThread → call main_main (user main) → exit.",
+          "sources": [
+            "src/runtime/proc.go#L153-290",
+            "src/runtime/proc.go#L1864-1965"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Scheduler loop trace: goready/newproc → runqput (local runnext/runq or global) → wakep if spinning==0 and idle P → M spins in findRunnable (local queue → global → netpoll → steal from other P) → schedule() resets spinning, handles lockedm via startlockedm → execute(gp, inheritTime) → gogo jumps to goroutine.",
+          "sources": [
+            "src/runtime/proc.go#L4151-4247",
+            "src/runtime/proc.go#L2876-2925",
+            "src/runtime/proc.go#L3347"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "GC trigger trace: allocation or force → gcStart → sweep termination STW → gcphase=_GCmark + write barrier enable → start world, mark workers + assists drain grey queue → gcMarkDone distributed termination → mark termination STW → _GCoff, concurrent sweep resumes.",
+          "sources": [
+            "src/runtime/mgc.go#L24-110"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Test-dir trace: run.bash → 'go tool dist test -rebuild' → tester.run enumerates distTests → for test/ corpus: 'go test cmd/internal/testdir' → Test() reads 'go env -json', iterates dirs=[.,ken,chan,interface,...,codegen,fixedbugs,...], registers each .go file as subtest Test/<rel path> honoring //-directives (run, errorcheck, compile).",
+          "sources": [
+            "src/run.bash#L34-60",
+            "src/cmd/dist/test.go#L27-140",
+            "src/cmd/internal/testdir/testdir_test.go#L37-120"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Toolchain switch trace: Select → modload.NewLoader().WillBeEnabled → read go.mod 'toolchain' line → compare with local version → if newer needed: modfetch downloads golang.org/toolchain@v0.0.1-<ver>.<os>-<arch> → exec new go binary with GOTOOLCHAIN_INTERNAL_SWITCH_VERSION set → child verifies and clears it; maxSwitch=100 aborts loops.",
+          "sources": [
+            "src/cmd/go/internal/toolchain/select.go#L37-119"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "cgo trace: package with import \"C\" → runCgo generates _cgo_gotypes.go etc → processCgoOutputs compiles generated C via gcc (ccompile with DefaultCFlags='-O2 -g') → dynimport produces dynamic symbols → swig path handles .swig/.swigcxx files → objects linked into the package.",
+          "sources": [
+            "src/cmd/go/internal/work/exec.go#L3381-4100",
+            "src/cmd/go/internal/work/exec.go#L54"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "testing_signals": {
+      "summary": "Testing is massive and layered: package-level Go tests throughout stdlib and cmd, the ~1900-file test/ black-box corpus driven by cmd/internal/testdir with //-directive comments, cmd/go's script-based tests under testdata/script using the cmd/internal/script engine, dist-level orchestration with race/msan/asan/compile-only modes, and API golden tests. CI is not GitHub Actions — .github contains only templates; testing runs on Go's own builder fleet via all.bash/run.bash with sharding support.",
+      "claims": [
+        {
+          "claim": "testdir_test.go runs every test/*.go file as a subtest 'Test/<path>' over dirs {., ken, chan, interface, internal/runtime/sys, syntax, dwarf, fixedbugs, codegen, abi, typeparam, arenas, simd}; directives like '// run' and '// errorcheck' in each file control execution; flags -shard/-shards/-target/-update_errors/-all_codegen exist.",
+          "sources": [
+            "src/cmd/internal/testdir/testdir_test.go#L37-120",
+            "test/fixedbugs/bug000.go",
+            "test/README.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "run.bash exports GOENV=off, GOPATH=/nonexist-gopath, disables core dumps, then execs 'go tool dist test -rebuild'; GO_TEST_SHARDS (default 1, or 10 on builders), GO_BUILDER_NAME, GO_TEST_SHORT, GO_TEST_TIMEOUT_SCALE control behavior.",
+          "sources": [
+            "src/run.bash#L6-60"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "cmd/dist/test.go's tester supports -race, -msan, -asan, -compile-only, -k (keep going), -run regexp (invertible with '!'), -json output; tests are grouped under headings and run as parallel work items.",
+          "sources": [
+            "src/cmd/dist/test.go#L27-114"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "cmd/go has extensive tests: go_test.go, plus script-driven tests in src/cmd/go/testdata/script executed by the cmd/internal/script engine (engine.go, conds.go, cmds_*.go).",
+          "sources": [
+            "src/cmd/go/go_test.go",
+            "src/cmd/go/testdata/script",
+            "src/cmd/internal/script/engine.go"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "API compatibility is tested by src/cmd/api: api_test.go TestGolden/TestCompareAPI walks exported symbols and diffs against api/go1*.txt + api/next; boring_test.go covers FIPS API differences.",
+          "sources": [
+            "src/cmd/api/api_test.go#L22-101",
+            "src/cmd/api/main_test.go",
+            "src/cmd/api/boring_test.go"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The compiler backend is heavily unit-tested in-tree: ssacompile has ~30 *_test.go files (prove_test, fuse_test, rewriteCond_test, looprotate_test, regalloc_test, schedule_test, etc.); test/codegen files assert generated-assembly patterns.",
+          "sources": [
+            "src/cmd/compile/internal/ssacompile/compile.go",
+            "src/cmd/compile/internal/ssacompile/prove_test.go",
+            "src/cmd/internal/testdir/testdir_test.go#L74"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "cmd/go/internal/verylongtest exists as a separate package for tests too slow for normal runs; run.bash's GO_TEST_SHORT plumbing distinguishes short vs long builders.",
+          "sources": [
+            "src/cmd/go/internal/verylongtest",
+            "src/run.bash#L17-20"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "internal/testenv provides test helpers (GoToolPath, Builder) used by testdir and other cmd tests to locate the freshly built toolchain and detect builder environment.",
+          "sources": [
+            "src/cmd/internal/testdir/testdir_test.go#L96",
+            "src/internal/testenv"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "buildall.bash/race.bash/clean.bash in src/ provide cross-compile and race-mode build verification; all.bash chains make.bash + run.bash + 'dist banner'.",
+          "sources": [
+            "src/all.bash",
+            "src/buildall.bash",
+            "src/race.bash"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "There are no GitHub Actions workflows: .github/ contains only CODE_OF_CONDUCT, ISSUE_TEMPLATE, PULL_REQUEST_TEMPLATE, SUPPORT; review runs on Gerrit (codereview.cfg) with LUCI builders — CI config is external to the repo (x/build).",
+          "sources": [
+            "codereview.cfg",
+            "CONTRIBUTING.md#L29-31"
+          ],
+          "kind": "inference"
+        },
+        {
+          "claim": "VCS behavior is tested hermetically: cmd/go/internal/vcweb.Server hosts fake repos (VCSTestRepoURL/VCSTestHosts/VCSTestIsLocalHost hooks in vcs.go) so tests don't hit the network.",
+          "sources": [
+            "src/cmd/go/internal/vcs/vcs.go#L56-110",
+            "src/cmd/go/internal/vcweb"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Test flag definitions are shared and generated: genflags.go emits flagdefs.go so 'go test' flags and vet/test2json stay consistent; flagdefs_test.go verifies.",
+          "sources": [
+            "src/cmd/go/internal/test/genflags.go",
+            "src/cmd/go/internal/test/flagdefs.go",
+            "src/cmd/go/internal/test/flagdefs_test.go"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "risk_map": {
+      "summary": "Highest-risk surfaces: (1) supply-chain code execution — toolchain auto-download+re-exec, module fetches, VCS shell-outs, and cgo/gcc/swig invocation; (2) runtime invariants where a single mistake corrupts all programs (scheduler throws, GC write barriers, linkname/unsafe); (3) bootstrap trust — the build requires a pre-existing Go binary; (4) compatibility enforcement — api/ files and GODEBUG semantics are contractual. Many security gates exist (sumdb verification, IsSecure scheme checks, #cgo flag validation) but bypass knobs (GOINSECURE, GONOSUMDB/GONOSUMCHECK, GIT_ALLOW_PROTOCOL, -insecure) weaken them.",
+      "claims": [
+        {
+          "claim": "toolchain.Select can download and exec a different toolchain binary on every invocation; the internal switch protocol (targetEnv/countEnv) is filtered from user env via FilterEnv, but a compromised proxy/toolchain module would execute arbitrary code — mitigated by sumdb verification and maxSwitch loop detection.",
+          "sources": [
+            "src/cmd/go/internal/toolchain/select.go#L37-119",
+            "go.env"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "modfetch unzips remotely fetched archives into the module cache; integrity depends on checkMod comparing against go.sum and sum.golang.org (dirhash); Fetcher.Unzip bypass path exists for shipped GOFIPS140 zips.",
+          "sources": [
+            "src/cmd/go/internal/modfetch/fetch.go#L40-110",
+            "go.env"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "vcs.go executes git/hg/svn/fossil binaries against module-controlled repo URLs; scheme security is enforced via isSecureScheme (https/ssh only) and honors GIT_ALLOW_PROTOCOL, but repo-root discovery parses remote HTML/meta tags via cmd/go/internal/web.",
+          "sources": [
+            "src/cmd/go/internal/vcs/vcs.go#L35-140",
+            "src/cmd/go/internal/web"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "cgo compiles package-supplied C/C++/Fortran and runs pkg-config and swig; buildFlags validates #cgo flags (security against flag injection), DefaultCFlags='-O2 -g'; malicious module C sources execute at build time.",
+          "sources": [
+            "src/cmd/go/internal/work/exec.go#L54",
+            "src/cmd/go/internal/work/exec.go#L3319-3381",
+            "src/cmd/go/internal/work/exec.go#L3838-4100"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The scheduler has many hard invariants enforced by throw() — 'schedule: holding locks', 'schedule: in cgo', 'runtime.main not on m0', 'nanotime returning zero' — a violation crashes the whole program; the spinning-thread protocol comment documents known underutilization race windows.",
+          "sources": [
+            "src/runtime/proc.go#L86-104",
+            "src/runtime/proc.go#L4154-4178",
+            "src/runtime/proc.go#L191-200"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "GC correctness depends on write-barrier discipline; the compiler's nowritebarrierrec check (ssagen.EnableNoWriteBarrierRecCheck/NoWriteBarrierRecCheck) runs only when compiling the runtime — a fragile coupling between compiler flags and runtime safety.",
+          "sources": [
+            "src/cmd/compile/internal/gc/main.go#L303-309",
+            "src/cmd/compile/internal/gc/main.go#L370-373",
+            "src/runtime/mgc.go#L33-44"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Bootstrap requires trusting a prebuilt Go >= 1.26.0 (GOROOT_BOOTSTRAP); make.bash refuses GOROOT_BOOTSTRAP==GOROOT but cannot verify provenance — classic trusting-trust exposure; GOEXPERIMENT is deliberately forced to 'none' for toolchain1 to avoid skew.",
+          "sources": [
+            "src/make.bash#L67-194",
+            "src/cmd/dist/build.go#L966-978"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "make.bash contains environment probes that can block or corrupt builds: gold 2.20 ld detection, SELinux allow_execstack check, src/pkg staleness fatal in cmdbootstrap — build failures here are environment-specific and hard to reproduce.",
+          "sources": [
+            "src/make.bash#L97-129",
+            "src/cmd/dist/build.go#L980-988"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "//go:linkname and unsafe let user code bypass type safety into runtime internals; linker flag -checklinkname (default true) exists specifically to police linkname references, indicating a known abuse vector; test/linkname.dir exercises it.",
+          "sources": [
+            "src/cmd/link/internal/ld/main.go#L103",
+            "src/unsafe"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Telemetry writes counter files and spawns upload sidecars (MaybeChild/MaybeParent) — privacy-sensitive surface; special-cased so 'go telemetry off' works without opening counter files, and cmdIsGoTelemetryOff scans os.Args pre-parse.",
+          "sources": [
+            "src/cmd/go/main.go#L98-114",
+            "src/cmd/go/main.go#L223-256"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Removed GODEBUG settings produce a fatal() at program startup — a deliberate compat break that can kill binaries built with older defaults if the env carries stale settings.",
+          "sources": [
+            "src/runtime/proc.go#L220-225",
+            "doc/godebug.md",
+            "src/internal/godebugs/table.go"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "api/ files are a contractual freeze: adding to a released go1.N.txt is forbidden (files 'add new lines but do not remove any'), and post-1.19 entries must cite a proposal issue — editing the wrong file silently breaks the compatibility checker.",
+          "sources": [
+            "api/README"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Two parallel type checkers exist (go/types in std and cmd/compile/internal/types2 for the compiler) that must be kept in sync; skew between them is a recurring correctness risk.",
+          "sources": [
+            "src/go/types",
+            "src/cmd/compile/internal/types2"
+          ],
+          "kind": "inference"
+        },
+        {
+          "claim": "Generated files must stay in sync with generators: flagdefs.go (from genflags.go), opGen.go/rewrite rules in ssacompile, and files produced by writeGeneratedFiles in dist; editing outputs without regenerating causes subtle drift.",
+          "sources": [
+            "src/cmd/go/internal/test/genflags.go",
+            "src/cmd/compile/internal/ssacompile/opGen.go",
+            "src/cmd/dist/build.go#L995"
+          ],
+          "kind": "inference"
+        }
+      ]
+    },
+    "extension_points": {
+      "summary": "Extension is table-driven almost everywhere: new 'go' subcommands register in main.go's command table; new architectures add an Init func to cmd/compile's archInits map plus an ssagen.ArchInfo; new SSA passes go in the ordered passes table; new VCS tools extend vcsList; experiments are file-pairs in internal/goexperiment; GODEBUGs register in internal/godebugs/table.go; new stdlib API must add lines to api/next and release notes under doc/next; new test/ cases just drop files into the enumerated dirs.",
+      "claims": [
+        {
+          "claim": "New 'go' subcommands: create a package under cmd/go/internal/<name>, define a &base.Command{Run, UsageLine, Flag, ...}, and append it to base.Go.Commands in cmd/go/main.go init().",
+          "sources": [
+            "src/cmd/go/main.go#L50-92",
+            "src/cmd/go/internal/base/base.go#L28-54"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Nested subcommand groups work via Command.Commands (e.g. 'go mod', 'go work'); Lookup ignores non-runnable entries so help topics coexist in the same table.",
+          "sources": [
+            "src/cmd/go/internal/base/base.go#L50-74",
+            "src/cmd/go/internal/modcmd/mod.go"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New CPU architecture: add an entry to archInits in cmd/compile/main.go mapping GOARCH name to an Init(*ssagen.ArchInfo), implement the arch package under cmd/compile/internal/<arch>, and add a linker backend dir under cmd/link/internal/<arch>.",
+          "sources": [
+            "src/cmd/compile/main.go#L28-43",
+            "src/cmd/compile/internal/ssagen/arch.go",
+            "src/cmd/link/internal/amd64"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New SSA optimization pass: append to the `passes` table in ssacompile/compile.go (line ~414); ordering is verified ('passes %s and %s out of order') and each pass gets timing/debug plumbing automatically.",
+          "sources": [
+            "src/cmd/compile/internal/ssacompile/compile.go#L413-480",
+            "src/cmd/compile/internal/ssacompile/compile.go#L574-607"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New VCS support: add a *Cmd to vcsList in vcs.go with Name/Cmd/Env/Roots/Scheme/PingCmd/Status; secure schemes come from defaultSecureScheme.",
+          "sources": [
+            "src/cmd/go/internal/vcs/vcs.go#L35-125"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New toolchain experiment: add exp_<name>_on.go/exp_<name>_off.go file pairs in src/internal/goexperiment (existing pairs: arenas, boringcrypto, cgocheck2, dwarf5, fieldtrack, ...); buildcfg surfaces them via GOEXPERIMENT.",
+          "sources": [
+            "src/internal/goexperiment",
+            "src/internal/buildcfg/cfg.go"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New GODEBUG compatibility setting: register in internal/godebugs/table.go, document in doc/godebug.md; runtime reads values and fatals on removed ones.",
+          "sources": [
+            "src/internal/godebugs/table.go",
+            "doc/godebug.md",
+            "src/runtime/proc.go#L220-225"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New stdlib API: implementation in src/<pkg>, one line in api/next/*.txt with proposal issue annotation, release-note entry under doc/next/6-stdlib; the api test enforces the manifest.",
+          "sources": [
+            "api/README",
+            "api/next",
+            "doc/next/1-intro.md",
+            "src/cmd/api/api_test.go"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New regression test: drop a .go file with a '// run'/'// errorcheck' comment into test/ or test/fixedbugs; it is picked up automatically by testdir without registration.",
+          "sources": [
+            "src/cmd/internal/testdir/testdir_test.go#L72-120",
+            "test/README.md",
+            "test/fixedbugs/bug000.go"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New cmd/go script test: add a txtar script under src/cmd/go/testdata/script; the cmd/internal/script engine interprets commands/conditions without code changes.",
+          "sources": [
+            "src/cmd/go/testdata/script",
+            "src/cmd/internal/script/engine.go"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New telemetry counter: call counter.New(\"name\") / counter.Inc in cmd or compiler code; CountFlags auto-instruments flag usage per subcommand.",
+          "sources": [
+            "src/cmd/go/main.go#L96-114",
+            "src/cmd/internal/telemetry/counter"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Build-time microarch targeting is env-extensible: GOAMD64/GOARM64/GORISCV64 etc. parsed in buildcfg; adding a level means extending the envOr validators, not the tools.",
+          "sources": [
+            "src/internal/buildcfg/cfg.go#L22-120"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Vet analysis passes plug in through golang.org/x/tools/go/analysis (imported by work/exec.go), so new analyzers come from the x/tools module rather than this repo.",
+          "sources": [
+            "src/cmd/go/internal/work/exec.go#L51",
+            "src/cmd/vet/main.go"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_handoff": {
+      "summary": "Working rules: never build inside a pristine checkout without a bootstrap Go; run tests via the built tree's ../bin/go, not a system go. The safe edit boundary is: stdlib packages are ordinary Go code, but runtime, compiler SSA tables, api/ manifests, and cmd/go internals have hard invariants and generated files. Always read the file's package comment first — cmd/dist, runtime/proc.go, mgc.go and gc/main.go carry long design comments that encode the actual contract. After edits, run the package's own tests plus cmd/internal/testdir for anything touching the toolchain.",
+      "claims": [
+        {
+          "claim": "Build: 'cd src && ./make.bash' (needs GOROOT_BOOTSTRAP >= Go 1.26.0); full validation: ./all.bash which runs make.bash + run.bash; test-only: 'cd src && ./run.bash' or '../bin/go test cmd/internal/testdir -run=Test/<file>'.",
+          "sources": [
+            "src/make.bash",
+            "src/all.bash",
+            "src/run.bash",
+            "test/README.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Read first for any toolchain change: src/cmd/go/main.go (command wiring), src/cmd/go/internal/base/base.go (Command contract), src/cmd/go/internal/work/exec.go (build engine), src/cmd/go/internal/load/pkg.go (Package model), src/cmd/go/internal/modload/init.go (module state).",
+          "sources": [
+            "src/cmd/go/main.go",
+            "src/cmd/go/internal/base/base.go",
+            "src/cmd/go/internal/work/exec.go",
+            "src/cmd/go/internal/load/pkg.go",
+            "src/cmd/go/internal/modload/init.go"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Read first for compiler work: src/cmd/compile/main.go, src/cmd/compile/internal/gc/main.go (the phase ordering is the file), src/cmd/compile/internal/ssacompile/compile.go (pass table); for runtime work: src/runtime/proc.go and src/runtime/mgc.go headers are mandatory.",
+          "sources": [
+            "src/cmd/compile/main.go",
+            "src/cmd/compile/internal/gc/main.go",
+            "src/cmd/compile/internal/ssacompile/compile.go",
+            "src/runtime/proc.go",
+            "src/runtime/mgc.go"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "make.bash explicitly forbids new code after the bootstrap call — additions belong in cmd/dist's cmdbootstrap so all three shell variants (make.bash/make.bat/make.rc) stay minimal.",
+          "sources": [
+            "src/make.bash#L222-226"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "api/go1*.txt files are frozen once shipped; only api/next/* is mutable and each new line needs a '#nnnnn' proposal issue annotation; except.txt lists permitted exceptions.",
+          "sources": [
+            "api/README"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "PackagePublic in load/pkg.go is a public API surface ('okay to add fields, but not to change or remove existing ones. Keep in sync with ../list/list.go') — renaming a field breaks 'go list -json' consumers.",
+          "sources": [
+            "src/cmd/go/internal/load/pkg.go#L63-80"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Generated-code traps: cmd/go/internal/test/flagdefs.go is produced by genflags.go; ssacompile/opGen.go and rewrite tables are generated; dist's writeGeneratedFiles produces version/config files — regenerate rather than hand-editing.",
+          "sources": [
+            "src/cmd/go/internal/test/genflags.go",
+            "src/cmd/go/internal/test/flagdefs.go",
+            "src/cmd/compile/internal/ssacompile/opGen.go",
+            "src/cmd/dist/build.go#L995"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Error conventions: go-command code uses base.Fatalf/base.Errorf (exit status via base.SetExitStatus + base.Exit with atExitFuncs); runtime code uses throw() for invariant violations and fatal() for startup failures — do not mix.",
+          "sources": [
+            "src/cmd/go/internal/base/base.go#L127-140",
+            "src/runtime/proc.go#L191-200"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "GOPATH/GOROOT hygiene: go command fatals on GOPATH entries starting with '~' or relative paths and warns when GOPATH==GOROOT; tests run with GOPATH=/nonexist-gopath so code must not depend on a real GOPATH.",
+          "sources": [
+            "src/cmd/go/main.go#L151-182",
+            "src/run.bash#L59"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The -C flag must be first on the command line and is stripped by handleChdirFlag before dispatch; toolchain re-exec relies on this — new pre-dispatch logic must not break the ordering.",
+          "sources": [
+            "src/cmd/go/main.go#L371-411"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Vendored deps: std module vendors golang.org/x/{crypto,net,sys,text} under src/vendor; cmd module has its own vendor tree incl. x/tools and x/mod — update via normal module workflow then re-vendor; go.mod 'go 1.28' means only language features ≤1.28 are usable.",
+          "sources": [
+            "src/go.mod",
+            "src/cmd/go.mod",
+            "src/vendor/modules.txt",
+            "src/cmd/vendor/modules.txt"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Contributions go through Gerrit (codereview.cfg), not GitHub PRs; security issues go to security@golang.org per CONTRIBUTING.md; 'go bug' is the recommended issue-filing path.",
+          "sources": [
+            "codereview.cfg",
+            "CONTRIBUTING.md#L13-27"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "internal/ packages are import-restricted by the compiler itself (enforced in load/internal), so new shared helpers for cmd tools belong under src/cmd/internal; std internals under src/internal.",
+          "sources": [
+            "src/cmd/go/internal/load/pkg.go",
+            "src/cmd/internal"
+          ],
+          "kind": "inference"
+        }
+      ]
+    },
+    "agent_prompt": "You are working in a clone of golang/go — the Go toolchain source itself (module 'std' for src/, module 'cmd' for src/cmd/), currently at Go 1.28 development on branch master.\n\nBUILD & TEST\n- Build from source: `cd src && ./make.bash`. Requires a bootstrap Go >= 1.26.0 in $GOROOT_BOOTSTRAP (never equal to $GOROOT). make.bash builds cmd/dist with the bootstrap toolchain, then `dist bootstrap` builds toolchain1 (asm, cgo, compile, link, preprofile) and go_bootstrap, which rebuilds the tree.\n- Full validation: `cd src && ./all.bash`. Tests only: `./run.bash` → runs `go tool dist test -rebuild`. Single regression test: `../bin/go test cmd/internal/testdir -run='Test/fixedbugs/bugNNN.go'`. Package tests: `../bin/go test <pkg>` — always use the built ../bin/go, not a system go.\n- Useful env: GO_TEST_SHARDS, GO_TEST_TIMEOUT_SCALE, GO_BUILDER_NAME, GOBUILDTIMELOGFILE.\n\nMAP\n- src/cmd/go/main.go: command table in init(); every subcommand is a *base.Command (base/base.go). Dispatch: handleChdirFlag → toolchain.Select → lookupCmd → invoke.\n- Build engine: src/cmd/go/internal/work/exec.go (Builder.Do, action DAG, sha256 action IDs, cache). Package model: load/pkg.go — PackagePublic is public API, additive-only.\n- Modules: modload (build list), modfetch/fetch.go (download→checkMod→sumdb/go.sum→modcache), vcs/vcs.go (git/hg/svn/fossil shell-out, scheme security).\n- Compiler: cmd/compile/main.go → archInits → gc.Main (noder→typecheck→inline/devirt→escape→walk→SSA). Pass table: ssacompile/compile.go (~line 414). Linker: cmd/link/internal/ld.\n- Runtime: proc.go (G/M/P scheduler; main() → gcenable → doInit → main.main), mgc.go (concurrent mark-sweep).\n\nHARD RULES\n- api/go1*.txt are frozen; only api/next/* is editable, and new lines need a '#issue' annotation. New stdlib API also needs doc/next release notes.\n- Regenerate, don't hand-edit: flagdefs.go (genflags.go), opGen.go/SSA rewrites, dist writeGeneratedFiles outputs.\n- make.bash must not gain code after the bootstrap call — extend cmd/dist instead.\n- go command errors: base.Fatalf; runtime invariants: throw()/fatal().\n- Vendored deps under src/vendor and src/cmd/vendor; go directive 'go 1.28' caps usable language features.\n- Code review is Gerrit-based (codereview.cfg); security reports → security@golang.org.\n\nSAFE FIRST TASKS: add a test/ regression file, a cmd/go script test under testdata/script, or a stdlib package test. DANGER ZONES: scheduler/GC invariants, write-barrier checks, toolchain switching, module/VCS security gates, and anything touching api/ manifests."
+  },
+  "analysis": {
+    "agent": "devin",
+    "model": "swe-2",
+    "runtime_ms": null,
+    "cost_usd": null,
+    "collected_at": "2026-09-22T16:03:31.568Z"
   }
 }

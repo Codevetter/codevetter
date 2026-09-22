@@ -414,7 +414,7 @@
         {
           "path": "README.md",
           "bytes": 19225,
-          "preview": "<p align=\"center\">\n  <a href=\"https://ollama.com\">\n    <img src=\"https://github.com/ollama/ollama/assets/3325447/0d0b44e2-8f4a-4e99-9b52-a5c1c741c8f7\" alt=\"ollama\" width=\"200\"/>\n  </a>\n</p>\n\n# Ollama\n\nStart building with open models.\n\n## Download\n\n### macOS\n\n```shell\ncurl -fsSL https://ollama.com/install.sh | sh\n```\n\nor [download manually](https://ollama.com/download/Ollama.dmg)\n\n### Windows\n\n```shell\nirm https://ollama.com/install.ps1 | iex\n```\n\nor [download manually](https://ollama.com/download/OllamaSetup.exe)\n\n### Linux\n\n```shell\ncurl -fsSL https://ollama.com/install.sh | sh\n```\n\n[Manual install instructions](https://docs.ollama.com/linux#manual-install)\n\n### Docker\n\nThe official [Ollama Docker image](https://hub.docker.com/r/ollama/ollama) `ollama/ollama` is available on Docker Hub.\n\n### Libraries\n\n- [ollama-python](https://github.com/ollama/ollama-python)\n- [ollama-js](https://github.com/ollama/ollama-js)\n\n### Community\n\n- [Discord](https://discord.gg/ollama)\n- [\ud835\udd4f (Twitter)](https://x.com/ollama)\n- [Reddit](https://reddit.com/r/ollama)\n\n## Get started\n\n```\nollama\n```\n\nYou'll be prompted to run a model or connect Ollama to your existing agents or applications such as `Claude Code`, `OpenClaw`, `OpenCode` , `Codex`, `Copilot`,  and more.\n\n### Coding\n\nTo launch a specific integration:\n\n```\nollama launch claude\n```\n\nSupported integrations include [Claude Code](https://docs.ollama.com/integrations/claude-code), [Codex](https://docs.ollama.com/integrations/codex), [Copilot CLI](https://docs.ollama.com/integrations/copilot-cli), [DeepSeek Harness](https://docs.ollama.com/integrations/deepseek-harness), [Droid](https://docs.ollama.com/integrations/droid), and [OpenCode](https://docs.ollama.com/integrations/opencode).\n\n### AI assistant\n\nUse [OpenClaw](https://docs.ollama.com/integrations/openclaw) to turn Ollama into a personal AI assistant across WhatsApp, Telegram, Slack, Discord, and more:\n\n```\nollama launch openclaw\n```\n\n### Chat with a model\n\nRun and chat with [Gemma 4](https://ollama.com/library/gemma4):\n\n```\nollama run gemma4\n```\n\nSee [ollama.com/library](https://ollama.com/library) for the full list.\n\nSee the [quickstart guide](https://docs.ollama.com/quickstart) for more details.\n\n## REST API\n\nOllama has a REST API for running and managing models.\n\n```\ncurl http://localhost:11434/api/chat -d '{\n  \"model\": \"gemma4\",\n  \"messages\": [{\n    \"role\": \"user\",\n    \"content\": \"Why is the sky blue?\"\n  }],\n  \"stream\": false\n}'\n```\n\nSee the [API documentation](https://docs.ollama.com/api) for all endpoints.\n\n### Python\n\n```\npip install ollama\n```\n\n```python\nfrom ollama import chat\n\nresponse = chat(model='gemma4', messages=[\n  {\n    'role': 'user',\n    'content': 'Why is the sky blue?',\n  },\n])\nprint(response.message.content)\n```\n\n### JavaScript\n\n```\nnpm i ollama\n```\n\n```javascript\nimport ollama from \"ollama\";\n\nconst response = await ollama.chat({\n  model: \"gemma4\",\n  messages: [{ role: \"user\", content: \"Why is the sky blue?\" }],\n});\nconsole.log(response.message.content);\n```\n\n## Supported backends\n\n- [llama.cpp](https://github.com/ggml-org/llama.cpp) project founded by Georgi Gerganov.\n\n## Documentation\n\n- [CLI reference](https://docs.ollama.com/cli)\n- [REST API reference](https://docs.ollama.com/api)\n- [Importing models](https://docs.ollama.com/import)\n- [Modelfile reference](https://docs.ollama.com/modelfile)\n- [Building from source](https://github.com/ollama/ollama/blob/main/docs/development.md)\n\n## Community Integrations\n\n> Want to add your project? Open a pull request.\n\n### Chat Interfaces\n\n#### Web\n\n- [Open WebUI](https://github.com/open-webui/open-webui) - Extensible, self-hosted AI interface\n- [Onyx](https://github.com/onyx-dot-app/onyx) - Connected AI workspace\n- [LibreChat](https://github.com/danny-avila/LibreChat) - Enhanced ChatGPT clone with multi-provider support\n- [Lobe Chat](https://github.com/lobehub/lobe-chat) - Modern chat framework with plugin ecosystem ([docs](https://lobehub.com/docs/self-hosting/examples/ollama))\n- [NextChat](https://github.com/ChatGPTNextWeb/ChatGPT-Next-Web) - Cross-platform ChatGPT UI ([docs](https://docs.nextchat.dev/models/ollama))\n- [Perplexica](https://github.com/ItzCrazyKns/Perplexica) - AI-powered search engine, open-source Perplexity alternative\n- [big-AGI](https://github.com/enricoros/big-AGI) - AI suite for professionals\n- [Lollms WebUI](https://github.com/ParisNeo/lollms-webui) - Multi-model web interface\n- [ChatOllama](https://github.com/sugarforever/chat-ollama) - Chatbot with knowledge bases\n- [Bionic GPT](https://github.com/bionic-gpt/bionic-gpt) - On-premise AI platform\n- [Chatbot UI](https://github.com/ivanfioravanti/chatbot-ollama) - ChatGPT-style web interface\n- [Hollama](https://github.com/fmaclen/hollama) - Minimal web interface\n- [Chatbox](https://github.com/Bin-Huang/Chatbox) - Desktop and web AI client\n- [chat](https://github.com/swuecho/chat) - Chat web app for teams\n- [Ollama RAG Chatbot](https://github.com/datvodinh/rag-chatbot.git) - Chat with multiple PDFs using RAG\n- [Tkinter-based client](https://github.com/chyok/ollama-gui) - Python desktop client\n\n#### Desktop\n\n- [Dify.AI](https://github.com/langgenius/dify) - LLM app development platform\n- [AnythingLLM](https://github.com/Mintplex-Labs/anything-llm) - All-in-one AI app for Mac, Windows, and Linux\n- [Maid](https://github.com/Mobile-Artificial-Intelligence/maid) - Cross-platform mobile and desktop client\n- [Witsy](https://github.com/nbonamy/witsy) - AI desktop app for Mac, Windows, and Linux\n- [Cherry Studio](https://github.com/kangfenmao/cherry-studio) - Multi-provider desktop client\n- [Ollama App](https://github.com/JHubi1/ollama-app) - Multi-platform client for desktop and mobile\n- [PyGPT](https://github.com/szczyglis-dev/py-gpt) - AI desktop assistant for Linux, Windows, and Mac\n- [Alpaca](https://github.com/Jeffser/Alpaca) - GTK4 client for Linux and macOS\n- [SwiftChat](https://github.com/aws-samples/swift-chat) - Cross-platform including iOS, Android, and Apple Vision Pro\n- [Enchanted](https://github.com/AugustDev/enchanted) - Native macOS and iOS client\n- [RWKV-Runner](https://github.com/josStorer/RWKV-Runner) - Multi-model desktop runner\n- [Ollama Grid Search](https://github.com/dezoito/ollama-grid-search) - Evaluate and compare models\n- [macai](https://github.com/Renset/macai) - macOS client for Ollama and ChatGPT\n- [AI Studio](https://github.com/MindWorkAI/AI-Studio) - Multi-provider desktop IDE\n- [Reins](https://github.com/ibrahimcetin/reins) - Parameter tuning and reasoning model support\n- [ConfiChat](https://github.com/1runeberg/confichat) - Privacy-focused with optional encryption\n- [LLocal.in](https://github.com/kartikm7/llocal) - Electron desktop client\n- [MindMac](https://mindmac.app) - AI chat client for Mac\n- [Msty](https://msty.app) - Multi-model desktop client\n- [BoltAI for Mac](https://boltai.com) - AI chat client for Mac\n- [IntelliBar](https://intellibar.app/) - AI-powered assistant for macOS\n- [Kerlig AI](https://www.kerlig.com/) - AI writing assistant for macOS\n- [Hillnote](https://hillnote.com) - Markdown-first AI workspace\n- [Perfect Memory AI](https://www.perfectmemory.ai/) - Productivity AI personalized by screen and meeting history\n\n#### Mobile\n\n- [Ollama Android Chat](https://github.com/sunshine0523/OllamaServer) - One-click Ollama on Android\n\n> SwiftChat, Enchanted, Maid, Ollama App, Reins, and ConfiChat listed above also support mobile platforms.\n\n### Code Editors & Development\n\n- [Cline](https://github.com/cline/cline) - VS Code extension for multi-file/whole-repo coding\n- [Continue](https://github.com/continuedev/continue) - Open-source AI code assistant for any IDE\n- [Void](https://github.com/voideditor/void) - Open source AI code editor, Cursor alternative\n- [Copilot for Obsidian](https://github.com/logancyang/obsidian-copilot) - AI assistant for Obsidian\n- [twinny](https://github.com/rjmacarthy/twinny) - Copilot and Copilot chat alternative\n- [gptel Emacs client](https://github.com/karthink/gptel) - LLM client for Emacs\n- [Ollama Copilot](https://github.com/bernardo-bruning/ollama-copilot) - Use Ollama as GitHub Copilot\n- [Obsidian Local GPT](https://github.com/pfrankov/obsidian-l"
+          "preview": "<p align=\"center\">\n  <a href=\"https://ollama.com\">\n    <img src=\"https://github.com/ollama/ollama/assets/3325447/0d0b44e2-8f4a-4e99-9b52-a5c1c741c8f7\" alt=\"ollama\" width=\"200\"/>\n  </a>\n</p>\n\n# Ollama\n\nStart building with open models.\n\n## Download\n\n### macOS\n\n```shell\ncurl -fsSL https://ollama.com/install.sh | sh\n```\n\nor [download manually](https://ollama.com/download/Ollama.dmg)\n\n### Windows\n\n```shell\nirm https://ollama.com/install.ps1 | iex\n```\n\nor [download manually](https://ollama.com/download/OllamaSetup.exe)\n\n### Linux\n\n```shell\ncurl -fsSL https://ollama.com/install.sh | sh\n```\n\n[Manual install instructions](https://docs.ollama.com/linux#manual-install)\n\n### Docker\n\nThe official [Ollama Docker image](https://hub.docker.com/r/ollama/ollama) `ollama/ollama` is available on Docker Hub.\n\n### Libraries\n\n- [ollama-python](https://github.com/ollama/ollama-python)\n- [ollama-js](https://github.com/ollama/ollama-js)\n\n### Community\n\n- [Discord](https://discord.gg/ollama)\n- [𝕏 (Twitter)](https://x.com/ollama)\n- [Reddit](https://reddit.com/r/ollama)\n\n## Get started\n\n```\nollama\n```\n\nYou'll be prompted to run a model or connect Ollama to your existing agents or applications such as `Claude Code`, `OpenClaw`, `OpenCode` , `Codex`, `Copilot`,  and more.\n\n### Coding\n\nTo launch a specific integration:\n\n```\nollama launch claude\n```\n\nSupported integrations include [Claude Code](https://docs.ollama.com/integrations/claude-code), [Codex](https://docs.ollama.com/integrations/codex), [Copilot CLI](https://docs.ollama.com/integrations/copilot-cli), [DeepSeek Harness](https://docs.ollama.com/integrations/deepseek-harness), [Droid](https://docs.ollama.com/integrations/droid), and [OpenCode](https://docs.ollama.com/integrations/opencode).\n\n### AI assistant\n\nUse [OpenClaw](https://docs.ollama.com/integrations/openclaw) to turn Ollama into a personal AI assistant across WhatsApp, Telegram, Slack, Discord, and more:\n\n```\nollama launch openclaw\n```\n\n### Chat with a model\n\nRun and chat with [Gemma 4](https://ollama.com/library/gemma4):\n\n```\nollama run gemma4\n```\n\nSee [ollama.com/library](https://ollama.com/library) for the full list.\n\nSee the [quickstart guide](https://docs.ollama.com/quickstart) for more details.\n\n## REST API\n\nOllama has a REST API for running and managing models.\n\n```\ncurl http://localhost:11434/api/chat -d '{\n  \"model\": \"gemma4\",\n  \"messages\": [{\n    \"role\": \"user\",\n    \"content\": \"Why is the sky blue?\"\n  }],\n  \"stream\": false\n}'\n```\n\nSee the [API documentation](https://docs.ollama.com/api) for all endpoints.\n\n### Python\n\n```\npip install ollama\n```\n\n```python\nfrom ollama import chat\n\nresponse = chat(model='gemma4', messages=[\n  {\n    'role': 'user',\n    'content': 'Why is the sky blue?',\n  },\n])\nprint(response.message.content)\n```\n\n### JavaScript\n\n```\nnpm i ollama\n```\n\n```javascript\nimport ollama from \"ollama\";\n\nconst response = await ollama.chat({\n  model: \"gemma4\",\n  messages: [{ role: \"user\", content: \"Why is the sky blue?\" }],\n});\nconsole.log(response.message.content);\n```\n\n## Supported backends\n\n- [llama.cpp](https://github.com/ggml-org/llama.cpp) project founded by Georgi Gerganov.\n\n## Documentation\n\n- [CLI reference](https://docs.ollama.com/cli)\n- [REST API reference](https://docs.ollama.com/api)\n- [Importing models](https://docs.ollama.com/import)\n- [Modelfile reference](https://docs.ollama.com/modelfile)\n- [Building from source](https://github.com/ollama/ollama/blob/main/docs/development.md)\n\n## Community Integrations\n\n> Want to add your project? Open a pull request.\n\n### Chat Interfaces\n\n#### Web\n\n- [Open WebUI](https://github.com/open-webui/open-webui) - Extensible, self-hosted AI interface\n- [Onyx](https://github.com/onyx-dot-app/onyx) - Connected AI workspace\n- [LibreChat](https://github.com/danny-avila/LibreChat) - Enhanced ChatGPT clone with multi-provider support\n- [Lobe Chat](https://github.com/lobehub/lobe-chat) - Modern chat framework with plugin ecosystem ([docs](https://lobehub.com/docs/self-hosting/examples/ollama))\n- [NextChat](https://github.com/ChatGPTNextWeb/ChatGPT-Next-Web) - Cross-platform ChatGPT UI ([docs](https://docs.nextchat.dev/models/ollama))\n- [Perplexica](https://github.com/ItzCrazyKns/Perplexica) - AI-powered search engine, open-source Perplexity alternative\n- [big-AGI](https://github.com/enricoros/big-AGI) - AI suite for professionals\n- [Lollms WebUI](https://github.com/ParisNeo/lollms-webui) - Multi-model web interface\n- [ChatOllama](https://github.com/sugarforever/chat-ollama) - Chatbot with knowledge bases\n- [Bionic GPT](https://github.com/bionic-gpt/bionic-gpt) - On-premise AI platform\n- [Chatbot UI](https://github.com/ivanfioravanti/chatbot-ollama) - ChatGPT-style web interface\n- [Hollama](https://github.com/fmaclen/hollama) - Minimal web interface\n- [Chatbox](https://github.com/Bin-Huang/Chatbox) - Desktop and web AI client\n- [chat](https://github.com/swuecho/chat) - Chat web app for teams\n- [Ollama RAG Chatbot](https://github.com/datvodinh/rag-chatbot.git) - Chat with multiple PDFs using RAG\n- [Tkinter-based client](https://github.com/chyok/ollama-gui) - Python desktop client\n\n#### Desktop\n\n- [Dify.AI](https://github.com/langgenius/dify) - LLM app development platform\n- [AnythingLLM](https://github.com/Mintplex-Labs/anything-llm) - All-in-one AI app for Mac, Windows, and Linux\n- [Maid](https://github.com/Mobile-Artificial-Intelligence/maid) - Cross-platform mobile and desktop client\n- [Witsy](https://github.com/nbonamy/witsy) - AI desktop app for Mac, Windows, and Linux\n- [Cherry Studio](https://github.com/kangfenmao/cherry-studio) - Multi-provider desktop client\n- [Ollama App](https://github.com/JHubi1/ollama-app) - Multi-platform client for desktop and mobile\n- [PyGPT](https://github.com/szczyglis-dev/py-gpt) - AI desktop assistant for Linux, Windows, and Mac\n- [Alpaca](https://github.com/Jeffser/Alpaca) - GTK4 client for Linux and macOS\n- [SwiftChat](https://github.com/aws-samples/swift-chat) - Cross-platform including iOS, Android, and Apple Vision Pro\n- [Enchanted](https://github.com/AugustDev/enchanted) - Native macOS and iOS client\n- [RWKV-Runner](https://github.com/josStorer/RWKV-Runner) - Multi-model desktop runner\n- [Ollama Grid Search](https://github.com/dezoito/ollama-grid-search) - Evaluate and compare models\n- [macai](https://github.com/Renset/macai) - macOS client for Ollama and ChatGPT\n- [AI Studio](https://github.com/MindWorkAI/AI-Studio) - Multi-provider desktop IDE\n- [Reins](https://github.com/ibrahimcetin/reins) - Parameter tuning and reasoning model support\n- [ConfiChat](https://github.com/1runeberg/confichat) - Privacy-focused with optional encryption\n- [LLocal.in](https://github.com/kartikm7/llocal) - Electron desktop client\n- [MindMac](https://mindmac.app) - AI chat client for Mac\n- [Msty](https://msty.app) - Multi-model desktop client\n- [BoltAI for Mac](https://boltai.com) - AI chat client for Mac\n- [IntelliBar](https://intellibar.app/) - AI-powered assistant for macOS\n- [Kerlig AI](https://www.kerlig.com/) - AI writing assistant for macOS\n- [Hillnote](https://hillnote.com) - Markdown-first AI workspace\n- [Perfect Memory AI](https://www.perfectmemory.ai/) - Productivity AI personalized by screen and meeting history\n\n#### Mobile\n\n- [Ollama Android Chat](https://github.com/sunshine0523/OllamaServer) - One-click Ollama on Android\n\n> SwiftChat, Enchanted, Maid, Ollama App, Reins, and ConfiChat listed above also support mobile platforms.\n\n### Code Editors & Development\n\n- [Cline](https://github.com/cline/cline) - VS Code extension for multi-file/whole-repo coding\n- [Continue](https://github.com/continuedev/continue) - Open-source AI code assistant for any IDE\n- [Void](https://github.com/voideditor/void) - Open source AI code editor, Cursor alternative\n- [Copilot for Obsidian](https://github.com/logancyang/obsidian-copilot) - AI assistant for Obsidian\n- [twinny](https://github.com/rjmacarthy/twinny) - Copilot and Copilot chat alternative\n- [gptel Emacs client](https://github.com/karthink/gptel) - LLM client for Emacs\n- [Ollama Copilot](https://github.com/bernardo-bruning/ollama-copilot) - Use Ollama as GitHub Copilot\n- [Obsidian Local GPT](https://github.com/pfrankov/obsidian-l"
         },
         {
           "path": "docs/README.md",
@@ -9842,7 +9842,7 @@
         "steps": [
           {
             "id": "serialize",
-            "label": "JSON serialize (inventory \u2192 SQLite)",
+            "label": "JSON serialize (inventory → SQLite)",
             "ms": 0,
             "pct": 0
           },
@@ -9861,5 +9861,863 @@
         ]
       }
     ]
+  },
+  "report": {
+    "overview": "Ollama is a Go-based local LLM runner that packages models as OCI-style content-addressed blobs plus manifests under ~/.ollama/models, serves them through a Gin HTTP API on 127.0.0.1:11434, and delegates actual inference to per-model subprocesses — upstream llama-server for GGUF models and a bundled `ollama runner` MLX subprocess for safetensors models on Apple silicon. The same binary provides the end-user CLI (cobra), a Bubbletea TUI, and a desktop app (macOS/Windows webview + React/Vite chat UI backed by a sqlite store). Distinctively, it emulates OpenAI and Anthropic REST surfaces on top of its native /api/* routes via middleware translators, supports remote 'cloud' models hosted on ollama.com, and renders/parses chat formats in Go through per-model-family renderer and parser registries.",
+    "system_map": {
+      "summary": "Single Go module (github.com/ollama/ollama) whose main binary is both the CLI client and the server. `ollama serve` starts a Gin HTTP server that owns a model Scheduler; inference is delegated to subprocesses (llama-server for GGUF, `ollama runner` for MLX/safetensors) spoken to over loopback HTTP. Model artifacts live as sha256 blobs + JSON manifests under OLLAMA_MODELS. Native code (vendored llama.cpp under llama/, MLX under mlx/) is built by CMake; the desktop app adds a webview shell and a React/Vite UI. Everything is configured through OLLAMA_* environment variables centralized in envconfig.",
+      "claims": [
+        {
+          "claim": "Process entrypoint is main.go which calls cmd.NewCLI().ExecuteContext; all user-facing commands are cobra subcommands registered in NewCLI in cmd/cmd.go",
+          "sources": [
+            "main.go",
+            "cmd/cmd.go#L2385-L2600"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The HTTP server is a Gin engine built by Server.GenerateRoutes, registering ~30 routes across /api/*, OpenAI-compatible /v1/*, and Anthropic /v1/messages",
+          "sources": [
+            "server/routes.go#L1852-L1949"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Inference scheduling is a channel-based Scheduler with pendingReqCh/finishedReqCh/expiredCh/unloadedCh, a loaded map of runnerRef keyed by model path, and a single in-flight load (activeLoading)",
+          "sources": [
+            "server/sched.go#L61-L106"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "GGUF inference runs in a separate llama-server subprocess spawned via exec.Command and driven over loopback HTTP through the llm.LlamaServer interface (Completion, Chat, Embedding, Tokenize, WaitUntilRunning, Close)",
+          "sources": [
+            "llm/llama_server.go#L120-L160",
+            "llm/llama_server.go#L424",
+            "llm/server.go#L58-L77"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Safetensors/MLX models take a different runner path: sched.load detects m.IsMLX() (Config.ModelFormat == \"safetensors\") and creates an mlxrunner.Client which re-execs the same binary as `ollama runner --model X --port N`",
+          "sources": [
+            "server/sched.go#L530-L594",
+            "server/images.go#L93-L95",
+            "mlxrunner/client.go#L349",
+            "cmd/cmd.go#L2569-L2576"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Model storage is content-addressed: manifest.Path() -> OLLAMA_MODELS/manifests/<name>, BlobsPath() -> OLLAMA_MODELS/blobs/sha256-<hex>; manifests map model names to typed layers",
+          "sources": [
+            "manifest/paths.go#L29-L72",
+            "server/model.go#L27-L97"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Configuration is centralized in envconfig as OLLAMA_* variables (HOST, MODELS, KEEP_ALIVE, NUM_PARALLEL, MAX_LOADED_MODELS, MAX_QUEUE, ORIGINS, FLASH_ATTENTION, KV_CACHE_TYPE, NO_CLOUD, REMOTES, etc.) exposed via AsMap()",
+          "sources": [
+            "envconfig/config.go#L20-L341"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The desktop app is a separate main package gated by `//go:build windows || darwin` in app/cmd/app/app.go, bundling a webview, sqlite-backed store (app/store/schema.sql), updater, and a React 19 + Vite + Tailwind UI under app/ui/app",
+          "sources": [
+            "app/cmd/app/app.go#L1-L34",
+            "app/store/schema.sql",
+            "app/ui/app/package.json"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Full build is CMake-driven (cmake -B build .; cmake --build build) producing the Go binary plus native payload under build/lib/ollama; go build ./go run . serve works for Go-only iteration against an existing native payload",
+          "sources": [
+            "AGENTS.md",
+            "docs/development.md",
+            "CMakeLists.txt"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Native engines are vendored/pinned: llama.cpp version in LLAMA_CPP_VERSION with llama/server sources, MLX pinned via MLX_VERSION and MLX_C_VERSION under mlx/, GPU backends selected via -DOLLAMA_LLAMA_BACKENDS=cuda_v12;cuda_v13;rocm_v7_1;rocm_v7_2;vulkan;cuda_jetpack5;cuda_jetpack6",
+          "sources": [
+            "docs/development.md",
+            ".github/workflows/test.yaml#L40-L49",
+            "LLAMA_CPP_VERSION",
+            "MLX_VERSION"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "GPU/device discovery is performed by spawning helper binaries: `ollama gpu-discover` (hidden cobra cmd -> discover.RunNativeProbeCommand) and llama-server --list-devices probes in discover/llama_server.go",
+          "sources": [
+            "cmd/cmd.go#L2581-L2590",
+            "discover/native_probe.go#L86",
+            "discover/llama_server.go#L143",
+            "discover/runner.go#L36-L80"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The CLI talks to the server through api.Client (api/client.go) whose methods map 1:1 to the REST API and which reads OLLAMA_HOST via ClientFromEnvironment",
+          "sources": [
+            "api/client.go#L1-L79"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "feature_catalog": {
+      "summary": "User-facing surface = CLI subcommands + REST endpoints + OpenAI/Anthropic compat shims + a desktop chat app. Features cover the full model lifecycle (pull/create/push/copy/show/list/ps/delete), inference (generate/chat/embed with streaming NDJSON, thinking, tools, vision/audio, structured output, logprobs), cloud remote inference on ollama.com, experimental web search/fetch, and Codex Desktop integration via a loopback proxy.",
+      "claims": [
+        {
+          "claim": "CLI commands: create, show, run, stop, serve (alias start), pull, push, signin/login, signout/logout, list, ps, cp, rm; hidden commands `runner` (MLX runner entrypoint) and `gpu-discover`",
+          "sources": [
+            "cmd/cmd.go#L2393-L2595"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Native API endpoints: /api/generate, /api/chat, /api/embed, /api/embeddings, /api/pull, /api/push, /api/tags (GET+HEAD), /api/show, /api/delete, /api/create, /api/blobs/:digest (POST+HEAD), /api/copy, /api/ps, /api/me, /api/signout, /api/version, /api/status",
+          "sources": [
+            "server/routes.go#L1892-L1930"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "OpenAI-compatible endpoints /v1/chat/completions, /v1/completions, /v1/embeddings, /v1/models(+/:model), /v1/responses(+ /compact), /v1/audio/transcriptions are middleware translators over the native handlers",
+          "sources": [
+            "server/routes.go#L1932-L1943",
+            "middleware/openai.go#L27-L80",
+            "openai/openai.go#L1-L30"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Anthropic compatibility is provided by POST /v1/messages -> middleware.AnthropicMessagesMiddleware -> ChatHandler",
+          "sources": [
+            "server/routes.go#L1945-L1946",
+            "middleware/anthropic.go",
+            "anthropic/anthropic.go"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`ollama create` supports two paths: classic Modelfile+API (parser.ParseFile -> CreateRequest -> blob upload -> /api/create) and in-process safetensors import with --quantize/--draft-quantize/--force when the server is local (OLLAMA_CREATE_REMOTE forces remote)",
+          "sources": [
+            "cmd/cmd.go#L220-L315",
+            "cmd/cmd.go#L317-L400",
+            "parser/parser.go#L56-L120",
+            "create/create.go#L22-L100"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Chat features include thinking control (think bool or level; --think/--hidethinking flags), tool calling via api.Tools parsed by model parsers, vision/audio inputs (ImageData, MediaKind), and shift/truncate context management options",
+          "sources": [
+            "api/types.go#L104-L120",
+            "cmd/cmd.go#L830-L855",
+            "llm/server.go#L156-L228",
+            "model/parsers/parsers.go#L12-L24"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Structured output: GenerateRequest.Format accepts a JSON schema which is passed to llama-server's json_schema field; a built-in BNF grammarJSON exists for generic JSON mode",
+          "sources": [
+            "api/types.go#L89-L91",
+            "llm/llama_server.go#L8-L10",
+            "llm/llama_server.go#L52-L73"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Cloud/remote models: models whose Config has RemoteHost+RemoteModel are proxied by ChatHandler to remoteURL via api.NewClient, gated by envconfig.Remotes() allowlist and OLLAMA_NO_CLOUD; :cloud model refs take cloudPassthroughMiddleware on /v1 routes",
+          "sources": [
+            "server/routes.go#L2555-L2621",
+            "server/routes.go#L1935-L1946",
+            "envconfig/config.go#L166-L177",
+            "internal/cloud/policy.go"
+          ],
+          "kind": "inference"
+        },
+        {
+          "claim": "Experimental endpoints: POST /api/experimental/web_search, /api/experimental/web_fetch, GET /api/experimental/model-recommendations served from a stale-while-revalidate modelCaches.recommendations",
+          "sources": [
+            "server/routes.go#L1921-L1923",
+            "server/routes.go#L1951-L1967",
+            "middleware/web_search.go"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "A loopback-only Codex Desktop reverse proxy is mounted at /api/codex/* (proxy.CodexDesktopPathPrefix) to route between native Ollama models and Codex upstreams, with request logging via writeActivity",
+          "sources": [
+            "server/routes.go#L1898-L1900",
+            "internal/proxy/codex_desktop.go#L28-L30",
+            "internal/proxy/codex_desktop.go#L157-L163",
+            "internal/proxy/codex_desktop.go#L645-L657"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Model auth uses an ed25519 keypair at ~/.ollama/id_ed25519 generated on serve start (initializeKeypair); registry challenge-response tokens are obtained via signed nonce requests (getAuthorizationToken)",
+          "sources": [
+            "cmd/cmd.go#L2101-L2163",
+            "server/auth.go#L22-L100"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Interactive UX: bare `ollama` launches a Bubbletea TUI (runInteractiveTUI + welcome flow via cmd/launch + cmd/tui); `ollama run` without prompt enters readline-based interactive session; selectors/sign-in/upgrade prompts are injected as launch.Default* hooks",
+          "sources": [
+            "cmd/cmd.go#L62-L99",
+            "cmd/cmd.go#L2400-L2414",
+            "cmd/interactive.go"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Separate `bench` main package under cmd/bench provides a benchmarking CLI hitting the API (used by CI bench step)",
+          "sources": [
+            "cmd/bench/bench.go",
+            ".github/workflows/test.yaml#L451-L455"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "data_flow": {
+      "summary": "Requests enter via Gin handlers -> model resolution (manifest -> Model struct) -> option merge (defaults < generation defaults < model < request) -> Scheduler -> runner subprocess over loopback HTTP -> streamed tokens parsed back into API responses. Model artifacts flow registry -> blob downloads -> manifest write; create flows Modelfile/safetensors dir -> layer blobs -> manifest. Chat text flows messages -> Go renderer or llama-server chat template -> prompt -> token stream -> Parser.Add splits content/thinking/tool calls -> NDJSON stream.",
+      "claims": [
+        {
+          "claim": "Option precedence is layered in modelOptions: api.DefaultOptions -> model.GenerationDefaults (parsed from GGUF metadata) -> model.Options (Modelfile params) -> request options, with embedding models getting a NumBatch=2048 default capped by context",
+          "sources": [
+            "server/routes.go#L125-L172",
+            "server/images.go#L110-L135",
+            "llm/llama_server.go#L90-L104"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Chat path in ChatHandler: ShouldBindJSON -> parseAndValidateModelRef -> getExistingName -> GetModel -> (unload shortcut for keep_alive=0) -> scheduleRunner -> renderer/parser selection -> llm runner Chat/Completion -> NDJSON stream to client",
+          "sources": [
+            "server/routes.go#L2465-L2540",
+            "server/routes.go#L3016"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "GetModel resolves a name through manifest.ParseNamedManifest -> config blob decode (ConfigV2) -> layer iteration, grouping split GGUF shards via groupManifestSplitGGUFLayers; parseFromModel auto-pulls when the manifest is missing",
+          "sources": [
+            "server/model.go#L27-L97",
+            "server/images.go#L656"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Prompt rendering branches: models with a Go renderer name go through renderers.RenderWithRenderer; others use template.Template (embedded .gotmpl set indexed by index.json) or llama-server's native chat_template via /v1/chat/completions",
+          "sources": [
+            "model/renderers/renderer.go#L40-L60",
+            "template/template.go#L1-L40",
+            "llm/llama_server.go#L3-L13",
+            "server/images.go#L362-L432"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Output parsing: streamed runner tokens are fed to Parser.Add which returns (content, thinking, toolCalls); PreservedTokens tells llama-server which grammar tokens must survive detokenization",
+          "sources": [
+            "model/parsers/parsers.go#L12-L24",
+            "llm/server.go#L197-L208"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Pull flow: PullHandler -> PullModel -> registry layer resolution -> blobDownload.Run with chunked resumable parts -> sha256 verification -> manifest write; progress is fanned out as api.ProgressResponse over a channel to streamResponse",
+          "sources": [
+            "server/routes.go#L1135-L1193",
+            "server/images.go#L1002",
+            "server/download.go#L187-L476"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Blob writes are content-addressed: CreateBlobHandler accepts POST /api/blobs/:digest and HeadBlobHandler probes existence; digest validity enforced by manifest.ValidateDigest regex sha256[:-][64 hex]",
+          "sources": [
+            "server/routes.go#L1715-L1852",
+            "manifest/paths.go#L15-L27"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Runner placement: scheduler loads GGUF metadata (llm.LoadModel), predicts VRAM via llm.PredictServerVRAM, selects GPUs via selectLlamaServerPlacement honoring OLLAMA_SCHED_SPREAD and OLLAMA_GPU_OVERHEAD, then evicts loaded runners if predicted footprint exceeds 80% of free memory",
+          "sources": [
+            "server/sched.go#L528-L575",
+            "llm/llama_server.go#L2698"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "llama-server subprocesses receive model path, ports, -ngl/-t only when explicitly set (otherwise auto-detect), media marker rewriting ([img-N]) for vision, and report memory back via parsed log lines into runner's vramByDevice/systemFreeAtLoad",
+          "sources": [
+            "llm/llama_server.go#L400-L440",
+            "llm/llama_server.go#L120-L160"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Desktop app persists chats/settings in sqlite (mattn/go-sqlite3) via app/store with a frozen v2 schema (schema.sql) plus migrations; the React UI talks to the same Ollama HTTP API",
+          "sources": [
+            "app/store/schema.sql",
+            "app/store/database.go",
+            "app/ui/app/package.json",
+            "go.mod#L12"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Inference request logging is optional and bounded: withInferenceRequestLogging wraps /api/generate, /api/chat, and the /v1 inference routes, gated by OLLAMA_DEBUG_LOG_REQUESTS",
+          "sources": [
+            "server/routes.go#L1927-L1946",
+            "server/inference_request_log.go",
+            "envconfig/config.go#L220"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Context management: num_ctx defaults come from OLLAMA_CONTEXT_LENGTH or a VRAM-tier auto default (numCtxAuto), clamped to model train context; `shift` enables sliding-window context shift except for deepseek2 family; `truncate` drops history instead of erroring",
+          "sources": [
+            "server/sched.go#L134-L172",
+            "server/sched.go#L174-L200",
+            "envconfig/config.go#L230",
+            "envconfig/config.go#L338"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "behavior_traces": {
+      "summary": "Three canonical flows: (1) serve startup: main -> cobra serve -> initializeKeypair -> net.Listen -> server.Serve -> blob prune -> GenerateRoutes -> InitScheduler.Run; (2) `ollama run X prompt`: CLI heartbeat/pull -> api.Client.Chat -> ChatHandler -> GetModel -> getRunner -> load -> llama-server subprocess -> streamed parse -> NDJSON; (3) pull: PullHandler -> PullModel -> blob downloads -> manifest write. Safetensors models diverge at sched.load into the mlxrunner subprocess.",
+      "claims": [
+        {
+          "claim": "Startup order: main() -> NewCLI() -> serveCmd -> RunServer -> initializeKeypair (ed25519 at ~/.ollama) -> net.Listen(envconfig.Host) -> server.Serve(ln)",
+          "sources": [
+            "main.go",
+            "cmd/cmd.go#L2101-L2117",
+            "cmd/cmd.go#L2119-L2163"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "server.Serve sequence: slog logger init -> log cloud-disabled status -> llm.PruneSplitModelDirs on blobs dir -> fixBlobs -> PruneLayers + manifest.PruneDirectory (unless OLLAMA_NOPRUNE) -> GenerateRoutes -> InitScheduler -> sched.Run goroutines -> http.Serve",
+          "sources": [
+            "server/routes.go#L1969-L2031",
+            "server/sched.go#L91-L106",
+            "server/sched.go#L219-L220"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CLI run flow: RunHandler parses --think/--keepalive/--format flags -> api.ClientFromEnvironment -> showOrPullModel (pulls if absent) -> inferThinkingOption -> isEmbeddingModel branch -> generateChat/generateInteractive -> client.Chat -> POST /api/chat",
+          "sources": [
+            "cmd/cmd.go#L814-L953",
+            "api/client.go#L74-L79"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Server chat flow: ChatHandler binds JSON -> parseAndValidateModelRef -> cloud refs proxied via proxyCloudJSONRequest -> GetModel -> keep_alive=0 unloads via sched.expireRunner -> remote models proxied to RemoteHost -> otherwise modelOptions + scheduleRunner",
+          "sources": [
+            "server/routes.go#L2465-L2553",
+            "server/routes.go#L2555-L2621",
+            "server/routes.go#L205-L253"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Scheduling flow: getRunner builds LlmRequest -> loaded-map fast path via schedulerModelKey (modelPaths joined with NUL, or digest:/name: fallback) -> else enqueue pendingReqCh (ErrMaxQueue when full) -> scheduler picks GPUs -> load() spawns runner -> useLoadedRunner",
+          "sources": [
+            "server/sched.go#L108-L132",
+            "server/sched.go#L174-L216",
+            "server/sched.go#L520-L632"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "GGUF runner launch: sched.load -> llm.LoadModel (gguf.ReadModel metadata) -> PredictServerVRAM -> selectLlamaServerPlacement -> newServerFn = llm.NewLlamaServer -> NewLlamaServerRunner -> startLlamaServer -> exec.Command(llama-server, params) -> WaitUntilRunning polls /health",
+          "sources": [
+            "server/sched.go#L528-L600",
+            "llm/server.go#L93-L111",
+            "llm/llama_server.go#L348",
+            "llm/llama_server.go#L424",
+            "llm/llama_server.go#L851"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "MLX runner launch: sched.load -> m.IsMLX() -> mlxrunner.NewClient(modelName, numCtx) -> exec.Command(self, \"runner\", --model, --port) -> hidden cobra `runner` cmd -> mlxrunner.Execute -> HTTP server inside subprocess",
+          "sources": [
+            "server/sched.go#L591-L594",
+            "mlxrunner/client.go#L349",
+            "cmd/cmd.go#L2569-L2576"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Pull trace: PullHandler binds api.PullRequest -> parseNormalizePullModelRef (normalizes :cloud) -> PullModel in goroutine -> per-layer blobDownload (chunked parts with backoff) -> manifest write -> progress channel -> streamResponse emits api.ProgressResponse NDJSON",
+          "sources": [
+            "server/routes.go#L1135-L1193",
+            "server/images.go#L1002",
+            "server/download.go#L187-L333"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Create trace (Modelfile): CreateHandler -> readCreateModelfile -> parser.ParseFile -> reject adapter/typical_p -> modelfile.CreateRequest -> createBlob uploads per file (or sharedBlobStore local shortcut) -> client.Create -> /api/create -> server assembles layers + manifest",
+          "sources": [
+            "cmd/cmd.go#L220-L241",
+            "cmd/cmd.go#L317-L400",
+            "parser/parser.go#L56-L120",
+            "server/routes.go#L1917"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Unload/keep-alive: empty chat request with keep_alive=0 triggers sched.expireRunner and returns done_reason=unload without inference; runners expire via expiredCh after sessionDuration (OLLAMA_KEEP_ALIVE default 5m)",
+          "sources": [
+            "server/routes.go#L2541-L2553",
+            "server/sched.go#L61-L82",
+            "envconfig/config.go#L126-L144"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "OOM resilience: on llm.IsOutOfMemory during Load, scheduler reduces automatically-derived num_ctx/num_batch once (oomRetryAttempted) and retries; evict-all-and-retry is guarded against infinite loops",
+          "sources": [
+            "server/sched.go#L39-L42",
+            "server/sched.go#L632-L659"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "testing_signals": {
+      "summary": "Testing is Go-test-first with heavy coverage in server/, model/parsers, model/renderers, middleware, mlxrunner, create, envconfig; testify is the assertion library. integration/ holds end-to-end suites gated on a live server/registry; CI runs go test -count=1 ./... plus a -race job, golangci-lint, patch-apply checks, vitest for the React app, and a benchmark pass.",
+      "claims": [
+        {
+          "claim": "CI test.yaml runs `go test -count=1 -bench=. -benchtime=1x ./...` on PRs and a separate `go test -race -count=1 ./...` race job",
+          "sources": [
+            ".github/workflows/test.yaml#L451-L455",
+            ".github/workflows/test.yaml#L500-L501"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CI includes golangci-lint (golangci-lint-action@v9), go_mod_tidy and go_license checks, plus a patches job that verifies llama/server patches apply cleanly under CMake",
+          "sources": [
+            ".github/workflows/test.yaml#L62-L80",
+            ".github/workflows/test.yaml#L370-L394",
+            ".github/workflows/test.yaml#L461"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The desktop app is tested with `go test -tags updater_live ./app/...` and the React UI via `npm ci && npm test` (vitest) plus npm run build; Storybook config also present (build-storybook script)",
+          "sources": [
+            ".github/workflows/test.yaml#L427-L434",
+            ".github/workflows/test.yaml#L457-L459",
+            "app/ui/app/package.json"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "server/ has ~30 *_test.go files including routes_*_test.go per endpoint family, a fuzz test (create_fuzz_test.go), and sched_test.go for scheduler logic",
+          "sources": [
+            "server/create_fuzz_test.go",
+            "server/routes_test.go",
+            "server/sched_test.go"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "model/parsers and model/renderers have per-family test files plus reference-test files (nemotron*_reference_test.go) and shared testhelpers_test.go",
+          "sources": [
+            "model/parsers/parsers_test.go",
+            "model/parsers/testhelpers_test.go",
+            "model/renderers/renderer_test.go"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "integration/ contains end-to-end tests (api_test, concurrency_test, max_queue_test, vision/audio tests, reg_* group files) that require a running server and real model pulls — documented in integration/README.md",
+          "sources": [
+            "integration/README.md",
+            "integration/api_test.go",
+            "integration/max_queue_test.go"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Test isolation uses OLLAMA_MODELS/home overrides: many packages ship test_home_test.go helpers to redirect model storage into temp dirs",
+          "sources": [
+            "envconfig/test_home_test.go",
+            "server/test_home_test.go",
+            "middleware/test_home_test.go"
+          ],
+          "kind": "inference"
+        },
+        {
+          "claim": "template/ has a golden-file style test driven by embedded index.json + per-model .gotmpl/.json pairs (template_test.go)",
+          "sources": [
+            "template/template_test.go",
+            "template/template.go#L22-L40"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "api/ tests include types_typescript_test.go which cross-checks Go API types against generated TypeScript (typescriptify dep in go.mod)",
+          "sources": [
+            "api/types_typescript_test.go",
+            "go.mod#L29"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Coverage gaps: Objective-C/macOS glue (app/cmd/app/*.m, discover/gpu_info_darwin.m) and the codex_desktop_autoreview/proxy hot paths have tests but the darwin app lifecycle is largely untestable in CI (build-tagged windows||darwin)",
+          "sources": [
+            "app/cmd/app/app.go#L1",
+            "app/cmd/app/codex_app_darwin.go",
+            "discover/gpu_info_darwin.m"
+          ],
+          "kind": "inference"
+        }
+      ]
+    },
+    "risk_map": {
+      "summary": "Main risks: the API has no request authentication by default and can be bound to non-loopback hosts via OLLAMA_HOST; the server spawns subprocesses (llama-server, self runner, gpu probes) with model-derived arguments; startup blob pruning deletes on-disk data; registry push/pull signs with a local private key; and several middleware paths decompress/transform untrusted request bodies. Scheduler and runner state is intricate (eviction, OOM retry, panic on model mismatch during load).",
+      "claims": [
+        {
+          "claim": "The REST API is unauthenticated; OLLAMA_HOST can bind it to 0.0.0.0 and OLLAMA_ORIGINS CORS allows wildcards/browser extensions, so any reachable origin can pull/delete/run models unless the operator restricts it",
+          "sources": [
+            "server/routes.go#L1858-L1890",
+            "envconfig/config.go#L85-L111",
+            "envconfig/config.go#L324"
+          ],
+          "kind": "inference"
+        },
+        {
+          "claim": "Subprocess attack surface: llama-server is exec'd with flags assembled from request/model options (num_ctx, -ngl, -t, chat templates); the runner binary path and env are constructed in startLlamaServer/SetupLlamaServerCommandEnv",
+          "sources": [
+            "llm/llama_server.go#L400-L435",
+            "llm/llama_server.go#L424"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Startup performs destructive maintenance: PruneLayers, manifest.PruneDirectory and fixBlobs delete blobs/manifests under OLLAMA_MODELS; guarded only by OLLAMA_NOPRUNE and a 1h grace period for fresh blobs",
+          "sources": [
+            "server/routes.go#L1979-L2004",
+            "server/images.go#L37-L39",
+            "manifest/paths.go#L74-L106"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Private signing key ~/.ollama/id_ed25519 (0600) is generated on first serve and used by auth.Sign for registry token exchange; realm host is checked against original host to avoid token leakage cross-origin",
+          "sources": [
+            "cmd/cmd.go#L2119-L2163",
+            "server/auth.go#L53-L62"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "--insecure / registryOptions.Insecure permits plain-HTTP registry traffic (errInsecureProtocol exists but can be bypassed by request flag)",
+          "sources": [
+            "server/images.go#L41-L61",
+            "cmd/cmd.go#L2455"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Request-body decompression is capped at 20MB (maxDecompressedBodySize) in the OpenAI middleware — a decompression-bomb guard; other endpoints bind JSON directly via gin ShouldBindJSON without explicit size limits",
+          "sources": [
+            "middleware/openai.go#L24-L25",
+            "server/routes.go#L2473"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Scheduler contains a deliberate panic when the active load's ModelPath differs from the evicted-retry request — a crash-on-invariant-violation that takes down the whole server",
+          "sources": [
+            "server/sched.go#L603-L611"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Secret hygiene in logs: filteredEnv redacts env values containing API/KEY/TOKEN/SECRET/PASSWORD/CREDENTIAL/AUTH before logging subprocess env, but only CUDA_/ROCR_/ROCM_/HIP_/HSA_/GGML_/PATH/LD_LIBRARY_PATH/DYLD_LIBRARY_PATH keys are logged at all",
+          "sources": [
+            "llm/server.go#L21-L56"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Codex desktop proxy restricts to loopback requests (isLoopbackRequest) and websocket upgrades are special-cased; misconfiguration here would expose upstream proxying on the shared listener",
+          "sources": [
+            "internal/proxy/codex_desktop.go#L645-L657",
+            "server/routes.go#L1898-L1900"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Runner stream parsing bounds single response lines at 8MB (llamaServerStreamMaxBufferSize); unbounded growth in a misbehaving subprocess is otherwise handled only via HasExited/ping timeouts",
+          "sources": [
+            "llm/server.go#L150-L154"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Legacy/removed features linger as explicit errors: LoRA adapters rejected (errAdaptersUnsupported), typical_p rejected, `useClient2` experiment warns-and-continues; dead flags like --experimental are hidden no-ops",
+          "sources": [
+            "cmd/cmd.go#L292-L296",
+            "cmd/cmd.go#L2431-L2433",
+            "server/routes.go#L93",
+            "server/routes.go#L2014-L2016"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Blast radius: a single Scheduler serializes all model loads (activeLoading) so a stuck subprocess load stalls every inference request; queue overflow surfaces as ErrMaxQueue (OLLAMA_MAX_QUEUE default 512)",
+          "sources": [
+            "server/sched.go#L61-L89",
+            "envconfig/config.go#L281"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "extension_points": {
+      "summary": "Deliberate plug-in surfaces: per-model-family Parser and Renderer registries (name-keyed constructors with a switch fallback), embedded named chat templates, the llm.LlamaServer runner interface, cobra command table, launch.Default* UI hooks, middleware translators for new API dialects, envconfig's AsMap registry, and the create/ import pipeline stages.",
+      "claims": [
+        {
+          "claim": "New output parsers plug in via parsers.Register(name, constructor) or a case in ParserForName's switch; Parser interface = Init/Add/PreservedTokens/HasToolSupport/HasThinkingSupport",
+          "sources": [
+            "model/parsers/parsers.go#L12-L107"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New prompt renderers plug in via renderers.Register or rendererForName switch; Renderer interface = Thinking/Render/LeadingBOS; RenderImgTags global toggles [img] tag emission",
+          "sources": [
+            "model/renderers/renderer.go#L10-L60",
+            "server/routes.go#L116-L118"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Named Go templates are added as .gotmpl+.json pairs embedded via go:embed and indexed in template/index.json; template.Named resolves by GGUF chat_template name for autodetection",
+          "sources": [
+            "template/template.go#L22-L40",
+            "server/model.go#L99-L138",
+            "template/index.json"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New inference backends implement llm.LlamaServer (Completion/Chat/Embedding/Tokenize/WaitUntilRunning/Close/...) and get wired through Scheduler.newServerFn or the IsMLX branch (mlxrunner.Client)",
+          "sources": [
+            "llm/server.go#L58-L77",
+            "server/sched.go#L77-L104",
+            "mlxrunner/client.go#L32-L40"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New API dialects slot into GenerateRoutes as gin middleware translators in middleware/ (ChatMiddleware, CompletionsMiddleware, ResponsesMiddleware, AnthropicMessagesMiddleware, TranscriptionMiddleware) wrapping the core handlers",
+          "sources": [
+            "server/routes.go#L1935-L1946",
+            "middleware/openai.go#L27-L80",
+            "middleware/anthropic.go"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New CLI commands register in NewCLI's command table; hidden/internal commands (runner, gpu-discover) show the pattern for plumbing sub-binaries through the same binary",
+          "sources": [
+            "cmd/cmd.go#L2393-L2600",
+            "cmd/cmd.go#L2569-L2590"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Interactive UI is swappable via launch.Default* function hooks (SingleSelector, MultiSelector, SignIn, Upgrade, ConfirmPrompt, Spinner) — cmd/cmd.go's init() replaces them with Bubbletea TUI implementations",
+          "sources": [
+            "cmd/cmd.go#L62-L99"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New environment settings register in envconfig: typed accessors (Bool/Uint/String/BoolWithDefault) plus an entry in AsMap() so `ollama serve` logs and help list them",
+          "sources": [
+            "envconfig/config.go#L177-L290",
+            "envconfig/config.go#L313-L341"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "GPU backends are build-time extensions: OLLAMA_LLAMA_BACKENDS selects cuda_v12/cuda_v13/rocm_v7_1/rocm_v7_2/vulkan/jetpack variants; runtime discovery globs lib/ollama/*/ggml-* dirs",
+          "sources": [
+            "docs/development.md",
+            "discover/runner.go#L45-L58"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Safetensors import is a staged pipeline in create/ (classify -> transform -> prequant -> quantize -> writer -> manifest) with per-architecture files (gemma4.go, qwen35.go, cohere2moe.go, glimmer.go, nemotron_h.go, laguna.go) — new architectures add a file + classification entry",
+          "sources": [
+            "create/create.go#L73-L100",
+            "create/classify.go",
+            "create/pipeline.go",
+            "create/transform.go"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Model capabilities are declared via model.Capability flags (completion, tools, insert, vision, audio, embedding, thinking, image) checked through Model.CheckCapabilities, gating handler behavior per request",
+          "sources": [
+            "server/images.go#L41-L52",
+            "server/images.go#L137-L140",
+            "server/sched.go#L179-L182"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_handoff": {
+      "summary": "Start with AGENTS.md and docs/development.md. Build Go-only via `go build .`/`go run . serve`; full builds need CMake (native payload under build/lib/ollama). Tests: `go test ./...` (race: `go test -race ./...`), vitest under app/ui/app, integration/ needs a live server. Read cmd/cmd.go, server/routes.go, server/sched.go, llm/llama_server.go first. Traps: dual runner paths (GGUF subprocess vs MLX self-runner), removed features that still error loudly, scheduler panics, and env-var-driven behavior.",
+      "claims": [
+        {
+          "claim": "Authoritative onboarding docs: AGENTS.md (build commands), docs/development.md (prereqs, GPU backends, platform notes), docs/api.md (REST reference)",
+          "sources": [
+            "AGENTS.md",
+            "docs/development.md",
+            "docs/api.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Read-first files for server changes: cmd/cmd.go (CLI+RunServer), server/routes.go (GenerateRoutes + handlers), server/sched.go (Scheduler lifecycle), server/images.go (Model + pull/create/prune), llm/llama_server.go (runner subprocess)",
+          "sources": [
+            "cmd/cmd.go",
+            "server/routes.go",
+            "server/sched.go",
+            "server/images.go",
+            "llm/llama_server.go"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Shared types live in api/types.go and are the contract between CLI client, server handlers, and the generated TypeScript (checked by api/types_typescript_test.go) — change them carefully",
+          "sources": [
+            "api/types.go",
+            "api/client.go#L1-L14",
+            "api/types_typescript_test.go"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Model support additions typically touch four places: model/parsers (output), model/renderers (prompt), template/ (named .gotmpl), and server/images.go capability/template selection — plus create/ for safetensors architectures",
+          "sources": [
+            "model/parsers/parsers.go",
+            "model/renderers/renderer.go",
+            "template/index.json",
+            "server/images.go#L362-L432"
+          ],
+          "kind": "inference"
+        },
+        {
+          "claim": "Safe edit boundaries: middleware/ translators and model/{parsers,renderers} are well-isolated and heavily tested; sched.go and llm/llama_server.go are high-blast-radius (concurrency + subprocess lifecycle) — add tests in the same package's *_test.go",
+          "sources": [
+            "server/sched.go",
+            "llm/llama_server.go",
+            "server/sched_test.go"
+          ],
+          "kind": "inference"
+        },
+        {
+          "claim": "Known traps: (a) LoRA adapters and typical_p are removed and error on use; (b) NumGPU==-1 means auto, 0 means CPU-only — don't collapse; (c) num_ctx auto-detection is VRAM-tiered (numCtxAuto flag) and OOM retry reduces it once; (d) scheduler model keys join shard paths with NUL",
+          "sources": [
+            "cmd/cmd.go#L292-L296",
+            "llm/llama_server.go#L404-L411",
+            "server/sched.go#L43-L49",
+            "server/sched.go#L111-L120"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Environment knobs for debugging: OLLAMA_DEBUG=1 (log level), OLLAMA_DEBUG_LOG_REQUESTS (request replay logs to temp dir), OLLAMA_LOAD_TIMEOUT (stall detection), OLLAMA_NOPRUNE (disable startup deletion), OLLAMA_HOST/OLLAMA_MODELS (paths/bind)",
+          "sources": [
+            "envconfig/config.go#L201-L240",
+            "envconfig/config.go#L315-L340",
+            "server/inference_request_log.go"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Test commands: `go test -count=1 ./...` locally (some packages need CGO/native payload), `go test -race ./...` mirrors CI race job, `npm test`/`npm run build` under app/ui/app; integration tests are opt-in (need pulled models + running server)",
+          "sources": [
+            ".github/workflows/test.yaml#L451-L501",
+            "integration/README.md",
+            "app/ui/app/package.json"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Platform-conditional code uses file-suffix build tags (llm_linux.go, llm_darwin.go, llm_windows.go, editor_unix.go, start_darwin.go) — edit the right variant and keep signatures identical across OSes",
+          "sources": [
+            "llm/llm_linux.go",
+            "llm/llm_darwin.go",
+            "cmd/editor_unix.go",
+            "cmd/start_darwin.go"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Gin runs in DebugMode by default (mode var = gin.DebugMode with a defensive switch); don't rely on release-mode assumptions in handlers",
+          "sources": [
+            "server/routes.go#L95-L114"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The repo mixes vendored native code (llama/ llama.cpp fork, mlx/) with Go; changes under llama/server or cmake/ trigger the `patches` CI job verifying patches apply — avoid touching unless intentional",
+          "sources": [
+            ".github/workflows/test.yaml#L35-L80",
+            "LLAMA_CPP_VERSION",
+            "MLX_VERSION"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Progress reporting convention: long operations (pull/create/push) emit api.ProgressResponse structs over a channel consumed by streamResponse — new streaming endpoints should reuse that pattern",
+          "sources": [
+            "server/routes.go#L1161-L1193",
+            "server/download.go#L446-L476"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_prompt": "You are working on Ollama (github.com/ollama/ollama), a Go monorepo: one binary is both CLI client and inference server. Entrypoint: main.go -> cmd.NewCLI() (cobra commands in cmd/cmd.go: create, show, run, stop, serve, pull, push, list, ps, cp, rm, signin/out; hidden `runner` = MLX runner, `gpu-discover` = probe). `ollama serve` -> RunServer -> initializeKeypair (ed25519 at ~/.ollama/id_ed25519) -> net.Listen(OLLAMA_HOST, default 127.0.0.1:11434) -> server.Serve -> startup blob pruning -> GenerateRoutes (Gin) -> InitScheduler.\n\nArchitecture: server/routes.go has all handlers. Inference flows ChatHandler/GenerateHandler -> GetModel (manifest+blobs under OLLAMA_MODELS: manifests/<name> JSON, blobs/sha256-*) -> modelOptions merge (api.DefaultOptions < GenerationDefaults < model.Options < request) -> Scheduler (server/sched.go; channel-based, one load at a time, VRAM prediction via llm.PredictServerVRAM, eviction at 80% free, OOM auto-retry shrinking num_ctx once) -> llm.LlamaServer interface. Two runner impls: GGUF -> llm.NewLlamaServer -> llamaServerRunner spawning upstream `llama-server` subprocess over loopback HTTP (llm/llama_server.go); safetensors/MLX -> mlxrunner.NewClient re-execs self as `ollama runner`. GPU discovery spawns probe binaries (discover/, `ollama gpu-discover`).\n\nPrompting: model/renderers (name -> Renderer registry, Render messages+tools -> prompt) and template/ (embedded .gotmpl via index.json) vs llama-server's own chat_template. Output: model/parsers (name -> Parser registry; Add(chunk,done) -> content/thinking/toolCalls). Capabilities (tools/vision/audio/embedding/thinking/image) gate behavior via Model.CheckCapabilities.\n\nAPI surface: /api/* native + OpenAI /v1/* and Anthropic /v1/messages via middleware/ translators; cloud models proxy to RemoteHost (envconfig.Remotes allowlist, OLLAMA_NO_CLOUD); Codex Desktop loopback proxy at /api/codex/*. Desktop app: app/cmd/app (darwin||windows), webview + React/Vite UI (app/ui/app, vitest+storybook), sqlite store (app/store/schema.sql frozen v2).\n\nConventions: all config via envconfig OLLAMA_* vars (register in AsMap); shared request/response types in api/types.go (checked against TS by types_typescript_test.go); progress via api.ProgressResponse channel + streamResponse; platform code via _linux/_darwin/_windows file suffixes; secrets redacted in subprocess env logs (filteredEnv).\n\nBuild/test: `go build .` / `go run . serve` for Go iteration; full build `cmake -B build . && cmake --build build` (native payload build/lib/ollama; GPU backends via -DOLLAMA_LLAMA_BACKENDS). Tests: `go test -count=1 ./...`, `go test -race ./...` (CI), vitest in app/ui/app; integration/ needs a live server + pulled models.\n\nTraps: LoRA adapters and typical_p are removed-by-error; NumGPU -1=auto / 0=CPU; scheduler panics if active-loading model mismatches after eviction; the API is unauthenticated — keep changes loopback-safe; startup prunes blobs (OLLAMA_NOPRUNE disables); don't touch llama/ or cmake/ without checking the patches CI job."
+  },
+  "analysis": {
+    "agent": "devin",
+    "model": "swe-2",
+    "runtime_ms": null,
+    "cost_usd": null,
+    "collected_at": "2026-09-22T16:03:31.932Z"
   }
 }

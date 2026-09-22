@@ -6357,891 +6357,910 @@
     ]
   },
   "report": {
-    "overview": "ComfyUI 0.37.0 is a local node-graph runtime and aiohttp server for running diffusion and media models on the user's machine. A JSON prompt of nodes is queued, validated, and executed in dependency order, with partial-graph caching and explicit VRAM offload, then images and other media are written under the output directory. The graph is built from core nodes in nodes.py, a large built-in set in comfy_extras, optional paid partner nodes in comfy_api_nodes, and third-party packs under custom_nodes. The HTTP API defaults to 127.0.0.1:8188 and is the integration surface for the separate frontend package and for external clients.",
+    "overview": "ComfyUI (version 0.37.0) is a node-based inference engine and aiohttp web server for diffusion and generative AI models. A single Python process runs an HTTP/WebSocket frontend server (server.PromptServer) plus a daemon 'prompt_worker' thread that pops prompt graphs off a priority queue and executes them node-by-node through execution.PromptExecutor with aggressive inter-node output caching. Its distinctive architecture is a dynamic graph executor supporting lazy inputs, list-mapping, async node functions, and runtime subgraph expansion, paired with a checkpoint auto-detection system (comfy.model_detection) that identifies model families from state-dict keys and shapes.",
     "system_map": {
-      "summary": "The process starts at main.py and splits into an aiohttp PromptServer on the asyncio loop and a daemon prompt_worker thread that owns PromptExecutor. Model math lives under comfy/ (detection, patching, sampling, ldm implementations) and is reached only through node classes. Paths, the optional SQLite asset catalog, and the pip-packaged frontend are separate owners. There is no application server framework beyond aiohttp, and there is no durable job store: the queue and history are in-process.",
+      "summary": "ComfyUI is a single-process Python application: main.py parses CLI args, sets device env vars, runs custom-node prestartup scripts, loads all node definitions, initializes an optional SQLite database, then starts an aiohttp server and a daemon worker thread. The aiohttp layer (server.PromptServer) owns HTTP routes, WebSocket clients, and middleware; execution.PromptExecutor owns graph execution in the worker thread; the comfy/ package owns model loading, memory management, and sampling; nodes.py plus comfy_extras/, comfy_api_nodes/, and custom_nodes/ supply the node registry. Persistence is three-layered: an in-memory PromptQueue/history, filesystem dirs (input/output/temp/user/models) managed by folder_paths, and an Alembic-migrated SQLite DB (user/comfyui.db) for the assets system.",
       "claims": [
         {
-          "claim": "The distribution name is ComfyUI version 0.37.0, requires Python >=3.10, and comfyui_version.__version__ is generated from that same version.",
+          "claim": "Entry point is main.py: it enables args parsing via comfy.options, reads comfy.cli_args.args, sets HF_HUB_DISABLE_TELEMETRY/DO_NOT_TRACK/CUDA_VISIBLE_DEVICES env vars, runs custom-node prestartup scripts, then calls start_comfyui() which builds PromptServer, loads nodes, and spawns the prompt_worker daemon thread.",
           "sources": [
-            "pyproject.toml#L1-L6",
-            "comfyui_version.py#L1-L3"
+            "main.py#L39-115",
+            "main.py#L489-551",
+            "main.py#L183-237"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "Running main.py calls start_comfyui, which constructs server.PromptServer, loads nodes, opens the database, registers routes, starts prompt_worker as a daemon thread, and returns the asyncio loop plus start_all.",
+          "claim": "server.PromptServer builds an aiohttp web.Application with a middleware chain (cache_control, deprecation_warning, optional compress_body, CORS or origin-only, CSP when api nodes disabled, optional comfyui_manager middleware) and registers all routes inside __init__ via a RouteTableDef.",
           "sources": [
-            "main.py#L489-L551",
-            "main.py#L554-L585"
+            "server.py#L215-267"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "PromptServer is an aiohttp web.Application. Default listen address and port are --listen 127.0.0.1 and --port 8188. TLS is optional via --tls-keyfile and --tls-certfile.",
+          "claim": "The worker loop prompt_worker() blocks on PromptQueue.get(timeout), calls PromptExecutor.execute(), marks the task done into history, then handles unload_models/free_memory queue flags and runs gc.collect() + model_management.soft_empty_cache() every ~10 seconds.",
           "sources": [
-            "server.py#L215-L263",
-            "comfy/cli_args.py#L63-L66"
+            "main.py#L319-410"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "Non-static routes are registered twice: the original path and the same handler under an /api prefix, so /prompt and /api/prompt both exist.",
+          "claim": "Every route defined on the PromptServer RouteTableDef is duplicated under an /api prefix in add_routes() (e.g. /prompt and /api/prompt both work), plus static mounts for /extensions/<node>, /templates, /docs and the frontend web_root.",
           "sources": [
-            "server.py#L1223-L1243"
+            "server.py#L1223-1284"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "Prompt execution is owned by execution.PromptExecutor and execution.PromptQueue. The graph walker is comfy_execution.graph.DynamicPrompt, not the HTTP layer.",
+          "claim": "The node registry lives in module-level dicts NODE_CLASS_MAPPINGS and NODE_DISPLAY_NAME_MAPPINGS in nodes.py; init_extra_nodes() loads ~130 built-in comfy_extras files, comfy_api_nodes glob-matched files, and external custom_nodes via load_custom_node().",
           "sources": [
-            "execution.py#L663-L729",
-            "execution.py#L1286-L1301",
-            "comfy_execution/graph.py#L21-L39"
+            "nodes.py#L2068-2137",
+            "nodes.py#L2574-2610",
+            "nodes.py#L2394-2552"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "Checkpoint loading, architecture detection, weight dtype, and ModelPatcher wrapping are in comfy/sd.py load_checkpoint_guess_config and load_state_dict_guess_config, which call comfy.model_detection.model_config_from_unet.",
+          "claim": "Model/MLOps core lives under comfy/: model_detection.py fingerprints checkpoints from state-dict keys, model_management.py owns device/VRAM/pinning policy, model_patcher.py owns the ModelPatcher weight-patching abstraction, samplers.py/sample.py own the sampling loop, and ldm/ holds model implementations.",
           "sources": [
-            "comfy/sd.py#L2132-L2248",
-            "comfy/model_detection.py#L1313-L1321"
+            "comfy/model_detection.py#L44-120",
+            "comfy/model_management.py#L893-1044",
+            "comfy/model_patcher.py#L340"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "folder_paths.folder_names_and_paths is the model-folder registry (checkpoints, loras, vae, text_encoders, diffusion_models, controlnet, custom_nodes, and others) rooted at models/ unless --base-directory or --models-directory overrides it. input/, output/, temp/, and user/ sit beside that root.",
+          "claim": "Persistent state: a SQLite database (default user/comfyui.db, override via --database-url) is created by app/database/db.py init_db() using SQLAlchemy + Alembic migrations in alembic_db/, guarded by a filelock <db>.lock against concurrent ComfyUI processes.",
           "sources": [
-            "folder_paths.py#L14-L72",
-            "folder_paths.py#L373-L393"
+            "app/database/db.py#L66-85",
+            "app/database/db.py#L147-263",
+            "alembic.ini"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "SQLite is optional at startup. init_db uses --database-url or sqlite:///<user>/comfyui.db, takes a filelock, and Alembic-upgrades alembic_db to head. --enable-assets is what turns the catalog and background scanner on.",
+          "claim": "The web frontend is not in this repo: it ships as the pinned pip package comfyui-frontend-package==1.53.6 and FrontendManager.init_frontend() can download a release zip from api.github.com when --front-end-version requests a specific version; --front-end-root overrides with a local path.",
           "sources": [
-            "app/database/db.py#L66-L74",
-            "app/database/db.py#L147-L194",
-            "app/database/db.py#L210-L263",
-            "comfy/cli_args.py#L271-L276"
+            "requirements.txt#L1-3",
+            "app/frontend_management.py#L355-431",
+            "comfy/cli_args.py#L228-257"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "The browser UI is not in this tree. FrontendManager.default_frontend_path serves comfyui_frontend_package static files. requirements.txt pins comfyui-frontend-package==1.53.6, comfyui-workflow-templates==0.11.68, comfy-kitchen==0.2.35, and comfy-aimdo==0.5.5.",
+          "claim": "CLI configuration is a module-level argparse parser in comfy/cli_args.py (~70 flags: --listen/--port, --cuda-device, VRAM modes, cache modes, dtype forcing, --disable-all-custom-nodes, --enable-manager, --database-url, --enable-assets) whose parsed `args` singleton is imported by nearly every module.",
           "sources": [
-            "requirements.txt#L1-L26",
-            "app/frontend_management.py#L232-L249"
+            "comfy/cli_args.py#L61-275"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "On NVIDIA, and on AMD ROCm >= 7.14, start_comfyui can swap comfy.model_patcher.CoreModelPatcher to ModelPatcherDynamic when comfy_aimdo.control.init_devices succeeds. --disable-dynamic-vram forces the legacy patcher.",
+          "claim": "Directory layout is configured at import time in folder_paths.py: folder_names_and_paths maps logical model categories (checkpoints, loras, vae, diffusion_models, controlnet, upscale_models, ~20 total) to search dirs, plus output/temp/input/user dirs all relocatable via --base-directory or per-dir flags.",
           "sources": [
-            "main.py#L264-L304",
-            "main.py#L569-L576"
+            "folder_paths.py#L10-72",
+            "main.py#L140-180"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "GitHub Actions in this repo are split: test-execution.yml runs pytest tests/execution on every PR; test-ci.yml and pullrequest-ci-run.yml dispatch the external comfy-org/comfy-action GPU workflow; test-build.yml only pip-installs requirements.txt on Python 3.10 through 3.14.",
+          "claim": "Runtime concurrency model: one asyncio event loop runs the HTTP server and a publish_loop() that drains a message queue fed thread-safely by send_sync() from the worker thread; WebSocket clients live in self.sockets keyed by clientId.",
           "sources": [
-            ".github/workflows/test-execution.yml#L1-L31",
-            ".github/workflows/test-ci.yml#L1-L50",
-            ".github/workflows/test-build.yml#L1-L31",
-            ".github/workflows/pullrequest-ci-run.yml#L1-L38"
+            "server.py#L1395-1405",
+            "server.py#L269-327",
+            "main.py#L412-418"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Optional sub-apps and managers attach in add_routes(): UserManager (/users, /userdata), ModelFileManager (/experiment/models), CustomNodeManager (/workflow_templates, /i18n), SubgraphManager, NodeReplaceManager, and an /internal sub-application from api_server InternalRoutes.",
+          "sources": [
+            "server.py#L1223-1229",
+            "app/user_manager.py#L123-440",
+            "api_server/routes/internal/internal_routes.py#L1-40"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Build/run/test surface: pip install -r requirements.txt then `python main.py`; unit tests via `pytest tests-unit` (pytest.ini sets testpaths to tests and tests-unit); lint via ruff config in pyproject.toml and .github/workflows/ruff.yml.",
+          "sources": [
+            "requirements.txt",
+            "pytest.ini#L1-9",
+            "pyproject.toml#L14-30",
+            ".github/workflows/test-unit.yml"
           ],
           "kind": "evidence"
         }
       ]
     },
     "feature_catalog": {
-      "summary": "User-facing behavior is a node graph plus an HTTP and WebSocket API. Core sampling, loading, and image nodes are hard-coded in nodes.py. Family-specific nodes (Flux, Wan, LTX, Qwen, and many others) are extra modules loaded by name. Partner API nodes, the asset catalog, multi-user storage, subgraphs, and the manager are all flag-gated. The visual editor itself ships in the frontend package, not as first-party screens in this repository.",
+      "summary": "The user-facing surface is an HTTP+WebSocket API driving a node-graph execution engine, plus a large built-in node library. HTTP covers prompt submission, queue/history management, job status, image upload/view, model listing, object_info schema introspection, user data storage, and workflow templates. The node catalog spans core SD nodes in nodes.py, ~130 comfy_extras modules (audio, video, 3D, model merging, advanced samplers), and comfy_api_nodes that call paid third-party APIs. The optional ComfyUI Manager integration and the assets system (blake3-hashed media catalog in SQLite) are feature-flagged subsystems.",
       "claims": [
         {
-          "claim": "nodes.NODE_CLASS_MAPPINGS registers the classic graph: KSampler, KSamplerAdvanced, CheckpointLoaderSimple, CLIPTextEncode, VAEDecode, VAEEncode, SaveImage, PreviewImage, LoadImage, LoraLoader, UNETLoader, CLIPLoader, ControlNetApplyAdvanced, EmptyLatentImage, and latent/image utilities. CheckpointLoader and DiffusersLoader are marked DEPRECATED in NODE_DISPLAY_NAME_MAPPINGS.",
+          "claim": "POST /prompt accepts a workflow graph {node_id: {class_type, inputs}} plus optional client_id/extra_data/prompt_id/partial_execution_targets, runs validate_prompt, and heapq-pushes (number, prompt_id, prompt, extra_data, outputs_to_execute, sensitive) onto PromptQueue returning {prompt_id, number, node_errors}.",
           "sources": [
-            "nodes.py#L2068-L2158",
-            "nodes.py#L1597-L1729"
+            "server.py#L1075-1147",
+            "execution.py#L1297-1314"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "init_builtin_extra_nodes loads an explicit list of comfy_extras modules, including nodes_flux, nodes_wan, nodes_lt, nodes_hunyuan, nodes_hunyuan3d, nodes_sd3, nodes_ace, nodes_seedvr, nodes_qwen, nodes_sam3, nodes_video, nodes_audio, nodes_textgen, nodes_trellis2, nodes_triposplat, and nodes_depth_anything_3. A new extra file does nothing until it is added to that list.",
+          "claim": "Queue and history endpoints: GET /queue returns running+pending with sensitive fields stripped by _remove_sensitive_from_queue; POST /queue supports clear/delete; GET /history and /history/{prompt_id} read the in-memory history dict; POST /history clears or deletes entries.",
           "sources": [
-            "nodes.py#L2394-L2552"
+            "server.py#L69-71",
+            "server.py#L1048-1073",
+            "server.py#L1149-1217"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "init_builtin_api_nodes globs comfy_api_nodes/nodes_*.py. Present packs include Ideogram, BFL, Gemini, OpenAI, Kling, Luma, Runway, Veo, Wan, Hunyuan3D, ElevenLabs, and others. --disable-api-nodes skips that import and installs a CSP middleware that blocks the frontend from calling the network.",
+          "claim": "A jobs API exposes GET /api/jobs, GET /api/jobs/{job_id}, POST /api/jobs/{job_id}/cancel and POST /api/jobs/cancel backed by comfy_execution/jobs.py with JobStatus pending/in_progress/completed/failed/cancelled.",
           "sources": [
-            "nodes.py#L2555-L2581",
-            "comfy/cli_args.py#L217",
-            "server.py#L242-L243"
+            "server.py#L824-1048",
+            "comfy_execution/jobs.py#L1-40"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "KSampler.sample calls common_ksampler, which calls comfy.sample.sample. Sampler names include euler, euler_ancestral, dpmpp_2m, dpmpp_3m_sde, lcm, ddpm, ddim, and uni_pc. Schedulers are simple, sgm_uniform, karras, exponential, ddim_uniform, beta, normal, linear_quadratic, and kl_optimal.",
+          "claim": "POST /interrupt either targets a specific running prompt_id or globally interrupts via nodes.interrupt_processing -> comfy.model_management.interrupt_current_processing; POST /free sets unload_models/free_memory flags consumed by the worker loop.",
           "sources": [
-            "nodes.py#L1572-L1624",
-            "comfy/sample.py#L79-L84",
-            "comfy/samplers.py#L971-L975",
-            "comfy/samplers.py#L1356-L1376"
+            "server.py#L1163-1204",
+            "nodes.py#L48-52",
+            "main.py#L386-397"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "The HTTP surface in PromptServer includes GET /ws, GET /, GET /embeddings, GET /models, GET /models/{folder}, GET /extensions, POST /upload/image, POST /upload/mask, GET /view, GET /view_metadata/{folder_name}, GET /system_stats, GET /features, GET /prompt, GET /object_info, GET /object_info/{node_class}, GET /history, GET /queue, POST /prompt, POST /queue, POST /interrupt, POST /free, and POST /history.",
+          "claim": "File endpoints: POST /upload/image and /upload/mask write into input/temp/output dirs with subfolder confinement checks and duplicate detection via hashing; GET /view serves files (including blake3: hash resolution to asset paths) and GET /view_metadata/{folder} exposes safetensors metadata.",
           "sources": [
-            "server.py#L269-L356",
-            "server.py#L464-L516",
-            "server.py#L666-L689",
-            "server.py#L742-L824",
-            "server.py#L1048-L1206"
+            "server.py#L397-499",
+            "server.py#L516-560",
+            "server.py#L666-689"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "Jobs are a view over the same in-memory queue: GET /api/jobs filters by status, workflow_id, sort, limit, and offset; GET /api/jobs/{job_id} fetches one; POST /api/jobs/{job_id}/cancel and POST /api/jobs/cancel interrupt a running prompt or dequeue a pending one. Status strings are pending, in_progress, completed, failed, and cancelled. Job ids must be canonical lowercase UUIDs.",
+          "claim": "Introspection endpoints: GET /object_info and /object_info/{node_class} serialize each node class's INPUT_TYPES/RETURN_TYPES/CATEGORY for the frontend; GET /models and /models/{folder} list folder_paths categories; GET /embeddings lists embedding names; GET /system_stats and /features report device and capability info.",
           "sources": [
-            "server.py#L824-L976",
-            "comfy_execution/jobs.py#L23-L50"
+            "server.py#L337-356",
+            "server.py#L689-823"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "WebSocket /ws assigns a clientId, sends the current queue status, and on the first text frame of type feature_flags stores the client flags and replies with feature_flags.get_server_features. Progress is pushed as JSON progress plus binary preview frames.",
+          "claim": "The /ws WebSocket negotiates per-client feature_flags as the first message, then streams JSON events (status, executing, executed, progress, execution_start/cached/success/error) and binary frames for preview images (PREVIEW_IMAGE, UNENCODED_PREVIEW_IMAGE, PREVIEW_IMAGE_WITH_METADATA from protocol.BinaryEventTypes).",
           "sources": [
-            "server.py#L269-L327",
-            "protocol.py#L2-L6",
-            "main.py#L420-L447"
+            "server.py#L269-327",
+            "server.py#L1293-1397",
+            "protocol.py"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "With --enable-assets, register_assets_routes mounts /api/assets CRUD, content, tags, from-hash, seed, seed/status, seed/cancel, and prune. The module comment tells custom-node authors the assets API is not stable.",
+          "claim": "Core node set in nodes.py covers the SD1.x/SDXL workflow: CheckpointLoaderSimple, CLIPTextEncode, KSampler/KSamplerAdvanced, VAEEncode/VAEDecode(+Tiled), LoraLoader, ControlNetLoader/Apply, EmptyLatentImage, SaveImage/PreviewImage, LoadImage, and conditioning/latent/image transform nodes.",
           "sources": [
-            "app/assets/api/routes.py#L120-L134",
-            "app/assets/api/routes.py#L453-L467",
-            "app/assets/api/routes.py#L662-L709",
-            "app/assets/api/routes.py#L1033-L1117",
-            "app/assets/manager.py#L132-L166"
+            "nodes.py#L2068-2137",
+            "nodes.py#L1572-1658"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "UserManager serves GET/POST /users and userdata file APIs. Without --multi-user the only user is default. With --multi-user the user id is the comfy-user request header, checked against user/users.json. Names starting with __ are rejected as system users.",
+          "claim": "comfy_extras/ contributes ~130 node modules loaded by init_builtin_extra_nodes: upscale models, mask/compositing, model merging, SD3/Flux/Hunyuan/Wan/Qwen video+audio model support, 3D (load/save/mesh/gaussian splat), GLSL shaders, logic/loop/math utility nodes, and training nodes (nodes_train, nodes_dataset).",
           "sources": [
-            "app/user_manager.py#L36-L148",
-            "folder_paths.py#L154-L216"
+            "nodes.py#L2394-2552"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "SubgraphManager GET /global_subgraphs and GET /global_subgraphs/{id} merge custom-node subgraphs with every JSON file in blueprints/. CustomNodeManager GET /workflow_templates and GET /i18n expose example workflows and locale JSON shipped inside custom node folders.",
+          "claim": "comfy_api_nodes/ contains API nodes that call remote paid services (OpenAI, Anthropic, Gemini, Grok, Kling, Luma, ByteDance, ElevenLabs, Stability, etc.) authenticated through hidden AUTH_TOKEN_COMFY_ORG/API_KEY_COMFY_ORG extra_data keys; --disable-api-nodes blocks them and adds a restrictive CSP middleware.",
           "sources": [
-            "app/subgraph_manager.py#L92-L132",
-            "app/custom_node_manager.py#L92-L143"
+            "comfy_api_nodes/nodes_openai.py#L1-30",
+            "execution.py#L161",
+            "execution.py#L206-213",
+            "server.py#L200-243"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "ModelFileManager adds experimental listings at GET /experiment/models, GET /experiment/models/{folder}, and GET /experiment/models/preview/{folder}/{path_index}/{filename}. These sit beside the older GET /models routes.",
+          "claim": "User/file management features: UserManager adds /users CRUD and /userdata file endpoints (GET/POST/DELETE/move) gated by --multi-user; get_public_user_directory blocks '__'-prefixed system user dirs from HTTP access.",
           "sources": [
-            "app/model_manager.py#L28-L80"
+            "app/user_manager.py#L123-440",
+            "folder_paths.py#L154-216",
+            "comfy/cli_args.py#L219"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "InternalRoutes is mounted at /internal and is documented as frontend-only: GET /logs, GET /logs/raw, PATCH /logs/subscribe, GET /folder_paths, and GET /files/{directory_type} for output, input, or temp.",
+          "claim": "ModelFileManager adds experimental /experiment/models routes including a preview endpoint that extracts embedded preview images from model files; CustomNodeManager serves /workflow_templates and /i18n translation JSON built from loaded custom nodes.",
           "sources": [
-            "api_server/routes/internal/internal_routes.py#L8-L77",
-            "server.py#L1229"
+            "app/model_manager.py#L28-105",
+            "app/custom_node_manager.py#L92-141"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "--list-feature-flags prints CLI_FEATURE_FLAG_REGISTRY and exits before the server starts. Known flags are show_signin_button, enable_telemetry, and partner_run_gate_enabled. Core flags such as supports_preview_metadata and assets cannot be overwritten from the CLI.",
+          "claim": "The assets system (--enable-assets) registers uploads and generated outputs into a SQLite catalog with blake3 content hashes, runs background filesystem scans, and emits events through the server's send_sync sink.",
           "sources": [
-            "main.py#L7-L11",
-            "comfy_api/feature_flags.py#L20-L38",
-            "comfy_api/feature_flags.py#L105-L119"
+            "app/assets/manager.py#L22-101",
+            "server.py#L443-460",
+            "comfy/cli_args.py#L275"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "--enable-manager imports the optional comfyui_manager package, runs its prestartup, and can block custom nodes via should_be_disabled. If the package is missing, the flag is forced off and a pip command is logged.",
+          "claim": "Latent previews during sampling are produced by latent_preview.py with methods none/auto/latent2rgb/taesd chosen by --preview-method/--preview-size, streamed to the client as binary preview frames via the hijacked progress hook.",
           "sources": [
-            "main.py#L117-L137",
-            "main.py#L234-L236",
-            "main.py#L507-L509",
-            "nodes.py#L2375-L2378"
+            "latent_preview.py",
+            "comfy/cli_args.py#L122-137",
+            "main.py#L420-449"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Internal (frontend-only, unstable) endpoints are mounted as the /internal sub-app: /internal/logs, /internal/logs/raw and log-subscription handled by TerminalService.",
+          "sources": [
+            "api_server/routes/internal/internal_routes.py#L1-40"
           ],
           "kind": "evidence"
         }
       ]
     },
     "data_flow": {
-      "summary": "A client posts a prompt dict whose nodes reference class_type keys in NODE_CLASS_MAPPINGS. The server validates links, splits secrets out of extra_data, and heap-queues the job. The worker builds a DynamicPrompt, skips nodes whose outputs are still cached, and calls each node's FUNCTION with inputs resolved from upstream outputs. Model weights enter through folder_paths and comfy.sd; tensors stay on the model-management device policy; UI outputs and files are what cross back to the client. The database, when enabled, catalogs files after the fact and is not on the sampling path.",
+      "summary": "A prompt enters as JSON at POST /prompt, is validated into an executable output list, and becomes a heapq item on PromptQueue. The worker thread wraps it in DynamicPrompt (original + ephemeral + override layers) and builds an ExecutionList — a topological dissolve where nodes become ready when their link dependencies resolve. Each node call resolves inputs from cached upstream outputs, invokes the node's FUNCTION (mapped over input lists, async-aware), and stores outputs in signature-keyed caches; UI outputs and progress flow back over WebSocket via send_sync. Model weights flow through folder_paths resolvers into comfy.sd loaders that detect the architecture and wrap it in a ModelPatcher managed by model_management for VRAM offload. Results persist to the output dir (SaveImage) and the run record lands in the in-memory history dict (capped at 10000) plus the assets DB when enabled.",
       "claims": [
         {
-          "claim": "POST /prompt reads JSON, runs trigger_on_prompt, accepts an optional client prompt_id only if validate_job_id accepts it, and otherwise mints a uuid4. partial_execution_targets limits which nodes are executed.",
+          "claim": "Input boundary: POST /prompt -> trigger_on_prompt(on_prompt_handlers) -> number assignment -> node_replace_manager.apply_replacements -> execution.validate_prompt -> PromptQueue.put((number, prompt_id, prompt, extra_data, outputs_to_execute, sensitive)).",
           "sources": [
-            "server.py#L1075-L1111"
+            "server.py#L1075-1136",
+            "server.py#L1459-1470",
+            "execution.py#L1128-1282"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "Before queueing, node_replace_manager.apply_replacements rewrites class_types that are missing from NODE_CLASS_MAPPINGS when a NodeReplace mapping was registered. Then execution.validate_prompt returns validity, error, outputs_to_execute, and node_errors.",
+          "claim": "validate_prompt collects OUTPUT_NODE classes (optionally filtered by partial_execution_targets), recursively validates inputs (type matching via validate_node_input, min/max, combo membership, custom VALIDATE_INPUTS/validate_inputs hooks), detects dependency cycles, and validates loop boundaries via validate_loops.",
           "sources": [
-            "server.py#L1113-L1139",
-            "app/node_replace_manager.py#L61-L79",
-            "execution.py#L1128"
+            "execution.py#L846-1120",
+            "execution.py#L1163-1282",
+            "comfy_execution/validation.py"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "SENSITIVE_EXTRA_DATA_KEYS are auth_token_comfy_org and api_key_comfy_org. post_prompt pops them into a side channel so they are not stored in the history copy. prompt_worker copies them back into extra_data only for the duration of PromptExecutor.execute.",
+          "claim": "Execution loop: PromptExecutor.execute_async wraps everything in torch.inference_mode, builds DynamicPrompt + ExecutionList, seeds it with output node ids, then repeatedly calls stage_node_execution -> module-level execute() -> complete/unstage until the list empties.",
           "sources": [
+            "execution.py#L727-843",
+            "comfy_execution/graph.py#L212-387"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Per-node execution order inside execute(): check output cache -> get_input_data resolves each input link through execution_list.get_cache (missing -> mark_missing and lazy evaluation via check_lazy_status returns PENDING) -> instantiate/cache the node object in caches.objects -> get_output_data -> _async_map_node_over_list -> node FUNCTION.",
+          "sources": [
+            "execution.py#L438-565",
+            "execution.py#L163-235",
+            "execution.py#L251-327"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Intermediate results are cached by CacheSet: outputs cache uses CacheKeySetInputSignature (class_type + IS_CHANGED value + ancestor input signatures, folded via to_hashable) while objects cache uses CacheKeySetID (node_id, class_type); modes are CLASSIC/LRU/NONE/RAM_PRESSURE chosen by --cache-* flags.",
+          "sources": [
+            "execution.py#L113-159",
+            "comfy_execution/caching.py#L68-120",
+            "main.py#L319-339"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Node functions can return plain tuples, dicts with 'result'/'ui'/'expand', or V3 NodeOutput objects; 'expand' produces an ephemeral subgraph injected into DynamicPrompt.ephemeral_prompt and re-scheduled, with the node's final outputs resolved later from pending_subgraph_results.",
+          "sources": [
+            "execution.py#L359-422",
+            "execution.py#L578-612",
+            "comfy_execution/graph.py#L21-71",
+            "comfy_api/latest/_io.py#L2344"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Streaming output: nodes emit UI data via 'ui' dicts -> register_executed_outputs enriches them into asset references -> send_sync('executed', ...) to the client; sampler progress goes through comfy.utils.ProgressBar global hook -> send_sync('progress') + binary preview frames.",
+          "sources": [
+            "execution.py#L565-577",
+            "comfy_execution/asset_enrichment.py",
+            "main.py#L420-449",
+            "comfy/utils.py#L1292-1306"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Model loading path: folder_paths.get_full_path_or_raise resolves a filename inside a category's search dirs -> comfy.utils.load_torch_file reads safetensors/ckpt -> model_detection.model_config_from_unet fingerprints the state dict -> comfy.supported_models builds the model -> ModelPatcher wraps it -> load_models_gpu places it per VRAM policy.",
+          "sources": [
+            "folder_paths.py#L441-468",
+            "comfy/sd.py#L2132-2215",
+            "comfy/model_detection.py#L44-120",
+            "comfy/model_management.py#L939-1044"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Sampling path inside a node: KSampler.sample -> common_ksampler -> comfy.sample.prepare_noise (seeded) -> latent_preview.prepare_callback -> comfy.sample.sample -> comfy.samplers.KSampler.sample drives the denoise loop calling model.apply_model per sigma step.",
+          "sources": [
+            "nodes.py#L1572-1624",
+            "comfy/sample.py#L79-86",
+            "comfy/samplers.py#L1276-1443"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "History persistence: task_done() pops currently_running, strips the sensitive tuple element via process_item=remove_sensitive, and stores {prompt, outputs, status} in self.history keyed by prompt_id, evicting FIFO beyond MAXIMUM_HISTORY_SIZE=10000.",
+          "sources": [
+            "execution.py#L1284-1341",
+            "main.py#L366-372"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Auth-sensitive extra_data keys (auth_token_comfy_org, api_key_comfy_org) are popped into a separate `sensitive` dict at enqueue time, reattached only inside the worker, and injected into node inputs via hidden input plumbing (Hidden.auth_token_comfy_org / hidden AUTH_TOKEN_COMFY_ORG).",
+          "sources": [
+            "server.py#L1129-1134",
             "execution.py#L161",
-            "server.py#L1127-L1134",
-            "main.py#L350-L372"
+            "execution.py#L206-211",
+            "main.py#L356-359"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "PromptQueue.put heap-pushes (number, prompt_id, prompt, extra_data, outputs_to_execute, sensitive). A negative number, set when the client passes front, runs the job first. get() moves the item into currently_running under a lock.",
+          "claim": "File output boundary: SaveImage writes PNGs (with embedded prompt/workflow metadata unless --disable-metadata) into folder_paths.get_output_directory() with counter-suffixed filenames; LoadImage reads from the input directory through annotated_filepath/get_annotated_filepath resolvers.",
           "sources": [
-            "execution.py#L1297-L1314",
-            "server.py#L1081-L1134"
+            "nodes.py#L1660-1679",
+            "folder_paths.py#L255-270",
+            "folder_paths.py#L343-357"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "execute_async wraps the run in torch.inference_mode, builds DynamicPrompt, resets progress, and sets an IsChangedCache. CacheType defaults to RAM_PRESSURE unless --cache-classic, --cache-lru N, or --cache-none is set.",
+          "claim": "Asset enrichment: when enabled, AssetManager pauses its background scan during execution, registers uploaded/executed files into the DB catalog, and /view resolves blake3:<hash> filenames to asset paths via resolve_hash_to_path.",
           "sources": [
-            "execution.py#L113-L153",
-            "execution.py#L727-L768",
-            "main.py#L319-L339"
-          ],
-          "kind": "evidence"
-        },
-        {
-          "claim": "execution.execute resolves inputs with get_input_data, instantiates the node class into the object cache, honors check_lazy_status by returning PENDING, then get_output_data calls the node FUNCTION. Subgraph outputs and pending asyncio tasks also return PENDING and are resumed on a later turn.",
-          "sources": [
-            "execution.py#L438-L564",
-            "execution.py#L351-L359"
-          ],
-          "kind": "evidence"
-        },
-        {
-          "claim": "A typical text-to-image node chain is CheckpointLoaderSimple.load_checkpoint to CLIPTextEncode to EmptyLatentImage to KSampler.sample to VAEDecode to SaveImage.save_images. KSampler does not load weights itself.",
-          "sources": [
-            "nodes.py#L616-L637",
-            "nodes.py#L1572-L1624",
-            "nodes.py#L1660-L1719"
-          ],
-          "kind": "evidence"
-        },
-        {
-          "claim": "load_checkpoint_guess_config reads the state dict with comfy.utils.load_torch_file, detects the UNet via model_config_from_unet, picks unet dtype with model_management.unet_dtype, builds the model, and wraps it in CoreModelPatcher or ModelPatcher. CLIP and VAE are split out of the same checkpoint when present.",
-          "sources": [
-            "comfy/sd.py#L2132-L2299"
-          ],
-          "kind": "evidence"
-        },
-        {
-          "claim": "comfy.sample.sample builds comfy.samplers.KSampler and calls sampler.sample. That path prepares a CFGGuider and runs WrapperExecutor over outer_sample so model_options wrappers can intercept the denoise loop. The returned latent is moved to intermediate_device and intermediate_dtype.",
-          "sources": [
-            "comfy/sample.py#L79-L89",
-            "comfy/samplers.py#L1320-L1353"
-          ],
-          "kind": "evidence"
-        },
-        {
-          "claim": "SaveImage writes PNG files under folder_paths.get_output_directory using get_save_image_path. Unless --disable-metadata, the PNG text chunks store the prompt JSON and extra_pnginfo. The node returns a ui.images list of filename, subfolder, and type, which the executor sends as an executed websocket event.",
-          "sources": [
-            "nodes.py#L1660-L1719",
-            "comfy/cli_args.py#L214",
-            "execution.py#L565-L577"
-          ],
-          "kind": "evidence"
-        },
-        {
-          "claim": "On success, history_result holds ui outputs and meta. PromptQueue.task_done stores that under history[prompt_id] and drops the oldest entry once length exceeds MAXIMUM_HISTORY_SIZE of 10000. Nothing in task_done writes the history to disk.",
-          "sources": [
-            "execution.py#L826-L834",
-            "execution.py#L1321-L1341",
-            "execution.py#L1284"
-          ],
-          "kind": "evidence"
-        },
-        {
-          "claim": "When assets are enabled, register_executed_outputs catalogs output files during the node, and prompt_worker calls asset_manager.queue_output_scan after GC so the seeder walks the output root. Uploads through /upload/image also call asset_manager.register_upload.",
-          "sources": [
-            "execution.py#L573",
-            "main.py#L399-L409",
-            "server.py#L443-L449",
-            "app/assets/manager.py#L156-L166"
-          ],
-          "kind": "evidence"
-        },
-        {
-          "claim": "Hidden node inputs such as PROMPT and EXTRA_PNGINFO are filled from the prompt extra_data inside get_input_data. API nodes read auth_token_comfy_org and api_key_comfy_org from the V3 hidden inputs and send them only on requests to the Comfy API base URL.",
-          "sources": [
-            "execution.py#L163-L172",
-            "nodes.py#L1676-L1679",
-            "comfy_api_nodes/util/_helpers.py#L40-L78"
-          ],
-          "kind": "evidence"
-        },
-        {
-          "claim": "GET /view resolves a filename inside input, output, or temp, or a blake3: hash via resolve_hash_to_path. Dangerous content types are forced to an attachment octet-stream unless the request is an image-dest SVG.",
-          "sources": [
-            "server.py#L516-L662",
-            "folder_paths.py#L289-L323"
+            "main.py#L361-362",
+            "server.py#L524-531",
+            "app/assets/manager.py"
           ],
           "kind": "evidence"
         }
       ]
     },
     "behavior_traces": {
-      "summary": "Three flows cover how a process comes up, how one prompt becomes pixels, and how results are kept. Startup is single-threaded until the worker thread and the aiohttp loop split. The prompt path is a queue handoff from the event loop into that worker, which then runs the graph asynchronously inside asyncio.run. Persistence is split: pixels and metadata go to the output directory immediately, the job record stays in RAM, and the SQLite catalog is a best-effort index that can be rebuilt by scanning.",
+      "summary": "Traced flows: (1) startup from `python main.py` through arg parsing, env setup, prestartup scripts, node loading, DB init, route registration and server bind; (2) a prompt's journey from POST /prompt through validation, queueing, per-node execution, caching and WebSocket events; (3) model loading from a CheckpointLoaderSimple node through state-dict detection into a VRAM-managed ModelPatcher; (4) interrupt and memory-pressure handling; (5) image upload and /view retrieval with traversal guards.",
       "claims": [
         {
-          "claim": "Startup step 1: main sets HF_HUB_DISABLE_TELEMETRY and DO_NOT_TRACK, imports cuda_malloc, and on Windows with no device override sets CUDA_VISIBLE_DEVICES=0. It then may call comfy_aimdo.control.init before torch is imported.",
+          "claim": "Startup order: comfy.options.enable_args_parsing -> args parse -> setup_logger -> (optional) comfy_aimdo.control.init for DynamicVRAM -> apply_custom_paths (extra_model_paths.yaml, dir overrides) -> init_mime_types -> execute_prestartup_script over custom_nodes -> import execution/server/nodes -> start_comfyui: PromptServer(loop) -> init_extra_nodes -> set_cudnn_benchmark -> setup_database(init_db + asset_manager.startup) -> add_routes -> hijack_progress -> prompt_worker thread -> prompt_server.setup + run -> TCPSite bind on --listen/--port.",
           "sources": [
-            "main.py#L39-L81",
-            "main.py#L245-L247"
+            "main.py#L1-37",
+            "main.py#L183-237",
+            "main.py#L489-551",
+            "server.py#L1410-1457"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "Startup step 2: apply_custom_paths loads extra_model_paths.yaml and every --extra-model-paths-config file through utils.extra_config.load_extra_path_config, then applies --output-directory, --input-directory, and --user-directory onto folder_paths.",
+          "claim": "Prompt submission order: post_prompt -> request.json -> trigger_on_prompt -> client prompt_id validation via validate_job_id (canonical UUID) -> node_replace_manager.apply_replacements -> validate_prompt -> sensitive key extraction -> prompt_queue.put -> queue_updated() broadcasts status -> worker q.get pops the item.",
           "sources": [
-            "main.py#L140-L180",
-            "utils/extra_config.py#L6-L34"
+            "server.py#L1075-1147",
+            "comfy_execution/jobs.py#L29-60",
+            "execution.py#L1297-1314"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "Startup step 3: execute_prestartup_script walks each custom_nodes directory and execs prestartup_script.py via importlib, skipping .disabled folders and anything outside --whitelist-custom-nodes when --disable-all-custom-nodes is set.",
+          "claim": "Worker execution order: prompt_worker gets item -> asset_manager.pause_background_scan -> PromptExecutor.execute -> execute_async: set_preview_method -> interrupt_processing(False) -> execution_start msg -> torch.inference_mode -> DynamicPrompt + reset_progress_state -> caches.set_prompt/clean_unused -> execution_cached msg -> loop stage_node_execution/execute -> execution_success or handle_execution_error -> task_done stores history -> send 'executing' node=None.",
           "sources": [
-            "main.py#L183-L237"
+            "main.py#L344-384",
+            "execution.py#L730-843"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "Startup step 4: start_comfyui builds PromptServer, calls hook_breaker_ac10a0.save_functions, then asyncio_loop.run_until_complete(nodes.init_extra_nodes). That awaits init_public_apis, init_builtin_extra_nodes, init_builtin_api_nodes unless disabled, and init_external_custom_nodes. Functions are restored afterward and cuDNN benchmark policy is reapplied.",
+          "claim": "Single node step order inside execute(): dynprompt id mapping (real/display/parent) -> caches.outputs.get short-circuit -> get_input_data (links via execution_list.get_cache, hidden PROMPT/DYNPROMPT/EXTRA_PNGINFO/UNIQUE_ID injection) -> send 'executing' -> lazy check via check_lazy_status -> get_output_data -> _async_map_node_over_list (slices list inputs, asyncio.create_task for coroutine functions, ExecutionBlocker propagation) -> merge_result_data -> caches.outputs.set + execution_list.cache_update -> 'executed' event.",
           "sources": [
-            "main.py#L506-L521",
-            "nodes.py#L2574-L2586"
+            "execution.py#L438-661",
+            "execution.py#L251-349"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "Startup step 5: setup_database calls init_db and asset_manager.startup when SQLAlchemy imports. A locked database exits the process if --enable-assets is set. add_routes, hijack_progress, and the prompt_worker thread follow. --quick-test-for-ci then exits 0 before listen.",
+          "claim": "Interrupt trace: POST /interrupt -> nodes.interrupt_processing -> comfy.model_management.interrupt_current_processing(True) -> flag checked by throw_exception_if_processing_interrupted inside the progress hook and before_node_execution -> InterruptProcessingException caught in execute() -> handle_execution_error sends 'execution_interrupted'.",
           "sources": [
-            "main.py#L452-L532"
+            "server.py#L1163-1193",
+            "nodes.py#L48-52",
+            "main.py#L427",
+            "execution.py#L618-626",
+            "execution.py#L692-699"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "Startup step 6: start_all awaits prompt_server.setup, which opens an aiohttp ClientSession with no total timeout, then run gathers start_multi_address and publish_loop. --auto-launch opens a browser. On KeyboardInterrupt the finally block calls asset_manager.shutdown.",
+          "claim": "Checkpoint load trace: CheckpointLoaderSimple node -> comfy.sd.load_checkpoint_guess_config -> utils.load_torch_file -> model_detection.unet_prefix_from_state_dict + model_config_from_unet (state-dict key/shape fingerprinting) -> model_config classes from comfy.supported_models -> CLIP/VAE patchers built -> ModelPatcher returned as MODEL output -> later load_models_gpu/free_memory decide device placement and weight offloading.",
           "sources": [
-            "main.py#L412-L418",
-            "main.py#L535-L585",
-            "server.py#L1219-L1221"
+            "comfy/sd.py#L2132-2215",
+            "comfy/model_detection.py#L44-120",
+            "comfy/model_patcher.py#L340",
+            "comfy/model_management.py#L893-1044"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "Prompt step 1: post_prompt logs 'got prompt', assigns the queue number, validates the prompt id, applies node replacements, and awaits validate_prompt. Invalid prompts return HTTP 400 with error and node_errors and are not queued.",
+          "claim": "Image upload trace: POST /upload/image -> request.post() -> image_upload -> get_dir_by_type(input/temp/output) -> normpath join + commonpath containment check -> hash-compare dedup loop renaming 'name (i).ext' -> write file -> asset_manager.register_upload -> JSON {name, subfolder, type, asset?}.",
           "sources": [
-            "server.py#L1075-L1139"
+            "server.py#L370-462"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "Prompt step 2: prompt_worker blocks on PromptQueue.get, pauses the asset scanner, and calls PromptExecutor.execute, which is a synchronous asyncio.run of execute_async. On completion it task_done's the history, sends executing with node null, and may gc.collect plus soft_empty_cache.",
+          "claim": "WebSocket lifecycle: GET /ws -> ws.prepare -> sid from clientId query or uuid4 -> sockets[sid]=ws -> send 'status' with queue info -> first TEXT message may carry feature_flags (stored in sockets_metadata, server flags replied) -> all server->client traffic funnels through send_sync -> messages queue -> publish_loop -> send_json/send_bytes.",
           "sources": [
-            "main.py#L319-L409",
-            "execution.py#L727-L729"
+            "server.py#L269-327",
+            "server.py#L1375-1405",
+            "comfy_api/feature_flags.py"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "Prompt step 3: execute_async emits execution_start, notifies cache providers via on_prompt_start, marks cached nodes with execution_cached, and loops ExecutionList.stage_node_execution until the list is empty or a node returns FAILURE. Success emits execution_success.",
+          "claim": "OOM/error path: exception inside execute() -> formatted inputs captured -> comfy.model_management.is_oom check triggers unload_all_models and debug_memory_summary logging -> error_details {node_id, exception_message, exception_type, traceback, current_inputs} -> handle_execution_error -> 'execution_error' WebSocket message -> worker records status 'error' in history.",
           "sources": [
-            "execution.py#L730-L824",
-            "execution.py#L714-L725"
+            "execution.py#L627-656",
+            "execution.py#L686-712",
+            "main.py#L367-372"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "Prompt step 4 for sampling: KSampler.sample calls common_ksampler, which builds noise with comfy.sample.prepare_noise, optionally applies latent noise_mask, then comfy.sample.sample. The latent preview callback is latent_preview.prepare_callback, which reaches the progress hook installed by hijack_progress.",
+          "claim": "RAM-pressure caching behavior: with default RAM_PRESSURE cache, execute_async wires ram_release callback into memory_management.set_ram_cache_release_state; after each node it releases toward inactive headroom, computes shortfall vs virtual_memory_available, frees large intermediates then pins if needed.",
           "sources": [
-            "nodes.py#L1572-L1624",
-            "comfy/sample.py#L79-L84",
-            "main.py#L420-L449"
-          ],
-          "kind": "evidence"
-        },
-        {
-          "claim": "Interrupt path: POST /interrupt calls nodes.interrupt_processing. If a prompt_id is supplied it interrupts only when that id is in the running queue. POST /api/jobs/{job_id}/cancel uses PromptQueue.interrupt_if_running under the queue mutex so a late cancel cannot hit the next job. execute_async clears the flag at the start of every prompt.",
-          "sources": [
-            "server.py#L1163-L1193",
-            "server.py#L947-L972",
-            "execution.py#L1358-L1375",
-            "execution.py#L733"
-          ],
-          "kind": "evidence"
-        },
-        {
-          "claim": "Persistence path for an image: SaveImage.save_images computes the output path, encodes the tensor to uint8, writes a PNG, and returns ui images. The executor stores that in history. GET /history and GET /view read it back. Restarting the process drops history because it lives only on PromptQueue.",
-          "sources": [
-            "nodes.py#L1693-L1719",
-            "execution.py#L826-L834",
-            "execution.py#L1399-L1424",
-            "server.py#L1048-L1065"
-          ],
-          "kind": "inference"
-        },
-        {
-          "claim": "Persistence path for the asset catalog: setup_database migrates SQLite, AssetsEnabled.startup records hash-mode intent, and later scans roots models, input, and output. Migration 0007_record_content_split drops the old asset tables and tells the operator that tags, metadata, and job links were discarded. A pre-upgrade copy is kept at the .bkp path when that revision runs.",
-          "sources": [
-            "app/database/db.py#L200-L258",
-            "alembic_db/versions/0007_record_content_split.py#L1-L29",
-            "app/assets/manager.py#L140-L166"
+            "execution.py#L745-748",
+            "execution.py#L799-811",
+            "comfy_execution/caching.py#L1-66"
           ],
           "kind": "evidence"
         }
       ]
     },
     "testing_signals": {
-      "summary": "pytest is the only test runner. pytest.ini collects tests and tests-unit, adds the repo root to pythonpath, and defines inference and execution markers. tests-unit is large and CPU-oriented, with deep coverage of the asset catalog, path security, and pieces of execution. tests/execution boots a real server graph with testing nodes. Pixel-level inference tests are documented but not wired into the PR workflow, and the GPU workflow CI is manual or label-gated.",
+      "summary": "Testing is pytest-based and split into two trees: tests-unit (fast unit tests, run in CI on Linux/Windows/macOS with CPU torch) and tests (integration: execution tests that spawn a real server subprocess and drive it over WebSocket, and inference tests that run full workflows and compare generated images against a baseline directory). Markers 'inference' and 'execution' allow deselection. Coverage of the node library itself is thin — most tests target the execution engine, validation, caching, and server endpoints rather than model math.",
       "claims": [
         {
-          "claim": "pytest.ini sets testpaths to tests and tests-unit, addopts -s, and markers inference and execution so those can be deselected.",
+          "claim": "pytest.ini sets testpaths to both tests and tests-unit, registers 'inference' and 'execution' markers, and adds -s (no output capture); pythonpath=. makes the repo root importable.",
           "sources": [
-            "pytest.ini#L1-L9"
+            "pytest.ini#L1-9"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "tests-unit/README.md says install tests-unit/requirements.txt and run pytest tests-unit/. tests/README.md says inference tests need pytest, websocket-client==1.6.1, opencv-python==4.6.0.66, and scikit-image==0.21.0, then pytest tests/inference.",
+          "claim": "tests/execution/test_execution.py spins up the real server via subprocess.Popen([sys.executable, 'main.py', ...]), waits, connects a ComfyClient over websocket-client, submits prompt graphs built with GraphBuilder, and asserts on WS events and output images.",
           "sources": [
-            "tests-unit/README.md#L1-L8",
-            "tests/README.md#L1-L28"
+            "tests/execution/test_execution.py#L1-30",
+            "tests/execution/test_execution.py#L505-580"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "tests-unit/assets_test covers ingest, scanning, tags, hashing, uploads, and API routes. tests-unit/app_test covers user manager, database locking, and Alembic migrations including migration 0007. tests-unit/execution_test covers the execution list, cache providers, and nested loops. tests-unit/comfy_test covers model detection and folder paths.",
+          "claim": "tests/execution also covers async nodes, jobs API, preview method override, progress isolation, and the public API (test_public_api.py), with a testing_nodes helper package of custom nodes for the tests.",
           "sources": [
-            "tests-unit/app_test/test_migrations.py",
-            "tests-unit/execution_test/test_execution_list.py",
-            "tests-unit/comfy_test/model_detection_test.py",
-            "tests-unit/assets_test/test_uploads.py"
+            "tests/execution"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "tests-unit/security_test holds regression tests named for path traversal and userdata XSS: test_ghsa_779p_02_preview_traversal.py through test_ghsa_779p_06_inline_svg_image_dest.py. folder_paths_test and prompt_server_test cover system-user path blocking.",
+          "claim": "tests/inference/test_inference.py runs real diffusion workflows (ComfyGraph wrapper, KSampler imported from comfy.samplers) writing images to --output_dir; tests/compare performs quality regression by comparing directories, and conftest.py deliberately runs test_quality last.",
           "sources": [
-            "tests-unit/security_test/test_ghsa_779p_05_dangerous_content_types.py",
-            "tests-unit/folder_paths_test/system_user_test.py",
-            "tests-unit/prompt_server_test/system_user_endpoint_test.py"
+            "tests/inference/test_inference.py#L1-30",
+            "tests/conftest.py#L28-45",
+            "tests/README.md"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "tests/execution contains test_execution.py, test_async_nodes.py, test_jobs.py, test_preview_method.py, test_progress_isolation.py, and test_public_api.py, plus a testing_nodes pack that is loaded as custom nodes during the run.",
+          "claim": "tests-unit covers the execution engine (test_execution_list, validate_node_input, loop validation, nested loops, cache providers, reentry), server/user endpoints (prompt_server_test, system_user_endpoint_test), folder_paths, security (security_test dir), assets, and comfy internals — all CPU-only.",
           "sources": [
-            "tests/execution/test_execution.py",
-            "tests/execution/test_jobs.py",
-            "tests/execution/testing_nodes/testing-pack/__init__.py"
+            "tests-unit/execution_test",
+            "tests-unit/prompt_server_test",
+            "tests-unit/README.md"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "test-execution.yml runs on push and pull_request to main, master, and release/**. It installs CPU torch plus requirements.txt and tests-unit/requirements.txt on Python 3.12 and runs python -m pytest tests/execution --skip-timing-checks. The job sets continue-on-error true on ubuntu-latest, windows-latest, and macos-latest.",
+          "claim": "CI: .github/workflows/test-unit.yml runs `pytest tests-unit` on ubuntu-latest/windows-2022/macos-latest with Python 3.12 and CPU-only torch; it is marked continue-on-error, so unit failures do not block merges.",
           "sources": [
-            ".github/workflows/test-execution.yml#L3-L31"
+            ".github/workflows/test-unit.yml"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "test-ci.yml is workflow_dispatch only. The push trigger is commented out. It calls comfy-org/comfy-action on self-hosted Linux for Python 3.10, 3.11, and 3.12 with stable torch, plus a nightly job, using secrets.GCS_SERVICE_ACCOUNT_JSON.",
+          "claim": "Additional workflows: test-execution.yml and test-ci.yml run the execution/integration suites, test-launch.yml smoke-tests server launch (--quick-test-for-ci exits after startup), and ruff.yml lints with the rule set pinned in pyproject.toml.",
           "sources": [
-            ".github/workflows/test-ci.yml#L4-L50",
-            ".github/workflows/test-ci.yml#L74-L99"
+            ".github/workflows/test-execution.yml",
+            ".github/workflows/test-ci.yml",
+            "comfy/cli_args.py#L211",
+            "pyproject.toml#L14-30"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "pullrequest-ci-run.yml runs the same GPU action only when a pull_request_target is labeled Run-CI-Test, with use_prior_commit true, across macOS, Linux, and Windows and Python 3.9 through 3.12. It comments a link to ci.comfy.org.",
+          "claim": "Test deps are separate: tests-unit/requirements.txt plus websocket-client/opencv/scikit-image for integration tests per tests/README.md; inference tests require downloaded models, so they are not runnable in plain CI.",
           "sources": [
-            ".github/workflows/pullrequest-ci-run.yml#L1-L53"
+            "tests-unit/requirements.txt",
+            "tests/README.md",
+            ".github/workflows/test-unit.yml"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "comfy_api_nodes unit coverage is narrow: tests-unit/comfy_api_nodes_test has audio and image conversion tests, a cloud test, and a Gemini response-image test. Most partner node HTTP clients have no unit test in that directory.",
+          "claim": "No coverage tooling, no mocked-HTTP layer for aiohttp routes, and no tests under comfy/ for individual model implementations — model correctness is only exercised indirectly through the heavyweight inference suite.",
           "sources": [
-            "tests-unit/comfy_api_nodes_test/gemini_response_images_test.py",
-            "tests-unit/comfy_api_nodes_test/comfy_cloud_test.py"
+            "pytest.ini",
+            "tests",
+            "tests-unit"
           ],
-          "kind": "evidence"
+          "kind": "inference"
         },
         {
-          "claim": "Model forward tests that do exist under tests-unit/comfy_test are concentrated on SeedVR2, SenseNova, MiniMax H3, and a VAE tiled-decode case, not on the full ldm family under comfy/ldm.",
+          "claim": "A --quick-test-for-ci flag in main.py exits right after the worker thread starts, which is what test-launch.yml uses to verify the server boots cleanly.",
           "sources": [
-            "tests-unit/comfy_test/test_seedvr2_model.py",
-            "tests-unit/comfy_test/test_minimax_h3_model.py",
-            "tests-unit/comfy_test/test_vae_decode_tiled_nested.py"
+            "main.py#L529-532",
+            "comfy/cli_args.py#L211"
           ],
           "kind": "evidence"
         }
       ]
     },
     "risk_map": {
-      "summary": "The published threat model is a localhost process whose operator trusts everyone who can reach the port and trusts every installed custom node. The dangerous edges are the unauthenticated HTTP API if --listen is opened, arbitrary code execution from custom nodes, partner-node credential handling, and file serving from output and userdata. Several guards exist and are regression-tested. The queue is volatile, the asset migration 0007 is destructive, and execution CI is allowed to fail without failing the check.",
+      "summary": "Biggest risks: there is no authentication on the HTTP API, custom nodes are arbitrary code executed at startup, and model file formats include pickle-capable extensions. The codebase has accumulated scattered path-traversal and XSS mitigations that must be replicated at every new file endpoint. The execution engine is a single shared mutable state machine (server.client_id, last_node_id, module-level registries) so concurrent or reentrant use is fragile. Memory management and the aimdo/DynamicVRAM integration contain version-dependent protocol fallbacks that are easy to break.",
       "claims": [
         {
-          "claim": "SECURITY.md states the server binds to 127.0.0.1 by default, custom nodes are arbitrary Python and out of vulnerability scope, and bugs that require --listen or a non-default exposure are not treated as vulnerabilities. Reports go to GitHub private advisories.",
+          "claim": "No authentication exists on any route: default bind is 127.0.0.1, but --listen with no value exposes 0.0.0.0,:: — an unauthenticated API that can queue prompts, read/write userdata files, upload images, and hit /internal/logs.",
           "sources": [
-            "SECURITY.md#L1-L35"
+            "comfy/cli_args.py#L63",
+            "server.py#L1075-1147",
+            "app/user_manager.py#L334-440",
+            "api_server/routes/internal/internal_routes.py#L20-40"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "There is no session, password, or token check on PromptServer routes. --multi-user only trusts the comfy-user header against users.json. Anyone who can reach the port can queue prompts and read output files.",
+          "claim": "Custom nodes are arbitrary Python: execute_prestartup_script exec_modules every custom_nodes/*/prestartup_script.py before the server starts, and load_custom_node exec_modules each module — remote-code-execution by design; mitigations are only --disable-all-custom-nodes/--whitelist-custom-nodes and optional comfyui_manager policy.",
           "sources": [
-            "server.py#L215-L263",
-            "app/user_manager.py#L59-L70",
-            "SECURITY.md#L5-L11"
+            "main.py#L183-237",
+            "nodes.py#L2246-2266",
+            "nodes.py#L2365-2382"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "load_custom_node and execute_prestartup_script both exec_module whatever Python is on disk under the custom_nodes folders. That is the intended extension mechanism and also remote-code-execution if an attacker can write those files or if the user installs an untrusted pack.",
+          "claim": "supported_pt_extensions includes .ckpt/.pt/.bin/.pkl — formats that can embed pickle payloads; loading relies on comfy.utils.load_torch_file's safe handling, so changes there are security-critical.",
           "sources": [
-            "nodes.py#L2246-L2266",
-            "main.py#L187-L219"
+            "folder_paths.py#L10"
+          ],
+          "kind": "inference"
+        },
+        {
+          "claim": "Path traversal defenses are reimplemented per endpoint: /view checks '..' and leading '/', subfolder joins use os.path.commonpath containment, and folder_paths.is_within_directory/get_annotated_filepath add realpath-based containment — any new file-serving endpoint must repeat this correctly.",
+          "sources": [
+            "server.py#L536-549",
+            "server.py#L410-415",
+            "folder_paths.py#L326-357"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "When --listen is passed with no address it binds 0.0.0.0 and ::. --enable-cors-header replaces the origin check with an explicit CORS middleware that reflects the given origin, or * if the flag is bare. The default middleware is create_origin_only_middleware, which 403s cross-site Sec-Fetch-Site and mismatched Host versus Origin on loopback.",
+          "claim": "Stored-XSS mitigation is centralized in folder_paths.DANGEROUS_CONTENT_TYPES/is_dangerous_content_type with a Sec-Fetch-Dest:image carve-out for SVG; endpoints serving user content must route dangerous types to octet-stream or they reintroduce XSS.",
           "sources": [
-            "comfy/cli_args.py#L63-L67",
-            "server.py#L115-L129",
-            "server.py#L159-L243"
+            "folder_paths.py#L273-323"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "API credentials travel in prompt extra_data. They are stripped before history is stored, but they are present in the worker and are attached as Authorization Bearer or X-API-KEY by get_auth_header. default_base_url is --comfy-api-base, default https://api.comfy.org.",
+          "claim": "origin_only_middleware is an admitted partial fix for DNS-rebinding/cross-site POSTs to a loopback server ('the proper fix would be to add a cookie'): it 403s Sec-Fetch-Site:cross-site and Host/Origin hostname mismatches only when Host resolves to loopback.",
           "sources": [
-            "execution.py#L161",
-            "comfy_api_nodes/util/_helpers.py#L40-L78",
-            "comfy/cli_args.py#L264-L269"
+            "server.py#L159-197"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "File serving is contained by is_within_directory and realpath, by rejecting leading slashes and .. in /view, and by forcing HTML, JS, CSS, SVG, and XML content types to download. tests-unit/security_test locks those behaviors in. Upload paths also reject commonpath escapes.",
+          "claim": "Shared mutable globals: server.client_id and last_node_id are single-slot fields on PromptServer set from extra_data of whichever prompt is running, and NODE_CLASS_MAPPINGS is a module-level dict mutated by every extension — one concurrently executing prompt or a misbehaving custom node can corrupt routing/display state.",
           "sources": [
-            "folder_paths.py#L289-L357",
-            "server.py#L414-L415",
-            "server.py#L541-L658",
-            "tests-unit/security_test/test_ghsa_779p_06_inline_svg_image_dest.py"
+            "server.py#L264-267",
+            "execution.py#L736-739",
+            "nodes.py#L2295-2303"
+          ],
+          "kind": "inference"
+        },
+        {
+          "claim": "comfy_aimdo protocol drift is handled by chained TypeError fallbacks (0.4.9/0.4.10 signatures) in main.py; silent wrong-version behavior is a real hazard since the fallbacks catch TypeError broadly.",
+          "sources": [
+            "main.py#L71-81",
+            "main.py#L278-281"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "GET /internal/folder_paths returns every configured model directory, and GET /internal/logs returns recent log lines. They share the same unauthenticated app as the public routes, mounted as a subapp at /internal.",
+          "claim": "The queue item is a positional tuple where index 5 is `sensitive` extra data; _remove_sensitive_from_queue and the remove_sensitive lambda both rely on tuple position, so reordering the tuple silently leaks auth tokens into queue/history responses.",
           "sources": [
-            "api_server/routes/internal/internal_routes.py#L21-L52",
-            "server.py#L1229"
+            "server.py#L69-71",
+            "main.py#L356-372",
+            "execution.py#L161"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "Alembic revision 0007_record_content_split drops asset tables and deletes tags with no data migration. db.py warns at startup when that revision is applied and keeps the previous file as a .bkp backup.",
+          "claim": "hook_breaker_ac10a0.py is a manual save/restore shim that protects comfy.model_management.cast_to from being hooked by custom nodes — evidence that custom-node monkeypatching has caused production incidents and protection is opt-in per function.",
           "sources": [
-            "alembic_db/versions/0007_record_content_split.py#L1-L29",
-            "app/database/db.py#L200-L258"
+            "hook_breaker_ac10a0.py#L1-17",
+            "main.py#L511-521"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "PromptQueue.history and the pending heap are process memory. A crash or restart loses queued and completed job records even though PNG files remain on disk. Two processes on one database file fail the filelock and, with --enable-assets, exit.",
+          "claim": "DB init kills the process on lock contention only when --enable-assets is set; otherwise it logs and continues with a degraded assets layer — divergence between code paths makes failures mode-dependent.",
           "sources": [
-            "execution.py#L1286-L1341",
-            "app/database/db.py#L123-L139",
-            "main.py#L460-L474"
+            "main.py#L452-486",
+            "app/database/db.py#L123-139"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "FrontendManager.init_frontend_unsafe, when --front-end-version is not the built-in default, GETs the GitHub releases API and downloads a zip into the custom frontends directory. The default path does not download; it uses the installed pip package.",
+          "claim": "Alembic migration 0007_record_content_split is explicitly destructive: upgrading through it discards the prior asset catalog (tags, metadata, previews, renames) keeping only a .bkp file.",
           "sources": [
-            "app/frontend_management.py#L128-L148",
-            "app/frontend_management.py#L355-L436",
-            "comfy/cli_args.py#L225-L240"
+            "app/database/db.py#L200-258"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "Checkpoint and .pt loading goes through comfy.utils.load_torch_file. SECURITY.md explicitly declines torch.load issues on PyTorch versions older than what the project ships. supported_pt_extensions includes .ckpt, .pt, .pt2, .bin, .pth, .safetensors, .pkl, and .sft.",
+          "claim": "API nodes make outbound calls to dozens of paid third-party services using the user's comfy-org token; --disable-api-nodes exists as the kill switch and also adds a strict CSP header, implying these nodes are treated as the network-risk boundary.",
           "sources": [
-            "comfy/sd.py#L2132-L2134",
-            "folder_paths.py#L10",
-            "SECURITY.md#L27-L29"
-          ],
-          "kind": "evidence"
-        },
-        {
-          "claim": "test-execution.yml continue-on-error true means a failing tests/execution job does not fail the GitHub check. Combined with test-ci being manual, graph regressions can merge without a required GPU or even a required CPU execution signal.",
-          "sources": [
-            ".github/workflows/test-execution.yml#L11-L14",
-            ".github/workflows/test-ci.yml#L4-L17"
-          ],
-          "kind": "evidence"
-        },
-        {
-          "claim": "app/database/models.py still says the ORM models belong there but defines only Base. The real tables are Asset, AssetContent, AssetMeta, AssetTag, Tag, and AssetSystemState in app/assets/database/models.py. Agents that edit the empty module will not change the catalog.",
-          "sources": [
-            "app/database/models.py#L14-L30",
-            "app/assets/database/models.py#L36-L188"
+            "comfy_api_nodes",
+            "comfy/cli_args.py#L217",
+            "server.py#L200-243"
           ],
           "kind": "evidence"
         }
       ]
     },
     "extension_points": {
-      "summary": "New behavior is expected to arrive as a node class, not as a new server route. V1 packs export NODE_CLASS_MAPPINGS. V3 packs export an async comfy_entrypoint that returns a ComfyExtension. Built-in extras are an allowlist; API nodes are a filename glob; third-party nodes are whatever sits in the custom_nodes folders. Smaller hooks exist for path config, node replacements, feature flags, cache providers, and the versioned comfy_api facade.",
+      "summary": "ComfyUI's primary extension mechanism is the custom_nodes directory scanned at startup: V1 extensions export NODE_CLASS_MAPPINGS/NODE_DISPLAY_NAME_MAPPINGS dicts (and optional WEB_DIRECTORY for frontend JS), while V3 extensions expose a comfy_entrypoint() returning a ComfyExtension whose get_node_list() yields ComfyNode classes with declarative Schemas. Secondary hooks: prestartup_script.py per package, server.on_prompt_handlers for prompt mutation, custom aiohttp routes via PromptServer.instance.routes, extra model paths via yaml config, progress handlers, cache providers, and node replacement rules.",
       "claims": [
         {
-          "claim": "load_custom_node accepts either a module-level NODE_CLASS_MAPPINGS dict or a callable comfy_entrypoint. V3 nodes are registered under schema.node_id from GET_SCHEMA. Core names passed in the ignore set cannot be overwritten by later packs.",
+          "claim": "V1 node contract: a module in custom_nodes/ exporting NODE_CLASS_MAPPINGS {name: class} where each class defines INPUT_TYPES (required/optional/hidden), RETURN_TYPES, FUNCTION (method name), CATEGORY; OUTPUT_NODE=True makes it an execution target; registered into the global registry by load_custom_node.",
           "sources": [
-            "nodes.py#L2246-L2332",
-            "nodes.py#L2357-L2381"
+            "nodes.py#L2246-2304",
+            "nodes.py#L56-77",
+            "custom_nodes/example_node.py.example"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "comfy_extras/nodes_flux.py is the V3 shape: async def comfy_entrypoint returns a FluxExtension. init_builtin_extra_nodes is the registration allowlist for that directory.",
+          "claim": "V3 node contract: modules export comfy_entrypoint() (sync or async) returning a ComfyExtension; get_node_list() returns io.ComfyNode subclasses whose GET_SCHEMA() provides node_id, inputs/outputs as typed Input/Output objects, hidden flags, and behavior flags (is_output_node, not_idempotent, enable_expand, accept_all_inputs, loop_boundary).",
           "sources": [
-            "comfy_extras/nodes_flux.py#L318",
-            "nodes.py#L2394-L2549"
+            "nodes.py#L2305-2335",
+            "comfy_api/latest/_io.py#L1704-1780",
+            "comfy_api/latest/_io.py#L2296"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "Third-party nodes live in folders registered under folder_paths custom_nodes, defaulting to <base>/custom_nodes. A directory named with a .disabled suffix is skipped. prestartup_script.py runs earlier than node import. custom_nodes/example_node.py.example is the in-repo sample.",
+          "claim": "Frontend extension point: WEB_DIRECTORY module attr or pyproject.toml [tool.comfy] web dir registers a static JS dir served at /extensions/<name>; /extensions endpoint enumerates all JS for the frontend to import.",
           "sources": [
-            "folder_paths.py#L45",
-            "nodes.py#L2344-L2373",
-            "main.py#L198-L214"
+            "nodes.py#L2270-2292",
+            "server.py#L356-368",
+            "server.py#L1245-1247"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "A custom node can serve static JS by setting WEB_DIRECTORY, or by declaring tool.comfy.web in pyproject.toml, which config_parser.extract_node_configuration reads. Both paths fill nodes.EXTENSION_WEB_DIRS, and the server mounts them at /extensions/<name>.",
+          "claim": "Per-package prestartup hook: any custom_nodes/<pkg>/prestartup_script.py is exec'd before node loading, letting packages patch the environment early (used e.g. for dependency installs).",
           "sources": [
-            "nodes.py#L2270-L2292",
-            "server.py#L1245-L1247",
-            "comfy_config/config_parser.py#L1-L12"
+            "main.py#L183-237"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "extra_model_paths.yaml maps folder keys such as checkpoints, loras, and diffusion_models onto extra directories. load_extra_path_config calls folder_paths.add_model_folder_path. is_default inserts the path at the front of the search list.",
+          "claim": "Prompt mutation hook: PromptServer.add_on_prompt_handler registers callables run by trigger_on_prompt on every POST /prompt body before validation (exceptions are logged and skipped).",
           "sources": [
-            "extra_model_paths.yaml.example#L1-L40",
-            "utils/extra_config.py#L6-L34",
-            "folder_paths.py#L373-L389"
+            "server.py#L1459-1470",
+            "server.py#L1079"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "Node authors register replacements through ComfyAPI_latest.NodeReplacement.register, which calls PromptServer.instance.node_replace_manager.register. apply_replacements only rewrites nodes whose class_type is absent from NODE_CLASS_MAPPINGS.",
+          "claim": "HTTP route extension: custom nodes can append to PromptServer.instance.routes (the same RouteTableDef), and every added route is automatically mirrored under /api by add_routes.",
           "sources": [
-            "comfy_api/latest/__init__.py#L18-L32",
-            "app/node_replace_manager.py#L29-L69"
+            "server.py#L262-267",
+            "server.py#L1236-1243"
+          ],
+          "kind": "inference"
+        },
+        {
+          "claim": "Model path extension: extra_model_paths.yaml (example in repo root) and --extra-model-paths-config call utils.extra_config.load_extra_path_config which feeds folder_paths.add_model_folder_path to add search dirs per category.",
+          "sources": [
+            "main.py#L140-149",
+            "utils/extra_config.py",
+            "extra_model_paths.yaml.example",
+            "folder_paths.py#L373-389"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "Public Python API versions are registered in comfy_api/version_list.py as ComfyAPI_latest, ComfyAPIAdapter_v0_0_2, and ComfyAPIAdapter_v0_0_1. init_public_apis wraps each in ComfyAPIWithVersion. The latest class exposes execution.set_progress, caching, and node replacement.",
+          "claim": "Execution hooks for nodes: IS_CHANGED/fingerprint_inputs controls cache reuse; check_lazy_status marks required inputs for lazy evaluation; VALIDATE_INPUTS/validate_inputs custom-validates; ExecutionBlocker short-circuits branches; GraphBuilder lets a node emit an 'expand' subgraph.",
           "sources": [
-            "comfy_api/version_list.py#L1-L10",
-            "nodes.py#L2566-L2575",
-            "comfy_api/latest/__init__.py#L18-L49"
+            "execution.py#L64-105",
+            "execution.py#L503-522",
+            "execution.py#L884-893",
+            "comfy_execution/graph_utils.py"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "comfy_execution.cache_provider.register_cache_provider adds a CacheProvider. PromptExecutor._notify_prompt_lifecycle calls on_prompt_start and on_prompt_end when any provider is registered. Output caches are built with enable_providers=True.",
+          "claim": "Cache providers: comfy_execution/cache_provider.py exposes _get_cache_providers()/_has_cache_providers and PromptExecutor calls provider.on_prompt_start/on_prompt_end around each run — an external cache persistence seam.",
           "sources": [
-            "comfy_execution/cache_provider.py#L18-L45",
-            "execution.py#L139-L149",
-            "execution.py#L714-L725"
+            "comfy_execution/cache_provider.py",
+            "execution.py#L714-725"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "CLI feature flags are added by extending CLI_FEATURE_FLAG_REGISTRY. --feature-flag KEY=VALUE is parsed in _parse_cli_feature_flags and merged into SERVER_FEATURE_FLAGS unless the key is already a core flag.",
+          "claim": "Progress reporting is extensible via add_progress_handler in comfy_execution/progress.py; WebUIProgressHandler is the built-in implementation forwarding to the websocket client.",
           "sources": [
-            "comfy_api/feature_flags.py#L20-L38",
-            "comfy_api/feature_flags.py#L78-L119"
+            "comfy_execution/progress.py",
+            "execution.py#L753-754"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "New partner nodes are picked up automatically if the file matches comfy_api_nodes/nodes_*.py and exports NODE_CLASS_MAPPINGS or comfy_entrypoint. HTTP calls are supposed to go through comfy_api_nodes.util.client.ApiEndpoint and sync_op, which attach auth, idempotency, and polling.",
+          "claim": "Feature flags: comfy_api/feature_flags.py maintains CLI_FEATURE_FLAG_REGISTRY (--list-feature-flag dumps it) and per-connection negotiation lets clients declare capabilities like supports_preview_metadata that change server behavior.",
           "sources": [
-            "nodes.py#L2555-L2564",
-            "comfy_api_nodes/util/client.py#L45-L81",
-            "comfy_api_nodes/util/client.py#L180"
+            "comfy_api/feature_flags.py",
+            "main.py#L7-11",
+            "main.py#L436-447"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "Reusable workflow JSON dropped into blueprints/*.json is loaded by SubgraphManager.get_blueprint_subgraphs and served from GET /global_subgraphs without a code change. Custom-node example_workflows directories are a second source.",
+          "claim": "Comfy API versioning seam: comfy_api/version_list.supported_versions are registered through register_versions(ComfyAPIWithVersion) in init_public_apis, letting custom nodes target a stable versioned API surface (v0_0_1, v0_0_2, latest).",
           "sources": [
-            "app/subgraph_manager.py#L92-L113",
-            "app/custom_node_manager.py#L94-L138"
+            "nodes.py#L2566-2575",
+            "comfy_api/version_list.py",
+            "comfy_api"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "script_examples/basic_api_example.py and websockets_api_example.py are the supported external-client samples. They post the same prompt payload the frontend posts, including the optional api_key_comfy_org extra_data field.",
+          "claim": "NodeReplaceManager rewrites submitted prompt graphs (apply_replacements is invoked in post_prompt before validation) — a server-side node-substitution extension point.",
           "sources": [
-            "script_examples/basic_api_example.py#L103",
-            "server.py#L1075-L1134"
+            "server.py#L1113",
+            "app/node_replace_manager.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "comfyui_manager is an optional pip-installed extension enabled by --enable-manager that adds its own middleware, prestartup, and node-load policy hooks (should_be_disabled).",
+          "sources": [
+            "main.py#L117-137",
+            "server.py#L245-246",
+            "nodes.py#L2375-2378"
           ],
           "kind": "evidence"
         }
       ]
     },
     "agent_handoff": {
-      "summary": "Edit the narrowest owner. Nodes and model math do not belong in server.py, and workflow or user ids do not belong in execution.py. Read AGENTS.md before any core change: it bans new network calls, new inference-mode wrappers, new dependencies, and silent dtype fallbacks. Preserve node class names and the prompt JSON shape. Run the unit tests that sit next to the code you touched, and do not assume the GPU workflow CI will catch a regression.",
+      "summary": "AGENTS.md is unusually prescriptive and is the first file to read: it demands minimal diffs, no new dependencies, no outbound network calls in core, strict layer boundaries (execution.py must not learn API/persistence concepts), no torch.no_grad wrappers (inference_mode already wraps execution), and reuse of comfy.ops/quant_ops/Comfy Kitchen optimized ops for model code. Read main.py -> server.py -> execution.py -> nodes.py -> folder_paths.py -> comfy/cli_args.py to understand any user-facing change. Tests: pytest tests-unit for fast checks; tests/execution needs a spawned server; tests/inference needs real models. Watch the traps: import-time side effects everywhere, tuple-indexed queue items, three different node ids (real/display/ephemeral), and signature-based caching that silently reuses outputs.",
       "claims": [
         {
-          "claim": "AGENTS.md is the engineering contract: smallest diff, no new dependencies, no core internet calls, no torch.no_grad or torch.inference_mode additions, no model freeze toggles, operations is never None, and model detection must only use the first linear-weight dimension.",
+          "claim": "AGENTS.md mandates: smallest possible diff, no new dependencies, no internet requests from core ComfyUI (no telemetry/upload/update-check code paths), and aggressive deletion of dead compat code.",
           "sources": [
             "AGENTS.md"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "An agent changing the prompt lifecycle should read server.py post_prompt, execution.py PromptExecutor.execute_async and execution.execute, and main.py prompt_worker, in that order. Do not thread workflow ids or frontend ids into execution.py.",
+          "claim": "AGENTS.md architecture rule: keep layer boundaries — execution.py consumes the prompt graph and must not know workflow/frontend/persistence ids; fix leaks with caller-side mapping or narrow interfaces rather than passing context objects through.",
           "sources": [
-            "server.py#L1075-L1139",
-            "execution.py#L438-L447",
-            "execution.py#L727-L789",
-            "main.py#L319-L362"
-          ],
-          "kind": "evidence"
-        },
-        {
-          "claim": "An agent adding a built-in node should copy a nearby comfy_extras module and append its filename to init_builtin_extra_nodes. Putting the file in the directory alone does not load it. V3 nodes use comfy_entrypoint and io.ComfyNode rather than a new NODE_CLASS_MAPPINGS entry in nodes.py.",
-          "sources": [
-            "nodes.py#L2394-L2552",
-            "comfy_extras/nodes_flux.py#L318",
-            "nodes.py#L2305-L2331"
-          ],
-          "kind": "evidence"
-        },
-        {
-          "claim": "An agent changing checkpoint loading should start at CheckpointLoaderSimple.load_checkpoint, then comfy.sd.load_state_dict_guess_config and model_detection.model_config_from_unet. Do not add a model-specific branch to a shared helper when only one caller needs it.",
-          "sources": [
-            "nodes.py#L616-L637",
-            "comfy/sd.py#L2199-L2248",
-            "comfy/model_detection.py#L1313-L1321"
-          ],
-          "kind": "evidence"
-        },
-        {
-          "claim": "Path and file changes must keep using folder_paths.get_full_path, get_annotated_filepath, and is_within_directory. Combo widget values are not a security boundary. System user directories use the __ prefix and get_public_user_directory returns None for them.",
-          "sources": [
-            "folder_paths.py#L191-L216",
-            "folder_paths.py#L326-L357",
-            "folder_paths.py#L441-L468"
-          ],
-          "kind": "evidence"
-        },
-        {
-          "claim": "Do not add a second place that stores auth_token_comfy_org or api_key_comfy_org. The strip list is SENSITIVE_EXTRA_DATA_KEYS. History and /queue responses must keep going through the sensitive-key removal.",
-          "sources": [
-            "execution.py#L161",
-            "server.py#L69",
-            "server.py#L1127-L1134"
-          ],
-          "kind": "evidence"
-        },
-        {
-          "claim": "The asset HTTP API is explicitly unstable. app/assets/api/routes.py tells custom-node authors not to depend on it. Schema changes also require an Alembic revision under alembic_db/versions, and revision 0007 already discarded catalog data once.",
-          "sources": [
-            "app/assets/api/routes.py#L120-L124",
-            "alembic_db/versions/0007_record_content_split.py#L1-L16",
-            "app/database/db.py#L54-L63"
-          ],
-          "kind": "evidence"
-        },
-        {
-          "claim": "Torch must not be imported before the warning in main.py around the 'Main code' section. Custom nodes that import torch at module import are tolerated later, but core import order before that line is a known footgun.",
-          "sources": [
-            "main.py#L240-L247"
-          ],
-          "kind": "evidence"
-        },
-        {
-          "claim": "execute_async already enters torch.inference_mode for the whole prompt. Adding another inference-mode wrapper inside a model or node violates AGENTS.md and can break any training or gradient path that temporarily disables the global mode.",
-          "sources": [
-            "execution.py#L750-L751",
             "AGENTS.md"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "After a node-execution change, run pytest tests-unit/execution_test and, if the public prompt or jobs contract moved, pytest tests/execution. Asset changes should run pytest tests-unit/assets_test and tests-unit/app_test. Path changes should run tests-unit/security_test and tests-unit/folder_paths_test.",
+          "claim": "AGENTS.md model rules: never add torch.no_grad/inference_mode wrappers (execution is already inside torch.inference_mode), never add freeze/trainability toggles, prefer existing optimized ops in comfy.ops/comfy.quant_ops/Comfy Kitchen, and DiT models must tolerate non-patch-multiple latents via pad_to_patch_size.",
           "sources": [
-            "pytest.ini#L1-L9",
-            "tests-unit/README.md#L7-L8",
-            ".github/workflows/test-execution.yml#L28-L30"
+            "AGENTS.md",
+            "execution.py#L751"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "init_external_custom_nodes inserts the comfy/ directory at the front of sys.path so old custom nodes can import helpers unqualified. Renaming a module that those nodes import as a bare name will break packs that are not in this repo.",
+          "claim": "Import order is load-bearing: torch must not be imported before main.py's late import block (it warns if 'torch' is in sys.modules), which is why ExecutionBlocker lives in comfy_execution/graph_utils.py rather than graph.py — keep heavy imports out of modules parsed early.",
           "sources": [
-            "nodes.py#L2354-L2355"
+            "main.py#L245-261",
+            "comfy_execution/graph.py#L9-10"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "Windows startup forces CUDA_VISIBLE_DEVICES=0 unless --cuda-device, --default-device, or the env var is already set. A change that assumes multi-GPU visibility on Windows by default will not match what users actually run.",
+          "claim": "The args singleton from comfy.cli_args is parsed at import time and read by folder_paths at import time to fix base_path/models_dir — tests and embedding code must control argv or env carefully; comfy.options.enable_args_parsing() is the gate.",
           "sources": [
-            "main.py#L46-L53"
+            "comfy/cli_args.py#L61-64",
+            "folder_paths.py#L14-23",
+            "main.py#L1-4"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Queue tuple layout is positional and load-bearing: (number, prompt_id, prompt, extra_data, outputs_to_execute, sensitive); index 5 is stripped before exposure — preserve arity when modifying put/get/task_done or the remove_sensitive lambdas.",
+          "sources": [
+            "server.py#L1134",
+            "main.py#L366-372",
+            "server.py#L69-71"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Three node-id namespaces coexist: ephemeral ids (created by expand), display ids (UI mapping), and real ids (original prompt); always use dynprompt.get_real_node_id/get_display_node_id rather than raw ids in execution code.",
+          "sources": [
+            "comfy_execution/graph.py#L49-68",
+            "execution.py#L439-443"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Caching can silently skip your code path: outputs are keyed by input signature including IS_CHANGED/fingerprint_inputs — when debugging a node that 'doesn't run', check CacheKeySetInputSignature and the node flags NOT_IDEMPOTENT / UNIQUE_ID hidden input first.",
+          "sources": [
+            "comfy_execution/caching.py#L83-120",
+            "execution.py#L64-105"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Safe edit boundaries: add a node in nodes.py or a comfy_extras/nodes_*.py file (register in NODE_CLASS_MAPPINGS), add routes in the owning app/* manager, add model support via comfy/model_detection.py signature + comfy/supported_models entry — do not create parallel registries.",
+          "sources": [
+            "nodes.py#L2068-2137",
+            "nodes.py#L2394-2552",
+            "app/model_manager.py#L28",
+            "comfy/model_detection.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Run `pytest tests-unit` after changes; unit CI is continue-on-error so green CI does not prove correctness — for executor changes also run tests/execution which needs websocket-client and spawns main.py as a subprocess.",
+          "sources": [
+            "tests-unit/README.md",
+            ".github/workflows/test-unit.yml",
+            "tests/execution/test_execution.py#L505-562"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "When touching file-serving endpoints, reuse folder_paths.is_within_directory/get_annotated_filepath and is_dangerous_content_type rather than hand-rolling checks — traversal/XSS guards are the most-reviewed security surface.",
+          "sources": [
+            "folder_paths.py#L273-357",
+            "server.py#L536-549",
+            "AGENTS.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Style: ruff lint (E, W, F, T print-usage, S102/S307, N805) with E501/E722/E731/E402 ignored; comments sparse; match local style — long lines and module-level state are normal here.",
+          "sources": [
+            "pyproject.toml#L14-30",
+            "AGENTS.md"
           ],
           "kind": "evidence"
         }
       ]
     },
-    "agent_prompt": "You are working in ComfyUI core, version 0.37.0, declared in pyproject.toml and mirrored by comfyui_version.py. It is a local node-graph runtime for diffusion, video, audio, and 3D models, plus an aiohttp server. It is not the desktop shell and not the frontend SPA. Those live in other repositories. This process starts at main.py. start_comfyui builds server.PromptServer, loads nodes, optionally opens SQLite, and starts a daemon prompt_worker over execution.PromptQueue. The default bind is 127.0.0.1 port 8188.\n\nRead AGENTS.md before editing. Then read the file you will change and its callers. For queue or HTTP work read server.py post_prompt and execution.py PromptExecutor.execute_async plus execution.execute. For a built-in node read nodes.py load_custom_node and the init_builtin_extra_nodes allowlist. A file dropped into comfy_extras is not loaded unless that list names it. V3 nodes export async comfy_entrypoint and return a ComfyExtension, as comfy_extras/nodes_flux.py does. For checkpoints read CheckpointLoaderSimple, comfy/sd.py load_checkpoint_guess_config, and comfy/model_detection.py. For sampling read nodes.common_ksampler, comfy/sample.py sample, and comfy/samplers.py. For paths read folder_paths.py. For the asset catalog read app/assets and alembic_db. Treat app/assets/api/routes.py as unstable: the file says custom nodes must not depend on it.\n\nRules that are enforced here: keep execution.py free of workflow ids, frontend ids, and persistence bookkeeping. Do not add torch.inference_mode or torch.no_grad. execute_async already wraps the whole prompt in torch.inference_mode. Do not add freeze or unfreeze helpers. Do not add outbound network calls to core. Partner HTTP belongs only in comfy_api_nodes and is skipped when --disable-api-nodes is set. Model __init__ operations is never None. Model-detection code may use only the first dimension of a linear weight. Do not add convenience dtype casts in model forward. Do not add a dependency unless the change cannot work without it. Preserve existing node class names and the prompt JSON shape.\n\nPrompt path: POST /prompt, also mounted at /api/prompt, validates with execution.validate_prompt, strips auth_token_comfy_org and api_key_comfy_org into a side channel listed in SENSITIVE_EXTRA_DATA_KEYS, and heap-pushes the job. The worker calls PromptExecutor.execute, which is asyncio.run of execute_async. That walks a comfy_execution.graph.DynamicPrompt and calls execution.execute per node. Lazy nodes return PENDING. Subgraph expansions add ephemeral nodes. The default cache is RAM_PRESSURE, overridable with --cache-classic, --cache-lru, or --cache-none. History is an in-memory dict capped at 10000 entries. It is not the database. Restarting the process drops the queue and history. Images land on disk through SaveImage into the output directory, with PNG prompt metadata unless --disable-metadata.\n\n--enable-assets turns on the SQLite catalog at user/comfyui.db, migrated by Alembic. Head revision 0007_record_content_split drops the previous asset tables on purpose. Do not write a migration that silently destroys user tags again. Two processes must not share one database file. init_db takes a non-blocking filelock and exits when --enable-assets cannot get it.\n\nSecurity assumptions from SECURITY.md: localhost by default, every client who can reach the URL is trusted, and custom nodes are arbitrary Python. load_custom_node and prestartup_script.py exec user code. Do not weaken folder_paths.is_within_directory, the /view content-type attachment logic, or UserManager path checks. Multi-user mode is the comfy-user header plus user/users.json, not authentication. System user ids are prefixed with __. Do not log or persist API keys. They are removed before history is stored and must stay removed.\n\nTests use pytest, with pythonpath set to the repo root. Fast checks are pytest tests-unit. Graph behavior is pytest tests/execution, which is what .github/workflows/test-execution.yml runs on CPU torch. That workflow sets continue-on-error, so a red job may not fail the check. tests/inference needs real models and is not the PR unit job. The full GPU workflow is comfy-org/comfy-action, triggered manually or by the Run-CI-Test label. After a node-execution change run tests-unit/execution_test. After an asset change run tests-unit/assets_test and tests-unit/app_test. After a path change run tests-unit/security_test.\n\nTraps: do not import torch before the guard in main.py. On Windows, CUDA_VISIBLE_DEVICES is forced to 0 unless the user opted out. init_external_custom_nodes inserts the comfy directory at the front of sys.path, so bare import names are a compatibility surface. Node replacements apply only when the old class_type is missing from NODE_CLASS_MAPPINGS. Dynamic VRAM swaps in ModelPatcherDynamic only when comfy-aimdo initializes. Keep diffs narrow and match the style of the file you edit."
+    "agent_prompt": "You are working in ComfyUI (python main.py), a single-process node-graph inference engine for diffusion/generative models. Architecture: main.py parses the module-level argparse singleton in comfy/cli_args.py, sets device env vars, execs custom-node prestartup_script.py files, loads all node registries via nodes.init_extra_nodes (core nodes.py + ~130 comfy_extras files + comfy_api_nodes + custom_nodes/), initializes an Alembic-managed SQLite DB (user/comfyui.db, filelock-guarded), then starts server.PromptServer (aiohttp) and a daemon prompt_worker thread.\n\nRequest flow: POST /prompt JSON -> validate_prompt (type/min-max/combo/cycle/loop checks) -> heapq PromptQueue -> worker -> execution.PromptExecutor.execute_async under torch.inference_mode -> DynamicPrompt + ExecutionList topological dissolve -> per-node execute(): cache lookup -> get_input_data (links, hidden inputs) -> node FUNCTION via _async_map_node_over_list -> CacheEntry stored in signature-keyed caches -> 'executed'/'progress' WS events via send_sync -> publish_loop -> history dict (cap 10000).\n\nKey invariants: queue items are positional tuples with sensitive extra_data at index 5 (auth_token_comfy_org, api_key_comfy_org) stripped before any exposure; three node id namespaces (real/display/ephemeral) must go through DynamicPrompt helpers; node output caching is keyed by class_type + IS_CHANGED + ancestor input signatures so identical inputs reuse results — flag nondeterminism with NOT_IDEMPOTENT or UNIQUE_ID hidden input.\n\nExtension points: V1 nodes export NODE_CLASS_MAPPINGS + INPUT_TYPES/RETURN_TYPES/FUNCTION; V3 nodes export comfy_entrypoint() -> ComfyExtension -> ComfyNode classes with GET_SCHEMA; WEB_DIRECTORY registers frontend JS at /extensions/<name>; on_prompt_handlers mutate prompt JSON; extra_model_paths.yaml adds model search dirs via folder_paths.add_model_folder_path.\n\nRules (from AGENTS.md): minimal diffs, no new deps, no outbound network code in core, no torch.no_grad/inference_mode wrappers, no einops in model code, preserve node names/APIs/workflow compat, reuse comfy.ops/quant_ops/Comfy Kitchen ops, keep execution.py free of API/persistence concepts. Torch must not be imported before main.py's late import block. Security surface: folder_paths.is_within_directory + annotated_filepath + DANGEROUS_CONTENT_TYPES are the traversal/XSS toolkit — reuse them at every file endpoint; there is no auth, default bind is 127.0.0.1.\n\nTest: `pytest tests-unit` (CPU-only, CI matrix is continue-on-error); tests/execution spawns the real server over WebSocket; tests/inference needs real models and does image regression against a baseline dir. Lint: ruff (config in pyproject.toml)."
   },
   "analysis": {
-    "agent": "grok",
-    "model": "cli:grok",
-    "runtime_ms": 369628,
+    "agent": "devin",
+    "model": "swe-2",
+    "runtime_ms": null,
     "cost_usd": null,
-    "collected_at": "2026-09-22T12:18:12.202Z"
+    "collected_at": "2026-09-22T16:03:31.258Z"
   }
 }

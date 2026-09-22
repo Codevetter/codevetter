@@ -20868,769 +20868,899 @@
     ]
   },
   "report": {
-    "overview": "Electron is a framework that embeds Chromium and Node.js so desktop apps can be written in JavaScript. This repository is the glue: C++ in shell/, the public JS API in lib/, upstream patches, and the spec/ test suite. App developers consume the published npm package; this tree is for people who build, patch, and release Electron itself.",
+    "overview": "Electron is the framework that embeds Chromium and Node.js into a single binary so apps can be built with JavaScript, HTML, and CSS. This repo is the framework itself: a C++ core in shell/ layered on the Chromium content API, a per-process JavaScript API layer in lib/ that is bundled by rolldown and baked into the binary, ~200 maintained patches to Chromium/Node/V8 under patches/, and a Mocha-based spec suite in spec/ that runs inside the built binary.",
     "system_map": {
-      "summary": "There is no single main() that apps call. Chromium starts the process, ElectronMainDelegate in shell/app routes startup, and the JS surface is assembled from lib/browser and lib/renderer. The public package is assembled under npm/. Storage is not a database: state lives in Chromium profiles, the session partition, and protocol handlers. External systems are Chromium, Node, V8, and the GitHub Actions release pipelines. Build entry is GN plus Ninja via the e CLI described in CLAUDE.md; day-to-day JS lint is npm run lint.",
+      "summary": "Electron is a Chromium content-API embedder: platform entry points (shell/app/electron_main_*.cc) create an ElectronMainDelegate that plugs Electron's content clients into content::ContentMain. The browser (main) process lives in shell/browser, renderers in shell/renderer, shared code in shell/common, and a separate utility-process client in shell/utility plus shell/services/node. On top of the C++ core sits a TypeScript layer in lib/ that is bundled per execution context (browser, renderer, worker, webview, isolated_renderer, node, utility) and compiled into the binary. Build is GN/Ninja driven by BUILD.gn and filenames.gni, with dependency versions pinned in DEPS and upstream modifications carried as patch queues in patches/.",
       "claims": [
         {
-          "claim": "The repository root package is @electron-ci/dev-root at version 0.0.0-development and is private. Its scripts wire lint (script/lint.js), lint:clang-format (python3 script/lint.js --cc), lint:js (node ./script/lint.js --js), lint:api-history, create-typescript-definitions (script/gen-typescript-definitions.js), and gn-check (script/gn-check.js).",
+          "claim": "Each platform has a thin main() — shell/app/electron_main_linux.cc line 49 — that hands off to content::ContentMain with an ElectronMainDelegate; the delegate implements BasicStartupComplete, PreSandboxStartup, PreBrowserMain and the CreateContent*Client factory methods.",
           "sources": [
-            "package.json"
+            "shell/app/electron_main_linux.cc#L49",
+            "shell/app/electron_main_delegate.cc#L216-L284",
+            "shell/app/electron_main_delegate.cc#L437-L470"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "Process startup is owned by ElectronMainDelegate (shell/app/electron_main_delegate.cc), which subclasses content::ContentMainDelegate. On macOS it calls OverrideChildProcessPath and SetUpBundleOverride; PreSandboxStartup registers the electron scheme, calls NodeBindings::RegisterBuiltinModules, and initializes crash keys.",
+          "claim": "The browser-process composition root is ElectronBrowserMainParts: its constructor wires BrowserProcessImpl, NodeBindings, ElectronBindings and the Browser singleton, and PostEarlyInitialization() creates the V8 isolate via JavascriptEnvironment, initializes Node, and loads the app package.",
           "sources": [
-            "shell/app/electron_main_delegate.cc",
-            "shell/app/electron_main_delegate.h"
+            "shell/browser/electron_browser_main_parts.cc#L200-L210",
+            "shell/browser/electron_browser_main_parts.cc#L290-L410"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "The browser-process content layer is ElectronBrowserClient (shell/browser/electron_browser_client.cc), which creates ElectronBrowserMainParts, wires WebContents preferences, protocol handlers, and the Node.js service host. Renderer-side counterpart is ElectronRendererClient in shell/renderer/.",
+          "claim": "ElectronMainDelegate::CreateContentRendererClient selects between ElectronSandboxedRendererClient and ElectronRendererClient based on IsSandboxEnabled(command_line), so the sandbox decision happens per child-process launch.",
           "sources": [
-            "shell/browser/electron_browser_client.cc",
-            "shell/browser/electron_browser_client.h",
-            "shell/renderer/electron_renderer_client.cc"
+            "shell/app/electron_main_delegate.cc#L454-L464"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "JavaScript API modules for the main process live under lib/browser/api/ (app.ts, web-contents.ts, session.ts, ipc-main.ts, protocol.ts, auto-updater/, and others). Renderer-exposed modules live under lib/renderer/api/ (ipc-renderer.ts, web-frame.ts, context-bridge.ts). Shared process helpers are in lib/common/.",
+          "claim": "The JS layer in lib/ is compiled into seven self-contained bundles (browser, renderer, worker, webview, isolated_renderer, node, utility) by build/bundle/bundle.mjs using rolldown, driven by the per-target flags in build/bundle/targets.mjs.",
           "sources": [
-            "lib/browser/init.ts",
-            "lib/renderer/init.ts",
-            "lib/browser/api/module-list.ts"
+            "build/bundle/bundle.mjs#L50-L60",
+            "build/bundle/targets.mjs#L23-L54",
+            "build/bundle/bundle.gni"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "The module allow-list that decides which built-ins a process may require is GetModuleList() in lib/browser/api/module-list.ts (browser) and lib/renderer/api/module-list.ts (renderer), keyed by process type: browser, renderer, worker, utility, service-worker.",
+          "claim": "Native modules are exposed to JS through process._linkedBinding: node_bindings.cc declares the binding names in the ELECTRON_BROWSER_BINDINGS / ELECTRON_COMMON_BINDINGS / ELECTRON_RENDERER_BINDINGS macros, and each C++ file registers itself with NODE_LINKED_BINDING_CONTEXT_AWARE (e.g. electron_browser_app in electron_api_app.cc).",
           "sources": [
-            "lib/browser/api/module-list.ts",
-            "lib/renderer/api/module-list.ts"
+            "shell/common/node_bindings.cc#L68-L120",
+            "shell/browser/api/electron_api_app.cc#L2127"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "C++ API objects are exposed to V8 through gin. The browser API index is shell/browser/api/electron_api_app.cc (App), shell/browser/api/electron_api_web_contents.cc, and the generated binding table consumed by NodeBindings::RegisterBuiltinModules.",
+          "claim": "The 'electron' npm module object is assembled lazily: lib/browser/api/exports/electron.ts calls defineProperties over commonModuleList + browserModuleList, where each entry is { name, loader } with a deferred require().",
           "sources": [
-            "shell/browser/api/electron_api_app.cc",
-            "shell/common/node_bindings.cc"
+            "lib/browser/api/exports/electron.ts#L1-L8",
+            "lib/browser/api/module-list.ts#L4-L48",
+            "lib/common/define-properties.ts"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "GN is the build system. BUILD.gn at the repo root defines the electron target and source sets; filenames.gni lists per-platform sources; build/args/all.gn, testing.gn, and release.gn hold GN args. Feature switches live in buildflags/buildflags.gni.",
+          "claim": "require('electron'), 'electron/main', 'electron/renderer', 'electron/common' and 'electron/utility' are module aliases installed by lib/common/init.ts via fake entries in Module._cache and a Module._resolveFilename override.",
           "sources": [
-            "BUILD.gn",
-            "filenames.gni",
-            "buildflags/buildflags.gni",
+            "lib/common/init.ts#L79-L122"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Dependencies are pinned in DEPS: chromium_version 155.0.8046.0, node_version v24.21.0, plus squirrel.mac, sparkle, nan and others; gclient applies the patch queue because 'apply_patches': True.",
+          "sources": [
+            "DEPS#L1-L40"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "patches/config.json maps 13 patch directories (chromium, boringssl, devtools_frontend, ffmpeg, v8, node, nan, libaddressinput, perfetto, squirrel.mac, webrtc, sqlite, angle) onto target repos under src/.",
+          "sources": [
+            "patches/config.json"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Build configuration is GN: BUILD.gn (~2200 lines) defines the electron targets including the electron_fuses action that generates fuses.h/fuses.cc from build/fuses/fuses.json5; per-build args live in build/args/{all,testing,release}.gn.",
+          "sources": [
+            "BUILD.gn#L450-L457",
+            "build/fuses/fuses.json5",
             "build/args/all.gn"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "Upstream modifications are not forked in-tree as full copies. patches/config.json maps patch directories (chromium, node, v8, boringssl, and others) onto checkout paths. CLAUDE.md documents the round-trip: edit the target repo, commit, then e patches <target>.",
+          "claim": "If no app is supplied, resources/default_app.asar provides a fallback app (default_app/) that parses CLI args, can open a file/URL/package directory, prints --version/--abi, or starts a REPL with lazy Electron builtins.",
           "sources": [
-            "patches/config.json",
-            "CLAUDE.md"
+            "default_app/main.ts#L297-L341",
+            "default_app/main.ts#L174-L295",
+            "shell/browser/app_package.cc#L93-L98"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "The shippable npm layout is npm/: it re-exports the built binary, the TypeScript definitions (electron.d.ts), and the install script that downloads the platform binary. default_app/ is the window shown when electron is launched with no app path.",
+          "claim": "The published npm package (npm/) is a thin downloader: index.js reads path.txt for the executable name, supports ELECTRON_OVERRIDE_DIST_PATH, and runs install.js to fetch the binary.",
           "sources": [
-            "npm/package.json",
-            "npm/index.js",
-            "default_app/main.ts",
-            "default_app/package.json"
+            "npm/index.js#L25-L52"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "DEPS pins Chromium, Node.js, and other checkout revisions and is the source of truth for what e sync fetches. The parent directory of this repo is the Chromium source tree, per the directory map in CLAUDE.md.",
+          "claim": "asar archives are supported at two levels: shell/common/asar implements the archive reader used by C++ (LoadAppPackage reads package.json through asar::ReadFileToString), and lib/node/asar-fs-wrapper.ts monkey-patches the fs module so Node can read inside .asar files.",
           "sources": [
-            "DEPS",
-            "CLAUDE.md"
-          ],
-          "kind": "evidence"
-        },
-        {
-          "claim": "There is no application database. Persistent user state for an Electron app is delegated to Chromium: Session (lib/browser/api/session.ts) owns partitions, cookies, cache, and protocol handlers; app.getPath in the app module resolves userData, crashDumps, and logs directories.",
-          "sources": [
-            "lib/browser/api/session.ts",
-            "docs/api/app.md",
-            "docs/api/session.md"
-          ],
-          "kind": "evidence"
-        },
-        {
-          "claim": "Release publishing is split by OS. .github/workflows/macos-publish.yml, linux-publish.yml, and windows-publish.yml build and upload artifacts. They are not the app runtime; they are the deployment shape for electron/electron maintainers.",
-          "sources": [
-            ".github/workflows/macos-publish.yml",
-            ".github/workflows/linux-publish.yml",
-            ".github/workflows/windows-publish.yml"
-          ],
-          "kind": "evidence"
-        },
-        {
-          "claim": "Required maintainer environment variables are documented in .env.example (tokens used by release and CI scripts). Runtime Electron apps do not read this file; it is for the repository's own automation.",
-          "sources": [
-            ".env.example"
+            "shell/common/asar/asar_util.cc",
+            "shell/browser/app_package.cc#L102-L107",
+            "lib/node/asar-fs-wrapper.ts",
+            "lib/node/init.ts#L1-L3"
           ],
           "kind": "evidence"
         }
       ]
     },
     "feature_catalog": {
-      "summary": "The user-facing product is a Node-style API, not a website. Main-process modules cover app lifecycle, windows, sessions, IPC, protocols, auto-update, menus, trays, dialogs, and shell integration. Renderer modules are a smaller, intentionally restricted set. CLI surface is Chromium switches plus a few Electron-specific ones, and the default_app window is what users see when they run the binary with no app. Docs under docs/api/ are the contract.",
+      "summary": "Electron's public surface is a set of lazily-loaded modules on the 'electron' export, split by process: ~40 browser-process modules, 2 common modules, 6 renderer modules and a small utility-process set. Highlights include the windowing stack (BrowserWindow/BaseWindow/WebContentsView), ipcMain/ipcRenderer messaging, session/networking (net, protocol, session), OS integrations (Tray, Menu, Notification, globalShortcut, powerMonitor, autoUpdater), and newer additions like utilityProcess, ServiceWorkerMain, sharedTexture and a local-AI handler. Binary-level behavior toggles called fuses let distributors flip security-relevant features post-build.",
       "claims": [
         {
-          "claim": "app (lib/browser/api/app.ts, implemented by gin::Handle<App> in shell/browser/api/electron_api_app.cc) is the process-lifecycle module: ready/will-quit/window-all-closed events, getPath/setPath, quit, relaunch, focus, dock/taskbar helpers, and single-instance lock.",
+          "claim": "browserModuleList enumerates the main-process API surface: app, autoUpdater, BaseWindow, BrowserView, BrowserWindow, clipboard, contentTracing, crashReporter, desktopCapturer, dialog, globalShortcut, ipcMain, inAppPurchase, Menu/MenuItem, MessageChannelMain, nativeTheme, net, netLog, Notification, powerMonitor, powerSaveBlocker, protocol, pushNotifications, safeStorage, screen, ServiceWorkerMain, session, sharedTexture, ShareMenu, systemPreferences, TouchBar, Tray, utilityProcess, View, webContents, WebContentsView, webFrameMain and native-bound ImageView.",
           "sources": [
-            "lib/browser/api/app.ts",
-            "shell/browser/api/electron_api_app.cc",
-            "docs/api/app.md"
+            "lib/browser/api/module-list.ts#L4-L48"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "BrowserWindow and BaseWindow are the windowing API. JS wrappers live in lib/browser/api/browser-window.ts and lib/browser/api/base-window.ts; native ownership is ElectronBrowserWindow / ElectronBaseWindow in shell/browser/api/. WebContents (lib/browser/api/web-contents.ts) is the page object: loadURL, navigation events, executeJavaScript, print, and devtools.",
+          "claim": "The renderer-side module list is deliberately small — contextBridge, crashReporter, ipcRenderer, sharedTexture, webFrame, webUtils — while common modules (nativeImage, shell) load on both sides.",
           "sources": [
-            "lib/browser/api/browser-window.ts",
-            "lib/browser/api/web-contents.ts",
-            "docs/api/browser-window.md"
+            "lib/renderer/api/module-list.ts#L2-L9",
+            "lib/common/api/module-list.ts#L2-L5"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "IPC has two ends. ipcMain (lib/browser/api/ipc-main.ts) registers ipcMain.on and ipcMain.handle in the browser process. ipcRenderer (lib/renderer/api/ipc-renderer.ts) sends from the renderer. Messages cross via Mojo IPC implemented in shell/browser/api/electron_api_web_contents.cc and shell/renderer/api/electron_api_ipc_renderer.cc, not via Node sockets.",
+          "claim": "The net module exposes request() (ClientRequest), fetch() (delegated to session.defaultSession.fetch), resolveHost(), isOnline()/online and a WebSocket implementation, and refuses to run before app ready.",
           "sources": [
-            "lib/browser/api/ipc-main.ts",
-            "lib/renderer/api/ipc-renderer.ts",
-            "docs/api/ipc-main.md"
+            "lib/browser/api/net.ts#L9-L33",
+            "lib/browser/api/session.ts#L41-L43",
+            "lib/common/api/net-client-request.ts"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "contextBridge (lib/renderer/api/context-bridge.ts) is the supported way to expose a frozen API from a preload script into an isolated world. It clones arguments with a structured-clone-like walk and refuses prototypes, functions except bound callbacks, and non-cloneable objects.",
+          "claim": "protocol.handle() registers a Fetch-API-style handler per scheme — using registerProtocol for custom schemes and interceptProtocol for http/https/file — converting ProtocolRequest into a Request and the returned Response back to a Chromium loader callback.",
           "sources": [
-            "lib/renderer/api/context-bridge.ts",
-            "docs/api/context-bridge.md"
+            "lib/browser/api/protocol.ts#L152-L200"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "Session and protocol let an app partition storage and register custom schemes. session.fromPartition / session.defaultSession live in lib/browser/api/session.ts. protocol.register* and protocol.handle are in lib/browser/api/protocol.ts, backed by shell/browser/net/electron_url_loader_factory and the network service.",
+          "claim": "Global protocol functions (registerFileProtocol, interceptBufferProtocol, etc.) are deprecated-style shims that forward to session.defaultSession.protocol.",
           "sources": [
-            "lib/browser/api/session.ts",
-            "lib/browser/api/protocol.ts",
-            "docs/api/protocol.md"
+            "lib/browser/api/protocol.ts#L214-L236"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "net and net.request (ClientRequest) expose Chromium's network stack to the main process rather than Node's http. The JS entry is lib/browser/api/net.ts and lib/browser/api/net-client-request.ts; docs are docs/api/client-request.md and docs/api/net.md.",
+          "claim": "session provides fromPartition/fromPath factories, a defaultSession getter, fetch(), setDisplayMediaRequestHandler (with a macOS native-picker fake source id window:-4:N), registerPreloadScript, extensions loading, and registerLocalAIHandler which unwraps a utilityProcess handle.",
           "sources": [
-            "lib/browser/api/net.ts",
-            "docs/api/client-request.md",
-            "docs/api/net.md"
+            "lib/browser/api/session.ts#L24-L128"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "Utility and sandbox features: utilityProcess (lib/browser/api/utility-process.ts) forks a Node utility process; sandbox is a WebPreferences flag enforced in ElectronRendererClient; webFrame and webFrameMain expose frame-level zoom and word-list APIs; webUtils.getPathForFile replaces the old File.path in the renderer.",
+          "claim": "utilityProcess.fork() spawns a child running a JS entry script via the native electron_browser_utility_process._fork binding, validating stdio ('pipe'|'inherit'|'ignore' triples, stdin must be 'ignore') and exposing postMessage/kill/pid/stdout/stderr.",
           "sources": [
-            "lib/browser/api/utility-process.ts",
-            "lib/renderer/api/web-frame.ts",
-            "docs/api/utility-process.md"
+            "lib/browser/api/utility-process.ts#L7-L153",
+            "shell/browser/api/electron_api_utility_process.cc"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "Command-line switches are documented in docs/api/command-line-switches.md and docs/api/command-line.md. app.commandLine.appendSwitch is the JS API; Chromium flags pass through because Electron is a Content embedder. Electron-specific switches include --enable-logging, --inspect, and switches that disable sandbox or features.",
+          "claim": "autoUpdater has three platform implementations under lib/browser/api/auto-updater/: auto-updater-native.ts (macOS Squirrel), squirrel-update-win.ts and auto-updater-msix.ts/msix-update-win.ts (Windows).",
           "sources": [
-            "docs/api/command-line-switches.md",
-            "docs/api/command-line.md",
-            "lib/browser/api/app.ts"
+            "lib/browser/api/auto-updater/auto-updater-native.ts",
+            "lib/browser/api/auto-updater/squirrel-update-win.ts",
+            "lib/browser/api/auto-updater/auto-updater-msix.ts",
+            "shell/browser/auto_updater.cc"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "When the electron binary is started with no application path, default_app/main.ts loads, creates a BrowserWindow, and shows a file-open dialog so a developer can pick an app to run. default_app/package.json names the package electron and points main at the compiled default_app.",
+          "claim": "ElectronBindings::BindProcess extends the Node process object with Electron methods: crash(), hang(), getCreationTime, getHeapStatistics, getBlinkMemoryInfo, getSystemMemoryInfo, getCPUUsage, getProcessMemoryInfo (browser only), plus takeHeapSnapshot, setFdLimit (POSIX) and activateUvLoop.",
           "sources": [
-            "default_app/main.ts",
-            "default_app/package.json"
+            "shell/common/api/electron_bindings.cc#L43-L84"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "BrowserView is still documented (docs/api/browser-view.md) but is a deprecated embed surface; new code is directed at WebContentsView / BaseWindow. The JS module remains in lib/browser/api/browser-view.ts for compatibility.",
+          "claim": "Fuses are post-build toggles baked into the binary: run_as_node, cookie_encryption, node_options, node_cli_inspect, embedded_asar_integrity_validation, only_load_app_from_asar, load_browser_process_specific_v8_snapshot, grant_file_protocol_extra_privileges, wasm_trap_handlers — defined in build/fuses/fuses.json5 and consumed via electron::fuses::* (e.g. IsOnlyLoadAppFromAsarEnabled gates the app-search list).",
           "sources": [
-            "docs/api/browser-view.md",
-            "lib/browser/api/browser-view.ts",
-            "docs/api/base-window.md"
+            "build/fuses/fuses.json5#L1-L14",
+            "shell/browser/app_package.cc#L91-L98",
+            "docs/tutorial/fuses.md",
+            "spec/fuses-spec.ts"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "In-app purchases, push notifications, desktopCapturer, and systemPreferences are platform-gated features compiled behind buildflags and exported only on the relevant OS from the browser module list.",
+          "claim": "The utility process gets its own mini API set (net, local-ai-handler, language-model-utility) via lib/utility/api/module-list.ts, backed by the NodeService in shell/services/node.",
           "sources": [
-            "lib/browser/api/module-list.ts",
-            "buildflags/buildflags.gni",
-            "docs/api/desktop-capturer.md"
+            "lib/utility/api/module-list.ts",
+            "lib/utility/init.ts",
+            "shell/services/node/node_service.cc"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "BrowserWindow forwards most content operations (loadURL, loadFile, reload, send, openDevTools, capturePage, setBackgroundThrottling, inspectElement/SharedWorker/ServiceWorker) straight to its webContents, and manages a _browserViews list via addBrowserView/setTopBrowserView.",
+          "sources": [
+            "lib/browser/api/browser-window.ts#L118-L240"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The <webview> tag is implemented by guest-view-manager.ts in the browser process responding to GUEST_VIEW_MANAGER_* internal IPC channels, tracking GuestInstance records keyed by guestInstanceId.",
+          "sources": [
+            "lib/browser/guest-view-manager.ts#L1-L30",
+            "lib/common/ipc-messages.ts#L5-L11",
+            "lib/isolated_renderer/init.ts#L4-L11"
           ],
           "kind": "evidence"
         }
       ]
     },
     "data_flow": {
-      "summary": "An Electron process is a Chromium browser process that also hosts a Node environment. App JS enters through the main script resolved by the browser client. Calls cross from JS into C++ via gin, then into Chromium services (network, storage, viz). Renderer pages are isolated; the only supported data channel back to the app is IPC (ipcRenderer to ipcMain) or a contextBridge-exposed preload. Protocol handlers and session partitions are the two places app code intercepts bytes that would otherwise go to the network stack or the profile.",
+      "summary": "App code enters through a package.json discovered in resources/{app.asar,app,default_app.asar}; the browser process creates a Node environment, loads the bundled browser init script which in turn loads the app's main entry. Renderer↔browser communication rides a mojo interface (mojom::ElectronApiIPC) into a C++ dispatch layer that emits events on the JS ipcMain/ipcMainInternal objects; the reverse direction emits on ipcRenderer via a hidden 'ipcNative' context binding. Network data flows through Chromium URL loader factories, with protocol.handle() bridging Fetch-API Request/Response objects and net.fetch routing through the session's network context. Preload scripts are pushed to the renderer ahead of navigation in startup data rather than fetched by sync IPC.",
       "claims": [
         {
-          "claim": "The main script path is resolved in the browser process before Node evaluates it. ElectronBrowserClient / ElectronBrowserMainParts decide the package.json main (or index.js) of the app directory, then NodeBindings loads it inside the browser process's Node environment.",
+          "claim": "App discovery: LoadAppPackage() reads package.json from resources/app.asar, then resources/app, then resources/default_app.asar (only app.asar when the only_load_app_from_asar fuse is on), applies name/productName/version/desktopName, and returns {path, main, esm, v8Flags}.",
           "sources": [
-            "shell/browser/electron_browser_client.cc",
-            "shell/browser/electron_browser_main_parts.cc",
-            "shell/common/node_bindings.cc"
+            "shell/browser/app_package.cc#L86-L134"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "lib/browser/init.ts runs once the browser Node environment is up. It installs error handlers, exposes process.type = 'browser', freezes the public module set, and requires the app's entry after the 'ready' path is armed. Renderer init is lib/renderer/init.ts and sets process.type = 'renderer'.",
+          "claim": "PostEarlyInitialization() stashes the AppPackage as a v8 private value 'appPackage' on the Node context global; lib/browser/init.ts retrieves it via getHiddenValue, calls app.setAppPath, then loads the entry with Module._load (CJS) or runEntryPointWithESMLoader (ESM, when type=module or .mjs).",
           "sources": [
-            "lib/browser/init.ts",
-            "lib/renderer/init.ts"
+            "shell/browser/electron_browser_main_parts.cc#L349-L365",
+            "lib/browser/init.ts#L62-L121"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "A BrowserWindow constructor call goes JS (lib/browser/api/browser-window.ts) to gin (shell/browser/api/electron_api_browser_window.cc) to ElectronBaseWindow / NativeWindow, which creates a content::WebContents. The renderer's first document is loaded by WebContents::LoadURL or LoadFile.",
+          "claim": "node_bindings_->JoinAppCode() blocks browser startup until init.ts signals process.appCodeLoaded(), which init.ts invokes after the main module loads (or after the ESM loader settles); this is what synchronizes Chromium startup with the app's JS.",
           "sources": [
-            "lib/browser/api/browser-window.ts",
-            "shell/browser/api/electron_api_browser_window.cc",
-            "lib/browser/api/web-contents.ts"
+            "shell/browser/electron_browser_main_parts.cc#L378-L382",
+            "lib/browser/init.ts#L95-L120"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "Preload scripts are declared on webPreferences.preload. The renderer injects them in an isolated world before the page script runs. contextBridge.exposeInMainWorld then copies a filtered object onto the page's main world; it does not share the Node global.",
+          "claim": "Renderer→main IPC: the mojom::ElectronApiIPC associated interface delivers Message/Invoke/MessageSync/ReceivePostMessage/MessageHost to ElectronApiIPCHandlerImpl, which resolves the Session from the RenderFrameHost's BrowserContext, builds an api::IpcMainEvent, and calls ipc_dispatch::Message/Invoke which emit on the JS objects registered via electron_browser_ipc_dispatch.setup({ipcMain, ipcMainInternal}).",
           "sources": [
-            "lib/renderer/api/context-bridge.ts",
-            "shell/renderer/electron_renderer_client.cc",
-            "docs/api/context-bridge.md"
+            "shell/browser/electron_api_ipc_handler_impl.cc#L48-L128",
+            "shell/browser/electron_api_ipc_handler_impl.cc#L152-L196",
+            "lib/browser/ipc-dispatch.ts#L1-L7",
+            "shell/common/api/api.mojom"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "ipcRenderer.invoke(channel, ...args) serializes arguments, posts them over the WebContents IPC binding, and ipcMain.handle's listener runs in the browser process. The return value is serialized back as a Promise. ipcRenderer.send is fire-and-forget and lands on ipcMain.on.",
+          "claim": "ipcMain.handle registrations live in IpcMainImpl._invokeHandlers (a Map keyed by channel) which throws on duplicate handlers; handleOnce wraps handle + removeHandler.",
           "sources": [
-            "lib/renderer/api/ipc-renderer.ts",
-            "lib/browser/api/ipc-main.ts",
-            "shell/renderer/api/electron_api_ipc_renderer.cc"
+            "lib/browser/ipc-main-impl.ts#L5-L35"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "session.fromPartition(name) keys a Chromium storage partition. Cookies, cache, localStorage, and service workers for windows created with that partition stay inside it. session.defaultSession is the unnamed partition. This is the persistence boundary; Electron does not add its own key-value store.",
+          "claim": "Main→renderer IPC: EmitIPCEvent in electron_ipc_native.cc looks up a hidden 'ipcNative' private binding on the v8 context (set by the renderer IPC setup), wraps {sender, ports} into an event object, and emits the channel on ipcRenderer or ipcRendererInternal inside a node::CallbackScope when a Node env exists.",
           "sources": [
-            "lib/browser/api/session.ts",
-            "docs/api/session.md",
-            "shell/browser/api/electron_api_session.cc"
+            "shell/renderer/electron_ipc_native.cc#L21-L36",
+            "shell/renderer/electron_ipc_native.cc#L40-L99"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "protocol.handle(scheme, handler) registers a callback that receives a GlobalRequest and returns a Response. The network service routes matching URLs to ElectronURLLoaderFactory instead of the default HTTP loader. Privileged schemes (standard, secure, cors-enabled, fetch-enabled) must be declared before app ready via protocol.registerSchemesAsPrivileged.",
+          "claim": "Internal control messages ride reserved channels in the IPC_MESSAGES const enum (e.g. BROWSER_PRELOAD_ERROR re-emitted as 'preload-error' on webContents, BROWSER_GET_PROCESS_MEMORY_INFO returning the calling frame's own renderer pid stats) handled by lib/browser/rpc-server.ts.",
           "sources": [
-            "lib/browser/api/protocol.ts",
-            "docs/api/protocol.md",
-            "shell/browser/electron_browser_client.cc"
+            "lib/common/ipc-messages.ts#L1-L14",
+            "lib/browser/rpc-server.ts#L4-L14"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "Crash reports and GPU info cross a different boundary. crashReporter.start sends minidumps via the Crashpad handler process; app.getPath('crashDumps') is the on-disk directory. This path is independent of session partitions.",
+          "claim": "Preload flow: the browser pushes preload paths into RendererStartupData ahead of navigation (WebContents::MaybeSendRendererStartupData); ElectronRendererClient::DidCreateScriptContext creates a per-frame Node environment, defers document loading (LoaderFreezeMode::kStrict), and lib/renderer/init.ts loads CJS preloads via Module._load and .mjs preloads via runEntryPointWithESMLoader, then calls appCodeLoaded which triggers UndeferLoad.",
           "sources": [
-            "lib/browser/api/crash-reporter.ts",
-            "docs/api/crash-reporter.md",
-            "shell/app/electron_main_delegate.cc"
+            "shell/renderer/electron_renderer_client.cc#L133-L204",
+            "shell/renderer/electron_renderer_client.cc#L128-L131",
+            "lib/renderer/init.ts#L145-L180"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "Patches flow in one direction at release time and the reverse during development. patches/<target>/*.patch are applied onto the dependency checkout by e sync; e patches <target> re-exports commits from that checkout back into patches/. The config map is patches/config.json.",
+          "claim": "protocol.handle() converts the native ProtocolRequest into a WHATWG Request — rebuilding uploadData (rawData/file/stream/blob chunk types, blob data pulled via session.defaultSession.getBlobData) into a ReadableStream body — then converts the handler's Response back, with a fast path (relayUntouchedFetch) that hands an untouched net.fetch URL loader straight to Chromium instead of streaming through JS.",
           "sources": [
-            "patches/config.json",
-            "CLAUDE.md"
+            "lib/browser/api/protocol.ts#L58-L106",
+            "lib/browser/api/protocol.ts#L127-L150",
+            "lib/browser/api/protocol.ts#L175-L198"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "net.fetch/session.fetch go through fetchWithSession in net-fetch.ts into Chromium's network stack under the session's NetworkContext (shell/browser/net/), so requests share the session's cookies, proxy and cache.",
+          "sources": [
+            "lib/browser/api/net.ts#L16-L18",
+            "lib/browser/api/session.ts#L41-L43",
+            "lib/browser/api/net-fetch.ts",
+            "shell/browser/net/network_context_service.cc"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Node module resolution is fenced: lib/node/init.ts overrides Module._nodeModulePaths so modules inside process.resourcesPath can only resolve node_modules inside the app, and patches child_process.fork to set ELECTRON_RUN_AS_NODE=1 (refusing outright when the runAsNode fuse is off).",
+          "sources": [
+            "lib/node/init.ts#L6-L41",
+            "lib/node/init.ts#L77-L93"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The uv loop is demand-driven: lib/common/init.ts wraps process.nextTick, setImmediate, setTimeout and setInterval to call process.activateUvLoop() (bound to ElectronBindings::ActivateUVLoop, which uv_async_sends to OnCallNextTick) so Node callbacks fire even though Chromium owns the main loop.",
+          "sources": [
+            "lib/common/init.ts#L8-L61",
+            "shell/common/api/electron_bindings.cc#L90-L111"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Guest <webview> data flow: a renderer frame registers the element, the browser's guest-view-manager maps guestInstanceId→GuestInstance (embedder WebContents + embedderFrame), and only the creating frame may drive the guest through GUEST_VIEW_MANAGER_* IPCs; webPreferences are parsed from the 'webpreferences' attribute string with security options force-inherited from the embedder.",
+          "sources": [
+            "lib/browser/guest-view-manager.ts#L15-L30",
+            "lib/browser/guest-view-manager.ts#L32-L75",
+            "lib/common/ipc-messages.ts#L7-L11"
           ],
           "kind": "evidence"
         }
       ]
     },
     "behavior_traces": {
-      "summary": "Three flows dominate the runtime. Startup goes from the OS executable through ContentMainDelegate into a Node main script. Opening a window is a JS constructor that ends in a Chromium WebContents plus an optional preload. A renderer-to-main request is invoke on ipcRenderer, a Mojo hop, and a handler on ipcMain. Persistence of window state is not a framework feature; apps write files themselves, while Chromium persists cookies and cache inside the session partition.",
+      "summary": "Three flows define the system's shape. (1) Cold start: platform main → ElectronMainDelegate hooks → ElectronBrowserMainParts builds V8+Node, loads the app package, runs the bundled init which loads the app's main script, then Chromium's BrowserMain continues. (2) ipcRenderer.invoke: mojo message → ElectronApiIPCHandlerImpl → IpcMainEvent → JS ipcMain handler → reply through a ReplyChannel. (3) protocol.handle: a renderer request hits the session's protocol registry, calls the JS handler with a Request, and streams the Response back to the loader.",
       "claims": [
         {
-          "claim": "Startup order: OS loads the electron executable; Chromium calls ElectronMainDelegate::BasicStartup then PreSandboxStartup (scheme registry, NodeBindings::RegisterBuiltinModules, crash keys). PostEarlyInitialization creates the browser client. ElectronBrowserMainParts::PreMainMessageLoopRun starts the Node environment and evaluates the app main script. lib/browser/init.ts emits will-finish-launching and, once Chromium is ready, app emits ready.",
+          "claim": "Browser-process startup order: main() → content::ContentMain → ElectronMainDelegate::BasicStartupComplete (env vars ELECTRON_ENABLE_STACK_DUMPING/ELECTRON_DISABLE_SANDBOX, RegisterPathProvider, root-without-sandbox fatal check on Linux) → PreSandboxStartup (logging, crash keys, ResourceBundle for subprocesses, --allow-file-access-from-files) → PreBrowserMain (FieldTrialList, InitializeFeatureList, InitializeMojoCore).",
           "sources": [
-            "shell/app/electron_main_delegate.cc",
-            "shell/browser/electron_browser_main_parts.cc",
-            "lib/browser/init.ts",
-            "lib/browser/api/app.ts"
+            "shell/app/electron_main_linux.cc#L49",
+            "shell/app/electron_main_delegate.cc#L216-L284",
+            "shell/app/electron_main_delegate.cc#L286-L410"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "No-app startup: if no path argument is present, the browser client falls back to the packaged default_app. default_app/main.ts waits for app ready, builds a BrowserWindow loading default_app/index.html, and offers a file dialog to open a real app folder.",
+          "claim": "Startup continued: ElectronBrowserMainParts::PostEarlyInitialization sets up WASM trap handlers (fuse-gated), creates JavascriptEnvironment, node_bindings_->Initialize → CreateEnvironment → sets unhandled_rejections='warn-with-error-code' → ElectronBindings::BindTo → LoadAppPackage → node_bindings_->LoadEnvironment (runs the browser bundle = lib/browser/init.ts) → JoinAppCode → re-initializes the FeatureList so app-set command-line switches take effect.",
           "sources": [
-            "default_app/main.ts",
-            "shell/browser/electron_browser_client.cc"
+            "shell/browser/electron_browser_main_parts.cc#L290-L410"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "Primary window flow: user code calls new BrowserWindow(options) in lib/browser/api/browser-window.ts. The wrapper validates webPreferences (nodeIntegration, contextIsolation, sandbox, preload), constructs the native window via process._linkedBinding('electron_browser_window'), then typically calls win.loadURL or win.loadFile. The native side creates WebContents and a NativeWindow platform subclass (Mac/Win/Views).",
+          "claim": "lib/browser/init.ts order: require common init (module aliases, uv-loop wrapping) → set EventEmitter prototype on the native binding → install uncaughtException→dialog.showErrorBox handler → map process.exit→app.exit → require ipc-dispatch, rpc-server, guest-view-manager → read 'appPackage' hidden value → app.setAppPath → pre-populate protocol/service-worker-main/web-contents/web-frame-main modules → default window-all-closed→app.quit handler → apply v8Flags → load main entry → appCodeLoaded.",
           "sources": [
-            "lib/browser/api/browser-window.ts",
-            "shell/browser/api/electron_api_browser_window.cc",
-            "lib/browser/api/web-contents.ts"
+            "lib/browser/init.ts#L10-L121"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "Preload flow: WebContents honors webPreferences.preload. In the renderer, ElectronRendererClient runs the preload in the isolated context before page JS. If the preload calls contextBridge.exposeInMainWorld(key, api), the bridge defines a getter on the page window and later calls go through the cloned function table.",
+          "claim": "new BrowserWindow(): JS constructor reaches the native object from process._linkedBinding('electron_browser_window'), whose _init freeze-wraps id, merges setBounds args with getBounds, re-emits focus/blur on app as 'browser-window-focus/blur', debounces 'unresponsive' (50ms; 5s during close), tracks _browserViews, emits 'browser-window-created' on app, then loadURL etc. forward to webContents.",
           "sources": [
-            "lib/renderer/api/context-bridge.ts",
-            "shell/renderer/electron_renderer_client.cc",
-            "lib/renderer/init.ts"
+            "lib/browser/api/browser-window.ts#L4-L82",
+            "lib/browser/api/browser-window.ts#L118-L128"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "IPC request/response: preload or page calls ipcRenderer.invoke('channel', payload). lib/renderer/api/ipc-renderer.ts assigns an internal request id and calls the native ipcRenderer binding. The browser side delivers to ipcMain.handle's listener. A thrown error or returned Promise rejects the renderer's Promise; a resolved value is structured-cloned back.",
+          "claim": "Renderer script-context flow: Blink creates a script context → ElectronRendererClient::DidCreateScriptContext → ShouldLoadPreload gate → first-time NodeBindings::Initialize/SetUpIsolate (then restores Blink's WASM streaming callback) → per-frame FrameEnvironment + node::InitializeContext → document load deferred (kStrict) → CreateEnvironment registers UndeferLoad callback → BindTo + BindProcess → preload paths stored as hidden 'preloadPaths'.",
           "sources": [
-            "lib/renderer/api/ipc-renderer.ts",
-            "lib/browser/api/ipc-main.ts",
-            "shell/renderer/api/electron_api_ipc_renderer.cc"
+            "shell/renderer/electron_renderer_client.cc#L133-L204",
+            "shell/renderer/renderer_client_base.cc#L389-L416"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "Custom protocol flow: before ready, the app calls protocol.registerSchemesAsPrivileged. After ready, protocol.handle('app', handler) installs a handler on the session. A subsequent loadURL('app://host/index.html') hits ElectronURLLoaderFactory, which invokes the JS handler and streams the Response body into the URLLoader client.",
+          "claim": "Preload execution order in lib/renderer/init.ts: patch Module._load to warn on 'vm' → override Module.wrapper to keep process/global/Buffer for preloads → common init → read webPreferences (nodeIntegration) → set up node globals only if nodeIntegration → load cjsPreloads synchronously (errors → BROWSER_PRELOAD_ERROR IPC) → esmPreloads via runEntryPointWithESMLoader → onPreloadsLoaded deletes node globals when !nodeIntegration && !contextIsolated → appCodeLoaded → UndeferLoad unfreezes the document.",
           "sources": [
-            "lib/browser/api/protocol.ts",
-            "docs/api/protocol.md",
-            "shell/browser/electron_browser_client.cc"
+            "lib/renderer/init.ts#L11-L41",
+            "lib/renderer/init.ts#L125-L180"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "Quit flow: closing the last window emits window-all-closed on app. If the listener calls app.quit(), the browser process runs before-quit, then will-quit, then quits the message loop. will-quit can preventDefault. On macOS the default library behavior keeps the app alive after the last window unless the user quits explicitly; that default is in lib/browser/api/app.ts.",
+          "claim": "ipcRenderer.invoke('ch', ...args): the renderer binding sends ElectronApiIPC.Invoke over the associated mojo channel → ElectronApiIPCHandlerImpl::Invoke resolves api::Session from the frame's BrowserContext → MakeIPCEvent builds api::IpcMainEvent carrying the mojo InvokeCallback (ReplyChannel) → ipc_dispatch::Invoke looks up IpcMainImpl._invokeHandlers['ch'] → return value/promise serialized back through SerializedValue to the renderer promise.",
           "sources": [
-            "lib/browser/api/app.ts",
-            "docs/api/app.md",
-            "shell/browser/api/electron_api_app.cc"
+            "shell/browser/electron_api_ipc_handler_impl.cc#L66-L84",
+            "shell/browser/electron_api_ipc_handler_impl.cc#L158-L188",
+            "lib/browser/ipc-main-impl.ts#L15-L35",
+            "lib/browser/ipc-dispatch.ts#L5-L7"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "File-open dialog flow: dialog.showOpenDialog(win, options) calls into shell/browser/api/electron_api_dialog.cc, which uses the native file picker (NSOpenPanel / IFileDialog / GTK). The chosen paths return to JS as a string array. dialog.showOpenDialogSync blocks the main process.",
+          "claim": "If the Session or WebContents wrapper is gone when an Invoke arrives, MakeIPCEvent still invokes the reply callback with an error via ReplyChannel::SendError so the renderer promise rejects instead of hanging.",
           "sources": [
-            "lib/browser/api/dialog.ts",
-            "shell/browser/api/electron_api_dialog.cc",
-            "docs/api/dialog.md"
+            "shell/browser/electron_api_ipc_handler_impl.cc#L163-L184"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "Test-runner flow (maintainer, not app): e test boots the built Electron with the spec runner. spec/index.js discovers *.spec.ts under spec/, starts a Mocha run inside Electron, and uses spec fixtures in spec/fixtures as child apps. spec/package.json names this package electron-test-main.",
+          "claim": "protocol.handle('app', handler) on a custom scheme: registerProtocol stores the callback → a request arrives as ProtocolRequest → convertToRequestBody rebuilds uploadData → a Request is constructed (initiatorOrigin attached as own prop, 'null' origin header stripped) → await handler(req) → validateResponse → if the Response is an untouched net.fetch result, relayUntouchedFetch holds the URL loader and streams prefix+remainder natively; otherwise res.body is wrapped with Readable.fromWeb → cb({data, headers, statusCode, statusText, mimeType}).",
           "sources": [
-            "spec/package.json",
-            "spec/index.js",
-            "CLAUDE.md"
+            "lib/browser/api/protocol.ts#L152-L200"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "utilityProcess.fork flow: JS validates options (execArgv array, serviceName string, stdio triple with stdin forced 'ignore') → native _fork launches a utility process → the returned handle emits 'stdout'/'stderr' events carrying fds that JS wraps in Socket→PassThrough pipes → 'exit' nulls the handle and tears down streams.",
+          "sources": [
+            "lib/browser/api/utility-process.ts#L53-L117",
+            "shell/services/node/node_service.cc"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "ELECTRON_RUN_AS_NODE flow: lib/node/init.ts patches child_process.fork to inject ELECTRON_RUN_AS_NODE=1 (and helperExecPath on macOS); on Linux, spawn/spawnSync are wrapped to forward CRASHDUMP_SIGNAL_FD/CRASHPAD_HANDLER_PID env pairs to such children; shell/app/node_main.cc detects the env var and runs plain Node instead of Chromium.",
+          "sources": [
+            "lib/node/init.ts#L6-L75",
+            "shell/app/node_main.cc"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "V8 snapshot integrity: when the embedded_asar_integrity_validation fuse is on, a validator registered via gin::SetV8SnapshotValidator CHECK-fails startup unless the snapshot's SHA-256 equals the compiled-in snapshot_checksum::kChecksum.",
+          "sources": [
+            "shell/app/electron_main_delegate.cc#L165-L177",
+            "shell/app/electron_main_delegate.cc#L202-L204"
           ],
           "kind": "evidence"
         }
       ]
     },
     "testing_signals": {
-      "summary": "Tests are first-class and large: spec/ holds well over a thousand TypeScript files run by Mocha and Chai inside a built Electron, not in plain Node. CI is GitHub Actions (pipeline-segment-electron-test and related workflows). Lint is separate and runs in Node: oxlint for JS/TS, clang-format for C++, and an API-history checker for docs. There is no traditional unit-test pyramid for the C++ layer in this repo; C++ is tested through the JS spec process plus Chromium's own tests upstream.",
+      "summary": "Tests are Mocha specs in spec/ (api-*-spec.ts per module plus feature specs like asar/fuses/esm/crash) executed inside the built Electron binary — spec/index.js is literally run as the app's main script by script/spec-runner.js. Assertions use chai with dirty-chai and chai-as-promised; CI shards by per-file weights and records timing artifacts. Coverage is strongest on the JS-facing API surface; C++ internals are exercised indirectly, and there are no unit tests for shell/ outside the in-binary specs.",
       "claims": [
         {
-          "claim": "The test package is spec/package.json (name electron-test-main). The runner entry is spec/index.js. CLAUDE.md states the frameworks are Mocha and Chai and that the command is e test, which must be run against a locally built Electron.",
+          "claim": "npm test → script/spec-runner.js, which installs spec node_modules when the spec hash changed, generates electron.d.ts if missing, then launches the built Electron binary with spec/ as the app.",
           "sources": [
-            "spec/package.json",
-            "spec/index.js",
-            "CLAUDE.md"
+            "package.json#L73",
+            "script/spec-runner.js#L44-L120",
+            "spec/index.js#L1-L8"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "Fixtures under spec/fixtures are mini Electron apps (their own package.json, main.js, pages) used so a test can spawn a second app with a given webPreferences combination. spec/fixtures/package.json and spec/fixtures/snapshot-items-available/package.json are two of those manifests.",
+          "claim": "spec/index.js is the test app's main: it registers privileged test schemes ('app', 'zoom', 'sw', 'cors', 'stream', ...), appends js-flags=--expose_gc and enable-features switches, loads Mocha with forbidOnly+3 retries on CI, TAP reporter by default (MOCHA_REPORTER/MOCHA_MULTI_REPORTERS override), 30s default timeout (MOCHA_TIMEOUT).",
           "sources": [
-            "spec/fixtures/package.json",
-            "spec/fixtures/snapshot-items-available/package.json"
+            "spec/index.js#L33-L80",
+            "spec/index.js#L208-L292"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "JS/TS lint is oxlint via npm run lint:js, which runs node ./script/lint.js --js. Config is .oxlintrc.json. C++ formatting is npm run lint:clang-format (python3 script/lint.js --cc). API docs are checked by npm run lint:api-history (script/check-api-history.js) against the YAML blocks in docs/api/*.md.",
+          "claim": "Spec discovery picks files matching /-spec\\.[tj]s$/ under spec/ via get-files.ts; MOCHA_GREP/MOCHA_INVERT and --files allow sharding; npm_config_match filters by name.",
           "sources": [
-            "package.json",
+            "spec/index.js#L294-L321",
+            "spec/get-files.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "disabled-tests.json is a title-exact skip list enforced by a mocha beforeEach root hook; per-suite beforeAll kills orphaned Electron processes (pgrep/wmic/proc scan filtered by execPath and PID-descent) between spec files.",
+          "sources": [
+            "spec/index.js#L249-L258",
+            "spec/index.js#L104-L206",
+            "spec/disabled-tests.json"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "On CI the runner writes spec/artifacts/spec-timings.json (per-file wall time keyed by platform/arch/mas/sanitizer) consumed by script/gen-spec-weights.js; script/spec-weights.json already holds per-file shard weights.",
+          "sources": [
+            "spec/index.js#L363-L394",
+            "script/spec-weights.json"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "spec/package.json pins the harness deps — mocha ^10, chai + chai-as-promised + dirty-chai, mocha-junit-reporter, ws, busboy — plus @electron-ci/* native-addon fixtures (dialog-helper, echo, is-valid-window, object-wrap, uv-dlopen, virtual-display) and @electron/fuses.",
+          "sources": [
+            "spec/package.json#L10-L43"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "ELECTRON_REQUIRE_TESTING_BINDINGS=1 makes the run fail early if testing bindings are unavailable, distinguishing testing builds from release binaries.",
+          "sources": [
+            "spec/index.js#L268-L271",
+            "spec/lib/spec-helpers.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "electron.d.ts is generated from docs API markdown (create-api-json.mjs + @electron/typescript-definitions) and validated by a smoke test: spec/ts-smoke/runner.js compiles fixture TS against the definitions; the same generation runs as a docs lint step.",
+          "sources": [
+            "package.json#L61-L63",
+            "spec/ts-smoke/runner.js",
+            "script/create-api-json.mjs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Fixtures cover asar archives (test.asar, recursive-asar), crash-cases, devtools-extensions, native-addon builds, ESM variants and webview pages under spec/fixtures; helper modules live in spec/lib (http-server-helpers, codesign-helpers, window-helpers, ...).",
+          "sources": [
+            "spec/fixtures",
+            "spec/lib/spec-helpers.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Linting is a first-class gate: npm run lint chains script/lint.js (oxlint for JS/TS, cpplint-style for C++/ObjC, python, gn), oxfmt format check, clang-format on shell/, and a docs pipeline that lints code blocks in markdown and validates api-history YAML blocks against docs/api-history.schema.json.",
+          "sources": [
+            "package.json#L42-L60",
             "script/lint.js",
-            ".oxlintrc.json"
+            "docs/api-history.schema.json"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "CI workflow files under .github/workflows/ split the pipeline into segments: build, lint (pipeline-electron-lint), tests (pipeline-segment-electron-test), clang-tidy (pipeline-segment-electron-clang-tidy), and publish per OS. audit-branch-ci.yml and archaeologist-dig.yml upload an unarchived audit-results.md artifact.",
+          "claim": "CI splits work across pipeline workflows: pipeline-segment-electron-build.yml, pipeline-segment-electron-test.yml (plus a -64k variant), pipeline-electron-lint.yml, apply-patches.yml, and per-OS publish workflows (linux/macos/windows-publish.yml); audit workflows publish findings as an 'audit-results.md' artifact.",
           "sources": [
-            ".github/workflows/pipeline-segment-electron-clang-tidy.yml",
-            ".github/workflows/audit-branch-ci.yml",
-            ".github/workflows/archaeologist-dig.yml",
-            "CLAUDE.md"
+            ".github/workflows/pipeline-segment-electron-test.yml",
+            ".github/workflows/apply-patches.yml",
+            ".github/workflows/audit-branch-ci.yml"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "script/gn-check.js (npm run gn-check) verifies GN files reference sources that exist and that filenames.gni stays in sync. This is a build-graph test, not a behavior test.",
+          "claim": "default_app/ has no dedicated spec file — its CLI behaviors (REPL, --version, package loading) are only covered indirectly through specs that launch Electron with app paths; the argument parser itself is untested in isolation.",
           "sources": [
-            "script/gn-check.js",
-            "package.json",
-            "filenames.gni"
+            "default_app/main.ts#L20-L70",
+            "spec/index.js"
           ],
-          "kind": "evidence"
+          "kind": "inference"
         },
         {
-          "claim": "PGO collection is its own CI segment (.github/workflows/pipeline-segment-pgo-collect.yml) driven by script/pgo, whose package is @electron-ci/pgo. The benchmark runner package is script/pgo/benchmark-app (electron-pgo-benchmark-runner). This is release-optimization coverage, not functional regression coverage.",
+          "claim": "spec/CLAUDE.md documents real test-authoring hazards: expect() inside stream/event listeners becomes an uncaught exception that kills the runner silently, utilityProcess drops stdio listeners at 'exit', and children must be registered with deferKillUtilityProcess — evidence that flaky child-process specs have been a recurring problem.",
           "sources": [
-            ".github/workflows/pipeline-segment-pgo-collect.yml",
-            "script/pgo/package.json",
-            "script/pgo/benchmark-app/package.json"
+            "spec/CLAUDE.md"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "risk_map": {
+      "summary": "The largest risks are the security boundary between web content and Node, the breadth of the IPC surface, and the patch-queue maintenance burden. Sandbox/safety defaults are computed from webPreferences in one place (web_contents_preferences.cc) so changes there have wide blast radius; several features (fuses, ELECTRON_RUN_AS_NODE, preload privilege, protocol handlers) deliberately trade security for capability; and ~200 patches to Chromium/Node/V8 must be re-applied and merged on every dependency roll.",
+      "claims": [
+        {
+          "claim": "Sandbox defaults are derived, not explicit: RendererProcessPreferences::From marks a renderer sandboxed unless nodeIntegration or nodeIntegrationInWorker is set (or webPreferences.sandbox overrides), and AppendCommandLineSwitches injects --no-sandbox/--no-zygote for unsandboxed renderers — a single pref change flips process isolation.",
+          "sources": [
+            "shell/browser/web_contents_preferences.cc#L86-L117",
+            "shell/browser/web_contents_preferences.cc#L126-L159"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "What is not covered inside this repo: Chromium and Node themselves are assumed tested upstream. Patch files under patches/ have no unit tests; a bad patch is caught only when e sync fails or when a spec that depends on the patched behavior fails after a full build. C++ in shell/ rarely has a gtest binary of its own in this tree.",
+          "claim": "ELECTRON_DISABLE_SANDBOX unconditionally appends --no-sandbox at BasicStartupComplete, and ELECTRON_RUN_AS_NODE turns the whole binary into Node — both are env-var-controlled capabilities attackers can sometimes influence.",
+          "sources": [
+            "shell/app/electron_main_delegate.cc#L100-L103",
+            "shell/app/electron_main_delegate.cc#L235-L236",
+            "lib/node/init.ts#L28-L41"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Preload scripts run with Node globals even in isolated worlds; the Module.wrapper hack in lib/renderer/init.ts must stay in sync with the bundle's inject list in build/bundle/bundle.mjs, and mistakes leak process/Buffer into the main world (the deletion path only runs for non-context-isolated renderers).",
+          "sources": [
+            "lib/renderer/init.ts#L21-L41",
+            "lib/renderer/init.ts#L125-L141",
+            "build/bundle/bundle.mjs#L127-L141"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The IPC surface trusts channel strings end-to-end: internal channels share the same wire as app channels (ipcMainInternal vs ipcMain separated only by the 'internal' bool on the mojo call), so a confused-deputy bug in ipc_dispatch or event.type checks (e.g. rpc-server.ts guards event.type !== 'frame') would let renderer content reach privileged handlers.",
+          "sources": [
+            "shell/browser/electron_api_ipc_handler_impl.cc#L48-L84",
+            "lib/browser/rpc-server.ts#L4-L14",
+            "lib/browser/ipc-dispatch.ts#L5-L7"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "process._linkedBinding exposes the entire native binding table (ELECTRON_*_BINDINGS) to any code running with Node in the renderer when nodeIntegration is on — including process.crash() and process.hang() which deliberately crash/hang the process.",
+          "sources": [
+            "shell/common/node_bindings.cc#L68-L120",
+            "shell/common/api/electron_bindings.cc#L113-L123"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Fuses change security posture post-build without recompilation: grant_file_protocol_extra_privileges defaults to '1' (on) and run_as_node/node_options/node_cli_inspect default on; embedded_asar_integrity_validation and only_load_app_from_asar default off, so integrity guarantees are opt-in.",
+          "sources": [
+            "build/fuses/fuses.json5#L5-L14",
+            "shell/browser/app_package.cc#L91-L98",
+            "docs/tutorial/fuses.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "protocol.handle bridges raw request data into Fetch objects: uploadData chunk types (rawData/file/stream/blob) are reassembled by hand and blob bytes come from session.defaultSession regardless of the requesting session (noted in the code as relying on globals) — a subtle cross-session data path.",
+          "sources": [
+            "lib/browser/api/protocol.ts#L58-L106"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "<webview> webPreferences are parsed from a DOM attribute string via parse-features-string, and guest-view-manager merges them with embedder-inherited security prefs; malformed or malicious attribute values are a parsing/injection surface, mitigated by the inheritedWebPreferences allowlist.",
+          "sources": [
+            "lib/browser/guest-view-manager.ts#L32-L75",
+            "lib/browser/parse-features-string.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "security_warnings.cc exists specifically to nag developers about insecure configurations (insecure content, disabled webSecurity, etc.) in devtools — implying the footguns are common enough to need runtime warnings, gated off in tests via ELECTRON_DISABLE_SECURITY_WARNINGS.",
+          "sources": [
+            "shell/renderer/security_warnings.cc",
+            "spec/index.js#L16"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The uncaughtException handler in lib/browser/init.ts swallows main-process crashes into a GUI error box (showErrorBox) instead of exiting — a deliberate 'don't quit' policy that can mask fatal errors in production apps.",
+          "sources": [
+            "lib/browser/init.ts#L14-L31"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "patches/ carries ~200 patches across 13 upstream repos (chromium, node, v8, angle, sqlite, webrtc, boringssl, ffmpeg, ...); each Chromium roll (DEPS chromium_version) requires 3-way merging the queue, and patch rot in security-relevant files is a recurring fragility the repo's own docs warn about.",
           "sources": [
             "patches/config.json",
-            "spec/index.js",
-            "CLAUDE.md"
+            "DEPS#L3-L8",
+            "docs/development/patches.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "spec/index.js kills processes matching the Electron execPath between spec files — on macOS via pgrep -f and on Linux by scanning /proc/*/exe — which would terminate any co-located Electron app sharing the binary path if run outside CI.",
+          "sources": [
+            "spec/index.js#L104-L206"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "ElectronBrowserMainParts holds most browser-process singletons (node_bindings_, js_env_, node_env_, browser_, fake_browser_process_) with an enforced single self_ instance; ordering bugs in PostEarlyInitialization (env before LoadAppPackage, JoinAppCode before FeatureList re-init) are load-bearing and poorly isolated.",
+          "sources": [
+            "shell/browser/electron_browser_main_parts.cc#L198-L210",
+            "shell/browser/electron_browser_main_parts.cc#L290-L410"
           ],
           "kind": "inference"
         }
       ]
     },
-    "risk_map": {
-      "summary": "The dangerous surface is the privilege boundary between a web page and the Node-capable main process. contextIsolation, sandbox, and the contextBridge clone are the mitigations; turning them off is still possible and is the usual foot-gun. IPC channels are strings with no framework-level auth. shell.openExternal, protocol handlers, and the preload path are the other sensitive edges. A second risk class is maintainer-only: patches against Chromium, CI secrets in .env.example, and the publish workflows. Blast radius of a mistake in electron_browser_client or node_bindings is every Electron app.",
-      "claims": [
-        {
-          "claim": "nodeIntegration and sandbox are webPreferences on BrowserWindow. Setting nodeIntegration: true with contextIsolation: false gives the loaded page a Node global. The safe default path is sandbox true and contextIsolation true, with a preload that uses contextBridge. The flags are interpreted in lib/browser/api/browser-window.ts and enforced in the renderer client.",
-          "sources": [
-            "lib/browser/api/browser-window.ts",
-            "shell/renderer/electron_renderer_client.cc",
-            "docs/api/browser-window.md"
-          ],
-          "kind": "evidence"
-        },
-        {
-          "claim": "ipcMain has no authentication. Any frame that can call ipcRenderer.invoke can hit any channel the main process registered, unless the handler itself checks event.senderFrame or event.sender. Channel names are plain strings. This is the standard confused-deputy foot-gun and is documented as the app's responsibility.",
-          "sources": [
-            "lib/browser/api/ipc-main.ts",
-            "lib/renderer/api/ipc-renderer.ts",
-            "docs/api/ipc-main.md"
-          ],
-          "kind": "evidence"
-        },
-        {
-          "claim": "protocol.registerSchemesAsPrivileged and protocol.handle can make a custom scheme look like https (standard, secure, cors, fetch). A privileged scheme that serves renderer-controlled content inherits those privileges. Registration must happen before app ready and is sticky for the process.",
-          "sources": [
-            "lib/browser/api/protocol.ts",
-            "docs/api/protocol.md"
-          ],
-          "kind": "evidence"
-        },
-        {
-          "claim": "Preload path is a filesystem read of a JS file executed with Node (or sandbox-preload) privileges. webPreferences.preload is an absolute path. A compromised or writable preload is full app compromise. session.setPreloads appends more scripts to every subsequent load in that partition.",
-          "sources": [
-            "lib/browser/api/session.ts",
-            "lib/browser/api/web-contents.ts",
-            "shell/renderer/electron_renderer_client.cc"
-          ],
-          "kind": "evidence"
-        },
-        {
-          "claim": "The renderer is not fully trusted even in sandbox mode for some legacy APIs. desktopCapturer, clipboard, and crashReporter can expose system information if granted. clipboard is implemented in both main and renderer module lists; a preload that re-exports clipboard gives the page read/write of the OS clipboard.",
-          "sources": [
-            "lib/browser/api/clipboard.ts",
-            "lib/renderer/api/module-list.ts",
-            "docs/api/clipboard.md"
-          ],
-          "kind": "evidence"
-        },
-        {
-          "claim": "NodeBindings::RegisterBuiltinModules installs Electron's native addons into Node's builtin list before the app script runs. A bug in the binding allow-list (which process type receives which module) leaks main-process capabilities into the renderer or a utility process.",
-          "sources": [
-            "shell/common/node_bindings.cc",
-            "lib/browser/api/module-list.ts",
-            "lib/renderer/api/module-list.ts"
-          ],
-          "kind": "evidence"
-        },
-        {
-          "claim": "Command-line switches can disable the sandbox or turn on Node in renderers (--no-sandbox and related Chromium flags). Because Electron forwards unrecognized switches to Chromium, an app that appends user-controlled switches is a sandbox escape. The list is documented in docs/api/command-line-switches.md.",
-          "sources": [
-            "docs/api/command-line-switches.md",
-            "lib/browser/api/app.ts"
-          ],
-          "kind": "evidence"
-        },
-        {
-          "claim": "Maintainer secrets live outside the app runtime. .env.example names tokens consumed by release scripts. Publish workflows (macos-publish.yml, linux-publish.yml, windows-publish.yml) have permission to upload release assets. Those files are in-scope for supply-chain risk and out-of-scope for ordinary API changes.",
-          "sources": [
-            ".env.example",
-            ".github/workflows/macos-publish.yml",
-            ".github/workflows/windows-publish.yml"
-          ],
-          "kind": "evidence"
-        },
-        {
-          "claim": "patches/ is a fragile coupling. Each file is a diff against a pinned Chromium or Node revision in DEPS. A Chromium upgrade (roller/chromium/main) invalidates hunks. CLAUDE.md says to fix existing patches rather than add new ones, and never to rewrite TODO(name) assignees. A conflict here breaks e sync for every developer.",
-          "sources": [
-            "patches/config.json",
-            "DEPS",
-            "CLAUDE.md"
-          ],
-          "kind": "evidence"
-        },
-        {
-          "claim": "BrowserView is legacy. It still has docs, a JS module, a C++ implementation, and tests, but BaseWindow plus WebContentsView is the replacement. Editing browser-view in isolation can miss the new view hierarchy, and deleting it outright is a semver-major break.",
-          "sources": [
-            "docs/api/browser-view.md",
-            "lib/browser/api/browser-view.ts",
-            "docs/api/base-window.md"
-          ],
-          "kind": "evidence"
-        },
-        {
-          "claim": "shell/browser/api/electron_api_app.cc and shell/browser/electron_browser_client.cc are blast-radius hotspots. They run in every app's browser process and own lifecycle, scheme registration, and process spawning. A small behavior change shows up as a breaking change for the whole ecosystem and needs a Notes: release note.",
-          "sources": [
-            "shell/browser/api/electron_api_app.cc",
-            "shell/browser/electron_browser_client.cc",
-            "CLAUDE.md"
-          ],
-          "kind": "evidence"
-        },
-        {
-          "claim": "safeStorage encrypts secrets with an OS keychain (Keychain, DPAPI, kwallet/libsecret) but the ciphertext is only as safe as the OS user account. It is not a substitute for not putting secrets in the renderer. Implementation is shell/browser/api/electron_api_safe_storage.cc.",
-          "sources": [
-            "lib/browser/api/safe-storage.ts",
-            "docs/api/safe-storage.md"
-          ],
-          "kind": "evidence"
-        }
-      ]
-    },
     "extension_points": {
-      "summary": "Electron does not load third-party native plugins from a directory. Extension is by API: new browser modules are added to the module list and a gin class, new protocols are handlers, new process types go through the utility process or a content client. For maintainers, the real plug-in points are filenames.gni, the module lists, the docs API pages (which generate TypeScript), and the patch config. App authors extend behavior through webPreferences, protocol.handle, ipcMain channels, and session partitions.",
+      "summary": "New APIs plug in at three layers: a C++ binding registered via NODE_LINKED_BINDING_CONTEXT_AWARE plus a name in the ELECTRON_*_BINDINGS macros, a JS wrapper added to the appropriate lib/<proc>/api/module-list.ts, and a docs/api/*.md page that generates the .d.ts. Apps extend Electron through protocol.handle/registerSchemesAsPrivileged, session partitions and preload-script registration, ipcMain/ipcRenderer channels, utilityProcess.fork, and (for embedders) build-time fuses and GN buildflags. docs/development/creating-api.md documents the recipe.",
       "claims": [
         {
-          "claim": "Browser built-in registry: lib/browser/api/module-list.ts exports the map of module name to implementation. Adding a main-process API means adding a file under lib/browser/api/, listing it in that map for the right process types, and usually adding a native binding name.",
+          "claim": "To add a main-process module: add { name, loader } to browserModuleList in lib/browser/api/module-list.ts (alphabetical, with a matching module-keys update noted in the file's TODO), implement lib/browser/api/<name>.ts, and it appears on require('electron') via defineProperties.",
           "sources": [
-            "lib/browser/api/module-list.ts",
-            "lib/browser/init.ts"
+            "lib/browser/api/module-list.ts#L1-L5",
+            "lib/browser/api/exports/electron.ts#L5-L8",
+            "lib/common/define-properties.ts"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "Renderer built-in registry is the smaller list in lib/renderer/api/module-list.ts. A module present only in the browser list cannot be required from a renderer. This split is the extension gate for anything that should not be page-reachable.",
+          "claim": "To add a native binding: register Initialize() with NODE_LINKED_BINDING_CONTEXT_AWARE(electron_<proc>_<name>, Initialize) at file scope and add the name to the matching ELECTRON_*_BINDINGS macro in node_bindings.cc; JS reaches it via process._linkedBinding('electron_<proc>_<name>').",
           "sources": [
-            "lib/renderer/api/module-list.ts",
-            "lib/renderer/init.ts"
+            "shell/browser/api/electron_api_app.cc#L2099-L2127",
+            "shell/common/node_bindings.cc#L68-L120"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "Native binding registration is NodeBindings::RegisterBuiltinModules in shell/common/node_bindings.cc. JS reaches C++ through process._linkedBinding('electron_browser_*') or the renderer equivalent. A new API needs both the gin class (shell/browser/api/electron_api_*.cc) and the binding name wired into the Node builtin table.",
+          "claim": "docs/development/creating-api.md is the canonical recipe for new APIs; the docs page's YAML 'history' front-matter is schema-validated and feeds electron.d.ts generation via create-api-json.mjs + electron-typescript-definitions.",
           "sources": [
-            "shell/common/node_bindings.cc",
-            "shell/browser/api/electron_api_app.cc"
+            "docs/development/creating-api.md",
+            "docs/api-history.schema.json",
+            "package.json#L61-L62"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "Source-file registration for the GN build is filenames.gni (and BUILD.gn source sets). A new .cc file that is not listed there is not compiled. script/gn-check.js fails CI when the list and the tree disagree.",
+          "claim": "protocol.registerSchemesAsPrivileged (must run before app ready, per spec/index.js usage) + session.protocol.handle/unhandle/isProtocolHandled let apps mint custom URL schemes with privileges (standard, secure, stream, corsEnabled, supportFetchAPI, allowServiceWorkers).",
           "sources": [
-            "filenames.gni",
-            "BUILD.gn",
-            "script/gn-check.js"
+            "lib/browser/api/protocol.ts#L152-L212",
+            "spec/index.js#L62-L80",
+            "shell/browser/protocol_registry.cc"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "Custom schemes are the app-author extension point for navigation. protocol.registerSchemesAsPrivileged declares scheme flags; protocol.handle installs the loader. There is no separate plugin manifest.",
+          "claim": "session.fromPartition/fromPath create isolated storage/network contexts; registerPreloadScript registers frame- or service-worker-scoped preloads (superseding getPreloads/setPreloads which are deprecation shims).",
           "sources": [
-            "lib/browser/api/protocol.ts",
-            "docs/api/protocol.md"
+            "lib/browser/api/session.ts#L57-L85",
+            "lib/browser/api/session.ts#L122-L128",
+            "shell/browser/electron_browser_context.cc"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "IPC channels are an open string registry. ipcMain.handle and ipcMain.on do not consult a central route table beyond the EventEmitter map inside ipc-main.ts. Apps invent their own channel names; Electron does not namespace them.",
+          "claim": "session.extensions.loadExtension (Chromium extensions support, ENABLE_ELECTRON_EXTENSIONS buildflag) is the app-facing extension point for MV2-style extensions; old session.loadExtension calls are rerouted with deprecation warnings.",
           "sources": [
-            "lib/browser/api/ipc-main.ts",
-            "docs/api/ipc-main.md"
+            "lib/browser/api/session.ts#L87-L114",
+            "shell/browser/electron_browser_main_parts.cc#L114-L121",
+            "docs/api/extensions.md"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "Session is a factory. session.fromPartition(partition, options) returns or creates a Session object keyed by partition string. New storage domains are new partition names, not new classes.",
+          "claim": "ipcMain.handle/on and ipcRenderer.invoke/send are the app-level RPC extension point; MessageChannelMain/MessagePortMain support transferable ports, and ipcMainServiceWorker covers service-worker targets.",
           "sources": [
-            "lib/browser/api/session.ts",
-            "docs/api/session.md"
+            "lib/browser/ipc-main-impl.ts#L15-L35",
+            "docs/api/ipc-main.md",
+            "docs/api/ipc-main-service-worker.md"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "utilityProcess.fork(modulePath, args, options) is the supported way to add a Node child that is not a renderer. It does not share the DOM. The implementation is lib/browser/api/utility-process.ts plus shell/browser/api/electron_api_utility_process.cc.",
+          "claim": "utilityProcess.fork(modulePath, args, opts) is the supported way to run app JS in a dedicated process with postMessage messaging — replacing child_process.fork when the runAsNode fuse is off.",
           "sources": [
-            "lib/browser/api/utility-process.ts",
-            "docs/api/utility-process.md"
+            "lib/browser/api/utility-process.ts#L151-L153",
+            "lib/node/init.ts#L28-L32"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "Platform implementations are selected at compile time with GN buildflags (buildflags/buildflags.gni) and per-OS source lists in filenames.gni. Mac-only files live under shell/browser/ui/cocoa, Windows under win/, Linux under views/ and the GTK/Ozone paths. Adding a platform feature means a new source-list entry, not a runtime plugin.",
+          "claim": "GN buildflags (buildflags/buildflags.gni) gate major subsystems — ENABLE_ELECTRON_EXTENSIONS, ENABLE_BUILTIN_SPELLCHECKER, ENABLE_PDF_VIEWER, ENABLE_PRINTING, ENABLE_PLUGINS — and are exposed to JS at runtime via electron_common_features binding (features.cc).",
           "sources": [
             "buildflags/buildflags.gni",
-            "filenames.gni",
-            "BUILD.gn"
+            "shell/common/api/features.cc",
+            "shell/browser/electron_browser_main_parts.cc#L114-L135"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "Upstream behavior is extended by patches, not by subclassing Chromium in a plugin DLL. patches/config.json is the registry of patchable repos. The documented workflow is to change the checkout, commit, and run e patches <target>.",
+          "claim": "Fuses are the distributor-facing extension mechanism: build/fuses/fuses.json5 is the schema (with a 'never remove, mark removed r' rule and _version field), generated into fuses.h/fuses.cc by build/fuses/build.py during the electron_fuses GN action; the @electron/fuses npm package flips them in shipped binaries.",
+          "sources": [
+            "build/fuses/fuses.json5#L1-L4",
+            "BUILD.gn#L450-L457",
+            "spec/fuses-spec.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New webview-exposed behaviors plug into the GUEST_VIEW_MANAGER_* internal channels plus the syncMethods/asyncMethods/properties tables in lib/common/web-view-methods.ts and the event list in lib/browser/web-view-events.ts.",
+          "sources": [
+            "lib/common/ipc-messages.ts#L5-L11",
+            "lib/common/web-view-methods.ts",
+            "lib/browser/guest-view-manager.ts#L7-L11"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New patch targets are added by extending patches/config.json with a {patch_dir, repo} pair — the queue is applied by e sync / apply-patches.yml and exported by e patches <target>.",
           "sources": [
             "patches/config.json",
-            "CLAUDE.md"
+            ".github/workflows/apply-patches.yml"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "Feature flags that change the compiled API go in buildflags/buildflags.gni and are read from C++ as BUILDFLAG(...) and from JS via process._linkedBinding or generated defines. enable_electron_build_flags style switches gate in-app-purchase and similar OS-specific modules.",
+          "claim": "The bundle pipeline itself is extensible: adding a lib/<name>/init.ts plus a targets.mjs entry produces a new baked-in JS context, with knobs for Node availability, electron-module aliasing, node-globals capture and init wrapping.",
           "sources": [
-            "buildflags/buildflags.gni",
-            "lib/browser/api/module-list.ts"
+            "build/bundle/targets.mjs#L5-L54",
+            "build/bundle/bundle.mjs#L50-L60"
           ],
-          "kind": "evidence"
-        },
-        {
-          "claim": "The default app is a replaceable entry, not a plugin system. Shipping apps set their own package.json main. default_app/main.ts only runs when the binary has nothing else to load. Overriding it is done by passing an app path on the command line.",
-          "sources": [
-            "default_app/main.ts",
-            "default_app/package.json"
-          ],
-          "kind": "evidence"
+          "kind": "inference"
         }
       ]
     },
     "agent_handoff": {
-      "summary": "Read CLAUDE.md and docs/README.md before editing. Most API changes touch four layers at once: C++ in shell/, the JS wrapper in lib/, the markdown doc in docs/api/, and a spec in spec/. Do not run e test or e build unless asked. Do not use npx. Do not invent a new patch if an existing one can be edited. PR bodies need a Notes: line as the last line. Match Chromium C++ style and oxlint for TypeScript. cppgc rules in CLAUDE.md are mandatory for any Oilpan code.",
+      "summary": "This is a Chromium-tree project, not a standalone repo: it lives at src/electron inside a Chromium checkout, builds with GN/Ninja via @electron/build-tools ('e' commands), and tests run the built binary against spec/. Follow the pinned rules: no npx, no force-push conventions, patches are fixed not recreated, C++ is Chromium-style, JS/TS is oxlint+oxfmt. Read the root CLAUDE.md and docs/development/* before editing; run lint-staged-adjacent checks (oxlint, clang-format, gen-filenames) since filenames.gni is generated.",
       "claims": [
         {
-          "claim": "First files to read for any task: CLAUDE.md (build, patches, PR notes, cppgc rules), docs/README.md and docs/CLAUDE.md (how API docs are structured), package.json scripts, and the specific docs/api/<module>.md for the feature being changed.",
+          "claim": "Read first: root CLAUDE.md (build commands, patch rules, cppgc/GC rules, PR conventions), docs/development/source-code-directory-structure.md, docs/development/creating-api.md, docs/development/testing.md, then BUILD.gn/DEPS/filenames.gni for build wiring.",
           "sources": [
             "CLAUDE.md",
-            "docs/README.md",
+            "docs/development/source-code-directory-structure.md",
+            "docs/development/creating-api.md",
+            "docs/development/testing.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Never use npx — it can fetch arbitrary packages; run binaries via node_modules/.bin/<tool> or yarn <tool>. This applies to authored scripts too.",
+          "sources": [
+            "CLAUDE.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Build/test loop: e init/e use/e sync/e build/e start/e test (from @electron/build-tools); inside the repo, npm test runs script/spec-runner.js and npm run lint runs the full lint chain (oxlint, oxfmt, clang-format, docs lint, gn check).",
+          "sources": [
+            "CLAUDE.md",
+            "package.json#L42-L77",
+            "script/spec-runner.js#L1-L30"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "filenames.gni and filenames.auto.gni are generated: lint-staged runs script/gen-filenames.mts on *.{js,mjs,ts,mts,d.ts} changes, and bundle.mjs --print-graph produces the module list — hand-editing them is a trap.",
+          "sources": [
+            "package.json#L94-L96",
+            "build/bundle/bundle.mjs#L8-L10",
+            "script/gen-filenames.mts",
+            "filenames.gni"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Patch workflow: fix existing patches rather than adding new ones, preserve TODO(name) attribution, edit the target repo then 'e patches <target>' to export; for CI patch conflicts fetch the update-patches.patch artifact from the Apply Patches run instead of a local e sync --3.",
+          "sources": [
+            "CLAUDE.md",
+            "docs/development/patches.md",
+            ".github/workflows/apply-patches.yml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Spec-writing rules (spec/CLAUDE.md): never expect() inside 'data'/'message'/'exit' listeners, wait for expected output not 'exit', accumulate stdout before asserting (stderr races), and register forked children with deferKillUtilityProcess so the global afterEach reaps them.",
+          "sources": [
+            "spec/CLAUDE.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "C++ conventions follow Chromium style enforced by clang-format (script/run-clang-format.py); cppgc/Oilpan rules are strict — cppgc::MakeGarbageCollected only, Member/WeakMember edges, no destructors touching other GC objects, GCPA-managed callbacks via WeakCellFactory.",
+          "sources": [
+            "CLAUDE.md",
+            "package.json#L46"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "API changes need synchronized updates across lib/<proc>/api/module-list.ts (+module-keys), the C++ binding registration, docs/api/*.md with YAML history blocks (lint:api-history validates against docs/api-history.schema.json), docs/breaking-changes.md for removals, and regenerated electron.d.ts.",
+          "sources": [
+            "lib/browser/api/module-list.ts#L1-L3",
             "docs/CLAUDE.md",
-            "package.json"
+            "package.json#L59-L62"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "Safe lint commands that do not require a Chromium build: npm run lint:js, npm run lint:clang-format, npm run lint:api-history, npm run gn-check. Binaries must be invoked as node_modules/.bin/<tool> or via yarn / the script/lint.js wrapper. npx is forbidden by CLAUDE.md.",
+          "claim": "PR conventions: body must end with a 'Notes:' consumer-facing line ('Notes: none' if internal); label semver/{none,patch,minor,major} and target/{N}-x-y backports — bug fixes to all active branches except oldest, security fixes including oldest, features main-only.",
+          "sources": [
+            "CLAUDE.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Known traps: the renderer's Module.wrapper hack must mirror build/bundle/bundle.mjs inject entries; the 'vm' module is unusable in renderers; process.exit is remapped to app.exit; renderer node globals are deleted unless nodeIntegration/contextIsolation; unhandled rejections are set to 'warn-with-error-code' not crash.",
+          "sources": [
+            "lib/renderer/init.ts#L11-L41",
+            "lib/browser/init.ts#L40-L50",
+            "lib/renderer/init.ts#L125-L141",
+            "shell/browser/electron_browser_main_parts.cc#L343-L344"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Safe edit boundaries: lib/ changes are self-contained TS that get bundled — run build/bundle/typecheck.mjs and oxlint; shell/ C++ changes need clang-format and a full build; spec/ changes should mirror the api-<module>-spec.ts naming convention and use spec/lib helpers.",
+          "sources": [
+            "build/bundle/typecheck.mjs",
+            "spec/lib/spec-helpers.ts",
+            "package.json#L76"
+          ],
+          "kind": "inference"
+        },
+        {
+          "claim": "CI artifacts worth knowing: audit workflows upload 'audit-results.md' unarchived (archive_download_url returns raw markdown); the Apply Patches workflow uploads 'update-patches.patch'; spec-timings.json feeds shard balancing.",
           "sources": [
             "CLAUDE.md",
-            "package.json",
-            "script/lint.js"
-          ],
-          "kind": "evidence"
-        },
-        {
-          "claim": "Do not run e build, e sync, e start, or e test unless the user asks. CLAUDE.md says to leave e start and e test to the user. A full build needs the Chromium checkout in the parent directory and an e config under ~/.electron_build_tools/configs/.",
-          "sources": [
-            "CLAUDE.md"
-          ],
-          "kind": "evidence"
-        },
-        {
-          "claim": "Patch edits: prefer fixing an existing file in patches/<target>/ over adding a new patch. Keep the original commit message and TODO(author) assignee. If the task is a Chromium roll on roller/chromium/main, use the electron-chromium-upgrade skill; for Node, electron-node-upgrade. Export with e patches <target> only after committing in the target repo.",
-          "sources": [
-            "CLAUDE.md",
-            "patches/config.json"
-          ],
-          "kind": "evidence"
-        },
-        {
-          "claim": "PR convention: the body must end with a Notes: line written for app developers, or Notes: none. Semver labels are semver/none, semver/patch, semver/minor, semver/major. Bug fixes get target/N-x-y labels for active release lines except the oldest; security fixes include the oldest. Active target labels use color #ad244f.",
-          "sources": [
-            "CLAUDE.md"
-          ],
-          "kind": "evidence"
-        },
-        {
-          "claim": "C++ edits must follow the cppgc rules in CLAUDE.md: no bare pointers to GC objects in heap fields (use cppgc::Member), no allocating GC objects with new, trace every Member, do not touch other GC objects in destructors, and avoid prefinalizers. clang-format is the formatter.",
-          "sources": [
-            "CLAUDE.md"
-          ],
-          "kind": "evidence"
-        },
-        {
-          "claim": "New .cc/.h files must be added to filenames.gni or they will not link. New JS modules must be added to the correct module-list.ts or require('electron').<name> will be undefined in that process.",
-          "sources": [
-            "filenames.gni",
-            "lib/browser/api/module-list.ts",
-            "lib/renderer/api/module-list.ts"
-          ],
-          "kind": "evidence"
-        },
-        {
-          "claim": "Known trap: patch conflict on an existing PR. CLAUDE.md says to download the update-patches.patch artifact from the failed Apply Patches workflow with gh api (it is uploaded unarchived, so gh run download rejects it) and git am it, instead of running e sync locally.",
-          "sources": [
-            "CLAUDE.md"
-          ],
-          "kind": "evidence"
-        },
-        {
-          "claim": "Do not edit publish workflows, .env.example secrets, or DEPS pins as a drive-by while changing an API. Release files (.github/workflows/*-publish.yml) and the roller branches are separate tasks. chromium_src/ is for source-file overrides that cannot be expressed as patches; touch it only when a patch cannot work.",
-          "sources": [
-            ".github/workflows/linux-publish.yml",
-            "DEPS",
-            ".env.example"
-          ],
-          "kind": "evidence"
-        },
-        {
-          "claim": "Code style for TypeScript is oxlint (.oxlintrc.json), not ESLint and not Prettier-as-a-gate. Match the existing file's export style (many API modules are large classes that delegate to a native binding). Do not reformat unrelated code.",
-          "sources": [
-            ".oxlintrc.json",
-            "package.json",
-            "lib/browser/api/app.ts"
+            ".github/workflows/audit-branch-ci.yml",
+            "spec/index.js#L376-L394"
           ],
           "kind": "evidence"
         }
       ]
     },
-    "agent_prompt": "You are working in the electron/electron repository (commit 56f681cfe08e1c6bf02cfad2807ff1c47ae13d4f on main). This is the Electron framework itself, not an app built with Electron. It embeds Chromium and Node.js and exposes a JavaScript API so third-party desktop apps can be written against BrowserWindow, app, ipcMain, session, and protocol.\n\nLayout: shell/ is the C++ embedder (browser process, renderer process, utility process, gin bindings in shell/browser/api and shell/renderer/api). lib/ is the TypeScript surface that app code require()s (lib/browser/api for the main process, lib/renderer/api for the renderer, lib/common for shared helpers). docs/api/*.md is the public contract and the source for generated TypeScript. spec/ is a Mocha and Chai suite that runs inside a built Electron. patches/ holds diffs applied onto Chromium, Node, V8, and other checkouts listed in patches/config.json. DEPS pins those checkouts. The parent directory of this repo is the Chromium tree. npm/ is the published package layout. default_app/ is what the binary shows when launched with no app path.\n\nStartup: ElectronMainDelegate (shell/app/electron_main_delegate.cc) is the ContentMainDelegate. PreSandboxStartup registers the electron scheme and calls NodeBindings::RegisterBuiltinModules. ElectronBrowserMainParts then starts Node and evaluates the app's package.json main. lib/browser/init.ts sets process.type to browser and emits the app ready sequence. Renderers go through ElectronRendererClient and lib/renderer/init.ts. Privileged page integration uses a preload plus contextBridge.exposeInMainWorld (lib/renderer/api/context-bridge.ts). IPC is ipcRenderer.invoke/send to ipcMain.handle/on; there is no auth on channel names.\n\nHow to change a public API: touch the gin C++ class, the lib wrapper, the module list (lib/browser/api/module-list.ts or lib/renderer/api/module-list.ts) if you added a module, filenames.gni if you added a C++ file, docs/api/<module>.md including the API-history YAML block, and a spec under spec/api/. Regenerate typedefs only via script/gen-typescript-definitions.js. script/check-api-history.js fails CI if the history block is wrong.\n\nCommands: never use npx. Lint with npm run lint:js (node ./script/lint.js --js, oxlint), npm run lint:clang-format, npm run lint:api-history. Do not run e build, e sync, e start, or e test unless the user explicitly asks; those need a configured Electron build and the user owns running them. Build system is GN (BUILD.gn, build/args/*.gn, buildflags/buildflags.gni) invoked by the e CLI from @electron/build-tools.\n\nPatches: fix an existing patch instead of adding one. Never rewrite a TODO(name) assignee. On roller/chromium/main follow the chromium-upgrade workflow; on roller/node/main follow the node-upgrade workflow. If a PR's Apply Patches check failed, download the unarchived update-patches.patch artifact with gh api and git am it rather than syncing locally.\n\nC++ rules: Chromium style, clang-format. For Oilpan, no bare pointers or raw_ptr to GC objects in heap fields; use cppgc::Member or WeakMember. Allocate with cppgc::MakeGarbageCollected only. Trace every Member. Destructors must not touch other GC objects. Prefinalizers are a last resort. Use v8::TracedReference for unified-heap V8 values.\n\nSecurity boundaries you must not weaken: contextIsolation and sandbox defaults, the contextBridge structured clone, the split between browser and renderer module lists, protocol.registerSchemesAsPrivileged (must be called before ready), and shell.openExternal scheme checks. Do not pass renderer-controlled strings to openExternal, command-line switches, or preload paths. ipcMain handlers must keep checking event.senderFrame when the channel can be reached from untrusted content.\n\nPull requests: the body ends with a Notes: line aimed at app developers, or Notes: none. Choose one semver label. Backport labels use target/N-x-y; active ones are colored #ad244f. Bug fixes backport to all active lines except the oldest; security fixes include the oldest; features and breaking changes stay on main.\n\nDo not drive-by edit publish workflows, .env.example, or DEPS. BrowserView is legacy; BaseWindow and WebContentsView are the current windowing API. Match surrounding code. Do not reformat unrelated lines. If you are unsure whether a behavior change is user-visible, read the matching docs/api page and the spec before editing."
+    "agent_prompt": "You are working in the Electron repository (electron/electron): the framework that embeds Chromium + Node.js for desktop apps. This is not a standalone checkout — the repo sits at src/electron inside a Chromium source tree and builds with GN/Ninja via @electron/build-tools (commands: `e sync`, `e build`, `e start`, `e test`). Dependencies are pinned in DEPS (Chromium ~155.x, Node ~24.x) and upstream changes are carried as patch queues under patches/ mapped by patches/config.json — fix existing patches rather than creating new ones, and preserve TODO(name) attribution.\n\nArchitecture: C++ core in shell/ — shell/app has platform mains and ElectronMainDelegate (content embedder hooks), shell/browser is the main process (api/ holds ~100 electron_api_* modules, net/ the URL loader stack, ui/ native widgets), shell/renderer the renderer clients (ElectronRendererClient for nodeIntegration, ElectronSandboxedRendererClient otherwise), shell/common shared code (node_bindings.cc with the ELECTRON_*_BINDINGS registration macros, asar/, gin_converters/, gin_helper/), shell/utility + shell/services/node for utility processes. On top sits lib/: TypeScript bundled per context (browser, renderer, worker, webview, isolated_renderer, node, utility) by build/bundle/bundle.mjs + targets.mjs and baked into the binary; `require('electron')` resolves to lazily-loaded module lists in lib/<proc>/api/module-list.ts. Native APIs surface through process._linkedBinding('electron_<proc>_<name>') registered via NODE_LINKED_BINDING_CONTEXT_AWARE.\n\nKey flows: startup runs ElectronMainDelegate::BasicStartupComplete/PreSandboxStartup → ElectronBrowserMainParts::PostEarlyInitialization (V8 + Node env, LoadAppPackage reads resources/{app.asar,app,default_app.asar}/package.json, LoadEnvironment runs the browser bundle = lib/browser/init.ts, which loads the app's main script, then JoinAppCode). IPC rides mojom::ElectronApiIPC into ElectronApiIPCHandlerImpl → ipc_dispatch → the JS ipcMain/ipcMainInternal objects wired by lib/browser/ipc-dispatch.ts. protocol.handle converts ProtocolRequest↔fetch Request/Response; net.fetch goes through the session's network context. Preloads are pushed in RendererStartupData, run by lib/renderer/init.ts while document loading is deferred.\n\nRules and traps: never use npx (use yarn or node_modules/.bin). filenames.gni is generated by script/gen-filenames.mts — don't hand-edit. New public APIs need: module-list entry + module-keys update, C++ binding registration, docs/api/*.md with YAML api-history block (schema in docs/api-history.schema.json), and regenerated electron.d.ts. PRs need a trailing `Notes:` line and semver/target labels per CLAUDE.md. Tests are Mocha+chai in spec/ run inside the built binary (npm test → script/spec-runner.js); never expect() inside stream/event listeners, and defer-kill forked children (see spec/CLAUDE.md). Security-sensitive surfaces: webPreferences→sandbox derivation in web_contents_preferences.cc, fuses in build/fuses/fuses.json5, the IPC channel boundary, preload privilege, and the asar fs wrapper (lib/node/asar-fs-wrapper.ts). Run npm run lint (oxlint/oxfmt/clang-format/docs lint) before submitting."
   },
   "analysis": {
-    "agent": "grok",
-    "model": "cli:grok",
-    "runtime_ms": 204610,
+    "agent": "devin",
+    "model": "swe-2",
+    "runtime_ms": null,
     "cost_usd": null,
-    "collected_at": "2026-09-22T12:15:27.185Z"
+    "collected_at": "2026-09-22T16:03:31.410Z"
   }
 }
