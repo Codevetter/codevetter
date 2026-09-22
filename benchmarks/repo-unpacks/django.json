@@ -7726,5 +7726,939 @@
         ]
       }
     ]
+  },
+  "report": {
+    "overview": "Django 6.2.0 alpha is the Django Software Foundation's BSD-licensed Python web framework (Python >= 3.12) for application developers who want an ORM, routing, templates, forms, auth, admin, and migrations without writing that stack themselves. This repository is the framework library, not a deployed site: django-admin startproject emits a project, and runtime configuration comes from DJANGO_SETTINGS_MODULE over django.conf.global_settings. HTTP enters through WSGIHandler or ASGIHandler; management commands enter through execute_from_command_line. Distinctive code in this tree includes a tasks registry whose default backend runs work inline, a MAILERS migration that deprecates EMAIL_* before Django 2028, CSP middleware, and CI that already runs the suite on free-threaded Python 3.14.",
+    "system_map": {
+      "summary": "The installable product is the django package (setuptools include django*). Process entrypoints are the django-admin console script, python -m django, and the WSGI/ASGI factories. django.setup() is the shared bootstrap: logging, script prefix, then Apps.populate. Settings are a lazy proxy. Persistence is a ConnectionHandler over pluggable database backends, with sqlite3, postgresql, mysql, oracle, and a dummy engine in-tree. There is no application server to deploy from this repo; deployment shape is a generated project plus an external WSGI/ASGI server. Tests and docs are developer-only surfaces driven by tests/runtests.py, tox.ini, and GitHub Actions.",
+      "claims": [
+        {
+          "claim": "django/__init__.py sets VERSION to VersionTuple(6, 2, 0, 'alpha', 0) and setup() calls configure_logging, optionally set_script_prefix from FORCE_SCRIPT_NAME, then apps.populate(settings.INSTALLED_APPS).",
+          "sources": [
+            "django/__init__.py#L1-25"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "pyproject.toml names the project Django, requires Python >= 3.12, depends on asgiref>=3.12.1 and sqlparse>=0.5.0 (tzdata on Windows), and exposes console script django-admin = django.core.management:execute_from_command_line. Optional extras are argon2 (argon2-cffi) and bcrypt.",
+          "sources": [
+            "pyproject.toml#L1-46"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "python -m django delegates to management.execute_from_command_line() in django/__main__.py. ManagementUtility.execute parses --settings and --pythonpath first, calls django.setup() unless the runserver autoreloader path already did, then fetch_command(subcommand).run_from_argv.",
+          "sources": [
+            "django/__main__.py#L1-11",
+            "django/core/management/__init__.py#L353-440"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "get_wsgi_application() and get_asgi_application() both call django.setup(set_prefix=False) and return WSGIHandler or ASGIHandler. The handlers are intentionally not the public API.",
+          "sources": [
+            "django/core/wsgi.py#L1-13",
+            "django/core/asgi.py#L1-13"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "LazySettings loads the module named by environment variable DJANGO_SETTINGS_MODULE (ENVIRONMENT_VARIABLE) and raises ImproperlyConfigured if it is unset and settings were not configured manually. User settings overlay django.conf.global_settings.",
+          "sources": [
+            "django/conf/__init__.py#L1-109"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Apps.populate is thread-safe and idempotent but not reentrant. It imports AppConfig entries, import_models on each, then calls AppConfig.ready() before setting apps.ready and ready_event.",
+          "sources": [
+            "django/apps/registry.py#L61-127"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "django.db.connections is a ConnectionHandler; connection is a ConnectionProxy for the default alias; router is a ConnectionRouter. request_started resets query logs and closes unusable connections; request_finished closes them again.",
+          "sources": [
+            "django/db/__init__.py#L38-63"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Database engines shipped in-tree are django.db.backends.sqlite3, postgresql, mysql, oracle, and dummy. An empty DATABASES ENGINE uses the dummy backend, whose operations raise ImproperlyConfigured. The startproject template sets ENGINE to sqlite3 and NAME to BASE_DIR/db.sqlite3.",
+          "sources": [
+            "django/db/backends/dummy/base.py#L1-25",
+            "django/conf/global_settings.py#L184-189",
+            "django/conf/project_template/project_name/settings.py-tpl#L72-80"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Core management commands are discovered by find_commands via pkgutil.iter_modules on management/commands, mapped by get_commands() (functools.cache) as name -> app. Installed apps override core names because their configs are applied in reverse.",
+          "sources": [
+            "django/core/management/__init__.py#L29-80"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Built-in command modules include check, dbshell, dumpdata, loaddata, makemigrations, migrate, optimizemigration, runserver, shell, squashmigrations, startapp, startproject, test, and testserver, among others under django/core/management/commands/.",
+          "sources": [
+            "django/core/management/commands/migrate.py#L18-22",
+            "django/core/management/commands/runserver.py#L27-28"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Default cache backend is django.core.cache.backends.locmem.LocMemCache via CACHES['default']. CacheHandler reads settings.CACHES the same way TaskBackendHandler reads settings.TASKS.",
+          "sources": [
+            "django/conf/global_settings.py#L521-526",
+            "django/conf/global_settings.py#L689-692",
+            "django/core/cache/__init__.py#L36-40",
+            "django/tasks/__init__.py#L29-45"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "tox.ini envlist is py3, black, blacken-docs, flake8, docs, isort, lint-docs, and zizmor. The py3 env installs the repo editable, installs tests/requirements/py3.txt, cds to tests, and runs runtests.py. GitHub Actions workflow Tests runs that suite on SQLite for CPython 3.14 (Windows) and free-threaded 3.14t (Ubuntu).",
+          "sources": [
+            "tox.ini#L6-52",
+            ".github/workflows/tests.yml#L20-74"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Documentation is reStructuredText under docs/ (Sphinx). tox docs runs make spelling; lint-docs runs make lint. README.rst points readers at docs/intro/install.txt, the tutorials, and docs/howto/deployment/index.txt rather than a server in this repo.",
+          "sources": [
+            "README.rst#L1-22",
+            "tox.ini#L78-90",
+            "docs/intro/overview.txt#L1-14"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "feature_catalog": {
+      "summary": "User-facing surface area is a CLI (django-admin / manage.py), an HTTP stack (URLs, middleware, views, templates, forms), an ORM with migrations, and optional contrib apps. The generated project turns on admin, auth, sessions, messages, and static files, and mounts admin.site.urls at admin/. Batteries that are present in the tree but not in the default project include GIS, Postgres-only fields, flatpages, redirects, sitemaps, and the CSP middleware. A first-party tasks API and a mailers migration sit beside the older email backend.",
+      "claims": [
+        {
+          "claim": "Core CLI subcommands implemented as Command classes include check, compilemessages, createcachetable, dbshell, diffsettings, dumpdata, flush, inspectdb, listurls, loaddata, makemessages, makemigrations, migrate, optimizemigration, runserver, sendtestemail, shell, showmigrations, sqlflush, sqlmigrate, sqlsequencereset, squashmigrations, startapp, startproject, test, and testserver.",
+          "sources": [
+            "django/core/management/__init__.py#L52-80",
+            "django/core/management/commands/migrate.py#L18-91",
+            "django/core/management/commands/runserver.py#L27-61"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "runserver starts a development WSGI server (WSGIServer) on 127.0.0.1:8000 by default, with --ipv6, --nothreading, and --noreload. It raises CommandError if DEBUG is False and ALLOWED_HOSTS is empty, and uses autoreload.run_with_reloader unless --noreload is set.",
+          "sources": [
+            "django/core/management/commands/runserver.py#L27-117"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "migrate updates schema via MigrationExecutor. Flags include --fake, --fake-initial, --plan, --run-syncdb, --check (unapplied migrations), and --prune. makemigrations, sqlmigrate, showmigrations, squashmigrations, and optimizemigration are the surrounding schema commands.",
+          "sources": [
+            "django/core/management/commands/migrate.py#L18-91",
+            "docs/intro/overview.txt#L50-64"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The ORM exposes Model.save/asave/delete and QuerySet.filter, exclude, get, create, iterator, and prefetch. Models are registered through ModelBase and served by a manager API with no code generation, as described in the overview doc.",
+          "sources": [
+            "django/db/models/base.py#L847-932",
+            "django/db/models/query.py#L1723-1757",
+            "docs/intro/overview.txt#L66-136"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "django.contrib.admin.sites.AdminSite.register binds a Model to a ModelAdmin (or a dynamic subclass when options are passed). The startproject URLconf mounts path('admin/', admin.site.urls).",
+          "sources": [
+            "django/contrib/admin/sites.py#L95-149",
+            "django/conf/project_template/project_name/urls.py-tpl#L17-22"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Auth provides ModelBackend (default AUTHENTICATION_BACKENDS), RemoteUserBackend, LoginView/LogoutView/password-reset views in django.contrib.auth.urls, and password hashers selected by PASSWORD_HASHERS. AUTH_USER_MODEL defaults to auth.User.",
+          "sources": [
+            "django/conf/global_settings.py#L534-556",
+            "django/contrib/auth/backends.py#L59-101",
+            "django/contrib/auth/urls.py#L9-36"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Forms: BaseForm.is_valid() is true only when the form is bound and full_clean() produced no errors. full_clean runs _clean_fields (including clean_<field>), _clean_form, and _post_clean.",
+          "sources": [
+            "django/forms/forms.py#L204-206",
+            "django/forms/forms.py#L324-359"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The template Engine defaults builtins to defaulttags, defaultfilters, and loader_tags, and when app_dirs is true wraps filesystem and app_directories loaders in the cached loader. Tags and filters register on Library.tags and Library.filters.",
+          "sources": [
+            "django/template/engine.py#L13-60",
+            "django/template/library.py#L17-55"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Sessions default to SESSION_ENGINE django.contrib.sessions.backends.db, cookie name sessionid, age two weeks, HttpOnly, SameSite Lax. SessionMiddleware loads the engine from settings and attaches request.session from the cookie.",
+          "sources": [
+            "django/conf/global_settings.py#L487-515",
+            "django/contrib/sessions/middleware.py#L12-20"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Static files use STATICFILES_FINDERS FileSystemFinder and AppDirectoriesFinder. BaseFinder is the extension interface (find/list/check). startproject sets STATIC_URL to 'static/'.",
+          "sources": [
+            "django/conf/global_settings.py#L632-646",
+            "django/contrib/staticfiles/finders.py#L18-38",
+            "django/conf/project_template/project_name/settings.py-tpl#L114-117"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "HTTP middleware shipped under django/middleware includes SecurityMiddleware (HSTS, nosniff, COOP, Referrer-Policy, optional HTTPS redirect), CsrfViewMiddleware, ContentSecurityPolicyMiddleware (SECURE_CSP / SECURE_CSP_REPORT_ONLY), plus cache, clickjacking, common, gzip, http, and locale modules. The project template enables security, sessions, common, csrf, auth, messages, and XFrameOptionsMiddleware, not CSP.",
+          "sources": [
+            "django/middleware/security.py#L8-66",
+            "django/middleware/csrf.py#L165-172",
+            "django/middleware/csp.py#L10-33",
+            "django/conf/project_template/project_name/settings.py-tpl#L42-50"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Tasks: @task / Task.enqueue go through task_backends. The default TASKS backend is django.tasks.backends.immediate.ImmediateBackend, which validates, builds a TaskResult, and runs the callable inside enqueue, emitting task_enqueued, task_started, and task_finished.",
+          "sources": [
+            "django/tasks/base.py#L100-177",
+            "django/tasks/backends/immediate.py#L16-80",
+            "django/conf/global_settings.py#L689-692"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Mail still defaults EMAIL_BACKEND to django.core.mail.backends.smtp.EmailBackend (localhost:25). get_connection() is deprecated (RemovedInDjango2028Warning) and, when MAILERS is configured, refuses a backend argument and uses mailers.create_connection('default'). MAILERS and deprecated EMAIL_* settings cannot both be set.",
+          "sources": [
+            "django/conf/global_settings.py#L190-207",
+            "django/core/mail/__init__.py#L71-100",
+            "django/conf/__init__.py#L42-70"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Serialization formats registered in BUILTIN_SERIALIZERS are xml, python, json, yaml, and jsonl. register_serializer(format, serializer_module) adds more; registering into the global map is documented as not thread-safe.",
+          "sources": [
+            "django/core/serializers/__init__.py#L26-67"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Other contrib packages in the tree, beyond the startproject set, include admindocs, flatpages, gis (GDAL/GEOS), humanize, postgres, redirects, sitemaps, sites, syndication, and contenttypes. Generic class-based views start at View.as_view/dispatch in django/views/generic/base.py.",
+          "sources": [
+            "django/views/generic/base.py#L37-143",
+            "django/conf/project_template/project_name/settings.py-tpl#L33-40"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "data_flow": {
+      "summary": "Configuration flows from the environment into LazySettings, then into the app registry, middleware list, URLConf, and connection handlers. An HTTP request becomes a request object, passes a middleware onion, resolves to a view, and returns an HttpResponse. ORM reads stay as Query objects until evaluation, then SQLCompiler sends SQL and params to a backend cursor. Writes go through Model.save_base and, for schema, through MigrationExecutor. Cross-cutting state (sessions, CSRF, signatures) is keyed by SECRET_KEY or server-side stores.",
+      "claims": [
+        {
+          "claim": "WSGIHandler.__call__ sets the script prefix from the WSGI environ, sends request_started, builds a WSGIRequest (method, LimitedStream body capped at CONTENT_LENGTH, GET from QUERY_STRING, cookies from HTTP_COOKIE), then get_response. The iterable returned may be a wsgi.file_wrapper around response.file_to_stream.",
+          "sources": [
+            "django/core/handlers/wsgi.py#L56-144"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "BaseHandler.load_middleware imports each settings.MIDDLEWARE path in reverse, instantiates it with the adapted next handler, and records process_view, process_template_response, and process_exception hooks. MiddlewareNotUsed skips an entry. get_response sets the thread URLConf to ROOT_URLCONF, runs the chain, and logs status >= 400.",
+          "sources": [
+            "django/core/handlers/base.py#L27-152"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "resolve_request uses request.urlconf if set, otherwise get_resolver(), then URLResolver.resolve(request.path_info). resolve walks url_patterns, merges kwargs, and returns a ResolverMatch. request_finished is connected to reset_urlconf.",
+          "sources": [
+            "django/core/handlers/base.py#L302-317",
+            "django/urls/resolvers.py#L672-710",
+            "django/core/handlers/base.py#L370-375"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "If the view returns an object with a callable render(), template-response middleware runs and then response.render() is called. A None or unawaited coroutine from a view raises ValueError. Async views on the sync path are wrapped with async_to_sync.",
+          "sources": [
+            "django/core/handlers/base.py#L176-228"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "QuerySet.filter clones via _chain and adds a Q object in _filter_or_exclude_inplace; it raises TypeError if the query is already sliced. Evaluation is deferred until _fetch_all, which lists self._iterable_class(self) and then runs prefetch_related if needed.",
+          "sources": [
+            "django/db/models/query.py#L1723-1757",
+            "django/db/models/query.py#L2326-2330"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "SQLCompiler.execute_sql compiles with as_sql(), opens connection.cursor() or chunked_cursor(), and calls cursor.execute(sql, params). Result shape depends on MULTI, SINGLE, ROW_COUNT, or CURSOR. EmptyResultSet short-circuits.",
+          "sources": [
+            "django/db/models/sql/compiler.py#L1619-1649"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Model.save picks a database with router.db_for_write, optionally narrows update_fields for deferred instances, then save_base sends pre_save, writes inside transaction.atomic (if the model has parents) or mark_for_rollback_on_error, stores _state.db, clears _state.adding, and sends post_save with created=(not updated).",
+          "sources": [
+            "django/db/models/base.py#L847-1024"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "MigrationExecutor.migrate ensures the django_migrations table unless the plan is empty, builds a plan, rejects mixed forward and backward plans with InvalidMigrationPlan, and applies forward migrations in full_plan order via apply_migration.",
+          "sources": [
+            "django/db/migrations/executor.py#L96-169"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CSRF: CsrfViewMiddleware reads the secret from the session (CSRF_USE_SESSIONS, key requires SessionMiddleware first) or from cookie CSRF_COOKIE_NAME (default csrftoken). Unsafe methods must present csrfmiddlewaretoken in POST or the header named by CSRF_HEADER_NAME (default HTTP_X_CSRFTOKEN). Failures go to CSRF_FAILURE_VIEW.",
+          "sources": [
+            "django/middleware/csrf.py#L165-268",
+            "django/middleware/csrf.py#L349-384",
+            "django/conf/global_settings.py#L567-585"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "HttpRequest.get_host validates the raw host against ALLOWED_HOSTS via validate_host. If DEBUG is true and ALLOWED_HOSTS is empty, the allow-list becomes .localhost, 127.0.0.1, and [::1]. Otherwise it raises DisallowedHost. is_secure consults SECURE_PROXY_SSL_HEADER before the scheme.",
+          "sources": [
+            "django/http/request.py#L190-210",
+            "django/http/request.py#L306-330"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Signed cookies: HttpRequest.get_signed_cookie calls signing._unsign_cookie and re-raises BadSignature unless a default is supplied. SIGNING_BACKEND defaults to django.core.signing.TimestampSigner. The signing module documents HMAC/SHA-256 over URL-safe base64 JSON using the project secret.",
+          "sources": [
+            "django/http/request.py#L239-261",
+            "django/core/signing.py#L1-66",
+            "django/conf/global_settings.py#L560-565"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Upload bounds in global settings: DATA_UPLOAD_MAX_MEMORY_SIZE and FILE_UPLOAD_MAX_MEMORY_SIZE are 2621440 bytes, DATA_UPLOAD_MAX_NUMBER_FIELDS is 1000, and DATA_UPLOAD_MAX_NUMBER_FILES is 100. WSGIRequest wraps wsgi.input in LimitedStream so reads cannot pass CONTENT_LENGTH.",
+          "sources": [
+            "django/conf/global_settings.py#L311-330",
+            "django/core/handlers/wsgi.py#L15-40"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "ImmediateBackend.enqueue does not hand work to another process: _execute_task sets status RUNNING, calls task.call (async_to_sync if needed), JSON-normalizes the return value, and sets SUCCESSFUL or FAILED with a traceback stored on TaskResult.errors.",
+          "sources": [
+            "django/tasks/backends/immediate.py#L24-80",
+            "django/tasks/base.py#L131-138"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Settings reference order is explicit user module then global defaults. When MAILERS is defined, deprecated EMAIL_* names are rejected if also set, and getattr of those names is blocked. Database routers are an ordered list in DATABASE_ROUTERS, empty by default.",
+          "sources": [
+            "django/conf/__init__.py#L60-70",
+            "django/conf/__init__.py#L128-192",
+            "django/conf/global_settings.py#L184-189"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "behavior_traces": {
+      "summary": "Three flows dominate day-to-day work: process startup for django-admin, the per-request path from handler to view, and the persistence path from QuerySet or Model.save through SQL and migrations. Auth and CSRF are the security-critical variants of the request path. Names below are the functions actually called, in order.",
+      "claims": [
+        {
+          "claim": "CLI startup order: execute_from_command_line -> ManagementUtility.execute -> CommandParser known-args for --settings/--pythonpath -> handle_default_options -> django.setup (configure_logging, set_script_prefix, apps.populate) -> autocomplete if DJANGO_AUTO_COMPLETE is set -> fetch_command -> load_command_class -> BaseCommand.run_from_argv -> execute (system checks unless skipped) -> Command.handle. No subcommand prints help.",
+          "sources": [
+            "django/core/management/__init__.py#L353-440",
+            "django/__init__.py#L8-25",
+            "django/core/management/base.py#L410-471"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "runserver special case: if the subcommand is runserver and --noreload is absent, ManagementUtility calls autoreload.check_errors(django.setup) before the command class is loaded, and on failure pretends the app registry is ready so the reloader child can show the exception. Command.handle then inner_run via run_with_reloader, serving get_internal_wsgi_application().",
+          "sources": [
+            "django/core/management/__init__.py#L386-414",
+            "django/core/management/commands/runserver.py#L71-117"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Sync HTTP order: WSGIHandler.__call__ -> signals.request_started (reset_queries, close_old_connections) -> WSGIRequest -> BaseHandler.get_response -> set_urlconf(ROOT_URLCONF) -> middleware chain -> _get_response -> resolve_request -> URLResolver.resolve -> make_view_atomic -> view(request, *args, **kwargs) -> optional process_exception -> optional TemplateResponse.render -> start_response.",
+          "sources": [
+            "django/core/handlers/wsgi.py#L120-144",
+            "django/db/__init__.py#L46-63",
+            "django/core/handlers/base.py#L138-228",
+            "django/core/handlers/base.py#L302-356"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "ASGI differs at the edges: ASGIHandler serves ASGIRequest built from scope (path, method, query_string, root_path) and uses get_response_async so async views are awaited and sync views run via sync_to_async(thread_sensitive=True). body_receive_timeout is 60 seconds.",
+          "sources": [
+            "django/core/handlers/asgi.py#L39-80",
+            "django/core/handlers/base.py#L154-174",
+            "django/core/handlers/base.py#L230-265"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Class-based view order: URL resolver calls the callable returned by View.as_view -> view() constructs the class, calls setup (stores request/args/kwargs, aliases head to get), then dispatch, which lowercases request.method and invokes that handler or http_method_not_allowed.",
+          "sources": [
+            "django/views/generic/base.py#L82-143"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Read query order: QuerySet.filter -> _filter_or_exclude -> _chain/_clone -> _filter_or_exclude_inplace -> Query.add_q(Q). Later iteration calls _fetch_all -> ModelIterable -> SQL compiler as_sql -> SQLCompiler.execute_sql -> cursor.execute. prefetch_related runs only after the primary result list exists.",
+          "sources": [
+            "django/db/models/query.py#L1723-1757",
+            "django/db/models/query.py#L2326-2330",
+            "django/db/models/sql/compiler.py#L1619-1649"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Write order: Model.save -> _prepare_related_fields_for_save -> router.db_for_write -> save_base -> pre_save.send -> _save_parents (when not raw) -> _save_table -> _do_insert or _do_update -> post_save.send. asave is sync_to_async(self.save). Empty update_fields returns before signals.",
+          "sources": [
+            "django/db/models/base.py#L847-1024"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "migrate command order: Command.handle reads --database (default alias), builds a MigrationExecutor for that connection, plans targets, and calls executor.migrate. Forward application renders project state (state.apps) once, then apply_migration for each selected node. --fake records without running SQL.",
+          "sources": [
+            "django/core/management/commands/migrate.py#L93-99",
+            "django/db/migrations/executor.py#L96-169"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Login order: authenticate walks AUTHENTICATION_BACKENDS, calls backend.authenticate, stops on PermissionDenied, and on total failure sends user_login_failed. ModelBackend.authenticate loads the user with get_by_natural_key and check_password_with_timing_attack_mitigation, then user_can_authenticate (is_active). login() stores the user pk and session auth hash, flushing the session if it belonged to someone else, otherwise cycle_key.",
+          "sources": [
+            "django/contrib/auth/__init__.py#L123-188",
+            "django/contrib/auth/backends.py#L59-101"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CSRF failure order on an unsafe request: process_view -> _get_secret (cookie or session) -> _check_token compares the POST or header token -> RejectRequest -> _reject -> CSRF_FAILURE_VIEW (default django.views.csrf.csrf_failure) -> log_response Forbidden. HTTPS requests also pass _origin_verified and _check_referer.",
+          "sources": [
+            "django/middleware/csrf.py#L202-219",
+            "django/middleware/csrf.py#L271-384",
+            "django/conf/global_settings.py#L571-573"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Password check order: check_password -> verify_password -> identify_hasher (algorithm is the prefix before $, with legacy unsalted md5/sha1 shapes) -> hasher.verify. If the preferred hasher differs or must_update, and a setter is passed, the password is re-encoded. Missing users still run make_password once to reduce timing differences.",
+          "sources": [
+            "django/contrib/auth/hashers.py#L39-118",
+            "django/contrib/auth/hashers.py#L172-191"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "System-check order inside a command: BaseCommand.execute, when requires_system_checks and not skip_checks, calls self.check, then check_migrations if required, then handle. call_command forces skip_checks=True unless the caller passed that option. Deployment-tagged checks such as check_secret_key are omitted unless include_deployment_checks is set.",
+          "sources": [
+            "django/core/management/base.py#L446-471",
+            "django/core/management/__init__.py#L191-194",
+            "django/core/checks/registry.py#L74-94",
+            "django/core/checks/security/base.py#L263-271"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "testing_signals": {
+      "summary": "Django tests Django with its own test runner. The suite lives in tests/ and is launched by tests/runtests.py, not by a third-party discovery command. Default CI is SQLite on CPython 3.14 plus a free-threading job; JavaScript admin tests and scripts/ unit tests are separate jobs. Lint is flake8, isort, black, and zizmor. Postgres, MySQL, Oracle, and PostGIS need extra settings and are not what tox runs by default. Deprecation and resource warnings are treated as errors, so a behavior change that trips RemovedInNextVersionWarning fails the suite.",
+      "claims": [
+        {
+          "claim": "tests/runtests.py imports django.test.TestCase, TransactionTestCase, and get_runner (TEST_RUNNER default django.test.runner.DiscoverRunner). It filters RemovedInNextVersionWarning, RemovedAfterNextVersionWarning, ResourceWarning, and RuntimeWarning as errors, and raises GC thresholds on CPython.",
+          "sources": [
+            "tests/runtests.py#L22-62",
+            "django/conf/global_settings.py#L619-620"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Discovery scans tests/ for packages containing __init__.py. SUBDIRS_TO_SKIP always skips import_error_package, playwright_tests, and test_runner_apps. gis_tests is skipped unless GIS is enabled, and gis_tests/data is always skipped. The documented invocation is cd tests && ./runtests.py after pip install -e .. and tests/requirements/py3.txt.",
+          "sources": [
+            "tests/runtests.py#L73-137",
+            "docs/internals/contributing/writing-code/unit-tests.txt#L16-35"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The runner always installs contenttypes, auth, sites, sessions, messages, django.contrib.admin.apps.SimpleAdminConfig, and staticfiles, and always enables SessionMiddleware, CommonMiddleware, CsrfViewMiddleware, AuthenticationMiddleware, and MessageMiddleware. flatpages and redirects are added only for their test labels.",
+          "sources": [
+            "tests/runtests.py#L80-105"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "tox default environments are py3, black, blacken-docs, flake8, docs, isort, lint-docs, and zizmor. Database factors such as postgres, mysql, and oracle append extra requirements but still need a settings module the suite does not vendor, for example tox -e py312-postgres -- --settings=my_postgres_settings. Free-threaded envs py314t and py313t exist.",
+          "sources": [
+            "tox.ini#L6-52",
+            "docs/internals/contributing/writing-code/unit-tests.txt#L57-109"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": ".github/workflows/tests.yml on pull_request and push to main (ignoring docs/**) runs python -Wall tests/runtests.py -v2 for Windows/SQLite/Python 3.14 and Ubuntu/SQLite/Python 3.14t, npm test for admin JavaScript, and python -m unittest discover -v -s scripts/.",
+          "sources": [
+            ".github/workflows/tests.yml#L1-109",
+            "package.json#L1-17"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "JavaScript coverage is QUnit via Grunt: package.json scripts.test is grunt test --verbose, devDependencies include qunit, grunt-contrib-qunit, and @biomejs/biome. Test files live under js_tests/admin (actions, DateTimeShortcuts, inlines, SelectBox, URLify) and js_tests/gis/mapwidget.test.js.",
+          "sources": [
+            "package.json#L1-17"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Linters workflow runs flake8, isort --check --diff django tests scripts, black (psf/black@stable), and zizmor. pyproject.toml configures black target-version py312 and isort profile black with known_first_party django.",
+          "sources": [
+            ".github/workflows/linters.yml#L1-71",
+            "pyproject.toml#L56-63"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Playwright browser tests are label-gated: .github/workflows/playwright.yml runs only when the pull request has the playwright label, then installs apt packages and Playwright browsers. runtests.py imports PlaywrightTestCase but does not discover tests/playwright_tests during the normal scan.",
+          "sources": [
+            ".github/workflows/playwright.yml#L1-19",
+            "tests/runtests.py#L22-76"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Topic packages under tests/ include auth_tests, csrf_tests, handlers, migrations-related packages, admin_views, forms_tests, gis_tests, composite_pk, and file_uploads. Policy in the contributing doc is that the suite must pass at all times and that new tests use Django's own test infrastructure.",
+          "sources": [
+            "docs/internals/contributing/writing-code/unit-tests.txt#L1-12",
+            "tests/runtests.py#L108-137"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "GIS-related tests depend on native libraries. tox passenv forwards GDAL_LIBRARY_PATH, GEOS_LIBRARY_PATH, and SPATIALITE_LIBRARY_PATH. The default Tests workflow jobs read above do not install those libraries, so a green SQLite run is not evidence that django.contrib.gis was exercised.",
+          "sources": [
+            "tox.ini#L29-40",
+            ".github/workflows/tests.yml#L20-74",
+            "tests/runtests.py#L108-120"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "django.test.client exposes Client, AsyncClient, RequestFactory, and AsyncRequestFactory. They build WSGIRequest or ASGIRequest and drive BaseHandler, and FakePayload refuses seeks so views cannot read the body differently than on a real socket.",
+          "sources": [
+            "django/test/client.py#L1-80"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "scripts/ has its own unittest discovery (CI job scripts-tests), including scripts/pr_quality tests. That job does not install the Django test requirements file used by runtests.py.",
+          "sources": [
+            ".github/workflows/tests.yml#L96-109"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "risk_map": {
+      "summary": "The sharp edges are secret handling, host and CSRF checks, password-hasher compatibility, shell-outs, and a few APIs that look asynchronous or durable but are not. Deployment checks for SECRET_KEY do not run on ordinary manage.py check. The generated project is explicitly unsuitable for production (DEBUG True). Schema and request code have hard incompatibilities: mixed migration directions, ATOMIC_REQUESTS with async views, and admin registration of composite primary keys.",
+      "claims": [
+        {
+          "claim": "startproject writes SECRET_KEY into settings and sets DEBUG = True with ALLOWED_HOSTS = []. The template comments say both are unsuitable for production. check_secret_key (security.W009) only runs as a deploy=True check and flags length < 50, fewer than 5 unique characters, or the django-insecure- prefix.",
+          "sources": [
+            "django/conf/project_template/project_name/settings.py-tpl#L19-28",
+            "django/core/checks/security/base.py#L22-29",
+            "django/core/checks/security/base.py#L255-271"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "HttpRequest.get_host allows any *.localhost, 127.0.0.1, and [::1] when DEBUG is true and ALLOWED_HOSTS is empty. SECURE_PROXY_SSL_HEADER is None by default and global_settings warns that setting it without a trusted proxy allows scheme spoofing.",
+          "sources": [
+            "django/http/request.py#L190-210",
+            "django/http/request.py#L314-327",
+            "django/conf/global_settings.py#L466-473"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CSRF_COOKIE_HTTPONLY defaults to False so client script can read csrftoken. CSRF_TRUSTED_ORIGINS defaults to empty. A missing SessionMiddleware with CSRF_USE_SESSIONS raises ImproperlyConfigured from _get_secret.",
+          "sources": [
+            "django/conf/global_settings.py#L575-585",
+            "django/middleware/csrf.py#L221-237"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "MD5PasswordHasher (algorithm md5) is still implemented and documented as not recommended, but it is not in the default PASSWORD_HASHERS list. identify_hasher still accepts 32-character unsalted MD5 and sha1$$ legacy hashes and will call get_hasher for those algorithms if they remain configured.",
+          "sources": [
+            "django/contrib/auth/hashers.py#L172-191",
+            "django/contrib/auth/hashers.py#L656-679",
+            "django/conf/global_settings.py#L548-556"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "get_git_changeset runs a fixed git log command via subprocess.run(..., shell=True) with cwd two directories above django/utils/version.py, and uses stdout as a version timestamp. The command string is not user input, but shell=True is still a process boundary.",
+          "sources": [
+            "django/utils/version.py#L221-247"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "dbshell reaches the database client through BaseDatabaseClient.runshell, which merges the backend env over os.environ and calls subprocess.run(args, env=env, check=True) without shell=True. The executable name is backend-defined (psql and similar).",
+          "sources": [
+            "django/db/backends/base/client.py#L1-31"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "SafeExceptionReporterFilter.hidden_settings redacts keys matching API, AUTH, TOKEN, KEY, SECRET, PASS, SIGNATURE, and HTTP_COOKIE, plus the session cookie name, before the debug exception reporter shows settings. DEFAULT_EXCEPTION_REPORTER_FILTER points at this class. Debug pages are still a risk if DEBUG is left on.",
+          "sources": [
+            "django/views/debug.py#L112-145",
+            "django/conf/global_settings.py#L607-613"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "ImmediateBackend executes task functions in the calling process during enqueue, stores tracebacks on failure, and does not persist results beyond the returned TaskResult. Treating settings.TASKS['default'] as a durable queue will drop work when the process exits.",
+          "sources": [
+            "django/tasks/backends/immediate.py#L16-80",
+            "django/conf/global_settings.py#L689-692"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Email has two configuration paths during the Django 6.x cycle. EMAIL_BACKEND and related EMAIL_* settings are marked RemovedInDjango2028Warning, get_connection() warns, and defining MAILERS together with any deprecated email setting raises ImproperlyConfigured.",
+          "sources": [
+            "django/conf/__init__.py#L42-70",
+            "django/core/mail/__init__.py#L71-100",
+            "django/conf/global_settings.py#L190-199"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "make_view_atomic wraps a view in transaction.atomic for every alias with ATOMIC_REQUESTS unless the view lists that alias in _non_atomic_requests. If the view is a coroutine function it raises RuntimeError instead of wrapping.",
+          "sources": [
+            "django/core/handlers/base.py#L347-356"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "AdminSite.register raises ImproperlyConfigured for abstract models and for models with _meta.is_composite_pk, and AlreadyRegistered if the model is already in the registry. Swapped models are silently not registered.",
+          "sources": [
+            "django/contrib/admin/sites.py#L112-149"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Apps.populate raises RuntimeError if called reentrantly while loading, which happens if AppConfig.ready() or a model import triggers setup again. get_commands is functools.cache, so tests that mutate INSTALLED_APPS without clearing that cache see a stale command map.",
+          "sources": [
+            "django/apps/registry.py#L72-84",
+            "django/core/management/__init__.py#L52-80"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "runserver is a development server (help text) bound to loopback by default. SecurityMiddleware does not redirect to HTTPS unless SECURE_SSL_REDIRECT is true, and SECURE_HSTS_SECONDS defaults to 0 so HSTS is off. Those production headers are not applied by the generated project unless the deployer changes settings.",
+          "sources": [
+            "django/core/management/commands/runserver.py#L27-81",
+            "django/middleware/security.py#L21-44",
+            "django/conf/global_settings.py#L668-676"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Request body size is capped twice: LimitedStream refuses reads past CONTENT_LENGTH, and DATA_UPLOAD_MAX_MEMORY_SIZE defaults to 2.5 MB. ASGIRequest additionally aborts body reads after body_receive_timeout of 60 seconds (RequestAborted / RequestDataTooBig are imported by the ASGI handler).",
+          "sources": [
+            "django/core/handlers/wsgi.py#L15-40",
+            "django/conf/global_settings.py#L318-326",
+            "django/core/handlers/asgi.py#L11-13",
+            "django/core/handlers/asgi.py#L45-47"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "extension_points": {
+      "summary": "Django is built as registries plus import strings. New behavior is expected to plug in through INSTALLED_APPS, MIDDLEWARE, management command modules, database and cache and task backends, URL converters, lookups, template libraries, checks, signals, admin classes, and serializers. Most of these are configured from settings rather than a single plugin entry file. Contrib apps are ordinary apps that happen to ship in the django package.",
+      "claims": [
+        {
+          "claim": "Application plugins are INSTALLED_APPS entries. AppConfig.create loads each entry; ready() runs after models import. Duplicate labels or duplicate app names raise ImproperlyConfigured. startapp scaffolds from django/conf/app_template/*.py-tpl.",
+          "sources": [
+            "django/apps/registry.py#L86-124",
+            "django/__init__.py#L8-25"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "HTTP plugins are dotted paths in settings.MIDDLEWARE. BaseHandler.load_middleware import_string's each one and requires sync_capable or async_capable. MiddlewareNotUsed drops an entry at runtime.",
+          "sources": [
+            "django/core/handlers/base.py#L27-70",
+            "django/conf/global_settings.py#L475-482"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CLI plugins are modules named management/commands/<name>.py inside an installed app (or django.core). find_commands lists them; load_command_class imports module.Command. Later apps override earlier command names.",
+          "sources": [
+            "django/core/management/__init__.py#L29-80"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Auth plugins are AUTHENTICATION_BACKENDS (default ModelBackend) and PASSWORD_HASHERS. get_hasher('default') returns the first hasher. A custom hasher subclasses BasePasswordHasher and must set algorithm, verify, encode, and safe_summary.",
+          "sources": [
+            "django/conf/global_settings.py#L534-556",
+            "django/contrib/auth/hashers.py#L121-169",
+            "django/contrib/auth/hashers.py#L209-216",
+            "django/contrib/auth/__init__.py#L123-139"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Database plugins are DATABASES[alias]['ENGINE'] pointing at a backend package with DatabaseWrapper, plus optional DATABASE_ROUTERS. The dummy backend is the empty-ENGINE fallback. Custom lookups register via RegisterLookupMixin.register_lookup, which writes class_lookups or instance_lookups.",
+          "sources": [
+            "django/db/backends/sqlite3/base.py#L60",
+            "django/db/backends/dummy/base.py#L1-25",
+            "django/conf/global_settings.py#L184-189",
+            "django/db/models/query_utils.py#L379-404"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "URL plugins: path, re_path, and include build URLPattern and URLResolver trees. register_converter adds path converters; built-ins include IntConverter, StringConverter, UUIDConverter, SlugConverter, and PathConverter.",
+          "sources": [
+            "django/urls/__init__.py#L1-53",
+            "django/urls/converters.py#L5-40",
+            "django/urls/resolvers.py#L505-523"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Template plugins: a templatetags module exposes a Library (conventionally register). Engine accepts libraries and extra builtins. default_builtins are defaulttags, defaultfilters, and loader_tags.",
+          "sources": [
+            "django/template/library.py#L17-55",
+            "django/template/engine.py#L13-60"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "System checks plug in through CheckRegistry.register, usable as a decorator with tags. deploy=True puts the check in deployment_checks, which run_checks includes only when asked. Tags include admin, models, security, database, and urls.",
+          "sources": [
+            "django/core/checks/registry.py#L8-99"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Signals: django.dispatch.Signal is the shared bus. ORM code sends pre_save and post_save. Request lifecycle uses request_started and request_finished. Task backends send task_enqueued, task_started, and task_finished. Receivers can be sync or async.",
+          "sources": [
+            "django/dispatch/dispatcher.py#L68-80",
+            "django/db/models/base.py#L981-1024",
+            "django/tasks/backends/immediate.py#L29-72",
+            "django/db/__init__.py#L46-63"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Admin plugins: subclass ModelAdmin and call AdminSite.register(model, admin_class) or admin.site.register. Keyword options to register() build a dynamic subclass. Autodiscover imports each app's admin module.",
+          "sources": [
+            "django/contrib/admin/sites.py#L95-149"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Cache, task, and mailer backends are alias maps of BACKEND import strings: CACHES via CacheHandler, TASKS via TaskBackendHandler.create_connection, and MAILERS via the mailers handler. Session stores swap by setting SESSION_ENGINE to a module that defines SessionStore.",
+          "sources": [
+            "django/core/cache/__init__.py#L36-40",
+            "django/tasks/__init__.py#L29-45",
+            "django/conf/global_settings.py#L507-515",
+            "django/contrib/sessions/middleware.py#L12-16"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Serializers plug in through register_serializer(format, dotted_module). Built-ins cover xml, python, json, yaml, and jsonl. dumpdata/loaddata consume that registry.",
+          "sources": [
+            "django/core/serializers/__init__.py#L26-67"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Static-file finders plug in through STATICFILES_FINDERS. BaseFinder.find and list are the methods a custom finder must implement. Storage uses the same alias pattern (DEFAULT_STORAGE_ALIAS).",
+          "sources": [
+            "django/contrib/staticfiles/finders.py#L18-38",
+            "django/conf/global_settings.py#L637-646",
+            "django/conf/__init__.py#L25-26"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Password validators in the generated project are UserAttributeSimilarityValidator, MinimumLengthValidator, CommonPasswordValidator, and NumericPasswordValidator, each selected by a NAME import path. Global default AUTH_PASSWORD_VALIDATORS is an empty list; the template opts in.",
+          "sources": [
+            "django/conf/project_template/project_name/settings.py-tpl#L86-99",
+            "django/conf/global_settings.py#L558"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_handoff": {
+      "summary": "Edit the django/ package as a library with a stable import surface, and prove changes with a narrow runtests.py label. Read the handler, settings, and the subsystem you touch before writing code. Black, isort, and flake8 are enforced. Deprecation warnings are test failures. Do not treat this checkout as an application: there is no project settings module until startproject creates one. Avoid full-suite runs, native GIS, and alternate databases unless the task needs them.",
+      "claims": [
+        {
+          "claim": "Read first: django/__init__.py (version and setup), django/conf/__init__.py plus global_settings.py, django/core/handlers/base.py, django/core/management/__init__.py, and the subsystem file (ORM query.py/base.py, urls/resolvers.py, or the contrib app). Design intent is loose coupling: templates do not know about requests, the database layer does not know about display.",
+          "sources": [
+            "django/__init__.py#L8-25",
+            "docs/misc/design-philosophies.txt#L14-28",
+            "django/core/handlers/base.py#L138-228"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Safe test command, from a venv with pip install -e . and tests/requirements/py3.txt: cd tests && ./runtests.py <label> -v2. Labels are package names such as handlers, csrf_tests, or auth_tests. tox -e py3 -- <label> is the same runner. Do not start with the full suite.",
+          "sources": [
+            "docs/internals/contributing/writing-code/unit-tests.txt#L27-35",
+            "tox.ini#L27-52",
+            "tests/runtests.py#L108-137"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Formatting: black target py312 (force-excludes tests/test_runner_apps/tagged/tests_syntax_error.py) and isort profile black, known_first_party django, checked on django, tests, and scripts. flake8 is the lint gate in CI.",
+          "sources": [
+            "pyproject.toml#L56-63",
+            ".github/workflows/linters.yml#L21-60"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "runtests.py makes RemovedInNextVersionWarning, RemovedAfterNextVersionWarning, ResourceWarning, and RuntimeWarning errors. Code that emits those warnings fails CI even if assertions pass. EMAIL_* and get_connection() already warn with RemovedInDjango2028Warning.",
+          "sources": [
+            "tests/runtests.py#L48-54",
+            "django/core/mail/__init__.py#L71-86"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Settings trap: any import-time access to django.conf.settings before DJANGO_SETTINGS_MODULE or settings.configure() raises ImproperlyConfigured. Model import before apps.populate raises AppRegistryNotReady. Tests rely on runtests.py to configure settings; ad-hoc scripts must do it themselves.",
+          "sources": [
+            "django/conf/__init__.py#L93-107",
+            "django/apps/registry.py#L129-143"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "call_command() sets skip_checks=True by default, so it will not reproduce a failing system check that run_from_argv would run. ManagementUtility fetches commands only after setup, except the runserver autoreload bootstrap.",
+          "sources": [
+            "django/core/management/__init__.py#L83-194",
+            "django/core/management/__init__.py#L386-414",
+            "django/core/management/base.py#L466-471"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "get_commands is functools.cache. Adding a command module or changing INSTALLED_APPS in-process requires clearing that cache or the new command stays invisible. Command instances live in app packages as class Command(BaseCommand).",
+          "sources": [
+            "django/core/management/__init__.py#L42-80"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Project and app scaffolds are .py-tpl files under django/conf/project_template and django/conf/app_template, not .py modules. Editing a generated-looking settings.py that is not in the tree will not change startproject.",
+          "sources": [
+            "django/conf/project_template/project_name/settings.py-tpl#L1-28",
+            "django/conf/project_template/project_name/urls.py-tpl#L1-22"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Do not hand-edit compiled .mo catalogs under django/conf/locale or contrib/*/locale. Translation source is the .po files; makemessages and compilemessages are the commands. isort/black CI does not cover those catalogs the way it covers Python.",
+          "sources": [
+            "django/core/management/commands/migrate.py"
+          ],
+          "kind": "inference"
+        },
+        {
+          "claim": "Async trap: a coroutine view cannot be combined with ATOMIC_REQUESTS. Admin trap: composite primary keys and abstract models cannot be registered. Migration trap: a plan that both applies and unapplies in one executor.migrate call raises InvalidMigrationPlan.",
+          "sources": [
+            "django/core/handlers/base.py#L347-356",
+            "django/contrib/admin/sites.py#L112-122",
+            "django/db/migrations/executor.py#L125-132"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Security-sensitive edits belong with the matching tests: csrf_tests for CsrfViewMiddleware, auth_tests for hashers and backends, check_framework or security checks for W009. Deployment checks do not run unless include_deployment_checks is requested, so a unit test must opt in.",
+          "sources": [
+            "django/core/checks/registry.py#L74-94",
+            "django/core/checks/security/base.py#L263-271",
+            "tests/runtests.py#L90-96"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "GIS and non-SQLite backends are optional. Changing django/contrib/gis or django/db/backends/postgresql|mysql|oracle is not validated by the default GitHub Actions SQLite job. tox only adds those drivers when the env factor is selected, and you must pass --settings.",
+          "sources": [
+            ".github/workflows/tests.yml#L20-46",
+            "tox.ini#L43-52",
+            "docs/internals/contributing/writing-code/unit-tests.txt#L92-109"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "JavaScript for admin is not covered by runtests.py. Changes under django/contrib/admin/static or js_tests need npm test (Node is pinned to 24.15.0 in CI because of a puppeteer break on 24.16). Biome is available as npm run biome.",
+          "sources": [
+            "package.json#L1-17",
+            ".github/workflows/tests.yml#L76-94"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Public entrypoints to preserve: execute_from_command_line, get_wsgi_application, get_asgi_application, django.setup, path/re_path/include, Model.save, and QuerySet.filter. Handler classes are documented as private so they can move. Version is read dynamically from django.__version__ for the package metadata.",
+          "sources": [
+            "django/core/wsgi.py#L5-13",
+            "django/core/asgi.py#L5-13",
+            "pyproject.toml#L45-66"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_prompt": "You are working in the Django framework repository, not in a Django project. This tree is Django 6.2.0 alpha (django/__init__.py VERSION = VersionTuple(6, 2, 0, 'alpha', 0)). Python requirement is >= 3.12. Runtime dependencies are asgiref>=3.12.1 and sqlparse>=0.5.0; argon2-cffi and bcrypt are optional extras. setuptools packages only the django* tree. tests/, docs/, and scripts/ are for contributors.\n\nProcess entrypoints: console script django-admin maps to django.core.management.execute_from_command_line; python -m django hits django/__main__.py. HTTP entrypoints are django.core.wsgi.get_wsgi_application and django.core.asgi.get_asgi_application. Both call django.setup(set_prefix=False) and return WSGIHandler or ASGIHandler. Those handler classes are intentionally private. django.setup() configures logging from LOGGING_CONFIG, sets the script prefix from FORCE_SCRIPT_NAME, and calls apps.populate(settings.INSTALLED_APPS). Apps.populate imports AppConfigs, imports models, then calls ready(). It is not reentrant.\n\nSettings are django.conf.settings, a LazySettings proxy. It loads DJANGO_SETTINGS_MODULE on first access and overlays django.conf.global_settings. If the env var is unset and settings.configure() was not called, access raises ImproperlyConfigured. Model imports before the app registry is ready raise AppRegistryNotReady.\n\nRequest path: WSGIHandler or ASGIHandler builds the request, sends request_started (which clears query logs and closes stale DB connections), then BaseHandler.get_response. Middleware from settings.MIDDLEWARE is composed in reverse. resolve_request uses URLResolver.resolve against ROOT_URLCONF. make_view_atomic wraps the view in transaction.atomic when ATOMIC_REQUESTS is set, and raises RuntimeError for async views. Class-based views enter through View.as_view -> setup -> dispatch. TemplateResponse.render runs after template-response middleware.\n\nORM path: QuerySet.filter/exclude only clone the query and add a Q. SQL runs in SQLCompiler.execute_sql when the queryset is evaluated via _fetch_all. Model.save uses router.db_for_write, sends pre_save, writes in save_base, then post_save. Schema changes use makemigrations and migrate. MigrationExecutor.migrate rejects a plan that mixes forward and backward migrations.\n\nAuth path: django.contrib.auth.authenticate iterates AUTHENTICATION_BACKENDS. The default backend is ModelBackend against AUTH_USER_MODEL (auth.User). Passwords go through PASSWORD_HASHERS; the default first hasher is PBKDF2PasswordHasher. Argon2 and bcrypt need extras. MD5PasswordHasher still exists and is not in the default list; do not add it back. CSRF is CsrfViewMiddleware: cookie csrftoken or the session, plus POST csrfmiddlewaretoken or header HTTP_X_CSRFTOKEN. HttpRequest.get_host checks ALLOWED_HOSTS; with DEBUG and an empty allow-list only .localhost, 127.0.0.1, and [::1] work. Signing lives in django.core.signing and uses SECRET_KEY. check_secret_key is a deploy-only system check (prefix django-insecure-, length, uniqueness).\n\nTasks: settings.TASKS defaults to ImmediateBackend, which runs the task inside enqueue in-process. That is not a worker queue. Email is mid-migration: EMAIL_* and get_connection() are deprecated before Django 2028 in favor of MAILERS. Do not set both.\n\nThe startproject template enables admin, auth, contenttypes, sessions, messages, and staticfiles; middleware is SecurityMiddleware, SessionMiddleware, CommonMiddleware, CsrfViewMiddleware, AuthenticationMiddleware, MessageMiddleware, and XFrameOptionsMiddleware. ContentSecurityPolicyMiddleware exists but is not in that list. The generated project uses SQLite and DEBUG=True. runserver defaults to 127.0.0.1:8000 and refuses to start when DEBUG is false and ALLOWED_HOSTS is empty.\n\nTests: create a venv, pip install -e . and tests/requirements/py3.txt, then cd tests && ./runtests.py <label> -v2. The runner turns RemovedInNextVersionWarning, RemovedAfterNextVersionWarning, ResourceWarning, and RuntimeWarning into errors. It always installs contenttypes, auth, sites, sessions, messages, SimpleAdminConfig, and staticfiles. GIS packages are skipped unless GIS is enabled. tox default envs are py3, black, flake8, isort, docs, lint-docs, zizmor. CI (.github/workflows/tests.yml) is SQLite on Python 3.14 and free-threaded 3.14t, plus npm test (QUnit, Node 24.15.0) and unittest for scripts/. Postgres, MySQL, Oracle, and PostGIS need another workflow or a tox factor plus your own settings module. Do not run the entire suite unless asked.\n\nEditing rules: Black target py312, isort profile black, known_first_party django, flake8 clean. Keep diffs small. New commands are management/commands modules discovered by pkgutil; get_commands() is cached. New lookups use Field.register_lookup. New checks use CheckRegistry.register. New template tags use Library. New admin screens use admin.site.register; abstract models and composite primary keys are rejected. URL pieces use path, re_path, include, and register_converter. Do not edit .mo files. Scaffolds are *.py-tpl. call_command() defaults skip_checks to True. Async views and ATOMIC_REQUESTS do not mix. Match existing style and add a focused test in the matching tests/<topic> package."
+  },
+  "analysis": {
+    "agent": "grok",
+    "model": "cli:grok",
+    "runtime_ms": 430527,
+    "cost_usd": null,
+    "collected_at": "2026-09-22T11:46:51.994Z"
   }
 }

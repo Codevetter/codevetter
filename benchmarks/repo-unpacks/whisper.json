@@ -1,0 +1,2212 @@
+{
+  "schema_version": "codevetter.repo-unpack-corpus/v1",
+  "repo": "openai/whisper",
+  "slug": "whisper",
+  "codevetter_version": "codevetter 1.12.0",
+  "collected_at": "2026-09-22T11:40:45.858Z",
+  "last_commit": {
+    "sha": "86098128c0b4f24f0e2aa2994de830614b474227",
+    "date": "2026-08-31",
+    "subject": "Only spell out a standalone 1 in the English number normalizer (#2836)"
+  },
+  "scan": {
+    "schema_version": "codevetter.unpack-scan/v1",
+    "report_id": "beed15ff-aea5-476a-bb5c-0e1202f9123b",
+    "status": "scan_only",
+    "created_at": "2026-09-22T11:40:45.856596+00:00",
+    "inventory": {
+      "repo_path": "/private/var/folders/9_/1109_2dd1qz6zyvmxb5zp8pc0000gn/T/unpack-pilot-BlI6IT/whisper",
+      "repo_name": "whisper",
+      "commit_sha": "86098128c0b4f24f0e2aa2994de830614b474227",
+      "branch": "main",
+      "remote_url": "https://github.com/openai/whisper.git",
+      "files_scanned": 42,
+      "files_skipped": 3,
+      "bytes_scanned": 2291548,
+      "max_files_hit": false,
+      "estimated_total_files": null,
+      "languages": [
+        {
+          "language": "Python",
+          "files": 20,
+          "bytes": 160526
+        },
+        {
+          "language": "JSON",
+          "files": 2,
+          "bytes": 123930
+        },
+        {
+          "language": "Markdown",
+          "files": 4,
+          "bytes": 30788
+        },
+        {
+          "language": "YAML",
+          "files": 4,
+          "bytes": 5676
+        },
+        {
+          "language": "TOML",
+          "files": 1,
+          "bytes": 1418
+        }
+      ],
+      "manifests": [
+        {
+          "path": "pyproject.toml",
+          "kind": "pyproject.toml",
+          "name": "false",
+          "version": "{ attr = \"whisper.version.__version__\" }",
+          "dependencies": [],
+          "scripts": []
+        }
+      ],
+      "entrypoints": [
+        {
+          "path": "README.md",
+          "kind": "docs",
+          "reason": "Repository readme"
+        },
+        {
+          "path": ".github/workflows/python-publish.yml",
+          "kind": "config",
+          "reason": "GitHub Actions workflow"
+        },
+        {
+          "path": ".github/workflows/test.yml",
+          "kind": "config",
+          "reason": "GitHub Actions workflow"
+        }
+      ],
+      "top_level_dirs": [
+        {
+          "path": "whisper",
+          "file_count": 18,
+          "bytes": 1863574
+        },
+        {
+          "path": "tests",
+          "file_count": 6,
+          "bytes": 9635
+        },
+        {
+          "path": ".github",
+          "file_count": 3,
+          "bytes": 4689
+        },
+        {
+          "path": "data",
+          "file_count": 2,
+          "bytes": 74013
+        },
+        {
+          "path": "notebooks",
+          "file_count": 1,
+          "bytes": 31973
+        }
+      ],
+      "docs": [
+        {
+          "path": "README.md",
+          "bytes": 8246,
+          "preview": "# Whisper\n\n[[Blog]](https://openai.com/blog/whisper)\n[[Paper]](https://arxiv.org/abs/2212.04356)\n[[Model card]](https://github.com/openai/whisper/blob/main/model-card.md)\n[[Colab example]](https://colab.research.google.com/github/openai/whisper/blob/master/notebooks/LibriSpeech.ipynb)\n\nWhisper is a general-purpose speech recognition model. It is trained on a large dataset of diverse audio and is also a multitasking model that can perform multilingual speech recognition, speech translation, and language identification.\n\n\n## Approach\n\n![Approach](https://raw.githubusercontent.com/openai/whisper/main/approach.png)\n\nA Transformer sequence-to-sequence model is trained on various speech processing tasks, including multilingual speech recognition, speech translation, spoken language identification, and voice activity detection. These tasks are jointly represented as a sequence of tokens to be predicted by the decoder, allowing a single model to replace many stages of a traditional speech-processing pipeline. The multitask training format uses a set of special tokens that serve as task specifiers or classification targets.\n\n\n## Setup\n\nWe used Python 3.9.9 and [PyTorch](https://pytorch.org/) 1.10.1 to train and test our models, but the codebase is expected to be compatible with Python 3.8-3.11 and recent PyTorch versions. The codebase also depends on a few Python packages, most notably [OpenAI's tiktoken](https://github.com/openai/tiktoken) for their fast tokenizer implementation. You can download and install (or update to) the latest release of Whisper with the following command:\n\n    pip install -U openai-whisper\n\nAlternatively, the following command will pull and install the latest commit from this repository, along with its Python dependencies:\n\n    pip install git+https://github.com/openai/whisper.git \n\nTo update the package to the latest version of this repository, please run:\n\n    pip install --upgrade --no-deps --force-reinstall git+https://github.com/openai/whisper.git\n\nIt also requires the command-line tool [`ffmpeg`](https://ffmpeg.org/) to be installed on your system, which is available from most package managers:\n\n```bash\n# on Ubuntu or Debian\nsudo apt update && sudo apt install ffmpeg\n\n# on Arch Linux\nsudo pacman -S ffmpeg\n\n# on MacOS using Homebrew (https://brew.sh/)\nbrew install ffmpeg\n\n# on Windows using Chocolatey (https://chocolatey.org/)\nchoco install ffmpeg\n\n# on Windows using Scoop (https://scoop.sh/)\nscoop install ffmpeg\n```\n\nYou may need [`rust`](http://rust-lang.org) installed as well, in case [tiktoken](https://github.com/openai/tiktoken) does not provide a pre-built wheel for your platform. If you see installation errors during the `pip install` command above, please follow the [Getting started page](https://www.rust-lang.org/learn/get-started) to install Rust development environment. Additionally, you may need to configure the `PATH` environment variable, e.g. `export PATH=\"$HOME/.cargo/bin:$PATH\"`. If the installation fails with `No module named 'setuptools_rust'`, you need to install `setuptools_rust`, e.g. by running:\n\n```bash\npip install setuptools-rust\n```\n\n\n## Available models and languages\n\nThere are six model sizes, four with English-only versions, offering speed and accuracy tradeoffs.\nBelow are the names of the available models and their approximate memory requirements and inference speed relative to the large model.\nThe relative speeds below are measured by transcribing English speech on a A100, and the real-world speed may vary significantly depending on many factors including the language, the speaking speed, and the available hardware.\n\n|  Size  | Parameters | English-only model | Multilingual model | Required VRAM | Relative speed |\n|:------:|:----------:|:------------------:|:------------------:|:-------------:|:--------------:|\n|  tiny  |    39 M    |     `tiny.en`      |       `tiny`       |     ~1 GB     |      ~10x      |\n|  base  |    74 M    |     `base.en`      |       `base`       |     ~1 GB     |      ~7x       |\n| small  |   244 M    |     `small.en`     |      `small`       |     ~2 GB     |      ~4x       |\n| medium |   769 M    |    `medium.en`     |      `medium`      |     ~5 GB     |      ~2x       |\n| large  |   1550 M   |        N/A         |      `large`       |    ~10 GB     |       1x       |\n| turbo  |   809 M    |        N/A         |      `turbo`       |     ~6 GB     |      ~8x       |\n\nThe `.en` models for English-only applications tend to perform better, especially for the `tiny.en` and `base.en` models. We observed that the difference becomes less significant for the `small.en` and `medium.en` models.\nAdditionally, the `turbo` model is an optimized version of `large-v3` that offers faster transcription speed with a minimal degradation in accuracy.\n\nWhisper's performance varies widely depending on the language. The figure below shows a performance breakdown of `large-v3` and `large-v2` models by language, using WERs (word error rates) or CER (character error rates, shown in *Italic*) evaluated on the Common Voice 15 and Fleurs datasets. Additional WER/CER metrics corresponding to the other models and datasets can be found in Appendix D.1, D.2, and D.4 of [the paper](https://arxiv.org/abs/2212.04356), as well as the BLEU (Bilingual Evaluation Understudy) scores for translation in Appendix D.3.\n\n![WER breakdown by language](https://github.com/openai/whisper/assets/266841/f4619d66-1058-4005-8f67-a9d811b77c62)\n\n## Command-line usage\n\nThe following command will transcribe speech in audio files, using the `turbo` model:\n\n```bash\nwhisper audio.flac audio.mp3 audio.wav --model turbo\n```\n\nThe default setting (which selects the `turbo` model) works well for transcribing English. However, **the `turbo` model is not trained for translation tasks**. If you need to **translate non-English speech into English**, use one of the **multilingual models** (`tiny`, `base`, `small`, `medium`, `large`) instead of `turbo`. \n\nFor example, to transcribe an audio file containing non-English speech, you can specify the language:\n\n```bash\nwhisper japanese.wav --language Japanese\n```\n\nTo **translate** speech into English, use:\n\n```bash\nwhisper japanese.wav --model medium --language Japanese --task translate\n```\n\n> **Note:** The `turbo` model will return the original language even if `--task translate` is specified. Use `medium` or `large` for the best translation results.\n\nRun the following to view all available options:\n\n```bash\nwhisper --help\n```\n\nSee [tokenizer.py](https://github.com/openai/whisper/blob/main/whisper/tokenizer.py) for the list of all available languages.\n\n\n## Python usage\n\nTranscription can also be performed within Python: \n\n```python\nimport whisper\n\nmodel = whisper.load_model(\"turbo\")\nresult = model.transcribe(\"audio.mp3\")\nprint(result[\"text\"])\n```\n\nInternally, the `transcribe()` method reads the entire file and processes the audio with a sliding 30-second window, performing autoregressive sequence-to-sequence predictions on each window.\n\nBelow is an example usage of `whisper.detect_language()` and `whisper.decode()` which provide lower-level access to the model.\n\n```python\nimport whisper\n\nmodel = whisper.load_model(\"turbo\")\n\n# load audio and pad/trim it to fit 30 seconds\naudio = whisper.load_audio(\"audio.mp3\")\naudio = whisper.pad_or_trim(audio)\n\n# make log-Mel spectrogram and move to the same device as the model\nmel = whisper.log_mel_spectrogram(audio, n_mels=model.dims.n_mels).to(model.device)\n\n# detect the spoken language\n_, probs = model.detect_language(mel)\nprint(f\"Detected language: {max(probs, key=probs.get)}\")\n\n# decode the audio\noptions = whisper.DecodingOptions()\nresult = whisper.decode(model, mel, options)\n\n# print the recognized text\nprint(result.text)\n```\n\n## More examples\n\nPlease use the [🙌 Show and tell](https://github.com/openai/whisper/discussions/categories/show-and-tell) category in Discussions for sharing more example usages of Whisper and third-party extensions such as web demos, integrations with other tools, ports for different platforms, etc.\n\n\n## License\n\nWhisper's code and model weights are released under the MIT License. See [LICENSE](https://github.com/o"
+        }
+      ],
+      "config_files": [],
+      "stack_tags": [
+        "GitHub Actions",
+        "Python"
+      ],
+      "workspace_units": [
+        {
+          "path": ".",
+          "name": "false",
+          "kind": "workspace",
+          "manifest_path": "pyproject.toml",
+          "build_system": "pyproject.toml",
+          "file_count": 42,
+          "languages": [
+            {
+              "language": "Python",
+              "files": 20,
+              "bytes": 160526
+            },
+            {
+              "language": "Markdown",
+              "files": 4,
+              "bytes": 30788
+            },
+            {
+              "language": "YAML",
+              "files": 4,
+              "bytes": 5676
+            },
+            {
+              "language": "JSON",
+              "files": 2,
+              "bytes": 123930
+            },
+            {
+              "language": "TOML",
+              "files": 1,
+              "bytes": 1418
+            }
+          ],
+          "scripts": [],
+          "entrypoints": [
+            ".github/workflows/python-publish.yml",
+            ".github/workflows/test.yml",
+            "README.md"
+          ],
+          "test_files": [],
+          "tags": [
+            "Markdown",
+            "Python",
+            "YAML"
+          ]
+        }
+      ],
+      "qa_readiness": {
+        "score": 0,
+        "status": "missing",
+        "summary": "Repo does not expose enough local browser QA structure for a reliable Synthetic QA workflow yet.",
+        "signals": [
+          {
+            "id": "browser_runner",
+            "label": "Browser runner",
+            "status": "missing",
+            "detail": "No Playwright, Cypress, or browser runner config was found.",
+            "sources": []
+          },
+          {
+            "id": "user_flow_specs",
+            "label": "User-flow specs",
+            "status": "missing",
+            "detail": "No e2e/playwright/cypress spec files were found.",
+            "sources": []
+          },
+          {
+            "id": "local_app_command",
+            "label": "Local app command",
+            "status": "missing",
+            "detail": "No obvious package script for starting the app locally was found.",
+            "sources": []
+          },
+          {
+            "id": "qa_script",
+            "label": "QA script",
+            "status": "missing",
+            "detail": "No explicit QA/e2e/browser test script was found.",
+            "sources": []
+          },
+          {
+            "id": "artifact_trail",
+            "label": "Artifact trail",
+            "status": "missing",
+            "detail": "No browser QA artifacts or artifact-capable runner were found.",
+            "sources": []
+          },
+          {
+            "id": "targetable_routes",
+            "label": "Targetable surfaces",
+            "status": "missing",
+            "detail": "No obvious web entrypoint or route file was found.",
+            "sources": []
+          }
+        ],
+        "suggested_flows": []
+      },
+      "repo_graph": {
+        "schema_version": 2,
+        "nodes": [
+          {
+            "id": "file:github-workflows-python-publish-yml",
+            "kind": "file",
+            "label": ".github/workflows/python-publish.yml",
+            "path": ".github/workflows/python-publish.yml",
+            "detail": "workspace entrypoint",
+            "sources": [
+              ".github/workflows/python-publish.yml"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:github-workflows-test-yml",
+            "kind": "file",
+            "label": ".github/workflows/test.yml",
+            "path": ".github/workflows/test.yml",
+            "detail": "workspace entrypoint",
+            "sources": [
+              ".github/workflows/test.yml"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:changelog-md",
+            "kind": "file",
+            "label": "CHANGELOG.md",
+            "path": "CHANGELOG.md",
+            "detail": "source marker candidate",
+            "sources": [
+              "CHANGELOG.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:readme-md",
+            "kind": "file",
+            "label": "README.md",
+            "path": "README.md",
+            "detail": "workspace entrypoint",
+            "sources": [
+              "README.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:data-readme-md",
+            "kind": "file",
+            "label": "data/README.md",
+            "path": "data/README.md",
+            "detail": "source marker candidate",
+            "sources": [
+              "data/README.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:model-card-md",
+            "kind": "file",
+            "label": "model-card.md",
+            "path": "model-card.md",
+            "detail": "source marker candidate",
+            "sources": [
+              "model-card.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "package:pyproject-toml",
+            "kind": "package",
+            "label": "false",
+            "path": "pyproject.toml",
+            "detail": "pyproject.toml manifest",
+            "sources": [
+              "pyproject.toml"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-conftest-py",
+            "kind": "test",
+            "label": "tests/conftest.py",
+            "path": "tests/conftest.py",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/conftest.py"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-test-audio-py",
+            "kind": "test",
+            "label": "tests/test_audio.py",
+            "path": "tests/test_audio.py",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/test_audio.py"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-test-normalizer-py",
+            "kind": "test",
+            "label": "tests/test_normalizer.py",
+            "path": "tests/test_normalizer.py",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/test_normalizer.py"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-test-timing-py",
+            "kind": "test",
+            "label": "tests/test_timing.py",
+            "path": "tests/test_timing.py",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/test_timing.py"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-test-tokenizer-py",
+            "kind": "test",
+            "label": "tests/test_tokenizer.py",
+            "path": "tests/test_tokenizer.py",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/test_tokenizer.py"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-test-transcribe-py",
+            "kind": "test",
+            "label": "tests/test_transcribe.py",
+            "path": "tests/test_transcribe.py",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/test_transcribe.py"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "workspace:",
+            "kind": "workspace_unit",
+            "label": "false",
+            "path": null,
+            "detail": "workspace | 42 files | 20 Python, 4 Markdown, 4 YAML",
+            "sources": [
+              ".github/workflows/python-publish.yml",
+              ".github/workflows/test.yml",
+              "pyproject.toml"
+            ],
+            "source_location": null,
+            "community": null
+          }
+        ],
+        "edges": [
+          {
+            "from": "workspace:",
+            "to": "package:pyproject-toml",
+            "kind": "defines",
+            "evidence": "workspace unit owns this manifest",
+            "sources": [
+              "pyproject.toml"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "file:github-workflows-python-publish-yml",
+            "kind": "entrypoint",
+            "evidence": "entrypoint belongs to this workspace unit",
+            "sources": [
+              ".github/workflows/python-publish.yml"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "file:github-workflows-test-yml",
+            "kind": "entrypoint",
+            "evidence": "entrypoint belongs to this workspace unit",
+            "sources": [
+              ".github/workflows/test.yml"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "file:readme-md",
+            "kind": "entrypoint",
+            "evidence": "entrypoint belongs to this workspace unit",
+            "sources": [
+              "README.md"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          }
+        ],
+        "truncated": false
+      },
+      "history_brief": {
+        "schema_version": 2,
+        "summary": "Local history brief captured 12 recent commits, 0 decision markers, 6 test hints, and 3 co-change clusters for Repo Unpacked. Treat commit subjects as leads and rely on cited files for durable constraints.",
+        "recent_commits": [
+          {
+            "sha": "86098128c0b4",
+            "date": "2026-08-31",
+            "subject": "Only spell out a standalone 1 in the English number normalizer (#2836)",
+            "files": []
+          },
+          {
+            "sha": "5f86d1d86363",
+            "date": "2026-07-28",
+            "subject": "Fix SDPA cross-attention falling back to the math kernel during beam search (#2812)",
+            "files": []
+          },
+          {
+            "sha": "90fdc51112dc",
+            "date": "2026-07-29",
+            "subject": "Add JSONL output format (one JSON object per line per segment) (#2815)",
+            "files": []
+          },
+          {
+            "sha": "04f449b8a437",
+            "date": "2026-04-15",
+            "subject": "Pin pre-commit hook revisions to immutable commits (#2760)",
+            "files": [
+              ".pre-commit-config.yaml"
+            ]
+          },
+          {
+            "sha": "cba3768142a2",
+            "date": "2026-03-27",
+            "subject": "Pin GitHub Actions workflow references (#2751)",
+            "files": [
+              ".github/workflows/python-publish.yml",
+              ".github/workflows/test.yml"
+            ]
+          },
+          {
+            "sha": "c0d2f624c09d",
+            "date": "2025-06-25",
+            "subject": "Release 20250625",
+            "files": [
+              ".github/workflows/python-publish.yml"
+            ]
+          },
+          {
+            "sha": "db7fbc75fe23",
+            "date": "2025-06-25",
+            "subject": "Release 20250625",
+            "files": [
+              ".github/workflows/python-publish.yml"
+            ]
+          },
+          {
+            "sha": "31243bad24cc",
+            "date": "2025-06-25",
+            "subject": "Release 20250625",
+            "files": [
+              "CHANGELOG.md"
+            ]
+          },
+          {
+            "sha": "1f8fc975d3f6",
+            "date": "2025-06-26",
+            "subject": "Fix: Update torch.load to use weights_only=True to prevent security w… (#2451)",
+            "files": []
+          },
+          {
+            "sha": "679ae1d14167",
+            "date": "2025-06-25",
+            "subject": "Fix: Ensure DTW cost tensor is on the same device as input tensor (#2561)",
+            "files": []
+          },
+          {
+            "sha": "f50c4f264e07",
+            "date": "2025-06-25",
+            "subject": "docs: updated README to specify translation model limitation (#2547)",
+            "files": [
+              "README.md"
+            ]
+          },
+          {
+            "sha": "86899243e9fd",
+            "date": "2025-06-26",
+            "subject": "Fixed triton kernel update to support latest triton versions (#2588)",
+            "files": []
+          }
+        ],
+        "decisions": [],
+        "test_hints": [
+          {
+            "path": "tests/test_timing.py",
+            "reason": "test/spec file anchors expected behavior"
+          },
+          {
+            "path": "tests/test_normalizer.py",
+            "reason": "test/spec file anchors expected behavior"
+          },
+          {
+            "path": "tests/conftest.py",
+            "reason": "test/spec file anchors expected behavior"
+          },
+          {
+            "path": "tests/test_tokenizer.py",
+            "reason": "test/spec file anchors expected behavior"
+          },
+          {
+            "path": "tests/test_audio.py",
+            "reason": "test/spec file anchors expected behavior"
+          },
+          {
+            "path": "tests/test_transcribe.py",
+            "reason": "test/spec file anchors expected behavior"
+          }
+        ],
+        "temporal_couplings": [
+          {
+            "files": [
+              "README.md",
+              "model-card.md"
+            ],
+            "commit_count": 3,
+            "last_commit": "25e5c364e0a2",
+            "reason": "These files changed together in 3 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              ".github/workflows/python-publish.yml",
+              ".github/workflows/test.yml"
+            ],
+            "commit_count": 2,
+            "last_commit": "cba3768142a2",
+            "reason": "These files changed together in 2 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              ".github/workflows/test.yml",
+              ".pre-commit-config.yaml"
+            ],
+            "commit_count": 2,
+            "last_commit": "26a7cacc83c2",
+            "reason": "These files changed together in 2 recent commits; inspect both when either side moves."
+          }
+        ],
+        "graph": {
+          "schema_version": 2,
+          "nodes": [
+            {
+              "id": "commit:04f449b8a437",
+              "kind": "commit",
+              "label": "Pin pre-commit hook revisions to immutable commits (#2760)",
+              "path": null,
+              "detail": "2026-04-15",
+              "citations": [
+                "git:04f449b8a437"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:1f8fc975d3f6",
+              "kind": "commit",
+              "label": "Fix: Update torch.load to use weights_only=True to prevent security w… (#2451)",
+              "path": null,
+              "detail": "2025-06-26",
+              "citations": [
+                "git:1f8fc975d3f6"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:31243bad24cc",
+              "kind": "commit",
+              "label": "Release 20250625",
+              "path": null,
+              "detail": "2025-06-25",
+              "citations": [
+                "git:31243bad24cc"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:5f86d1d86363",
+              "kind": "commit",
+              "label": "Fix SDPA cross-attention falling back to the math kernel during beam search (#2812)",
+              "path": null,
+              "detail": "2026-07-28",
+              "citations": [
+                "git:5f86d1d86363"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:679ae1d14167",
+              "kind": "commit",
+              "label": "Fix: Ensure DTW cost tensor is on the same device as input tensor (#2561)",
+              "path": null,
+              "detail": "2025-06-25",
+              "citations": [
+                "git:679ae1d14167"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:86098128c0b4",
+              "kind": "commit",
+              "label": "Only spell out a standalone 1 in the English number normalizer (#2836)",
+              "path": null,
+              "detail": "2026-08-31",
+              "citations": [
+                "git:86098128c0b4"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:86899243e9fd",
+              "kind": "commit",
+              "label": "Fixed triton kernel update to support latest triton versions (#2588)",
+              "path": null,
+              "detail": "2025-06-26",
+              "citations": [
+                "git:86899243e9fd"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:90fdc51112dc",
+              "kind": "commit",
+              "label": "Add JSONL output format (one JSON object per line per segment) (#2815)",
+              "path": null,
+              "detail": "2026-07-29",
+              "citations": [
+                "git:90fdc51112dc"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:c0d2f624c09d",
+              "kind": "commit",
+              "label": "Release 20250625",
+              "path": null,
+              "detail": "2025-06-25",
+              "citations": [
+                "git:c0d2f624c09d"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:cba3768142a2",
+              "kind": "commit",
+              "label": "Pin GitHub Actions workflow references (#2751)",
+              "path": null,
+              "detail": "2026-03-27",
+              "citations": [
+                "git:cba3768142a2"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:db7fbc75fe23",
+              "kind": "commit",
+              "label": "Release 20250625",
+              "path": null,
+              "detail": "2025-06-25",
+              "citations": [
+                "git:db7fbc75fe23"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:f50c4f264e07",
+              "kind": "commit",
+              "label": "docs: updated README to specify translation model limitation (#2547)",
+              "path": null,
+              "detail": "2025-06-25",
+              "citations": [
+                "git:f50c4f264e07"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:-github-workflows-python-publish-yml",
+              "kind": "file",
+              "label": ".github/workflows/python-publish.yml",
+              "path": ".github/workflows/python-publish.yml",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                ".github/workflows/python-publish.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:-github-workflows-test-yml",
+              "kind": "file",
+              "label": ".github/workflows/test.yml",
+              "path": ".github/workflows/test.yml",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                ".github/workflows/test.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:-pre-commit-config-yaml",
+              "kind": "file",
+              "label": ".pre-commit-config.yaml",
+              "path": ".pre-commit-config.yaml",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                ".pre-commit-config.yaml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:changelog-md",
+              "kind": "file",
+              "label": "CHANGELOG.md",
+              "path": "CHANGELOG.md",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "CHANGELOG.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:model-card-md",
+              "kind": "file",
+              "label": "model-card.md",
+              "path": "model-card.md",
+              "detail": "Recent co-change lead",
+              "citations": [
+                "model-card.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:readme-md",
+              "kind": "file",
+              "label": "README.md",
+              "path": "README.md",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "README.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:tests-conftest-py",
+              "kind": "file",
+              "label": "tests/conftest.py",
+              "path": "tests/conftest.py",
+              "detail": "Verification source",
+              "citations": [
+                "tests/conftest.py"
+              ],
+              "trust": "source_backed"
+            },
+            {
+              "id": "file:tests-test-audio-py",
+              "kind": "file",
+              "label": "tests/test_audio.py",
+              "path": "tests/test_audio.py",
+              "detail": "Verification source",
+              "citations": [
+                "tests/test_audio.py"
+              ],
+              "trust": "source_backed"
+            },
+            {
+              "id": "file:tests-test-normalizer-py",
+              "kind": "file",
+              "label": "tests/test_normalizer.py",
+              "path": "tests/test_normalizer.py",
+              "detail": "Verification source",
+              "citations": [
+                "tests/test_normalizer.py"
+              ],
+              "trust": "source_backed"
+            },
+            {
+              "id": "file:tests-test-timing-py",
+              "kind": "file",
+              "label": "tests/test_timing.py",
+              "path": "tests/test_timing.py",
+              "detail": "Verification source",
+              "citations": [
+                "tests/test_timing.py"
+              ],
+              "trust": "source_backed"
+            },
+            {
+              "id": "file:tests-test-tokenizer-py",
+              "kind": "file",
+              "label": "tests/test_tokenizer.py",
+              "path": "tests/test_tokenizer.py",
+              "detail": "Verification source",
+              "citations": [
+                "tests/test_tokenizer.py"
+              ],
+              "trust": "source_backed"
+            },
+            {
+              "id": "file:tests-test-transcribe-py",
+              "kind": "file",
+              "label": "tests/test_transcribe.py",
+              "path": "tests/test_transcribe.py",
+              "detail": "Verification source",
+              "citations": [
+                "tests/test_transcribe.py"
+              ],
+              "trust": "source_backed"
+            },
+            {
+              "id": "test:tests-conftest-py-test-spec-file-anchors-expected-behavior",
+              "kind": "test",
+              "label": "test/spec file anchors expected behavior",
+              "path": "tests/conftest.py",
+              "detail": "Likely verification lead",
+              "citations": [
+                "tests/conftest.py"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "id": "test:tests-test-audio-py-test-spec-file-anchors-expected-behavior",
+              "kind": "test",
+              "label": "test/spec file anchors expected behavior",
+              "path": "tests/test_audio.py",
+              "detail": "Likely verification lead",
+              "citations": [
+                "tests/test_audio.py"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "id": "test:tests-test-normalizer-py-test-spec-file-anchors-expected-behavior",
+              "kind": "test",
+              "label": "test/spec file anchors expected behavior",
+              "path": "tests/test_normalizer.py",
+              "detail": "Likely verification lead",
+              "citations": [
+                "tests/test_normalizer.py"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "id": "test:tests-test-timing-py-test-spec-file-anchors-expected-behavior",
+              "kind": "test",
+              "label": "test/spec file anchors expected behavior",
+              "path": "tests/test_timing.py",
+              "detail": "Likely verification lead",
+              "citations": [
+                "tests/test_timing.py"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "id": "test:tests-test-tokenizer-py-test-spec-file-anchors-expected-behavior",
+              "kind": "test",
+              "label": "test/spec file anchors expected behavior",
+              "path": "tests/test_tokenizer.py",
+              "detail": "Likely verification lead",
+              "citations": [
+                "tests/test_tokenizer.py"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "id": "test:tests-test-transcribe-py-test-spec-file-anchors-expected-behavior",
+              "kind": "test",
+              "label": "test/spec file anchors expected behavior",
+              "path": "tests/test_transcribe.py",
+              "detail": "Likely verification lead",
+              "citations": [
+                "tests/test_transcribe.py"
+              ],
+              "trust": "navigation_lead"
+            }
+          ],
+          "edges": [
+            {
+              "from": "commit:04f449b8a437",
+              "to": "file:-pre-commit-config-yaml",
+              "kind": "changed",
+              "evidence": "04f449b8a437 changed this file",
+              "citations": [
+                "git:04f449b8a437",
+                ".pre-commit-config.yaml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:31243bad24cc",
+              "to": "file:changelog-md",
+              "kind": "changed",
+              "evidence": "31243bad24cc changed this file",
+              "citations": [
+                "git:31243bad24cc",
+                "CHANGELOG.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:c0d2f624c09d",
+              "to": "file:-github-workflows-python-publish-yml",
+              "kind": "changed",
+              "evidence": "c0d2f624c09d changed this file",
+              "citations": [
+                "git:c0d2f624c09d",
+                ".github/workflows/python-publish.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:cba3768142a2",
+              "to": "file:-github-workflows-python-publish-yml",
+              "kind": "changed",
+              "evidence": "cba3768142a2 changed this file",
+              "citations": [
+                "git:cba3768142a2",
+                ".github/workflows/python-publish.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:cba3768142a2",
+              "to": "file:-github-workflows-test-yml",
+              "kind": "changed",
+              "evidence": "cba3768142a2 changed this file",
+              "citations": [
+                "git:cba3768142a2",
+                ".github/workflows/test.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:db7fbc75fe23",
+              "to": "file:-github-workflows-python-publish-yml",
+              "kind": "changed",
+              "evidence": "db7fbc75fe23 changed this file",
+              "citations": [
+                "git:db7fbc75fe23",
+                ".github/workflows/python-publish.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:f50c4f264e07",
+              "to": "file:readme-md",
+              "kind": "changed",
+              "evidence": "f50c4f264e07 changed this file",
+              "citations": [
+                "git:f50c4f264e07",
+                "README.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "file:-github-workflows-python-publish-yml",
+              "to": "file:-github-workflows-test-yml",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 2 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:cba3768142a2"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:-github-workflows-test-yml",
+              "to": "file:-pre-commit-config-yaml",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 2 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:26a7cacc83c2"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:readme-md",
+              "to": "file:model-card-md",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 3 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:25e5c364e0a2"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:tests-conftest-py",
+              "to": "test:tests-conftest-py-test-spec-file-anchors-expected-behavior",
+              "kind": "verified_by",
+              "evidence": "test/spec file anchors expected behavior",
+              "citations": [
+                "tests/conftest.py"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:tests-test-audio-py",
+              "to": "test:tests-test-audio-py-test-spec-file-anchors-expected-behavior",
+              "kind": "verified_by",
+              "evidence": "test/spec file anchors expected behavior",
+              "citations": [
+                "tests/test_audio.py"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:tests-test-normalizer-py",
+              "to": "test:tests-test-normalizer-py-test-spec-file-anchors-expected-behavior",
+              "kind": "verified_by",
+              "evidence": "test/spec file anchors expected behavior",
+              "citations": [
+                "tests/test_normalizer.py"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:tests-test-timing-py",
+              "to": "test:tests-test-timing-py-test-spec-file-anchors-expected-behavior",
+              "kind": "verified_by",
+              "evidence": "test/spec file anchors expected behavior",
+              "citations": [
+                "tests/test_timing.py"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:tests-test-tokenizer-py",
+              "to": "test:tests-test-tokenizer-py-test-spec-file-anchors-expected-behavior",
+              "kind": "verified_by",
+              "evidence": "test/spec file anchors expected behavior",
+              "citations": [
+                "tests/test_tokenizer.py"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:tests-test-transcribe-py",
+              "to": "test:tests-test-transcribe-py-test-spec-file-anchors-expected-behavior",
+              "kind": "verified_by",
+              "evidence": "test/spec file anchors expected behavior",
+              "citations": [
+                "tests/test_transcribe.py"
+              ],
+              "trust": "navigation_lead"
+            }
+          ],
+          "truncated": false
+        },
+        "sources": [
+          "tests/test_timing.py",
+          "tests/test_normalizer.py",
+          "tests/conftest.py",
+          "tests/test_tokenizer.py",
+          "tests/test_audio.py",
+          "tests/test_transcribe.py",
+          "README.md",
+          "model-card.md",
+          ".github/workflows/python-publish.yml",
+          ".github/workflows/test.yml",
+          ".pre-commit-config.yaml",
+          "pyproject.toml"
+        ],
+        "truncated": false
+      },
+      "repo_health": {
+        "schema_version": 1,
+        "summary": "Deterministic scan scored 14 source files across simple size, churn, structural, test-adjacency, and performance-risk signals. 3 hotspots surfaced; average score is 7.5/10. Treat these as review leads, not proof of a bug.",
+        "average_score": 7.5,
+        "hotspot_count": 3,
+        "files_analyzed": 14,
+        "files_with_test_signal": 0,
+        "top_files": [
+          {
+            "path": "whisper/decoding.py",
+            "score": 6.2,
+            "bucket": "hotspot",
+            "lines": 826,
+            "bytes": 32155,
+            "churn": 830,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "826 lines in one source file; changes here may be harder to review.",
+                "sources": [
+                  "whisper/decoding.py"
+                ]
+              },
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 12; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "whisper/decoding.py"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 830 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "whisper/decoding.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "whisper/decoding.py"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "whisper/transcribe.py",
+            "score": 6.2,
+            "bucket": "hotspot",
+            "lines": 623,
+            "bytes": 30375,
+            "churn": 675,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "623 lines in one source file; changes here may be harder to review.",
+                "sources": [
+                  "whisper/transcribe.py"
+                ]
+              },
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 18; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "whisper/transcribe.py"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 675 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "whisper/transcribe.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "whisper/transcribe.py"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "whisper/normalizers/english.py",
+            "score": 6.2,
+            "bucket": "hotspot",
+            "lines": 552,
+            "bytes": 21001,
+            "churn": 556,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "552 lines in one source file; changes here may be harder to review.",
+                "sources": [
+                  "whisper/normalizers/english.py"
+                ]
+              },
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 14; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "whisper/normalizers/english.py"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 556 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "whisper/normalizers/english.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "whisper/normalizers/english.py"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "whisper/timing.py",
+            "score": 6.6,
+            "bucket": "watch",
+            "lines": 388,
+            "bytes": 12697,
+            "churn": 392,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 12; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "whisper/timing.py"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 392 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "whisper/timing.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "whisper/timing.py"
+                ]
+              },
+              {
+                "id": "io_boundary",
+                "label": "I/O or process boundary",
+                "dimension": "defect",
+                "severity": "low",
+                "detail": "File touches filesystem, network, database, or subprocess boundaries; changes need concrete runtime proof.",
+                "sources": [
+                  "whisper/timing.py"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "whisper/model.py",
+            "score": 6.6,
+            "bucket": "watch",
+            "lines": 352,
+            "bytes": 12209,
+            "churn": 376,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 8; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "whisper/model.py"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 376 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "whisper/model.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "whisper/model.py"
+                ]
+              },
+              {
+                "id": "io_boundary",
+                "label": "I/O or process boundary",
+                "dimension": "defect",
+                "severity": "low",
+                "detail": "File touches filesystem, network, database, or subprocess boundaries; changes need concrete runtime proof.",
+                "sources": [
+                  "whisper/model.py"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "whisper/utils.py",
+            "score": 6.9,
+            "bucket": "watch",
+            "lines": 329,
+            "bytes": 11839,
+            "churn": 431,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 18; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "whisper/utils.py"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 431 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "whisper/utils.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "whisper/utils.py"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "whisper/tokenizer.py",
+            "score": 6.9,
+            "bucket": "watch",
+            "lines": 395,
+            "bytes": 12338,
+            "churn": 413,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 10; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "whisper/tokenizer.py"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 413 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "whisper/tokenizer.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "whisper/tokenizer.py"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "whisper/audio.py",
+            "score": 7.4,
+            "bucket": "watch",
+            "lines": 157,
+            "bytes": 4945,
+            "churn": 175,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 8; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "whisper/audio.py"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "Moderate churn",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "Recent git history shows 175 changed lines in this file; it is a change hotspot.",
+                "sources": [
+                  "whisper/audio.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "whisper/audio.py"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "whisper/__init__.py",
+            "score": 7.4,
+            "bucket": "watch",
+            "lines": 161,
+            "bytes": 7432,
+            "churn": 167,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 10; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "whisper/__init__.py"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "Moderate churn",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "Recent git history shows 167 changed lines in this file; it is a change hotspot.",
+                "sources": [
+                  "whisper/__init__.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "whisper/__init__.py"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "whisper/triton_ops.py",
+            "score": 7.4,
+            "bucket": "watch",
+            "lines": 117,
+            "bytes": 3646,
+            "churn": 123,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 16; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "whisper/triton_ops.py"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "Moderate churn",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "Recent git history shows 123 changed lines in this file; it is a change hotspot.",
+                "sources": [
+                  "whisper/triton_ops.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "whisper/triton_ops.py"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "whisper/normalizers/basic.py",
+            "score": 7.4,
+            "bucket": "watch",
+            "lines": 80,
+            "bytes": 2064,
+            "churn": 98,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 10; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "whisper/normalizers/basic.py"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "Moderate churn",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "Recent git history shows 98 changed lines in this file; it is a change hotspot.",
+                "sources": [
+                  "whisper/normalizers/basic.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "whisper/normalizers/basic.py"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "whisper/version.py",
+            "score": 10,
+            "bucket": "healthy",
+            "lines": 1,
+            "bytes": 25,
+            "churn": 15,
+            "has_test_signal": false,
+            "findings": [],
+            "refactoring_targets": []
+          }
+        ],
+        "truncated": false
+      },
+      "all_files": [],
+      "ignored_dirs": [
+        ".git"
+      ],
+      "coverage": {
+        "schema_version": 1,
+        "strategy": "full_walk",
+        "sampled_files": 42,
+        "total_files": null,
+        "sample_percent": null,
+        "languages": [
+          {
+            "language": "Python",
+            "files": 20,
+            "bytes": 160526
+          },
+          {
+            "language": "Markdown",
+            "files": 4,
+            "bytes": 30788
+          },
+          {
+            "language": "YAML",
+            "files": 4,
+            "bytes": 5676
+          },
+          {
+            "language": "JSON",
+            "files": 2,
+            "bytes": 123930
+          },
+          {
+            "language": "TOML",
+            "files": 1,
+            "bytes": 1418
+          }
+        ],
+        "top_level_dirs": [
+          {
+            "path": "whisper",
+            "file_count": 18,
+            "bytes": 1863574
+          },
+          {
+            "path": "tests",
+            "file_count": 6,
+            "bytes": 9635
+          },
+          {
+            "path": ".github",
+            "file_count": 3,
+            "bytes": 4689
+          },
+          {
+            "path": "data",
+            "file_count": 2,
+            "bytes": 74013
+          },
+          {
+            "path": "notebooks",
+            "file_count": 1,
+            "bytes": 31973
+          }
+        ],
+        "notes": [
+          "Full local walk covered the repo within the scan cap."
+        ]
+      },
+      "all_files_capped": false,
+      "dir_tree_preview": {
+        "name": "",
+        "path": "",
+        "is_dir": true,
+        "file_count": 42,
+        "children": [
+          {
+            "name": ".github",
+            "path": ".github",
+            "is_dir": true,
+            "file_count": 3,
+            "children": [
+              {
+                "name": "workflows",
+                "path": ".github/workflows",
+                "is_dir": true,
+                "file_count": 2,
+                "children": [
+                  {
+                    "name": "python-publish.yml",
+                    "path": ".github/workflows/python-publish.yml",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "test.yml",
+                    "path": ".github/workflows/test.yml",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "dependabot.yml",
+                "path": ".github/dependabot.yml",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "data",
+            "path": "data",
+            "is_dir": true,
+            "file_count": 2,
+            "children": [
+              {
+                "name": "README.md",
+                "path": "data/README.md",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "meanwhile.json",
+                "path": "data/meanwhile.json",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "notebooks",
+            "path": "notebooks",
+            "is_dir": true,
+            "file_count": 1,
+            "children": [
+              {
+                "name": "LibriSpeech.ipynb",
+                "path": "notebooks/LibriSpeech.ipynb",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "tests",
+            "path": "tests",
+            "is_dir": true,
+            "file_count": 6,
+            "children": [
+              {
+                "name": "conftest.py",
+                "path": "tests/conftest.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "test_audio.py",
+                "path": "tests/test_audio.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "test_normalizer.py",
+                "path": "tests/test_normalizer.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "test_timing.py",
+                "path": "tests/test_timing.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "test_tokenizer.py",
+                "path": "tests/test_tokenizer.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "test_transcribe.py",
+                "path": "tests/test_transcribe.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "whisper",
+            "path": "whisper",
+            "is_dir": true,
+            "file_count": 18,
+            "children": [
+              {
+                "name": "assets",
+                "path": "whisper/assets",
+                "is_dir": true,
+                "file_count": 3,
+                "children": [
+                  {
+                    "name": "gpt2.tiktoken",
+                    "path": "whisper/assets/gpt2.tiktoken",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "mel_filters.npz",
+                    "path": "whisper/assets/mel_filters.npz",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "multilingual.tiktoken",
+                    "path": "whisper/assets/multilingual.tiktoken",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "normalizers",
+                "path": "whisper/normalizers",
+                "is_dir": true,
+                "file_count": 4,
+                "children": [
+                  {
+                    "name": "__init__.py",
+                    "path": "whisper/normalizers/__init__.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "basic.py",
+                    "path": "whisper/normalizers/basic.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "english.json",
+                    "path": "whisper/normalizers/english.json",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "english.py",
+                    "path": "whisper/normalizers/english.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "__init__.py",
+                "path": "whisper/__init__.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "__main__.py",
+                "path": "whisper/__main__.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "audio.py",
+                "path": "whisper/audio.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "decoding.py",
+                "path": "whisper/decoding.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "model.py",
+                "path": "whisper/model.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "timing.py",
+                "path": "whisper/timing.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "tokenizer.py",
+                "path": "whisper/tokenizer.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "transcribe.py",
+                "path": "whisper/transcribe.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "triton_ops.py",
+                "path": "whisper/triton_ops.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "utils.py",
+                "path": "whisper/utils.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "version.py",
+                "path": "whisper/version.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": ".flake8",
+            "path": ".flake8",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": ".gitattributes",
+            "path": ".gitattributes",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": ".gitignore",
+            "path": ".gitignore",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": ".pre-commit-config.yaml",
+            "path": ".pre-commit-config.yaml",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "CHANGELOG.md",
+            "path": "CHANGELOG.md",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "LICENSE",
+            "path": "LICENSE",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "MANIFEST.in",
+            "path": "MANIFEST.in",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "README.md",
+            "path": "README.md",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "language-breakdown.svg",
+            "path": "language-breakdown.svg",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "model-card.md",
+            "path": "model-card.md",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "pyproject.toml",
+            "path": "pyproject.toml",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "requirements.txt",
+            "path": "requirements.txt",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          }
+        ]
+      }
+    },
+    "profiles": [
+      {
+        "stage": "full_scan",
+        "total_ms": 83,
+        "peak_rss_bytes": 28573696,
+        "steps": [
+          {
+            "id": "git_metadata",
+            "label": "Git metadata",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "file_walk",
+            "label": "Parallel file walk",
+            "ms": 5,
+            "pct": 6.024096385542169
+          },
+          {
+            "id": "languages",
+            "label": "Language breakdown",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "manifests",
+            "label": "Manifest parsing",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "docs",
+            "label": "Doc previews",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "aggregates",
+            "label": "Dirs, configs, stack tags",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "entrypoints",
+            "label": "Entrypoints, workspace units & QA readiness",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "source_previews",
+            "label": "Source preview cache",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "repo_graph",
+            "label": "Deterministic graph scan",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "history",
+            "label": "Git history & decision scan",
+            "ms": 12,
+            "pct": 14.457831325301203
+          },
+          {
+            "id": "repo_health",
+            "label": "Deterministic health scoring",
+            "ms": 65,
+            "pct": 78.3132530120482
+          },
+          {
+            "id": "dir_tree",
+            "label": "Directory tree preview",
+            "ms": 0,
+            "pct": 0
+          }
+        ]
+      },
+      {
+        "stage": "local_scan_persist",
+        "total_ms": 0,
+        "peak_rss_bytes": 28983296,
+        "steps": [
+          {
+            "id": "serialize",
+            "label": "JSON serialize (inventory → SQLite)",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "db_insert",
+            "label": "SQLite insert",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "touch_project",
+            "label": "Update repo project metadata",
+            "ms": 0,
+            "pct": 0
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1995,6 +1995,846 @@
       "md": "https://codevetter.com/unpack/compare/axios-vs-requests.md",
       "kind": "static",
       "description": "Structural codebase comparison of axios/axios vs psf/requests at pinned commits"
+    },
+    {
+      "id": "unpack-agency-agents",
+      "url": "https://codevetter.com/unpack/agency-agents",
+      "md": "https://codevetter.com/unpack/agency-agents.md",
+      "kind": "static",
+      "description": "Repo Unpack evidence scan of msitarzewski/agency-agents at 053ddbb"
+    },
+    {
+      "id": "unpack-biome-system-map",
+      "url": "https://codevetter.com/unpack/biome/system-map",
+      "md": "https://codevetter.com/unpack/biome/system-map.md",
+      "kind": "static",
+      "description": "system map — claim-cited deep dive into biomejs/biome at 82f9b0e"
+    },
+    {
+      "id": "unpack-biome-feature-catalog",
+      "url": "https://codevetter.com/unpack/biome/feature-catalog",
+      "md": "https://codevetter.com/unpack/biome/feature-catalog.md",
+      "kind": "static",
+      "description": "feature catalog — claim-cited deep dive into biomejs/biome at 82f9b0e"
+    },
+    {
+      "id": "unpack-biome-data-flow",
+      "url": "https://codevetter.com/unpack/biome/data-flow",
+      "md": "https://codevetter.com/unpack/biome/data-flow.md",
+      "kind": "static",
+      "description": "data flow — claim-cited deep dive into biomejs/biome at 82f9b0e"
+    },
+    {
+      "id": "unpack-biome-behavior-traces",
+      "url": "https://codevetter.com/unpack/biome/behavior-traces",
+      "md": "https://codevetter.com/unpack/biome/behavior-traces.md",
+      "kind": "static",
+      "description": "behavior traces — claim-cited deep dive into biomejs/biome at 82f9b0e"
+    },
+    {
+      "id": "unpack-biome-testing-signals",
+      "url": "https://codevetter.com/unpack/biome/testing-signals",
+      "md": "https://codevetter.com/unpack/biome/testing-signals.md",
+      "kind": "static",
+      "description": "testing signals — claim-cited deep dive into biomejs/biome at 82f9b0e"
+    },
+    {
+      "id": "unpack-biome-risk-map",
+      "url": "https://codevetter.com/unpack/biome/risk-map",
+      "md": "https://codevetter.com/unpack/biome/risk-map.md",
+      "kind": "static",
+      "description": "risk map — claim-cited deep dive into biomejs/biome at 82f9b0e"
+    },
+    {
+      "id": "unpack-biome-extension-points",
+      "url": "https://codevetter.com/unpack/biome/extension-points",
+      "md": "https://codevetter.com/unpack/biome/extension-points.md",
+      "kind": "static",
+      "description": "extension points — claim-cited deep dive into biomejs/biome at 82f9b0e"
+    },
+    {
+      "id": "unpack-biome-agent-handoff",
+      "url": "https://codevetter.com/unpack/biome/agent-handoff",
+      "md": "https://codevetter.com/unpack/biome/agent-handoff.md",
+      "kind": "static",
+      "description": "agent handoff — claim-cited deep dive into biomejs/biome at 82f9b0e"
+    },
+    {
+      "id": "unpack-browser-use",
+      "url": "https://codevetter.com/unpack/browser-use",
+      "md": "https://codevetter.com/unpack/browser-use.md",
+      "kind": "static",
+      "description": "Repo Unpack evidence scan of browser-use/browser-use at d8110c5"
+    },
+    {
+      "id": "unpack-cc-switch",
+      "url": "https://codevetter.com/unpack/cc-switch",
+      "md": "https://codevetter.com/unpack/cc-switch.md",
+      "kind": "static",
+      "description": "Repo Unpack evidence scan of farion1231/cc-switch at 09c5d39"
+    },
+    {
+      "id": "unpack-clash-verge-rev",
+      "url": "https://codevetter.com/unpack/clash-verge-rev",
+      "md": "https://codevetter.com/unpack/clash-verge-rev.md",
+      "kind": "static",
+      "description": "Repo Unpack evidence scan of clash-verge-rev/clash-verge-rev at fd06fbb"
+    },
+    {
+      "id": "unpack-claude-code",
+      "url": "https://codevetter.com/unpack/claude-code",
+      "md": "https://codevetter.com/unpack/claude-code.md",
+      "kind": "static",
+      "description": "Repo Unpack evidence scan of anthropics/claude-code at b486776"
+    },
+    {
+      "id": "unpack-codex",
+      "url": "https://codevetter.com/unpack/codex",
+      "md": "https://codevetter.com/unpack/codex.md",
+      "kind": "static",
+      "description": "Repo Unpack evidence scan of openai/codex at a1f40f3"
+    },
+    {
+      "id": "unpack-comfyui",
+      "url": "https://codevetter.com/unpack/comfyui",
+      "md": "https://codevetter.com/unpack/comfyui.md",
+      "kind": "static",
+      "description": "Repo Unpack evidence scan of Comfy-Org/ComfyUI at b33e2b5"
+    },
+    {
+      "id": "unpack-create-react-app",
+      "url": "https://codevetter.com/unpack/create-react-app",
+      "md": "https://codevetter.com/unpack/create-react-app.md",
+      "kind": "static",
+      "description": "Repo Unpack evidence scan of react/create-react-app at 6254386"
+    },
+    {
+      "id": "unpack-d3",
+      "url": "https://codevetter.com/unpack/d3",
+      "md": "https://codevetter.com/unpack/d3.md",
+      "kind": "static",
+      "description": "Repo Unpack evidence scan of d3/d3 at ca958d4"
+    },
+    {
+      "id": "unpack-deepseek-v3",
+      "url": "https://codevetter.com/unpack/deepseek-v3",
+      "md": "https://codevetter.com/unpack/deepseek-v3.md",
+      "kind": "static",
+      "description": "Repo Unpack evidence scan of deepseek-ai/DeepSeek-V3 at 9b4e978"
+    },
+    {
+      "id": "unpack-dify",
+      "url": "https://codevetter.com/unpack/dify",
+      "md": "https://codevetter.com/unpack/dify.md",
+      "kind": "static",
+      "description": "Repo Unpack evidence scan of langgenius/dify at 3a017e8"
+    },
+    {
+      "id": "unpack-django-system-map",
+      "url": "https://codevetter.com/unpack/django/system-map",
+      "md": "https://codevetter.com/unpack/django/system-map.md",
+      "kind": "static",
+      "description": "system map — claim-cited deep dive into django/django at dd6f6b1"
+    },
+    {
+      "id": "unpack-django-feature-catalog",
+      "url": "https://codevetter.com/unpack/django/feature-catalog",
+      "md": "https://codevetter.com/unpack/django/feature-catalog.md",
+      "kind": "static",
+      "description": "feature catalog — claim-cited deep dive into django/django at dd6f6b1"
+    },
+    {
+      "id": "unpack-django-data-flow",
+      "url": "https://codevetter.com/unpack/django/data-flow",
+      "md": "https://codevetter.com/unpack/django/data-flow.md",
+      "kind": "static",
+      "description": "data flow — claim-cited deep dive into django/django at dd6f6b1"
+    },
+    {
+      "id": "unpack-django-behavior-traces",
+      "url": "https://codevetter.com/unpack/django/behavior-traces",
+      "md": "https://codevetter.com/unpack/django/behavior-traces.md",
+      "kind": "static",
+      "description": "behavior traces — claim-cited deep dive into django/django at dd6f6b1"
+    },
+    {
+      "id": "unpack-django-testing-signals",
+      "url": "https://codevetter.com/unpack/django/testing-signals",
+      "md": "https://codevetter.com/unpack/django/testing-signals.md",
+      "kind": "static",
+      "description": "testing signals — claim-cited deep dive into django/django at dd6f6b1"
+    },
+    {
+      "id": "unpack-django-risk-map",
+      "url": "https://codevetter.com/unpack/django/risk-map",
+      "md": "https://codevetter.com/unpack/django/risk-map.md",
+      "kind": "static",
+      "description": "risk map — claim-cited deep dive into django/django at dd6f6b1"
+    },
+    {
+      "id": "unpack-django-extension-points",
+      "url": "https://codevetter.com/unpack/django/extension-points",
+      "md": "https://codevetter.com/unpack/django/extension-points.md",
+      "kind": "static",
+      "description": "extension points — claim-cited deep dive into django/django at dd6f6b1"
+    },
+    {
+      "id": "unpack-django-agent-handoff",
+      "url": "https://codevetter.com/unpack/django/agent-handoff",
+      "md": "https://codevetter.com/unpack/django/agent-handoff.md",
+      "kind": "static",
+      "description": "agent handoff — claim-cited deep dive into django/django at dd6f6b1"
+    },
+    {
+      "id": "unpack-electron",
+      "url": "https://codevetter.com/unpack/electron",
+      "md": "https://codevetter.com/unpack/electron.md",
+      "kind": "static",
+      "description": "Repo Unpack evidence scan of electron/electron at 56f681c"
+    },
+    {
+      "id": "unpack-esbuild-system-map",
+      "url": "https://codevetter.com/unpack/esbuild/system-map",
+      "md": "https://codevetter.com/unpack/esbuild/system-map.md",
+      "kind": "static",
+      "description": "system map — claim-cited deep dive into evanw/esbuild at f6058f8"
+    },
+    {
+      "id": "unpack-esbuild-feature-catalog",
+      "url": "https://codevetter.com/unpack/esbuild/feature-catalog",
+      "md": "https://codevetter.com/unpack/esbuild/feature-catalog.md",
+      "kind": "static",
+      "description": "feature catalog — claim-cited deep dive into evanw/esbuild at f6058f8"
+    },
+    {
+      "id": "unpack-esbuild-data-flow",
+      "url": "https://codevetter.com/unpack/esbuild/data-flow",
+      "md": "https://codevetter.com/unpack/esbuild/data-flow.md",
+      "kind": "static",
+      "description": "data flow — claim-cited deep dive into evanw/esbuild at f6058f8"
+    },
+    {
+      "id": "unpack-esbuild-behavior-traces",
+      "url": "https://codevetter.com/unpack/esbuild/behavior-traces",
+      "md": "https://codevetter.com/unpack/esbuild/behavior-traces.md",
+      "kind": "static",
+      "description": "behavior traces — claim-cited deep dive into evanw/esbuild at f6058f8"
+    },
+    {
+      "id": "unpack-esbuild-testing-signals",
+      "url": "https://codevetter.com/unpack/esbuild/testing-signals",
+      "md": "https://codevetter.com/unpack/esbuild/testing-signals.md",
+      "kind": "static",
+      "description": "testing signals — claim-cited deep dive into evanw/esbuild at f6058f8"
+    },
+    {
+      "id": "unpack-esbuild-risk-map",
+      "url": "https://codevetter.com/unpack/esbuild/risk-map",
+      "md": "https://codevetter.com/unpack/esbuild/risk-map.md",
+      "kind": "static",
+      "description": "risk map — claim-cited deep dive into evanw/esbuild at f6058f8"
+    },
+    {
+      "id": "unpack-esbuild-extension-points",
+      "url": "https://codevetter.com/unpack/esbuild/extension-points",
+      "md": "https://codevetter.com/unpack/esbuild/extension-points.md",
+      "kind": "static",
+      "description": "extension points — claim-cited deep dive into evanw/esbuild at f6058f8"
+    },
+    {
+      "id": "unpack-esbuild-agent-handoff",
+      "url": "https://codevetter.com/unpack/esbuild/agent-handoff",
+      "md": "https://codevetter.com/unpack/esbuild/agent-handoff.md",
+      "kind": "static",
+      "description": "agent handoff — claim-cited deep dive into evanw/esbuild at f6058f8"
+    },
+    {
+      "id": "unpack-excalidraw",
+      "url": "https://codevetter.com/unpack/excalidraw",
+      "md": "https://codevetter.com/unpack/excalidraw.md",
+      "kind": "static",
+      "description": "Repo Unpack evidence scan of excalidraw/excalidraw at 31df3e6"
+    },
+    {
+      "id": "unpack-firecrawl",
+      "url": "https://codevetter.com/unpack/firecrawl",
+      "md": "https://codevetter.com/unpack/firecrawl.md",
+      "kind": "static",
+      "description": "Repo Unpack evidence scan of firecrawl/firecrawl at 556c12c"
+    },
+    {
+      "id": "unpack-flutter",
+      "url": "https://codevetter.com/unpack/flutter",
+      "md": "https://codevetter.com/unpack/flutter.md",
+      "kind": "static",
+      "description": "Repo Unpack evidence scan of flutter/flutter at acb8fd5"
+    },
+    {
+      "id": "unpack-frp",
+      "url": "https://codevetter.com/unpack/frp",
+      "md": "https://codevetter.com/unpack/frp.md",
+      "kind": "static",
+      "description": "Repo Unpack evidence scan of fatedier/frp at d20a232"
+    },
+    {
+      "id": "unpack-gemini-cli",
+      "url": "https://codevetter.com/unpack/gemini-cli",
+      "md": "https://codevetter.com/unpack/gemini-cli.md",
+      "kind": "static",
+      "description": "Repo Unpack evidence scan of google-gemini/gemini-cli at d5b3e3a"
+    },
+    {
+      "id": "unpack-go",
+      "url": "https://codevetter.com/unpack/go",
+      "md": "https://codevetter.com/unpack/go.md",
+      "kind": "static",
+      "description": "Repo Unpack evidence scan of golang/go at 12c76d4"
+    },
+    {
+      "id": "unpack-graphify",
+      "url": "https://codevetter.com/unpack/graphify",
+      "md": "https://codevetter.com/unpack/graphify.md",
+      "kind": "static",
+      "description": "Repo Unpack evidence scan of Graphify-Labs/graphify at 20a20d3"
+    },
+    {
+      "id": "unpack-gstack",
+      "url": "https://codevetter.com/unpack/gstack",
+      "md": "https://codevetter.com/unpack/gstack.md",
+      "kind": "static",
+      "description": "Repo Unpack evidence scan of garrytan/gstack at 35dd014"
+    },
+    {
+      "id": "unpack-hello-algo",
+      "url": "https://codevetter.com/unpack/hello-algo",
+      "md": "https://codevetter.com/unpack/hello-algo.md",
+      "kind": "static",
+      "description": "Repo Unpack evidence scan of krahets/hello-algo at 28c1e74"
+    },
+    {
+      "id": "unpack-immich",
+      "url": "https://codevetter.com/unpack/immich",
+      "md": "https://codevetter.com/unpack/immich.md",
+      "kind": "static",
+      "description": "Repo Unpack evidence scan of immich-app/immich at d6d0947"
+    },
+    {
+      "id": "unpack-javascript-algorithms",
+      "url": "https://codevetter.com/unpack/javascript-algorithms",
+      "md": "https://codevetter.com/unpack/javascript-algorithms.md",
+      "kind": "static",
+      "description": "Repo Unpack evidence scan of trekhleb/javascript-algorithms at 85293e3"
+    },
+    {
+      "id": "unpack-langchain",
+      "url": "https://codevetter.com/unpack/langchain",
+      "md": "https://codevetter.com/unpack/langchain.md",
+      "kind": "static",
+      "description": "Repo Unpack evidence scan of langchain-ai/langchain at 9e4ea7a"
+    },
+    {
+      "id": "unpack-llama-cpp",
+      "url": "https://codevetter.com/unpack/llama-cpp",
+      "md": "https://codevetter.com/unpack/llama-cpp.md",
+      "kind": "static",
+      "description": "Repo Unpack evidence scan of ggml-org/llama.cpp at 7ab4ee7"
+    },
+    {
+      "id": "unpack-markitdown",
+      "url": "https://codevetter.com/unpack/markitdown",
+      "md": "https://codevetter.com/unpack/markitdown.md",
+      "kind": "static",
+      "description": "Repo Unpack evidence scan of microsoft/markitdown at b8f79c5"
+    },
+    {
+      "id": "unpack-moneyprinterturbo",
+      "url": "https://codevetter.com/unpack/moneyprinterturbo",
+      "md": "https://codevetter.com/unpack/moneyprinterturbo.md",
+      "kind": "static",
+      "description": "Repo Unpack evidence scan of harry0703/MoneyPrinterTurbo at 3d5f4e4"
+    },
+    {
+      "id": "unpack-n8n",
+      "url": "https://codevetter.com/unpack/n8n",
+      "md": "https://codevetter.com/unpack/n8n.md",
+      "kind": "static",
+      "description": "Repo Unpack evidence scan of n8n-io/n8n at 1a370b9"
+    },
+    {
+      "id": "unpack-ohmyzsh",
+      "url": "https://codevetter.com/unpack/ohmyzsh",
+      "md": "https://codevetter.com/unpack/ohmyzsh.md",
+      "kind": "static",
+      "description": "Repo Unpack evidence scan of ohmyzsh/ohmyzsh at 86ef655"
+    },
+    {
+      "id": "unpack-ollama",
+      "url": "https://codevetter.com/unpack/ollama",
+      "md": "https://codevetter.com/unpack/ollama.md",
+      "kind": "static",
+      "description": "Repo Unpack evidence scan of ollama/ollama at 6383a0f"
+    },
+    {
+      "id": "unpack-pi",
+      "url": "https://codevetter.com/unpack/pi",
+      "md": "https://codevetter.com/unpack/pi.md",
+      "kind": "static",
+      "description": "Repo Unpack evidence scan of earendil-works/pi at 95fbc04"
+    },
+    {
+      "id": "unpack-ponytail",
+      "url": "https://codevetter.com/unpack/ponytail",
+      "md": "https://codevetter.com/unpack/ponytail.md",
+      "kind": "static",
+      "description": "Repo Unpack evidence scan of DietrichGebert/ponytail at e3ba2aa"
+    },
+    {
+      "id": "unpack-prettier-system-map",
+      "url": "https://codevetter.com/unpack/prettier/system-map",
+      "md": "https://codevetter.com/unpack/prettier/system-map.md",
+      "kind": "static",
+      "description": "system map — claim-cited deep dive into prettier/prettier at 1a36a7d"
+    },
+    {
+      "id": "unpack-prettier-feature-catalog",
+      "url": "https://codevetter.com/unpack/prettier/feature-catalog",
+      "md": "https://codevetter.com/unpack/prettier/feature-catalog.md",
+      "kind": "static",
+      "description": "feature catalog — claim-cited deep dive into prettier/prettier at 1a36a7d"
+    },
+    {
+      "id": "unpack-prettier-data-flow",
+      "url": "https://codevetter.com/unpack/prettier/data-flow",
+      "md": "https://codevetter.com/unpack/prettier/data-flow.md",
+      "kind": "static",
+      "description": "data flow — claim-cited deep dive into prettier/prettier at 1a36a7d"
+    },
+    {
+      "id": "unpack-prettier-behavior-traces",
+      "url": "https://codevetter.com/unpack/prettier/behavior-traces",
+      "md": "https://codevetter.com/unpack/prettier/behavior-traces.md",
+      "kind": "static",
+      "description": "behavior traces — claim-cited deep dive into prettier/prettier at 1a36a7d"
+    },
+    {
+      "id": "unpack-prettier-testing-signals",
+      "url": "https://codevetter.com/unpack/prettier/testing-signals",
+      "md": "https://codevetter.com/unpack/prettier/testing-signals.md",
+      "kind": "static",
+      "description": "testing signals — claim-cited deep dive into prettier/prettier at 1a36a7d"
+    },
+    {
+      "id": "unpack-prettier-risk-map",
+      "url": "https://codevetter.com/unpack/prettier/risk-map",
+      "md": "https://codevetter.com/unpack/prettier/risk-map.md",
+      "kind": "static",
+      "description": "risk map — claim-cited deep dive into prettier/prettier at 1a36a7d"
+    },
+    {
+      "id": "unpack-prettier-extension-points",
+      "url": "https://codevetter.com/unpack/prettier/extension-points",
+      "md": "https://codevetter.com/unpack/prettier/extension-points.md",
+      "kind": "static",
+      "description": "extension points — claim-cited deep dive into prettier/prettier at 1a36a7d"
+    },
+    {
+      "id": "unpack-prettier-agent-handoff",
+      "url": "https://codevetter.com/unpack/prettier/agent-handoff",
+      "md": "https://codevetter.com/unpack/prettier/agent-handoff.md",
+      "kind": "static",
+      "description": "agent handoff — claim-cited deep dive into prettier/prettier at 1a36a7d"
+    },
+    {
+      "id": "unpack-prisma-system-map",
+      "url": "https://codevetter.com/unpack/prisma/system-map",
+      "md": "https://codevetter.com/unpack/prisma/system-map.md",
+      "kind": "static",
+      "description": "system map — claim-cited deep dive into prisma/prisma at dd86723"
+    },
+    {
+      "id": "unpack-prisma-feature-catalog",
+      "url": "https://codevetter.com/unpack/prisma/feature-catalog",
+      "md": "https://codevetter.com/unpack/prisma/feature-catalog.md",
+      "kind": "static",
+      "description": "feature catalog — claim-cited deep dive into prisma/prisma at dd86723"
+    },
+    {
+      "id": "unpack-prisma-data-flow",
+      "url": "https://codevetter.com/unpack/prisma/data-flow",
+      "md": "https://codevetter.com/unpack/prisma/data-flow.md",
+      "kind": "static",
+      "description": "data flow — claim-cited deep dive into prisma/prisma at dd86723"
+    },
+    {
+      "id": "unpack-prisma-behavior-traces",
+      "url": "https://codevetter.com/unpack/prisma/behavior-traces",
+      "md": "https://codevetter.com/unpack/prisma/behavior-traces.md",
+      "kind": "static",
+      "description": "behavior traces — claim-cited deep dive into prisma/prisma at dd86723"
+    },
+    {
+      "id": "unpack-prisma-testing-signals",
+      "url": "https://codevetter.com/unpack/prisma/testing-signals",
+      "md": "https://codevetter.com/unpack/prisma/testing-signals.md",
+      "kind": "static",
+      "description": "testing signals — claim-cited deep dive into prisma/prisma at dd86723"
+    },
+    {
+      "id": "unpack-prisma-risk-map",
+      "url": "https://codevetter.com/unpack/prisma/risk-map",
+      "md": "https://codevetter.com/unpack/prisma/risk-map.md",
+      "kind": "static",
+      "description": "risk map — claim-cited deep dive into prisma/prisma at dd86723"
+    },
+    {
+      "id": "unpack-prisma-extension-points",
+      "url": "https://codevetter.com/unpack/prisma/extension-points",
+      "md": "https://codevetter.com/unpack/prisma/extension-points.md",
+      "kind": "static",
+      "description": "extension points — claim-cited deep dive into prisma/prisma at dd86723"
+    },
+    {
+      "id": "unpack-prisma-agent-handoff",
+      "url": "https://codevetter.com/unpack/prisma/agent-handoff",
+      "md": "https://codevetter.com/unpack/prisma/agent-handoff.md",
+      "kind": "static",
+      "description": "agent handoff — claim-cited deep dive into prisma/prisma at dd86723"
+    },
+    {
+      "id": "unpack-python",
+      "url": "https://codevetter.com/unpack/python",
+      "md": "https://codevetter.com/unpack/python.md",
+      "kind": "static",
+      "description": "Repo Unpack evidence scan of TheAlgorithms/Python at 52b9b91"
+    },
+    {
+      "id": "unpack-pytorch",
+      "url": "https://codevetter.com/unpack/pytorch",
+      "md": "https://codevetter.com/unpack/pytorch.md",
+      "kind": "static",
+      "description": "Repo Unpack evidence scan of pytorch/pytorch at 5711f1a"
+    },
+    {
+      "id": "unpack-rails-system-map",
+      "url": "https://codevetter.com/unpack/rails/system-map",
+      "md": "https://codevetter.com/unpack/rails/system-map.md",
+      "kind": "static",
+      "description": "system map — claim-cited deep dive into rails/rails at be63fd9"
+    },
+    {
+      "id": "unpack-rails-feature-catalog",
+      "url": "https://codevetter.com/unpack/rails/feature-catalog",
+      "md": "https://codevetter.com/unpack/rails/feature-catalog.md",
+      "kind": "static",
+      "description": "feature catalog — claim-cited deep dive into rails/rails at be63fd9"
+    },
+    {
+      "id": "unpack-rails-data-flow",
+      "url": "https://codevetter.com/unpack/rails/data-flow",
+      "md": "https://codevetter.com/unpack/rails/data-flow.md",
+      "kind": "static",
+      "description": "data flow — claim-cited deep dive into rails/rails at be63fd9"
+    },
+    {
+      "id": "unpack-rails-behavior-traces",
+      "url": "https://codevetter.com/unpack/rails/behavior-traces",
+      "md": "https://codevetter.com/unpack/rails/behavior-traces.md",
+      "kind": "static",
+      "description": "behavior traces — claim-cited deep dive into rails/rails at be63fd9"
+    },
+    {
+      "id": "unpack-rails-testing-signals",
+      "url": "https://codevetter.com/unpack/rails/testing-signals",
+      "md": "https://codevetter.com/unpack/rails/testing-signals.md",
+      "kind": "static",
+      "description": "testing signals — claim-cited deep dive into rails/rails at be63fd9"
+    },
+    {
+      "id": "unpack-rails-risk-map",
+      "url": "https://codevetter.com/unpack/rails/risk-map",
+      "md": "https://codevetter.com/unpack/rails/risk-map.md",
+      "kind": "static",
+      "description": "risk map — claim-cited deep dive into rails/rails at be63fd9"
+    },
+    {
+      "id": "unpack-rails-extension-points",
+      "url": "https://codevetter.com/unpack/rails/extension-points",
+      "md": "https://codevetter.com/unpack/rails/extension-points.md",
+      "kind": "static",
+      "description": "extension points — claim-cited deep dive into rails/rails at be63fd9"
+    },
+    {
+      "id": "unpack-rails-agent-handoff",
+      "url": "https://codevetter.com/unpack/rails/agent-handoff",
+      "md": "https://codevetter.com/unpack/rails/agent-handoff.md",
+      "kind": "static",
+      "description": "agent handoff — claim-cited deep dive into rails/rails at be63fd9"
+    },
+    {
+      "id": "unpack-react-native",
+      "url": "https://codevetter.com/unpack/react-native",
+      "md": "https://codevetter.com/unpack/react-native.md",
+      "kind": "static",
+      "description": "Repo Unpack evidence scan of react/react-native at b7c0e49"
+    },
+    {
+      "id": "unpack-ruff-system-map",
+      "url": "https://codevetter.com/unpack/ruff/system-map",
+      "md": "https://codevetter.com/unpack/ruff/system-map.md",
+      "kind": "static",
+      "description": "system map — claim-cited deep dive into astral-sh/ruff at c131cba"
+    },
+    {
+      "id": "unpack-ruff-feature-catalog",
+      "url": "https://codevetter.com/unpack/ruff/feature-catalog",
+      "md": "https://codevetter.com/unpack/ruff/feature-catalog.md",
+      "kind": "static",
+      "description": "feature catalog — claim-cited deep dive into astral-sh/ruff at c131cba"
+    },
+    {
+      "id": "unpack-ruff-data-flow",
+      "url": "https://codevetter.com/unpack/ruff/data-flow",
+      "md": "https://codevetter.com/unpack/ruff/data-flow.md",
+      "kind": "static",
+      "description": "data flow — claim-cited deep dive into astral-sh/ruff at c131cba"
+    },
+    {
+      "id": "unpack-ruff-behavior-traces",
+      "url": "https://codevetter.com/unpack/ruff/behavior-traces",
+      "md": "https://codevetter.com/unpack/ruff/behavior-traces.md",
+      "kind": "static",
+      "description": "behavior traces — claim-cited deep dive into astral-sh/ruff at c131cba"
+    },
+    {
+      "id": "unpack-ruff-testing-signals",
+      "url": "https://codevetter.com/unpack/ruff/testing-signals",
+      "md": "https://codevetter.com/unpack/ruff/testing-signals.md",
+      "kind": "static",
+      "description": "testing signals — claim-cited deep dive into astral-sh/ruff at c131cba"
+    },
+    {
+      "id": "unpack-ruff-risk-map",
+      "url": "https://codevetter.com/unpack/ruff/risk-map",
+      "md": "https://codevetter.com/unpack/ruff/risk-map.md",
+      "kind": "static",
+      "description": "risk map — claim-cited deep dive into astral-sh/ruff at c131cba"
+    },
+    {
+      "id": "unpack-ruff-extension-points",
+      "url": "https://codevetter.com/unpack/ruff/extension-points",
+      "md": "https://codevetter.com/unpack/ruff/extension-points.md",
+      "kind": "static",
+      "description": "extension points — claim-cited deep dive into astral-sh/ruff at c131cba"
+    },
+    {
+      "id": "unpack-ruff-agent-handoff",
+      "url": "https://codevetter.com/unpack/ruff/agent-handoff",
+      "md": "https://codevetter.com/unpack/ruff/agent-handoff.md",
+      "kind": "static",
+      "description": "agent handoff — claim-cited deep dive into astral-sh/ruff at c131cba"
+    },
+    {
+      "id": "unpack-rustdesk",
+      "url": "https://codevetter.com/unpack/rustdesk",
+      "md": "https://codevetter.com/unpack/rustdesk.md",
+      "kind": "static",
+      "description": "Repo Unpack evidence scan of rustdesk/rustdesk at c6a358a"
+    },
+    {
+      "id": "unpack-scrcpy",
+      "url": "https://codevetter.com/unpack/scrcpy",
+      "md": "https://codevetter.com/unpack/scrcpy.md",
+      "kind": "static",
+      "description": "Repo Unpack evidence scan of Genymobile/scrcpy at 19c1261"
+    },
+    {
+      "id": "unpack-spec-kit",
+      "url": "https://codevetter.com/unpack/spec-kit",
+      "md": "https://codevetter.com/unpack/spec-kit.md",
+      "kind": "static",
+      "description": "Repo Unpack evidence scan of github/spec-kit at 175adbc"
+    },
+    {
+      "id": "unpack-stable-diffusion-webui",
+      "url": "https://codevetter.com/unpack/stable-diffusion-webui",
+      "md": "https://codevetter.com/unpack/stable-diffusion-webui.md",
+      "kind": "static",
+      "description": "Repo Unpack evidence scan of AUTOMATIC1111/stable-diffusion-webui at 82a973c"
+    },
+    {
+      "id": "unpack-tauri",
+      "url": "https://codevetter.com/unpack/tauri",
+      "md": "https://codevetter.com/unpack/tauri.md",
+      "kind": "static",
+      "description": "Repo Unpack evidence scan of tauri-apps/tauri at 745b9a4"
+    },
+    {
+      "id": "unpack-terminal",
+      "url": "https://codevetter.com/unpack/terminal",
+      "md": "https://codevetter.com/unpack/terminal.md",
+      "kind": "static",
+      "description": "Repo Unpack evidence scan of microsoft/terminal at 7c92ecd"
+    },
+    {
+      "id": "unpack-trpc-system-map",
+      "url": "https://codevetter.com/unpack/trpc/system-map",
+      "md": "https://codevetter.com/unpack/trpc/system-map.md",
+      "kind": "static",
+      "description": "system map — claim-cited deep dive into trpc/trpc at 8b649ad"
+    },
+    {
+      "id": "unpack-trpc-feature-catalog",
+      "url": "https://codevetter.com/unpack/trpc/feature-catalog",
+      "md": "https://codevetter.com/unpack/trpc/feature-catalog.md",
+      "kind": "static",
+      "description": "feature catalog — claim-cited deep dive into trpc/trpc at 8b649ad"
+    },
+    {
+      "id": "unpack-trpc-data-flow",
+      "url": "https://codevetter.com/unpack/trpc/data-flow",
+      "md": "https://codevetter.com/unpack/trpc/data-flow.md",
+      "kind": "static",
+      "description": "data flow — claim-cited deep dive into trpc/trpc at 8b649ad"
+    },
+    {
+      "id": "unpack-trpc-behavior-traces",
+      "url": "https://codevetter.com/unpack/trpc/behavior-traces",
+      "md": "https://codevetter.com/unpack/trpc/behavior-traces.md",
+      "kind": "static",
+      "description": "behavior traces — claim-cited deep dive into trpc/trpc at 8b649ad"
+    },
+    {
+      "id": "unpack-trpc-testing-signals",
+      "url": "https://codevetter.com/unpack/trpc/testing-signals",
+      "md": "https://codevetter.com/unpack/trpc/testing-signals.md",
+      "kind": "static",
+      "description": "testing signals — claim-cited deep dive into trpc/trpc at 8b649ad"
+    },
+    {
+      "id": "unpack-trpc-risk-map",
+      "url": "https://codevetter.com/unpack/trpc/risk-map",
+      "md": "https://codevetter.com/unpack/trpc/risk-map.md",
+      "kind": "static",
+      "description": "risk map — claim-cited deep dive into trpc/trpc at 8b649ad"
+    },
+    {
+      "id": "unpack-trpc-extension-points",
+      "url": "https://codevetter.com/unpack/trpc/extension-points",
+      "md": "https://codevetter.com/unpack/trpc/extension-points.md",
+      "kind": "static",
+      "description": "extension points — claim-cited deep dive into trpc/trpc at 8b649ad"
+    },
+    {
+      "id": "unpack-trpc-agent-handoff",
+      "url": "https://codevetter.com/unpack/trpc/agent-handoff",
+      "md": "https://codevetter.com/unpack/trpc/agent-handoff.md",
+      "kind": "static",
+      "description": "agent handoff — claim-cited deep dive into trpc/trpc at 8b649ad"
+    },
+    {
+      "id": "unpack-typescript",
+      "url": "https://codevetter.com/unpack/typescript",
+      "md": "https://codevetter.com/unpack/typescript.md",
+      "kind": "static",
+      "description": "Repo Unpack evidence scan of microsoft/TypeScript at 5f6db9c"
+    },
+    {
+      "id": "unpack-ui-ux-pro-max-skill",
+      "url": "https://codevetter.com/unpack/ui-ux-pro-max-skill",
+      "md": "https://codevetter.com/unpack/ui-ux-pro-max-skill.md",
+      "kind": "static",
+      "description": "Repo Unpack evidence scan of nextlevelbuilder/ui-ux-pro-max-skill at dcc40ff"
+    },
+    {
+      "id": "unpack-ui",
+      "url": "https://codevetter.com/unpack/ui",
+      "md": "https://codevetter.com/unpack/ui.md",
+      "kind": "static",
+      "description": "Repo Unpack evidence scan of shadcn-ui/ui at 98a1fe6"
+    },
+    {
+      "id": "unpack-uv-system-map",
+      "url": "https://codevetter.com/unpack/uv/system-map",
+      "md": "https://codevetter.com/unpack/uv/system-map.md",
+      "kind": "static",
+      "description": "system map — claim-cited deep dive into astral-sh/uv at a9e231a"
+    },
+    {
+      "id": "unpack-uv-feature-catalog",
+      "url": "https://codevetter.com/unpack/uv/feature-catalog",
+      "md": "https://codevetter.com/unpack/uv/feature-catalog.md",
+      "kind": "static",
+      "description": "feature catalog — claim-cited deep dive into astral-sh/uv at a9e231a"
+    },
+    {
+      "id": "unpack-uv-data-flow",
+      "url": "https://codevetter.com/unpack/uv/data-flow",
+      "md": "https://codevetter.com/unpack/uv/data-flow.md",
+      "kind": "static",
+      "description": "data flow — claim-cited deep dive into astral-sh/uv at a9e231a"
+    },
+    {
+      "id": "unpack-uv-behavior-traces",
+      "url": "https://codevetter.com/unpack/uv/behavior-traces",
+      "md": "https://codevetter.com/unpack/uv/behavior-traces.md",
+      "kind": "static",
+      "description": "behavior traces — claim-cited deep dive into astral-sh/uv at a9e231a"
+    },
+    {
+      "id": "unpack-uv-testing-signals",
+      "url": "https://codevetter.com/unpack/uv/testing-signals",
+      "md": "https://codevetter.com/unpack/uv/testing-signals.md",
+      "kind": "static",
+      "description": "testing signals — claim-cited deep dive into astral-sh/uv at a9e231a"
+    },
+    {
+      "id": "unpack-uv-risk-map",
+      "url": "https://codevetter.com/unpack/uv/risk-map",
+      "md": "https://codevetter.com/unpack/uv/risk-map.md",
+      "kind": "static",
+      "description": "risk map — claim-cited deep dive into astral-sh/uv at a9e231a"
+    },
+    {
+      "id": "unpack-uv-extension-points",
+      "url": "https://codevetter.com/unpack/uv/extension-points",
+      "md": "https://codevetter.com/unpack/uv/extension-points.md",
+      "kind": "static",
+      "description": "extension points — claim-cited deep dive into astral-sh/uv at a9e231a"
+    },
+    {
+      "id": "unpack-uv-agent-handoff",
+      "url": "https://codevetter.com/unpack/uv/agent-handoff",
+      "md": "https://codevetter.com/unpack/uv/agent-handoff.md",
+      "kind": "static",
+      "description": "agent handoff — claim-cited deep dive into astral-sh/uv at a9e231a"
+    },
+    {
+      "id": "unpack-v2rayn",
+      "url": "https://codevetter.com/unpack/v2rayn",
+      "md": "https://codevetter.com/unpack/v2rayn.md",
+      "kind": "static",
+      "description": "Repo Unpack evidence scan of 2dust/v2rayN at 2813985"
+    },
+    {
+      "id": "unpack-whisper",
+      "url": "https://codevetter.com/unpack/whisper",
+      "md": "https://codevetter.com/unpack/whisper.md",
+      "kind": "static",
+      "description": "Repo Unpack evidence scan of openai/whisper at 8609812"
+    },
+    {
+      "id": "unpack-youtube-dl",
+      "url": "https://codevetter.com/unpack/youtube-dl",
+      "md": "https://codevetter.com/unpack/youtube-dl.md",
+      "kind": "static",
+      "description": "Repo Unpack evidence scan of ytdl-org/youtube-dl at 956b8c5"
+    },
+    {
+      "id": "unpack-yt-dlp",
+      "url": "https://codevetter.com/unpack/yt-dlp",
+      "md": "https://codevetter.com/unpack/yt-dlp.md",
+      "kind": "static",
+      "description": "Repo Unpack evidence scan of yt-dlp/yt-dlp at c7fb478"
     }
   ],
   "auth": {

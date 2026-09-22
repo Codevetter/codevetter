@@ -1,0 +1,1100 @@
+{
+  "schema_version": "codevetter.repo-unpack-corpus/v1",
+  "repo": "deepseek-ai/DeepSeek-V3",
+  "slug": "deepseek-v3",
+  "codevetter_version": "codevetter 1.12.0",
+  "collected_at": "2026-09-22T11:40:47.220Z",
+  "last_commit": {
+    "sha": "9b4e9788e4a3a731f7567338ed15d3ec549ce03b",
+    "date": "2025-08-28",
+    "subject": "Merge pull request #969 from youkaichao/rmsnorm"
+  },
+  "scan": {
+    "schema_version": "codevetter.unpack-scan/v1",
+    "report_id": "8845a480-11f1-4c5c-882a-28743fc9fac6",
+    "status": "scan_only",
+    "created_at": "2026-09-22T11:40:47.218620+00:00",
+    "inventory": {
+      "repo_path": "/private/var/folders/9_/1109_2dd1qz6zyvmxb5zp8pc0000gn/T/unpack-pilot-gl5sYX/deepseek-v3",
+      "repo_name": "deepseek-v3",
+      "commit_sha": "9b4e9788e4a3a731f7567338ed15d3ec549ce03b",
+      "branch": "main",
+      "remote_url": "https://github.com/deepseek-ai/DeepSeek-V3.git",
+      "files_scanned": 18,
+      "files_skipped": 2,
+      "bytes_scanned": 104175,
+      "max_files_hit": false,
+      "estimated_total_files": null,
+      "languages": [
+        {
+          "language": "Python",
+          "files": 5,
+          "bytes": 57381
+        },
+        {
+          "language": "Markdown",
+          "files": 4,
+          "bytes": 25569
+        },
+        {
+          "language": "JSON",
+          "files": 4,
+          "bytes": 1904
+        },
+        {
+          "language": "YAML",
+          "files": 1,
+          "bytes": 1031
+        }
+      ],
+      "manifests": [],
+      "entrypoints": [
+        {
+          "path": "README.md",
+          "kind": "docs",
+          "reason": "Repository readme"
+        },
+        {
+          "path": ".github/workflows/stale.yml",
+          "kind": "config",
+          "reason": "GitHub Actions workflow"
+        }
+      ],
+      "top_level_dirs": [
+        {
+          "path": "inference",
+          "file_count": 10,
+          "bytes": 59351
+        },
+        {
+          "path": ".github",
+          "file_count": 3,
+          "bytes": 2094
+        }
+      ],
+      "docs": [
+        {
+          "path": "README.md",
+          "bytes": 20851,
+          "preview": "<!-- markdownlint-disable first-line-h1 -->\n<!-- markdownlint-disable html -->\n<!-- markdownlint-disable no-duplicate-header -->\n\n<div align=\"center\">\n  <img src=\"https://github.com/deepseek-ai/DeepSeek-V2/blob/main/figures/logo.svg?raw=true\" width=\"60%\" alt=\"DeepSeek-V3\" />\n</div>\n<hr>\n<div align=\"center\" style=\"line-height: 1;\">\n  <a href=\"https://www.deepseek.com/\"><img alt=\"Homepage\"\n    src=\"https://github.com/deepseek-ai/DeepSeek-V2/blob/main/figures/badge.svg?raw=true\"/></a>\n  <a href=\"https://chat.deepseek.com/\"><img alt=\"Chat\"\n    src=\"https://img.shields.io/badge/🤖%20Chat-DeepSeek%20V3-536af5?color=536af5&logoColor=white\"/></a>\n  <a href=\"https://huggingface.co/deepseek-ai\"><img alt=\"Hugging Face\"\n    src=\"https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-DeepSeek%20AI-ffc107?color=ffc107&logoColor=white\"/></a>\n  <br>\n  <a href=\"https://discord.gg/Tc7c45Zzu5\"><img alt=\"Discord\"\n    src=\"https://img.shields.io/badge/Discord-DeepSeek%20AI-7289da?logo=discord&logoColor=white&color=7289da\"/></a>\n  <a href=\"https://github.com/deepseek-ai/DeepSeek-V2/blob/main/figures/qr.jpeg?raw=true\"><img alt=\"Wechat\"\n    src=\"https://img.shields.io/badge/WeChat-DeepSeek%20AI-brightgreen?logo=wechat&logoColor=white\"/></a>\n  <a href=\"https://twitter.com/deepseek_ai\"><img alt=\"Twitter Follow\"\n    src=\"https://img.shields.io/badge/Twitter-deepseek_ai-white?logo=x&logoColor=white\"/></a>\n  <br>\n  <a href=\"https://github.com/deepseek-ai/DeepSeek-V3/blob/main/LICENSE-CODE\"><img alt=\"Code License\"\n    src=\"https://img.shields.io/badge/Code_License-MIT-f5de53?&color=f5de53\"/></a>\n  <a href=\"https://github.com/deepseek-ai/DeepSeek-V3/blob/main/LICENSE-MODEL\"><img alt=\"Model License\"\n    src=\"https://img.shields.io/badge/Model_License-Model_Agreement-f5de53?&color=f5de53\"/></a>\n  <br>\n  <a href=\"https://arxiv.org/pdf/2412.19437\"><b>Paper Link</b>👁️</a>\n</div>\n\n## Table of Contents\n\n1. [Introduction](#1-introduction)\n2. [Model Summary](#2-model-summary)\n3. [Model Downloads](#3-model-downloads)\n4. [Evaluation Results](#4-evaluation-results)\n5. [Chat Website & API Platform](#5-chat-website--api-platform)\n6. [How to Run Locally](#6-how-to-run-locally)\n7. [License](#7-license)\n8. [Citation](#8-citation)\n9. [Contact](#9-contact)\n\n\n## 1. Introduction\n\nWe present DeepSeek-V3, a strong Mixture-of-Experts (MoE) language model with 671B total parameters with 37B activated for each token. \nTo achieve efficient inference and cost-effective training, DeepSeek-V3 adopts Multi-head Latent Attention (MLA) and DeepSeekMoE architectures, which were thoroughly validated in DeepSeek-V2. \nFurthermore, DeepSeek-V3 pioneers an auxiliary-loss-free strategy for load balancing and sets a multi-token prediction training objective for stronger performance. \nWe pre-train DeepSeek-V3 on 14.8 trillion diverse and high-quality tokens, followed by Supervised Fine-Tuning and Reinforcement Learning stages to fully harness its capabilities. \nComprehensive evaluations reveal that DeepSeek-V3 outperforms other open-source models and achieves performance comparable to leading closed-source models.\nDespite its excellent performance, DeepSeek-V3 requires only 2.788M H800 GPU hours for its full training.\nIn addition, its training process is remarkably stable. \nThroughout the entire training process, we did not experience any irrecoverable loss spikes or perform any rollbacks. \n<p align=\"center\">\n  <img width=\"80%\" src=\"figures/benchmark.png\">\n</p>\n\n## 2. Model Summary\n\n---\n\n**Architecture: Innovative Load Balancing Strategy and Training Objective**\n\n- On top of the efficient architecture of DeepSeek-V2, we pioneer an auxiliary-loss-free strategy for load balancing, which minimizes the performance degradation that arises from encouraging load balancing.\n-  We investigate a Multi-Token Prediction (MTP) objective and prove it beneficial to model performance. \n    It can also be used for speculative decoding for inference acceleration. \n\n---\n\n**Pre-Training: Towards Ultimate Training Efficiency**\n\n- We design an FP8 mixed precision training framework and, for the first time, validate the feasibility and effectiveness of FP8 training on an extremely large-scale model.  \n- Through co-design of algorithms, frameworks, and hardware, we overcome the communication bottleneck in cross-node MoE training, nearly achieving full computation-communication overlap.  \n  This significantly enhances our training efficiency and reduces the training costs, enabling us to further scale up the model size without additional overhead.  \n- At an economical cost of only 2.664M H800 GPU hours, we complete the pre-training of DeepSeek-V3 on 14.8T tokens, producing the currently strongest open-source base model. The subsequent training stages after pre-training require only 0.1M GPU hours.\n\n---\n\n**Post-Training: Knowledge Distillation from DeepSeek-R1**\n\n-   We introduce an innovative methodology to distill reasoning capabilities from the long-Chain-of-Thought (CoT) model, specifically from one of the DeepSeek R1 series models, into standard LLMs, particularly DeepSeek-V3. Our pipeline elegantly incorporates the verification and reflection patterns of R1 into DeepSeek-V3 and notably improves its reasoning performance. Meanwhile, we also maintain a control over the output style and length of DeepSeek-V3.\n\n---\n\n\n## 3. Model Downloads\n\n<div align=\"center\">\n\n| **Model** | **#Total Params** | **#Activated Params** | **Context Length** | **Download** |\n| :------------: | :------------: | :------------: | :------------: | :------------: |\n| DeepSeek-V3-Base | 671B | 37B | 128K   | [🤗 Hugging Face](https://huggingface.co/deepseek-ai/DeepSeek-V3-Base)   |\n| DeepSeek-V3   | 671B | 37B |  128K   | [🤗 Hugging Face](https://huggingface.co/deepseek-ai/DeepSeek-V3)   |\n\n</div>\n\n> [!NOTE]\n> The total size of DeepSeek-V3 models on Hugging Face is 685B, which includes 671B of the Main Model weights and 14B of the Multi-Token Prediction (MTP) Module weights.\n\nTo ensure optimal performance and flexibility, we have partnered with open-source communities and hardware vendors to provide multiple ways to run the model locally. For step-by-step guidance, check out Section 6: [How_to Run_Locally](#6-how-to-run-locally).\n\nFor developers looking to dive deeper, we recommend exploring [README_WEIGHTS.md](./README_WEIGHTS.md) for details on the Main Model weights and the Multi-Token Prediction (MTP) Modules. Please note that MTP support is currently under active development within the community, and we welcome your contributions and feedback.\n\n## 4. Evaluation Results\n### Base Model\n#### Standard Benchmarks\n\n<div align=\"center\">\n\n\n|  | Benchmark (Metric) | # Shots | DeepSeek-V2 | Qwen2.5 72B | LLaMA3.1 405B | DeepSeek-V3 |\n|---|-------------------|----------|--------|-------------|---------------|---------|\n| | Architecture | - | MoE | Dense | Dense | MoE |\n| | # Activated Params | - | 21B | 72B | 405B | 37B |\n| | # Total Params | - | 236B | 72B | 405B | 671B |\n| English | Pile-test (BPB) | - | 0.606 | 0.638 | **0.542** | 0.548 |\n| | BBH (EM) | 3-shot | 78.8 | 79.8 | 82.9 | **87.5** |\n| | MMLU (Acc.) | 5-shot | 78.4 | 85.0 | 84.4 | **87.1** |\n| | MMLU-Redux (Acc.) | 5-shot | 75.6 | 83.2 | 81.3 | **86.2** |\n| | MMLU-Pro (Acc.) | 5-shot | 51.4 | 58.3 | 52.8 | **64.4** |\n| | DROP (F1) | 3-shot | 80.4 | 80.6 | 86.0 | **89.0** |\n| | ARC-Easy (Acc.) | 25-shot | 97.6 | 98.4 | 98.4 | **98.9** |\n| | ARC-Challenge (Acc.) | 25-shot | 92.2 | 94.5 | **95.3** | **95.3** |\n| | HellaSwag (Acc.) | 10-shot | 87.1 | 84.8 | **89.2** | 88.9 |\n| | PIQA (Acc.) | 0-shot | 83.9 | 82.6 | **85.9** | 84.7 |\n| | WinoGrande (Acc.) | 5-shot | **86.3** | 82.3 | 85.2 | 84.9 |\n| | RACE-Middle (Acc.) | 5-shot | 73.1 | 68.1 | **74.2** | 67.1 |\n| | RACE-High (Acc.) | 5-shot | 52.6 | 50.3 | **56.8** | 51.3 |\n| | TriviaQA (EM) | 5-shot | 80.0 | 71.9 | 82.7 | **82.9** |\n| | NaturalQuestions (EM) | 5-shot | 38.6 | 33.2 | **41.5** | 40.0 |\n| | AGIEval (Acc.) | 0-shot | 57.5 | 75.8 | 60.6 | **79.6** |\n| Code | HumanEval (Pass@1) | 0-shot | 43.3 | 53.0 | 54.9 | **65.2** |\n| | MBPP (Pass@1) | 3-shot | 65.0 | 72.6 | 68.4 | **75.4** |\n| | LiveCodeBench-Base (Pass@1) | 3-shot | 11.6 |"
+        }
+      ],
+      "config_files": [],
+      "stack_tags": [
+        "GitHub Actions"
+      ],
+      "workspace_units": [
+        {
+          "path": "inference",
+          "name": "inference",
+          "kind": "subsystem",
+          "manifest_path": null,
+          "build_system": null,
+          "file_count": 10,
+          "languages": [
+            {
+              "language": "Python",
+              "files": 5,
+              "bytes": 57381
+            },
+            {
+              "language": "JSON",
+              "files": 4,
+              "bytes": 1904
+            }
+          ],
+          "scripts": [],
+          "entrypoints": [],
+          "test_files": [],
+          "tags": [
+            "JSON",
+            "Python"
+          ]
+        }
+      ],
+      "qa_readiness": {
+        "score": 0,
+        "status": "missing",
+        "summary": "Repo does not expose enough local browser QA structure for a reliable Synthetic QA workflow yet.",
+        "signals": [
+          {
+            "id": "browser_runner",
+            "label": "Browser runner",
+            "status": "missing",
+            "detail": "No Playwright, Cypress, or browser runner config was found.",
+            "sources": []
+          },
+          {
+            "id": "user_flow_specs",
+            "label": "User-flow specs",
+            "status": "missing",
+            "detail": "No e2e/playwright/cypress spec files were found.",
+            "sources": []
+          },
+          {
+            "id": "local_app_command",
+            "label": "Local app command",
+            "status": "missing",
+            "detail": "No obvious package script for starting the app locally was found.",
+            "sources": []
+          },
+          {
+            "id": "qa_script",
+            "label": "QA script",
+            "status": "missing",
+            "detail": "No explicit QA/e2e/browser test script was found.",
+            "sources": []
+          },
+          {
+            "id": "artifact_trail",
+            "label": "Artifact trail",
+            "status": "missing",
+            "detail": "No browser QA artifacts or artifact-capable runner were found.",
+            "sources": []
+          },
+          {
+            "id": "targetable_routes",
+            "label": "Targetable surfaces",
+            "status": "missing",
+            "detail": "No obvious web entrypoint or route file was found.",
+            "sources": []
+          }
+        ],
+        "suggested_flows": []
+      },
+      "repo_graph": {
+        "schema_version": 2,
+        "nodes": [
+          {
+            "id": "file:github-issue-template-bug-report-md",
+            "kind": "file",
+            "label": ".github/ISSUE_TEMPLATE/bug_report.md",
+            "path": ".github/ISSUE_TEMPLATE/bug_report.md",
+            "detail": "source marker candidate",
+            "sources": [
+              ".github/ISSUE_TEMPLATE/bug_report.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:github-issue-template-feature-request-md",
+            "kind": "file",
+            "label": ".github/ISSUE_TEMPLATE/feature_request.md",
+            "path": ".github/ISSUE_TEMPLATE/feature_request.md",
+            "detail": "source marker candidate",
+            "sources": [
+              ".github/ISSUE_TEMPLATE/feature_request.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:github-workflows-stale-yml",
+            "kind": "file",
+            "label": ".github/workflows/stale.yml",
+            "path": ".github/workflows/stale.yml",
+            "detail": "GitHub Actions workflow",
+            "sources": [
+              ".github/workflows/stale.yml"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:readme-md",
+            "kind": "file",
+            "label": "README.md",
+            "path": "README.md",
+            "detail": "Repository readme",
+            "sources": [
+              "README.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:readme-weights-md",
+            "kind": "file",
+            "label": "README_WEIGHTS.md",
+            "path": "README_WEIGHTS.md",
+            "detail": "source marker candidate",
+            "sources": [
+              "README_WEIGHTS.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "workspace:inference",
+            "kind": "subsystem",
+            "label": "inference",
+            "path": "inference",
+            "detail": "subsystem | 10 files | 5 Python, 4 JSON",
+            "sources": [
+              "inference"
+            ],
+            "source_location": null,
+            "community": null
+          }
+        ],
+        "edges": [],
+        "truncated": false
+      },
+      "history_brief": {
+        "schema_version": 2,
+        "summary": "Local history brief captured 12 recent commits, 0 decision markers, 0 test hints, and 0 co-change clusters for Repo Unpacked. Treat commit subjects as leads and rely on cited files for durable constraints.",
+        "recent_commits": [
+          {
+            "sha": "9b4e9788e4a3",
+            "date": "2025-08-27",
+            "subject": "Merge pull request #969 from youkaichao/rmsnorm",
+            "files": []
+          },
+          {
+            "sha": "adecc0efbe2f",
+            "date": "2025-08-27",
+            "subject": "fix rmsnorm and act_quant_kernel",
+            "files": []
+          },
+          {
+            "sha": "82f6008c8c6a",
+            "date": "2025-08-27",
+            "subject": "fix act_quant_kernel (#968)",
+            "files": []
+          },
+          {
+            "sha": "b15f0dbbbe6a",
+            "date": "2025-08-27",
+            "subject": "support scale_fmt=ue8m0 (#964)",
+            "files": [
+              "inference/configs/config_v3.1.json"
+            ]
+          },
+          {
+            "sha": "4592be48c07f",
+            "date": "2025-08-26",
+            "subject": "fp32 gate bias",
+            "files": []
+          },
+          {
+            "sha": "f6e34dd26772",
+            "date": "2025-06-16",
+            "subject": "Merge pull request #903 from yixing1992/main",
+            "files": []
+          },
+          {
+            "sha": "e975062c42ac",
+            "date": "2025-06-16",
+            "subject": "Update README.md for Huawei Ascend NPU support modes",
+            "files": [
+              "README.md"
+            ]
+          },
+          {
+            "sha": "4cc6253d5c22",
+            "date": "2025-04-09",
+            "subject": "Merge pull request #666 from codinglover222/deepseek-doc-fix",
+            "files": []
+          },
+          {
+            "sha": "57d7bd45df20",
+            "date": "2025-04-08",
+            "subject": "Merge pull request #736 from shihaobai/main",
+            "files": []
+          },
+          {
+            "sha": "88d6547df285",
+            "date": "2025-04-08",
+            "subject": "Merge pull request #816 from KPCOFGS/main",
+            "files": []
+          },
+          {
+            "sha": "741b06ebca31",
+            "date": "2025-04-08",
+            "subject": "Merge pull request #720 from xiaokongkong/main",
+            "files": []
+          },
+          {
+            "sha": "a5d2ad229e6c",
+            "date": "2025-03-26",
+            "subject": "Update README.md",
+            "files": [
+              "README.md"
+            ]
+          }
+        ],
+        "decisions": [],
+        "test_hints": [],
+        "temporal_couplings": [],
+        "graph": {
+          "schema_version": 2,
+          "nodes": [
+            {
+              "id": "commit:4592be48c07f",
+              "kind": "commit",
+              "label": "fp32 gate bias",
+              "path": null,
+              "detail": "2025-08-26",
+              "citations": [
+                "git:4592be48c07f"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:4cc6253d5c22",
+              "kind": "commit",
+              "label": "Merge pull request #666 from codinglover222/deepseek-doc-fix",
+              "path": null,
+              "detail": "2025-04-09",
+              "citations": [
+                "git:4cc6253d5c22"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:57d7bd45df20",
+              "kind": "commit",
+              "label": "Merge pull request #736 from shihaobai/main",
+              "path": null,
+              "detail": "2025-04-08",
+              "citations": [
+                "git:57d7bd45df20"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:741b06ebca31",
+              "kind": "commit",
+              "label": "Merge pull request #720 from xiaokongkong/main",
+              "path": null,
+              "detail": "2025-04-08",
+              "citations": [
+                "git:741b06ebca31"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:82f6008c8c6a",
+              "kind": "commit",
+              "label": "fix act_quant_kernel (#968)",
+              "path": null,
+              "detail": "2025-08-27",
+              "citations": [
+                "git:82f6008c8c6a"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:88d6547df285",
+              "kind": "commit",
+              "label": "Merge pull request #816 from KPCOFGS/main",
+              "path": null,
+              "detail": "2025-04-08",
+              "citations": [
+                "git:88d6547df285"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:9b4e9788e4a3",
+              "kind": "commit",
+              "label": "Merge pull request #969 from youkaichao/rmsnorm",
+              "path": null,
+              "detail": "2025-08-27",
+              "citations": [
+                "git:9b4e9788e4a3"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:a5d2ad229e6c",
+              "kind": "commit",
+              "label": "Update README.md",
+              "path": null,
+              "detail": "2025-03-26",
+              "citations": [
+                "git:a5d2ad229e6c"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:adecc0efbe2f",
+              "kind": "commit",
+              "label": "fix rmsnorm and act_quant_kernel",
+              "path": null,
+              "detail": "2025-08-27",
+              "citations": [
+                "git:adecc0efbe2f"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:b15f0dbbbe6a",
+              "kind": "commit",
+              "label": "support scale_fmt=ue8m0 (#964)",
+              "path": null,
+              "detail": "2025-08-27",
+              "citations": [
+                "git:b15f0dbbbe6a"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:e975062c42ac",
+              "kind": "commit",
+              "label": "Update README.md for Huawei Ascend NPU support modes",
+              "path": null,
+              "detail": "2025-06-16",
+              "citations": [
+                "git:e975062c42ac"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:f6e34dd26772",
+              "kind": "commit",
+              "label": "Merge pull request #903 from yixing1992/main",
+              "path": null,
+              "detail": "2025-06-16",
+              "citations": [
+                "git:f6e34dd26772"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:inference-configs-config-v3-1-json",
+              "kind": "file",
+              "label": "inference/configs/config_v3.1.json",
+              "path": "inference/configs/config_v3.1.json",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "inference/configs/config_v3.1.json"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:readme-md",
+              "kind": "file",
+              "label": "README.md",
+              "path": "README.md",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "README.md"
+              ],
+              "trust": "git_observed"
+            }
+          ],
+          "edges": [
+            {
+              "from": "commit:a5d2ad229e6c",
+              "to": "file:readme-md",
+              "kind": "changed",
+              "evidence": "a5d2ad229e6c changed this file",
+              "citations": [
+                "git:a5d2ad229e6c",
+                "README.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:b15f0dbbbe6a",
+              "to": "file:inference-configs-config-v3-1-json",
+              "kind": "changed",
+              "evidence": "b15f0dbbbe6a changed this file",
+              "citations": [
+                "git:b15f0dbbbe6a",
+                "inference/configs/config_v3.1.json"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:e975062c42ac",
+              "to": "file:readme-md",
+              "kind": "changed",
+              "evidence": "e975062c42ac changed this file",
+              "citations": [
+                "git:e975062c42ac",
+                "README.md"
+              ],
+              "trust": "git_observed"
+            }
+          ],
+          "truncated": false
+        },
+        "sources": [],
+        "truncated": false
+      },
+      "repo_health": {
+        "schema_version": 1,
+        "summary": "Deterministic scan scored 5 source files across simple size, churn, structural, test-adjacency, and performance-risk signals. 1 hotspot surfaced; average score is 7.0/10. Treat these as review leads, not proof of a bug.",
+        "average_score": 7,
+        "hotspot_count": 1,
+        "files_analyzed": 5,
+        "files_with_test_signal": 0,
+        "top_files": [
+          {
+            "path": "inference/model.py",
+            "score": 6.2,
+            "bucket": "hotspot",
+            "lines": 808,
+            "bytes": 32831,
+            "churn": 849,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "808 lines in one source file; changes here may be harder to review.",
+                "sources": [
+                  "inference/model.py"
+                ]
+              },
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 19; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "inference/model.py"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 849 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "inference/model.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "inference/model.py"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "inference/kernel.py",
+            "score": 6.9,
+            "bucket": "watch",
+            "lines": 196,
+            "bytes": 8464,
+            "churn": 228,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 10; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "inference/kernel.py"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 228 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "inference/kernel.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "inference/kernel.py"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "inference/generate.py",
+            "score": 6.9,
+            "bucket": "watch",
+            "lines": 185,
+            "bytes": 7813,
+            "churn": 191,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 8; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "inference/generate.py"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 191 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "inference/generate.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "inference/generate.py"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "inference/fp8_cast_bf16.py",
+            "score": 7.4,
+            "bucket": "watch",
+            "lines": 112,
+            "bytes": 4454,
+            "churn": 134,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 10; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "inference/fp8_cast_bf16.py"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "Moderate churn",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "Recent git history shows 134 changed lines in this file; it is a change hotspot.",
+                "sources": [
+                  "inference/fp8_cast_bf16.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "inference/fp8_cast_bf16.py"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "inference/convert.py",
+            "score": 7.4,
+            "bucket": "watch",
+            "lines": 96,
+            "bytes": 3819,
+            "churn": 104,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 14; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "inference/convert.py"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "Moderate churn",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "Recent git history shows 104 changed lines in this file; it is a change hotspot.",
+                "sources": [
+                  "inference/convert.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "inference/convert.py"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          }
+        ],
+        "truncated": false
+      },
+      "all_files": [],
+      "ignored_dirs": [
+        ".git"
+      ],
+      "coverage": {
+        "schema_version": 1,
+        "strategy": "full_walk",
+        "sampled_files": 18,
+        "total_files": null,
+        "sample_percent": null,
+        "languages": [
+          {
+            "language": "Python",
+            "files": 5,
+            "bytes": 57381
+          },
+          {
+            "language": "JSON",
+            "files": 4,
+            "bytes": 1904
+          },
+          {
+            "language": "Markdown",
+            "files": 4,
+            "bytes": 25569
+          },
+          {
+            "language": "YAML",
+            "files": 1,
+            "bytes": 1031
+          }
+        ],
+        "top_level_dirs": [
+          {
+            "path": "inference",
+            "file_count": 10,
+            "bytes": 59351
+          },
+          {
+            "path": ".github",
+            "file_count": 3,
+            "bytes": 2094
+          }
+        ],
+        "notes": [
+          "Full local walk covered the repo within the scan cap."
+        ]
+      },
+      "all_files_capped": false,
+      "dir_tree_preview": {
+        "name": "",
+        "path": "",
+        "is_dir": true,
+        "file_count": 18,
+        "children": [
+          {
+            "name": ".github",
+            "path": ".github",
+            "is_dir": true,
+            "file_count": 3,
+            "children": [
+              {
+                "name": "ISSUE_TEMPLATE",
+                "path": ".github/ISSUE_TEMPLATE",
+                "is_dir": true,
+                "file_count": 2,
+                "children": [
+                  {
+                    "name": "bug_report.md",
+                    "path": ".github/ISSUE_TEMPLATE/bug_report.md",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "feature_request.md",
+                    "path": ".github/ISSUE_TEMPLATE/feature_request.md",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "workflows",
+                "path": ".github/workflows",
+                "is_dir": true,
+                "file_count": 1,
+                "children": [
+                  {
+                    "name": "stale.yml",
+                    "path": ".github/workflows/stale.yml",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "inference",
+            "path": "inference",
+            "is_dir": true,
+            "file_count": 10,
+            "children": [
+              {
+                "name": "configs",
+                "path": "inference/configs",
+                "is_dir": true,
+                "file_count": 4,
+                "children": [
+                  {
+                    "name": "config_16B.json",
+                    "path": "inference/configs/config_16B.json",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "config_236B.json",
+                    "path": "inference/configs/config_236B.json",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "config_671B.json",
+                    "path": "inference/configs/config_671B.json",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "config_v3.1.json",
+                    "path": "inference/configs/config_v3.1.json",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "convert.py",
+                "path": "inference/convert.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "fp8_cast_bf16.py",
+                "path": "inference/fp8_cast_bf16.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "generate.py",
+                "path": "inference/generate.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "kernel.py",
+                "path": "inference/kernel.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "model.py",
+                "path": "inference/model.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "requirements.txt",
+                "path": "inference/requirements.txt",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": ".gitignore",
+            "path": ".gitignore",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "LICENSE-CODE",
+            "path": "LICENSE-CODE",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "LICENSE-MODEL",
+            "path": "LICENSE-MODEL",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "README.md",
+            "path": "README.md",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "README_WEIGHTS.md",
+            "path": "README_WEIGHTS.md",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          }
+        ]
+      }
+    },
+    "profiles": [
+      {
+        "stage": "full_scan",
+        "total_ms": 36,
+        "peak_rss_bytes": 28213248,
+        "steps": [
+          {
+            "id": "git_metadata",
+            "label": "Git metadata",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "file_walk",
+            "label": "Parallel file walk",
+            "ms": 5,
+            "pct": 13.88888888888889
+          },
+          {
+            "id": "languages",
+            "label": "Language breakdown",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "manifests",
+            "label": "Manifest parsing",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "docs",
+            "label": "Doc previews",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "aggregates",
+            "label": "Dirs, configs, stack tags",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "entrypoints",
+            "label": "Entrypoints, workspace units & QA readiness",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "source_previews",
+            "label": "Source preview cache",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "repo_graph",
+            "label": "Deterministic graph scan",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "history",
+            "label": "Git history & decision scan",
+            "ms": 11,
+            "pct": 30.555555555555557
+          },
+          {
+            "id": "repo_health",
+            "label": "Deterministic health scoring",
+            "ms": 19,
+            "pct": 52.77777777777778
+          },
+          {
+            "id": "dir_tree",
+            "label": "Directory tree preview",
+            "ms": 0,
+            "pct": 0
+          }
+        ]
+      },
+      {
+        "stage": "local_scan_persist",
+        "total_ms": 0,
+        "peak_rss_bytes": 28639232,
+        "steps": [
+          {
+            "id": "serialize",
+            "label": "JSON serialize (inventory → SQLite)",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "db_insert",
+            "label": "SQLite insert",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "touch_project",
+            "label": "Update repo project metadata",
+            "ms": 0,
+            "pct": 0
+          }
+        ]
+      }
+    ]
+  }
+}

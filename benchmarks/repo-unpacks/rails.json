@@ -8786,5 +8786,901 @@
         ]
       }
     ]
+  },
+  "report": {
+    "overview": "Ruby on Rails 8.2.0.alpha is a monorepo of loosely coupled gems that together implement a Model-View-Controller web framework. The meta-gem rails pins Active Support, Active Model, Active Record, Action View, Action Pack, Action Mailer, Active Job, Action Cable, Active Storage, Action Mailbox, Action Text, and Railties to one version and requires Ruby >= 3.3.1. Applications are created and driven by the rails CLI in Railties; boot is a Railtie initializer pipeline, HTTP is a Rack middleware stack plus the Journey router, and persistence is Active Record over sqlite3, mysql2/trilogy, or postgresql. This tree is distinctive for versioned load_defaults through 8.2 (header-only CSRF, YJIT, enqueue-after-commit), encrypted credentials, multi-database connections, and first-party engines for jobs, WebSockets, file storage, inbound email, and rich text.",
+    "system_map": {
+      "summary": "The repository root is a Bundler workspace plus an npm workspace, not a single application. railties/exe/rails is the user-facing executable; rails/all.rb is the full framework require list; Rails::Application#initialize! is the runtime boot boundary. Persistence and file storage sit behind adapter registries. The in-repo test entry points are Rake and each component's bin/test. Gem and npm publishing is tools/releaser, triggered by the GitHub Actions release workflow; the full suite gate documented for releases is Buildkite, whose pipeline YAML is not in this checkout.",
+      "claims": [
+        {
+          "claim": "RAILS_VERSION is 8.2.0.alpha and rails.gemspec requires Ruby >= 3.3.1 and RubyGems >= 1.8.11, with MIT license and rubygems_mfa_required metadata.",
+          "sources": [
+            "RAILS_VERSION",
+            "rails.gemspec#L3-L46"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The meta-gem depends on activesupport, actionpack, actionview, activemodel, activerecord, actionmailer, activejob, actioncable, activestorage, actionmailbox, actiontext, and railties, each at the same version, plus bundler >= 1.15.0.",
+          "sources": [
+            "rails.gemspec#L31-L45"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "railties/exe/rails unshifts railties/lib onto $LOAD_PATH when a sibling .git directory exists, then requires rails/cli.",
+          "sources": [
+            "railties/exe/rails#L1-L10",
+            "railties/lib/rails/cli.rb#L1-L21"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Rails::AppLoader.exec_app walks parent directories looking for bin/rails or script/rails and execs Gem.ruby on that binstub when the file references APP_PATH or ENGINE_PATH; a Bundler-generated bin/rails prints BUNDLER_WARNING and then requires config/boot plus rails/commands.",
+          "sources": [
+            "railties/lib/rails/app_loader.rb#L10-L76"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "In-app dispatch is railties/lib/rails/commands.rb, which maps g, d, c, s, db, r, and t onto generate, destroy, console, server, dbconsole, runner, and test, then calls Rails::Command.invoke.",
+          "sources": [
+            "railties/lib/rails/commands.rb#L5-L18",
+            "railties/lib/rails/command.rb#L55-L77"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "rails/all.rb requires, in order, active_record/railtie, active_storage/engine, action_controller/railtie, action_view/railtie, action_mailer/railtie, active_job/railtie, action_cable/engine, action_mailbox/engine, action_text/engine, and rails/test_unit/railtie, swallowing LoadError only when the missing path is that railtie.",
+          "sources": [
+            "railties/lib/rails/all.rb#L5-L22"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Rails::Application#initialize! runs Bootstrap.initializers_for, then railties_initializers, then Finisher.initializers_for, and refuses a second call. Bootstrap loads Active Support, the logger, the error reporter, the cache, and the once-autoloader; Finisher builds the middleware stack, eager-loads, adds internal routes, and enables YJIT.",
+          "sources": [
+            "railties/lib/rails/application.rb#L470-L481",
+            "railties/lib/rails/application/bootstrap.rb#L13-L80",
+            "railties/lib/rails/application/finisher.rb#L49-L92"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "DefaultMiddlewareStack#build_stack assembles HostAuthorization, optional AssumeSSL and SSL, Static, Executor, RequestId, RemoteIp, Logger, ShowExceptions, DebugExceptions, Reloader, Cookies, the configured session store, Flash, ContentSecurityPolicy, and optional ActiveRecord DatabaseSelector and ShardSelector middleware.",
+          "sources": [
+            "railties/lib/rails/application/default_middleware_stack.rb#L14-L111"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "ActiveRecord.protocol_adapters maps DATABASE_URL schemes sqlite to sqlite3, mysql to mysql2, and postgres to postgresql; external adapters may replace those strings. The root Gemfile's :db group installs pg, mysql2, and trilogy, and sqlite3 is a default dependency.",
+          "sources": [
+            "activerecord/lib/active_record.rb#L580-L606",
+            "Gemfile#L147-L157"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "ActiveStorage::Service documents Disk, GCS, S3, and Mirror. Service.configure delegates to Service::Configurator.build, which require's active_storage/service/<name>_service and instantiates the matching Service subclass. Registry#fetch memoizes built services from the YAML configuration hash.",
+          "sources": [
+            "activestorage/lib/active_storage/service.rb#L14-L66",
+            "activestorage/lib/active_storage/service/configurator.rb#L7-L39",
+            "activestorage/lib/active_storage/service/registry.rb#L10-L23"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Root Rakefile task test iterates Releaser::FRAMEWORKS and runs rake test in each directory; task smoke does the same except Active Record, which runs sqlite3:test. Per-adapter tasks exist for mysql2, trilogy, postgresql, sqlite3, and sqlite3_mem, plus activerecord:db:create/drop/rebuild.",
+          "sources": [
+            "Rakefile#L10-L159",
+            "tools/releaser/lib/releaser.rb#L8-L22"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Releaser::FRAMEWORKS is ordered so dependents follow dependencies, ending in railties. The release GitHub workflow checks out the repo, configures RubyGems trusted publishing and npm, bundle-installs tools/releaser, and runs bundle exec rake push.",
+          "sources": [
+            "tools/releaser/lib/releaser.rb#L8-L22",
+            "tools/releaser/lib/releaser.rb#L185",
+            " .github/workflows/release.yml#L1-L41"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "package.json is a private npm workspace of actioncable, actiontext, and activestorage. @rails/actioncable, @rails/actiontext, and @rails/activestorage are versioned 8.2.0-alpha, matching RAILS_VERSION.",
+          "sources": [
+            "package.json",
+            "actioncable/package.json#L1-L5",
+            "RAILS_VERSION"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "RELEASING_RAILS.md tells releasers to treat https://buildkite.com/rails/rails as the CI status and not to release on red CI. This checkout has no .buildkite directory; the GitHub workflows that do exist cover release publishing, a rails-new Docker smoke, rail_inspector, markdown, devcontainer, labeling, and staleness.",
+          "sources": [
+            "RELEASING_RAILS.md#L12-L18",
+            "CONTRIBUTING.md#L1",
+            " .github/workflows/rails-new-docker.yml#L1-L15",
+            " .github/workflows/rail_inspector.yml#L1-L26"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "feature_catalog": {
+      "summary": "User-facing surface area is the rails CLI, the generators that stamp a new app, the Rack endpoints mounted by the framework itself, and the adapter-backed subsystems for jobs, cable, storage, mail, and passwords. Generated apps load framework defaults for the version they were created with and, unless skipped, depend on Solid Cache, Solid Queue, Solid Cable, Thruster, and Kamal. Guides and bug-report templates are part of the product, not side docs.",
+      "claims": [
+        {
+          "claim": "Command classes under railties/lib/rails/commands include about, application, boot, console, credentials, dbconsole, destroy, dev, devcontainer, encrypted, generate, help, initializers, middleware, new, notes, plugin, query, rake, restart, routes, runner, secret, server, stats, test, unused_routes, and version.",
+          "sources": [
+            "railties/lib/rails/commands.rb",
+            "railties/lib/rails/command.rb#L79-L98"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "ServerCommand#perform requires APP_PATH, chdirs to Rails.application.root, and starts Rails::Server. Defaults are port 3000, pid tmp/pids/server.pid, config.ru, and recommended Rack handler puma; supported handler names include cgi, webrick, scgi, thin, puma, unicorn, falcon, fastcgi, and lsws. Host defaults to localhost in development and 0.0.0.0 otherwise.",
+          "sources": [
+            "railties/lib/rails/commands/server/server_command.rb#L96-L169",
+            "railties/lib/rails/commands/server/server_command.rb#L32-L41"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The app generator template Gemfile.tt includes solid_cache, solid_queue, and solid_cable, adds thruster unless skip_thruster, and adds kamal unless skip_kamal. The root Gemfile mirrors those gems for framework tests, with kamal >= 2.1.0 and thruster require: false.",
+          "sources": [
+            "railties/lib/rails/generators/rails/app/templates/Gemfile.tt#L21-L76",
+            "Gemfile#L23-L28"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Generated config/application.rb calls config.load_defaults with the generator's config_target_version, or Rails::VERSION::STRING.to_f for dummy apps. A new_framework_defaults_8_2.rb.tt initializer tells upgraders to uncomment flags and then set load_defaults to 8.2.",
+          "sources": [
+            "railties/lib/rails/generators/rails/app/templates/config/application.rb.tt#L9-L16",
+            "railties/lib/rails/generators/rails/app/templates/config/initializers/new_framework_defaults_8_2.rb.tt#L7"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CredentialsCommand implements edit, show, diff, and fetch. edit opens the decrypted YAML in $VISUAL or $EDITOR, writing config/credentials/<env>.yml.enc and a sibling .key when an environment is specified. fetch walks a dotted YAML path.",
+          "sources": [
+            "railties/lib/rails/commands/credentials/credentials_command.rb#L17-L78",
+            "railties/lib/rails/command/helpers/editor.rb#L11-L29"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "RunnerCommand#perform boots the app and either evals stdin, Kernel.loads a .rb file, or evals the argument string in TOPLEVEL_BINDING, optionally inside the Rails executor.",
+          "sources": [
+            "railties/lib/rails/commands/runner/runner_command.rb#L22-L64"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Rails::HealthController#show renders HTML or JSON status up with 200, and rescue_from(Exception) renders status down with 500. The controller comment states the endpoint does not check the database or Redis and that new apps route it at /up via rails/health#show.",
+          "sources": [
+            "railties/lib/rails/health_controller.rb#L6-L56"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "In development, Finisher#add_internal_routes prepends /rails/info/properties, /rails/info/routes, /rails/info/notes, /rails/info, and a Chrome DevTools well-known path, and appends GET / to rails/welcome#index. WelcomeController skips forgery protection and renders without a layout.",
+          "sources": [
+            "railties/lib/rails/application/finisher.rb#L140-L155",
+            "railties/lib/rails/welcome_controller.rb#L5-L11"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Action Mailbox draws unauthenticated-looking ingress routes under /rails/action_mailbox for Postmark, Relay, Sendgrid, Mandrill (HEAD health check plus POST), and Mailgun (mime). A conductor UI under rails/conductor/action_mailbox exposes inbound email index, create, reroute, and incinerate.",
+          "sources": [
+            "actionmailbox/config/routes.rb#L3-L25"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Active Storage routes, under ActiveStorage.routes_prefix, serve blob redirect and proxy, representation redirect and proxy, disk GET and PUT, and POST /direct_uploads when draw_direct_upload_route is set. Signed ids are the public identifier.",
+          "sources": [
+            "activestorage/config/routes.rb#L3-L16"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "ActionCable.server memoizes ActionCable::Server::Base. The internal protocol table uses message types welcome, disconnect, ping, confirm_subscription, and reject_subscription, default mount path /cable, and protocols actioncable-v1-json and actioncable-unsupported. Redis and PostgreSQL subscription adapters are not eager-loaded.",
+          "sources": [
+            "actioncable/lib/action_cable.rb#L35-L82"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Active Job's default queue adapter is :async. QueueAdapters.lookup constantizes the camelized name plus Adapter. Built-ins are async, inline, and test; optional backends are backburner, delayed_job, queue_classic, resque, and sneakers. The file states new adapter pull requests are not accepted.",
+          "sources": [
+            "activejob/lib/active_job/queue_adapter.rb#L15-L52",
+            "activejob/lib/active_job/queue_adapters.rb#L6-L19",
+            "activejob/lib/active_job/queue_adapters.rb#L111-L131"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "ActiveRecord::Encryption::EncryptableRecord#encrypts declares encrypted attributes with deterministic, downcase, ignore_case, previous schemes, and compression options. ActiveModel::SecurePassword.register_algorithm ships :bcrypt and :argon2; has_secure_password defaults to BCryptPassword when algorithm is nil. The root Gemfile loads bcrypt and argon2 with require: false so Active Model does not depend on those native gems.",
+          "sources": [
+            "activerecord/lib/active_record/encryption/encryptable_record.rb#L49-L55",
+            "activemodel/lib/active_model/secure_password.rb#L194-L207",
+            "activemodel/lib/active_model/secure_password.rb#L319-L320",
+            "Gemfile#L29-L33"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Rails::Generators.invoke finds classes whose files end in _generator.rb under rails/generators or generators, trying base:name, name:context, name:name, rails:name, and configured fallbacks. Hidden namespaces include app, plugin, encrypted_file, encryption_key_file, master_key, credentials, and db:system:change.",
+          "sources": [
+            "railties/lib/rails/generators.rb#L223-L278",
+            "railties/lib/rails/generators.rb#L312-L318"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Guides source lives in guides/source (getting_started.md covers app layout, REST, and Kamal deploy). Bug reports are expected to start from guides/bug_report_templates for Active Record, migrations, Action View, Active Job, Active Storage, Action Mailer, Action Mailbox, Action Pack, or the generic template.",
+          "sources": [
+            "guides/source/getting_started.md#L1-L15",
+            "CONTRIBUTING.md#L17-L26"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "data_flow": {
+      "summary": "Three boundaries dominate. HTTP enters as a Rack env, passes DefaultMiddlewareStack, and is recognized by Journey into a controller action whose callbacks and render produce a Rack triple. Records enter through Active Record attribute hashes, are validated and callback-wrapped, then inserted or updated on a leased connection. Secrets enter as ENV or a key file, are decrypted with AES-128-GCM, and feed secret_key_base, which signs and encrypts cookies and messages. Jobs, uploads, and filtered logs are side channels off those paths.",
+      "claims": [
+        {
+          "claim": "RouteSet#call builds a request, normalizes path_info with Journey::Router::Utils.normalize_path, and calls @router.serve. Journey::Router#serve yields each match to route.app.serve and returns the response unless the X_CASCADE header is pass; otherwise it returns 404.",
+          "sources": [
+            "actionpack/lib/action_dispatch/routing/route_set.rb#L905-L909",
+            "actionpack/lib/action_dispatch/journey/router.rb#L30-L40"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "RouteSet::Dispatcher#serve reads path parameters, instantiates the controller response, and calls controller.dispatch. On RoutingError it re-raises only when @raise_on_name_error is set; otherwise it returns a 404 cascade triple.",
+          "sources": [
+            "actionpack/lib/action_dispatch/routing/route_set.rb#L46-L66"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "ActionController::Metal#dispatch assigns the request and response, calls process(name), commits the flash, and returns to_a. AbstractController::Base#process sets @_action_name, raises ActionNotFound when _find_action_name fails, and calls process_action. Callbacks#process_action wraps super in run_callbacks(:process_action).",
+          "sources": [
+            "actionpack/lib/action_controller/metal.rb#L282-L288",
+            "actionpack/lib/abstract_controller/base.rb#L146-L156",
+            "actionpack/lib/abstract_controller/callbacks.rb#L263-L269"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Journey path captures are CGI.unescapeURIComponent'd when they contain % and then forced to UTF-8 before being merged with route defaults. recognize_path separately binary-encodes and URI-unescapes string params and raises RoutingError when the controller constant is missing.",
+          "sources": [
+            "actionpack/lib/action_dispatch/journey/router.rb#L66-L83",
+            "actionpack/lib/action_dispatch/routing/route_set.rb#L911-L949"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Persistence#save calls create_or_update and returns false on RecordInvalid. create_or_update raises if the record is readonly, returns false if destroyed, and chooses _create_record or _update_record. _create_record filters attributes_for_create, opens with_connection, calls _insert_record with _returning_columns_for_insert, writes returned columns, and clears @new_record.",
+          "sources": [
+            "activerecord/lib/active_record/persistence.rb#L358-L361",
+            "activerecord/lib/active_record/persistence.rb#L928-L980"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "ActiveRecord::Base.establish_connection resolves a symbol or hash via resolve_config_for_connection and delegates to connection_handler.establish_connection with owner_name, current_role, and current_shard. connects_to accepts database: or shards: but not both, and only on Base or abstract classes. ConnectionPool#lease_connection checks out a connection once per thread and marks the lease sticky.",
+          "sources": [
+            "activerecord/lib/active_record/connection_handling.rb#L50-L86",
+            "activerecord/lib/active_record/connection_adapters/abstract/connection_pool.rb#L352-L362"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "secret_key_base prefers ENV[SECRET_KEY_BASE_DUMMY] (a generated local secret), then ENV[SECRET_KEY_BASE], then credentials.secret_key_base, then a generated secret when Rails.env.local?. A missing non-local secret raises ArgumentError naming bin/rails credentials:edit. Application#key_generator memoizes an ActiveSupport::CachingKeyGenerator per secret, used for MessageVerifier and MessageEncryptor including cookies.",
+          "sources": [
+            "railties/lib/rails/application/configuration.rb#L557-L578",
+            "railties/lib/rails/application.rb#L490-L510"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "ActiveSupport::EncryptedFile uses cipher aes-128-gcm. #key reads the env var named by env_key, then the key file, then raises MissingKeyError if raise_if_missing_key. #read decrypts content_path.binread. generate_key is SecureRandom.hex of MessageEncryptor.key_len, and a key of any other length raises InvalidKeyLengthError.",
+          "sources": [
+            "activesupport/lib/active_support/encrypted_file.rb#L30-L78"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Application#creds returns ActiveSupport::CombinedConfiguration. In development the lookup order is envs, then dotenv, then encrypted credentials; in other environments dotenv is omitted. The documented API is creds.require and creds.option.",
+          "sources": [
+            "railties/lib/rails/application.rb#L513-L536"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "ActiveJob::Enqueuing::ClassMethods#perform_later instantiates the job and calls enqueue. The class attribute enqueue_after_transaction_commit defaults to false in the module, but load_defaults 8.2 sets active_job.enqueue_after_transaction_commit = true so new 8.2 apps defer enqueue until the outermost transaction commits.",
+          "sources": [
+            "activejob/lib/active_job/enqueuing.rb#L13-L58",
+            "railties/lib/rails/application/configuration.rb#L397-L399"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "ActionDispatch::Http::FilterParameters#filtered_parameters runs ActiveSupport::ParameterFilter over the request parameters and substitutes matches with the mask [FILTERED]. ParseError yields an empty hash so a bad body does not leak into logs via the filter path.",
+          "sources": [
+            "actionpack/lib/action_dispatch/http/filter_parameters.rb#L9-L39",
+            "activesupport/lib/active_support/parameter_filter.rb#L44-L89"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "sanitize_sql_for_conditions sends Arrays through sanitize_sql_array and quotes bound values, but returns a bare String unchanged. The comment states the helper is not schema-aware and that MySQL numeric binds are quoted as strings.",
+          "sources": [
+            "activerecord/lib/active_record/sanitization.rb#L8-L39"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "An upload enters ActiveStorage::Service#upload(key, io, checksum:) and, when a checksum is given, must raise ActiveStorage::IntegrityError on mismatch. Disk, S3, GCS, and Mirror are selected by the service: key in the configuration passed to Service.configure, not by a hardcoded global.",
+          "sources": [
+            "activestorage/lib/active_storage/service.rb#L14-L73",
+            "activestorage/lib/active_storage/service/configurator.rb#L15-L19"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "behavior_traces": {
+      "summary": "Four flows are fully ordered in source: process start for an existing app, one HTTP request after boot, an Active Record insert, and editing encrypted credentials. Action Cable's socket open and Active Job's perform_later are shorter traces on the same boot. Names below are the methods actually called, not a conceptual MVC sketch.",
+      "claims": [
+        {
+          "claim": "Startup outside an app: railties/exe/rails requires rails/cli; cli.rb calls Rails::AppLoader.exec_app; if that returns, ARGV is help, plugin, or application, and Rails::Command.invoke dispatches gem_help, plugin, or application (rails new).",
+          "sources": [
+            "railties/exe/rails#L4-L10",
+            "railties/lib/rails/cli.rb#L6-L21"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Startup inside an app: AppLoader#exec_app finds bin/rails and execs it, so the gem CLI stops. The binstub eventually loads railties/lib/rails/commands.rb, which shifts ARGV and calls Rails::Command.invoke. Command#invoke splits namespace, find_by_namespace loads *_command.rb, and command.perform runs, falling through to the rake command when no Thor command matches.",
+          "sources": [
+            "railties/lib/rails/app_loader.rb#L45-L53",
+            "railties/lib/rails/commands.rb#L15-L18",
+            "railties/lib/rails/command.rb#L56-L151"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "rails server order: ServerCommand#perform calls set_application_directory! and prepare_restart, constructs Rails::Server with server_options, requires APP_PATH, Dir.chdir(Rails.application.root), then Server#start. start traps INT, create_tmp_directories (tmp/cache, tmp/pids, tmp/sockets), setup_dev_caching in development, optionally log_to_stdout, then Rackup::Server#start.",
+          "sources": [
+            "railties/lib/rails/commands/server/server_command.rb#L131-L149",
+            "railties/lib/rails/commands/server/server_command.rb#L32-L73"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Application boot order inside require APP_PATH: the Application subclass is defined, then initialize!(group = :default) calls run_initializers. initializers concatenates Bootstrap (:load_environment_hook, :load_active_support, :set_eager_load, :initialize_logger, :initialize_error_reporter, :initialize_event_reporter, :initialize_cache, :setup_once_autoloader, :bootstrap_hook), each railtie's initializers, then Finisher (:setup_default_session_store, :build_middleware_stack, :eager_load!, :add_internal_routes, :set_routes_reloader_hook, :enable_yjit).",
+          "sources": [
+            "railties/lib/rails/application.rb#L470-L481",
+            "railties/lib/rails/application/bootstrap.rb#L13-L123",
+            "railties/lib/rails/application/finisher.rb#L49-L160"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Request order after the middleware stack: RouteSet#call -> make_request -> Journey::Router#serve -> recognize -> route.app.serve. For a dispatcher endpoint that is Dispatcher#serve -> controller(req) -> make_response! -> dispatch -> ActionController::Metal#dispatch -> set_request! -> set_response! -> AbstractController::Base#process -> Callbacks#process_action -> the action method.",
+          "sources": [
+            "actionpack/lib/action_dispatch/routing/route_set.rb#L46-L66",
+            "actionpack/lib/action_dispatch/routing/route_set.rb#L905-L909",
+            "actionpack/lib/action_dispatch/journey/router.rb#L30-L40",
+            "actionpack/lib/action_controller/metal.rb#L282-L288",
+            "actionpack/lib/abstract_controller/base.rb#L146-L156"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Forgery checks are before-actions installed by protect_from_forgery: verify_authenticity_token and verify_request_for_forgery_protection, plus after-actions verify_same_origin_request and append_sec_fetch_site_to_vary_header. verified_request? allows GET, HEAD, a real QUERY (not a POST tunneled via _method=query), or a forgery strategy pass. load_defaults 8.2 sets the strategy to :header_only and the failure strategy to :exception.",
+          "sources": [
+            "actionpack/lib/action_controller/metal/request_forgery_protection.rb#L277-L309",
+            "actionpack/lib/action_controller/metal/request_forgery_protection.rb#L615-L639",
+            "railties/lib/rails/application/configuration.rb#L369-L376"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Insert order: Model#save -> create_or_update -> _create_record -> attributes_for_create -> self.class.with_connection -> _returning_columns_for_insert(connection) -> _insert_record -> type-cast returned columns -> @new_record = false. Update order is _update_record -> attributes_for_update -> _update_row, and an empty attribute list skips the SQL and sets @_trigger_update_callback. delete skips callbacks; destroy runs them.",
+          "sources": [
+            "activerecord/lib/active_record/persistence.rb#L358-L419",
+            "activerecord/lib/active_record/persistence.rb#L928-L980"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Connection acquisition order for that insert: establish_connection (usually from the railtie reading database.yml) -> connection_handler.establish_connection -> later with_connection -> ConnectionPool#lease_connection -> checkout on first use for the thread. ActiveRecord.disconnect_all! closes every pool via PoolConfig.disconnect_all!.",
+          "sources": [
+            "activerecord/lib/active_record/connection_handling.rb#L50-L54",
+            "activerecord/lib/active_record/connection_adapters/abstract/connection_pool.rb#L357-L362",
+            "activerecord/lib/active_record.rb#L625-L628"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "credentials:edit order: load_environment_config!, load_generators, maybe retarget content_path and key_path to config/credentials/<env>.yml.enc, ensure_encryption_key_has_been_added (EncryptionKeyFileGenerator#add_key_file), ensure_credentials_have_been_added (CredentialsGenerator#invoke_all), then credentials.change yields a tempfile to system_editor, which is system(*Shellwords.split(editor), path). InvalidMessage and MissingKeyError are rescued and printed.",
+          "sources": [
+            "railties/lib/rails/commands/credentials/credentials_command.rb#L17-L127",
+            "railties/lib/rails/command/helpers/editor.rb#L28-L30"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Action Cable open order on the server connection object: handle_open calls connect (empty by default; apps override it to identify the current user), then subscribe_to_internal_channel, then send_welcome_message. Authorization::UnauthorizedError closes with disconnect reason unauthorized and reconnect: false. Incoming frames go handle_channel_command -> subscriptions.execute_command. Close is unsubscribe_from_all, unsubscribe_from_internal_channel, disconnect.",
+          "sources": [
+            "actioncable/lib/action_cable/connection/base.rb#L82-L116"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Job order: SomeJob.perform_later -> job_or_instantiate -> job.enqueue. QueueAdapter::ClassMethods#queue_adapter lazily assigns :async, and queue_adapter= Symbol/String calls ActiveJob::QueueAdapters.lookup(name).new then check_adapter if the adapter defines it. A custom object is accepted only when it responds to enqueue and enqueue_at.",
+          "sources": [
+            "activejob/lib/active_job/enqueuing.rb#L51-L58",
+            "activejob/lib/active_job/queue_adapter.rb#L34-L74",
+            "activejob/lib/active_job/queue_adapters.rb#L124-L131"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "testing_signals": {
+      "summary": "The framework tests itself with Minitest, one test/ tree per component, and a shared runner in tools/test.rb. Active Record and Active Job are matrixed by adapter at the Rake layer. Browser-level coverage uses Capybara and Selenium and is declared for the framework tests, not for a sample app. GitHub Actions in this repo does not run that matrix; release docs point at Buildkite. JavaScript for Action Cable is a separate QUnit suite.",
+      "claims": [
+        {
+          "claim": "The root Gemfile pins minitest ~> 6.0, minitest-mock, and, in the :test group, minitest-retry, plus stackprof and debug on MRI. capybara >= 3.39 and selenium-webdriver >= 4.20.0 are top-level dependencies used by system tests. brakeman and bundler-audit are test dependencies because generated apps include them.",
+          "sources": [
+            "Gemfile#L6-L14",
+            "Gemfile#L134-L145"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "tools/test.rb expects COMPONENT_ROOT, prepends that component's test directory, requires bundler/setup and rails/test_unit/runner, extends ActiveSupport::TestCase with Rails::LineFiltering, and calls Rails::TestUnit::Runner.parse_options then Runner.run. Each component's bin/test is the documented entry; the repo-root bin/test only chdirs into the first path segment and execs that component's bin/test.",
+          "sources": [
+            "tools/test.rb#L1-L18",
+            "bin/test#L1-L16"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Rails::TestUnit::Runner knows test folders models, helpers, channels, controllers, mailers, integration, jobs, and mailboxes, and parses --environment / -e itself before Minitest sees ARGV. AGENTS.md documents bin/test FILE, bin/test -i /name/, and bin/test FILE:line, and states the runner is parallel across processes.",
+          "sources": [
+            "railties/lib/rails/test_unit/runner.rb#L25-L40",
+            "AGENTS.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Root rake test runs every framework in Releaser::FRAMEWORKS. rake activerecord:<adapter>:test and :integration cover mysql2, trilogy, postgresql, sqlite3, and sqlite3_mem. rake activejob:<adapter>:test and :integration cover async, inline, queue_classic (omitted on JRuby), resque, sneakers, backburner, and test.",
+          "sources": [
+            "Rakefile#L13-L80",
+            "tools/releaser/lib/releaser.rb#L8-L22"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Action Cable's package.json pretest/test scripts sit on @web/test-runner and qunit, with mock-socket. The package also has a lint script via eslint. actioncable/test/javascript holds the JS tests; Ruby tests live under actioncable/test/channel, connection, server, and subscription_adapter.",
+          "sources": [
+            "actioncable/package.json#L26-L40"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "guides/ has its own Rakefile, rails_guides.rb, and guides/test. CONTRIBUTING.md points bug reporters at executable templates in guides/bug_report_templates rather than at the main suite.",
+          "sources": [
+            "CONTRIBUTING.md#L17-L26",
+            "guides/source/getting_started.md#L1"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "rails-new-docker.yml, on push and pull_request, runs railties/exe/rails new dev/devrails --dev with BUNDLE_WITHOUT=db:job:cable:storage, builds that app's Dockerfile with podman, runs it with SECRET_KEY_BASE_DUMMY=1 and DATABASE_URL=sqlite3:storage/production.sqlite3, then executes .github/workflows/scripts/test-container.rb.",
+          "sources": [
+            ".github/workflows/rails-new-docker.yml#L1-L43"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "rail_inspector.yml runs only when tools/rail_inspector changes, and its job is cd tools/rail_inspector && bundle exec rake. release.yml runs only on a published GitHub release and does not run the test suite before rake push.",
+          "sources": [
+            ".github/workflows/rail_inspector.yml#L1-L26",
+            ".github/workflows/release.yml#L3-L38"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "AGENTS.md requires configuration tests to use Object#with (for example ActionView::Base.with or ActionController::Base.with) after requiring active_support/core_ext/object/with, instead of manual save/restore of class attributes.",
+          "sources": [
+            "AGENTS.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "There is no in-repo workflow that invokes rake test or the Active Record adapter matrix. A green GitHub Actions run on a normal pull request therefore does not mean the component suites passed; RELEASING_RAILS.md treats Buildkite as that signal.",
+          "sources": [
+            ".github/workflows/rails-new-docker.yml",
+            " .github/workflows/release.yml",
+            "RELEASING_RAILS.md#L12-L18"
+          ],
+          "kind": "inference"
+        },
+        {
+          "claim": "Optional queue backends are require: false in the :job group (resque, resque-scheduler, queue_classic, sneakers, backburner). Adapter tests for those gems cannot run unless the group is installed, so a default bundle that excludes :job does not exercise them.",
+          "sources": [
+            "Gemfile#L96-L102",
+            "Rakefile#L32-L56"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "HealthController is documented as not reflecting database or Redis health, and its own tests, if any, cannot prove dependency checks that the action does not perform. The controller rescues Exception and only renders up or down.",
+          "sources": [
+            "railties/lib/rails/health_controller.rb#L28-L56"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "risk_map": {
+      "summary": "The dangerous paths are the ones that eval, shell out, decrypt secrets, or accept network input before an app's own auth. CSRF and host authorization changed meaning across load_defaults versions, so an edit that looks local can change every newly generated app. Several public framework routes (health, storage, mailbox ingress) are safe only when the app understands their actual guarantees. The release webhook and the local .Gemfile hook are smaller but real trust boundaries.",
+      "claims": [
+        {
+          "claim": "RunnerCommand evals stdin or an arbitrary string in TOPLEVEL_BINDING after boot_application! and Rails.application.load_runner. That is an intentional RCE surface for anyone who can invoke bin/rails runner.",
+          "sources": [
+            "railties/lib/rails/commands/runner/runner_command.rb#L30-L50"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Credentials editing shells out with system(*Shellwords.split(ENV['VISUAL'] or ENV['EDITOR']), tempfile). Shellwords reduces word-splitting surprises, but the editor string is still an executable chosen by the environment, and a forking editor that does not wait will cause an immediate re-encrypt of an unedited file.",
+          "sources": [
+            "railties/lib/rails/command/helpers/editor.rb#L11-L30",
+            "railties/lib/rails/commands/credentials/credentials_command.rb#L116-L127"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "EncryptedFile follows ENV then key file, uses AES-128-GCM, and rejects keys whose length is not expected_key_length. Missing keys raise MissingKeyError naming both the key path and the env var. Invalid ciphertext surfaces as MessageEncryptor::InvalidMessage, which credentials diff and edit rescue and sometimes print the raw encrypted file.",
+          "sources": [
+            "activesupport/lib/active_support/encrypted_file.rb#L30-L74",
+            "railties/lib/rails/commands/credentials/credentials_command.rb#L56-L58"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "If SECRET_KEY_BASE and credentials are both empty in a local environment, secret_key_base generates and stores a secret in tmp/local_secret.txt. SECRET_KEY_BASE_DUMMY forces that path so assets:precompile can run without production secrets. A dummy secret shipped into a real environment would make cookie and message forgeries trivial.",
+          "sources": [
+            "railties/lib/rails/application.rb#L490-L508",
+            "railties/lib/rails/application/configuration.rb#L557-L566"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "HostAuthorization exists to stop DNS rebinding. It returns 403 via a default response_app when the host is not permitted, and logs the blocked host at error. ALLOWED_HOSTS_IN_DEVELOPMENT is .localhost, .test, 0.0.0.0/0, and ::/0. config.host_authorization exclude can opt a path out.",
+          "sources": [
+            "actionpack/lib/action_dispatch/middleware/host_authorization.rb#L5-L23",
+            "actionpack/lib/action_dispatch/middleware/host_authorization.rb#L23",
+            "railties/lib/rails/application/default_middleware_stack.rb#L16-L18"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "load_defaults 8.2 sets forgery_protection_verification_strategy to :header_only, default_protect_from_forgery_with to :exception, and removes X-XSS-Protection and X-Download-Options from the default security headers. Apps that stay on an older load_defaults keep the previous token-based behavior. protect_from_forgery without an explicit with: warns when the default is still :null_session.",
+          "sources": [
+            "railties/lib/rails/application/configuration.rb#L369-L386",
+            "actionpack/lib/action_controller/metal/request_forgery_protection.rb#L260-L309"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "sanitize_sql_for_conditions returns a String argument unchanged, so callers who pass an already-interpolated SQL fragment get no quoting. The safe form is the array or named-bind form. This is the classic injection footgun at the framework boundary.",
+          "sources": [
+            "activerecord/lib/active_record/sanitization.rb#L20-L39"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Rails::HealthController#show returns 200 whenever rendering succeeds. The class comment states it does not check the database or Redis, and that pointing a load balancer at it can restart pods for the wrong reason if an app later adds those checks carelessly.",
+          "sources": [
+            "railties/lib/rails/health_controller.rb#L28-L40"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Action Mailbox mounts POSTs at /rails/action_mailbox/{postmark,relay,sendgrid,mandrill}/inbound_emails and /rails/action_mailbox/mailgun/inbound_emails/mime on the application routes, plus a conductor that can create and incinerate emails. Those ingress controllers are the authentication boundary for inbound mail; the route file itself does not show a shared secret check.",
+          "sources": [
+            "actionmailbox/config/routes.rb#L3-L25"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Active Storage exposes signed_id blob and representation URLs and a disk service PUT /disk/:encoded_token plus direct upload creation. Confidentiality of stored files depends on signed-id expiry and the service, not on a session.",
+          "sources": [
+            "activestorage/config/routes.rb#L3-L16",
+            "activestorage/lib/active_storage/service.rb#L69-L73"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Rakefile task publish_docs POSTs to http://api.rubyonrails.org:8080/rails-master-hook with Net::HTTP and no credentials in the request. The comment says a GitHub webhook is what normally triggers doc publishing, and that humans should not run the task.",
+          "sources": [
+            "Rakefile#L183-L199"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The root Gemfile instance_evals ./.Gemfile when that file exists, so a local untracked file executes during every bundle install of the framework.",
+          "sources": [
+            "Gemfile#L130-L132"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "load_defaults is a single case ladder from 5.0 through 8.2 where each version calls the previous one. Changing an assignment inside when 8.2, or inserting a version in the wrong place, changes defaults for every app that generated config.load_defaults at that version. The generator writes that call into config/application.rb.",
+          "sources": [
+            "railties/lib/rails/application/configuration.rb#L96-L115",
+            "railties/lib/rails/application/configuration.rb#L336-L406",
+            "railties/lib/rails/generators/rails/app/templates/config/application.rb.tt#L11-L16"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "load_defaults 8.0 sets Regexp.timeout ||= 1 when the Ruby supports it, which can raise on previously legal long matches. 8.1 turns YJIT off when Rails.env.local? and on otherwise. Both are process-wide, not per-request.",
+          "sources": [
+            "railties/lib/rails/application/configuration.rb#L336-L350"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Railtie initializers share one ordered list with the application. A before/after name that does not match, or a railtie loaded after initialize!, silently misses the boot. rails/all.rb's require order is the supported composition order, and Releaser::FRAMEWORKS comments that Action Mailbox must follow Active Record.",
+          "sources": [
+            "railties/lib/rails/railtie.rb#L50-L72",
+            "railties/lib/rails/all.rb#L5-L16",
+            "tools/releaser/lib/releaser.rb#L8-L22"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "extension_points": {
+      "summary": "Rails is extended by subclassing Railtie or Engine, by dropping files that match command and generator globs, and by registering adapters. The frameworks that ship in this repo are themselves just those plugins. New queue adapters are explicitly not an accepted extension; password algorithms, storage services, database protocol names, and middleware are.",
+      "claims": [
+        {
+          "claim": "Rails::Railtie is the extension base. Subclasses are loaded when the gem is required if Rails::Railtie is defined. The initializer macro accepts before and after. Railties can also set config.app_generators, config.to_prepare, rake_tasks, generators, and a server block that runs when the Rails server starts.",
+          "sources": [
+            "railties/lib/rails/railtie.rb#L12-L136"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Rails::Engine subclasses Railtie and is what makes a gem load app/ models, controllers, helpers, config/routes.rb, config/locales, and lib/tasks. Rails::Application is an engine. Isolated engines are how Action Cable, Active Storage, Action Mailbox, and Action Text are mounted.",
+          "sources": [
+            "railties/lib/rails/engine.rb#L9-L35",
+            "railties/lib/rails/all.rb#L5-L16"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Rails::Command.find_by_namespace searches load paths for rails/commands and commands, files named *_command.rb, and namespaces with an optional rails: prefix. Adding a command is a new file matching that glob plus a class inheriting Rails::Command::Base, not a hand-edited registry hash.",
+          "sources": [
+            "railties/lib/rails/command.rb#L79-L163"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Rails::Generators uses the same pattern for *_generator.rb under rails/generators and generators, with fallbacks when the first lookup misses. invoke is the entry for generate, destroy, and update. after_generate callbacks see files recorded by add_generated_file.",
+          "sources": [
+            "railties/lib/rails/generators.rb#L223-L327"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "ActiveJob::QueueAdapters.lookup(name) does const_get of the camelized name plus Adapter. A non-symbol adapter is accepted by queue_adapter= when it implements enqueue and enqueue_at. The same file says pull requests for new adapters are not accepted.",
+          "sources": [
+            "activejob/lib/active_job/queue_adapters.rb#L6-L19",
+            "activejob/lib/active_job/queue_adapters.rb#L124-L131",
+            "activejob/lib/active_job/queue_adapter.rb#L49-L74"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Active Job argument types are extended with serializer classes under activejob/lib/active_job/serializers (date, time, duration, range, symbol, BigDecimal, ActionController::Parameters, module, and GlobalID via the documented Identification interface).",
+          "sources": [
+            "activejob/lib/active_job/enqueuing.rb#L28-L33"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "A new Active Storage backend subclasses Service, implements upload, download, download_chunk, and compose, and is selected when Configurator#resolve require's active_storage/service/<underscore>_service and constantizes <Name>Service. MirrorService is the built-in example of build receiving the configurator so it can construct children.",
+          "sources": [
+            "activestorage/lib/active_storage/service.rb#L56-L99",
+            "activestorage/lib/active_storage/service/configurator.rb#L15-L39"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "ActiveRecord.protocol_adapters is an ActiveSupport::InheritableOptions hash used only to map DATABASE_URL protocols onto adapter names. The documented extension is ActiveRecord.protocol_adapters.mysql = \"mysql2\" or a custom protocol string pointing at an external adapter.",
+          "sources": [
+            "activerecord/lib/active_record.rb#L580-L606"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Password hashing is a registry: ActiveModel::SecurePassword.register_algorithm(name, algorithm_class). :bcrypt and :argon2 are registered at load. has_secure_password algorithm: :name calls lookup_algorithm and instantiates the class; an unknown symbol raises ArgumentError.",
+          "sources": [
+            "activemodel/lib/active_model/secure_password.rb#L23-L26",
+            "activemodel/lib/active_model/secure_password.rb#L188-L205",
+            "activemodel/lib/active_model/secure_password.rb#L319-L320"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Middleware is inserted either in DefaultMiddlewareStack#build_stack or from a railtie initializer via app.middleware.use. Session stores are resolved through ActionDispatch::Session.resolve_store when config.session_store is a Symbol. :disabled skips session middleware.",
+          "sources": [
+            "railties/lib/rails/application/default_middleware_stack.rb#L14-L111",
+            "railties/lib/rails/application/configuration.rb#L585-L609",
+            "railties/lib/rails/railtie.rb#L64-L68"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Versioned behavior is the case statement in Application::Configuration#load_defaults. The in-file comment is the extension procedure: add an accessor preserving old behavior, branch on the flag, set the new default only in the next version arm, mirror it in new_framework_defaults, and update the configuring guide. Unknown versions raise.",
+          "sources": [
+            "railties/lib/rails/application/configuration.rb#L96-L114",
+            "railties/lib/rails/application/configuration.rb#L369-L403"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Action Cable subscription adapters for Redis and PostgreSQL are listed in Zeitwerk::Loader.do_not_eager_load so they load only when configured. Connection#connect and #disconnect are the empty hooks an app overrides for authentication and presence.",
+          "sources": [
+            "actioncable/lib/action_cable.rb#L43-L50",
+            "actioncable/lib/action_cable/connection/base.rb#L82-L91"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Engines draw routes by reopening Rails.application.routes.draw, which is how Action Mailbox and Active Storage install their endpoints without the app editing config/routes.rb. Development-only framework routes are appended later by Finisher#add_internal_routes.",
+          "sources": [
+            "actionmailbox/config/routes.rb#L3-L6",
+            "activestorage/config/routes.rb#L3-L6",
+            "railties/lib/rails/application/finisher.rb#L140-L155"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_handoff": {
+      "summary": "Edit one component at a time and treat Railties configuration and the generator templates as a second component whenever a default changes. The safe test loop is that component's bin/test, plus an adapter rake task if the change touches SQL or jobs. Read the load_defaults comment before adding a flag. Do not add Active Support core extensions or new Active Job adapters. Assume GitHub Actions will not prove the change is green.",
+      "claims": [
+        {
+          "claim": "Read first: AGENTS.md, README.md, the component README, rails.gemspec, railties/lib/rails/all.rb, and the load_defaults method in railties/lib/rails/application/configuration.rb. For a request bug, continue into default_middleware_stack.rb, route_set.rb, and the controller metal. For a persistence bug, continue into persistence.rb and connection_handling.rb.",
+          "sources": [
+            "AGENTS.md",
+            "README.md",
+            "rails.gemspec",
+            "railties/lib/rails/all.rb",
+            "railties/lib/rails/application/configuration.rb#L96-L114"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Components are meant to stay independently usable. A change that requires another framework must be guarded the way bcrypt and argon2 are (require: false) or the way rails/all.rb rescues a missing railtie. Releaser::FRAMEWORKS order is the dependency order used by packaging.",
+          "sources": [
+            "README.md#L44-L55",
+            "Gemfile#L29-L33",
+            "railties/lib/rails/all.rb#L15-L21",
+            "tools/releaser/lib/releaser.rb#L8-L22"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Run tests from the component directory: bin/test path/to_test.rb, bin/test path:line, or bin/test -i /method_name/. From the repo root the equivalents are rake <framework>:test, rake test, and rake smoke. Active Record SQL changes need bundle exec rake test:sqlite3 at minimum and the other adapters when the SQL differs. Active Job adapter changes need the matching test:<adapter> task.",
+          "sources": [
+            "AGENTS.md",
+            "Rakefile#L13-L80",
+            "tools/test.rb#L1-L18"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Toggle framework configuration in tests with Object#with after requiring active_support/core_ext/object/with. AGENTS.md forbids the manual save/restore pattern around class attributes such as ActionView::Base.remove_hidden_field_autocomplete.",
+          "sources": [
+            "AGENTS.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Every Ruby file starts with # frozen_string_literal: true. Bugfixes and features need a CHANGELOG.md entry at the top of that component. Assertions should prefer assert_not and, in view tests, assert_dom_equal. Style is bundle exec rubocop against the repo .rubocop.yml.",
+          "sources": [
+            "AGENTS.md",
+            "Gemfile#L47-L56"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "A new config flag is not done until load_defaults sets it in the newest version arm (currently 8.2), the upgrade initializer template under railties generators repeats it commented out, and guides/source/configuring.md mentions it. The steps are written at the top of load_defaults. Editing an older when arm changes behavior for apps that have not upgraded their load_defaults target.",
+          "sources": [
+            "railties/lib/rails/application/configuration.rb#L96-L114",
+            "railties/lib/rails/application/configuration.rb#L369-L401",
+            "railties/lib/rails/generators/rails/app/templates/config/application.rb.tt#L11-L16"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CONTRIBUTING.md says Active Support core-extension changes are generally rejected and should be proposed to Ruby instead, and that cosmetic-only patches are rejected. Active Job's queue_adapters.rb says new adapter pull requests are not accepted.",
+          "sources": [
+            "CONTRIBUTING.md#L42-L48",
+            "activejob/lib/active_job/queue_adapters.rb#L13"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Security reports must not be opened as GitHub issues. .github/security.md and CONTRIBUTING.md both redirect to https://rubyonrails.org/security. Do not add exploit details to a public changelog while following that policy.",
+          "sources": [
+            ".github/security.md#L1-L12",
+            "CONTRIBUTING.md#L10-L11",
+            "README.md#L93-L96"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The test runner is parallel. Tests that leak global configuration, routes, or Active Record connections across examples will flake even when they pass alone. Prefer the with helper and the existing test helper in that component (abstract_unit.rb or test_helper.rb) over process-global mutation.",
+          "sources": [
+            "AGENTS.md",
+            "railties/lib/rails/test_unit/runner.rb#L25-L28"
+          ],
+          "kind": "inference"
+        },
+        {
+          "claim": "Generated-app behavior is owned by railties/lib/rails/generators, especially templates under rails/app/templates, not by the root Gemfile. The root Gemfile is the framework's own development bundle. Changing one without the other leaves rails new and the CI docker smoke (BUNDLE_WITHOUT=db:job:cable:storage) disagreeing.",
+          "sources": [
+            "Gemfile#L1-L33",
+            "railties/lib/rails/generators/rails/app/templates/Gemfile.tt#L21-L76",
+            ".github/workflows/rails-new-docker.yml#L11-L27"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "JavaScript changes in Action Cable need the npm scripts in actioncable/package.json (build, lint, test) in addition to the Ruby tests under actioncable/test. The root package.json only declares workspaces; it has no test script.",
+          "sources": [
+            "package.json",
+            "actioncable/package.json#L1-L40"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Current development line is 8.2.0.alpha. Changelog entries, npm package versions, and gemspecs are expected to stay on that version until tools/releaser's update_versions task rewrites them. Do not hand-bump a single gemspec.",
+          "sources": [
+            "RAILS_VERSION",
+            "actioncable/package.json#L3",
+            "tools/releaser/lib/releaser.rb#L45-L48"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_prompt": "You are working in the Ruby on Rails monorepo at version 8.2.0.alpha (file RAILS_VERSION). This is the framework, not an application. The meta-gem declared in rails.gemspec depends on activesupport, activemodel, activerecord, actionview, actionpack, actionmailer, activejob, actioncable, activestorage, actionmailbox, actiontext, and railties, all at that same version, and requires Ruby >= 3.3.1. Components are loosely coupled. railties/lib/rails/all.rb is the full require list and rescues LoadError only when an optional railtie file is absent. README.md is the MVC map: Active Record and Active Model, Action View, Action Pack (Dispatch plus Controller), plus Mailer, Mailbox, Job, Cable, Storage, Text, and Active Support.\n\nStart with AGENTS.md, the component README, and railties/lib/rails/application/configuration.rb, method load_defaults. The CLI entry is railties/exe/rails, which loads railties/lib/rails/cli.rb. Rails::AppLoader.exec_app walks upward for bin/rails or script/rails and execs it when the file references APP_PATH or ENGINE_PATH. Outside an app, cli.rb dispatches help, plugin, or application (rails new). Inside an app, railties/lib/rails/commands.rb maps aliases g, d, c, s, db, r, and t, then Rails::Command.invoke loads a *_command.rb from rails/commands.\n\nBoot is Rails::Application#initialize!, which runs Bootstrap (Active Support, logger, error reporter, cache, Zeitwerk once-autoloader), then each railtie initializer, then Finisher (session store, middleware, eager load, development-only /rails/info and welcome routes, YJIT). The HTTP stack is Rails::Application::DefaultMiddlewareStack: HostAuthorization, optional SSL, static files, Executor, RequestId, RemoteIp, logger, exceptions, reloader, cookies, session, flash, content security policy, then optional Active Record database and shard selectors.\n\nA request then hits ActionDispatch::Routing::RouteSet#call, Journey::Router#serve, RouteSet::Dispatcher#serve, ActionController::Metal#dispatch, and AbstractController::Base#process, with callbacks around process_action. An insert is ActiveRecord::Persistence#save, create_or_update, _create_record, with_connection, _insert_record. establish_connection resolves database.yml or DATABASE_URL. ActiveRecord.protocol_adapters maps sqlite, mysql, and postgres onto sqlite3, mysql2, and postgresql.\n\nWhen changing defaults, follow the comment at the top of load_defaults: add an accessor that preserves old behavior, branch on it, set the new value only in the newest version arm (currently 8.2), mirror it in the new_framework_defaults template, and update guides/source/configuring.md. 8.2 turns on header-only CSRF (forgery_protection_verification_strategy = :header_only), protect_from_forgery with :exception, a stricter Accept header, immediate Active Storage analyze, and active_job.enqueue_after_transaction_commit. The job module's own class attribute still defaults to false; only load_defaults 8.2 flips it. Do not edit older version arms unless you intend to change apps that have not upgraded.\n\nTests are Minitest 6, not RSpec. From the component directory run bin/test path/to_test.rb, bin/test path:line, or bin/test -i /name/. The runner is tools/test.rb plus Rails::TestUnit::Runner, and it runs in parallel. From the repo root use rake <component>:test, rake test, or rake smoke. Active Record needs cd activerecord && bundle exec rake test:sqlite3, and postgresql, mysql2, or trilogy when SQL differs. Active Job has per-adapter tasks for async, inline, resque, sneakers, backburner, queue_classic, and test. Use Object#with from active_support/core_ext/object/with to toggle configuration. Put a CHANGELOG.md entry at the top of the component. Keep # frozen_string_literal: true. Prefer assert_not and assert_dom_equal. Run bundle exec rubocop on touched files.\n\nSecurity-sensitive code: ActiveSupport::EncryptedFile (AES-128-GCM, ENV key then key file), secret_key_base (ENV[\"SECRET_KEY_BASE\"], credentials, or tmp/local_secret.txt; SECRET_KEY_BASE_DUMMY for asset precompile), HostAuthorization, action_controller/metal/request_forgery_protection.rb, ActiveSupport::ParameterFilter mask \"[FILTERED]\", ActiveRecord::Sanitization (a raw SQL string is returned unchanged), rails runner eval in TOPLEVEL_BINDING, the credentials editor system() call via Shellwords, Action Mailbox ingress POSTs under /rails/action_mailbox, Active Storage signed blob routes, and has_secure_password (bcrypt and argon2, both require: false). Do not open public GitHub issues for vulnerabilities; the policy is https://rubyonrails.org/security.\n\nExtension points: subclass Rails::Railtie or Rails::Engine; drop *_command.rb or *_generator.rb on the load path; ActiveJob::QueueAdapters.lookup; serializers under activejob/lib/active_job/serializers; ActiveStorage::Service.build; ActiveRecord.protocol_adapters; ActiveModel::SecurePassword.register_algorithm. Do not add Active Job adapters (queue_adapters.rb rejects those PRs) and do not add Active Support core extensions that belong in Ruby (CONTRIBUTING.md).\n\nGenerated apps are defined by railties/lib/rails/generators/rails/app/templates, including Gemfile.tt (solid_cache, solid_queue, solid_cable, thruster, kamal) and config/application.rb.tt (config.load_defaults). The root Gemfile is only the framework's development bundle. npm workspaces are actioncable, actiontext, and activestorage at 8.2.0-alpha; Action Cable JS tests use QUnit via @web/test-runner.\n\nThe full suite is gated by Buildkite at https://buildkite.com/rails/rails, as RELEASING_RAILS.md describes. GitHub workflows in .github/workflows cover trusted-publishing release (tools/releaser rake push), a rails new Docker smoke, rail_inspector, and repo triage. A green Actions check on a normal pull request is not evidence that the component suites passed. Do not hand-bump a single gemspec; releaser update_versions rewrites versions together."
+  },
+  "analysis": {
+    "agent": "grok",
+    "model": "cli:grok",
+    "runtime_ms": 443124,
+    "cost_usd": null,
+    "collected_at": "2026-09-22T11:47:04.590Z"
   }
 }

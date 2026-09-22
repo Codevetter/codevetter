@@ -139,7 +139,97 @@ const started = Date.now();
 let text;
 let cost = null;
 let modelUsed = `cli:${agent}`;
-if (agent === 'codex') {
+if (agent === 'grok') {
+  // grok headless: strict JSON schema constrains the output shape; read tools
+  // only via --allow. Final message lands on stdout.
+  const claimSection = {
+    type: 'object',
+    properties: {
+      summary: { type: 'string' },
+      claims: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            claim: { type: 'string' },
+            sources: { type: 'array', items: { type: 'string' } },
+            kind: { type: 'string', enum: ['evidence', 'inference'] },
+          },
+          required: ['claim', 'sources', 'kind'],
+        },
+      },
+    },
+    required: ['summary', 'claims'],
+  };
+  const schema = JSON.stringify({
+    type: 'object',
+    properties: {
+      overview: { type: 'string' },
+      system_map: claimSection,
+      feature_catalog: claimSection,
+      data_flow: claimSection,
+      behavior_traces: claimSection,
+      testing_signals: claimSection,
+      risk_map: claimSection,
+      extension_points: claimSection,
+      agent_handoff: claimSection,
+      agent_prompt: { type: 'string' },
+    },
+    required: [
+      'overview',
+      'system_map',
+      'feature_catalog',
+      'data_flow',
+      'behavior_traces',
+      'testing_signals',
+      'risk_map',
+      'extension_points',
+      'agent_handoff',
+      'agent_prompt',
+    ],
+  });
+  const raw = execFileSync(
+    '/Users/sarthak/.grok/bin/grok',
+    [
+      '-p',
+      prompt,
+      '--output-format',
+      'json',
+      '--json-schema',
+      schema,
+      '--allow',
+      'Read,Glob,Grep,LS',
+    ],
+    {
+      encoding: 'utf8',
+      cwd: cloneDir,
+      input: '',
+      maxBuffer: 128 * 1024 * 1024,
+      timeout: 30 * 60 * 1000,
+    }
+  );
+  const env = JSON.parse(raw);
+  if (env.structuredOutput) {
+    // Schema-constrained output is already the report object.
+    const report = env.structuredOutput;
+    const usage = Object.values(env.modelUsage ?? {})[0];
+    if (usage?.canonicalModel) modelUsed = usage.canonicalModel;
+    record.report = report;
+    record.analysis = {
+      agent,
+      model: modelUsed,
+      runtime_ms: Date.now() - started,
+      cost_usd: null,
+      collected_at: new Date().toISOString(),
+    };
+    writeFileSync(corpusPath, `${JSON.stringify(record, null, 2)}\n`, 'utf8');
+    console.log(
+      `${record.repo}: report written — ${modelUsed}, ${Math.round((Date.now() - started) / 1000)}s`
+    );
+    process.exit(0);
+  }
+  text = env.result ?? env.message ?? env.response ?? raw;
+} else if (agent === 'codex') {
   // codex exec: JSONL events on stdout; the last agent message is the result.
   // stdin is closed (`input: ''`) so parallel runs don't contend for it.
   let raw;

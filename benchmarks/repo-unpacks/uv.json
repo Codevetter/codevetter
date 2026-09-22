@@ -18231,5 +18231,817 @@
         ]
       }
     ]
+  },
+  "report": {
+    "overview": "uv 0.12.17 is Astral's Rust CLI for installing, locking, and running Python projects. One binary replaces pip, pip-tools, pipx, poetry, pyenv, twine, and virtualenv: it resolves dependencies with a PubGrub solver, writes a universal uv.lock (schema version 1), installs wheels by clone or hardlink from a global cache, downloads CPython from python-build-standalone, and publishes distributions. The official interface is the uv command line, not the Rust library. The same workspace also ships the uvx alias, the Windows uvw launcher, the maturin-packaged PyPI distribution, and uv's own PEP 517 build backend.",
+    "system_map": {
+      "summary": "The cargo workspace at Cargo.toml includes every crate under crates/*, except scripts and the nightly-only crates/uv-trampoline. Product version 0.12.17 is shared by the uv, uv-version, and uv-build packages; most library crates are 0.0.84. Edition is 2024 and the MSRV is rust-version 1.96.0, licensed MIT OR Apache-2.0. The user-facing process starts at crates/uv/src/bin/uv.rs, which calls the unsafe uv::main in crates/uv/src/lib.rs. That function parses clap types from uv-cli, then runs an async dispatcher on a current-thread Tokio runtime. A separate PyPI wheel is built with maturin and a small Python launcher. Deployment artifacts are musl binaries produced by the Dockerfile (cargo auditable zigbuild --release) and GitHub Actions release workflows.",
+      "claims": [
+        {
+          "claim": "Workspace members are crates/* with resolver 2. scripts and crates/uv-trampoline are excluded because the trampoline crate needs nightly. Shared package metadata sets edition 2024, rust-version 1.96.0, and license MIT OR Apache-2.0.",
+          "sources": [
+            "Cargo.toml#L1-L16"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The uv library crate is version 0.12.17, default-run uv, and depends on the internal crates (uv-cli, uv-resolver, uv-lock, uv-client, uv-cache, uv-python, uv-auth, uv-publish, uv-workspace, and others). Optional features include performance-memory-allocator, self-update (axoupdater, only for the cargo-dist installer), and test-* gates.",
+          "sources": [
+            "crates/uv/Cargo.toml#L1-L12",
+            "crates/uv/Cargo.toml#L160-L217"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "crates/uv/src/bin/uv.rs is the real CLI entrypoint. When the performance-memory-allocator feature is on it links that allocator, then calls unsafe uv::main(std::env::args_os()) before any other threads exist.",
+          "sources": [
+            "crates/uv/src/bin/uv.rs#L1-L14"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "uv::main sets the UV environment variable to std::env::current_exe, parses Cli::try_parse_from, and on failure calls suggest_subcommand. It then builds a current-thread Tokio runtime on a thread named main2 with min_stack_size, block_on(run(..., GlobalInitialization::Initialize)), and shutdown_background so leftover resolver HTTP tasks do not delay exit.",
+          "sources": [
+            "crates/uv/src/lib.rs#L3006-L3074"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Two companion binaries share the install directory. uvx rewrites argv to uv tool uvx and execs a sibling uv (Unix CommandExt::exec, Windows uv_windows::spawn_child). uvw is a Windows GUI-subsystem binary (windows_subsystem = windows) that execs the sibling uv with the original arguments and no console.",
+          "sources": [
+            "crates/uv/src/bin/uvx.rs#L71-L103",
+            "crates/uv/src/bin/uvw.rs#L1-L16",
+            "crates/uv/src/bin/uvw.rs#L70-L100"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The PyPI package uv is built by maturin (bindings = bin, manifest-path crates/uv/Cargo.toml, python-source python, requires-python >=3.8). python/uv/__main__.py locates the bundled binary via find_uv_bin, copies VIRTUAL_ENV when the interpreter is already in a venv, sets UV_INTERNAL__PARENT_INTERPRETER, and execs or subprocess-runs uv.",
+          "sources": [
+            "pyproject.toml#L1-L49",
+            "python/uv/__main__.py#L1-L54"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Command modules are declared in crates/uv/src/commands/mod.rs: auth, pip, project, python, tool, publish, venv, workspace, cache_*, build_frontend, build_backend, and optional self_update. ExitStatus is Success, Failure, Error, or External(u8). UvError splits user, argument, and unexpected failures so the entrypoint can pick the exit code.",
+          "sources": [
+            "crates/uv/src/commands/mod.rs#L13-L105",
+            "crates/uv/src/commands/mod.rs#L107-L137"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The crate map in crates/README.md separates the PEP 517 build frontend (uv-build-frontend), Simple-API client (uv-client), wheel installer (uv-install-wheel), PubGrub-backed resolver (uv-resolver), cache (uv-cache), interpreter discovery (uv-python), and workspace layer (uv-workspace). uv-dispatch is the shared struct that resolves and builds sdists in isolated environments and implements uv-types traits.",
+          "sources": [
+            "crates/README.md#L45-L133"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "HTTP access is centralized in base_client_builder, which constructs BaseClientBuilder from connectivity, system_certs, allow_insecure_host, preview, read/connect timeouts, retries, metadata_range_request, cache_read_concurrency, and http/https/no_proxy settings, optionally attaching custom certificates.",
+          "sources": [
+            "crates/uv/src/lib.rs#L71-L93"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The Docker image is a two-stage build: ubuntu:24.04 installs a pinned rustup, uv sync --only-group docker --locked, then cargo auditable zigbuild --bin uv --bin uvx --release for aarch64-unknown-linux-musl or x86_64-unknown-linux-musl with AWS_LC_SYS_USE_SYSTEM=0. The runtime stage is FROM scratch with ENTRYPOINT /uv.",
+          "sources": [
+            "Dockerfile#L1-L73",
+            "pyproject.toml#L111-L117"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CI entry is .github/workflows/ci.yml on push to main, pull_request, and workflow_dispatch. It calls plan.yml, then reusable workflows for fmt, security review, lint, docs, zizmor, publish checks, lockfile checks, cargo test, Windows trampolines, dev binaries, and smoke tests. Permissions are contents: read and UV_LOCKED=1 is set.",
+          "sources": [
+            ".github/workflows/ci.yml#L1-L120"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "uv was installed through an external package manager and cannot update itself when the self-update feature is off. ExternallyInstalledError tells the user to use the recorded InstallSource. The self-update feature is documented as enabled only for uv's cargo-dist installer.",
+          "sources": [
+            "crates/uv/src/lib.rs#L111-L131",
+            "crates/uv/Cargo.toml#L167-L169"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "feature_catalog": {
+      "summary": "Every user-facing verb is a clap variant on Commands in crates/uv-cli/src/lib.rs and is matched in crates/uv/src/lib.rs. Project commands (init, add, remove, lock, sync, run, tree, export, version, upgrade, format, check, audit) manage pyproject.toml workspaces and PEP 723 scripts. The pip namespace is a compatible interface for compile, sync, install, uninstall, freeze, list, show, tree, and check. Separate namespaces cover Python installs, pipx-like tools, publishing, authentication, the cache, workspaces, and a hidden PEP 517 build-backend shim. Many newer commands are gated by PreviewFeature flags and warn until --preview-features or UV_PREVIEW is set.",
+      "claims": [
+        {
+          "claim": "Top-level Commands are Auth, flattened Project, Tool, Python, Pip, Venv (aliases virtualenv and v), Build, Publish, Workspace, hidden BuildBackend, Cache, Self_, hidden Clean, hidden GenerateShellCompletion, and Help. Global flags include --config-file (UV_CONFIG_FILE), --no-config (UV_NO_CONFIG), and -V.",
+          "sources": [
+            "crates/uv-cli/src/lib.rs#L130-L185",
+            "crates/uv-cli/src/lib.rs#L451-L614"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "ProjectCommand covers Run, Init, Add, Remove, Version, Sync, Lock, Upgrade, Export, Tree, Format, Check, and Audit. uv run treats .py files and HTTP(S) URLs as scripts, reads PEP 723 inline metadata, and syncs the project environment before invoking the command. uv add and uv lock can create a PEP 723 tag; other --script commands require one already.",
+          "sources": [
+            "crates/uv-cli/src/lib.rs#L1089-L1120",
+            "crates/uv/src/lib.rs#L363-L422"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "PipCommand implements compile, sync, install, uninstall, freeze, list (alias ls), show, tree, check, and a hidden debug command. pip compile writes requirements.txt or pylock.toml; pip sync removes packages not listed in the input file. If the user types uv install or uv compile, suggest_subcommand rewrites the hint to uv pip install or uv pip compile.",
+          "sources": [
+            "crates/uv-cli/src/lib.rs#L1018-L1086",
+            "crates/uv/src/lib.rs#L2961-L3003"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "PythonCommand is list, install, upgrade, find, and pin. Install docs state CPython comes from Astral python-build-standalone and PyPy from python.org, with the version catalog bundled in each uv release. pin writes .python-version. Discovery order is documented on the Python command: active or .venv interpreter, then PATH, then the Windows registry, with automatic downloads unless --no-python-downloads or python-downloads disables them.",
+          "sources": [
+            "crates/uv-cli/src/lib.rs#L470-L517",
+            "crates/uv-cli/src/lib.rs#L6112-L6180"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "python install is implemented by commands::python::install::install, which locks ManagedPythonInstallations, resolves targets, downloads in perform_install, and optionally bytecode-compiles the stdlib. --default is experimental unless PreviewFeature::PythonInstallDefault is enabled.",
+          "sources": [
+            "crates/uv/src/commands/python/install.rs#L201-L272",
+            "crates/uv/src/commands/python/install.rs#L309-L352"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "ToolCommand is run, a hidden uvx alias, install, upgrade, list, audit, uninstall, update-shell (alias ensurepath), and dir. uvx and uv tool run are documented as identical. Tools install into an isolated environment under the XDG tools directory; uv tool run uses an ephemeral environment in the cache unless an installed tool is reused.",
+          "sources": [
+            "crates/uv-cli/src/lib.rs#L5441-L5517",
+            "crates/uv/src/bin/uvx.rs#L81-L86"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "AuthCommand is login, logout, token, dir, and a hidden helper. The helper implements the Bazel credential-helper protocol over JSON on stdin/stdout and is the only AuthHelperProtocol variant. Credentials live in $XDG_DATA_HOME/uv/credentials or $HOME/.local/share/uv/credentials on Unix and %APPDATA%\\uv\\data\\credentials on Windows, overridable with UV_CREDENTIALS_DIR. The native keyring backend is separate from that directory.",
+          "sources": [
+            "crates/uv-cli/src/lib.rs#L5406-L5431",
+            "crates/uv/src/lib.rs#L639-L692"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CacheCommand is clean (alias clear), prune (--ci drops prebuilt wheels but keeps wheels built from source), dir, and size. The default cache path documented in the CLI is $XDG_CACHE_HOME/uv or $HOME/.cache/uv on Unix and %LOCALAPPDATA%\\uv\\cache on Windows, overridable by cache-dir, --cache-dir, or UV_CACHE_DIR. --no-cache uses a temporary directory discarded at process exit.",
+          "sources": [
+            "crates/uv-cli/src/lib.rs#L922-L948",
+            "docs/concepts/cache.md#L24-L39"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "uv publish uploads files through uv_publish::PublishSession. It refuses offline mode, can select an index by name and that index's publish_url, and accepts username, password, TrustedPublishing, keyring_provider, check_url, dry_run, and no_attestations.",
+          "sources": [
+            "crates/uv/src/commands/publish.rs#L28-L80"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "BuildBackendCommand is hidden and implements the PEP 517 and PEP 660 hooks: build_sdist, build_wheel, build_editable, get_requires_for_build_sdist, get_requires_for_build_wheel, prepare_metadata_for_build_wheel, get_requires_for_build_editable, and prepare_metadata_for_build_editable. The separate uv-build binary dispatches build-sdist without clap.",
+          "sources": [
+            "crates/uv-cli/src/lib.rs#L575-L583",
+            "crates/uv-cli/src/lib.rs#L7929-L7957",
+            "crates/uv-build/src/main.rs#L17-L80"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "WorkspaceCommand (mostly preview) is metadata, dir, and list. metadata can target a PEP 723 script and supports --locked (UV_LOCKED) and --frozen (UV_FROZEN). SelfCommand is update and version. Self update accepts an optional target version, UV_GITHUB_TOKEN, and --dry-run.",
+          "sources": [
+            "crates/uv-cli/src/lib.rs#L7812-L7852",
+            "crates/uv-cli/src/lib.rs#L885-L912"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "PreviewFeature is a u64 bitflags enum. Flags that gate user-visible behavior include PythonInstallDefault, JsonOutput, Pylock, FormatCommand, NativeAuth, CacheSize, SbomExport, AuthHelper, AuditCommand, MalwareCheck, CheckCommand, PackagedInit, CentralizedProjectEnvs, ToolInstallLocks, and LockWithoutMetadata. Unknown names parse as MaybePreviewFeature::Unknown.",
+          "sources": [
+            "crates/uv-preview/src/lib.rs#L230-L347",
+            "crates/uv-preview/src/lib.rs#L375-L378"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Output formats exposed on the CLI include VersionFormat and SyncFormat (text or json), AuditOutputFormat (text, json, sarif), CacheSizeOutputFormat (auto, human, machine), TreeFormat (text or json), and ListFormat (columns, freeze, json).",
+          "sources": [
+            "crates/uv-cli/src/lib.rs#L45-L112"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "data_flow": {
+      "summary": "User input enters as CLI arguments, environment variables, and config files, and is merged into typed settings before any network call. Project metadata is discovered from pyproject.toml workspaces or PEP 723 scripts, lowered into requirements, and solved against PEP 503/691 index metadata. The solver output becomes a uv.lock (version 1) which later commands treat as the source of installable pins. Artifacts are fetched into named cache buckets and linked into a virtual environment. Credentials are attached by HTTP middleware and must not be copied into new URLs, logs, or cache keys.",
+      "claims": [
+        {
+          "claim": "Documented configuration search reads a pyproject.toml [tool.uv] table or a uv.toml in the current directory or the nearest parent. In a workspace the search starts at the workspace root and member config is ignored. tool commands skip local files and read only user config (for example ~/.config/uv/uv.toml) and system config (for example /etc/uv/uv.toml).",
+          "sources": [
+            "docs/concepts/configuration-files.md#L1-L37"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "run() merges filesystem options in this order: an explicit --config-file (FilesystemOptions::from_file), or none when UV_NO_CONFIG or isolated mode is set. Tool and self commands use FilesystemOptions::user combined with system only. Otherwise Workspace::discover then FilesystemOptions::find(workspace.install_path()) is combined with user and then system. A pyproject.toml passed as --config-file warns; --project is the supported switch.",
+          "sources": [
+            "crates/uv/src/lib.rs#L300-L347"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Combine prefers the left-hand options, matching Cargo's layered config except that higher-precedence array items are placed earlier. Implemented for FilesystemOptions, Options, PipOptions, and AuditOptions in uv-settings.",
+          "sources": [
+            "crates/uv-settings/src/combine.rs#L25-L78"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Environment variables consumed by clap and settings include UV_CACHE_DIR, UV_NO_CACHE, UV_PYTHON, UV_PYTHON_DOWNLOADS, UV_PYTHON_PREFERENCE, UV_INDEX, UV_DEFAULT_INDEX, UV_INDEX_URL, UV_EXTRA_INDEX_URL, UV_FIND_LINKS, UV_LINK_MODE, UV_KEYRING_PROVIDER, UV_NATIVE_TLS, UV_SYSTEM_CERTS, UV_REQUIRE_HASHES, UV_LOCKED, UV_FROZEN, UV_NO_CONFIG, UV_CONFIG_FILE, UV_CREDENTIALS_DIR, and UV_OFFLINE. They are constants on uv_static::EnvVars.",
+          "sources": [
+            "crates/uv-static/src/env_vars.rs#L32-L242"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Index metadata is fetched by RegistryClient::simple_detail, which implements PEP 503 and PEP 691. --no-index returns ErrorKind::NoIndex. IndexStrategy::FirstIndex queries indexes serially; each hit is simple_detail_single_index, which uses fetch_remote_simple_detail or fetch_local_simple_detail. Responses are cached as rkyv under the Simple bucket.",
+          "sources": [
+            "crates/uv-client/src/registry_client.rs#L338-L376",
+            "crates/uv-cache/src/lib.rs#L1267-L1274",
+            "crates/uv-cache/src/lib.rs#L1313"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Resolution output is stored as Lock. The on-disk major version constant is VERSION = 1. A uv version supports a single major version; revision changes stay readable by older uv versions that share that major. Lock::from_toml parses the file and Lock::to_toml serializes it. Export paths in uv-lock include requirements.txt, pylock.toml, and CycloneDX JSON.",
+          "sources": [
+            "crates/uv-lock/src/lock/mod.rs#L88-L104",
+            "crates/uv-lock/src/lock/mod.rs#L293-L321",
+            "crates/uv-lock/src/lib.rs#L1-L10"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "do_lock lowers requirements, overrides, constraints, and dependency groups through LockTarget::lower, builds preferences and fork markers from an existing lock, calls pip::operations::resolve, then Lock::from_resolution. Unchanged locks are detected by equality or by comparing to_toml text when format checking is on. commit writes the TOML to the lock path with fs_err::tokio::write.",
+          "sources": [
+            "crates/uv/src/commands/project/lock.rs#L540-L624",
+            "crates/uv/src/commands/project/lock.rs#L1055-L1153",
+            "crates/uv/src/commands/project/lock_target.rs#L404-L408"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "pip::operations::resolve partitions named and unnamed requirements, resolves unnamed ones with NamedRequirementsResolver, then constructs Resolver::new and awaits Resolver::resolve. Resolver::resolve runs a metadata fetcher and spawns a thread named uv-resolver whose solve method initializes a PubGrub State.",
+          "sources": [
+            "crates/uv/src/commands/pip/operations.rs#L104-L166",
+            "crates/uv/src/commands/pip/operations.rs#L379-L410",
+            "crates/uv-resolver/src/resolver/mod.rs#L290-L348"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Installation uses pip::operations::install, which builds an InstallationPlan from the resolution and SitePackages, then plan.execute. LinkMode is clone (copy-on-write, serde alias reflink) by default on macOS and Linux, and hardlink elsewhere. Other modes are copy and symlink, selected by UV_LINK_MODE.",
+          "sources": [
+            "crates/uv/src/commands/pip/operations.rs#L684-L747",
+            "crates/uv-fs/src/link.rs#L13-L49"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Cache buckets and current directory names include SourceDistributions sdists-v9, Wheels wheels-v6, Simple simple-v25, FlatIndex flat-index-v5, Git git-v0, Interpreter interpreter-v4, Archive archive-v0, Files files-v0, Builds builds-v0, Environments environments-v2, Python python-v0, Binaries binaries-v0, and Osv osv-v0. Wheels and sdists are keyed by origin (pypi, index digest, git, or URL).",
+          "sources": [
+            "crates/uv-cache/src/lib.rs#L1188-L1326"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Credentials are Credentials::Basic or Bearer. TextCredentialStore persists them as credentials.toml under UV_CREDENTIALS_DIR or StateBucket::Credentials, guarded by an exclusive credentials.toml.lock. AuthBackend::from_settings uses KeyringProvider::native only when PreviewFeature::NativeAuth is enabled; otherwise it uses the plaintext store. AuthMiddleware can attach a keyring provider, indexes, and an only_authenticated flag.",
+          "sources": [
+            "crates/uv-auth/src/store.rs#L21-L54",
+            "crates/uv-auth/src/store.rs#L239-L270",
+            "crates/uv-auth/src/credentials.rs#L25-L25",
+            "crates/uv-auth/src/middleware.rs#L175-L285"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Managed CPython downloads use the prefix https://github.com/astral-sh/python-build-standalone/releases/download/ unless an Astral mirror base is appended with /github/python-build-standalone/releases/download/. ManagedPythonDownload carries a url and an optional sha256. The download catalog can be overridden with python_downloads_json_url.",
+          "sources": [
+            "crates/uv-python/src/downloads.rs#L195-L226",
+            "crates/uv-python/src/downloads.rs#L1027-L1039"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "behavior_traces": {
+      "summary": "Process startup always parses the CLI before the async runtime starts, loads configuration, and only then dispatches. uv lock discovers a workspace or PEP 723 script, solves with the universal resolver, and writes uv.lock. uv sync reuses that lock operation and then installs into the project environment. uv run syncs unless asked not to, rebuilds PATH, and waits on the child while forwarding signals. These three paths share interpreter discovery, the cache, and the registry client, but they differ in whether they mutate the lockfile, the environment, or both.",
+      "claims": [
+        {
+          "claim": "Startup sequence: uv binary main calls uv::main; that sets UV, parses Cli, and on a clap error calls suggest_subcommand then Error::exit. The main2 thread builds the runtime and block_on(run). run applies color, enables warnings unless --quiet, honors UV_WORKING_DIRECTORY by set_current_dir, loads EnvironmentOptions, resolves early preview flags, and calls uv_preview::set and logging::setup_logging before workspace discovery.",
+          "sources": [
+            "crates/uv/src/bin/uv.rs#L10-L14",
+            "crates/uv/src/lib.rs#L134-L203",
+            "crates/uv/src/lib.rs#L3026-L3067"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "After discovery, run validates that an explicit --project path exists and is a directory except for uv init. It refuses to operate when the project directory is inside the cache. It builds base_client_builder and matches *cli.command. User errors print via diagnostics::write_error_chain and exit Failure; argument and unexpected errors exit Error.",
+          "sources": [
+            "crates/uv/src/lib.rs#L231-L250",
+            "crates/uv/src/lib.rs#L598-L637",
+            "crates/uv/src/lib.rs#L3084-L3122"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "uv lock calls commands::project::lock::lock. For a script path it runs init_script_python_requirement and Pep723Script::init. Otherwise VirtualProject::discover selects LockTarget::Workspace. Frozen mode skips interpreter selection; otherwise ProjectInterpreter::discover runs with ActiveEnvironment::Ignore and ProjectEnvironmentPolicy::Optional, then do_lock.",
+          "sources": [
+            "crates/uv/src/commands/project/lock.rs#L89-L180"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "do_lock reads target.requirements, overrides, constraints, dependency_groups, and conflicts. It rejects overlapping environment markers as ProjectError::OverlappingMarkers. It warns when package-level conflicts are used without PreviewFeature::PackageConflicts. It prefers versions and fork markers from a validated existing lock via read_lock_requirements and ResolverEnvironment::universal.",
+          "sources": [
+            "crates/uv/src/commands/project/lock.rs#L505-L703",
+            "crates/uv/src/commands/project/lock.rs#L1005-L1053"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The lock solve calls ExtrasResolver::resolve on member requirements, chains group and dependency-group requirements, then pip::operations::resolve. That function builds Resolver::new(...).with_reporter(...).resolve(). On success, Lock::from_resolution plus with_conflicts and with_required_environments produces the lock. If PreviewFeature::MissingExcludeNewerPackageLock is set, without_unused_exclude_newer_packages runs. If the serialized lock changed, the caller commits it.",
+          "sources": [
+            "crates/uv/src/commands/project/lock.rs#L1055-L1153",
+            "crates/uv/src/commands/project/lock.rs#L397-L474",
+            "crates/uv/src/commands/pip/operations.rs#L389-L410"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "uv sync starts in commands::project::sync::sync. It discovers a VirtualProject (Existing members when frozen, or a single package via discover_with_package) or uses a Pep723Script. It computes default groups, then ProjectEnvironment::get_or_init or ScriptEnvironment::get_or_init, and takes an environment lock. A script with no lockfile cannot use --frozen or --locked.",
+          "sources": [
+            "crates/uv/src/commands/project/sync.rs#L66-L247"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "sync then builds a LockTarget and runs LockOperation::new(...).execute(lock_target). Lock mismatches in dry-run become Outcome::LockMismatch and still sync; otherwise they return UvError::user. It warns when a non-packaged member defines project.scripts. do_sync receives the install target, environment, extras, groups, and malware settings.",
+          "sources": [
+            "crates/uv/src/commands/project/sync.rs#L350-L438"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "do_sync lowers extra build dependencies, clones the client builder with the keyring provider, and errors with ProjectError::LockedPythonIncompatibility when the environment interpreter is outside lock.requires_python. It calls detect_conflicts for the requested extras and groups before planning installations.",
+          "sources": [
+            "crates/uv/src/commands/project/sync.rs#L625-L738"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "uv run enters commands::project::run::run, reads UV_RUN_RECURSION_DEPTH, and returns RecursionLimitError above max_recursion_depth (the usual cause is a shebang of #!/usr/bin/env -S uv run). It rejects requirements taken from pyproject.toml, setup.py, or setup.cfg, and rejects using stdin for both the script and a requirements file.",
+          "sources": [
+            "crates/uv/src/commands/project/run.rs#L90-L167"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "When a command is present, run builds it with command.as_command(interpreter), applies env-file variables, prepends environment Scripts directories and the base interpreter to PATH, increments UV_RUN_RECURSION_DEPTH, sets VIRTUAL_ENV when the interpreter is a virtualenv, optionally calls uv_unix::set_open_file_limit, spawns the process with inherited stdio, and waits in child::run_to_completion.",
+          "sources": [
+            "crates/uv/src/commands/project/run.rs#L1271-L1329"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "child::run_to_completion documents Unix signal policy: in a TTY, SIGINT is not forwarded immediately because the terminal already signals the process group; outside a TTY, SIGINT is forwarded. SIGTERM is forwarded so that uv as Docker PID 1 remains killable. The handler is only safe when the child is the last work in the process.",
+          "sources": [
+            "crates/uv/src/child.rs#L6-L37"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "uv pip install enters pip_install with requirements, constraints, overrides, excludes, build constraints, index locations, link mode, and hash-checking mode. The shared install tail is pip::operations::install, which diffs the resolution against SitePackages via InstallationPlan::build and then plan.execute.",
+          "sources": [
+            "crates/uv/src/commands/pip/install.rs#L79-L118",
+            "crates/uv/src/commands/pip/operations.rs#L684-L747"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "testing_signals": {
+      "summary": "Tests are Rust integration tests first, driven by cargo-nextest and insta snapshots. The uv crate's tests/ tree is split by command family (it, pip, project, python, sync, tool, workspace, lock, lock_scenarios, build). A uv-test harness provides TestContext and the uv_snapshot! macro. CI runs nextest on Linux, macOS, and Windows after installing Python with uv python install, and uploads JUnit plus pending snapshots on failure. Feature flags carve out network, Git LFS, ecosystem, and Windows-registry tests so local runs can skip them. Packse scenarios and ecosystem lock snapshots cover resolver behavior that unit tests cannot.",
+      "claims": [
+        {
+          "claim": "CONTRIBUTING.md requires cargo nextest. A single test is cargo nextest run -E 'test(test_name)'. Snapshots update with cargo insta test --accept --test-runner nextest. Local development is cargo run -- <args>. Python interpreters for tests are installed with cargo run python install and UV_PYTHON_INSTALL_DIR. Git and Git LFS tests can be disabled with the git and git-lfs features.",
+          "sources": [
+            "CONTRIBUTING.md#L63-L148"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The uv-test harness defines TestContext and the uv_snapshot! macro, which expands through capture_uv_snapshot! and INSTA_FILTERS. The documented pattern is TestContext::new(\"3.12\") then uv_snapshot!(context.filters(), context.add().arg(\"requests\"), @\"\").",
+          "sources": [
+            "crates/uv-test/src/lib.rs#L131",
+            "crates/uv-test/src/lib.rs#L2128",
+            "crates/uv-test/src/lib.rs#L2650-L2652",
+            "CONTRIBUTING.md#L105-L109"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Integration tests live under crates/uv/tests and are grouped as it (auth, network, publish, ecosystem, help), pip (compile, install, sync, freeze, list, show, tree, uninstall, check), project (init, run, workflow, export, edit), python, sync, tool, workspace, lock, and lock_scenarios. Ecosystem tests snapshot real upstream lockfiles such as black, httpx, pandas, and warehouse.",
+          "sources": [
+            "crates/uv/tests/it/ecosystem.rs",
+            "crates/uv/tests/project/workflow.rs",
+            "crates/uv/tests/pip/pip_sync.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Default uv features enable test-defaults, which turns on test-crates-io, test-git, test-git-lfs, test-pypi, test-r2, test-python, test-python-managed, test-python-eol, test-slow, test-ecosystem, and test-universal. test-windows-registry is off by default because it mutates the Windows registry and is enabled by Windows CI. test-python-patch is not in the default set.",
+          "sources": [
+            "crates/uv/Cargo.toml#L174-L215"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Linux CI (cargo test on linux in test.yml) installs mold, the Rust toolchain, a pinned uv 0.12.13, and Python via uv python install. It starts gnome-keyring, and creates btrfs, tmpfs, and minix filesystems exposed as UV_INTERNAL__TEST_COW_FS, UV_INTERNAL__TEST_NOCOW_FS, UV_INTERNAL__TEST_ALT_FS, and UV_INTERNAL__TEST_LOWLINKS_FS.",
+          "sources": [
+            ".github/workflows/test.yml#L30-L116"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The Linux nextest invocation is uv run --only-dev cargo nextest run --cargo-profile fast-build-nightly -Z panic-abort-tests -Z checksum-freshness --features test-python-patch,test-universal,native-auth,secret-service --workspace --profile ci-linux. INSTA_UPDATE=new writes failures to pending-snapshots, which the workflow uploads on failure along with target/nextest/ci*/junit.xml.",
+          "sources": [
+            ".github/workflows/test.yml#L110-L148"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "test-integration.yml is a workflow_call that downloads a built uv binary and runs shell-level checks, including nushell activation (overlay use .venv/bin/activate.nu) and a conda job via setup-miniconda. It does not replace cargo nextest.",
+          "sources": [
+            ".github/workflows/test-integration.yml#L1-L80"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Dev-only generation commands live in the uv-dev binary: generate-json-schema, generate-options-reference, generate-cli-reference, generate-env-vars-reference, generate-preview-features-reference, generate-scenario-tests, and generate-all. check-generated-files.yml runs when plan.yml sets test-code.",
+          "sources": [
+            "crates/uv-dev/src/lib.rs#L44-L77",
+            ".github/workflows/ci.yml#L85-L91"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Resolver fixtures also exist as checked-in data under test/scenarios (189 TOML files), test/ecosystem, test/workspaces, and test/requirements. Lock scenario tests are crates/uv/tests/lock_scenarios. These are the intended place for dependency-resolution regressions rather than new unit tests.",
+          "sources": [
+            "crates/uv/tests/lock_scenarios/lock_scenarios.rs",
+            "crates/uv-dev/src/lib.rs#L70-L71"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Unit tests exist beside library code (for example uv-lock snapshot tests for missing hashes and source kinds, uv-client HTML simple-API parser tests, and UvError chain snapshots in commands/mod.rs). CONTRIBUTING and AGENTS.md say to prefer crates/uv/tests integration tests and insta snapshots over substring assertions, and to check that a behavior is not already covered.",
+          "sources": [
+            "AGENTS.md#L3-L6",
+            "crates/uv/src/commands/mod.rs#L192-L198",
+            "crates/uv-lock/src/lock/mod.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "There is no single application-level test that boots the Docker scratch image or the maturin wheel as part of the cargo nextest profile cited above. Smoke coverage is a separate CI job, test-smoke.yml, which depends on build-dev-binaries and only runs when plan.yml sets test-smoke.",
+          "sources": [
+            ".github/workflows/ci.yml#L108-L120"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "risk_map": {
+      "summary": "uv is designed to run on a trusted developer or CI machine while consuming untrusted package, Git, and archive bytes. The threat model in agents/references/threat-model.md is the security contract: locked operations must not change sources or hashes, credentials must stay in their realm, and archive members must not write outside the chosen root. Concrete risk in the code includes plaintext credentials by default, a non-atomic uv.lock write, build backends and uv run executing arbitrary code by design, and a very large command dispatcher that every CLI change touches. Optional features and preview flags also change security-relevant defaults between the cargo-dist binary and distro packages.",
+      "claims": [
+        {
+          "claim": "The threat model treats the local machine, environment, project files, PATH, certificates, and caches as trusted, and treats untrusted publisher files, public package names, attacker-controlled Git refs, unauthenticated responses, and archives as attacker-controlled. During a locked operation the lockfile sources, object IDs, and hashes are authoritative and must not be replaced from upstream changes.",
+          "sources": [
+            "agents/references/threat-model.md#L17-L43",
+            "agents/references/threat-model.md#L57-L83"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Default credential storage is plaintext credentials.toml. Native keyring storage is used only when PreviewFeature::NativeAuth is enabled. The file is exclusive-locked, but the format is ordinary TOML with username, password, or bearer token. UV_CREDENTIALS_DIR redirects the directory.",
+          "sources": [
+            "crates/uv-auth/src/store.rs#L31-L54",
+            "crates/uv-auth/src/store.rs#L244-L276",
+            "crates/uv-preview/src/lib.rs#L250-L251"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "LockTarget::commit serializes with lock.to_toml and writes the destination path directly with fs_err::tokio::write. A crash during that write can leave a truncated uv.lock. Readers parse with Lock::from_toml and surface LockError::UnsupportedVersion when the major version is not 1.",
+          "sources": [
+            "crates/uv/src/commands/project/lock_target.rs#L391-L408",
+            "crates/uv-lock/src/lock/mod.rs#L88-L104"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Selected packages may run arbitrary code. The threat model says interpreter startup, .pth files, bytecode compilation, and entry points change timing rather than authority, but build-backend execution is a boundary crossing if it happens before selection, escapes isolation, or runs with greater privilege. uv run will spawn whatever command the user named after syncing dependencies.",
+          "sources": [
+            "agents/references/threat-model.md#L38-L44",
+            "agents/references/threat-model.md#L81-L88",
+            "crates/uv/src/commands/project/run.rs#L1322-L1329"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "base_client_builder forwards allow_insecure_host into BaseClientBuilder. That flag is an explicit trusted operator choice in the threat model, but it disables the normal TLS host check for the listed hosts and is therefore a high-impact misconfiguration.",
+          "sources": [
+            "crates/uv/src/lib.rs#L71-L86",
+            "agents/references/threat-model.md#L32-L36"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Git identity rules require a documented 40-character hex value to resolve as that immutable object; a same-named branch or tag must not win. Shorter hex identifiers can be redirected by an attacker-controlled ref. uv-git and the lockfile's recorded object ID are the code that has to uphold this.",
+          "sources": [
+            "agents/references/threat-model.md#L97-L106",
+            "crates/uv/src/commands/project/lock.rs#L1019-L1023"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Self-update is compiled out unless the self-update feature is on. Distro or maturin builds take the ExternallyInstalledError path. The cargo-dist build uses axoupdater and accepts UV_GITHUB_TOKEN on uv self update. Shipping the wrong feature set either enables network self-update or makes uv self update fail closed.",
+          "sources": [
+            "crates/uv/Cargo.toml#L167-L169",
+            "crates/uv/src/lib.rs#L111-L131",
+            "crates/uv-cli/src/lib.rs#L899-L912"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Python installs download from GitHub releases or a configured Astral mirror and record an optional sha256 on ManagedPythonDownload. The threat model treats configured HTTPS mirrors as trust roots. A custom python_downloads_json_url replaces the bundled catalog, so a bad URL is an operator-controlled supply-chain input.",
+          "sources": [
+            "crates/uv-python/src/downloads.rs#L195-L216",
+            "crates/uv/src/commands/python/install.rs#L203-L223",
+            "agents/references/threat-model.md#L107-L112"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Archive extraction and wheel install are the filesystem blast radius. The threat model says metadata must not cause writes or deletions outside the chosen root and intentionally followed symlink or junction targets. uv-extract and uv-install-wheel implement that path; link mode symlink makes the environment share cache inodes.",
+          "sources": [
+            "agents/references/threat-model.md#L89-L93",
+            "crates/uv-fs/src/link.rs#L26-L36"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "crates/uv/src/lib.rs is the single dispatch hotspot. The command match starts at the Auth arm and continues through pip, cache, build, venv, project, self, tool, python, publish, workspace, and build-backend. A settings or client-builder change there affects every subcommand.",
+          "sources": [
+            "crates/uv/src/lib.rs#L635-L692",
+            "crates/uv/src/lib.rs#L699-L819"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Generated shell activation is called out in the threat model: untrusted values must be quoted for the target shell, and impact rises if the script is sourced automatically. uv venv and python update-shell write those scripts. The nushell integration test only checks that activate.nu can be overlay-used.",
+          "sources": [
+            "agents/references/threat-model.md#L94-L96",
+            ".github/workflows/test-integration.yml#L59-L66"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Preview flags change defaults without a major version bump: NativeAuth, MalwareCheck, LockWithoutMetadata, CentralizedProjectEnvs, and VenvSafeClear. Callers that enable --preview or UV_PREVIEW turn all of them on at once, including in the uv-build backend, which parses UV_PREVIEW and UV_PREVIEW_FEATURES itself because it does not use clap.",
+          "sources": [
+            "crates/uv-preview/src/lib.rs#L250-L346",
+            "crates/uv-build/src/main.rs#L44-L69"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "extension_points": {
+      "summary": "uv does not load third-party Rust plugins. Extension is by adding a clap command variant, a settings field, a cache bucket, a preview flag, or a build-backend hook. Indexes, find-links directories, and keyring providers are the user-facing plugin surface. New resolver behavior plugs in through ResolverProvider and the PubGrub dependency provider. Documentation and the JSON schema are generated from the same types, so a new flag is incomplete until uv-dev regenerates the references.",
+      "claims": [
+        {
+          "claim": "New CLI commands are added as variants on Commands or on the nested enums ProjectCommand, PipCommand, ToolCommand, PythonCommand, AuthCommand, CacheCommand, and WorkspaceCommand in crates/uv-cli/src/lib.rs, then matched in crates/uv/src/lib.rs. Help is data-driven from clap, not a separate route table.",
+          "sources": [
+            "crates/uv-cli/src/lib.rs#L451-L614",
+            "crates/uv/src/lib.rs#L638-L692"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "User indexes are the main external integration point. CLI and config accept UV_INDEX, UV_DEFAULT_INDEX, UV_EXTRA_INDEX_URL, and UV_FIND_LINKS. RegistryClient::simple_detail walks those indexes using IndexStrategy. uv publish looks up a named index and uses its publish_url.",
+          "sources": [
+            "crates/uv-static/src/env_vars.rs#L37-L59",
+            "crates/uv-client/src/registry_client.rs#L346-L376",
+            "crates/uv/src/commands/publish.rs#L49-L80"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Authentication providers plug in through AuthBackend (system keyring or TextCredentialStore), KeyringProvider on AuthMiddleware, and netrc or URL credentials via Credentials::from_url and Credentials::from_env. The Bazel auth helper is a separate protocol enum with a single variant.",
+          "sources": [
+            "crates/uv-auth/src/store.rs#L21-L36",
+            "crates/uv-auth/src/middleware.rs#L248-L285",
+            "crates/uv-auth/src/credentials.rs#L232-L269",
+            "crates/uv-cli/src/lib.rs#L5424-L5431"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Build backends are an external plugin surface. uv-build-frontend speaks PEP 517. The in-tree backend is uv_build_backend::build_source_dist, build_wheel, and build_editable, invoked either by the hidden uv build-backend command or by the uv-build Python entrypoint's build-sdist command.",
+          "sources": [
+            "crates/README.md#L49-L52",
+            "crates/uv-build-backend/src/lib.rs#L9-L13",
+            "crates/uv-cli/src/lib.rs#L7932-L7944",
+            "crates/uv-build/src/main.rs#L71-L79"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Resolver extension is Resolver::new plus the provider passed into it. uv-resolver re-exports DefaultResolverProvider, ResolverProvider, InMemoryIndex, and OptionsBuilder. A new dependency kind has to be represented in the manifest, the PubGrub package model, and Lock::from_resolution or it will not round-trip through uv.lock.",
+          "sources": [
+            "crates/uv-resolver/src/lib.rs#L1-L26",
+            "crates/uv/src/commands/pip/operations.rs#L389-L410",
+            "crates/uv/src/commands/project/lock.rs#L1127-L1136"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "PreviewFeature is the feature-flag registry. Adding a variant to the enumflags2 enum requires a display name via PreviewMetadata, and docs are regenerated by uv-dev generate-preview-features-reference. UV_PREVIEW enables every flag; UV_PREVIEW_FEATURES takes an explicit list.",
+          "sources": [
+            "crates/uv-preview/src/lib.rs#L224-L230",
+            "crates/uv-preview/src/lib.rs#L349-L368",
+            "crates/uv-dev/src/lib.rs#L67-L69",
+            "crates/uv-build/src/main.rs#L44-L60"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Cache layout is a closed CacheBucket enum. New persistent data needs a new variant and a versioned directory name (the comment says bumps must also update references in cache_prune.rs, cache_clean.rs, or lock tests). Atomic directory replacement is done by storing blobs in Archive and symlinking them into other buckets.",
+          "sources": [
+            "crates/uv-cache/src/lib.rs#L1275-L1327"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Settings fields are added on Options and FilesystemOptions and merged by the Combine trait. The JSON schema for uv.toml is generated by uv-dev generate-json-schema, and the settings reference by generate-options-reference. check-generated-files.yml fails CI if those outputs drift.",
+          "sources": [
+            "crates/uv-settings/src/combine.rs#L25-L39",
+            "crates/uv-dev/src/lib.rs#L58-L65",
+            ".github/workflows/ci.yml#L85-L91"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Python discovery request syntax is itself an extension point documented on the Python command: version specifiers, implementation names, freethreaded and debug variants, target triples, executable paths, and install directories. New interpreter kinds have to be recognized by uv-python or they are skipped as unsupported.",
+          "sources": [
+            "crates/uv-cli/src/lib.rs#L470-L511"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Workspace membership is discovered by Workspace::discover and VirtualProject::discover in uv-workspace, with a WorkspaceCache. New project layouts have to be found there before lock, sync, or run will see them. DiscoveryOptions controls member discovery, including MemberDiscovery::Existing in frozen sync.",
+          "sources": [
+            "crates/uv-workspace/src/workspace.rs#L292",
+            "crates/uv-workspace/src/workspace.rs#L337",
+            "crates/uv/src/commands/project/sync.rs#L108-L119"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The uv-dev CLI is the internal extension tool, not a user plugin host. Its subcommands generate schema, CLI reference, env-var reference, preview-feature docs, Packse scenario tests, and sysconfig mappings. ROOT_DIR is the repository root computed from CARGO_MANIFEST_DIR.",
+          "sources": [
+            "crates/uv-dev/src/lib.rs#L42-L77"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_handoff": {
+      "summary": "Read AGENTS.md and CONTRIBUTING.md before editing. Prefer a narrow cargo nextest filter and insta snapshots over new unit tests or the full suite. Do not use the release profile unless asked. The Rust library is an unsupported entrypoint; behavior changes belong in the CLI and the command modules. Preview-gated behavior, generated docs, and the lockfile schema are the traps that most often produce a correct-looking diff that fails review. Security-sensitive edits should be checked against agents/references/threat-model.md, and privileged GitHub workflows must go through the automation dispatcher rather than pull_request_target.",
+      "claims": [
+        {
+          "claim": "AGENTS.md requires matching existing test style, checking for an existing test, preferring it/ integration tests, preferring insta snapshots, avoiding panic, unreachable, unwrap, and unsafe, preferring exhaustive matches, using #[expect] over allow, and using cargo update --precise for lockfile bumps. Do not add pull_request_target workflows; use .github/automations-dispatch.json. Do not leak conversation history into comments or PR text.",
+          "sources": [
+            "AGENTS.md#L1-L32"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "First files for a command change are crates/uv-cli/src/lib.rs (the clap type), the matching arm in crates/uv/src/lib.rs, the command module under crates/uv/src/commands/, and a nearby test under crates/uv/tests. For resolver or lockfile work also read crates/uv-resolver/src/resolver/mod.rs and crates/uv-lock/src/lock/mod.rs.",
+          "sources": [
+            "crates/uv-cli/src/lib.rs#L451-L460",
+            "crates/uv/src/lib.rs#L638-L640",
+            "crates/uv/src/commands/mod.rs#L83-L105"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Run the smallest test. The documented form is cargo nextest run -E 'test(test_name)'. Snapshot review is cargo insta test --accept --test-runner nextest -- <test_name> or cargo insta review. Do not cargo build --release. Development builds omit git metadata unless UV_INTERNAL__BUILD_GIT_INFO=1.",
+          "sources": [
+            "CONTRIBUTING.md#L63-L150",
+            "AGENTS.md#L6-L8"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "uv::main's own docs say the Rust entrypoint is not the public API and is unsafe to call once other threads are running. Changes that only affect library callers will not be supported. Behavior should stay reachable from the uv binary.",
+          "sources": [
+            "crates/uv/src/lib.rs#L3006-L3020"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "A new setting must be combined in uv-settings and will be ignored in the wrong file: project fields are rejected in uv.toml, and a uv.toml next to pyproject.toml causes overlapping [tool.uv] fields to be ignored. Tool and self commands do not read project config at all.",
+          "sources": [
+            "crates/uv/src/lib.rs#L312-L328",
+            "docs/concepts/configuration-files.md#L8-L16"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Preview features are not silently on. New behavior that should be experimental belongs in the PreviewFeature enum and should warn with the same 'experimental and may change' pattern used by --output-format json and --default. Turning it on by default is a behavior change for every UV_PREVIEW user.",
+          "sources": [
+            "crates/uv-preview/src/lib.rs#L231-L251",
+            "crates/uv/src/commands/project/sync.rs#L97-L101",
+            "crates/uv/src/commands/python/install.rs#L337-L341"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "After changing CLI help, settings, env vars, preview flags, or the uv.toml schema, regenerate with the uv-dev commands (generate-cli-reference, generate-options-reference, generate-env-vars-reference, generate-preview-features-reference, generate-json-schema) or generate-all. CI job check-generated-files compares them.",
+          "sources": [
+            "crates/uv-dev/src/lib.rs#L56-L69",
+            ".github/workflows/ci.yml#L85-L91"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Lockfile version is a single supported major, currently 1. Adding a field that old readers cannot skip is a format break. Prefer a revision-compatible addition. LockfileFormatCheck and LockWithoutMetadata are preview flags that change how --locked and --check compare bytes.",
+          "sources": [
+            "crates/uv-lock/src/lock/mod.rs#L88-L104",
+            "crates/uv-lock/src/lock/mod.rs#L293-L305",
+            "crates/uv-preview/src/lib.rs#L326-L329"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Cache directory names are versioned. Bumping CacheBucket::to_str without updating the tests named in the comments (cache_prune.rs, cache_clean.rs, lock.rs) and without a migration story will make existing user caches look empty and will fail CI snapshots.",
+          "sources": [
+            "crates/uv-cache/src/lib.rs#L1298-L1326"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Windows-only code paths include uvw, the registry Python search, test-windows-registry, and trampoline tests. AGENTS.md says to use cargo xwin clippy when changing Windows behavior from Unix. The uvw binary is behind the windows-gui-bin feature and is not in the default build.",
+          "sources": [
+            "AGENTS.md#L7",
+            "crates/uv/Cargo.toml#L212-L234",
+            "crates/uv/src/bin/uvw.rs#L1-L2"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Do not suppress the dangerous-triggers lint or add privileged pull_request_target workflows. Security review is a separate CI job (pull-request-security-review.yml) when plan.yml sets review-security. Read agents/references/threat-model.md before changing auth, hashing, Git pinning, archive extraction, or publish.",
+          "sources": [
+            "AGENTS.md#L20-L23",
+            ".github/workflows/ci.yml#L29-L38",
+            "agents/references/threat-model.md#L1-L15"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Formatting is cargo fmt --all for Rust, ruff format via uv run --only-group=check for Python, and prettier 3.9.0 for Markdown and YAML. Clippy is cargo clippy --workspace --all-targets --all-features --locked -- -D warnings. jq is required to validate pyproject.toml against the checked-in schema.",
+          "sources": [
+            "CONTRIBUTING.md#L152-L176"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_prompt": "You are working in the astral-sh/uv repository, product version 0.12.17. uv is a Rust command-line Python package and project manager. It replaces pip, pip-tools, pipx, poetry, pyenv, twine, and virtualenv. The public interface is the uv binary, not the Rust library. crates/uv/src/bin/uv.rs calls unsafe uv::main. That function sets the UV environment variable to the current executable, parses clap types from uv-cli, and runs crates/uv/src/lib.rs run on a current-thread Tokio runtime started on a thread named main2. Sibling binaries: uvx execs a sibling uv with arguments tool uvx; Windows uvw is a GUI-subsystem wrapper, feature windows-gui-bin, that execs uv. The PyPI distribution is a maturin bin wheel (pyproject.toml, python-source python). python/uv/__main__.py finds the bundled binary, may set VIRTUAL_ENV, sets UV_INTERNAL__PARENT_INTERPRETER, and execs uv.\n\nThe cargo workspace members are crates/*, edition 2024, rust-version 1.96.0, license MIT OR Apache-2.0. scripts and crates/uv-trampoline are excluded. Library crates are mostly 0.0.84. The product crates uv, uv-version, and uv-build are 0.12.17. Important crates: uv-cli (clap commands), uv-settings (uv.toml and [tool.uv] merged by the Combine trait), uv-workspace (Workspace::discover), uv-resolver (PubGrub on a thread named uv-resolver), uv-lock (uv.lock major version 1), uv-client (PEP 503 and PEP 691 Simple API over reqwest and rustls), uv-distribution and uv-dispatch (fetch and isolated PEP 517 builds), uv-installer and uv-install-wheel, uv-cache (versioned buckets such as simple-v25, wheels-v6, sdists-v9), uv-python (discovery and python-build-standalone downloads), uv-auth, uv-publish, uv-build-backend, uv-virtualenv, uv-preview, and uv-git.\n\nCommands are the Commands enum in crates/uv-cli/src/lib.rs, dispatched by a large match in crates/uv/src/lib.rs. Families: project (init, add, remove, lock, sync, run, export, tree, version, upgrade, format, check, audit), pip (compile, sync, install, uninstall, freeze, list, show, tree, check), python (list, install, find, pin, upgrade), tool (run and install; uvx is tool run), venv, build, publish, auth, cache, workspace, self, and a hidden build-backend shim for PEP 517 and PEP 660 hooks. Settings precedence is CLI and environment over files. File merge is an explicit --config-file, otherwise the workspace uv.toml or [tool.uv] combined with user then system config. tool and self ignore project config. UV_NO_CONFIG skips discovery.\n\nPrimary flows: uv lock discovers a VirtualProject or initializes a PEP 723 script, lowers requirements, calls pip::operations::resolve, which builds uv_resolver::Resolver and Resolver::resolve, then Lock::from_resolution and LockTarget::commit write uv.lock via to_toml. uv sync gets or creates the project environment, runs LockOperation, then do_sync installs from the lock, rejecting interpreters outside requires-python. uv run syncs unless --no-sync or frozen, prepends script directories to PATH, sets VIRTUAL_ENV and UV_RUN_RECURSION_DEPTH, spawns the child, and child::run_to_completion forwards signals so a TTY child is not double-interrupted and so uv as PID 1 still dies on SIGTERM. uv pip install resolves and then InstallationPlan::execute. Default LinkMode is clone on macOS and Linux and hardlink elsewhere (UV_LINK_MODE). The cache root is UV_CACHE_DIR or the XDG or LOCALAPPDATA path. Credentials default to plaintext credentials.toml under the state credentials bucket unless preview feature native-auth selects the system keyring.\n\nConventions from AGENTS.md and CONTRIBUTING.md: prefer integration tests under crates/uv/tests and the uv_snapshot! macro in uv-test; run cargo nextest run -E 'test(name)' rather than the whole suite; do not build the release profile unless asked; avoid unwrap, panic, and unsafe without a SAFETY comment; prefer exhaustive matches; bump dependencies only with cargo update --precise; do not add pull_request_target workflows, use .github/automations-dispatch.json. Preview behavior belongs in the PreviewFeature bitflags and should warn until the flag is set. UV_PREVIEW enables every flag. Regenerated docs and uv.schema.json come from cargo run -p uv-dev -- generate-all or the individual generate-* commands. CI is .github/workflows/ci.yml, which calls plan.yml and then fmt, lint, docs, zizmor, and nextest on Linux, macOS, and Windows. Linux tests enable extra features and mount btrfs, tmpfs, and minix for link-mode coverage.\n\nBefore changing auth, hash checking, Git object pins, archive extraction, shell activation scripts, or trusted publishing, read agents/references/threat-model.md. Locked operations must honor the lockfile sources and hashes. Credentials must not leak into URLs, error text, subprocess arguments, or cache keys. Do not treat the Rust API as stable. Cache bucket directory names are versioned; bumping them requires the test updates named in the cache comments. Lockfile major version is 1 and only one major is supported."
+  },
+  "analysis": {
+    "agent": "grok",
+    "model": "cli:grok",
+    "runtime_ms": 378362,
+    "cost_usd": null,
+    "collected_at": "2026-09-22T11:45:44.801Z"
   }
 }

@@ -10019,5 +10019,858 @@
         ]
       }
     ]
+  },
+  "report": {
+    "overview": "esbuild 0.28.2 is a Go bundler and minifier for JavaScript, TypeScript, JSX, JSON, and CSS. It is used from a native CLI (cmd/esbuild), a Go library (pkg/api and pkg/cli), and an npm package whose JavaScript spawns a long-lived native binary or a WebAssembly build. The pipeline is two phases, scan then compile, with three full AST passes, parallel parsing, and incremental rebuilds that reuse immutable cached ASTs instead of a content-addressed JS cache. Releases are a matrix of optional @esbuild/* native packages plus esbuild-wasm, published by GitHub Actions when version.txt changes on main.",
+    "system_map": {
+      "summary": "The module is github.com/evanw/esbuild. The process entry is cmd/esbuild, which either runs the CLI or a stdin/stdout service. Bundling lives under internal/ and is wrapped by pkg/api. There is no database: inputs are files or stdin, outputs are files, stdout, or in-memory bytes. The JS API in lib/ is compiled into the published npm packages and is not a separate server. Official builds pin Go 1.26.5, keep the language at Go 1.13, and disable cgo.",
+      "claims": [
+        {
+          "claim": "go.mod declares module github.com/evanw/esbuild, sets go 1.13 on purpose so old OS toolchains can still build it, and requires only golang.org/x/sys v0.0.0-20220715151400-c0bba94af5f8, which the comment says must not be upgraded.",
+          "sources": [
+            "go.mod#L1-L10"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The native entrypoint is main() in cmd/esbuild/main.go. It handles --help, --version (printed from esbuildVersion), hidden --trace/--heap/--cpuprofile/--timing, and --service=<hostVersion>, which must equal the binary version or the process exits 1.",
+          "sources": [
+            "cmd/esbuild/main.go#L159-L253",
+            "cmd/esbuild/version.go#L1-L3"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "version.txt and cmd/esbuild/version.go both say 0.28.2, matching npm/esbuild/package.json and npm/esbuild-wasm/package.json.",
+          "sources": [
+            "version.txt",
+            "cmd/esbuild/version.go#L1-L3",
+            "npm/esbuild/package.json#L2-L4",
+            "npm/esbuild-wasm/package.json#L2-L4"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "pkg/api exposes Build, Transform, and Context (Rebuild, Watch, Serve, Cancel, Dispose). pkg/cli.Run and RunWithPlugins invoke the same CLI parser without spawning a child process; ParseBuildOptions, ParseTransformOptions, and ParseServeOptions reuse that parser.",
+          "sources": [
+            "pkg/api/api.go#L398-L563",
+            "pkg/cli/cli.go#L30-L99"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The bundler pipeline is implemented in internal/bundler.ScanBundle and (*Bundle).Compile. Compile calls a Linker, which production code passes as linker.Link. Docs place both phases in internal/bundler/bundler.go.",
+          "sources": [
+            "docs/architecture.md#L54-L66",
+            "internal/bundler/bundler.go#L1371-L1379",
+            "internal/bundler/bundler.go#L3037-L3051",
+            "internal/linker/linker.go#L227-L238"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Parsing, printing, resolution, and helpers are split across internal/js_parser, internal/js_printer, internal/css_parser, internal/css_printer, internal/resolver, internal/runtime, internal/cache, internal/compat, and internal/config. JS parse entry is js_parser.Parse; CSS parse entry is css_parser.Parse; print entries are js_printer.Print and css_printer.Print.",
+          "sources": [
+            "internal/js_parser/js_parser.go#L17815-L17837",
+            "internal/css_parser/css_parser.go#L122",
+            "internal/js_printer/js_printer.go#L4969",
+            "internal/css_printer/css_printer.go#L68",
+            "internal/resolver/resolver.go#L242"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "File IO goes through internal/fs.FS so tests can mock it and so Yarn PnP zip installs can be overlaid. fs.go documents the abstraction; fs_zip.go wraps an inner FS and treats zip files as directories, including Yarn __virtual__ and $$virtual path segments.",
+          "sources": [
+            "internal/fs/fs.go#L1-L6",
+            "internal/fs/fs_zip.go#L1-L33"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The Makefile default target builds with CGO_ENABLED=0, -ldflags=-s -w -buildid=, -buildvcs=false, and -trimpath. go.version is 1.26.5. The go-compiler target downloads that Go source and comments out ctxt.buildinfo() so go version ./esbuild does not embed the toolchain version.",
+          "sources": [
+            "Makefile#L1-L17",
+            "Makefile#L59-L83",
+            "go.version"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "make no-filepath fails the build if any Go file under cmd, internal, or pkg imports path/filepath, citing golang.org/issue/43768. CI runs that check on Ubuntu.",
+          "sources": [
+            "Makefile#L85-L87",
+            ".github/workflows/ci.yml#L126-L128"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "WebAssembly builds use main_wasm.go under //go:build js && wasm. That file rejects --trace, --heap, and --cpuprofile and sets isServeUnsupported to true, so the dev server is not available in WASM.",
+          "sources": [
+            "cmd/esbuild/main_wasm.go#L1-L29",
+            "cmd/esbuild/main.go#L325-L332"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "npm/esbuild postinstall is node install.js. optionalDependencies lists per-OS @esbuild/* packages at 0.28.2, and esbuild.binaryHashes stores sha256 digests of those binaries. esbuild-wasm has no optionalDependencies and points browser at lib/browser.js.",
+          "sources": [
+            "npm/esbuild/package.json#L9-L47",
+            "npm/esbuild/package.json#L49-L73",
+            "npm/esbuild-wasm/package.json#L1-L18"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "GitHub Actions workflows are ci.yml (push, PR, dispatch), publish.yml (push to main when version.txt changes), e2e.yml (cron every 6 hours plus dispatch), and validate.yml (tags v* and dispatch running make validate-builds).",
+          "sources": [
+            ".github/workflows/ci.yml#L1-L8",
+            ".github/workflows/publish.yml#L1-L13",
+            ".github/workflows/e2e.yml#L1-L7",
+            ".github/workflows/validate.yml#L1-L30"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "feature_catalog": {
+      "summary": "User-facing features are the CLI flag set, the Go and JavaScript build/transform/context APIs, plugins, a local HTTP dev server, polling watch mode, and packaging for many OS/CPU targets plus WASM. Loaders cover JS, JSX, TS, TSX, CSS (including CSS modules), JSON, and several asset loaders. React appears only as a test dependency in scripts/package.json, not as a product UI.",
+      "claims": [
+        {
+          "claim": "CLI help in main.go documents --bundle, --define:K=V, --external:M, --format=iife|cjs|esm, --loader, --minify, --outdir/--outfile, --packages, --platform=browser|node|neutral, --serve, --sourcemap, --splitting, --target, and --watch / --watch=forever.",
+          "sources": [
+            "cmd/esbuild/main.go#L33-L56"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The same help lists loaders base64, binary, copy, css, dataurl, empty, file, global-css, js, json, jsx, local-css, text, ts, and tsx. Default extension mapping in bundler.go assigns .js/.mjs/.cjs to JS, .jsx to JSX, and .json to JSON.",
+          "sources": [
+            "cmd/esbuild/main.go#L40-L43",
+            "internal/bundler/bundler.go#L2956-L2967"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Advanced CLI flags include --analyze, --banner/--footer, --certfile/--keyfile, --drop, --jsx and --jsx-import-source (default react), --mangle-props, --metafile, --minify-whitespace/identifiers/syntax, --pure, --supported, --tree-shaking, --tsconfig, and --tsconfig-raw.",
+          "sources": [
+            "cmd/esbuild/main.go#L58-L135"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "pkg/api.BuildOptions-style operations are Build (one-shot), Transform (string in, code/map/legal comments out), and Context for repeated Rebuild, Watch, and Serve. Plugin hooks are Setup plus OnStart, OnEnd, OnResolve, OnLoad, and OnDispose.",
+          "sources": [
+            "pkg/api/api.go#L398-L416",
+            "pkg/api/api.go#L487-L543",
+            "pkg/api/api.go#L575-L600"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "lib/npm/node.ts exports build, context, transform, formatMessages, analyzeMetafile, and the sync twins buildSync, transformSync, and formatMessagesSync. Sync calls prefer a worker_threads service unless ESBUILD_WORKER_THREADS is 0 or the thread is already the internal worker.",
+          "sources": [
+            "lib/npm/node.ts#L23-L49",
+            "lib/npm/node.ts#L135-L187"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The service protocol commands handled in service.go are build, transform, resolve, rebuild, watch, serve, cancel, dispose, error, format-msgs, and analyze-metafile. Resolve kinds encoded later include entry-point, import-statement, require-call, dynamic-import, require-resolve, import-rule, composes-from, and url-token.",
+          "sources": [
+            "cmd/esbuild/service.go#L227-L244",
+            "cmd/esbuild/service.go#L360-L361",
+            "cmd/esbuild/service.go#L547-L571",
+            "cmd/esbuild/service.go#L828-L846"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Serve mode is a local HTTP server. It overlays in-memory build outputs on servedir, serves index.html or a generated directory listing, and special-cases GET /esbuild with Accept text/event-stream. HTTPS requires both keyfile and certfile. CORS origins support a single * wildcard.",
+          "sources": [
+            "pkg/api/serve_other.go#L1-L14",
+            "pkg/api/serve_other.go#L105-L169",
+            "pkg/api/serve_other.go#L747-L788"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Watch mode is a polling scanner, not fsnotify and not cgo. It sleeps 100ms, checks up to 16 recent paths every tick plus at least 64 other paths, and aims to scan a large project about every 2 seconds.",
+          "sources": [
+            "pkg/api/watcher.go#L1-L48"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "When bundling, an unspecified format becomes IIFE for platform browser, CommonJS for node, and ESM for neutral. --splitting is rejected unless the output format is ESM. external and alias are rejected unless bundle is set.",
+          "sources": [
+            "pkg/api/api_impl.go#L1413-L1447"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Yarn PnP resolution is implemented in internal/resolver/yarnpnp.go against the Yarn PnP spec (package registry, fallback pool, ignore pattern). Zip contents are read through internal/fs/fs_zip.go.",
+          "sources": [
+            "internal/resolver/yarnpnp.go#L1-L49",
+            "internal/fs/fs_zip.go#L1-L18"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The JS API locates a platform binary via knownWindowsPackages, knownUnixlikePackages, and knownWebAssemblyFallbackPackages (android arm, android x64, and openharmony arm64 are WASM fallbacks). ESBUILD_BINARY_PATH overrides the path, except the hard-coded ignore of /usr/bin/esbuild.",
+          "sources": [
+            "lib/npm/node-platform.ts#L7-L83",
+            "lib/npm/node-platform.ts#L116-L128"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "scripts/package.json depends on react 17.0.1, typescript 4.7.4, source-map, and unicode data. Those are test/tooling dependencies. The product itself has no React UI; JSX support defaults the factory to React.createElement.",
+          "sources": [
+            "scripts/package.json#L1-L11",
+            "internal/js_parser/js_parser.go#L17810-L17813"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "data_flow": {
+      "summary": "CLI arguments and JS option objects become config.Options and entry points. ScanBundle walks the graph in parallel: resolve, onLoad, parse, then enqueue imports. Cached ASTs must stay immutable. Compile clones the linker graph, tree-shakes, splits chunks, prints, and optionally writes files. Transform skips the real filesystem and feeds stdin bytes through the same two phases. The dev server serves the latest in-memory output instead of those files.",
+      "claims": [
+        {
+          "claim": "CLI runImpl reads NODE_PATH (colon-separated, semicolon on Windows) into BuildOptions.NodePaths, and if there are no entry points it reads all of stdin into Stdin.Contents with ResolveDir set from os.Getwd.",
+          "sources": [
+            "pkg/cli/cli_impl.go#L1198-L1249"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "A JS build request is a length-prefixed packet whose BuildRequest carries entries, flags, write, stdin bytes, absWorkingDir, nodePaths, plugins, and mangleCache. The Go side parses flags with cli.ParseBuildOptions and calls api.Build.",
+          "sources": [
+            "lib/shared/stdio_protocol.ts#L1-L21",
+            "cmd/esbuild/service.go#L597-L604",
+            "cmd/esbuild/service.go#L789"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "contextImpl builds a real FS from AbsWorkingDir, runs loadPlugins once, validates options, and stores a rebuildArgs including caches and onEnd callbacks. Later rebuilds do not re-run plugin setup.",
+          "sources": [
+            "pkg/api/api_impl.go#L901-L975"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "rebuildImpl calls bundler.ScanBundle(config.BuildCall, ...) then, if the log has no errors, bundle.Compile(..., linker.Link). Each output file is hashed with xxhash into an 8-byte base64 hash stored on OutputFile and in latestHashes.",
+          "sources": [
+            "pkg/api/api_impl.go#L1515-L1554",
+            "pkg/api/api_impl.go#L1488-L1516"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "ScanBundle always parses the runtime as source index 0 via globalRuntimeCache.parseRuntime before entry points. The runtime text lives in internal/runtime/runtime.go and is tree-shaken if unused. SourceIndex is the constant 0.",
+          "sources": [
+            "internal/bundler/bundler.go#L1424-L1441",
+            "internal/runtime/runtime.go#L13-L16",
+            "internal/runtime/runtime.go#L63-L67"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "maybeParseFile dedupes by canonical path, copies tsconfig JSX and module-type data (.mjs/.mts vs .cjs/.cts vs package.json type), then starts parseFile on a goroutine. scanAllDependencies reads resultChannel until remaining hits zero and resolves each import record.",
+          "sources": [
+            "internal/bundler/bundler.go#L1540-L1654",
+            "internal/bundler/bundler.go#L2176-L2224"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "parseFile runs onLoad plugins unless the input is stdin, maps LoaderDefault through ExtensionToLoader, then dispatches: JS/JSX/TS/TSX to caches.JSCache.Parse, CSS/global-css/local-css to CSSCache.Parse, and JSON to JSONCache.Parse plus LazyExportAST. Import attributes type json, bytes, and text retarget the loader.",
+          "sources": [
+            "internal/bundler/bundler.go#L124-L186",
+            "internal/bundler/bundler.go#L197-L218",
+            "internal/bundler/bundler.go#L267-L324"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "JSCache.Parse reuses an AST only when source.KeyPath hits and both source contents and js_parser.Options.Equal match. The cache comment forbids mutating cached ASTs and forbids baking in data from other files.",
+          "sources": [
+            "internal/cache/cache.go#L10-L38",
+            "internal/cache/cache_ast.go#L152-L188"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "js_parser.Parse lexes on the fly, parses statements with parseStmtsUpTo, then a second pass splits top-level statements into parts via appendPart, which calls visitStmtsAndPrependTempRefs for binding, lowering, and mangling.",
+          "sources": [
+            "docs/architecture.md#L70-L78",
+            "internal/js_parser/js_parser.go#L17850-L17855",
+            "internal/js_parser/js_parser.go#L18023-L18034",
+            "internal/js_parser/js_parser.go#L17682-L17687"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Compile either links all entry points together (code splitting, or a single entry) or forks one linker goroutine per entry point. linker.Link clones the graph, calls scanImportsAndExports, treeShakingAndCodeSplitting, computeChunks, mangles props under ExclusiveMangleCacheUpdate, then generateChunksInParallel. Metafile JSON is generated only when NeedsMetafile is set.",
+          "sources": [
+            "internal/bundler/bundler.go#L3050-L3130",
+            "internal/linker/linker.go#L243-L349"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "When write is true and not stdout, rebuildImpl deletes paths present in oldHashes but not newHashes, skips writes whose on-disk bytes already match, and otherwise MkdirAll 0755 plus WriteFile 0666 or 0777 for executables. OnEnd callbacks run after writes. Errors suppress writing (issue 3643 is cited in code).",
+          "sources": [
+            "pkg/api/api_impl.go#L1558-L1647"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Transform builds options with Stdin.Contents set to the input string, uses fs.MockFS, and calls ScanBundle(config.TransformCall) then Compile. Results are split into code, a .map file, and a .LEGAL.txt file by path suffix.",
+          "sources": [
+            "pkg/api/api_impl.go#L1782-L1833",
+            "pkg/api/api_impl.go#L1844-L1859"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "behavior_traces": {
+      "summary": "Three flows matter: process startup (CLI versus service), a full bundle (scan, link, write), and the JS client attaching to that service. Watch and serve sit on the same Context and reuse rebuild. Transform is the bundle path with a mock filesystem and no entry-point files.",
+      "claims": [
+        {
+          "claim": "Startup with no args and a TTY stdin prints helpText and exits 0. --version prints esbuildVersion and exits 0. --service=VERSION checks the host version, then runService(sendPings) and returns without calling cli.Run.",
+          "sources": [
+            "cmd/esbuild/main.go#L176-L184",
+            "cmd/esbuild/main.go#L200-L253"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "runService sets logger.API to JSAPI, writes the version as the first length-prefixed stdout packet, and if --ping was passed sends command ping every second. Packets are written on one goroutine so they cannot interleave. EOF on stdin ends the loop.",
+          "sources": [
+            "cmd/esbuild/service.go#L84-L159"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "A normal CLI invocation strips the special flags, optionally disables GC when there is at most one entry point and the process is not watch/serve, then sets exitCode from cli.Run. Non-TTY stdin starts a goroutine that os.Exit when stdin closes, which is how watch and serve stop.",
+          "sources": [
+            "cmd/esbuild/main.go#L309-L382"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "cli.runImpl intercepts any --serve, --servedir, or --serve-fallback argument and calls serveImpl, which parseServeOptionsImpl, api.Context, ctx.Serve, optional ctx.Watch, then blocks forever on a nil channel. Returning from serveImpl yields exit code 1.",
+          "sources": [
+            "pkg/cli/cli_impl.go#L1198-L1207",
+            "pkg/cli/cli_impl.go#L1497-L1555"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "One-shot Build calls contextImpl, then ctx.Rebuild, optionally printSummary, then ctx.Dispose. Rebuild coalesces concurrent callers onto the active buildInProgress and otherwise calls rebuildImpl.",
+          "sources": [
+            "pkg/api/api.go#L398-L416",
+            "pkg/api/api_impl.go#L1001-L1032"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Scan order inside ScanBundle is: parallel onStart callbacks, generateUniqueKeyPrefix, resolver.NewResolver, parse runtime, wait for onStart, honor CancelFlag, preprocessInjectedFiles, addEntryPoints, scanAllDependencies, processScannedFiles. Cancel after onStart still returns a Bundle so onEnd can run.",
+          "sources": [
+            "internal/bundler/bundler.go#L1385-L1518"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "linker.Link order is: wrappedLog, graph.CloneLinkerGraph, bind __commonJS or __commonJSMin from the runtime AST, scanImportsAndExports, treeShakingAndCodeSplitting, computeChunks, computeCrossChunkDependencies, mangleProps and mangleLocalCSS, ast.FollowAllSymbols, generateChunksInParallel.",
+          "sources": [
+            "internal/linker/linker.go#L227-L349"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "JS build() and transform() call ensureServiceIsRunning(). The child argv is the native binPath, or node plus the wasm bin shim when WASM or the platform fallback is WASM. esbuildCommandAndArgs throws if the API file is not lib/main.js, because bundling the package breaks the relative binary path.",
+          "sources": [
+            "lib/npm/node.ts#L51-L79",
+            "lib/npm/node.ts#L135-L142"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "handleBuildRequest parses flags with cli.ParseBuildOptions. For a context build it keeps an activeBuild keyed by an integer and wires plugin onEnd back across the protocol. A non-context build calls api.Build and encodes errors, warnings, output files, metafile, and mangle cache.",
+          "sources": [
+            "cmd/esbuild/service.go#L597-L604",
+            "cmd/esbuild/service.go#L721",
+            "cmd/esbuild/service.go#L789"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "ServeHTTP checks Host against localhost or the server's host list (DNS rebinding), rejects backslash paths, rebuilds via h.rebuild(), returns 503 text if the build has errors, then matches the cleaned URL to in-memory output or servedir.",
+          "sources": [
+            "pkg/api/serve_other.go#L105-L183"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "A service rebuild command looks up activeBuild by key, increments withinRebuildCount, calls ctx.Rebuild(), and returns only errors and warnings, not output files. dispose waits on disposeWaitGroup so in-flight rebuild, watch, serve, and resolve calls finish.",
+          "sources": [
+            "cmd/esbuild/service.go#L30-L39",
+            "cmd/esbuild/service.go#L274-L311"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Plugin onResolve filters are compiled with config.CompileFilterForPlugin before the callback is stored. During the build, Go plugins call bundler.RunOnResolvePlugins; JS plugins are proxied as service resolve requests.",
+          "sources": [
+            "pkg/api/api_impl.go#L1952-L1964",
+            "pkg/api/api_impl.go#L2141",
+            "internal/config/config.go#L756"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "testing_signals": {
+      "summary": "Go tests use the standard testing package and cover cmd, internal, and pkg. Bundler expectations are snapshot files updated with UPDATE_SNAPSHOTS=1. A second layer of Node scripts drives the real binary, the JS API, plugins, source maps, and WASM. CI splits fast race tests, slow compatibility suites, an old Go 1.13 job, tag validation, and a 6-hour install matrix. There is no separate browser product to test; React in scripts is a fixture dependency.",
+      "claims": [
+        {
+          "claim": "make test runs test-common in parallel: test-go, vet-go, no-filepath, verify-source-map, end-to-end-tests, js-api-tests, plugin-tests, register-test, node-unref-tests, and decorator-tests. test-go is go test ./cmd/... ./internal/... ./pkg/... and does not pass -race unless ESBUILD_RACE is set.",
+          "sources": [
+            "docs/development.md#L13-L17",
+            "Makefile#L19-L50"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CI job esbuild on ubuntu, macos, and windows runs go test -race, go vet, npm ci in scripts, register-test, verify-source-map, end-to-end-tests.js, js-api-tests.js, node-unref-tests.js, and plugin-tests.js. Ubuntu also runs no-filepath, ts-type-tests, lib-typecheck, decorator-tests, both WASM targets, sucrase, esprima, preact splitting, unicode table generation, and Yarn PnP.",
+          "sources": [
+            ".github/workflows/ci.yml#L88-L214"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Bundler tests in internal/bundler_tests compare against snapshots/*.txt. The header says to regenerate with UPDATE_SNAPSHOTS=1 make test and inspect the diff. expectBundled runs each case on fs.MockUnix and again with Windows path conversion.",
+          "sources": [
+            "internal/bundler_tests/bundler_test.go#L1-L7",
+            "internal/bundler_tests/bundler_test.go#L72-L80"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Snapshot files exist for css, dce, default, glob, importphase, importstar, loader, lower, packagejson, splitting, ts, tsconfig, and yarnpnp. Separate Go tests exist for the lexer, parser, printer, css parser, compat, resolver yarnpnp, runtime, logger, and pkg/api.",
+          "sources": [
+            "internal/bundler_tests/bundler_test.go#L1-L7"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The slow CI job uses Node 16 because a comment says WASM tests break on Node 18, and runs make test-rollup, CI=1 make uglify, make test-tsc, make test-old-ts, plus GOOS=plan9 builds for 386, amd64, and arm.",
+          "sources": [
+            ".github/workflows/ci.yml#L42-L84"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "A dedicated job installs Go 1.13, the minimum declared in go.mod, to prove the tree still builds on that compiler. check-go-version in the Makefile requires the go.version toolchain for release tasks.",
+          "sources": [
+            ".github/workflows/ci.yml#L216-L228",
+            "Makefile#L29-L30",
+            "go.mod#L3-L5"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "scripts/register-test.js writes a temporary require.extensions['.ts'] hook that calls transformSync with loader ts, then runs node -r register on an entry.ts. It is not a published register package; it is a regression test for that pattern.",
+          "sources": [
+            "scripts/register-test.js#L1-L40"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "decorator-tests compiles scripts/decorator-tests.ts with the built esbuild at --target=es2022 and fails if git diff shows the checked-in JS changed. The Makefile says the source of those tests is github.com/evanw/decorator-tests.",
+          "sources": [
+            "Makefile#L113-L121"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "make test-all adds ts-type-tests, test-wasm-node, test-wasm-browser, lib-typecheck, and test-yarnpnp on top of test-common. test-wasm-node runs go test ./internal/... with GOOS=js GOARCH=wasm and then node scripts/wasm-tests.js.",
+          "sources": [
+            "Makefile#L25-L27",
+            "Makefile#L94-L99"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "e2e.yml every 6 hours runs make test-e2e-npm, test-e2e-pnpm, test-e2e-yarn, and test-e2e-yarn-berry against the published esbuild package, including --ignore-scripts and --no-optional install paths.",
+          "sources": [
+            ".github/workflows/e2e.yml#L1-L41",
+            "Makefile#L153-L178"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "compat-table/package.json vendors compat-table at commit 8f4179ff, plus @mdn/browser-compat-data and caniuse-lite, which feed the engine support tables under internal/compat. Those generated tables are not executed as unit tests by themselves.",
+          "sources": [
+            "compat-table/package.json#L1-L10",
+            "internal/compat/compat.go#L1-L16"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "lib-typecheck runs tsc -noEmit on lib/tsconfig.json and lib/tsconfig-nolib.json. The published .d.ts surface is lib/shared/types.ts, copied into the npm package as lib/main.d.ts.",
+          "sources": [
+            "Makefile#L145-L151",
+            "lib/package.json#L1-L6",
+            "npm/esbuild/package.json#L12-L13"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "risk_map": {
+      "summary": "esbuild treats source text as trusted and says the dev server is not a security boundary. The sharp edges are the install-time binary download, the unauthenticated local IPC service, filesystem writes at absolute paths, and the size of the parser and linker. Go 1.13 compatibility and the path/filepath ban make casual modern-Go edits break the build. The architecture doc disagrees with the CLI on whether tree shaking can be turned off.",
+      "claims": [
+        {
+          "claim": "node-install.ts downloads missing platform binaries by running npm install of @esbuild/<pkg>@<version> via child_process.execSync, and as a last resort https.get of https://registry.npmjs.org/<pkg>/-/<tarball>.tgz. extractFileFromTarGzip pulls package/<subpath> out of the gzip.",
+          "sources": [
+            "lib/npm/node-install.ts#L70-L103",
+            "lib/npm/node-install.ts#L105-L148",
+            "lib/npm/node-install.ts#L236-L249"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "binaryIntegrityCheck sha256s the bytes and compares them to packageJSON['esbuild.binaryHashes'][pkg/subpath]. A missing or mismatched hash throws. The check is skipped when ESBUILD_BINARY_PATH is set and the file exists.",
+          "sources": [
+            "lib/npm/node-install.ts#L228-L234",
+            "lib/npm/node-install.ts#L252-L262",
+            "lib/npm/node-platform.ts#L116-L125"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "validateBinaryVersion runs the chosen binary with --version via execFileSync and throws if stdout does not equal packageJSON.version. On macOS it special-cases _SecTrustEvaluateWithError and suggests esbuild-wasm or an older Go.",
+          "sources": [
+            "lib/npm/node-install.ts#L20-L59"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The stdin/stdout service has no authentication. Any local process that can speak the length-prefixed protocol can request build, transform, serve, or resolve. --service refuses to start only when the host version string mismatches.",
+          "sources": [
+            "cmd/esbuild/service.go#L1-L4",
+            "cmd/esbuild/main.go#L200-L214",
+            "lib/shared/stdio_protocol.ts#L1-L5"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The Makefile comment states esbuild is not a security boundary: it transforms trusted source text and the dev server is a read-only view of source not intended for production. Serve still checks Host to block DNS rebinding and rejects Windows backslashes in URLs.",
+          "sources": [
+            "Makefile#L66-L77",
+            "pkg/api/serve_other.go#L134-L162"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "rebuildImpl writes output with ioutil.WriteFile at absolute paths using mode 0666, or 0777 when IsExecutable, and os.Remove on outputs that disappeared between rebuilds. AllowOverwrite is forced when Write is false so serve can use input paths as output paths.",
+          "sources": [
+            "pkg/api/api_impl.go#L1455-L1458",
+            "pkg/api/api_impl.go#L1604-L1624"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "OnLoad and OnResolve plugins supply file contents and paths. JS plugins cross the service boundary; a plugin callback can therefore cause the Go process to parse and later write whatever bytes the plugin returns.",
+          "sources": [
+            "pkg/api/api.go#L575-L597",
+            "internal/bundler/bundler.go#L164-L189",
+            "cmd/esbuild/service.go#L245-L262"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "docs/architecture.md says tree shaking is always active and cannot be disabled. The CLI and TransformOptions both expose a tree-shaking switch, and validateTreeShaking is called from transformImpl. The architecture page is stale on that point.",
+          "sources": [
+            "docs/architecture.md#L114-L116",
+            "cmd/esbuild/main.go#L130-L131",
+            "pkg/api/api_impl.go#L1776"
+          ],
+          "kind": "inference"
+        },
+        {
+          "claim": "publish.yml has id-token: write and contents: write, builds every platform, refuses a dirty git status, installs npm 11.5.1, runs make publish-all, pushes tag v$ESBUILD_VERSION, and creates a GitHub Release from the CHANGELOG section. A version.txt push to main is the release trigger.",
+          "sources": [
+            ".github/workflows/publish.yml#L3-L13",
+            ".github/workflows/publish.yml#L44-L87",
+            "RUNBOOK.md#L6-L24"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Parser panics that are not js_lexer.LexerPanic are re-panicked in js_parser.Parse. parseFile has its own recover that turns any panic into a log error with a stack, so a parser crash becomes a failed file rather than a dead process during scan.",
+          "sources": [
+            "internal/js_parser/js_parser.go#L17815-L17824",
+            "internal/bundler/bundler.go#L257-L265"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "staticcheck.conf sets checks = [] and the comment says the author disabled the VS Code Go linter on purpose. Agents should not assume staticcheck is an enforced gate.",
+          "sources": [
+            "staticcheck.conf#L1-L5"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "ioutil is still used in api_impl.go and the install path uses sync npm install. That is consistent with the Go 1.13 floor, but edits that use newer stdlib-only APIs or generics will fail the Go 1.13 CI job even if local Go 1.26 accepts them.",
+          "sources": [
+            "pkg/api/api_impl.go#L1599",
+            "go.mod#L3-L5",
+            ".github/workflows/ci.yml#L216-L228"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "extension_points": {
+      "summary": "The supported plug-in surface is the plugin object with onStart, onResolve, onLoad, onEnd, and onDispose, available from Go, the CLI via RunWithPlugins, and the JS service. Loaders, defines, inject files, and the runtime helper string are the other intended extension points. New OS targets are new directories under npm/@esbuild plus installer tables, not a plugin.",
+      "claims": [
+        {
+          "claim": "api.Plugin is Name plus Setup(PluginBuild). PluginBuild registers OnStart, OnEnd, OnResolve(filter, namespace), OnLoad(filter, namespace), OnDispose, and a Resolve helper. SideEffects is a bool-like enum on results.",
+          "sources": [
+            "pkg/api/api.go#L566-L641"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "cli.RunWithPlugins appends caller plugins after parse, and --analyze is itself added as a plugin that forces Metafile true. Native Go embedding is the supported way to add plugins without the JS service.",
+          "sources": [
+            "pkg/cli/cli.go#L34-L37",
+            "pkg/cli/cli_impl.go#L1213-L1220",
+            "pkg/cli/cli_impl.go#L1194-L1196"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "JS plugins are declared as BuildPlugin records (name, onStart, onEnd, onResolve/onLoad id+filter+namespace) and sent in the build packet. Callbacks round-trip as resolve and on-end requests.",
+          "sources": [
+            "lib/shared/stdio_protocol.ts#L42-L65",
+            "cmd/esbuild/service.go#L245-L262",
+            "cmd/esbuild/service.go#L418-L429"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "config.CompileFilterForPlugin compiles each OnResolve and OnLoad filter regex and tags errors with the plugin name and hook kind. That is the validation gate for new plugin filters.",
+          "sources": [
+            "pkg/api/api_impl.go#L1952-L1963",
+            "pkg/api/api_impl.go#L2030-L2040",
+            "internal/config/config.go#L756"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "parseFile's switch on config.Loader is the dispatch table for new content types. Adding a loader means a Loader constant, an extension map entry, a CLI name, and a branch that produces either a JSRepr or CSSRepr.",
+          "sources": [
+            "pkg/api/api.go#L141-L161",
+            "internal/bundler/bundler.go#L267-L308",
+            "cmd/esbuild/main.go#L40-L43"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Architecture docs say new helper functions belong in the string inside internal/runtime/runtime.go so they are parsed as the runtime file and tree-shaken. Names must not collide with tslib helpers such as __decorate and __extends; esbuild uses its own __create, __defProp, and similar names.",
+          "sources": [
+            "docs/architecture.md#L223-L225",
+            "internal/runtime/runtime.go#L19-L66"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Compile-time substitution is --define:K=V and the Define map. Dead-code elimination of require() inside folded branches is documented with the React process.env.NODE_ENV pattern. --inject:F and --pure:N are the other per-build hooks that do not require a plugin.",
+          "sources": [
+            "docs/architecture.md#L92-L104",
+            "cmd/esbuild/main.go#L35",
+            "cmd/esbuild/main.go#L83-L84",
+            "cmd/esbuild/main.go#L119"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Resolver namespaces are part of logger.Path. The file namespace is special-cased for canonical Windows paths, relative rewriting, and overwrite checks. dataurl is a namespace handled by resolver.ParseDataURL. Plugins can return other namespaces from OnResolve.",
+          "sources": [
+            "internal/bundler/bundler.go#L1550-L1553",
+            "internal/bundler/bundler.go#L1611-L1625",
+            "internal/bundler/bundler.go#L3137-L3142"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Engine support is data, not code: internal/compat feature bits plus tables generated from compat-table (MDN, caniuse, compat-table). --target and --supported:F=true|false are the user-facing overrides.",
+          "sources": [
+            "compat-table/package.json#L2-L9",
+            "internal/compat/compat.go#L14-L21",
+            "cmd/esbuild/main.go#L53-L54",
+            "cmd/esbuild/main.go#L130"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "A new platform package is a directory under npm/@esbuild, plus entries in node-platform.ts maps and esbuild.binaryHashes. RUNBOOK.md says to publish an empty 0.0.1 package, set the esbuild npm user as sole maintainer, and add this repo's publish.yml as the trusted publisher.",
+          "sources": [
+            "RUNBOOK.md#L40-L64",
+            "lib/npm/node-platform.ts#L22-L55",
+            "npm/esbuild/package.json#L20-L49"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "ESBUILD_BINARY_PATH is a documented external extension point. Comments in node-platform.ts and node-install.ts say not to remove it because outside code and the test suite depend on it.",
+          "sources": [
+            "lib/npm/node-platform.ts#L7-L17",
+            "lib/npm/node-install.ts#L252-L255"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Banner and footer are per output type (css or js). Injected files are turned into generated import statements in the parser before the visit pass. Both are extension points that do not add a new loader.",
+          "sources": [
+            "cmd/esbuild/main.go#L66-L79",
+            "internal/js_parser/js_parser.go#L17918-L17983"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_handoff": {
+      "summary": "Start with the architecture doc, the Makefile, and the three public edges (CLI, pkg/api, lib service protocol). Keep Go 1.13, the single dependency pin, and the path/filepath ban. Do not hand-edit published npm trees. Version changes are a release. Parser and linker edits need snapshot and JS API tests, and cached ASTs must stay immutable.",
+      "claims": [
+        {
+          "claim": "Read order for a pipeline change is docs/architecture.md, docs/development.md, internal/bundler/bundler.go (ScanBundle, parseFile, Compile), internal/linker/linker.go (Link), internal/js_parser/js_parser.go (Parse and appendPart), and pkg/api/api_impl.go (contextImpl, rebuildImpl, transformImpl).",
+          "sources": [
+            "docs/architecture.md#L54-L78",
+            "docs/development.md#L5-L17",
+            "internal/bundler/bundler.go#L1371",
+            "internal/linker/linker.go#L227",
+            "pkg/api/api_impl.go#L901"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Safe local checks are make or go build ./cmd/esbuild, then make test-go or go test ./internal/... ./pkg/.... Snapshot updates are UPDATE_SNAPSHOTS=1 and must be reviewed. JS API changes also need node scripts/js-api-tests.js and node scripts/plugin-tests.js after scripts/esbuild.js has built the package under test.",
+          "sources": [
+            "docs/development.md#L9-L17",
+            "Makefile#L16-L27",
+            "Makefile#L123-L128",
+            "internal/bundler_tests/bundler_test.go#L5-L7"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Do not change the go version line or the golang.org/x/sys pin in go.mod. Do not import path/filepath. Do not enable cgo. Release binaries are built with the go.version compiler via the Makefile GO_COMPILER wrapper, not whatever go is first on PATH.",
+          "sources": [
+            "go.mod#L3-L10",
+            "Makefile#L8-L14",
+            "Makefile#L85-L87",
+            "Makefile#L59-L83"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "A release is version.txt (number only), a matching ## header in CHANGELOG.md, then make platform-all committed so every package.json matches, then a push to main. publish.yml fails if git status is dirty after its own platform-all, and it refuses an empty changelog section.",
+          "sources": [
+            "RUNBOOK.md#L6-L24",
+            "docs/development.md#L19-L25",
+            ".github/workflows/publish.yml#L54-L72"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The JS service and the Go service are one protocol. Changing a command, flag name, or packet field requires edits in lib/shared/stdio_protocol.ts, lib/shared/common.ts, and cmd/esbuild/service.go together. The first stdout bytes of the service are the version string, and the host passes that same version as --service=.",
+          "sources": [
+            "lib/shared/stdio_protocol.ts#L1-L21",
+            "cmd/esbuild/service.go#L106-L107",
+            "cmd/esbuild/main.go#L200-L213"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Cache and linker invariants are unchecked by the type system. cache.go says ASTs are shared across builds and must be immutable, and options that affect parsing must be in the cache key. Architecture docs say cross-build data must stay immutable for watch mode.",
+          "sources": [
+            "internal/cache/cache.go#L10-L32",
+            "docs/architecture.md#L50-L52"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Symbol identity is a ref into a per-file symbol array, merged across files by Link chains. FollowSymbols or FollowAllSymbols must be used before printing. Renaming or cloning symbols without following links will emit the wrong identifier.",
+          "sources": [
+            "docs/architecture.md#L82-L88",
+            "docs/architecture.md#L211-L215",
+            "internal/linker/linker.go#L345-L349"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Code splitting only works for the esm format. Moving an assignment to a module-local binding into a different chunk than its declaration is a known correctness hazard documented in architecture.md.",
+          "sources": [
+            "pkg/api/api_impl.go#L1445-L1447",
+            "docs/architecture.md#L347-L379"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Watch mode stops when stdin closes unless --watch=forever. The dev server also stops when stdin closes. WASM cannot serve. Do not replace the poller with a cgo file watcher; watcher.go explains why cgo is rejected.",
+          "sources": [
+            "cmd/esbuild/main.go#L220-L236",
+            "cmd/esbuild/main.go#L333-L366",
+            "pkg/api/watcher.go#L1-L10",
+            "cmd/esbuild/main_wasm.go#L27-L29"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Large files an agent will fight: internal/js_parser/js_parser.go, internal/linker/linker.go, internal/bundler/bundler.go, and the css_parser declaration files. Prefer a new test in internal/bundler_tests or scripts/js-api-tests.js over a drive-by refactor.",
+          "sources": [
+            "internal/js_parser/js_parser.go#L17815",
+            "internal/linker/linker.go#L227",
+            "internal/bundler/bundler.go#L1371"
+          ],
+          "kind": "inference"
+        },
+        {
+          "claim": "npm/esbuild/lib and the platform bin/ directories are build outputs of scripts/esbuild.js. make publish-all deletes and restores npm/ from git before publishing. Editing generated install.js in the published tree without changing lib/npm/node-install.ts will be overwritten.",
+          "sources": [
+            "Makefile#L445-L447",
+            "lib/npm/node-install.ts#L1-L16",
+            "docs/development.md#L19-L25"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "There is no product web UI in this repo. scripts/try.html is a manual WASM playground served by esbuild --servedir=.. Do not treat the React dependency in scripts/package.json as application code.",
+          "sources": [
+            "docs/development.md#L27-L33",
+            "scripts/package.json#L2-L10"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_prompt": "You are working in the esbuild repository (module github.com/evanw/esbuild, version 0.28.2). It is a JavaScript, TypeScript, JSX, JSON, and CSS bundler and minifier written in Go. There is no application database and no product web UI. Users reach it through three surfaces that must stay behaviorally aligned: the native CLI in cmd/esbuild, the Go library in pkg/api and pkg/cli, and the npm package whose TypeScript in lib/ is compiled into the published package and spawns a long-lived native binary, or a WebAssembly build, over a length-prefixed stdin/stdout protocol.\n\nRead these before editing pipeline behavior: docs/architecture.md (scan versus compile, three AST passes, CommonJS versus ESM linking, tree shaking, code splitting, symbol Link chains), docs/development.md (Makefile workflow), RUNBOOK.md (trusted publishing), go.mod, go.version, version.txt, cmd/esbuild/main.go, pkg/api/api.go, pkg/api/api_impl.go, internal/bundler/bundler.go, internal/linker/linker.go, and lib/shared/stdio_protocol.ts together with cmd/esbuild/service.go.\n\nThe build pipeline is bundler.ScanBundle then (*Bundle).Compile, which calls linker.Link. ScanBundle runs plugin onStart callbacks, parses the helper source in internal/runtime/runtime.go as source index 0, then walks entry points on goroutines. Each file goes through resolver.Resolver, onLoad plugins, and parseFile. parseFile switches on loader into cache.JSCache.Parse (js_parser.Parse), CSSCache.Parse (css_parser.Parse), or JSONCache.Parse. Caches assume ASTs are immutable and that every option which changes parsing is part of the cache key. The second parser pass is appendPart calling visitStmtsAndPrependTempRefs. Linking then runs scanImportsAndExports, treeShakingAndCodeSplitting, computeChunks, property mangling, FollowAllSymbols, and generateChunksInParallel, which prints with js_printer.Print and css_printer.Print. Output files are written in rebuildImpl only when Write is set, skipping byte-identical files, at mode 0666 or 0777. Transform uses fs.MockFS and the same ScanBundle/Compile path with config.TransformCall and stdin contents.\n\nConstraints you must not casually break: the go 1.13 language line and the pinned golang.org/x/sys in go.mod; CGO_ENABLED=0; the Makefile ban on path/filepath (use internal/fs and the path package); official release builds use the Go version in go.version (currently 1.26.5) via a patched compiler that strips ctxt.buildinfo. Version bumps require version.txt, a matching CHANGELOG.md header, and a committed make platform-all. publish.yml fires on version.txt changes pushed to main, rejects a dirty tree, publishes every npm package, and tags vX.Y.Z. Do not hand-edit generated files under npm/ without changing lib/npm and scripts/esbuild.js. Keep service commands (build, transform, resolve, rebuild, watch, serve, cancel, dispose, format-msgs, analyze-metafile) in sync across Go and TypeScript. Plugin hooks are OnStart, OnResolve, OnLoad, OnEnd, and OnDispose; filters go through config.CompileFilterForPlugin. New runtime helpers belong in the string in internal/runtime/runtime.go so tree shaking can drop them, and their names must not collide with tslib.\n\nTests: go test ./cmd/... ./internal/... ./pkg/... or make test-go. CI adds -race. Bundler behavior is snapshot-tested under internal/bundler_tests; regenerate with UPDATE_SNAPSHOTS=1 and review the diff. JS behavior lives in scripts/*-tests.js (js-api, plugin, end-to-end, register, wasm). Also relevant are make no-filepath, the Go 1.13 job, and the slow compatibility suites (rollup, uglify, tsc, esprima, sucrase). The dev server in pkg/api/serve_other.go is not a production server: it checks Host against DNS rebinding, rejects backslashes, and overlays in-memory build output on servedir. Watch mode polls and does not use cgo. WASM builds cannot serve. ESBUILD_BINARY_PATH overrides the native binary and skips the sha256 check in the install script; do not remove that hook."
+  },
+  "analysis": {
+    "agent": "grok",
+    "model": "cli:grok",
+    "runtime_ms": 497129,
+    "cost_usd": null,
+    "collected_at": "2026-09-22T11:47:58.594Z"
   }
 }

@@ -1,0 +1,4525 @@
+{
+  "schema_version": "codevetter.repo-unpack-corpus/v1",
+  "repo": "AUTOMATIC1111/stable-diffusion-webui",
+  "slug": "stable-diffusion-webui",
+  "codevetter_version": "codevetter 1.12.0",
+  "collected_at": "2026-09-22T11:40:40.320Z",
+  "last_commit": {
+    "sha": "82a973c04367123ae98bd9abdf80d9eda9b910e2",
+    "date": "2024-07-27",
+    "subject": "changelog"
+  },
+  "scan": {
+    "schema_version": "codevetter.unpack-scan/v1",
+    "report_id": "ade2f68f-784e-4942-9e0a-c1eba994a736",
+    "status": "scan_only",
+    "created_at": "2026-09-22T11:40:40.318640+00:00",
+    "inventory": {
+      "repo_path": "/private/var/folders/9_/1109_2dd1qz6zyvmxb5zp8pc0000gn/T/unpack-pilot-bHiwuo/stable-diffusion-webui",
+      "repo_name": "stable-diffusion-webui",
+      "commit_sha": "82a973c04367123ae98bd9abdf80d9eda9b910e2",
+      "branch": "master",
+      "remote_url": "https://github.com/AUTOMATIC1111/stable-diffusion-webui.git",
+      "files_scanned": 303,
+      "files_skipped": 9,
+      "bytes_scanned": 2507501,
+      "max_files_hit": false,
+      "estimated_total_files": null,
+      "languages": [
+        {
+          "language": "Python",
+          "files": 213,
+          "bytes": 1840622
+        },
+        {
+          "language": "JavaScript",
+          "files": 30,
+          "bytes": 181011
+        },
+        {
+          "language": "Markdown",
+          "files": 3,
+          "bytes": 110586
+        },
+        {
+          "language": "CSS",
+          "files": 2,
+          "bytes": 44551
+        },
+        {
+          "language": "HTML",
+          "files": 11,
+          "bytes": 27503
+        },
+        {
+          "language": "YAML",
+          "files": 14,
+          "bytes": 24084
+        },
+        {
+          "language": "Shell",
+          "files": 2,
+          "bytes": 11972
+        },
+        {
+          "language": "TOML",
+          "files": 2,
+          "bytes": 987
+        },
+        {
+          "language": "JSON",
+          "files": 1,
+          "bytes": 185
+        }
+      ],
+      "manifests": [
+        {
+          "path": "package.json",
+          "kind": "package.json",
+          "name": "stable-diffusion-webui",
+          "version": "0.0.0",
+          "dependencies": [
+            "eslint"
+          ],
+          "scripts": [
+            "fix",
+            "lint"
+          ]
+        },
+        {
+          "path": "pyproject.toml",
+          "kind": "pyproject.toml",
+          "name": null,
+          "version": null,
+          "dependencies": [],
+          "scripts": []
+        }
+      ],
+      "entrypoints": [
+        {
+          "path": "README.md",
+          "kind": "docs",
+          "reason": "Repository readme"
+        },
+        {
+          "path": ".github/workflows/warns_merge_master.yml",
+          "kind": "config",
+          "reason": "GitHub Actions workflow"
+        },
+        {
+          "path": "package.json",
+          "kind": "config",
+          "reason": "npm scripts: fix, lint"
+        }
+      ],
+      "top_level_dirs": [
+        {
+          "path": "modules",
+          "file_count": 152,
+          "bytes": 1464569
+        },
+        {
+          "path": "extensions-builtin",
+          "file_count": 43,
+          "bytes": 296263
+        },
+        {
+          "path": "javascript",
+          "file_count": 25,
+          "bytes": 131358
+        },
+        {
+          "path": "scripts",
+          "file_count": 12,
+          "bytes": 103749
+        },
+        {
+          "path": "html",
+          "file_count": 11,
+          "bytes": 27503
+        },
+        {
+          "path": "test",
+          "file_count": 9,
+          "bytes": 10489
+        },
+        {
+          "path": ".github",
+          "file_count": 7,
+          "bytes": 10794
+        },
+        {
+          "path": "configs",
+          "file_count": 7,
+          "bytes": 13700
+        },
+        {
+          "path": "textual_inversion_templates",
+          "file_count": 6,
+          "bytes": 4058
+        },
+        {
+          "path": "models",
+          "file_count": 5,
+          "bytes": 220856
+        },
+        {
+          "path": "localizations",
+          "file_count": 1,
+          "bytes": 0
+        }
+      ],
+      "docs": [
+        {
+          "path": "README.md",
+          "bytes": 12924,
+          "preview": "# Stable Diffusion web UI\r\nA web interface for Stable Diffusion, implemented using Gradio library.\r\n\r\n![](screenshot.png)\r\n\r\n## Features\r\n[Detailed feature showcase with images](https://github.com/AUTOMATIC1111/stable-diffusion-webui/wiki/Features):\r\n- Original txt2img and img2img modes\r\n- One click install and run script (but you still must install python and git)\r\n- Outpainting\r\n- Inpainting\r\n- Color Sketch\r\n- Prompt Matrix\r\n- Stable Diffusion Upscale\r\n- Attention, specify parts of text that the model should pay more attention to\r\n    - a man in a `((tuxedo))` - will pay more attention to tuxedo\r\n    - a man in a `(tuxedo:1.21)` - alternative syntax\r\n    - select text and press `Ctrl+Up` or `Ctrl+Down` (or `Command+Up` or `Command+Down` if you're on a MacOS) to automatically adjust attention to selected text (code contributed by anonymous user)\r\n- Loopback, run img2img processing multiple times\r\n- X/Y/Z plot, a way to draw a 3 dimensional plot of images with different parameters\r\n- Textual Inversion\r\n    - have as many embeddings as you want and use any names you like for them\r\n    - use multiple embeddings with different numbers of vectors per token\r\n    - works with half precision floating point numbers\r\n    - train embeddings on 8GB (also reports of 6GB working)\r\n- Extras tab with:\r\n    - GFPGAN, neural network that fixes faces\r\n    - CodeFormer, face restoration tool as an alternative to GFPGAN\r\n    - RealESRGAN, neural network upscaler\r\n    - ESRGAN, neural network upscaler with a lot of third party models\r\n    - SwinIR and Swin2SR ([see here](https://github.com/AUTOMATIC1111/stable-diffusion-webui/pull/2092)), neural network upscalers\r\n    - LDSR, Latent diffusion super resolution upscaling\r\n- Resizing aspect ratio options\r\n- Sampling method selection\r\n    - Adjust sampler eta values (noise multiplier)\r\n    - More advanced noise setting options\r\n- Interrupt processing at any time\r\n- 4GB video card support (also reports of 2GB working)\r\n- Correct seeds for batches\r\n- Live prompt token length validation\r\n- Generation parameters\r\n     - parameters you used to generate images are saved with that image\r\n     - in PNG chunks for PNG, in EXIF for JPEG\r\n     - can drag the image to PNG info tab to restore generation parameters and automatically copy them into UI\r\n     - can be disabled in settings\r\n     - drag and drop an image/text-parameters to promptbox\r\n- Read Generation Parameters Button, loads parameters in promptbox to UI\r\n- Settings page\r\n- Running arbitrary python code from UI (must run with `--allow-code` to enable)\r\n- Mouseover hints for most UI elements\r\n- Possible to change defaults/mix/max/step values for UI elements via text config\r\n- Tiling support, a checkbox to create images that can be tiled like textures\r\n- Progress bar and live image generation preview\r\n    - Can use a separate neural network to produce previews with almost none VRAM or compute requirement\r\n- Negative prompt, an extra text field that allows you to list what you don't want to see in generated image\r\n- Styles, a way to save part of prompt and easily apply them via dropdown later\r\n- Variations, a way to generate same image but with tiny differences\r\n- Seed resizing, a way to generate same image but at slightly different resolution\r\n- CLIP interrogator, a button that tries to guess prompt from an image\r\n- Prompt Editing, a way to change prompt mid-generation, say to start making a watermelon and switch to anime girl midway\r\n- Batch Processing, process a group of files using img2img\r\n- Img2img Alternative, reverse Euler method of cross attention control\r\n- Highres Fix, a convenience option to produce high resolution pictures in one click without usual distortions\r\n- Reloading checkpoints on the fly\r\n- Checkpoint Merger, a tab that allows you to merge up to 3 checkpoints into one\r\n- [Custom scripts](https://github.com/AUTOMATIC1111/stable-diffusion-webui/wiki/Custom-Scripts) with many extensions from community\r\n- [Composable-Diffusion](https://energy-based-model.github.io/Compositional-Visual-Generation-with-Composable-Diffusion-Models/), a way to use multiple prompts at once\r\n     - separate prompts using uppercase `AND`\r\n     - also supports weights for prompts: `a cat :1.2 AND a dog AND a penguin :2.2`\r\n- No token limit for prompts (original stable diffusion lets you use up to 75 tokens)\r\n- DeepDanbooru integration, creates danbooru style tags for anime prompts\r\n- [xformers](https://github.com/AUTOMATIC1111/stable-diffusion-webui/wiki/Xformers), major speed increase for select cards: (add `--xformers` to commandline args)\r\n- via extension: [History tab](https://github.com/yfszzx/stable-diffusion-webui-images-browser): view, direct and delete images conveniently within the UI\r\n- Generate forever option\r\n- Training tab\r\n     - hypernetworks and embeddings options\r\n     - Preprocessing images: cropping, mirroring, autotagging using BLIP or deepdanbooru (for anime)\r\n- Clip skip\r\n- Hypernetworks\r\n- Loras (same as Hypernetworks but more pretty)\r\n- A separate UI where you can choose, with preview, which embeddings, hypernetworks or Loras to add to your prompt\r\n- Can select to load a different VAE from settings screen\r\n- Estimated completion time in progress bar\r\n- API\r\n- Support for dedicated [inpainting model](https://github.com/runwayml/stable-diffusion#inpainting-with-stable-diffusion) by RunwayML\r\n- via extension: [Aesthetic Gradients](https://github.com/AUTOMATIC1111/stable-diffusion-webui-aesthetic-gradients), a way to generate images with a specific aesthetic by using clip images embeds (implementation of [https://github.com/vicgalle/stable-diffusion-aesthetic-gradients](https://github.com/vicgalle/stable-diffusion-aesthetic-gradients))\r\n- [Stable Diffusion 2.0](https://github.com/Stability-AI/stablediffusion) support - see [wiki](https://github.com/AUTOMATIC1111/stable-diffusion-webui/wiki/Features#stable-diffusion-20) for instructions\r\n- [Alt-Diffusion](https://arxiv.org/abs/2211.06679) support - see [wiki](https://github.com/AUTOMATIC1111/stable-diffusion-webui/wiki/Features#alt-diffusion) for instructions\r\n- Now without any bad letters!\r\n- Load checkpoints in safetensors format\r\n- Eased resolution restriction: generated image's dimensions must be a multiple of 8 rather than 64\r\n- Now with a license!\r\n- Reorder elements in the UI from settings screen\r\n- [Segmind Stable Diffusion](https://huggingface.co/segmind/SSD-1B) support\r\n\r\n## Installation and Running\r\nMake sure the required [dependencies](https://github.com/AUTOMATIC1111/stable-diffusion-webui/wiki/Dependencies) are met and follow the instructions available for:\r\n- [NVidia](https://github.com/AUTOMATIC1111/stable-diffusion-webui/wiki/Install-and-Run-on-NVidia-GPUs) (recommended)\r\n- [AMD](https://github.com/AUTOMATIC1111/stable-diffusion-webui/wiki/Install-and-Run-on-AMD-GPUs) GPUs.\r\n- [Intel CPUs, Intel GPUs (both integrated and discrete)](https://github.com/openvinotoolkit/stable-diffusion-webui/wiki/Installation-on-Intel-Silicon) (external wiki page)\r\n- [Ascend NPUs](https://github.com/wangshuai09/stable-diffusion-webui/wiki/Install-and-run-on-Ascend-NPUs) (external wiki page)\r\n\r\nAlternatively, use online services (like Google Colab):\r\n\r\n- [List of Online Services](https://github.com/AUTOMATIC1111/stable-diffusion-webui/wiki/Online-Services)\r\n\r\n### Installation on Windows 10/11 with NVidia-GPUs using release package\r\n1. Download `sd.webui.zip` from [v1.0.0-pre](https://github.com/AUTOMATIC1111/stable-diffusion-webui/releases/tag/v1.0.0-pre) and extract its contents.\r\n2. Run `update.bat`.\r\n3. Run `run.bat`.\r\n> For more details see [Install-and-Run-on-NVidia-GPUs](https://github.com/AUTOMATIC1111/stable-diffusion-webui/wiki/Install-and-Run-on-NVidia-GPUs)\r\n\r\n### Automatic Installation on Windows\r\n1. Install [Python 3.10.6](https://www.python.org/downloads/release/python-3106/) (Newer version of Python does not support torch), checking \"Add Python to PATH\".\r\n2. Install [git](https://git-scm.com/download/win).\r\n3. Download the stable-diffusion-webui repository, for example by running `git clone https://github.com/AUTOMATIC1111/stable-diffusion-webui.git`.\r\n4. Run `webui-user.bat` from Windows Ex"
+        }
+      ],
+      "config_files": [],
+      "stack_tags": [
+        "GitHub Actions",
+        "Python"
+      ],
+      "workspace_units": [
+        {
+          "path": ".",
+          "name": "stable-diffusion-webui",
+          "kind": "workspace",
+          "manifest_path": "package.json",
+          "build_system": "package.json",
+          "file_count": 303,
+          "languages": [
+            {
+              "language": "Python",
+              "files": 213,
+              "bytes": 1840622
+            },
+            {
+              "language": "JavaScript",
+              "files": 30,
+              "bytes": 181011
+            },
+            {
+              "language": "YAML",
+              "files": 14,
+              "bytes": 24084
+            },
+            {
+              "language": "HTML",
+              "files": 11,
+              "bytes": 27503
+            },
+            {
+              "language": "Markdown",
+              "files": 3,
+              "bytes": 110586
+            }
+          ],
+          "scripts": [
+            "fix",
+            "lint"
+          ],
+          "entrypoints": [
+            ".github/workflows/warns_merge_master.yml",
+            "README.md",
+            "package.json"
+          ],
+          "test_files": [],
+          "tags": [
+            "JavaScript",
+            "Python",
+            "YAML"
+          ]
+        }
+      ],
+      "qa_readiness": {
+        "score": 0,
+        "status": "missing",
+        "summary": "Repo does not expose enough local browser QA structure for a reliable Synthetic QA workflow yet.",
+        "signals": [
+          {
+            "id": "browser_runner",
+            "label": "Browser runner",
+            "status": "missing",
+            "detail": "No Playwright, Cypress, or browser runner config was found.",
+            "sources": []
+          },
+          {
+            "id": "user_flow_specs",
+            "label": "User-flow specs",
+            "status": "missing",
+            "detail": "No e2e/playwright/cypress spec files were found.",
+            "sources": []
+          },
+          {
+            "id": "local_app_command",
+            "label": "Local app command",
+            "status": "missing",
+            "detail": "No obvious package script for starting the app locally was found.",
+            "sources": []
+          },
+          {
+            "id": "qa_script",
+            "label": "QA script",
+            "status": "missing",
+            "detail": "No explicit QA/e2e/browser test script was found.",
+            "sources": []
+          },
+          {
+            "id": "artifact_trail",
+            "label": "Artifact trail",
+            "status": "missing",
+            "detail": "No browser QA artifacts or artifact-capable runner were found.",
+            "sources": []
+          },
+          {
+            "id": "targetable_routes",
+            "label": "Targetable surfaces",
+            "status": "missing",
+            "detail": "No obvious web entrypoint or route file was found.",
+            "sources": []
+          }
+        ],
+        "suggested_flows": []
+      },
+      "repo_graph": {
+        "schema_version": 2,
+        "nodes": [
+          {
+            "id": "file:eslintrc-js",
+            "kind": "file",
+            "label": ".eslintrc.js",
+            "path": ".eslintrc.js",
+            "detail": "source marker candidate",
+            "sources": [
+              ".eslintrc.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:github-pull-request-template-md",
+            "kind": "file",
+            "label": ".github/pull_request_template.md",
+            "path": ".github/pull_request_template.md",
+            "detail": "source marker candidate",
+            "sources": [
+              ".github/pull_request_template.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:github-workflows-warns-merge-master-yml",
+            "kind": "file",
+            "label": ".github/workflows/warns_merge_master.yml",
+            "path": ".github/workflows/warns_merge_master.yml",
+            "detail": "workspace entrypoint",
+            "sources": [
+              ".github/workflows/warns_merge_master.yml"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:changelog-md",
+            "kind": "file",
+            "label": "CHANGELOG.md",
+            "path": "CHANGELOG.md",
+            "detail": "source marker candidate",
+            "sources": [
+              "CHANGELOG.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:readme-md",
+            "kind": "file",
+            "label": "README.md",
+            "path": "README.md",
+            "detail": "workspace entrypoint",
+            "sources": [
+              "README.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:extensions-builtin-canvas-zoom-and-pan-javascript-zoom-js",
+            "kind": "file",
+            "label": "extensions-builtin/canvas-zoom-and-pan/javascript/zoom.js",
+            "path": "extensions-builtin/canvas-zoom-and-pan/javascript/zoom.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "extensions-builtin/canvas-zoom-and-pan/javascript/zoom.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:extensions-builtin-mobile-javascript-mobile-js",
+            "kind": "file",
+            "label": "extensions-builtin/mobile/javascript/mobile.js",
+            "path": "extensions-builtin/mobile/javascript/mobile.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "extensions-builtin/mobile/javascript/mobile.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:extensions-builtin-prompt-bracket-checker-javascript-prompt-bracket-checker-js",
+            "kind": "file",
+            "label": "extensions-builtin/prompt-bracket-checker/javascript/prompt-bracket-checker.js",
+            "path": "extensions-builtin/prompt-bracket-checker/javascript/prompt-bracket-checker.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "extensions-builtin/prompt-bracket-checker/javascript/prompt-bracket-checker.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:javascript-aspectratiooverlay-js",
+            "kind": "file",
+            "label": "javascript/aspectRatioOverlay.js",
+            "path": "javascript/aspectRatioOverlay.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "javascript/aspectRatioOverlay.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:javascript-contextmenus-js",
+            "kind": "file",
+            "label": "javascript/contextMenus.js",
+            "path": "javascript/contextMenus.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "javascript/contextMenus.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:javascript-dragdrop-js",
+            "kind": "file",
+            "label": "javascript/dragdrop.js",
+            "path": "javascript/dragdrop.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "javascript/dragdrop.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:javascript-edit-attention-js",
+            "kind": "file",
+            "label": "javascript/edit-attention.js",
+            "path": "javascript/edit-attention.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "javascript/edit-attention.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:javascript-edit-order-js",
+            "kind": "file",
+            "label": "javascript/edit-order.js",
+            "path": "javascript/edit-order.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "javascript/edit-order.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:javascript-extensions-js",
+            "kind": "file",
+            "label": "javascript/extensions.js",
+            "path": "javascript/extensions.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "javascript/extensions.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:javascript-extranetworks-js",
+            "kind": "file",
+            "label": "javascript/extraNetworks.js",
+            "path": "javascript/extraNetworks.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "javascript/extraNetworks.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:javascript-generationparams-js",
+            "kind": "file",
+            "label": "javascript/generationParams.js",
+            "path": "javascript/generationParams.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "javascript/generationParams.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:javascript-hints-js",
+            "kind": "file",
+            "label": "javascript/hints.js",
+            "path": "javascript/hints.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "javascript/hints.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:javascript-hires-fix-js",
+            "kind": "file",
+            "label": "javascript/hires_fix.js",
+            "path": "javascript/hires_fix.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "javascript/hires_fix.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:javascript-imagemaskfix-js",
+            "kind": "file",
+            "label": "javascript/imageMaskFix.js",
+            "path": "javascript/imageMaskFix.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "javascript/imageMaskFix.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:javascript-imageviewer-js",
+            "kind": "file",
+            "label": "javascript/imageviewer.js",
+            "path": "javascript/imageviewer.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "javascript/imageviewer.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:javascript-imageviewergamepad-js",
+            "kind": "file",
+            "label": "javascript/imageviewerGamepad.js",
+            "path": "javascript/imageviewerGamepad.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "javascript/imageviewerGamepad.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:javascript-inputaccordion-js",
+            "kind": "file",
+            "label": "javascript/inputAccordion.js",
+            "path": "javascript/inputAccordion.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "javascript/inputAccordion.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:javascript-localstorage-js",
+            "kind": "file",
+            "label": "javascript/localStorage.js",
+            "path": "javascript/localStorage.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "javascript/localStorage.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:javascript-localization-js",
+            "kind": "file",
+            "label": "javascript/localization.js",
+            "path": "javascript/localization.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "javascript/localization.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:javascript-notification-js",
+            "kind": "file",
+            "label": "javascript/notification.js",
+            "path": "javascript/notification.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "javascript/notification.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:javascript-profilervisualization-js",
+            "kind": "file",
+            "label": "javascript/profilerVisualization.js",
+            "path": "javascript/profilerVisualization.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "javascript/profilerVisualization.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:javascript-progressbar-js",
+            "kind": "file",
+            "label": "javascript/progressbar.js",
+            "path": "javascript/progressbar.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "javascript/progressbar.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:javascript-resizehandle-js",
+            "kind": "file",
+            "label": "javascript/resizeHandle.js",
+            "path": "javascript/resizeHandle.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "javascript/resizeHandle.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:javascript-settings-js",
+            "kind": "file",
+            "label": "javascript/settings.js",
+            "path": "javascript/settings.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "javascript/settings.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:javascript-textualinversion-js",
+            "kind": "file",
+            "label": "javascript/textualInversion.js",
+            "path": "javascript/textualInversion.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "javascript/textualInversion.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:javascript-token-counters-js",
+            "kind": "file",
+            "label": "javascript/token-counters.js",
+            "path": "javascript/token-counters.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "javascript/token-counters.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:javascript-ui-js",
+            "kind": "file",
+            "label": "javascript/ui.js",
+            "path": "javascript/ui.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "javascript/ui.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:javascript-ui-settings-hints-js",
+            "kind": "file",
+            "label": "javascript/ui_settings_hints.js",
+            "path": "javascript/ui_settings_hints.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "javascript/ui_settings_hints.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:package-json",
+            "kind": "file",
+            "label": "package.json",
+            "path": "package.json",
+            "detail": "workspace entrypoint",
+            "sources": [
+              "package.json"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:script-js",
+            "kind": "file",
+            "label": "script.js",
+            "path": "script.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "script.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "package:pyproject-toml",
+            "kind": "package",
+            "label": "pyproject.toml",
+            "path": "pyproject.toml",
+            "detail": "pyproject.toml manifest",
+            "sources": [
+              "pyproject.toml"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "package:package-json",
+            "kind": "package",
+            "label": "stable-diffusion-webui",
+            "path": "package.json",
+            "detail": "package.json manifest",
+            "sources": [
+              "package.json"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "script:package-json-fix",
+            "kind": "script",
+            "label": "fix",
+            "path": "package.json",
+            "detail": "package script",
+            "sources": [
+              "package.json"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "script:package-json-lint",
+            "kind": "script",
+            "label": "lint",
+            "path": "package.json",
+            "detail": "package script",
+            "sources": [
+              "package.json"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "workspace:",
+            "kind": "workspace_unit",
+            "label": "stable-diffusion-webui",
+            "path": null,
+            "detail": "workspace | 303 files | 213 Python, 30 JavaScript, 14 YAML",
+            "sources": [
+              ".github/workflows/warns_merge_master.yml",
+              "README.md",
+              "package.json"
+            ],
+            "source_location": null,
+            "community": null
+          }
+        ],
+        "edges": [
+          {
+            "from": "package:package-json",
+            "to": "script:package-json-fix",
+            "kind": "defines",
+            "evidence": "package.json defines npm script `fix`",
+            "sources": [
+              "package.json"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "package:package-json",
+            "to": "script:package-json-lint",
+            "kind": "defines",
+            "evidence": "package.json defines npm script `lint`",
+            "sources": [
+              "package.json"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "package:package-json",
+            "kind": "defines",
+            "evidence": "workspace unit owns this manifest",
+            "sources": [
+              "package.json"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "file:github-workflows-warns-merge-master-yml",
+            "kind": "entrypoint",
+            "evidence": "entrypoint belongs to this workspace unit",
+            "sources": [
+              ".github/workflows/warns_merge_master.yml"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "file:package-json",
+            "kind": "entrypoint",
+            "evidence": "entrypoint belongs to this workspace unit",
+            "sources": [
+              "package.json"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "file:readme-md",
+            "kind": "entrypoint",
+            "evidence": "entrypoint belongs to this workspace unit",
+            "sources": [
+              "README.md"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          }
+        ],
+        "truncated": false
+      },
+      "history_brief": {
+        "schema_version": 2,
+        "summary": "Local history brief captured 12 recent commits, 0 decision markers, 1 test hint, and 0 co-change clusters for Repo Unpacked. Treat commit subjects as leads and rely on cited files for durable constraints.",
+        "recent_commits": [
+          {
+            "sha": "82a973c04367",
+            "date": "2024-07-27",
+            "subject": "changelog",
+            "files": [
+              "CHANGELOG.md"
+            ]
+          },
+          {
+            "sha": "1d7e9eca098d",
+            "date": "2024-07-27",
+            "subject": "Merge pull request #16275 from AUTOMATIC1111/fix-image-upscale-on-cpu",
+            "files": []
+          },
+          {
+            "sha": "c19d04436496",
+            "date": "2024-07-27",
+            "subject": "Merge branch 'release_candidate'",
+            "files": []
+          },
+          {
+            "sha": "8b3d98c5a580",
+            "date": "2024-07-20",
+            "subject": "update CHANGELOG",
+            "files": [
+              "CHANGELOG.md"
+            ]
+          },
+          {
+            "sha": "5bbbda473fc8",
+            "date": "2024-07-20",
+            "subject": "Merge branch 'dev' into release_candidate",
+            "files": []
+          },
+          {
+            "sha": "9f5a98d5766b",
+            "date": "2024-07-20",
+            "subject": "Merge pull request #16166 from richardtallent/dev",
+            "files": []
+          },
+          {
+            "sha": "986c31dcfe70",
+            "date": "2024-07-20",
+            "subject": "Merge pull request #16180 from light-and-ray/do_not_send_image_size_on_paste_inpaint",
+            "files": []
+          },
+          {
+            "sha": "5096c163c16b",
+            "date": "2024-07-20",
+            "subject": "Merge pull request #16173 from AUTOMATIC1111/robust-sysinfo",
+            "files": []
+          },
+          {
+            "sha": "7b99e14ab132",
+            "date": "2024-07-20",
+            "subject": "Merge pull request #16194 from light-and-ray/fix_cannot_write_mode_P_as_jpeg",
+            "files": []
+          },
+          {
+            "sha": "7c8a4ccecb59",
+            "date": "2024-07-20",
+            "subject": "Merge pull request #16202 from light-and-ray/do_not_break_progressbar_on_non-job_actions",
+            "files": []
+          },
+          {
+            "sha": "5d26c6ae89e3",
+            "date": "2024-07-20",
+            "subject": "Merge pull request #16178 from light-and-ray/update_installation_guide_linux",
+            "files": []
+          },
+          {
+            "sha": "5a10bb9aa6d4",
+            "date": "2024-07-20",
+            "subject": "Merge pull request #16235 from v0xie/beta-sampling",
+            "files": []
+          }
+        ],
+        "decisions": [],
+        "test_hints": [
+          {
+            "path": "package.json",
+            "reason": "package script `lint` is a likely verification command"
+          }
+        ],
+        "temporal_couplings": [],
+        "graph": {
+          "schema_version": 2,
+          "nodes": [
+            {
+              "id": "commit:1d7e9eca098d",
+              "kind": "commit",
+              "label": "Merge pull request #16275 from AUTOMATIC1111/fix-image-upscale-on-cpu",
+              "path": null,
+              "detail": "2024-07-27",
+              "citations": [
+                "git:1d7e9eca098d"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:5096c163c16b",
+              "kind": "commit",
+              "label": "Merge pull request #16173 from AUTOMATIC1111/robust-sysinfo",
+              "path": null,
+              "detail": "2024-07-20",
+              "citations": [
+                "git:5096c163c16b"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:5a10bb9aa6d4",
+              "kind": "commit",
+              "label": "Merge pull request #16235 from v0xie/beta-sampling",
+              "path": null,
+              "detail": "2024-07-20",
+              "citations": [
+                "git:5a10bb9aa6d4"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:5bbbda473fc8",
+              "kind": "commit",
+              "label": "Merge branch 'dev' into release_candidate",
+              "path": null,
+              "detail": "2024-07-20",
+              "citations": [
+                "git:5bbbda473fc8"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:5d26c6ae89e3",
+              "kind": "commit",
+              "label": "Merge pull request #16178 from light-and-ray/update_installation_guide_linux",
+              "path": null,
+              "detail": "2024-07-20",
+              "citations": [
+                "git:5d26c6ae89e3"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:7b99e14ab132",
+              "kind": "commit",
+              "label": "Merge pull request #16194 from light-and-ray/fix_cannot_write_mode_P_as_jpeg",
+              "path": null,
+              "detail": "2024-07-20",
+              "citations": [
+                "git:7b99e14ab132"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:7c8a4ccecb59",
+              "kind": "commit",
+              "label": "Merge pull request #16202 from light-and-ray/do_not_break_progressbar_on_non-job_actions",
+              "path": null,
+              "detail": "2024-07-20",
+              "citations": [
+                "git:7c8a4ccecb59"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:82a973c04367",
+              "kind": "commit",
+              "label": "changelog",
+              "path": null,
+              "detail": "2024-07-27",
+              "citations": [
+                "git:82a973c04367"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:8b3d98c5a580",
+              "kind": "commit",
+              "label": "update CHANGELOG",
+              "path": null,
+              "detail": "2024-07-20",
+              "citations": [
+                "git:8b3d98c5a580"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:986c31dcfe70",
+              "kind": "commit",
+              "label": "Merge pull request #16180 from light-and-ray/do_not_send_image_size_on_paste_inpaint",
+              "path": null,
+              "detail": "2024-07-20",
+              "citations": [
+                "git:986c31dcfe70"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:9f5a98d5766b",
+              "kind": "commit",
+              "label": "Merge pull request #16166 from richardtallent/dev",
+              "path": null,
+              "detail": "2024-07-20",
+              "citations": [
+                "git:9f5a98d5766b"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:c19d04436496",
+              "kind": "commit",
+              "label": "Merge branch 'release_candidate'",
+              "path": null,
+              "detail": "2024-07-27",
+              "citations": [
+                "git:c19d04436496"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:changelog-md",
+              "kind": "file",
+              "label": "CHANGELOG.md",
+              "path": "CHANGELOG.md",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "CHANGELOG.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:package-json",
+              "kind": "file",
+              "label": "package.json",
+              "path": "package.json",
+              "detail": "Verification source",
+              "citations": [
+                "package.json"
+              ],
+              "trust": "source_backed"
+            },
+            {
+              "id": "test:package-json-package-script--lint--is-a-likely-verification-command",
+              "kind": "test",
+              "label": "package script `lint` is a likely verification command",
+              "path": "package.json",
+              "detail": "Likely verification lead",
+              "citations": [
+                "package.json"
+              ],
+              "trust": "navigation_lead"
+            }
+          ],
+          "edges": [
+            {
+              "from": "commit:82a973c04367",
+              "to": "file:changelog-md",
+              "kind": "changed",
+              "evidence": "82a973c04367 changed this file",
+              "citations": [
+                "git:82a973c04367",
+                "CHANGELOG.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:8b3d98c5a580",
+              "to": "file:changelog-md",
+              "kind": "changed",
+              "evidence": "8b3d98c5a580 changed this file",
+              "citations": [
+                "git:8b3d98c5a580",
+                "CHANGELOG.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "file:package-json",
+              "to": "test:package-json-package-script--lint--is-a-likely-verification-command",
+              "kind": "verified_by",
+              "evidence": "package script `lint` is a likely verification command",
+              "citations": [
+                "package.json"
+              ],
+              "trust": "navigation_lead"
+            }
+          ],
+          "truncated": false
+        },
+        "sources": [
+          "package.json",
+          "pyproject.toml"
+        ],
+        "truncated": false
+      },
+      "repo_health": {
+        "schema_version": 1,
+        "summary": "Deterministic scan scored 96 source files across simple size, churn, structural, test-adjacency, and performance-risk signals. 3 hotspots surfaced; average score is 8.3/10. Treat these as review leads, not proof of a bug.",
+        "average_score": 8.3,
+        "hotspot_count": 3,
+        "files_analyzed": 96,
+        "files_with_test_signal": 0,
+        "top_files": [
+          {
+            "path": "extensions-builtin/canvas-zoom-and-pan/javascript/zoom.js",
+            "score": 6.2,
+            "bucket": "hotspot",
+            "lines": 995,
+            "bytes": 36827,
+            "churn": 0,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "high",
+                "detail": "995 lines in one source file; inspect whether the module hides multiple responsibilities.",
+                "sources": [
+                  "extensions-builtin/canvas-zoom-and-pan/javascript/zoom.js"
+                ]
+              },
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 14; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "extensions-builtin/canvas-zoom-and-pan/javascript/zoom.js"
+                ]
+              },
+              {
+                "id": "long_block",
+                "label": "Long function/block",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "A brace-delimited block spans roughly 995 lines; consider extracting a helper when touching it.",
+                "sources": [
+                  "extensions-builtin/canvas-zoom-and-pan/javascript/zoom.js"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "extensions-builtin/canvas-zoom-and-pan/javascript/zoom.js"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow.",
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "modules/launch_utils.py",
+            "score": 6.4,
+            "bucket": "hotspot",
+            "lines": 482,
+            "bytes": 20319,
+            "churn": 23,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "482 lines in one source file; changes here may be harder to review.",
+                "sources": [
+                  "modules/launch_utils.py"
+                ]
+              },
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 8; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "modules/launch_utils.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "modules/launch_utils.py"
+                ]
+              },
+              {
+                "id": "io_in_loop",
+                "label": "I/O inside loop",
+                "dimension": "performance",
+                "severity": "medium",
+                "detail": "Loop-shaped code appears near filesystem, subprocess, database, or network I/O; inspect for N+1 or repeated setup work.",
+                "sources": [
+                  "modules/launch_utils.py"
+                ]
+              },
+              {
+                "id": "io_boundary",
+                "label": "I/O or process boundary",
+                "dimension": "defect",
+                "severity": "low",
+                "detail": "File touches filesystem, network, database, or subprocess boundaries; changes need concrete runtime proof.",
+                "sources": [
+                  "modules/launch_utils.py"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Flatten guard-heavy branches before adding behavior.",
+              "Hoist repeated I/O or batch loop work where behavior allows."
+            ]
+          },
+          {
+            "path": "modules/ui_extensions.py",
+            "score": 6.4,
+            "bucket": "hotspot",
+            "lines": 701,
+            "bytes": 30694,
+            "churn": 14,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "701 lines in one source file; changes here may be harder to review.",
+                "sources": [
+                  "modules/ui_extensions.py"
+                ]
+              },
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 12; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "modules/ui_extensions.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "modules/ui_extensions.py"
+                ]
+              },
+              {
+                "id": "io_in_loop",
+                "label": "I/O inside loop",
+                "dimension": "performance",
+                "severity": "medium",
+                "detail": "Loop-shaped code appears near filesystem, subprocess, database, or network I/O; inspect for N+1 or repeated setup work.",
+                "sources": [
+                  "modules/ui_extensions.py"
+                ]
+              },
+              {
+                "id": "io_boundary",
+                "label": "I/O or process boundary",
+                "dimension": "defect",
+                "severity": "low",
+                "detail": "File touches filesystem, network, database, or subprocess boundaries; changes need concrete runtime proof.",
+                "sources": [
+                  "modules/ui_extensions.py"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Flatten guard-heavy branches before adding behavior.",
+              "Hoist repeated I/O or batch loop work where behavior allows."
+            ]
+          },
+          {
+            "path": "extensions-builtin/Lora/networks.py",
+            "score": 6.7,
+            "bucket": "watch",
+            "lines": 737,
+            "bytes": 29205,
+            "churn": 102,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "737 lines in one source file; changes here may be harder to review.",
+                "sources": [
+                  "extensions-builtin/Lora/networks.py"
+                ]
+              },
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 16; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "extensions-builtin/Lora/networks.py"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "Moderate churn",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "Recent git history shows 102 changed lines in this file; it is a change hotspot.",
+                "sources": [
+                  "extensions-builtin/Lora/networks.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "extensions-builtin/Lora/networks.py"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "modules/models/sd3/sd3_cond.py",
+            "score": 6.9,
+            "bucket": "watch",
+            "lines": 222,
+            "bytes": 8119,
+            "churn": 270,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 8; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "modules/models/sd3/sd3_cond.py"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 270 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "modules/models/sd3/sd3_cond.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "modules/models/sd3/sd3_cond.py"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "modules/sd_models.py",
+            "score": 6.9,
+            "bucket": "watch",
+            "lines": 1034,
+            "bytes": 37536,
+            "churn": 25,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "high",
+                "detail": "1034 lines in one source file; inspect whether the module hides multiple responsibilities.",
+                "sources": [
+                  "modules/sd_models.py"
+                ]
+              },
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 12; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "modules/sd_models.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "modules/sd_models.py"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow.",
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "modules/processing.py",
+            "score": 6.9,
+            "bucket": "watch",
+            "lines": 1104,
+            "bytes": 81170,
+            "churn": 9,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "high",
+                "detail": "1104 lines in one source file; inspect whether the module hides multiple responsibilities.",
+                "sources": [
+                  "modules/processing.py"
+                ]
+              },
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 30; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "modules/processing.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "modules/processing.py"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow.",
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "modules/api/api.py",
+            "score": 6.9,
+            "bucket": "watch",
+            "lines": 928,
+            "bytes": 42038,
+            "churn": 6,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "high",
+                "detail": "928 lines in one source file; inspect whether the module hides multiple responsibilities.",
+                "sources": [
+                  "modules/api/api.py"
+                ]
+              },
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 12; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "modules/api/api.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "modules/api/api.py"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow.",
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "extensions-builtin/LDSR/sd_hijack_ddpm_v1.py",
+            "score": 6.9,
+            "bucket": "watch",
+            "lines": 1061,
+            "bytes": 67254,
+            "churn": 2,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "high",
+                "detail": "1061 lines in one source file; inspect whether the module hides multiple responsibilities.",
+                "sources": [
+                  "extensions-builtin/LDSR/sd_hijack_ddpm_v1.py"
+                ]
+              },
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 32; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "extensions-builtin/LDSR/sd_hijack_ddpm_v1.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "extensions-builtin/LDSR/sd_hijack_ddpm_v1.py"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow.",
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "modules/models/diffusion/ddpm_edit.py",
+            "score": 6.9,
+            "bucket": "watch",
+            "lines": 1058,
+            "bytes": 67976,
+            "churn": 0,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "high",
+                "detail": "1058 lines in one source file; inspect whether the module hides multiple responsibilities.",
+                "sources": [
+                  "modules/models/diffusion/ddpm_edit.py"
+                ]
+              },
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 32; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "modules/models/diffusion/ddpm_edit.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "modules/models/diffusion/ddpm_edit.py"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow.",
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "modules/scripts.py",
+            "score": 6.9,
+            "bucket": "watch",
+            "lines": 1040,
+            "bytes": 41802,
+            "churn": 0,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "high",
+                "detail": "1040 lines in one source file; inspect whether the module hides multiple responsibilities.",
+                "sources": [
+                  "modules/scripts.py"
+                ]
+              },
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 10; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "modules/scripts.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "modules/scripts.py"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow.",
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "modules/sysinfo.py",
+            "score": 7.1,
+            "bucket": "watch",
+            "lines": 215,
+            "bytes": 6634,
+            "churn": 173,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 10; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "modules/sysinfo.py"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "Moderate churn",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "Recent git history shows 173 changed lines in this file; it is a change hotspot.",
+                "sources": [
+                  "modules/sysinfo.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "modules/sysinfo.py"
+                ]
+              },
+              {
+                "id": "io_boundary",
+                "label": "I/O or process boundary",
+                "dimension": "defect",
+                "severity": "low",
+                "detail": "File touches filesystem, network, database, or subprocess boundaries; changes need concrete runtime proof.",
+                "sources": [
+                  "modules/sysinfo.py"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          }
+        ],
+        "truncated": true
+      },
+      "all_files": [],
+      "ignored_dirs": [
+        "embeddings",
+        "extensions",
+        ".git",
+        "test/test_outputs"
+      ],
+      "coverage": {
+        "schema_version": 1,
+        "strategy": "full_walk",
+        "sampled_files": 303,
+        "total_files": null,
+        "sample_percent": null,
+        "languages": [
+          {
+            "language": "Python",
+            "files": 213,
+            "bytes": 1840622
+          },
+          {
+            "language": "JavaScript",
+            "files": 30,
+            "bytes": 181011
+          },
+          {
+            "language": "YAML",
+            "files": 14,
+            "bytes": 24084
+          },
+          {
+            "language": "HTML",
+            "files": 11,
+            "bytes": 27503
+          },
+          {
+            "language": "Markdown",
+            "files": 3,
+            "bytes": 110586
+          },
+          {
+            "language": "CSS",
+            "files": 2,
+            "bytes": 44551
+          },
+          {
+            "language": "Shell",
+            "files": 2,
+            "bytes": 11972
+          },
+          {
+            "language": "TOML",
+            "files": 2,
+            "bytes": 987
+          },
+          {
+            "language": "JSON",
+            "files": 1,
+            "bytes": 185
+          }
+        ],
+        "top_level_dirs": [
+          {
+            "path": "modules",
+            "file_count": 152,
+            "bytes": 1464569
+          },
+          {
+            "path": "extensions-builtin",
+            "file_count": 43,
+            "bytes": 296263
+          },
+          {
+            "path": "javascript",
+            "file_count": 25,
+            "bytes": 131358
+          },
+          {
+            "path": "scripts",
+            "file_count": 12,
+            "bytes": 103749
+          },
+          {
+            "path": "html",
+            "file_count": 11,
+            "bytes": 27503
+          },
+          {
+            "path": "test",
+            "file_count": 9,
+            "bytes": 10489
+          },
+          {
+            "path": ".github",
+            "file_count": 7,
+            "bytes": 10794
+          },
+          {
+            "path": "configs",
+            "file_count": 7,
+            "bytes": 13700
+          },
+          {
+            "path": "textual_inversion_templates",
+            "file_count": 6,
+            "bytes": 4058
+          },
+          {
+            "path": "models",
+            "file_count": 5,
+            "bytes": 220856
+          },
+          {
+            "path": "localizations",
+            "file_count": 1,
+            "bytes": 0
+          }
+        ],
+        "notes": [
+          "Full local walk covered the repo within the scan cap."
+        ]
+      },
+      "all_files_capped": false,
+      "dir_tree_preview": {
+        "name": "",
+        "path": "",
+        "is_dir": true,
+        "file_count": 303,
+        "children": [
+          {
+            "name": ".github",
+            "path": ".github",
+            "is_dir": true,
+            "file_count": 7,
+            "children": [
+              {
+                "name": "ISSUE_TEMPLATE",
+                "path": ".github/ISSUE_TEMPLATE",
+                "is_dir": true,
+                "file_count": 3,
+                "children": [
+                  {
+                    "name": "bug_report.yml",
+                    "path": ".github/ISSUE_TEMPLATE/bug_report.yml",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "config.yml",
+                    "path": ".github/ISSUE_TEMPLATE/config.yml",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "feature_request.yml",
+                    "path": ".github/ISSUE_TEMPLATE/feature_request.yml",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "workflows",
+                "path": ".github/workflows",
+                "is_dir": true,
+                "file_count": 3,
+                "children": [
+                  {
+                    "name": "on_pull_request.yaml",
+                    "path": ".github/workflows/on_pull_request.yaml",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "run_tests.yaml",
+                    "path": ".github/workflows/run_tests.yaml",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "warns_merge_master.yml",
+                    "path": ".github/workflows/warns_merge_master.yml",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "pull_request_template.md",
+                "path": ".github/pull_request_template.md",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "configs",
+            "path": "configs",
+            "is_dir": true,
+            "file_count": 7,
+            "children": [
+              {
+                "name": "alt-diffusion-inference.yaml",
+                "path": "configs/alt-diffusion-inference.yaml",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "alt-diffusion-m18-inference.yaml",
+                "path": "configs/alt-diffusion-m18-inference.yaml",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "instruct-pix2pix.yaml",
+                "path": "configs/instruct-pix2pix.yaml",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "sd3-inference.yaml",
+                "path": "configs/sd3-inference.yaml",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "sd_xl_inpaint.yaml",
+                "path": "configs/sd_xl_inpaint.yaml",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "v1-inference.yaml",
+                "path": "configs/v1-inference.yaml",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "v1-inpainting-inference.yaml",
+                "path": "configs/v1-inpainting-inference.yaml",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "extensions-builtin",
+            "path": "extensions-builtin",
+            "is_dir": true,
+            "file_count": 43,
+            "children": [
+              {
+                "name": "LDSR",
+                "path": "extensions-builtin/LDSR",
+                "is_dir": true,
+                "file_count": 6,
+                "children": [
+                  {
+                    "name": "scripts",
+                    "path": "extensions-builtin/LDSR/scripts",
+                    "is_dir": true,
+                    "file_count": 1,
+                    "children": [
+                      {
+                        "name": "ldsr_model.py",
+                        "path": "extensions-builtin/LDSR/scripts/ldsr_model.py",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": "ldsr_model_arch.py",
+                    "path": "extensions-builtin/LDSR/ldsr_model_arch.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "preload.py",
+                    "path": "extensions-builtin/LDSR/preload.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "sd_hijack_autoencoder.py",
+                    "path": "extensions-builtin/LDSR/sd_hijack_autoencoder.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "sd_hijack_ddpm_v1.py",
+                    "path": "extensions-builtin/LDSR/sd_hijack_ddpm_v1.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "vqvae_quantize.py",
+                    "path": "extensions-builtin/LDSR/vqvae_quantize.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "Lora",
+                "path": "extensions-builtin/Lora",
+                "is_dir": true,
+                "file_count": 19,
+                "children": [
+                  {
+                    "name": "scripts",
+                    "path": "extensions-builtin/Lora/scripts",
+                    "is_dir": true,
+                    "file_count": 1,
+                    "children": [
+                      {
+                        "name": "lora_script.py",
+                        "path": "extensions-builtin/Lora/scripts/lora_script.py",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": "extra_networks_lora.py",
+                    "path": "extensions-builtin/Lora/extra_networks_lora.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "lora.py",
+                    "path": "extensions-builtin/Lora/lora.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "lora_logger.py",
+                    "path": "extensions-builtin/Lora/lora_logger.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "lora_patches.py",
+                    "path": "extensions-builtin/Lora/lora_patches.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "lyco_helpers.py",
+                    "path": "extensions-builtin/Lora/lyco_helpers.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "network.py",
+                    "path": "extensions-builtin/Lora/network.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "network_full.py",
+                    "path": "extensions-builtin/Lora/network_full.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "network_glora.py",
+                    "path": "extensions-builtin/Lora/network_glora.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "network_hada.py",
+                    "path": "extensions-builtin/Lora/network_hada.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "network_ia3.py",
+                    "path": "extensions-builtin/Lora/network_ia3.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "network_lokr.py",
+                    "path": "extensions-builtin/Lora/network_lokr.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "network_lora.py",
+                    "path": "extensions-builtin/Lora/network_lora.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "network_norm.py",
+                    "path": "extensions-builtin/Lora/network_norm.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "network_oft.py",
+                    "path": "extensions-builtin/Lora/network_oft.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "networks.py",
+                    "path": "extensions-builtin/Lora/networks.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "preload.py",
+                    "path": "extensions-builtin/Lora/preload.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "ui_edit_user_metadata.py",
+                    "path": "extensions-builtin/Lora/ui_edit_user_metadata.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "ui_extra_networks_lora.py",
+                    "path": "extensions-builtin/Lora/ui_extra_networks_lora.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "ScuNET",
+                "path": "extensions-builtin/ScuNET",
+                "is_dir": true,
+                "file_count": 2,
+                "children": [
+                  {
+                    "name": "scripts",
+                    "path": "extensions-builtin/ScuNET/scripts",
+                    "is_dir": true,
+                    "file_count": 1,
+                    "children": [
+                      {
+                        "name": "scunet_model.py",
+                        "path": "extensions-builtin/ScuNET/scripts/scunet_model.py",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": "preload.py",
+                    "path": "extensions-builtin/ScuNET/preload.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "SwinIR",
+                "path": "extensions-builtin/SwinIR",
+                "is_dir": true,
+                "file_count": 2,
+                "children": [
+                  {
+                    "name": "scripts",
+                    "path": "extensions-builtin/SwinIR/scripts",
+                    "is_dir": true,
+                    "file_count": 1,
+                    "children": [
+                      {
+                        "name": "swinir_model.py",
+                        "path": "extensions-builtin/SwinIR/scripts/swinir_model.py",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": "preload.py",
+                    "path": "extensions-builtin/SwinIR/preload.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "canvas-zoom-and-pan",
+                "path": "extensions-builtin/canvas-zoom-and-pan",
+                "is_dir": true,
+                "file_count": 3,
+                "children": [
+                  {
+                    "name": "javascript",
+                    "path": "extensions-builtin/canvas-zoom-and-pan/javascript",
+                    "is_dir": true,
+                    "file_count": 1,
+                    "children": [
+                      {
+                        "name": "zoom.js",
+                        "path": "extensions-builtin/canvas-zoom-and-pan/javascript/zoom.js",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": "scripts",
+                    "path": "extensions-builtin/canvas-zoom-and-pan/scripts",
+                    "is_dir": true,
+                    "file_count": 1,
+                    "children": [
+                      {
+                        "name": "hotkey_config.py",
+                        "path": "extensions-builtin/canvas-zoom-and-pan/scripts/hotkey_config.py",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": "style.css",
+                    "path": "extensions-builtin/canvas-zoom-and-pan/style.css",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "extra-options-section",
+                "path": "extensions-builtin/extra-options-section",
+                "is_dir": true,
+                "file_count": 1,
+                "children": [
+                  {
+                    "name": "scripts",
+                    "path": "extensions-builtin/extra-options-section/scripts",
+                    "is_dir": true,
+                    "file_count": 1,
+                    "children": [
+                      {
+                        "name": "extra_options_section.py",
+                        "path": "extensions-builtin/extra-options-section/scripts/extra_options_section.py",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "name": "hypertile",
+                "path": "extensions-builtin/hypertile",
+                "is_dir": true,
+                "file_count": 2,
+                "children": [
+                  {
+                    "name": "scripts",
+                    "path": "extensions-builtin/hypertile/scripts",
+                    "is_dir": true,
+                    "file_count": 1,
+                    "children": [
+                      {
+                        "name": "hypertile_script.py",
+                        "path": "extensions-builtin/hypertile/scripts/hypertile_script.py",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": "hypertile.py",
+                    "path": "extensions-builtin/hypertile/hypertile.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "mobile",
+                "path": "extensions-builtin/mobile",
+                "is_dir": true,
+                "file_count": 1,
+                "children": [
+                  {
+                    "name": "javascript",
+                    "path": "extensions-builtin/mobile/javascript",
+                    "is_dir": true,
+                    "file_count": 1,
+                    "children": [
+                      {
+                        "name": "mobile.js",
+                        "path": "extensions-builtin/mobile/javascript/mobile.js",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "name": "postprocessing-for-training",
+                "path": "extensions-builtin/postprocessing-for-training",
+                "is_dir": true,
+                "file_count": 5,
+                "children": [
+                  {
+                    "name": "scripts",
+                    "path": "extensions-builtin/postprocessing-for-training/scripts",
+                    "is_dir": true,
+                    "file_count": 5,
+                    "children": [
+                      {
+                        "name": "postprocessing_autosized_crop.py",
+                        "path": "extensions-builtin/postprocessing-for-training/scripts/postprocessing_autosized_crop.py",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "postprocessing_caption.py",
+                        "path": "extensions-builtin/postprocessing-for-training/scripts/postprocessing_caption.py",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "postprocessing_create_flipped_copies.py",
+                        "path": "extensions-builtin/postprocessing-for-training/scripts/postprocessing_create_flipped_copies.py",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "postprocessing_focal_crop.py",
+                        "path": "extensions-builtin/postprocessing-for-training/scripts/postprocessing_focal_crop.py",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "postprocessing_split_oversized.py",
+                        "path": "extensions-builtin/postprocessing-for-training/scripts/postprocessing_split_oversized.py",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "name": "prompt-bracket-checker",
+                "path": "extensions-builtin/prompt-bracket-checker",
+                "is_dir": true,
+                "file_count": 1,
+                "children": [
+                  {
+                    "name": "javascript",
+                    "path": "extensions-builtin/prompt-bracket-checker/javascript",
+                    "is_dir": true,
+                    "file_count": 1,
+                    "children": [
+                      {
+                        "name": "prompt-bracket-checker.js",
+                        "path": "extensions-builtin/prompt-bracket-checker/javascript/prompt-bracket-checker.js",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "name": "soft-inpainting",
+                "path": "extensions-builtin/soft-inpainting",
+                "is_dir": true,
+                "file_count": 1,
+                "children": [
+                  {
+                    "name": "scripts",
+                    "path": "extensions-builtin/soft-inpainting/scripts",
+                    "is_dir": true,
+                    "file_count": 1,
+                    "children": [
+                      {
+                        "name": "soft_inpainting.py",
+                        "path": "extensions-builtin/soft-inpainting/scripts/soft_inpainting.py",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "html",
+            "path": "html",
+            "is_dir": true,
+            "file_count": 11,
+            "children": [
+              {
+                "name": "extra-networks-card.html",
+                "path": "html/extra-networks-card.html",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "extra-networks-copy-path-button.html",
+                "path": "html/extra-networks-copy-path-button.html",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "extra-networks-edit-item-button.html",
+                "path": "html/extra-networks-edit-item-button.html",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "extra-networks-metadata-button.html",
+                "path": "html/extra-networks-metadata-button.html",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "extra-networks-no-cards.html",
+                "path": "html/extra-networks-no-cards.html",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "extra-networks-pane-dirs.html",
+                "path": "html/extra-networks-pane-dirs.html",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "extra-networks-pane-tree.html",
+                "path": "html/extra-networks-pane-tree.html",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "extra-networks-pane.html",
+                "path": "html/extra-networks-pane.html",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "extra-networks-tree-button.html",
+                "path": "html/extra-networks-tree-button.html",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "footer.html",
+                "path": "html/footer.html",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "licenses.html",
+                "path": "html/licenses.html",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "javascript",
+            "path": "javascript",
+            "is_dir": true,
+            "file_count": 25,
+            "children": [
+              {
+                "name": "aspectRatioOverlay.js",
+                "path": "javascript/aspectRatioOverlay.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "contextMenus.js",
+                "path": "javascript/contextMenus.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "dragdrop.js",
+                "path": "javascript/dragdrop.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "edit-attention.js",
+                "path": "javascript/edit-attention.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "edit-order.js",
+                "path": "javascript/edit-order.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "extensions.js",
+                "path": "javascript/extensions.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "extraNetworks.js",
+                "path": "javascript/extraNetworks.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "generationParams.js",
+                "path": "javascript/generationParams.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "hints.js",
+                "path": "javascript/hints.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "hires_fix.js",
+                "path": "javascript/hires_fix.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "imageMaskFix.js",
+                "path": "javascript/imageMaskFix.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "imageviewer.js",
+                "path": "javascript/imageviewer.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "imageviewerGamepad.js",
+                "path": "javascript/imageviewerGamepad.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "inputAccordion.js",
+                "path": "javascript/inputAccordion.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "localStorage.js",
+                "path": "javascript/localStorage.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "localization.js",
+                "path": "javascript/localization.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "notification.js",
+                "path": "javascript/notification.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "profilerVisualization.js",
+                "path": "javascript/profilerVisualization.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "progressbar.js",
+                "path": "javascript/progressbar.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "resizeHandle.js",
+                "path": "javascript/resizeHandle.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "settings.js",
+                "path": "javascript/settings.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "textualInversion.js",
+                "path": "javascript/textualInversion.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "token-counters.js",
+                "path": "javascript/token-counters.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "ui.js",
+                "path": "javascript/ui.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "ui_settings_hints.js",
+                "path": "javascript/ui_settings_hints.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "localizations",
+            "path": "localizations",
+            "is_dir": true,
+            "file_count": 1,
+            "children": [
+              {
+                "name": "Put localization files here.txt",
+                "path": "localizations/Put localization files here.txt",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "models",
+            "path": "models",
+            "is_dir": true,
+            "file_count": 5,
+            "children": [
+              {
+                "name": "Stable-diffusion",
+                "path": "models/Stable-diffusion",
+                "is_dir": true,
+                "file_count": 1,
+                "children": [
+                  {
+                    "name": "Put Stable Diffusion checkpoints here.txt",
+                    "path": "models/Stable-diffusion/Put Stable Diffusion checkpoints here.txt",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "VAE",
+                "path": "models/VAE",
+                "is_dir": true,
+                "file_count": 1,
+                "children": [
+                  {
+                    "name": "Put VAE here.txt",
+                    "path": "models/VAE/Put VAE here.txt",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "VAE-approx",
+                "path": "models/VAE-approx",
+                "is_dir": true,
+                "file_count": 1,
+                "children": [
+                  {
+                    "name": "model.pt",
+                    "path": "models/VAE-approx/model.pt",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "deepbooru",
+                "path": "models/deepbooru",
+                "is_dir": true,
+                "file_count": 1,
+                "children": [
+                  {
+                    "name": "Put your deepbooru release project folder here.txt",
+                    "path": "models/deepbooru/Put your deepbooru release project folder here.txt",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "karlo",
+                "path": "models/karlo",
+                "is_dir": true,
+                "file_count": 1,
+                "children": [
+                  {
+                    "name": "ViT-L-14_stats.th",
+                    "path": "models/karlo/ViT-L-14_stats.th",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "modules",
+            "path": "modules",
+            "is_dir": true,
+            "file_count": 152,
+            "children": [
+              {
+                "name": "api",
+                "path": "modules/api",
+                "is_dir": true,
+                "file_count": 2,
+                "children": [
+                  {
+                    "name": "api.py",
+                    "path": "modules/api/api.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "models.py",
+                    "path": "modules/api/models.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "hypernetworks",
+                "path": "modules/hypernetworks",
+                "is_dir": true,
+                "file_count": 2,
+                "children": [
+                  {
+                    "name": "hypernetwork.py",
+                    "path": "modules/hypernetworks/hypernetwork.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "ui.py",
+                    "path": "modules/hypernetworks/ui.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "models",
+                "path": "modules/models",
+                "is_dir": true,
+                "file_count": 9,
+                "children": [
+                  {
+                    "name": "diffusion",
+                    "path": "modules/models/diffusion",
+                    "is_dir": true,
+                    "file_count": 4,
+                    "children": [
+                      {
+                        "name": "uni_pc",
+                        "path": "modules/models/diffusion/uni_pc",
+                        "is_dir": true,
+                        "file_count": 3,
+                        "children": [
+                          {
+                            "name": "__init__.py",
+                            "path": "modules/models/diffusion/uni_pc/__init__.py",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          },
+                          {
+                            "name": "sampler.py",
+                            "path": "modules/models/diffusion/uni_pc/sampler.py",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          },
+                          {
+                            "name": "uni_pc.py",
+                            "path": "modules/models/diffusion/uni_pc/uni_pc.py",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          }
+                        ]
+                      },
+                      {
+                        "name": "ddpm_edit.py",
+                        "path": "modules/models/diffusion/ddpm_edit.py",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": "sd3",
+                    "path": "modules/models/sd3",
+                    "is_dir": true,
+                    "file_count": 5,
+                    "children": [
+                      {
+                        "name": "mmdit.py",
+                        "path": "modules/models/sd3/mmdit.py",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "other_impls.py",
+                        "path": "modules/models/sd3/other_impls.py",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "sd3_cond.py",
+                        "path": "modules/models/sd3/sd3_cond.py",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "sd3_impls.py",
+                        "path": "modules/models/sd3/sd3_impls.py",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "sd3_model.py",
+                        "path": "modules/models/sd3/sd3_model.py",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "name": "processing_scripts",
+                "path": "modules/processing_scripts",
+                "is_dir": true,
+                "file_count": 4,
+                "children": [
+                  {
+                    "name": "comments.py",
+                    "path": "modules/processing_scripts/comments.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "refiner.py",
+                    "path": "modules/processing_scripts/refiner.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "sampler.py",
+                    "path": "modules/processing_scripts/sampler.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "seed.py",
+                    "path": "modules/processing_scripts/seed.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "textual_inversion",
+                "path": "modules/textual_inversion",
+                "is_dir": true,
+                "file_count": 7,
+                "children": [
+                  {
+                    "name": "autocrop.py",
+                    "path": "modules/textual_inversion/autocrop.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "dataset.py",
+                    "path": "modules/textual_inversion/dataset.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "image_embedding.py",
+                    "path": "modules/textual_inversion/image_embedding.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "learn_schedule.py",
+                    "path": "modules/textual_inversion/learn_schedule.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "saving_settings.py",
+                    "path": "modules/textual_inversion/saving_settings.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "textual_inversion.py",
+                    "path": "modules/textual_inversion/textual_inversion.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "ui.py",
+                    "path": "modules/textual_inversion/ui.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "cache.py",
+                "path": "modules/cache.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "call_queue.py",
+                "path": "modules/call_queue.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "cmd_args.py",
+                "path": "modules/cmd_args.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "codeformer_model.py",
+                "path": "modules/codeformer_model.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "config_states.py",
+                "path": "modules/config_states.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "dat_model.py",
+                "path": "modules/dat_model.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "deepbooru.py",
+                "path": "modules/deepbooru.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "deepbooru_model.py",
+                "path": "modules/deepbooru_model.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "devices.py",
+                "path": "modules/devices.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "errors.py",
+                "path": "modules/errors.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "esrgan_model.py",
+                "path": "modules/esrgan_model.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "extensions.py",
+                "path": "modules/extensions.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "extra_networks.py",
+                "path": "modules/extra_networks.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "extra_networks_hypernet.py",
+                "path": "modules/extra_networks_hypernet.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "extras.py",
+                "path": "modules/extras.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "face_restoration.py",
+                "path": "modules/face_restoration.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "face_restoration_utils.py",
+                "path": "modules/face_restoration_utils.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "fifo_lock.py",
+                "path": "modules/fifo_lock.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "gfpgan_model.py",
+                "path": "modules/gfpgan_model.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "gitpython_hack.py",
+                "path": "modules/gitpython_hack.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "gradio_extensons.py",
+                "path": "modules/gradio_extensons.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "hashes.py",
+                "path": "modules/hashes.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "hat_model.py",
+                "path": "modules/hat_model.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "images.py",
+                "path": "modules/images.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "img2img.py",
+                "path": "modules/img2img.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "import_hook.py",
+                "path": "modules/import_hook.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "infotext_utils.py",
+                "path": "modules/infotext_utils.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "infotext_versions.py",
+                "path": "modules/infotext_versions.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "initialize.py",
+                "path": "modules/initialize.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "initialize_util.py",
+                "path": "modules/initialize_util.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "interrogate.py",
+                "path": "modules/interrogate.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "launch_utils.py",
+                "path": "modules/launch_utils.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "localization.py",
+                "path": "modules/localization.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "logging_config.py",
+                "path": "modules/logging_config.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "lowvram.py",
+                "path": "modules/lowvram.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "mac_specific.py",
+                "path": "modules/mac_specific.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "masking.py",
+                "path": "modules/masking.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "memmon.py",
+                "path": "modules/memmon.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "modelloader.py",
+                "path": "modules/modelloader.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "ngrok.py",
+                "path": "modules/ngrok.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "npu_specific.py",
+                "path": "modules/npu_specific.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "options.py",
+                "path": "modules/options.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "patches.py",
+                "path": "modules/patches.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "paths.py",
+                "path": "modules/paths.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "paths_internal.py",
+                "path": "modules/paths_internal.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "postprocessing.py",
+                "path": "modules/postprocessing.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "processing.py",
+                "path": "modules/processing.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "profiling.py",
+                "path": "modules/profiling.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "progress.py",
+                "path": "modules/progress.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "prompt_parser.py",
+                "path": "modules/prompt_parser.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "realesrgan_model.py",
+                "path": "modules/realesrgan_model.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "restart.py",
+                "path": "modules/restart.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "rng.py",
+                "path": "modules/rng.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "rng_philox.py",
+                "path": "modules/rng_philox.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "safe.py",
+                "path": "modules/safe.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "script_callbacks.py",
+                "path": "modules/script_callbacks.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "script_loading.py",
+                "path": "modules/script_loading.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "scripts.py",
+                "path": "modules/scripts.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "scripts_auto_postprocessing.py",
+                "path": "modules/scripts_auto_postprocessing.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "scripts_postprocessing.py",
+                "path": "modules/scripts_postprocessing.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "sd_disable_initialization.py",
+                "path": "modules/sd_disable_initialization.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "sd_emphasis.py",
+                "path": "modules/sd_emphasis.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "sd_hijack.py",
+                "path": "modules/sd_hijack.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "sd_hijack_checkpoint.py",
+                "path": "modules/sd_hijack_checkpoint.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "sd_hijack_clip.py",
+                "path": "modules/sd_hijack_clip.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "sd_hijack_clip_old.py",
+                "path": "modules/sd_hijack_clip_old.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "sd_hijack_ip2p.py",
+                "path": "modules/sd_hijack_ip2p.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "sd_hijack_open_clip.py",
+                "path": "modules/sd_hijack_open_clip.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "sd_hijack_optimizations.py",
+                "path": "modules/sd_hijack_optimizations.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "sd_hijack_unet.py",
+                "path": "modules/sd_hijack_unet.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "sd_hijack_utils.py",
+                "path": "modules/sd_hijack_utils.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "sd_hijack_xlmr.py",
+                "path": "modules/sd_hijack_xlmr.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "sd_models.py",
+                "path": "modules/sd_models.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "sd_models_config.py",
+                "path": "modules/sd_models_config.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "sd_models_types.py",
+                "path": "modules/sd_models_types.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "sd_models_xl.py",
+                "path": "modules/sd_models_xl.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "sd_samplers.py",
+                "path": "modules/sd_samplers.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "sd_samplers_cfg_denoiser.py",
+                "path": "modules/sd_samplers_cfg_denoiser.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "sd_samplers_common.py",
+                "path": "modules/sd_samplers_common.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "sd_samplers_compvis.py",
+                "path": "modules/sd_samplers_compvis.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "sd_samplers_extra.py",
+                "path": "modules/sd_samplers_extra.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "sd_samplers_kdiffusion.py",
+                "path": "modules/sd_samplers_kdiffusion.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "sd_samplers_lcm.py",
+                "path": "modules/sd_samplers_lcm.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "sd_samplers_timesteps.py",
+                "path": "modules/sd_samplers_timesteps.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "sd_samplers_timesteps_impl.py",
+                "path": "modules/sd_samplers_timesteps_impl.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "sd_schedulers.py",
+                "path": "modules/sd_schedulers.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "sd_unet.py",
+                "path": "modules/sd_unet.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "sd_vae.py",
+                "path": "modules/sd_vae.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "sd_vae_approx.py",
+                "path": "modules/sd_vae_approx.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "sd_vae_taesd.py",
+                "path": "modules/sd_vae_taesd.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "shared.py",
+                "path": "modules/shared.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "shared_cmd_options.py",
+                "path": "modules/shared_cmd_options.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "shared_gradio_themes.py",
+                "path": "modules/shared_gradio_themes.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "shared_init.py",
+                "path": "modules/shared_init.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "shared_items.py",
+                "path": "modules/shared_items.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "shared_options.py",
+                "path": "modules/shared_options.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "shared_state.py",
+                "path": "modules/shared_state.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "shared_total_tqdm.py",
+                "path": "modules/shared_total_tqdm.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "styles.py",
+                "path": "modules/styles.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "sub_quadratic_attention.py",
+                "path": "modules/sub_quadratic_attention.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "sysinfo.py",
+                "path": "modules/sysinfo.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "timer.py",
+                "path": "modules/timer.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "torch_utils.py",
+                "path": "modules/torch_utils.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "txt2img.py",
+                "path": "modules/txt2img.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "ui.py",
+                "path": "modules/ui.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "ui_checkpoint_merger.py",
+                "path": "modules/ui_checkpoint_merger.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "ui_common.py",
+                "path": "modules/ui_common.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "ui_components.py",
+                "path": "modules/ui_components.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "ui_extensions.py",
+                "path": "modules/ui_extensions.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "ui_extra_networks.py",
+                "path": "modules/ui_extra_networks.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "ui_extra_networks_checkpoints.py",
+                "path": "modules/ui_extra_networks_checkpoints.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "ui_extra_networks_checkpoints_user_metadata.py",
+                "path": "modules/ui_extra_networks_checkpoints_user_metadata.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "ui_extra_networks_hypernets.py",
+                "path": "modules/ui_extra_networks_hypernets.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "ui_extra_networks_textual_inversion.py",
+                "path": "modules/ui_extra_networks_textual_inversion.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "ui_extra_networks_user_metadata.py",
+                "path": "modules/ui_extra_networks_user_metadata.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "ui_gradio_extensions.py",
+                "path": "modules/ui_gradio_extensions.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "ui_loadsave.py",
+                "path": "modules/ui_loadsave.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "ui_postprocessing.py",
+                "path": "modules/ui_postprocessing.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "ui_prompt_styles.py",
+                "path": "modules/ui_prompt_styles.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "ui_settings.py",
+                "path": "modules/ui_settings.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "ui_tempdir.py",
+                "path": "modules/ui_tempdir.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "ui_toprow.py",
+                "path": "modules/ui_toprow.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "upscaler.py",
+                "path": "modules/upscaler.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "upscaler_utils.py",
+                "path": "modules/upscaler_utils.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "util.py",
+                "path": "modules/util.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "xlmr.py",
+                "path": "modules/xlmr.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "xlmr_m18.py",
+                "path": "modules/xlmr_m18.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "xpu_specific.py",
+                "path": "modules/xpu_specific.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "scripts",
+            "path": "scripts",
+            "is_dir": true,
+            "file_count": 12,
+            "children": [
+              {
+                "name": "custom_code.py",
+                "path": "scripts/custom_code.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "img2imgalt.py",
+                "path": "scripts/img2imgalt.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "loopback.py",
+                "path": "scripts/loopback.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "outpainting_mk_2.py",
+                "path": "scripts/outpainting_mk_2.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "poor_mans_outpainting.py",
+                "path": "scripts/poor_mans_outpainting.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "postprocessing_codeformer.py",
+                "path": "scripts/postprocessing_codeformer.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "postprocessing_gfpgan.py",
+                "path": "scripts/postprocessing_gfpgan.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "postprocessing_upscale.py",
+                "path": "scripts/postprocessing_upscale.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "prompt_matrix.py",
+                "path": "scripts/prompt_matrix.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "prompts_from_file.py",
+                "path": "scripts/prompts_from_file.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "sd_upscale.py",
+                "path": "scripts/sd_upscale.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "xyz_grid.py",
+                "path": "scripts/xyz_grid.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "test",
+            "path": "test",
+            "is_dir": true,
+            "file_count": 9,
+            "children": [
+              {
+                "name": "test_files",
+                "path": "test/test_files",
+                "is_dir": true,
+                "file_count": 1,
+                "children": [
+                  {
+                    "name": "empty.pt",
+                    "path": "test/test_files/empty.pt",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "__init__.py",
+                "path": "test/__init__.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "conftest.py",
+                "path": "test/conftest.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "test_extras.py",
+                "path": "test/test_extras.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "test_face_restorers.py",
+                "path": "test/test_face_restorers.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "test_img2img.py",
+                "path": "test/test_img2img.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "test_torch_utils.py",
+                "path": "test/test_torch_utils.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "test_txt2img.py",
+                "path": "test/test_txt2img.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "test_utils.py",
+                "path": "test/test_utils.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "textual_inversion_templates",
+            "path": "textual_inversion_templates",
+            "is_dir": true,
+            "file_count": 6,
+            "children": [
+              {
+                "name": "hypernetwork.txt",
+                "path": "textual_inversion_templates/hypernetwork.txt",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "none.txt",
+                "path": "textual_inversion_templates/none.txt",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "style.txt",
+                "path": "textual_inversion_templates/style.txt",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "style_filewords.txt",
+                "path": "textual_inversion_templates/style_filewords.txt",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "subject.txt",
+                "path": "textual_inversion_templates/subject.txt",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "subject_filewords.txt",
+                "path": "textual_inversion_templates/subject_filewords.txt",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": ".eslintignore",
+            "path": ".eslintignore",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": ".eslintrc.js",
+            "path": ".eslintrc.js",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": ".git-blame-ignore-revs",
+            "path": ".git-blame-ignore-revs",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": ".gitignore",
+            "path": ".gitignore",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": ".pylintrc",
+            "path": ".pylintrc",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "CHANGELOG.md",
+            "path": "CHANGELOG.md",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "CITATION.cff",
+            "path": "CITATION.cff",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "CODEOWNERS",
+            "path": "CODEOWNERS",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "LICENSE.txt",
+            "path": "LICENSE.txt",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "README.md",
+            "path": "README.md",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "_typos.toml",
+            "path": "_typos.toml",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "environment-wsl2.yaml",
+            "path": "environment-wsl2.yaml",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "launch.py",
+            "path": "launch.py",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "package.json",
+            "path": "package.json",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "pyproject.toml",
+            "path": "pyproject.toml",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "requirements-test.txt",
+            "path": "requirements-test.txt",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "requirements.txt",
+            "path": "requirements.txt",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "requirements_npu.txt",
+            "path": "requirements_npu.txt",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "requirements_versions.txt",
+            "path": "requirements_versions.txt",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "script.js",
+            "path": "script.js",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "style.css",
+            "path": "style.css",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "webui-macos-env.sh",
+            "path": "webui-macos-env.sh",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "webui.bat",
+            "path": "webui.bat",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "webui.py",
+            "path": "webui.py",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "webui.sh",
+            "path": "webui.sh",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          }
+        ]
+      }
+    },
+    "profiles": [
+      {
+        "stage": "full_scan",
+        "total_ms": 50,
+        "peak_rss_bytes": 30801920,
+        "steps": [
+          {
+            "id": "git_metadata",
+            "label": "Git metadata",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "file_walk",
+            "label": "Parallel file walk",
+            "ms": 7,
+            "pct": 14.000000000000002
+          },
+          {
+            "id": "languages",
+            "label": "Language breakdown",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "manifests",
+            "label": "Manifest parsing",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "docs",
+            "label": "Doc previews",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "aggregates",
+            "label": "Dirs, configs, stack tags",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "entrypoints",
+            "label": "Entrypoints, workspace units & QA readiness",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "source_previews",
+            "label": "Source preview cache",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "repo_graph",
+            "label": "Deterministic graph scan",
+            "ms": 1,
+            "pct": 2
+          },
+          {
+            "id": "history",
+            "label": "Git history & decision scan",
+            "ms": 14,
+            "pct": 28.000000000000004
+          },
+          {
+            "id": "repo_health",
+            "label": "Deterministic health scoring",
+            "ms": 26,
+            "pct": 52
+          },
+          {
+            "id": "dir_tree",
+            "label": "Directory tree preview",
+            "ms": 0,
+            "pct": 0
+          }
+        ]
+      },
+      {
+        "stage": "local_scan_persist",
+        "total_ms": 0,
+        "peak_rss_bytes": 31342592,
+        "steps": [
+          {
+            "id": "serialize",
+            "label": "JSON serialize (inventory → SQLite)",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "db_insert",
+            "label": "SQLite insert",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "touch_project",
+            "label": "Update repo project metadata",
+            "ms": 0,
+            "pct": 0
+          }
+        ]
+      }
+    ]
+  }
+}
