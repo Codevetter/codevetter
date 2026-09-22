@@ -516,7 +516,10 @@ func renderPerformance(_ model: WorkbenchModel) {
 @MainActor
 func renderUsage(_ model: WorkbenchModel) {
   autoreleasepool {
-    let host = NSHostingView(rootView: PremiumWorkbenchRootView(model: model))
+    // The gate measures the already-loaded Usage surface. Repeatedly mounting
+    // the production lifecycle would start collectors and auto-refresh tasks in
+    // every sample, contradicting the gate's documented render-only boundary.
+    let host = NSHostingView(rootView: PremiumUsageView(model: model, startsUsageLifecycle: false))
     host.appearance = NSAppearance(named: .darkAqua)
     host.frame = NSRect(x: 0, y: 0, width: 980, height: 640)
     host.layoutSubtreeIfNeeded()

@@ -262,7 +262,13 @@ struct UsageViewProjection: Sendable {
 
 struct PremiumUsageView: View {
   @Bindable var model: WorkbenchModel
+  private let startsUsageLifecycle: Bool
   @State private var localDetailsExpanded = false
+
+  init(model: WorkbenchModel, startsUsageLifecycle: Bool = true) {
+    self.model = model
+    self.startsUsageLifecycle = startsUsageLifecycle
+  }
 
   var body: some View {
     VStack(spacing: 0) {
@@ -272,19 +278,25 @@ struct PremiumUsageView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
     .background(EvidenceStyle.canvas)
-    .onAppear { model.setUsageAutoRefreshSuspended(!NSApp.isActive) }
+    .onAppear {
+      guard startsUsageLifecycle else { return }
+      model.setUsageAutoRefreshSuspended(!NSApp.isActive)
+    }
     .task {
+      guard startsUsageLifecycle else { return }
       await model.prepareUsage()
       await model.runUsageAutoRefresh()
     }
     .onReceive(
       NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)
     ) { _ in
+      guard startsUsageLifecycle else { return }
       model.usageWindowBecameActive()
     }
     .onReceive(
       NotificationCenter.default.publisher(for: NSApplication.didResignActiveNotification)
     ) { _ in
+      guard startsUsageLifecycle else { return }
       model.setUsageAutoRefreshSuspended(true)
     }
   }
