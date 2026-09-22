@@ -32,7 +32,8 @@
       "!**/*.svg",
       "!**/*.astro",
       "!benchmarks/public-catch-rate/cases",
-      "!benchmarks/repo-unpacks"
+      "!benchmarks/repo-unpacks",
+      "!apps/landing-page-astro/src/data/unpack-reports.json"
     ]
   },
   "formatter": {

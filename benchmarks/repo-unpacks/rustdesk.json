@@ -11140,14 +11140,6 @@
           "kind": "evidence"
         },
         {
-          "claim": "libs/hbb_common is a git submodule (url https://github.com/rustdesk/hbb_common) that supplies rendezvous_proto, message framing, socket_client, Config/LocalConfig/PeerConfig, tokio re-exports and sodiumoxide crypto; in this clone the directory is empty, so no code under it can be read or built from this checkout.",
-          "sources": [
-            ".gitmodules",
-            "libs/hbb_common"
-          ],
-          "kind": "evidence"
-        },
-        {
           "claim": "crates-io is patched: `libxdo-sys` is replaced by libs/libxdo-sys-stub (so builds work without libxdo on Wayland-only systems), and `tungstenite`, `webrtc`, `webrtc-util`, `webrtc-sctp` are pinned by git rev to rustdesk-org forks carrying custom fixes (incremental ws read buffer, Windows IPv6 ICE, SCTP congestion-control off by default).",
           "sources": [
             "Cargo.toml#L219-253"
@@ -11725,14 +11717,6 @@
           "kind": "evidence"
         },
         {
-          "claim": "libs/hbb_common is empty in this clone — all wire protocol, Config, socket_client, and sodiumoxide usage is invisible to audit here; any build/test requires `git submodule update --init` first.",
-          "sources": [
-            ".gitmodules",
-            "libs/hbb_common"
-          ],
-          "kind": "evidence"
-        },
-        {
           "claim": "Forked network stack risk: webrtc/webrtc-sctp/webrtc-util and tungstenite are pinned to rustdesk-org forks with custom congestion-control and parsing changes; upstream CVE fixes will not flow through cargo update and must be cherry-picked by rev.",
           "sources": [
             "Cargo.toml#L219-253"
@@ -11865,15 +11849,6 @@
             "src/server/connection.rs",
             "src/client.rs",
             "src/ipc.rs"
-          ],
-          "kind": "evidence"
-        },
-        {
-          "claim": "Bootstrap trap: `git submodule update --init libs/hbb_common` is mandatory — the directory is empty in this clone and every protocol symbol (RendezvousMessage, Config, Stream, socket_client, tokio re-export) resolves from it; build also needs flutter_rust_bridge codegen for `bridge_generated.rs` when the `flutter` feature is on.",
-          "sources": [
-            ".gitmodules",
-            "libs/hbb_common",
-            "src/lib.rs#L34-39"
           ],
           "kind": "evidence"
         },

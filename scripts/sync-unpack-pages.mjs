@@ -189,12 +189,18 @@ for (const file of readdirSync(CORPUS)
                 ? { summary: record.report[k], claims: [] }
                 : {
                     summary: record.report[k].summary,
-                    claims: (record.report[k].claims ?? []).map((c) => ({
-                      ...c,
-                      // Agents occasionally append "(symbol)" after a path — strip it
-                      // so the source links resolve.
-                      sources: (c.sources ?? []).map((s) => s.replace(/\s*\([^)]*\)\s*$/, '')),
-                    })),
+                    // Keep only well-formed claims — a malformed record must not
+                    // reach the published JSON.
+                    claims: (record.report[k].claims ?? [])
+                      .filter((c) => typeof c?.claim === 'string' && Array.isArray(c.sources))
+                      .map((c) => ({
+                        ...c,
+                        // Agents occasionally append "(symbol)" after a path — strip it
+                        // so the source links resolve.
+                        sources: c.sources
+                          .filter((s) => typeof s === 'string' && s.length)
+                          .map((s) => s.replace(/\s*\([^)]*\)\s*$/, '')),
+                      })),
                   },
             ])
         )

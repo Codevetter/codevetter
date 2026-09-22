@@ -91315,64 +91315,6 @@
         "summary": "Agents should treat this as a layered contract compiler plus a runtime, not as a Next.js app. Start from Agents.md, the architecture overview, and architecture.config.json. Use pnpm on Node 24, rebuild before typecheck, and do not bypass lint:deps. Tests are written first and run with Vitest; name the Contract type at every JSON boundary; never use any, zod, or a bare cast. Skills and rules have one canonical directory each. The traps that waste a session are stale dist types, plane violations, fixture drift, warn-only marker checks, and editing a gitignored symlink tree.",
         "claims": [
           {
-            "claim": "Agents.md requires Node from the shell (engines.node in the root package.json; do not run nvm/fnm), pnpm instead of npm, and never npx. Build with pnpm build. Use the repo scripts pnpm typecheck and pnpm test rather than hand-rolled tsc or vitest. Use arktype, not zod. Never add extensions to TypeScript imports.",
-            "sources": [
-              "Agents.md",
-              "package.json#L6-L62",
-              "package.json#L101-L103"
-            ],
-            "kind": "evidence"
-          },
-          {
-            "claim": "Type rules from Agents.md: never any; never @ts-expect-error outside negative type tests; never @ts-nocheck; never suppress biome lints; no bare as in production code. Use blindCast or castAs from @internal/utils/casts. as const and test files are exempt. pnpm lint:casts is the ratchet.",
-            "sources": [
-              "Agents.md",
-              "package.json#L36"
-            ],
-            "kind": "evidence"
-          },
-          {
-            "claim": "Write tests before changing implementation. Omit the word should in test names. In sql-orm-client tests, assert the whole result shape with toEqual or a snapshot and an explicit select. Do not reexport from one file to another except under exports/ folders. Do not add backwards-compat exports unless asked. Do not branch on target; add an adapter.",
-            "sources": [
-              "Agents.md"
-            ],
-            "kind": "evidence"
-          },
-          {
-            "claim": "Where JSON enters the runtime, name the contract.d.ts type: postgres<Contract>({ contractJson, url }) or validateSqlContractFully<Contract>(contractJson). Do not use a wide generic such as SqlContract<SqlStorage>. The postgres() overloads encode that split between a live contract object and contractJson.",
-            "sources": [
-              "Agents.md",
-              "packages/3-extensions/postgres/src/runtime/postgres.ts#L155-L170"
-            ],
-            "kind": "evidence"
-          },
-          {
-            "claim": "After changing exported types in a package other packages consume, rebuild that package so dist/*.d.mts updates before downstream typecheck. Turbo already makes typecheck depend on build and ^build because self-imports of published subpaths read dist.",
-            "sources": [
-              "Agents.md",
-              "turbo.json#L35-L43"
-            ],
-            "kind": "evidence"
-          },
-          {
-            "claim": "Safe command set for a small change: pnpm build for the touched package, pnpm test:packages or that package's vitest, pnpm typecheck:packages, and pnpm lint:deps if imports moved. Contract artifact edits need pnpm fixtures:check rather than a hand-rolled emit-and-diff. Integration behavior needs pnpm test:integration; CLI journeys need pnpm test:journeys.",
-            "sources": [
-              "package.json#L14-L23",
-              "package.json#L34",
-              "package.json#L57-L60",
-              "Agents.md"
-            ],
-            "kind": "evidence"
-          },
-          {
-            "claim": "Edit skills at skills-contrib/<name>/SKILL.md and rules at .agents/rules/<name>.mdc. .claude, .cursor, and .agents skill/rule trees are presentation symlinks materialized by prepare (skills add and scripts/sync-agent-rules.mjs). A rule added only under .cursor/rules is gitignored and lost. pnpm rules:sync and pnpm lint:rules:symlinks check the trees.",
-            "sources": [
-              "Agents.md",
-              "package.json#L42-L69"
-            ],
-            "kind": "evidence"
-          },
-          {
             "claim": "New packages must be registered in architecture.config.json with plane-specific globs, broad to specific, including a migration glob for src/core/migrations/** even if the directory is empty. pnpm lint:deps fails the PR if a migration file imports a runtime package.",
             "sources": [
               "docs/onboarding/Repo-Map-and-Layering.md#L21-L30",
@@ -108907,14 +108849,6 @@
             "kind": "evidence"
           },
           {
-            "claim": "libs/hbb_common is a git submodule (url https://github.com/rustdesk/hbb_common) that supplies rendezvous_proto, message framing, socket_client, Config/LocalConfig/PeerConfig, tokio re-exports and sodiumoxide crypto; in this clone the directory is empty, so no code under it can be read or built from this checkout.",
-            "sources": [
-              ".gitmodules",
-              "libs/hbb_common"
-            ],
-            "kind": "evidence"
-          },
-          {
             "claim": "crates-io is patched: `libxdo-sys` is replaced by libs/libxdo-sys-stub (so builds work without libxdo on Wayland-only systems), and `tungstenite`, `webrtc`, `webrtc-util`, `webrtc-sctp` are pinned by git rev to rustdesk-org forks carrying custom fixes (incremental ws read buffer, Windows IPv6 ICE, SCTP congestion-control off by default).",
             "sources": [
               "Cargo.toml#L219-253"
@@ -109492,14 +109426,6 @@
             "kind": "evidence"
           },
           {
-            "claim": "libs/hbb_common is empty in this clone — all wire protocol, Config, socket_client, and sodiumoxide usage is invisible to audit here; any build/test requires `git submodule update --init` first.",
-            "sources": [
-              ".gitmodules",
-              "libs/hbb_common"
-            ],
-            "kind": "evidence"
-          },
-          {
             "claim": "Forked network stack risk: webrtc/webrtc-sctp/webrtc-util and tungstenite are pinned to rustdesk-org forks with custom congestion-control and parsing changes; upstream CVE fixes will not flow through cargo update and must be cherry-picked by rev.",
             "sources": [
               "Cargo.toml#L219-253"
@@ -109632,15 +109558,6 @@
               "src/server/connection.rs",
               "src/client.rs",
               "src/ipc.rs"
-            ],
-            "kind": "evidence"
-          },
-          {
-            "claim": "Bootstrap trap: `git submodule update --init libs/hbb_common` is mandatory — the directory is empty in this clone and every protocol symbol (RendezvousMessage, Config, Stream, socket_client, tokio re-export) resolves from it; build also needs flutter_rust_bridge codegen for `bridge_generated.rs` when the `flutter` feature is on.",
-            "sources": [
-              ".gitmodules",
-              "libs/hbb_common",
-              "src/lib.rs#L34-39"
             ],
             "kind": "evidence"
           },
@@ -125814,15 +125731,6 @@
               "src/terminal/parser/OutputStateMachineEngine.cpp#L21-44",
               "src/terminal/adapter/adaptDispatch.cpp",
               "src/terminal/parser/InputStateMachineEngine.cpp"
-            ],
-            "kind": "evidence"
-          },
-          {
-            "claim": "Renderers are pluggable behind renderer/base's IRenderer: AtlasEngine (D2D/D3D, custom shaders) for the new terminal, a GDI engine under renderer/gdi for legacy conhost, plus renderer/uia and renderer/wddmcon variants.",
-            "sources": [
-              "src/renderer/atlas/AtlasEngine.cpp",
-              "src/renderer/base/Renderer.cpp",
-              "src/renderer/gdi"
             ],
             "kind": "evidence"
           },

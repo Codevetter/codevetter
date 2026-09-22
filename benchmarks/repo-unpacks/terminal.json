@@ -11339,15 +11339,6 @@
           "kind": "evidence"
         },
         {
-          "claim": "Renderers are pluggable behind renderer/base's IRenderer: AtlasEngine (D2D/D3D, custom shaders) for the new terminal, a GDI engine under renderer/gdi for legacy conhost, plus renderer/uia and renderer/wddmcon variants.",
-          "sources": [
-            "src/renderer/atlas/AtlasEngine.cpp",
-            "src/renderer/base/Renderer.cpp",
-            "src/renderer/gdi"
-          ],
-          "kind": "evidence"
-        },
-        {
           "claim": "Settings layering is tag-based: ParsedSettings entries carry an OriginTag (InBox, User, Generated, Dynamic, Fragment) and SettingsLoader merges them in a fixed order — new settings sources plug in as additional origins without changing the merge engine.",
           "sources": [
             "src/cascadia/TerminalSettingsModel/CascadiaSettingsSerialization.cpp#L102-160"
