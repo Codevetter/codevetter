@@ -3,7 +3,7 @@
   "repo": "httpie/cli",
   "slug": "httpie",
   "codevetter_version": "codevetter 1.12.0",
-  "collected_at": "2026-09-22T05:15:33.545Z",
+  "collected_at": "2026-09-22T06:01:32.788Z",
   "last_commit": {
     "sha": "5b604c37c6c67e18e7c3e9aee6c88a8c22b98345",
     "date": "2024-12-17",
@@ -11,11 +11,11 @@
   },
   "scan": {
     "schema_version": "codevetter.unpack-scan/v1",
-    "report_id": "788fad44-7299-4553-82d2-b739e7d6ce40",
+    "report_id": "2f439e52-4eb0-4f4e-9517-58be616ae5bc",
     "status": "scan_only",
-    "created_at": "2026-09-22T05:15:33.538960+00:00",
+    "created_at": "2026-09-22T06:01:32.779781+00:00",
     "inventory": {
-      "repo_path": "/private/var/folders/9_/1109_2dd1qz6zyvmxb5zp8pc0000gn/T/unpack-pilot-mM8abS/httpie",
+      "repo_path": "/private/var/folders/9_/1109_2dd1qz6zyvmxb5zp8pc0000gn/T/unpack-pilot-4os5wn/httpie",
       "repo_name": "httpie",
       "commit_sha": "5b604c37c6c67e18e7c3e9aee6c88a8c22b98345",
       "branch": "master",
@@ -1922,37 +1922,90 @@
       },
       "history_brief": {
         "schema_version": 2,
-        "summary": "Local history brief captured 1 recent commit, 0 decision markers, 12 test hints, and 0 co-change clusters for Repo Unpacked. Treat commit subjects as leads and rely on cited files for durable constraints.",
+        "summary": "Local history brief captured 12 recent commits, 0 decision markers, 12 test hints, and 1 co-change cluster for Repo Unpacked. Treat commit subjects as leads and rely on cited files for durable constraints.",
         "recent_commits": [
           {
             "sha": "5b604c37c6c6",
             "date": "2024-12-17",
             "subject": "Fix `https` behaviour in fish (#1611)",
+            "files": []
+          },
+          {
+            "sha": "2843b874c60b",
+            "date": "2024-11-01",
+            "subject": "[automated] Update generated content (#1607)",
+            "files": []
+          },
+          {
+            "sha": "2105caa49bae",
+            "date": "2024-11-01",
+            "subject": "3.2.4",
             "files": [
-              ".github/ISSUE_TEMPLATE/bug_report.md",
-              ".github/ISSUE_TEMPLATE/feature_request.md",
-              ".github/ISSUE_TEMPLATE/other.md",
-              ".github/dependabot.yml",
-              ".github/workflows/benchmark.yml",
-              ".github/workflows/code-style.yml",
-              ".github/workflows/content.yml",
-              ".github/workflows/coverage.yml",
-              ".github/workflows/docs-check-markdown.yml",
-              ".github/workflows/docs-deploy.yml",
-              ".github/workflows/release-brew.yml",
-              ".github/workflows/release-choco.yml",
-              ".github/workflows/release-linux-standalone.yml",
-              ".github/workflows/release-pypi.yml",
-              ".github/workflows/release-snap.yml",
-              ".github/workflows/stale.yml",
-              ".github/workflows/test-package-linux-snap.yml",
-              ".github/workflows/test-package-mac-brew.yml",
-              ".github/workflows/tests.yml",
-              ".packit.yaml",
-              "AUTHORS.md",
-              "CHANGELOG.md",
-              "CODE_OF_CONDUCT.md",
-              "CONTRIBUTING.md"
+              "CHANGELOG.md"
+            ]
+          },
+          {
+            "sha": "8560d1196d78",
+            "date": "2024-11-01",
+            "subject": "Update test.yml",
+            "files": [
+              ".github/workflows/tests.yml"
+            ]
+          },
+          {
+            "sha": "2ef4a57d8c2a",
+            "date": "2024-11-01",
+            "subject": "Fix/refactor default cert loading",
+            "files": []
+          },
+          {
+            "sha": "ff742581f49d",
+            "date": "2024-11-01",
+            "subject": "Cleanup default cert loading",
+            "files": []
+          },
+          {
+            "sha": "fd30c4ef6230",
+            "date": "2024-11-01",
+            "subject": "Explicitly load default certificates when creating SSL context (#1583) (#1596)",
+            "files": []
+          },
+          {
+            "sha": "cee82c825e3e",
+            "date": "2024-10-31",
+            "subject": "Fix link to CurliPie tool (#1582)",
+            "files": [
+              "docs/README.md"
+            ]
+          },
+          {
+            "sha": "9eb869987300",
+            "date": "2024-10-31",
+            "subject": "Added an alias for HTTPS in fish completions (#1598)",
+            "files": []
+          },
+          {
+            "sha": "30373274104f",
+            "date": "2024-11-01",
+            "subject": "Update the raw json fields example (#1606)",
+            "files": [
+              "docs/README.md"
+            ]
+          },
+          {
+            "sha": "50e1564600ea",
+            "date": "2024-10-28",
+            "subject": "Update the Forms section of README.md (#1593)",
+            "files": [
+              "docs/README.md"
+            ]
+          },
+          {
+            "sha": "f4cf43ecdd6c",
+            "date": "2024-07-10",
+            "subject": "Cleanup",
+            "files": [
+              "CHANGELOG.md"
             ]
           }
         ],
@@ -2007,10 +2060,75 @@
             "reason": "test/spec file anchors expected behavior"
           }
         ],
-        "temporal_couplings": [],
+        "temporal_couplings": [
+          {
+            "files": [
+              "CHANGELOG.md",
+              "docs/README.md"
+            ],
+            "commit_count": 2,
+            "last_commit": "011402152c69",
+            "reason": "These files changed together in 2 recent commits; inspect both when either side moves."
+          }
+        ],
         "graph": {
           "schema_version": 2,
           "nodes": [
+            {
+              "id": "commit:2105caa49bae",
+              "kind": "commit",
+              "label": "3.2.4",
+              "path": null,
+              "detail": "2024-11-01",
+              "citations": [
+                "git:2105caa49bae"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:2843b874c60b",
+              "kind": "commit",
+              "label": "[automated] Update generated content (#1607)",
+              "path": null,
+              "detail": "2024-11-01",
+              "citations": [
+                "git:2843b874c60b"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:2ef4a57d8c2a",
+              "kind": "commit",
+              "label": "Fix/refactor default cert loading",
+              "path": null,
+              "detail": "2024-11-01",
+              "citations": [
+                "git:2ef4a57d8c2a"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:30373274104f",
+              "kind": "commit",
+              "label": "Update the raw json fields example (#1606)",
+              "path": null,
+              "detail": "2024-11-01",
+              "citations": [
+                "git:30373274104f"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:50e1564600ea",
+              "kind": "commit",
+              "label": "Update the Forms section of README.md (#1593)",
+              "path": null,
+              "detail": "2024-10-28",
+              "citations": [
+                "git:50e1564600ea"
+              ],
+              "trust": "git_observed"
+            },
             {
               "id": "commit:5b604c37c6c6",
               "kind": "commit",
@@ -2023,200 +2141,68 @@
               "trust": "git_observed"
             },
             {
-              "id": "file:-github-dependabot-yml",
-              "kind": "file",
-              "label": ".github/dependabot.yml",
-              "path": ".github/dependabot.yml",
-              "detail": "Changed in recent local git history",
+              "id": "commit:8560d1196d78",
+              "kind": "commit",
+              "label": "Update test.yml",
+              "path": null,
+              "detail": "2024-11-01",
               "citations": [
-                ".github/dependabot.yml"
+                "git:8560d1196d78"
               ],
               "trust": "git_observed"
             },
             {
-              "id": "file:-github-issue-template-bug-report-md",
-              "kind": "file",
-              "label": ".github/ISSUE_TEMPLATE/bug_report.md",
-              "path": ".github/ISSUE_TEMPLATE/bug_report.md",
-              "detail": "Changed in recent local git history",
+              "id": "commit:9eb869987300",
+              "kind": "commit",
+              "label": "Added an alias for HTTPS in fish completions (#1598)",
+              "path": null,
+              "detail": "2024-10-31",
               "citations": [
-                ".github/ISSUE_TEMPLATE/bug_report.md"
+                "git:9eb869987300"
               ],
               "trust": "git_observed"
             },
             {
-              "id": "file:-github-issue-template-feature-request-md",
-              "kind": "file",
-              "label": ".github/ISSUE_TEMPLATE/feature_request.md",
-              "path": ".github/ISSUE_TEMPLATE/feature_request.md",
-              "detail": "Changed in recent local git history",
+              "id": "commit:cee82c825e3e",
+              "kind": "commit",
+              "label": "Fix link to CurliPie tool (#1582)",
+              "path": null,
+              "detail": "2024-10-31",
               "citations": [
-                ".github/ISSUE_TEMPLATE/feature_request.md"
+                "git:cee82c825e3e"
               ],
               "trust": "git_observed"
             },
             {
-              "id": "file:-github-issue-template-other-md",
-              "kind": "file",
-              "label": ".github/ISSUE_TEMPLATE/other.md",
-              "path": ".github/ISSUE_TEMPLATE/other.md",
-              "detail": "Changed in recent local git history",
+              "id": "commit:f4cf43ecdd6c",
+              "kind": "commit",
+              "label": "Cleanup",
+              "path": null,
+              "detail": "2024-07-10",
               "citations": [
-                ".github/ISSUE_TEMPLATE/other.md"
+                "git:f4cf43ecdd6c"
               ],
               "trust": "git_observed"
             },
             {
-              "id": "file:-github-workflows-benchmark-yml",
-              "kind": "file",
-              "label": ".github/workflows/benchmark.yml",
-              "path": ".github/workflows/benchmark.yml",
-              "detail": "Changed in recent local git history",
+              "id": "commit:fd30c4ef6230",
+              "kind": "commit",
+              "label": "Explicitly load default certificates when creating SSL context (#1583) (#1596)",
+              "path": null,
+              "detail": "2024-11-01",
               "citations": [
-                ".github/workflows/benchmark.yml"
+                "git:fd30c4ef6230"
               ],
               "trust": "git_observed"
             },
             {
-              "id": "file:-github-workflows-code-style-yml",
-              "kind": "file",
-              "label": ".github/workflows/code-style.yml",
-              "path": ".github/workflows/code-style.yml",
-              "detail": "Changed in recent local git history",
+              "id": "commit:ff742581f49d",
+              "kind": "commit",
+              "label": "Cleanup default cert loading",
+              "path": null,
+              "detail": "2024-11-01",
               "citations": [
-                ".github/workflows/code-style.yml"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:-github-workflows-content-yml",
-              "kind": "file",
-              "label": ".github/workflows/content.yml",
-              "path": ".github/workflows/content.yml",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                ".github/workflows/content.yml"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:-github-workflows-coverage-yml",
-              "kind": "file",
-              "label": ".github/workflows/coverage.yml",
-              "path": ".github/workflows/coverage.yml",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                ".github/workflows/coverage.yml"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:-github-workflows-docs-check-markdown-yml",
-              "kind": "file",
-              "label": ".github/workflows/docs-check-markdown.yml",
-              "path": ".github/workflows/docs-check-markdown.yml",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                ".github/workflows/docs-check-markdown.yml"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:-github-workflows-docs-deploy-yml",
-              "kind": "file",
-              "label": ".github/workflows/docs-deploy.yml",
-              "path": ".github/workflows/docs-deploy.yml",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                ".github/workflows/docs-deploy.yml"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:-github-workflows-release-brew-yml",
-              "kind": "file",
-              "label": ".github/workflows/release-brew.yml",
-              "path": ".github/workflows/release-brew.yml",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                ".github/workflows/release-brew.yml"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:-github-workflows-release-choco-yml",
-              "kind": "file",
-              "label": ".github/workflows/release-choco.yml",
-              "path": ".github/workflows/release-choco.yml",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                ".github/workflows/release-choco.yml"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:-github-workflows-release-linux-standalone-yml",
-              "kind": "file",
-              "label": ".github/workflows/release-linux-standalone.yml",
-              "path": ".github/workflows/release-linux-standalone.yml",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                ".github/workflows/release-linux-standalone.yml"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:-github-workflows-release-pypi-yml",
-              "kind": "file",
-              "label": ".github/workflows/release-pypi.yml",
-              "path": ".github/workflows/release-pypi.yml",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                ".github/workflows/release-pypi.yml"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:-github-workflows-release-snap-yml",
-              "kind": "file",
-              "label": ".github/workflows/release-snap.yml",
-              "path": ".github/workflows/release-snap.yml",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                ".github/workflows/release-snap.yml"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:-github-workflows-stale-yml",
-              "kind": "file",
-              "label": ".github/workflows/stale.yml",
-              "path": ".github/workflows/stale.yml",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                ".github/workflows/stale.yml"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:-github-workflows-test-package-linux-snap-yml",
-              "kind": "file",
-              "label": ".github/workflows/test-package-linux-snap.yml",
-              "path": ".github/workflows/test-package-linux-snap.yml",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                ".github/workflows/test-package-linux-snap.yml"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:-github-workflows-test-package-mac-brew-yml",
-              "kind": "file",
-              "label": ".github/workflows/test-package-mac-brew.yml",
-              "path": ".github/workflows/test-package-mac-brew.yml",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                ".github/workflows/test-package-mac-brew.yml"
+                "git:ff742581f49d"
               ],
               "trust": "git_observed"
             },
@@ -2232,28 +2218,6 @@
               "trust": "git_observed"
             },
             {
-              "id": "file:-packit-yaml",
-              "kind": "file",
-              "label": ".packit.yaml",
-              "path": ".packit.yaml",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                ".packit.yaml"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:authors-md",
-              "kind": "file",
-              "label": "AUTHORS.md",
-              "path": "AUTHORS.md",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                "AUTHORS.md"
-              ],
-              "trust": "git_observed"
-            },
-            {
               "id": "file:changelog-md",
               "kind": "file",
               "label": "CHANGELOG.md",
@@ -2265,24 +2229,13 @@
               "trust": "git_observed"
             },
             {
-              "id": "file:code-of-conduct-md",
+              "id": "file:docs-readme-md",
               "kind": "file",
-              "label": "CODE_OF_CONDUCT.md",
-              "path": "CODE_OF_CONDUCT.md",
+              "label": "docs/README.md",
+              "path": "docs/README.md",
               "detail": "Changed in recent local git history",
               "citations": [
-                "CODE_OF_CONDUCT.md"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:contributing-md",
-              "kind": "file",
-              "label": "CONTRIBUTING.md",
-              "path": "CONTRIBUTING.md",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                "CONTRIBUTING.md"
+                "docs/README.md"
               ],
               "trust": "git_observed"
             },
@@ -2553,268 +2506,80 @@
           ],
           "edges": [
             {
-              "from": "commit:5b604c37c6c6",
-              "to": "file:-github-dependabot-yml",
-              "kind": "changed",
-              "evidence": "5b604c37c6c6 changed this file",
-              "citations": [
-                "git:5b604c37c6c6",
-                ".github/dependabot.yml"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:5b604c37c6c6",
-              "to": "file:-github-issue-template-bug-report-md",
-              "kind": "changed",
-              "evidence": "5b604c37c6c6 changed this file",
-              "citations": [
-                "git:5b604c37c6c6",
-                ".github/ISSUE_TEMPLATE/bug_report.md"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:5b604c37c6c6",
-              "to": "file:-github-issue-template-feature-request-md",
-              "kind": "changed",
-              "evidence": "5b604c37c6c6 changed this file",
-              "citations": [
-                "git:5b604c37c6c6",
-                ".github/ISSUE_TEMPLATE/feature_request.md"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:5b604c37c6c6",
-              "to": "file:-github-issue-template-other-md",
-              "kind": "changed",
-              "evidence": "5b604c37c6c6 changed this file",
-              "citations": [
-                "git:5b604c37c6c6",
-                ".github/ISSUE_TEMPLATE/other.md"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:5b604c37c6c6",
-              "to": "file:-github-workflows-benchmark-yml",
-              "kind": "changed",
-              "evidence": "5b604c37c6c6 changed this file",
-              "citations": [
-                "git:5b604c37c6c6",
-                ".github/workflows/benchmark.yml"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:5b604c37c6c6",
-              "to": "file:-github-workflows-code-style-yml",
-              "kind": "changed",
-              "evidence": "5b604c37c6c6 changed this file",
-              "citations": [
-                "git:5b604c37c6c6",
-                ".github/workflows/code-style.yml"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:5b604c37c6c6",
-              "to": "file:-github-workflows-content-yml",
-              "kind": "changed",
-              "evidence": "5b604c37c6c6 changed this file",
-              "citations": [
-                "git:5b604c37c6c6",
-                ".github/workflows/content.yml"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:5b604c37c6c6",
-              "to": "file:-github-workflows-coverage-yml",
-              "kind": "changed",
-              "evidence": "5b604c37c6c6 changed this file",
-              "citations": [
-                "git:5b604c37c6c6",
-                ".github/workflows/coverage.yml"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:5b604c37c6c6",
-              "to": "file:-github-workflows-docs-check-markdown-yml",
-              "kind": "changed",
-              "evidence": "5b604c37c6c6 changed this file",
-              "citations": [
-                "git:5b604c37c6c6",
-                ".github/workflows/docs-check-markdown.yml"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:5b604c37c6c6",
-              "to": "file:-github-workflows-docs-deploy-yml",
-              "kind": "changed",
-              "evidence": "5b604c37c6c6 changed this file",
-              "citations": [
-                "git:5b604c37c6c6",
-                ".github/workflows/docs-deploy.yml"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:5b604c37c6c6",
-              "to": "file:-github-workflows-release-brew-yml",
-              "kind": "changed",
-              "evidence": "5b604c37c6c6 changed this file",
-              "citations": [
-                "git:5b604c37c6c6",
-                ".github/workflows/release-brew.yml"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:5b604c37c6c6",
-              "to": "file:-github-workflows-release-choco-yml",
-              "kind": "changed",
-              "evidence": "5b604c37c6c6 changed this file",
-              "citations": [
-                "git:5b604c37c6c6",
-                ".github/workflows/release-choco.yml"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:5b604c37c6c6",
-              "to": "file:-github-workflows-release-linux-standalone-yml",
-              "kind": "changed",
-              "evidence": "5b604c37c6c6 changed this file",
-              "citations": [
-                "git:5b604c37c6c6",
-                ".github/workflows/release-linux-standalone.yml"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:5b604c37c6c6",
-              "to": "file:-github-workflows-release-pypi-yml",
-              "kind": "changed",
-              "evidence": "5b604c37c6c6 changed this file",
-              "citations": [
-                "git:5b604c37c6c6",
-                ".github/workflows/release-pypi.yml"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:5b604c37c6c6",
-              "to": "file:-github-workflows-release-snap-yml",
-              "kind": "changed",
-              "evidence": "5b604c37c6c6 changed this file",
-              "citations": [
-                "git:5b604c37c6c6",
-                ".github/workflows/release-snap.yml"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:5b604c37c6c6",
-              "to": "file:-github-workflows-stale-yml",
-              "kind": "changed",
-              "evidence": "5b604c37c6c6 changed this file",
-              "citations": [
-                "git:5b604c37c6c6",
-                ".github/workflows/stale.yml"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:5b604c37c6c6",
-              "to": "file:-github-workflows-test-package-linux-snap-yml",
-              "kind": "changed",
-              "evidence": "5b604c37c6c6 changed this file",
-              "citations": [
-                "git:5b604c37c6c6",
-                ".github/workflows/test-package-linux-snap.yml"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:5b604c37c6c6",
-              "to": "file:-github-workflows-test-package-mac-brew-yml",
-              "kind": "changed",
-              "evidence": "5b604c37c6c6 changed this file",
-              "citations": [
-                "git:5b604c37c6c6",
-                ".github/workflows/test-package-mac-brew.yml"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:5b604c37c6c6",
-              "to": "file:-github-workflows-tests-yml",
-              "kind": "changed",
-              "evidence": "5b604c37c6c6 changed this file",
-              "citations": [
-                "git:5b604c37c6c6",
-                ".github/workflows/tests.yml"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:5b604c37c6c6",
-              "to": "file:-packit-yaml",
-              "kind": "changed",
-              "evidence": "5b604c37c6c6 changed this file",
-              "citations": [
-                "git:5b604c37c6c6",
-                ".packit.yaml"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:5b604c37c6c6",
-              "to": "file:authors-md",
-              "kind": "changed",
-              "evidence": "5b604c37c6c6 changed this file",
-              "citations": [
-                "git:5b604c37c6c6",
-                "AUTHORS.md"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:5b604c37c6c6",
+              "from": "commit:2105caa49bae",
               "to": "file:changelog-md",
               "kind": "changed",
-              "evidence": "5b604c37c6c6 changed this file",
+              "evidence": "2105caa49bae changed this file",
               "citations": [
-                "git:5b604c37c6c6",
+                "git:2105caa49bae",
                 "CHANGELOG.md"
               ],
               "trust": "git_observed"
             },
             {
-              "from": "commit:5b604c37c6c6",
-              "to": "file:code-of-conduct-md",
+              "from": "commit:30373274104f",
+              "to": "file:docs-readme-md",
               "kind": "changed",
-              "evidence": "5b604c37c6c6 changed this file",
+              "evidence": "30373274104f changed this file",
               "citations": [
-                "git:5b604c37c6c6",
-                "CODE_OF_CONDUCT.md"
+                "git:30373274104f",
+                "docs/README.md"
               ],
               "trust": "git_observed"
             },
             {
-              "from": "commit:5b604c37c6c6",
-              "to": "file:contributing-md",
+              "from": "commit:50e1564600ea",
+              "to": "file:docs-readme-md",
               "kind": "changed",
-              "evidence": "5b604c37c6c6 changed this file",
+              "evidence": "50e1564600ea changed this file",
               "citations": [
-                "git:5b604c37c6c6",
-                "CONTRIBUTING.md"
+                "git:50e1564600ea",
+                "docs/README.md"
               ],
               "trust": "git_observed"
+            },
+            {
+              "from": "commit:8560d1196d78",
+              "to": "file:-github-workflows-tests-yml",
+              "kind": "changed",
+              "evidence": "8560d1196d78 changed this file",
+              "citations": [
+                "git:8560d1196d78",
+                ".github/workflows/tests.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:cee82c825e3e",
+              "to": "file:docs-readme-md",
+              "kind": "changed",
+              "evidence": "cee82c825e3e changed this file",
+              "citations": [
+                "git:cee82c825e3e",
+                "docs/README.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:f4cf43ecdd6c",
+              "to": "file:changelog-md",
+              "kind": "changed",
+              "evidence": "f4cf43ecdd6c changed this file",
+              "citations": [
+                "git:f4cf43ecdd6c",
+                "CHANGELOG.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "file:changelog-md",
+              "to": "file:docs-readme-md",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 2 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:011402152c69"
+              ],
+              "trust": "navigation_lead"
             },
             {
               "from": "file:tests-client-certs-client-crt",
@@ -2951,25 +2716,27 @@
           "tests/conftest.py",
           "tests/test_xml.py",
           "tests/test_redirects.py",
-          "tests/test_auth.py"
+          "tests/test_auth.py",
+          "CHANGELOG.md",
+          "docs/README.md"
         ],
         "truncated": true
       },
       "repo_health": {
         "schema_version": 1,
-        "summary": "Deterministic scan scored 83 source files across simple size, churn, structural, test-adjacency, and performance-risk signals. 0 hotspots surfaced; average score is 9.1/10. Treat these as review leads, not proof of a bug.",
-        "average_score": 9.1,
-        "hotspot_count": 0,
+        "summary": "Deterministic scan scored 83 source files across simple size, churn, structural, test-adjacency, and performance-risk signals. 7 hotspots surfaced; average score is 8.1/10. Treat these as review leads, not proof of a bug.",
+        "average_score": 8.1,
+        "hotspot_count": 7,
         "files_analyzed": 83,
         "files_with_test_signal": 3,
         "top_files": [
           {
             "path": "httpie/cli/definition.py",
-            "score": 6.9,
-            "bucket": "watch",
+            "score": 5.7,
+            "bucket": "hotspot",
             "lines": 956,
             "bytes": 29143,
-            "churn": 0,
+            "churn": 980,
             "has_test_signal": false,
             "findings": [
               {
@@ -2993,6 +2760,16 @@
                 ]
               },
               {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 980 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "httpie/cli/definition.py"
+                ]
+              },
+              {
                 "id": "untested_hotspot",
                 "label": "No adjacent test signal",
                 "dimension": "defect",
@@ -3010,11 +2787,11 @@
           },
           {
             "path": "httpie/client.py",
-            "score": 7.1,
-            "bucket": "watch",
+            "score": 5.9,
+            "bucket": "hotspot",
             "lines": 400,
             "bytes": 13396,
-            "churn": 0,
+            "churn": 406,
             "has_test_signal": false,
             "findings": [
               {
@@ -3023,6 +2800,16 @@
                 "dimension": "defect",
                 "severity": "high",
                 "detail": "Maximum indentation depth is about 12; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "httpie/client.py"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 406 changed lines in this file; combine review with history and tests.",
                 "sources": [
                   "httpie/client.py"
                 ]
@@ -3064,56 +2851,12 @@
             ]
           },
           {
-            "path": "httpie/cli/argparser.py",
-            "score": 7.4,
-            "bucket": "watch",
-            "lines": 613,
-            "bytes": 23136,
-            "churn": 0,
-            "has_test_signal": false,
-            "findings": [
-              {
-                "id": "large_file",
-                "label": "Large file",
-                "dimension": "maintainability",
-                "severity": "medium",
-                "detail": "613 lines in one source file; changes here may be harder to review.",
-                "sources": [
-                  "httpie/cli/argparser.py"
-                ]
-              },
-              {
-                "id": "deep_nesting",
-                "label": "Deep nesting",
-                "dimension": "defect",
-                "severity": "high",
-                "detail": "Maximum indentation depth is about 18; deeply nested branches are bug-prone review targets.",
-                "sources": [
-                  "httpie/cli/argparser.py"
-                ]
-              },
-              {
-                "id": "untested_hotspot",
-                "label": "No adjacent test signal",
-                "dimension": "defect",
-                "severity": "medium",
-                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
-                "sources": [
-                  "httpie/cli/argparser.py"
-                ]
-              }
-            ],
-            "refactoring_targets": [
-              "Flatten guard-heavy branches before adding behavior."
-            ]
-          },
-          {
             "path": "docs/contributors/fetch.py",
-            "score": 7.8,
-            "bucket": "watch",
+            "score": 5.9,
+            "bucket": "hotspot",
             "lines": 281,
             "bytes": 8916,
-            "churn": 0,
+            "churn": 281,
             "has_test_signal": false,
             "findings": [
               {
@@ -3122,6 +2865,26 @@
                 "dimension": "defect",
                 "severity": "high",
                 "detail": "Maximum indentation depth is about 12; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "docs/contributors/fetch.py"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 281 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "docs/contributors/fetch.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
                 "sources": [
                   "docs/contributors/fetch.py"
                 ]
@@ -3154,11 +2917,11 @@
           },
           {
             "path": "httpie/output/writer.py",
-            "score": 7.8,
-            "bucket": "watch",
+            "score": 5.9,
+            "bucket": "hotspot",
             "lines": 204,
             "bytes": 6515,
-            "churn": 0,
+            "churn": 204,
             "has_test_signal": false,
             "findings": [
               {
@@ -3167,6 +2930,26 @@
                 "dimension": "defect",
                 "severity": "high",
                 "detail": "Maximum indentation depth is about 10; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "httpie/output/writer.py"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 204 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "httpie/output/writer.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
                 "sources": [
                   "httpie/output/writer.py"
                 ]
@@ -3199,11 +2982,11 @@
           },
           {
             "path": "extras/profiling/benchmarks.py",
-            "score": 7.8,
-            "bucket": "watch",
+            "score": 5.9,
+            "bucket": "hotspot",
             "lines": 202,
             "bytes": 5925,
-            "churn": 0,
+            "churn": 202,
             "has_test_signal": false,
             "findings": [
               {
@@ -3217,6 +3000,26 @@
                 ]
               },
               {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 202 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "extras/profiling/benchmarks.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "extras/profiling/benchmarks.py"
+                ]
+              },
+              {
                 "id": "io_in_loop",
                 "label": "I/O inside loop",
                 "dimension": "performance",
@@ -3243,12 +3046,66 @@
             ]
           },
           {
+            "path": "httpie/cli/argparser.py",
+            "score": 6.2,
+            "bucket": "hotspot",
+            "lines": 613,
+            "bytes": 23136,
+            "churn": 613,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "613 lines in one source file; changes here may be harder to review.",
+                "sources": [
+                  "httpie/cli/argparser.py"
+                ]
+              },
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 18; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "httpie/cli/argparser.py"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 613 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "httpie/cli/argparser.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "httpie/cli/argparser.py"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
             "path": "extras/packaging/linux/build.py",
-            "score": 7.8,
-            "bucket": "watch",
+            "score": 6.4,
+            "bucket": "hotspot",
             "lines": 109,
             "bytes": 2767,
-            "churn": 0,
+            "churn": 109,
             "has_test_signal": false,
             "findings": [
               {
@@ -3262,6 +3119,26 @@
                 ]
               },
               {
+                "id": "churn_hotspot",
+                "label": "Moderate churn",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "Recent git history shows 109 changed lines in this file; it is a change hotspot.",
+                "sources": [
+                  "extras/packaging/linux/build.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "extras/packaging/linux/build.py"
+                ]
+              },
+              {
                 "id": "io_in_loop",
                 "label": "I/O inside loop",
                 "dimension": "performance",
@@ -3279,51 +3156,6 @@
                 "detail": "File touches filesystem, network, database, or subprocess boundaries; changes need concrete runtime proof.",
                 "sources": [
                   "extras/packaging/linux/build.py"
-                ]
-              }
-            ],
-            "refactoring_targets": [
-              "Flatten guard-heavy branches before adding behavior.",
-              "Hoist repeated I/O or batch loop work where behavior allows."
-            ]
-          },
-          {
-            "path": "httpie/manager/compat.py",
-            "score": 8.3,
-            "bucket": "healthy",
-            "lines": 68,
-            "bytes": 2001,
-            "churn": 0,
-            "has_test_signal": false,
-            "findings": [
-              {
-                "id": "deep_nesting",
-                "label": "Deep nesting",
-                "dimension": "defect",
-                "severity": "medium",
-                "detail": "Maximum indentation depth is about 6; inspect branch-heavy paths before risky edits.",
-                "sources": [
-                  "httpie/manager/compat.py"
-                ]
-              },
-              {
-                "id": "io_in_loop",
-                "label": "I/O inside loop",
-                "dimension": "performance",
-                "severity": "medium",
-                "detail": "Loop-shaped code appears near filesystem, subprocess, database, or network I/O; inspect for N+1 or repeated setup work.",
-                "sources": [
-                  "httpie/manager/compat.py"
-                ]
-              },
-              {
-                "id": "io_boundary",
-                "label": "I/O or process boundary",
-                "dimension": "defect",
-                "severity": "low",
-                "detail": "File touches filesystem, network, database, or subprocess boundaries; changes need concrete runtime proof.",
-                "sources": [
-                  "httpie/manager/compat.py"
                 ]
               }
             ],
@@ -3334,11 +3166,11 @@
           },
           {
             "path": "httpie/downloads.py",
-            "score": 8.5,
-            "bucket": "healthy",
+            "score": 6.6,
+            "bucket": "watch",
             "lines": 377,
             "bytes": 11802,
-            "churn": 0,
+            "churn": 379,
             "has_test_signal": false,
             "findings": [
               {
@@ -3347,6 +3179,26 @@
                 "dimension": "defect",
                 "severity": "high",
                 "detail": "Maximum indentation depth is about 14; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "httpie/downloads.py"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 379 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "httpie/downloads.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
                 "sources": [
                   "httpie/downloads.py"
                 ]
@@ -3368,11 +3220,11 @@
           },
           {
             "path": "httpie/core.py",
-            "score": 8.5,
-            "bucket": "healthy",
+            "score": 6.6,
+            "bucket": "watch",
             "lines": 298,
             "bytes": 10450,
-            "churn": 0,
+            "churn": 298,
             "has_test_signal": false,
             "findings": [
               {
@@ -3381,6 +3233,26 @@
                 "dimension": "defect",
                 "severity": "high",
                 "detail": "Maximum indentation depth is about 18; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "httpie/core.py"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 298 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "httpie/core.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
                 "sources": [
                   "httpie/core.py"
                 ]
@@ -3402,11 +3274,11 @@
           },
           {
             "path": "extras/profiling/run.py",
-            "score": 8.5,
-            "bucket": "healthy",
+            "score": 6.6,
+            "bucket": "watch",
             "lines": 287,
             "bytes": 8613,
-            "churn": 0,
+            "churn": 289,
             "has_test_signal": false,
             "findings": [
               {
@@ -3415,6 +3287,26 @@
                 "dimension": "defect",
                 "severity": "high",
                 "detail": "Maximum indentation depth is about 10; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "extras/profiling/run.py"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 289 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "extras/profiling/run.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
                 "sources": [
                   "extras/profiling/run.py"
                 ]
@@ -3436,11 +3328,11 @@
           },
           {
             "path": "httpie/uploads.py",
-            "score": 8.5,
-            "bucket": "healthy",
+            "score": 6.6,
+            "bucket": "watch",
             "lines": 269,
             "bytes": 7744,
-            "churn": 0,
+            "churn": 269,
             "has_test_signal": false,
             "findings": [
               {
@@ -3454,6 +3346,26 @@
                 ]
               },
               {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 269 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "httpie/uploads.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "httpie/uploads.py"
+                ]
+              },
+              {
                 "id": "io_boundary",
                 "label": "I/O or process boundary",
                 "dimension": "defect",
@@ -3461,6 +3373,60 @@
                 "detail": "File touches filesystem, network, database, or subprocess boundaries; changes need concrete runtime proof.",
                 "sources": [
                   "httpie/uploads.py"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "httpie/models.py",
+            "score": 6.6,
+            "bucket": "watch",
+            "lines": 233,
+            "bytes": 6483,
+            "churn": 233,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 8; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "httpie/models.py"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 233 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "httpie/models.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "httpie/models.py"
+                ]
+              },
+              {
+                "id": "io_boundary",
+                "label": "I/O or process boundary",
+                "dimension": "defect",
+                "severity": "low",
+                "detail": "File touches filesystem, network, database, or subprocess boundaries; changes need concrete runtime proof.",
+                "sources": [
+                  "httpie/models.py"
                 ]
               }
             ],
@@ -5783,8 +5749,8 @@
     "profiles": [
       {
         "stage": "full_scan",
-        "total_ms": 29,
-        "peak_rss_bytes": 29949952,
+        "total_ms": 52,
+        "peak_rss_bytes": 30457856,
         "steps": [
           {
             "id": "git_metadata",
@@ -5795,8 +5761,8 @@
           {
             "id": "file_walk",
             "label": "Parallel file walk",
-            "ms": 6,
-            "pct": 20.689655172413794
+            "ms": 8,
+            "pct": 15.384615384615385
           },
           {
             "id": "languages",
@@ -5843,14 +5809,14 @@
           {
             "id": "history",
             "label": "Git history & decision scan",
-            "ms": 12,
-            "pct": 41.37931034482759
+            "ms": 15,
+            "pct": 28.846153846153843
           },
           {
             "id": "repo_health",
             "label": "Deterministic health scoring",
-            "ms": 8,
-            "pct": 27.586206896551722
+            "ms": 26,
+            "pct": 50
           },
           {
             "id": "dir_tree",
@@ -5862,8 +5828,8 @@
       },
       {
         "stage": "local_scan_persist",
-        "total_ms": 4,
-        "peak_rss_bytes": 30441472,
+        "total_ms": 5,
+        "peak_rss_bytes": 30949376,
         "steps": [
           {
             "id": "serialize",
@@ -5874,7 +5840,7 @@
           {
             "id": "db_insert",
             "label": "SQLite insert",
-            "ms": 4,
+            "ms": 5,
             "pct": 100
           },
           {

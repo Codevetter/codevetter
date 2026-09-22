@@ -3,7 +3,7 @@
   "repo": "expressjs/express",
   "slug": "express",
   "codevetter_version": "codevetter 1.12.0",
-  "collected_at": "2026-09-22T05:15:33.318Z",
+  "collected_at": "2026-09-22T06:01:32.384Z",
   "last_commit": {
     "sha": "9a34acf03cb818ff3f8bc40e44176e277a25cbb9",
     "date": "2026-09-15",
@@ -11,11 +11,11 @@
   },
   "scan": {
     "schema_version": "codevetter.unpack-scan/v1",
-    "report_id": "05d202c2-5362-4318-a42a-1b9d994a7281",
+    "report_id": "b96697af-08d7-4771-a694-8c1fa0a0eeed",
     "status": "scan_only",
-    "created_at": "2026-09-22T05:15:33.315283+00:00",
+    "created_at": "2026-09-22T06:01:32.378051+00:00",
     "inventory": {
-      "repo_path": "/private/var/folders/9_/1109_2dd1qz6zyvmxb5zp8pc0000gn/T/unpack-pilot-yMdYhG/express",
+      "repo_path": "/private/var/folders/9_/1109_2dd1qz6zyvmxb5zp8pc0000gn/T/unpack-pilot-ubvm8H/express",
       "repo_name": "express",
       "commit_sha": "9a34acf03cb818ff3f8bc40e44176e277a25cbb9",
       "branch": "master",
@@ -2369,37 +2369,111 @@
       },
       "history_brief": {
         "schema_version": 2,
-        "summary": "Local history brief captured 1 recent commit, 0 decision markers, 6 test hints, and 0 co-change clusters for Repo Unpacked. Treat commit subjects as leads and rely on cited files for durable constraints.",
+        "summary": "Local history brief captured 12 recent commits, 0 decision markers, 6 test hints, and 8 co-change clusters for Repo Unpacked. Treat commit subjects as leads and rely on cited files for durable constraints.",
         "recent_commits": [
           {
             "sha": "9a34acf03cb8",
             "date": "2026-09-16",
             "subject": "fix(res.send): preserve ETag generation with Transfer-Encoding (#7459)",
             "files": [
-              ".eslintrc.yml",
-              ".github/dependabot.yml",
+              "lib/response.js",
+              "test/res.send.js"
+            ]
+          },
+          {
+            "sha": "3ce6d0eb86e9",
+            "date": "2026-09-13",
+            "subject": "ci: add npm staged publication with dist-tag support (#7464)",
+            "files": [
+              ".github/workflows/npm-publish.yml"
+            ]
+          },
+          {
+            "sha": "53d4a0d606c0",
+            "date": "2026-09-11",
+            "subject": "docs: fix capitalization of GitHub Discussions in Readme (#7426)",
+            "files": [
+              "Readme.md"
+            ]
+          },
+          {
+            "sha": "bed501c695a6",
+            "date": "2026-09-08",
+            "subject": "build(deps-dev): bump morgan from 1.11.0 to 1.12.0 (#7461)",
+            "files": [
+              "package.json"
+            ]
+          },
+          {
+            "sha": "4e65ec983d33",
+            "date": "2026-09-08",
+            "subject": "build(deps): bump the github-actions group with 5 updates (#7462)",
+            "files": [
               ".github/workflows/ci.yml",
               ".github/workflows/codeql.yml",
               ".github/workflows/legacy.yml",
-              ".github/workflows/npm-publish.yml",
-              ".github/workflows/scorecard.yml",
+              ".github/workflows/scorecard.yml"
+            ]
+          },
+          {
+            "sha": "4fe723dad4c9",
+            "date": "2026-09-08",
+            "subject": "build(deps-dev): bump hbs from 4.2.1 to 4.3.0 (#7450)",
+            "files": [
+              "package.json"
+            ]
+          },
+          {
+            "sha": "c35284ee7afd",
+            "date": "2026-09-08",
+            "subject": "chore: group github actions updates (#7460)",
+            "files": [
+              ".github/dependabot.yml"
+            ]
+          },
+          {
+            "sha": "023767fe9872",
+            "date": "2026-08-22",
+            "subject": "build(deps): bump github/codeql-action/upload-sarif (#7400)",
+            "files": [
+              ".github/workflows/scorecard.yml"
+            ]
+          },
+          {
+            "sha": "2574a53bbc52",
+            "date": "2026-08-22",
+            "subject": "build(deps): bump coverallsapp/github-action from 2.3.7 to 2.3.8 (#7399)",
+            "files": [
+              ".github/workflows/ci.yml",
+              ".github/workflows/legacy.yml"
+            ]
+          },
+          {
+            "sha": "91d333b4cfea",
+            "date": "2026-08-23",
+            "subject": "docs(res.location): clean up deprecated back string references (#7406)",
+            "files": [
+              "lib/response.js"
+            ]
+          },
+          {
+            "sha": "28f732e98f54",
+            "date": "2026-08-22",
+            "subject": "build(deps): bump actions/checkout from 7.0.0 to 7.0.1 (#7403)",
+            "files": [
+              ".github/workflows/ci.yml",
+              ".github/workflows/codeql.yml",
+              ".github/workflows/legacy.yml",
+              ".github/workflows/scorecard.yml"
+            ]
+          },
+          {
+            "sha": "8ba0c07fdcb3",
+            "date": "2026-08-23",
+            "subject": "deps: bump body-parser to ^2.3.0 to fix CVE-2026-12590 (#7390)",
+            "files": [
               "History.md",
-              "Readme.md",
-              "examples/README.md",
-              "examples/auth/index.js",
-              "examples/content-negotiation/db.js",
-              "examples/content-negotiation/index.js",
-              "examples/content-negotiation/users.js",
-              "examples/cookie-sessions/index.js",
-              "examples/cookies/index.js",
-              "examples/downloads/index.js",
-              "examples/ejs/index.js",
-              "examples/error-pages/index.js",
-              "examples/error/index.js",
-              "examples/hello-world/index.js",
-              "examples/markdown/index.js",
-              "examples/markdown/views/index.md",
-              "examples/multi-router/controllers/api_v1.js"
+              "package.json"
             ]
           }
         ],
@@ -2430,10 +2504,182 @@
             "reason": "package script `test-tap` is a likely verification command"
           }
         ],
-        "temporal_couplings": [],
+        "temporal_couplings": [
+          {
+            "files": [
+              ".github/workflows/ci.yml",
+              ".github/workflows/legacy.yml"
+            ],
+            "commit_count": 12,
+            "last_commit": "4e65ec983d33",
+            "reason": "These files changed together in 12 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              ".github/workflows/codeql.yml",
+              ".github/workflows/scorecard.yml"
+            ],
+            "commit_count": 9,
+            "last_commit": "4e65ec983d33",
+            "reason": "These files changed together in 9 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              ".github/workflows/ci.yml",
+              ".github/workflows/scorecard.yml"
+            ],
+            "commit_count": 6,
+            "last_commit": "4e65ec983d33",
+            "reason": "These files changed together in 6 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              ".github/workflows/legacy.yml",
+              ".github/workflows/scorecard.yml"
+            ],
+            "commit_count": 6,
+            "last_commit": "4e65ec983d33",
+            "reason": "These files changed together in 6 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              ".github/workflows/ci.yml",
+              ".github/workflows/codeql.yml"
+            ],
+            "commit_count": 4,
+            "last_commit": "4e65ec983d33",
+            "reason": "These files changed together in 4 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              ".github/workflows/codeql.yml",
+              ".github/workflows/legacy.yml"
+            ],
+            "commit_count": 4,
+            "last_commit": "4e65ec983d33",
+            "reason": "These files changed together in 4 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              "History.md",
+              "package.json"
+            ],
+            "commit_count": 3,
+            "last_commit": "8ba0c07fdcb3",
+            "reason": "These files changed together in 3 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              "History.md",
+              "lib/response.js"
+            ],
+            "commit_count": 2,
+            "last_commit": "18e5985b8a9d",
+            "reason": "These files changed together in 2 recent commits; inspect both when either side moves."
+          }
+        ],
         "graph": {
           "schema_version": 2,
           "nodes": [
+            {
+              "id": "commit:023767fe9872",
+              "kind": "commit",
+              "label": "build(deps): bump github/codeql-action/upload-sarif (#7400)",
+              "path": null,
+              "detail": "2026-08-22",
+              "citations": [
+                "git:023767fe9872"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:2574a53bbc52",
+              "kind": "commit",
+              "label": "build(deps): bump coverallsapp/github-action from 2.3.7 to 2.3.8 (#7399)",
+              "path": null,
+              "detail": "2026-08-22",
+              "citations": [
+                "git:2574a53bbc52"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:28f732e98f54",
+              "kind": "commit",
+              "label": "build(deps): bump actions/checkout from 7.0.0 to 7.0.1 (#7403)",
+              "path": null,
+              "detail": "2026-08-22",
+              "citations": [
+                "git:28f732e98f54"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:3ce6d0eb86e9",
+              "kind": "commit",
+              "label": "ci: add npm staged publication with dist-tag support (#7464)",
+              "path": null,
+              "detail": "2026-09-13",
+              "citations": [
+                "git:3ce6d0eb86e9"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:4e65ec983d33",
+              "kind": "commit",
+              "label": "build(deps): bump the github-actions group with 5 updates (#7462)",
+              "path": null,
+              "detail": "2026-09-08",
+              "citations": [
+                "git:4e65ec983d33"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:4fe723dad4c9",
+              "kind": "commit",
+              "label": "build(deps-dev): bump hbs from 4.2.1 to 4.3.0 (#7450)",
+              "path": null,
+              "detail": "2026-09-08",
+              "citations": [
+                "git:4fe723dad4c9"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:53d4a0d606c0",
+              "kind": "commit",
+              "label": "docs: fix capitalization of GitHub Discussions in Readme (#7426)",
+              "path": null,
+              "detail": "2026-09-11",
+              "citations": [
+                "git:53d4a0d606c0"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:8ba0c07fdcb3",
+              "kind": "commit",
+              "label": "deps: bump body-parser to ^2.3.0 to fix CVE-2026-12590 (#7390)",
+              "path": null,
+              "detail": "2026-08-23",
+              "citations": [
+                "git:8ba0c07fdcb3"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:91d333b4cfea",
+              "kind": "commit",
+              "label": "docs(res.location): clean up deprecated back string references (#7406)",
+              "path": null,
+              "detail": "2026-08-23",
+              "citations": [
+                "git:91d333b4cfea"
+              ],
+              "trust": "git_observed"
+            },
             {
               "id": "commit:9a34acf03cb8",
               "kind": "commit",
@@ -2446,13 +2692,24 @@
               "trust": "git_observed"
             },
             {
-              "id": "file:-eslintrc-yml",
-              "kind": "file",
-              "label": ".eslintrc.yml",
-              "path": ".eslintrc.yml",
-              "detail": "Changed in recent local git history",
+              "id": "commit:bed501c695a6",
+              "kind": "commit",
+              "label": "build(deps-dev): bump morgan from 1.11.0 to 1.12.0 (#7461)",
+              "path": null,
+              "detail": "2026-09-08",
               "citations": [
-                ".eslintrc.yml"
+                "git:bed501c695a6"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:c35284ee7afd",
+              "kind": "commit",
+              "label": "chore: group github actions updates (#7460)",
+              "path": null,
+              "detail": "2026-09-08",
+              "citations": [
+                "git:c35284ee7afd"
               ],
               "trust": "git_observed"
             },
@@ -2523,171 +2780,6 @@
               "trust": "git_observed"
             },
             {
-              "id": "file:examples-auth-index-js",
-              "kind": "file",
-              "label": "examples/auth/index.js",
-              "path": "examples/auth/index.js",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                "examples/auth/index.js"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:examples-content-negotiation-db-js",
-              "kind": "file",
-              "label": "examples/content-negotiation/db.js",
-              "path": "examples/content-negotiation/db.js",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                "examples/content-negotiation/db.js"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:examples-content-negotiation-index-js",
-              "kind": "file",
-              "label": "examples/content-negotiation/index.js",
-              "path": "examples/content-negotiation/index.js",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                "examples/content-negotiation/index.js"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:examples-content-negotiation-users-js",
-              "kind": "file",
-              "label": "examples/content-negotiation/users.js",
-              "path": "examples/content-negotiation/users.js",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                "examples/content-negotiation/users.js"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:examples-cookie-sessions-index-js",
-              "kind": "file",
-              "label": "examples/cookie-sessions/index.js",
-              "path": "examples/cookie-sessions/index.js",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                "examples/cookie-sessions/index.js"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:examples-cookies-index-js",
-              "kind": "file",
-              "label": "examples/cookies/index.js",
-              "path": "examples/cookies/index.js",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                "examples/cookies/index.js"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:examples-downloads-index-js",
-              "kind": "file",
-              "label": "examples/downloads/index.js",
-              "path": "examples/downloads/index.js",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                "examples/downloads/index.js"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:examples-ejs-index-js",
-              "kind": "file",
-              "label": "examples/ejs/index.js",
-              "path": "examples/ejs/index.js",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                "examples/ejs/index.js"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:examples-error-index-js",
-              "kind": "file",
-              "label": "examples/error/index.js",
-              "path": "examples/error/index.js",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                "examples/error/index.js"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:examples-error-pages-index-js",
-              "kind": "file",
-              "label": "examples/error-pages/index.js",
-              "path": "examples/error-pages/index.js",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                "examples/error-pages/index.js"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:examples-hello-world-index-js",
-              "kind": "file",
-              "label": "examples/hello-world/index.js",
-              "path": "examples/hello-world/index.js",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                "examples/hello-world/index.js"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:examples-markdown-index-js",
-              "kind": "file",
-              "label": "examples/markdown/index.js",
-              "path": "examples/markdown/index.js",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                "examples/markdown/index.js"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:examples-markdown-views-index-md",
-              "kind": "file",
-              "label": "examples/markdown/views/index.md",
-              "path": "examples/markdown/views/index.md",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                "examples/markdown/views/index.md"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:examples-multi-router-controllers-api-v1-js",
-              "kind": "file",
-              "label": "examples/multi-router/controllers/api_v1.js",
-              "path": "examples/multi-router/controllers/api_v1.js",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                "examples/multi-router/controllers/api_v1.js"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:examples-readme-md",
-              "kind": "file",
-              "label": "examples/README.md",
-              "path": "examples/README.md",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                "examples/README.md"
-              ],
-              "trust": "git_observed"
-            },
-            {
               "id": "file:history-md",
               "kind": "file",
               "label": "History.md",
@@ -2699,15 +2791,26 @@
               "trust": "git_observed"
             },
             {
+              "id": "file:lib-response-js",
+              "kind": "file",
+              "label": "lib/response.js",
+              "path": "lib/response.js",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "lib/response.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
               "id": "file:package-json",
               "kind": "file",
               "label": "package.json",
               "path": "package.json",
-              "detail": "Verification source",
+              "detail": "Changed in recent local git history",
               "citations": [
                 "package.json"
               ],
-              "trust": "source_backed"
+              "trust": "git_observed"
             },
             {
               "id": "file:readme-md",
@@ -2717,6 +2820,17 @@
               "detail": "Changed in recent local git history",
               "citations": [
                 "Readme.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:test-res-send-js",
+              "kind": "file",
+              "label": "test/res.send.js",
+              "path": "test/res.send.js",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "test/res.send.js"
               ],
               "trust": "git_observed"
             },
@@ -2789,268 +2903,315 @@
           ],
           "edges": [
             {
-              "from": "commit:9a34acf03cb8",
-              "to": "file:-eslintrc-yml",
-              "kind": "changed",
-              "evidence": "9a34acf03cb8 changed this file",
-              "citations": [
-                "git:9a34acf03cb8",
-                ".eslintrc.yml"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:9a34acf03cb8",
-              "to": "file:-github-dependabot-yml",
-              "kind": "changed",
-              "evidence": "9a34acf03cb8 changed this file",
-              "citations": [
-                "git:9a34acf03cb8",
-                ".github/dependabot.yml"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:9a34acf03cb8",
-              "to": "file:-github-workflows-ci-yml",
-              "kind": "changed",
-              "evidence": "9a34acf03cb8 changed this file",
-              "citations": [
-                "git:9a34acf03cb8",
-                ".github/workflows/ci.yml"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:9a34acf03cb8",
-              "to": "file:-github-workflows-codeql-yml",
-              "kind": "changed",
-              "evidence": "9a34acf03cb8 changed this file",
-              "citations": [
-                "git:9a34acf03cb8",
-                ".github/workflows/codeql.yml"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:9a34acf03cb8",
-              "to": "file:-github-workflows-legacy-yml",
-              "kind": "changed",
-              "evidence": "9a34acf03cb8 changed this file",
-              "citations": [
-                "git:9a34acf03cb8",
-                ".github/workflows/legacy.yml"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:9a34acf03cb8",
-              "to": "file:-github-workflows-npm-publish-yml",
-              "kind": "changed",
-              "evidence": "9a34acf03cb8 changed this file",
-              "citations": [
-                "git:9a34acf03cb8",
-                ".github/workflows/npm-publish.yml"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:9a34acf03cb8",
+              "from": "commit:023767fe9872",
               "to": "file:-github-workflows-scorecard-yml",
               "kind": "changed",
-              "evidence": "9a34acf03cb8 changed this file",
+              "evidence": "023767fe9872 changed this file",
               "citations": [
-                "git:9a34acf03cb8",
+                "git:023767fe9872",
                 ".github/workflows/scorecard.yml"
               ],
               "trust": "git_observed"
             },
             {
-              "from": "commit:9a34acf03cb8",
-              "to": "file:examples-auth-index-js",
+              "from": "commit:2574a53bbc52",
+              "to": "file:-github-workflows-ci-yml",
               "kind": "changed",
-              "evidence": "9a34acf03cb8 changed this file",
+              "evidence": "2574a53bbc52 changed this file",
               "citations": [
-                "git:9a34acf03cb8",
-                "examples/auth/index.js"
+                "git:2574a53bbc52",
+                ".github/workflows/ci.yml"
               ],
               "trust": "git_observed"
             },
             {
-              "from": "commit:9a34acf03cb8",
-              "to": "file:examples-content-negotiation-db-js",
+              "from": "commit:2574a53bbc52",
+              "to": "file:-github-workflows-legacy-yml",
               "kind": "changed",
-              "evidence": "9a34acf03cb8 changed this file",
+              "evidence": "2574a53bbc52 changed this file",
               "citations": [
-                "git:9a34acf03cb8",
-                "examples/content-negotiation/db.js"
+                "git:2574a53bbc52",
+                ".github/workflows/legacy.yml"
               ],
               "trust": "git_observed"
             },
             {
-              "from": "commit:9a34acf03cb8",
-              "to": "file:examples-content-negotiation-index-js",
+              "from": "commit:28f732e98f54",
+              "to": "file:-github-workflows-ci-yml",
               "kind": "changed",
-              "evidence": "9a34acf03cb8 changed this file",
+              "evidence": "28f732e98f54 changed this file",
               "citations": [
-                "git:9a34acf03cb8",
-                "examples/content-negotiation/index.js"
+                "git:28f732e98f54",
+                ".github/workflows/ci.yml"
               ],
               "trust": "git_observed"
             },
             {
-              "from": "commit:9a34acf03cb8",
-              "to": "file:examples-content-negotiation-users-js",
+              "from": "commit:28f732e98f54",
+              "to": "file:-github-workflows-codeql-yml",
               "kind": "changed",
-              "evidence": "9a34acf03cb8 changed this file",
+              "evidence": "28f732e98f54 changed this file",
               "citations": [
-                "git:9a34acf03cb8",
-                "examples/content-negotiation/users.js"
+                "git:28f732e98f54",
+                ".github/workflows/codeql.yml"
               ],
               "trust": "git_observed"
             },
             {
-              "from": "commit:9a34acf03cb8",
-              "to": "file:examples-cookie-sessions-index-js",
+              "from": "commit:28f732e98f54",
+              "to": "file:-github-workflows-legacy-yml",
               "kind": "changed",
-              "evidence": "9a34acf03cb8 changed this file",
+              "evidence": "28f732e98f54 changed this file",
               "citations": [
-                "git:9a34acf03cb8",
-                "examples/cookie-sessions/index.js"
+                "git:28f732e98f54",
+                ".github/workflows/legacy.yml"
               ],
               "trust": "git_observed"
             },
             {
-              "from": "commit:9a34acf03cb8",
-              "to": "file:examples-cookies-index-js",
+              "from": "commit:28f732e98f54",
+              "to": "file:-github-workflows-scorecard-yml",
               "kind": "changed",
-              "evidence": "9a34acf03cb8 changed this file",
+              "evidence": "28f732e98f54 changed this file",
               "citations": [
-                "git:9a34acf03cb8",
-                "examples/cookies/index.js"
+                "git:28f732e98f54",
+                ".github/workflows/scorecard.yml"
               ],
               "trust": "git_observed"
             },
             {
-              "from": "commit:9a34acf03cb8",
-              "to": "file:examples-downloads-index-js",
+              "from": "commit:3ce6d0eb86e9",
+              "to": "file:-github-workflows-npm-publish-yml",
               "kind": "changed",
-              "evidence": "9a34acf03cb8 changed this file",
+              "evidence": "3ce6d0eb86e9 changed this file",
               "citations": [
-                "git:9a34acf03cb8",
-                "examples/downloads/index.js"
+                "git:3ce6d0eb86e9",
+                ".github/workflows/npm-publish.yml"
               ],
               "trust": "git_observed"
             },
             {
-              "from": "commit:9a34acf03cb8",
-              "to": "file:examples-ejs-index-js",
+              "from": "commit:4e65ec983d33",
+              "to": "file:-github-workflows-ci-yml",
               "kind": "changed",
-              "evidence": "9a34acf03cb8 changed this file",
+              "evidence": "4e65ec983d33 changed this file",
               "citations": [
-                "git:9a34acf03cb8",
-                "examples/ejs/index.js"
+                "git:4e65ec983d33",
+                ".github/workflows/ci.yml"
               ],
               "trust": "git_observed"
             },
             {
-              "from": "commit:9a34acf03cb8",
-              "to": "file:examples-error-index-js",
+              "from": "commit:4e65ec983d33",
+              "to": "file:-github-workflows-codeql-yml",
               "kind": "changed",
-              "evidence": "9a34acf03cb8 changed this file",
+              "evidence": "4e65ec983d33 changed this file",
               "citations": [
-                "git:9a34acf03cb8",
-                "examples/error/index.js"
+                "git:4e65ec983d33",
+                ".github/workflows/codeql.yml"
               ],
               "trust": "git_observed"
             },
             {
-              "from": "commit:9a34acf03cb8",
-              "to": "file:examples-error-pages-index-js",
+              "from": "commit:4e65ec983d33",
+              "to": "file:-github-workflows-legacy-yml",
               "kind": "changed",
-              "evidence": "9a34acf03cb8 changed this file",
+              "evidence": "4e65ec983d33 changed this file",
               "citations": [
-                "git:9a34acf03cb8",
-                "examples/error-pages/index.js"
+                "git:4e65ec983d33",
+                ".github/workflows/legacy.yml"
               ],
               "trust": "git_observed"
             },
             {
-              "from": "commit:9a34acf03cb8",
-              "to": "file:examples-hello-world-index-js",
+              "from": "commit:4e65ec983d33",
+              "to": "file:-github-workflows-scorecard-yml",
               "kind": "changed",
-              "evidence": "9a34acf03cb8 changed this file",
+              "evidence": "4e65ec983d33 changed this file",
               "citations": [
-                "git:9a34acf03cb8",
-                "examples/hello-world/index.js"
+                "git:4e65ec983d33",
+                ".github/workflows/scorecard.yml"
               ],
               "trust": "git_observed"
             },
             {
-              "from": "commit:9a34acf03cb8",
-              "to": "file:examples-markdown-index-js",
+              "from": "commit:4fe723dad4c9",
+              "to": "file:package-json",
               "kind": "changed",
-              "evidence": "9a34acf03cb8 changed this file",
+              "evidence": "4fe723dad4c9 changed this file",
               "citations": [
-                "git:9a34acf03cb8",
-                "examples/markdown/index.js"
+                "git:4fe723dad4c9",
+                "package.json"
               ],
               "trust": "git_observed"
             },
             {
-              "from": "commit:9a34acf03cb8",
-              "to": "file:examples-markdown-views-index-md",
+              "from": "commit:53d4a0d606c0",
+              "to": "file:readme-md",
               "kind": "changed",
-              "evidence": "9a34acf03cb8 changed this file",
+              "evidence": "53d4a0d606c0 changed this file",
               "citations": [
-                "git:9a34acf03cb8",
-                "examples/markdown/views/index.md"
+                "git:53d4a0d606c0",
+                "Readme.md"
               ],
               "trust": "git_observed"
             },
             {
-              "from": "commit:9a34acf03cb8",
-              "to": "file:examples-multi-router-controllers-api-v1-js",
-              "kind": "changed",
-              "evidence": "9a34acf03cb8 changed this file",
-              "citations": [
-                "git:9a34acf03cb8",
-                "examples/multi-router/controllers/api_v1.js"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:9a34acf03cb8",
-              "to": "file:examples-readme-md",
-              "kind": "changed",
-              "evidence": "9a34acf03cb8 changed this file",
-              "citations": [
-                "git:9a34acf03cb8",
-                "examples/README.md"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:9a34acf03cb8",
+              "from": "commit:8ba0c07fdcb3",
               "to": "file:history-md",
               "kind": "changed",
-              "evidence": "9a34acf03cb8 changed this file",
+              "evidence": "8ba0c07fdcb3 changed this file",
               "citations": [
-                "git:9a34acf03cb8",
+                "git:8ba0c07fdcb3",
                 "History.md"
               ],
               "trust": "git_observed"
             },
             {
+              "from": "commit:8ba0c07fdcb3",
+              "to": "file:package-json",
+              "kind": "changed",
+              "evidence": "8ba0c07fdcb3 changed this file",
+              "citations": [
+                "git:8ba0c07fdcb3",
+                "package.json"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:91d333b4cfea",
+              "to": "file:lib-response-js",
+              "kind": "changed",
+              "evidence": "91d333b4cfea changed this file",
+              "citations": [
+                "git:91d333b4cfea",
+                "lib/response.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
               "from": "commit:9a34acf03cb8",
-              "to": "file:readme-md",
+              "to": "file:lib-response-js",
               "kind": "changed",
               "evidence": "9a34acf03cb8 changed this file",
               "citations": [
                 "git:9a34acf03cb8",
-                "Readme.md"
+                "lib/response.js"
               ],
               "trust": "git_observed"
+            },
+            {
+              "from": "commit:9a34acf03cb8",
+              "to": "file:test-res-send-js",
+              "kind": "changed",
+              "evidence": "9a34acf03cb8 changed this file",
+              "citations": [
+                "git:9a34acf03cb8",
+                "test/res.send.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:bed501c695a6",
+              "to": "file:package-json",
+              "kind": "changed",
+              "evidence": "bed501c695a6 changed this file",
+              "citations": [
+                "git:bed501c695a6",
+                "package.json"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:c35284ee7afd",
+              "to": "file:-github-dependabot-yml",
+              "kind": "changed",
+              "evidence": "c35284ee7afd changed this file",
+              "citations": [
+                "git:c35284ee7afd",
+                ".github/dependabot.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "file:-github-workflows-ci-yml",
+              "to": "file:-github-workflows-codeql-yml",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 4 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:4e65ec983d33"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:-github-workflows-ci-yml",
+              "to": "file:-github-workflows-legacy-yml",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 12 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:4e65ec983d33"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:-github-workflows-ci-yml",
+              "to": "file:-github-workflows-scorecard-yml",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 6 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:4e65ec983d33"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:-github-workflows-codeql-yml",
+              "to": "file:-github-workflows-legacy-yml",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 4 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:4e65ec983d33"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:-github-workflows-codeql-yml",
+              "to": "file:-github-workflows-scorecard-yml",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 9 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:4e65ec983d33"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:-github-workflows-legacy-yml",
+              "to": "file:-github-workflows-scorecard-yml",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 6 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:4e65ec983d33"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:history-md",
+              "to": "file:lib-response-js",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 2 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:18e5985b8a9d"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:history-md",
+              "to": "file:package-json",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 3 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:8ba0c07fdcb3"
+              ],
+              "trust": "navigation_lead"
             },
             {
               "from": "file:package-json",
@@ -3116,25 +3277,31 @@
           "truncated": false
         },
         "sources": [
-          "package.json"
+          "package.json",
+          ".github/workflows/ci.yml",
+          ".github/workflows/legacy.yml",
+          ".github/workflows/codeql.yml",
+          ".github/workflows/scorecard.yml",
+          "History.md",
+          "lib/response.js"
         ],
         "truncated": false
       },
       "repo_health": {
         "schema_version": 1,
-        "summary": "Deterministic scan scored 96 source files across simple size, churn, structural, test-adjacency, and performance-risk signals. 5 hotspots surfaced; average score is 9.2/10. Treat these as review leads, not proof of a bug.",
-        "average_score": 9.2,
-        "hotspot_count": 5,
+        "summary": "Deterministic scan scored 96 source files across simple size, churn, structural, test-adjacency, and performance-risk signals. 16 hotspots surfaced; average score is 7.9/10. Treat these as review leads, not proof of a bug.",
+        "average_score": 7.9,
+        "hotspot_count": 16,
         "files_analyzed": 96,
         "files_with_test_signal": 0,
         "top_files": [
           {
             "path": "test/app.router.js",
-            "score": 5.7,
+            "score": 4.5,
             "bucket": "hotspot",
             "lines": 1217,
             "bytes": 29831,
-            "churn": 0,
+            "churn": 1217,
             "has_test_signal": false,
             "findings": [
               {
@@ -3163,6 +3330,16 @@
                 "dimension": "maintainability",
                 "severity": "medium",
                 "detail": "A brace-delimited block spans roughly 1198 lines; consider extracting a helper when touching it.",
+                "sources": [
+                  "test/app.router.js"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 1217 changed lines in this file; combine review with history and tests.",
                 "sources": [
                   "test/app.router.js"
                 ]
@@ -3206,11 +3383,11 @@
           },
           {
             "path": "test/express.urlencoded.js",
-            "score": 6.2,
+            "score": 5,
             "bucket": "hotspot",
             "lines": 828,
             "bytes": 26741,
-            "churn": 0,
+            "churn": 828,
             "has_test_signal": false,
             "findings": [
               {
@@ -3239,6 +3416,16 @@
                 "dimension": "maintainability",
                 "severity": "medium",
                 "detail": "A brace-delimited block spans roughly 777 lines; consider extracting a helper when touching it.",
+                "sources": [
+                  "test/express.urlencoded.js"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 828 changed lines in this file; combine review with history and tests.",
                 "sources": [
                   "test/express.urlencoded.js"
                 ]
@@ -3282,11 +3469,11 @@
           },
           {
             "path": "test/res.send.js",
-            "score": 6.2,
+            "score": 5,
             "bucket": "hotspot",
             "lines": 635,
             "bytes": 15572,
-            "churn": 0,
+            "churn": 635,
             "has_test_signal": false,
             "findings": [
               {
@@ -3315,6 +3502,16 @@
                 "dimension": "maintainability",
                 "severity": "medium",
                 "detail": "A brace-delimited block spans roughly 624 lines; consider extracting a helper when touching it.",
+                "sources": [
+                  "test/res.send.js"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 635 changed lines in this file; combine review with history and tests.",
                 "sources": [
                   "test/res.send.js"
                 ]
@@ -3358,11 +3555,11 @@
           },
           {
             "path": "test/res.sendFile.js",
-            "score": 6.4,
+            "score": 5.2,
             "bucket": "hotspot",
             "lines": 913,
             "bytes": 23888,
-            "churn": 0,
+            "churn": 913,
             "has_test_signal": false,
             "findings": [
               {
@@ -3396,6 +3593,16 @@
                 ]
               },
               {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 913 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "test/res.sendFile.js"
+                ]
+              },
+              {
                 "id": "untested_hotspot",
                 "label": "No adjacent test signal",
                 "dimension": "defect",
@@ -3423,11 +3630,11 @@
           },
           {
             "path": "test/res.download.js",
-            "score": 6.4,
+            "score": 5.2,
             "bucket": "hotspot",
             "lines": 487,
             "bytes": 13112,
-            "churn": 0,
+            "churn": 515,
             "has_test_signal": false,
             "findings": [
               {
@@ -3461,6 +3668,16 @@
                 ]
               },
               {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 515 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "test/res.download.js"
+                ]
+              },
+              {
                 "id": "untested_hotspot",
                 "label": "No adjacent test signal",
                 "dimension": "defect",
@@ -3488,11 +3705,11 @@
           },
           {
             "path": "test/express.static.js",
-            "score": 6.9,
-            "bucket": "watch",
+            "score": 5.7,
+            "bucket": "hotspot",
             "lines": 815,
             "bytes": 23498,
-            "churn": 0,
+            "churn": 815,
             "has_test_signal": false,
             "findings": [
               {
@@ -3526,6 +3743,16 @@
                 ]
               },
               {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 815 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "test/express.static.js"
+                ]
+              },
+              {
                 "id": "untested_hotspot",
                 "label": "No adjacent test signal",
                 "dimension": "defect",
@@ -3553,11 +3780,11 @@
           },
           {
             "path": "test/express.json.js",
-            "score": 7.6,
-            "bucket": "watch",
+            "score": 6.4,
+            "bucket": "hotspot",
             "lines": 755,
             "bytes": 23675,
-            "churn": 0,
+            "churn": 755,
             "has_test_signal": false,
             "findings": [
               {
@@ -3576,6 +3803,16 @@
                 "dimension": "maintainability",
                 "severity": "medium",
                 "detail": "A brace-delimited block spans roughly 218 lines; consider extracting a helper when touching it.",
+                "sources": [
+                  "test/express.json.js"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 755 changed lines in this file; combine review with history and tests.",
                 "sources": [
                   "test/express.json.js"
                 ]
@@ -3607,11 +3844,11 @@
           },
           {
             "path": "test/express.text.js",
-            "score": 7.6,
-            "bucket": "watch",
+            "score": 6.4,
+            "bucket": "hotspot",
             "lines": 566,
             "bytes": 17277,
-            "churn": 0,
+            "churn": 566,
             "has_test_signal": false,
             "findings": [
               {
@@ -3630,6 +3867,16 @@
                 "dimension": "maintainability",
                 "severity": "medium",
                 "detail": "A brace-delimited block spans roughly 539 lines; consider extracting a helper when touching it.",
+                "sources": [
+                  "test/express.text.js"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 566 changed lines in this file; combine review with history and tests.",
                 "sources": [
                   "test/express.text.js"
                 ]
@@ -3661,11 +3908,11 @@
           },
           {
             "path": "test/app.use.js",
-            "score": 7.6,
-            "bucket": "watch",
+            "score": 6.4,
+            "bucket": "hotspot",
             "lines": 542,
             "bytes": 12605,
-            "churn": 0,
+            "churn": 542,
             "has_test_signal": false,
             "findings": [
               {
@@ -3684,6 +3931,16 @@
                 "dimension": "maintainability",
                 "severity": "medium",
                 "detail": "A brace-delimited block spans roughly 535 lines; consider extracting a helper when touching it.",
+                "sources": [
+                  "test/app.use.js"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 542 changed lines in this file; combine review with history and tests.",
                 "sources": [
                   "test/app.use.js"
                 ]
@@ -3715,11 +3972,11 @@
           },
           {
             "path": "test/express.raw.js",
-            "score": 7.6,
-            "bucket": "watch",
+            "score": 6.4,
+            "bucket": "hotspot",
             "lines": 513,
             "bytes": 16296,
-            "churn": 0,
+            "churn": 513,
             "has_test_signal": false,
             "findings": [
               {
@@ -3738,6 +3995,16 @@
                 "dimension": "maintainability",
                 "severity": "medium",
                 "detail": "A brace-delimited block spans roughly 481 lines; consider extracting a helper when touching it.",
+                "sources": [
+                  "test/express.raw.js"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 513 changed lines in this file; combine review with history and tests.",
                 "sources": [
                   "test/express.raw.js"
                 ]
@@ -3768,22 +4035,22 @@
             ]
           },
           {
-            "path": "test/Router.js",
-            "score": 7.9,
-            "bucket": "watch",
-            "lines": 636,
-            "bytes": 17372,
-            "churn": 0,
+            "path": "test/res.render.js",
+            "score": 6.4,
+            "bucket": "hotspot",
+            "lines": 367,
+            "bytes": 9137,
+            "churn": 367,
             "has_test_signal": false,
             "findings": [
               {
-                "id": "large_file",
-                "label": "Large file",
-                "dimension": "maintainability",
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
                 "severity": "medium",
-                "detail": "636 lines in one source file; changes here may be harder to review.",
+                "detail": "Maximum indentation depth is about 7; inspect branch-heavy paths before risky edits.",
                 "sources": [
-                  "test/Router.js"
+                  "test/res.render.js"
                 ]
               },
               {
@@ -3791,9 +4058,19 @@
                 "label": "Long function/block",
                 "dimension": "maintainability",
                 "severity": "medium",
-                "detail": "A brace-delimited block spans roughly 628 lines; consider extracting a helper when touching it.",
+                "detail": "A brace-delimited block spans roughly 352 lines; consider extracting a helper when touching it.",
                 "sources": [
-                  "test/Router.js"
+                  "test/res.render.js"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 367 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "test/res.render.js"
                 ]
               },
               {
@@ -3803,31 +4080,62 @@
                 "severity": "medium",
                 "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
                 "sources": [
-                  "test/Router.js"
+                  "test/res.render.js"
+                ]
+              },
+              {
+                "id": "io_boundary",
+                "label": "I/O or process boundary",
+                "dimension": "defect",
+                "severity": "low",
+                "detail": "File touches filesystem, network, database, or subprocess boundaries; changes need concrete runtime proof.",
+                "sources": [
+                  "test/res.render.js"
                 ]
               }
             ],
             "refactoring_targets": [
-              "Split file or extract helper around the largest cohesive flow."
+              "Split file or extract helper around the largest cohesive flow.",
+              "Flatten guard-heavy branches before adding behavior."
             ]
           },
           {
-            "path": "lib/response.js",
-            "score": 8.1,
-            "bucket": "healthy",
-            "lines": 1049,
-            "bytes": 25057,
-            "churn": 0,
+            "path": "test/res.jsonp.js",
+            "score": 6.4,
+            "bucket": "hotspot",
+            "lines": 330,
+            "bytes": 9154,
+            "churn": 358,
             "has_test_signal": false,
             "findings": [
               {
-                "id": "large_file",
-                "label": "Large file",
-                "dimension": "maintainability",
-                "severity": "high",
-                "detail": "1049 lines in one source file; inspect whether the module hides multiple responsibilities.",
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "Maximum indentation depth is about 6; inspect branch-heavy paths before risky edits.",
                 "sources": [
-                  "lib/response.js"
+                  "test/res.jsonp.js"
+                ]
+              },
+              {
+                "id": "long_block",
+                "label": "Long function/block",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "A brace-delimited block spans roughly 323 lines; consider extracting a helper when touching it.",
+                "sources": [
+                  "test/res.jsonp.js"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 358 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "test/res.jsonp.js"
                 ]
               },
               {
@@ -3837,12 +4145,23 @@
                 "severity": "medium",
                 "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
                 "sources": [
-                  "lib/response.js"
+                  "test/res.jsonp.js"
+                ]
+              },
+              {
+                "id": "io_boundary",
+                "label": "I/O or process boundary",
+                "dimension": "defect",
+                "severity": "low",
+                "detail": "File touches filesystem, network, database, or subprocess boundaries; changes need concrete runtime proof.",
+                "sources": [
+                  "test/res.jsonp.js"
                 ]
               }
             ],
             "refactoring_targets": [
-              "Split file or extract helper around the largest cohesive flow."
+              "Split file or extract helper around the largest cohesive flow.",
+              "Flatten guard-heavy branches before adding behavior."
             ]
           }
         ],
@@ -5971,8 +6290,8 @@
     "profiles": [
       {
         "stage": "full_scan",
-        "total_ms": 34,
-        "peak_rss_bytes": 30015488,
+        "total_ms": 54,
+        "peak_rss_bytes": 30097408,
         "steps": [
           {
             "id": "git_metadata",
@@ -5983,8 +6302,8 @@
           {
             "id": "file_walk",
             "label": "Parallel file walk",
-            "ms": 7,
-            "pct": 20.588235294117645
+            "ms": 9,
+            "pct": 16.666666666666664
           },
           {
             "id": "languages",
@@ -6020,25 +6339,25 @@
             "id": "source_previews",
             "label": "Source preview cache",
             "ms": 1,
-            "pct": 2.941176470588235
+            "pct": 1.8518518518518516
           },
           {
             "id": "repo_graph",
             "label": "Deterministic graph scan",
-            "ms": 3,
-            "pct": 8.823529411764707
+            "ms": 4,
+            "pct": 7.4074074074074066
           },
           {
             "id": "history",
             "label": "Git history & decision scan",
-            "ms": 13,
-            "pct": 38.23529411764706
+            "ms": 16,
+            "pct": 29.629629629629626
           },
           {
             "id": "repo_health",
             "label": "Deterministic health scoring",
-            "ms": 8,
-            "pct": 23.52941176470588
+            "ms": 20,
+            "pct": 37.03703703703704
           },
           {
             "id": "dir_tree",
@@ -6050,8 +6369,8 @@
       },
       {
         "stage": "local_scan_persist",
-        "total_ms": 0,
-        "peak_rss_bytes": 30801920,
+        "total_ms": 4,
+        "peak_rss_bytes": 30425088,
         "steps": [
           {
             "id": "serialize",
@@ -6062,8 +6381,8 @@
           {
             "id": "db_insert",
             "label": "SQLite insert",
-            "ms": 0,
-            "pct": 0
+            "ms": 4,
+            "pct": 100
           },
           {
             "id": "touch_project",

@@ -3,7 +3,7 @@
   "repo": "redis/redis",
   "slug": "redis",
   "codevetter_version": "codevetter 1.12.0",
-  "collected_at": "2026-09-22T05:15:34.273Z",
+  "collected_at": "2026-09-22T06:01:33.468Z",
   "last_commit": {
     "sha": "c3215f019a4c11c35d438f241114e94730fe39e5",
     "date": "2026-09-22",
@@ -11,11 +11,11 @@
   },
   "scan": {
     "schema_version": "codevetter.unpack-scan/v1",
-    "report_id": "035d22a7-c403-4785-b46e-d005b61eb7a5",
+    "report_id": "3885e40c-11ed-4be7-9e66-b37911f7fbc8",
     "status": "scan_only",
-    "created_at": "2026-09-22T05:15:34.265192+00:00",
+    "created_at": "2026-09-22T06:01:33.462248+00:00",
     "inventory": {
-      "repo_path": "/private/var/folders/9_/1109_2dd1qz6zyvmxb5zp8pc0000gn/T/unpack-pilot-BJ64Ag/redis",
+      "repo_path": "/private/var/folders/9_/1109_2dd1qz6zyvmxb5zp8pc0000gn/T/unpack-pilot-CCKLod/redis",
       "repo_name": "redis",
       "commit_sha": "c3215f019a4c11c35d438f241114e94730fe39e5",
       "branch": "unstable",
@@ -187,6 +187,11 @@
           "bytes": 77728
         },
         {
+          "path": "tools",
+          "file_count": 1,
+          "bytes": 18767
+        },
+        {
           "path": ".config",
           "file_count": 1,
           "bytes": 1711
@@ -195,11 +200,6 @@
           "path": "docker",
           "file_count": 1,
           "bytes": 2698
-        },
-        {
-          "path": "tools",
-          "file_count": 1,
-          "bytes": 18767
         }
       ],
       "docs": [
@@ -25481,37 +25481,131 @@
       },
       "history_brief": {
         "schema_version": 2,
-        "summary": "Local history brief captured 1 recent commit, 0 decision markers, 12 test hints, and 0 co-change clusters for Repo Unpacked. Treat commit subjects as leads and rely on cited files for durable constraints.",
+        "summary": "Local history brief captured 12 recent commits, 0 decision markers, 12 test hints, and 8 co-change clusters for Repo Unpacked. Treat commit subjects as leads and rely on cited files for durable constraints.",
         "recent_commits": [
           {
             "sha": "c3215f019a4c",
             "date": "2026-09-22",
             "subject": "CI remove unused redis_docs_sync workflow (#15816)",
             "files": [
-              ".config/typos.toml",
-              ".github/ISSUE_TEMPLATE/bug_report.md",
-              ".github/ISSUE_TEMPLATE/crash_report.md",
-              ".github/ISSUE_TEMPLATE/feature_request.md",
-              ".github/ISSUE_TEMPLATE/other_stuff.md",
-              ".github/ISSUE_TEMPLATE/question.md",
-              ".github/dependabot.yml",
-              ".github/workflows/ci.yml",
-              ".github/workflows/codecov.yml",
-              ".github/workflows/codeql-analysis.yml",
-              ".github/workflows/coverity.yml",
-              ".github/workflows/daily.yml",
+              ".github/workflows/redis_docs_sync.yaml"
+            ]
+          },
+          {
+            "sha": "0d6266f2deb9",
+            "date": "2026-09-21",
+            "subject": "Fix XTRIM leaving a 0-live stream node that RDB cannot load (#15815)",
+            "files": [
+              "src/t_stream.c"
+            ]
+          },
+          {
+            "sha": "62d1a5b930ed",
+            "date": "2026-09-20",
+            "subject": "Make ASM tests work with --single (#15636)",
+            "files": []
+          },
+          {
+            "sha": "5f08991bce47",
+            "date": "2026-09-20",
+            "subject": "Fix argument release race in the AOF duration test module (#15805)",
+            "files": [
+              "tests/modules/aofduration.c"
+            ]
+          },
+          {
+            "sha": "c00f920b2a3d",
+            "date": "2026-09-19",
+            "subject": "redis-cli: use CLIENT NO-TOUCH for key size analysis (#15817)",
+            "files": [
+              "src/redis-cli.c"
+            ]
+          },
+          {
+            "sha": "16e021b465fb",
+            "date": "2026-09-17",
+            "subject": "RED-214919 Test loading cluster config without shard IDs (#15757)",
+            "files": []
+          },
+          {
+            "sha": "7c641d81b0eb",
+            "date": "2026-09-17",
+            "subject": "Fix test AOF duration more tolerance for Mac sleep delay (#15814)",
+            "files": []
+          },
+          {
+            "sha": "2b32b1788867",
+            "date": "2026-09-17",
+            "subject": "Bump redisearch module to v8.10.1 (#15811)",
+            "files": [
+              "modules/modules.yaml"
+            ]
+          },
+          {
+            "sha": "07a33b919581",
+            "date": "2026-09-16",
+            "subject": "Remove unused EB_BUCKET_KEY_PRECISION machinery from ebuckets (#15725)",
+            "files": [
+              "src/ebuckets.c",
+              "src/ebuckets.h",
+              "src/expire.c",
+              "src/t_hash.c"
+            ]
+          },
+          {
+            "sha": "b78a80bd1fe4",
+            "date": "2026-09-15",
+            "subject": "Make an unauthenticated cluster bus port an explicit choice (#15722)",
+            "files": [
               ".github/workflows/external.yml",
-              ".github/workflows/modules-build-flow.yml",
-              ".github/workflows/post-release-automation.yml",
-              ".github/workflows/reply-schemas-linter.yml",
-              ".github/workflows/spell-check.yml",
-              "CODE_OF_CONDUCT.md",
-              "CONTRIBUTING.md",
-              "Makefile",
-              "README.md",
-              "SECURITY.md",
               "TLS.md",
-              "codecov.yml"
+              "src/config.c",
+              "src/server.h"
+            ]
+          },
+          {
+            "sha": "51913f692387",
+            "date": "2026-09-15",
+            "subject": "Add aof_cmd_duration estimate for AOF reload RTO visibility",
+            "files": [
+              "src/aof.c",
+              "src/cluster_asm.c",
+              "src/module.c",
+              "src/server.c",
+              "src/server.h",
+              "tests/modules/Makefile",
+              "tests/modules/aofduration.c"
+            ]
+          },
+          {
+            "sha": "b9800e06b210",
+            "date": "2026-09-15",
+            "subject": "RED-211767 - Add BLESS — protect keys from eviction (#15649)",
+            "files": [
+              "src/Makefile",
+              "src/aof.c",
+              "src/bless.c",
+              "src/cluster.c",
+              "src/cluster_asm.c",
+              "src/commands/bless-clear.json",
+              "src/commands/bless-get.json",
+              "src/commands/bless-scan.json",
+              "src/commands/bless-set.json",
+              "src/commands/bless.json",
+              "src/commands/memory-stats.json",
+              "src/db.c",
+              "src/defrag.c",
+              "src/evict.c",
+              "src/keymeta.c",
+              "src/keymeta.h",
+              "src/lazyfree.c",
+              "src/object.c",
+              "src/object.h",
+              "src/rdb.c",
+              "src/rdb.h",
+              "src/redis-check-rdb.c",
+              "src/server.c",
+              "src/server.h"
             ]
           }
         ],
@@ -25566,10 +25660,204 @@
             "reason": "test/spec file anchors expected behavior"
           }
         ],
-        "temporal_couplings": [],
+        "temporal_couplings": [
+          {
+            "files": [
+              "TLS.md",
+              "src/config.c"
+            ],
+            "commit_count": 3,
+            "last_commit": "b78a80bd1fe4",
+            "reason": "These files changed together in 3 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              "src/cluster_asm.c",
+              "src/server.h"
+            ],
+            "commit_count": 3,
+            "last_commit": "51913f692387",
+            "reason": "These files changed together in 3 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              "src/module.c",
+              "src/server.c"
+            ],
+            "commit_count": 3,
+            "last_commit": "51913f692387",
+            "reason": "These files changed together in 3 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              "src/module.c",
+              "src/server.h"
+            ],
+            "commit_count": 3,
+            "last_commit": "51913f692387",
+            "reason": "These files changed together in 3 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              "src/server.c",
+              "src/server.h"
+            ],
+            "commit_count": 3,
+            "last_commit": "51913f692387",
+            "reason": "These files changed together in 3 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              "Makefile",
+              "README.md"
+            ],
+            "commit_count": 2,
+            "last_commit": "0b0d1784b8c8",
+            "reason": "These files changed together in 2 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              "TLS.md",
+              "src/server.h"
+            ],
+            "commit_count": 2,
+            "last_commit": "b78a80bd1fe4",
+            "reason": "These files changed together in 2 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              "src/cluster_asm.c",
+              "src/cluster_asm.h"
+            ],
+            "commit_count": 2,
+            "last_commit": "c12a522e47be",
+            "reason": "These files changed together in 2 recent commits; inspect both when either side moves."
+          }
+        ],
         "graph": {
           "schema_version": 2,
           "nodes": [
+            {
+              "id": "commit:07a33b919581",
+              "kind": "commit",
+              "label": "Remove unused EB_BUCKET_KEY_PRECISION machinery from ebuckets (#15725)",
+              "path": null,
+              "detail": "2026-09-16",
+              "citations": [
+                "git:07a33b919581"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:0d6266f2deb9",
+              "kind": "commit",
+              "label": "Fix XTRIM leaving a 0-live stream node that RDB cannot load (#15815)",
+              "path": null,
+              "detail": "2026-09-21",
+              "citations": [
+                "git:0d6266f2deb9"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:16e021b465fb",
+              "kind": "commit",
+              "label": "RED-214919 Test loading cluster config without shard IDs (#15757)",
+              "path": null,
+              "detail": "2026-09-17",
+              "citations": [
+                "git:16e021b465fb"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:2b32b1788867",
+              "kind": "commit",
+              "label": "Bump redisearch module to v8.10.1 (#15811)",
+              "path": null,
+              "detail": "2026-09-17",
+              "citations": [
+                "git:2b32b1788867"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:51913f692387",
+              "kind": "commit",
+              "label": "Add aof_cmd_duration estimate for AOF reload RTO visibility",
+              "path": null,
+              "detail": "2026-09-15",
+              "citations": [
+                "git:51913f692387"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:5f08991bce47",
+              "kind": "commit",
+              "label": "Fix argument release race in the AOF duration test module (#15805)",
+              "path": null,
+              "detail": "2026-09-20",
+              "citations": [
+                "git:5f08991bce47"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:62d1a5b930ed",
+              "kind": "commit",
+              "label": "Make ASM tests work with --single (#15636)",
+              "path": null,
+              "detail": "2026-09-20",
+              "citations": [
+                "git:62d1a5b930ed"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:7c641d81b0eb",
+              "kind": "commit",
+              "label": "Fix test AOF duration more tolerance for Mac sleep delay (#15814)",
+              "path": null,
+              "detail": "2026-09-17",
+              "citations": [
+                "git:7c641d81b0eb"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:b78a80bd1fe4",
+              "kind": "commit",
+              "label": "Make an unauthenticated cluster bus port an explicit choice (#15722)",
+              "path": null,
+              "detail": "2026-09-15",
+              "citations": [
+                "git:b78a80bd1fe4"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:b9800e06b210",
+              "kind": "commit",
+              "label": "RED-211767 - Add BLESS — protect keys from eviction (#15649)",
+              "path": null,
+              "detail": "2026-09-15",
+              "citations": [
+                "git:b9800e06b210"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:c00f920b2a3d",
+              "kind": "commit",
+              "label": "redis-cli: use CLIENT NO-TOUCH for key size analysis (#15817)",
+              "path": null,
+              "detail": "2026-09-19",
+              "citations": [
+                "git:c00f920b2a3d"
+              ],
+              "trust": "git_observed"
+            },
             {
               "id": "commit:c3215f019a4c",
               "kind": "commit",
@@ -25578,138 +25866,6 @@
               "detail": "2026-09-22",
               "citations": [
                 "git:c3215f019a4c"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:-config-typos-toml",
-              "kind": "file",
-              "label": ".config/typos.toml",
-              "path": ".config/typos.toml",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                ".config/typos.toml"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:-github-dependabot-yml",
-              "kind": "file",
-              "label": ".github/dependabot.yml",
-              "path": ".github/dependabot.yml",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                ".github/dependabot.yml"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:-github-issue-template-bug-report-md",
-              "kind": "file",
-              "label": ".github/ISSUE_TEMPLATE/bug_report.md",
-              "path": ".github/ISSUE_TEMPLATE/bug_report.md",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                ".github/ISSUE_TEMPLATE/bug_report.md"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:-github-issue-template-crash-report-md",
-              "kind": "file",
-              "label": ".github/ISSUE_TEMPLATE/crash_report.md",
-              "path": ".github/ISSUE_TEMPLATE/crash_report.md",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                ".github/ISSUE_TEMPLATE/crash_report.md"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:-github-issue-template-feature-request-md",
-              "kind": "file",
-              "label": ".github/ISSUE_TEMPLATE/feature_request.md",
-              "path": ".github/ISSUE_TEMPLATE/feature_request.md",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                ".github/ISSUE_TEMPLATE/feature_request.md"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:-github-issue-template-other-stuff-md",
-              "kind": "file",
-              "label": ".github/ISSUE_TEMPLATE/other_stuff.md",
-              "path": ".github/ISSUE_TEMPLATE/other_stuff.md",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                ".github/ISSUE_TEMPLATE/other_stuff.md"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:-github-issue-template-question-md",
-              "kind": "file",
-              "label": ".github/ISSUE_TEMPLATE/question.md",
-              "path": ".github/ISSUE_TEMPLATE/question.md",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                ".github/ISSUE_TEMPLATE/question.md"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:-github-workflows-ci-yml",
-              "kind": "file",
-              "label": ".github/workflows/ci.yml",
-              "path": ".github/workflows/ci.yml",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                ".github/workflows/ci.yml"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:-github-workflows-codecov-yml",
-              "kind": "file",
-              "label": ".github/workflows/codecov.yml",
-              "path": ".github/workflows/codecov.yml",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                ".github/workflows/codecov.yml"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:-github-workflows-codeql-analysis-yml",
-              "kind": "file",
-              "label": ".github/workflows/codeql-analysis.yml",
-              "path": ".github/workflows/codeql-analysis.yml",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                ".github/workflows/codeql-analysis.yml"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:-github-workflows-coverity-yml",
-              "kind": "file",
-              "label": ".github/workflows/coverity.yml",
-              "path": ".github/workflows/coverity.yml",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                ".github/workflows/coverity.yml"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:-github-workflows-daily-yml",
-              "kind": "file",
-              "label": ".github/workflows/daily.yml",
-              "path": ".github/workflows/daily.yml",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                ".github/workflows/daily.yml"
               ],
               "trust": "git_observed"
             },
@@ -25725,79 +25881,13 @@
               "trust": "git_observed"
             },
             {
-              "id": "file:-github-workflows-modules-build-flow-yml",
+              "id": "file:-github-workflows-redis-docs-sync-yaml",
               "kind": "file",
-              "label": ".github/workflows/modules-build-flow.yml",
-              "path": ".github/workflows/modules-build-flow.yml",
+              "label": ".github/workflows/redis_docs_sync.yaml",
+              "path": ".github/workflows/redis_docs_sync.yaml",
               "detail": "Changed in recent local git history",
               "citations": [
-                ".github/workflows/modules-build-flow.yml"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:-github-workflows-post-release-automation-yml",
-              "kind": "file",
-              "label": ".github/workflows/post-release-automation.yml",
-              "path": ".github/workflows/post-release-automation.yml",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                ".github/workflows/post-release-automation.yml"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:-github-workflows-reply-schemas-linter-yml",
-              "kind": "file",
-              "label": ".github/workflows/reply-schemas-linter.yml",
-              "path": ".github/workflows/reply-schemas-linter.yml",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                ".github/workflows/reply-schemas-linter.yml"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:-github-workflows-spell-check-yml",
-              "kind": "file",
-              "label": ".github/workflows/spell-check.yml",
-              "path": ".github/workflows/spell-check.yml",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                ".github/workflows/spell-check.yml"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:code-of-conduct-md",
-              "kind": "file",
-              "label": "CODE_OF_CONDUCT.md",
-              "path": "CODE_OF_CONDUCT.md",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                "CODE_OF_CONDUCT.md"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:codecov-yml",
-              "kind": "file",
-              "label": "codecov.yml",
-              "path": "codecov.yml",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                "codecov.yml"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:contributing-md",
-              "kind": "file",
-              "label": "CONTRIBUTING.md",
-              "path": "CONTRIBUTING.md",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                "CONTRIBUTING.md"
+                ".github/workflows/redis_docs_sync.yaml"
               ],
               "trust": "git_observed"
             },
@@ -25806,9 +25896,20 @@
               "kind": "file",
               "label": "Makefile",
               "path": "Makefile",
-              "detail": "Changed in recent local git history",
+              "detail": "Recent co-change lead",
               "citations": [
                 "Makefile"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:modules-modules-yaml",
+              "kind": "file",
+              "label": "modules/modules.yaml",
+              "path": "modules/modules.yaml",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "modules/modules.yaml"
               ],
               "trust": "git_observed"
             },
@@ -25817,20 +25918,372 @@
               "kind": "file",
               "label": "README.md",
               "path": "README.md",
-              "detail": "Changed in recent local git history",
+              "detail": "Recent co-change lead",
               "citations": [
                 "README.md"
               ],
               "trust": "git_observed"
             },
             {
-              "id": "file:security-md",
+              "id": "file:src-aof-c",
               "kind": "file",
-              "label": "SECURITY.md",
-              "path": "SECURITY.md",
+              "label": "src/aof.c",
+              "path": "src/aof.c",
               "detail": "Changed in recent local git history",
               "citations": [
-                "SECURITY.md"
+                "src/aof.c"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:src-bless-c",
+              "kind": "file",
+              "label": "src/bless.c",
+              "path": "src/bless.c",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "src/bless.c"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:src-cluster-asm-c",
+              "kind": "file",
+              "label": "src/cluster_asm.c",
+              "path": "src/cluster_asm.c",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "src/cluster_asm.c"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:src-cluster-asm-h",
+              "kind": "file",
+              "label": "src/cluster_asm.h",
+              "path": "src/cluster_asm.h",
+              "detail": "Recent co-change lead",
+              "citations": [
+                "src/cluster_asm.h"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:src-cluster-c",
+              "kind": "file",
+              "label": "src/cluster.c",
+              "path": "src/cluster.c",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "src/cluster.c"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:src-commands-bless-clear-json",
+              "kind": "file",
+              "label": "src/commands/bless-clear.json",
+              "path": "src/commands/bless-clear.json",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "src/commands/bless-clear.json"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:src-commands-bless-get-json",
+              "kind": "file",
+              "label": "src/commands/bless-get.json",
+              "path": "src/commands/bless-get.json",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "src/commands/bless-get.json"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:src-commands-bless-json",
+              "kind": "file",
+              "label": "src/commands/bless.json",
+              "path": "src/commands/bless.json",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "src/commands/bless.json"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:src-commands-bless-scan-json",
+              "kind": "file",
+              "label": "src/commands/bless-scan.json",
+              "path": "src/commands/bless-scan.json",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "src/commands/bless-scan.json"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:src-commands-bless-set-json",
+              "kind": "file",
+              "label": "src/commands/bless-set.json",
+              "path": "src/commands/bless-set.json",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "src/commands/bless-set.json"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:src-commands-memory-stats-json",
+              "kind": "file",
+              "label": "src/commands/memory-stats.json",
+              "path": "src/commands/memory-stats.json",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "src/commands/memory-stats.json"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:src-config-c",
+              "kind": "file",
+              "label": "src/config.c",
+              "path": "src/config.c",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "src/config.c"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:src-db-c",
+              "kind": "file",
+              "label": "src/db.c",
+              "path": "src/db.c",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "src/db.c"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:src-defrag-c",
+              "kind": "file",
+              "label": "src/defrag.c",
+              "path": "src/defrag.c",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "src/defrag.c"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:src-ebuckets-c",
+              "kind": "file",
+              "label": "src/ebuckets.c",
+              "path": "src/ebuckets.c",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "src/ebuckets.c"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:src-ebuckets-h",
+              "kind": "file",
+              "label": "src/ebuckets.h",
+              "path": "src/ebuckets.h",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "src/ebuckets.h"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:src-evict-c",
+              "kind": "file",
+              "label": "src/evict.c",
+              "path": "src/evict.c",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "src/evict.c"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:src-expire-c",
+              "kind": "file",
+              "label": "src/expire.c",
+              "path": "src/expire.c",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "src/expire.c"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:src-keymeta-c",
+              "kind": "file",
+              "label": "src/keymeta.c",
+              "path": "src/keymeta.c",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "src/keymeta.c"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:src-keymeta-h",
+              "kind": "file",
+              "label": "src/keymeta.h",
+              "path": "src/keymeta.h",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "src/keymeta.h"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:src-lazyfree-c",
+              "kind": "file",
+              "label": "src/lazyfree.c",
+              "path": "src/lazyfree.c",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "src/lazyfree.c"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:src-makefile",
+              "kind": "file",
+              "label": "src/Makefile",
+              "path": "src/Makefile",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "src/Makefile"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:src-module-c",
+              "kind": "file",
+              "label": "src/module.c",
+              "path": "src/module.c",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "src/module.c"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:src-object-c",
+              "kind": "file",
+              "label": "src/object.c",
+              "path": "src/object.c",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "src/object.c"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:src-object-h",
+              "kind": "file",
+              "label": "src/object.h",
+              "path": "src/object.h",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "src/object.h"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:src-rdb-c",
+              "kind": "file",
+              "label": "src/rdb.c",
+              "path": "src/rdb.c",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "src/rdb.c"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:src-rdb-h",
+              "kind": "file",
+              "label": "src/rdb.h",
+              "path": "src/rdb.h",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "src/rdb.h"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:src-redis-check-rdb-c",
+              "kind": "file",
+              "label": "src/redis-check-rdb.c",
+              "path": "src/redis-check-rdb.c",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "src/redis-check-rdb.c"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:src-redis-cli-c",
+              "kind": "file",
+              "label": "src/redis-cli.c",
+              "path": "src/redis-cli.c",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "src/redis-cli.c"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:src-server-c",
+              "kind": "file",
+              "label": "src/server.c",
+              "path": "src/server.c",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "src/server.c"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:src-server-h",
+              "kind": "file",
+              "label": "src/server.h",
+              "path": "src/server.h",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "src/server.h"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:src-t-hash-c",
+              "kind": "file",
+              "label": "src/t_hash.c",
+              "path": "src/t_hash.c",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "src/t_hash.c"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:src-t-stream-c",
+              "kind": "file",
+              "label": "src/t_stream.c",
+              "path": "src/t_stream.c",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "src/t_stream.c"
               ],
               "trust": "git_observed"
             },
@@ -25965,6 +26418,28 @@
                 "tests/cluster/tests/includes/utils.tcl"
               ],
               "trust": "source_backed"
+            },
+            {
+              "id": "file:tests-modules-aofduration-c",
+              "kind": "file",
+              "label": "tests/modules/aofduration.c",
+              "path": "tests/modules/aofduration.c",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "tests/modules/aofduration.c"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:tests-modules-makefile",
+              "kind": "file",
+              "label": "tests/modules/Makefile",
+              "path": "tests/modules/Makefile",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "tests/modules/Makefile"
+              ],
+              "trust": "git_observed"
             },
             {
               "id": "file:tls-md",
@@ -26112,268 +26587,548 @@
           ],
           "edges": [
             {
-              "from": "commit:c3215f019a4c",
-              "to": "file:-config-typos-toml",
+              "from": "commit:07a33b919581",
+              "to": "file:src-ebuckets-c",
               "kind": "changed",
-              "evidence": "c3215f019a4c changed this file",
+              "evidence": "07a33b919581 changed this file",
               "citations": [
-                "git:c3215f019a4c",
-                ".config/typos.toml"
+                "git:07a33b919581",
+                "src/ebuckets.c"
               ],
               "trust": "git_observed"
             },
             {
-              "from": "commit:c3215f019a4c",
-              "to": "file:-github-dependabot-yml",
+              "from": "commit:07a33b919581",
+              "to": "file:src-ebuckets-h",
               "kind": "changed",
-              "evidence": "c3215f019a4c changed this file",
+              "evidence": "07a33b919581 changed this file",
               "citations": [
-                "git:c3215f019a4c",
-                ".github/dependabot.yml"
+                "git:07a33b919581",
+                "src/ebuckets.h"
               ],
               "trust": "git_observed"
             },
             {
-              "from": "commit:c3215f019a4c",
-              "to": "file:-github-issue-template-bug-report-md",
+              "from": "commit:07a33b919581",
+              "to": "file:src-expire-c",
               "kind": "changed",
-              "evidence": "c3215f019a4c changed this file",
+              "evidence": "07a33b919581 changed this file",
               "citations": [
-                "git:c3215f019a4c",
-                ".github/ISSUE_TEMPLATE/bug_report.md"
+                "git:07a33b919581",
+                "src/expire.c"
               ],
               "trust": "git_observed"
             },
             {
-              "from": "commit:c3215f019a4c",
-              "to": "file:-github-issue-template-crash-report-md",
+              "from": "commit:07a33b919581",
+              "to": "file:src-t-hash-c",
               "kind": "changed",
-              "evidence": "c3215f019a4c changed this file",
+              "evidence": "07a33b919581 changed this file",
               "citations": [
-                "git:c3215f019a4c",
-                ".github/ISSUE_TEMPLATE/crash_report.md"
+                "git:07a33b919581",
+                "src/t_hash.c"
               ],
               "trust": "git_observed"
             },
             {
-              "from": "commit:c3215f019a4c",
-              "to": "file:-github-issue-template-feature-request-md",
+              "from": "commit:0d6266f2deb9",
+              "to": "file:src-t-stream-c",
               "kind": "changed",
-              "evidence": "c3215f019a4c changed this file",
+              "evidence": "0d6266f2deb9 changed this file",
               "citations": [
-                "git:c3215f019a4c",
-                ".github/ISSUE_TEMPLATE/feature_request.md"
+                "git:0d6266f2deb9",
+                "src/t_stream.c"
               ],
               "trust": "git_observed"
             },
             {
-              "from": "commit:c3215f019a4c",
-              "to": "file:-github-issue-template-other-stuff-md",
+              "from": "commit:2b32b1788867",
+              "to": "file:modules-modules-yaml",
               "kind": "changed",
-              "evidence": "c3215f019a4c changed this file",
+              "evidence": "2b32b1788867 changed this file",
               "citations": [
-                "git:c3215f019a4c",
-                ".github/ISSUE_TEMPLATE/other_stuff.md"
+                "git:2b32b1788867",
+                "modules/modules.yaml"
               ],
               "trust": "git_observed"
             },
             {
-              "from": "commit:c3215f019a4c",
-              "to": "file:-github-issue-template-question-md",
+              "from": "commit:51913f692387",
+              "to": "file:src-aof-c",
               "kind": "changed",
-              "evidence": "c3215f019a4c changed this file",
+              "evidence": "51913f692387 changed this file",
               "citations": [
-                "git:c3215f019a4c",
-                ".github/ISSUE_TEMPLATE/question.md"
+                "git:51913f692387",
+                "src/aof.c"
               ],
               "trust": "git_observed"
             },
             {
-              "from": "commit:c3215f019a4c",
-              "to": "file:-github-workflows-ci-yml",
+              "from": "commit:51913f692387",
+              "to": "file:src-cluster-asm-c",
               "kind": "changed",
-              "evidence": "c3215f019a4c changed this file",
+              "evidence": "51913f692387 changed this file",
               "citations": [
-                "git:c3215f019a4c",
-                ".github/workflows/ci.yml"
+                "git:51913f692387",
+                "src/cluster_asm.c"
               ],
               "trust": "git_observed"
             },
             {
-              "from": "commit:c3215f019a4c",
-              "to": "file:-github-workflows-codecov-yml",
+              "from": "commit:51913f692387",
+              "to": "file:src-module-c",
               "kind": "changed",
-              "evidence": "c3215f019a4c changed this file",
+              "evidence": "51913f692387 changed this file",
               "citations": [
-                "git:c3215f019a4c",
-                ".github/workflows/codecov.yml"
+                "git:51913f692387",
+                "src/module.c"
               ],
               "trust": "git_observed"
             },
             {
-              "from": "commit:c3215f019a4c",
-              "to": "file:-github-workflows-codeql-analysis-yml",
+              "from": "commit:51913f692387",
+              "to": "file:src-server-c",
               "kind": "changed",
-              "evidence": "c3215f019a4c changed this file",
+              "evidence": "51913f692387 changed this file",
               "citations": [
-                "git:c3215f019a4c",
-                ".github/workflows/codeql-analysis.yml"
+                "git:51913f692387",
+                "src/server.c"
               ],
               "trust": "git_observed"
             },
             {
-              "from": "commit:c3215f019a4c",
-              "to": "file:-github-workflows-coverity-yml",
+              "from": "commit:51913f692387",
+              "to": "file:src-server-h",
               "kind": "changed",
-              "evidence": "c3215f019a4c changed this file",
+              "evidence": "51913f692387 changed this file",
               "citations": [
-                "git:c3215f019a4c",
-                ".github/workflows/coverity.yml"
+                "git:51913f692387",
+                "src/server.h"
               ],
               "trust": "git_observed"
             },
             {
-              "from": "commit:c3215f019a4c",
-              "to": "file:-github-workflows-daily-yml",
+              "from": "commit:51913f692387",
+              "to": "file:tests-modules-aofduration-c",
               "kind": "changed",
-              "evidence": "c3215f019a4c changed this file",
+              "evidence": "51913f692387 changed this file",
               "citations": [
-                "git:c3215f019a4c",
-                ".github/workflows/daily.yml"
+                "git:51913f692387",
+                "tests/modules/aofduration.c"
               ],
               "trust": "git_observed"
             },
             {
-              "from": "commit:c3215f019a4c",
+              "from": "commit:51913f692387",
+              "to": "file:tests-modules-makefile",
+              "kind": "changed",
+              "evidence": "51913f692387 changed this file",
+              "citations": [
+                "git:51913f692387",
+                "tests/modules/Makefile"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:5f08991bce47",
+              "to": "file:tests-modules-aofduration-c",
+              "kind": "changed",
+              "evidence": "5f08991bce47 changed this file",
+              "citations": [
+                "git:5f08991bce47",
+                "tests/modules/aofduration.c"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:b78a80bd1fe4",
               "to": "file:-github-workflows-external-yml",
               "kind": "changed",
-              "evidence": "c3215f019a4c changed this file",
+              "evidence": "b78a80bd1fe4 changed this file",
               "citations": [
-                "git:c3215f019a4c",
+                "git:b78a80bd1fe4",
                 ".github/workflows/external.yml"
               ],
               "trust": "git_observed"
             },
             {
-              "from": "commit:c3215f019a4c",
-              "to": "file:-github-workflows-modules-build-flow-yml",
+              "from": "commit:b78a80bd1fe4",
+              "to": "file:src-config-c",
               "kind": "changed",
-              "evidence": "c3215f019a4c changed this file",
+              "evidence": "b78a80bd1fe4 changed this file",
               "citations": [
-                "git:c3215f019a4c",
-                ".github/workflows/modules-build-flow.yml"
+                "git:b78a80bd1fe4",
+                "src/config.c"
               ],
               "trust": "git_observed"
             },
             {
-              "from": "commit:c3215f019a4c",
-              "to": "file:-github-workflows-post-release-automation-yml",
+              "from": "commit:b78a80bd1fe4",
+              "to": "file:src-server-h",
               "kind": "changed",
-              "evidence": "c3215f019a4c changed this file",
+              "evidence": "b78a80bd1fe4 changed this file",
               "citations": [
-                "git:c3215f019a4c",
-                ".github/workflows/post-release-automation.yml"
+                "git:b78a80bd1fe4",
+                "src/server.h"
               ],
               "trust": "git_observed"
             },
             {
-              "from": "commit:c3215f019a4c",
-              "to": "file:-github-workflows-reply-schemas-linter-yml",
-              "kind": "changed",
-              "evidence": "c3215f019a4c changed this file",
-              "citations": [
-                "git:c3215f019a4c",
-                ".github/workflows/reply-schemas-linter.yml"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:c3215f019a4c",
-              "to": "file:-github-workflows-spell-check-yml",
-              "kind": "changed",
-              "evidence": "c3215f019a4c changed this file",
-              "citations": [
-                "git:c3215f019a4c",
-                ".github/workflows/spell-check.yml"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:c3215f019a4c",
-              "to": "file:code-of-conduct-md",
-              "kind": "changed",
-              "evidence": "c3215f019a4c changed this file",
-              "citations": [
-                "git:c3215f019a4c",
-                "CODE_OF_CONDUCT.md"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:c3215f019a4c",
-              "to": "file:codecov-yml",
-              "kind": "changed",
-              "evidence": "c3215f019a4c changed this file",
-              "citations": [
-                "git:c3215f019a4c",
-                "codecov.yml"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:c3215f019a4c",
-              "to": "file:contributing-md",
-              "kind": "changed",
-              "evidence": "c3215f019a4c changed this file",
-              "citations": [
-                "git:c3215f019a4c",
-                "CONTRIBUTING.md"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:c3215f019a4c",
-              "to": "file:makefile",
-              "kind": "changed",
-              "evidence": "c3215f019a4c changed this file",
-              "citations": [
-                "git:c3215f019a4c",
-                "Makefile"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:c3215f019a4c",
-              "to": "file:readme-md",
-              "kind": "changed",
-              "evidence": "c3215f019a4c changed this file",
-              "citations": [
-                "git:c3215f019a4c",
-                "README.md"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:c3215f019a4c",
-              "to": "file:security-md",
-              "kind": "changed",
-              "evidence": "c3215f019a4c changed this file",
-              "citations": [
-                "git:c3215f019a4c",
-                "SECURITY.md"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:c3215f019a4c",
+              "from": "commit:b78a80bd1fe4",
               "to": "file:tls-md",
               "kind": "changed",
-              "evidence": "c3215f019a4c changed this file",
+              "evidence": "b78a80bd1fe4 changed this file",
               "citations": [
-                "git:c3215f019a4c",
+                "git:b78a80bd1fe4",
                 "TLS.md"
               ],
               "trust": "git_observed"
+            },
+            {
+              "from": "commit:b9800e06b210",
+              "to": "file:src-aof-c",
+              "kind": "changed",
+              "evidence": "b9800e06b210 changed this file",
+              "citations": [
+                "git:b9800e06b210",
+                "src/aof.c"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:b9800e06b210",
+              "to": "file:src-bless-c",
+              "kind": "changed",
+              "evidence": "b9800e06b210 changed this file",
+              "citations": [
+                "git:b9800e06b210",
+                "src/bless.c"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:b9800e06b210",
+              "to": "file:src-cluster-asm-c",
+              "kind": "changed",
+              "evidence": "b9800e06b210 changed this file",
+              "citations": [
+                "git:b9800e06b210",
+                "src/cluster_asm.c"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:b9800e06b210",
+              "to": "file:src-cluster-c",
+              "kind": "changed",
+              "evidence": "b9800e06b210 changed this file",
+              "citations": [
+                "git:b9800e06b210",
+                "src/cluster.c"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:b9800e06b210",
+              "to": "file:src-commands-bless-clear-json",
+              "kind": "changed",
+              "evidence": "b9800e06b210 changed this file",
+              "citations": [
+                "git:b9800e06b210",
+                "src/commands/bless-clear.json"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:b9800e06b210",
+              "to": "file:src-commands-bless-get-json",
+              "kind": "changed",
+              "evidence": "b9800e06b210 changed this file",
+              "citations": [
+                "git:b9800e06b210",
+                "src/commands/bless-get.json"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:b9800e06b210",
+              "to": "file:src-commands-bless-json",
+              "kind": "changed",
+              "evidence": "b9800e06b210 changed this file",
+              "citations": [
+                "git:b9800e06b210",
+                "src/commands/bless.json"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:b9800e06b210",
+              "to": "file:src-commands-bless-scan-json",
+              "kind": "changed",
+              "evidence": "b9800e06b210 changed this file",
+              "citations": [
+                "git:b9800e06b210",
+                "src/commands/bless-scan.json"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:b9800e06b210",
+              "to": "file:src-commands-bless-set-json",
+              "kind": "changed",
+              "evidence": "b9800e06b210 changed this file",
+              "citations": [
+                "git:b9800e06b210",
+                "src/commands/bless-set.json"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:b9800e06b210",
+              "to": "file:src-commands-memory-stats-json",
+              "kind": "changed",
+              "evidence": "b9800e06b210 changed this file",
+              "citations": [
+                "git:b9800e06b210",
+                "src/commands/memory-stats.json"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:b9800e06b210",
+              "to": "file:src-db-c",
+              "kind": "changed",
+              "evidence": "b9800e06b210 changed this file",
+              "citations": [
+                "git:b9800e06b210",
+                "src/db.c"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:b9800e06b210",
+              "to": "file:src-defrag-c",
+              "kind": "changed",
+              "evidence": "b9800e06b210 changed this file",
+              "citations": [
+                "git:b9800e06b210",
+                "src/defrag.c"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:b9800e06b210",
+              "to": "file:src-evict-c",
+              "kind": "changed",
+              "evidence": "b9800e06b210 changed this file",
+              "citations": [
+                "git:b9800e06b210",
+                "src/evict.c"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:b9800e06b210",
+              "to": "file:src-keymeta-c",
+              "kind": "changed",
+              "evidence": "b9800e06b210 changed this file",
+              "citations": [
+                "git:b9800e06b210",
+                "src/keymeta.c"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:b9800e06b210",
+              "to": "file:src-keymeta-h",
+              "kind": "changed",
+              "evidence": "b9800e06b210 changed this file",
+              "citations": [
+                "git:b9800e06b210",
+                "src/keymeta.h"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:b9800e06b210",
+              "to": "file:src-lazyfree-c",
+              "kind": "changed",
+              "evidence": "b9800e06b210 changed this file",
+              "citations": [
+                "git:b9800e06b210",
+                "src/lazyfree.c"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:b9800e06b210",
+              "to": "file:src-makefile",
+              "kind": "changed",
+              "evidence": "b9800e06b210 changed this file",
+              "citations": [
+                "git:b9800e06b210",
+                "src/Makefile"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:b9800e06b210",
+              "to": "file:src-object-c",
+              "kind": "changed",
+              "evidence": "b9800e06b210 changed this file",
+              "citations": [
+                "git:b9800e06b210",
+                "src/object.c"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:b9800e06b210",
+              "to": "file:src-object-h",
+              "kind": "changed",
+              "evidence": "b9800e06b210 changed this file",
+              "citations": [
+                "git:b9800e06b210",
+                "src/object.h"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:b9800e06b210",
+              "to": "file:src-rdb-c",
+              "kind": "changed",
+              "evidence": "b9800e06b210 changed this file",
+              "citations": [
+                "git:b9800e06b210",
+                "src/rdb.c"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:b9800e06b210",
+              "to": "file:src-rdb-h",
+              "kind": "changed",
+              "evidence": "b9800e06b210 changed this file",
+              "citations": [
+                "git:b9800e06b210",
+                "src/rdb.h"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:b9800e06b210",
+              "to": "file:src-redis-check-rdb-c",
+              "kind": "changed",
+              "evidence": "b9800e06b210 changed this file",
+              "citations": [
+                "git:b9800e06b210",
+                "src/redis-check-rdb.c"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:b9800e06b210",
+              "to": "file:src-server-c",
+              "kind": "changed",
+              "evidence": "b9800e06b210 changed this file",
+              "citations": [
+                "git:b9800e06b210",
+                "src/server.c"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:b9800e06b210",
+              "to": "file:src-server-h",
+              "kind": "changed",
+              "evidence": "b9800e06b210 changed this file",
+              "citations": [
+                "git:b9800e06b210",
+                "src/server.h"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:c00f920b2a3d",
+              "to": "file:src-redis-cli-c",
+              "kind": "changed",
+              "evidence": "c00f920b2a3d changed this file",
+              "citations": [
+                "git:c00f920b2a3d",
+                "src/redis-cli.c"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:c3215f019a4c",
+              "to": "file:-github-workflows-redis-docs-sync-yaml",
+              "kind": "changed",
+              "evidence": "c3215f019a4c changed this file",
+              "citations": [
+                "git:c3215f019a4c",
+                ".github/workflows/redis_docs_sync.yaml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "file:makefile",
+              "to": "file:readme-md",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 2 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:0b0d1784b8c8"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:src-cluster-asm-c",
+              "to": "file:src-cluster-asm-h",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 2 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:c12a522e47be"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:src-cluster-asm-c",
+              "to": "file:src-server-h",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 3 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:51913f692387"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:src-module-c",
+              "to": "file:src-server-c",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 3 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:51913f692387"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:src-module-c",
+              "to": "file:src-server-h",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 3 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:51913f692387"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:src-server-c",
+              "to": "file:src-server-h",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 3 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:51913f692387"
+              ],
+              "trust": "navigation_lead"
             },
             {
               "from": "file:tests-cluster-tests-00-base-tcl",
@@ -26494,6 +27249,26 @@
                 "tests/cluster/tests/includes/utils.tcl"
               ],
               "trust": "navigation_lead"
+            },
+            {
+              "from": "file:tls-md",
+              "to": "file:src-config-c",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 3 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:b78a80bd1fe4"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:tls-md",
+              "to": "file:src-server-h",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 2 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:b78a80bd1fe4"
+              ],
+              "trust": "navigation_lead"
             }
           ],
           "truncated": false
@@ -26510,25 +27285,34 @@
           "tests/cluster/tests/19-cluster-nodes-slots.tcl",
           "tests/cluster/tests/includes/utils.tcl",
           "tests/cluster/tests/includes/init-tests.tcl",
-          "tests/cluster/tests/06-slave-stop-cond.tcl"
+          "tests/cluster/tests/06-slave-stop-cond.tcl",
+          "TLS.md",
+          "src/config.c",
+          "src/cluster_asm.c",
+          "src/server.h",
+          "src/module.c",
+          "src/server.c",
+          "Makefile",
+          "README.md",
+          "src/cluster_asm.h"
         ],
         "truncated": true
       },
       "repo_health": {
         "schema_version": 1,
-        "summary": "Deterministic scan scored 23 source files across simple size, churn, structural, test-adjacency, and performance-risk signals. 0 hotspots surfaced; average score is 8.8/10. Treat these as review leads, not proof of a bug.",
-        "average_score": 8.8,
-        "hotspot_count": 0,
+        "summary": "Deterministic scan scored 23 source files across simple size, churn, structural, test-adjacency, and performance-risk signals. 3 hotspots surfaced; average score is 7.9/10. Treat these as review leads, not proof of a bug.",
+        "average_score": 7.9,
+        "hotspot_count": 3,
         "files_analyzed": 23,
         "files_with_test_signal": 0,
         "top_files": [
           {
             "path": "tools/array-bench.py",
-            "score": 7.1,
-            "bucket": "watch",
+            "score": 5.9,
+            "bucket": "hotspot",
             "lines": 431,
             "bytes": 18767,
-            "churn": 0,
+            "churn": 431,
             "has_test_signal": false,
             "findings": [
               {
@@ -26537,6 +27321,16 @@
                 "dimension": "defect",
                 "severity": "high",
                 "detail": "Maximum indentation depth is about 12; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "tools/array-bench.py"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 431 changed lines in this file; combine review with history and tests.",
                 "sources": [
                   "tools/array-bench.py"
                 ]
@@ -26578,12 +27372,77 @@
             ]
           },
           {
+            "path": "utils/req-res-log-validator.py",
+            "score": 5.9,
+            "bucket": "hotspot",
+            "lines": 364,
+            "bytes": 12276,
+            "churn": 364,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 11; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "utils/req-res-log-validator.py"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 364 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "utils/req-res-log-validator.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "utils/req-res-log-validator.py"
+                ]
+              },
+              {
+                "id": "io_in_loop",
+                "label": "I/O inside loop",
+                "dimension": "performance",
+                "severity": "medium",
+                "detail": "Loop-shaped code appears near filesystem, subprocess, database, or network I/O; inspect for N+1 or repeated setup work.",
+                "sources": [
+                  "utils/req-res-log-validator.py"
+                ]
+              },
+              {
+                "id": "io_boundary",
+                "label": "I/O or process boundary",
+                "dimension": "defect",
+                "severity": "low",
+                "detail": "File touches filesystem, network, database, or subprocess boundaries; changes need concrete runtime proof.",
+                "sources": [
+                  "utils/req-res-log-validator.py"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Flatten guard-heavy branches before adding behavior.",
+              "Hoist repeated I/O or batch loop work where behavior allows."
+            ]
+          },
+          {
             "path": "utils/generate-command-code.py",
-            "score": 7.4,
-            "bucket": "watch",
+            "score": 6.2,
+            "bucket": "hotspot",
             "lines": 635,
             "bytes": 22442,
-            "churn": 0,
+            "churn": 635,
             "has_test_signal": false,
             "findings": [
               {
@@ -26607,6 +27466,16 @@
                 ]
               },
               {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 635 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "utils/generate-command-code.py"
+                ]
+              },
+              {
                 "id": "untested_hotspot",
                 "label": "No adjacent test signal",
                 "dimension": "defect",
@@ -26622,12 +27491,100 @@
             ]
           },
           {
-            "path": "utils/req-res-log-validator.py",
-            "score": 7.8,
+            "path": "deps/jemalloc/scripts/gen_travis.py",
+            "score": 6.9,
             "bucket": "watch",
-            "lines": 364,
-            "bytes": 12276,
-            "churn": 0,
+            "lines": 327,
+            "bytes": 9184,
+            "churn": 327,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 8; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "deps/jemalloc/scripts/gen_travis.py"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 327 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "deps/jemalloc/scripts/gen_travis.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "deps/jemalloc/scripts/gen_travis.py"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "modules/vector-sets/test.py",
+            "score": 6.9,
+            "bucket": "watch",
+            "lines": 294,
+            "bytes": 10229,
+            "churn": 294,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 13; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "modules/vector-sets/test.py"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 294 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "modules/vector-sets/test.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "modules/vector-sets/test.py"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "utils/generate-module-api-doc.rb",
+            "score": 6.9,
+            "bucket": "watch",
+            "lines": 195,
+            "bytes": 6494,
+            "churn": 195,
             "has_test_signal": false,
             "findings": [
               {
@@ -26637,42 +27594,41 @@
                 "severity": "high",
                 "detail": "Maximum indentation depth is about 11; deeply nested branches are bug-prone review targets.",
                 "sources": [
-                  "utils/req-res-log-validator.py"
+                  "utils/generate-module-api-doc.rb"
                 ]
               },
               {
-                "id": "io_in_loop",
-                "label": "I/O inside loop",
-                "dimension": "performance",
-                "severity": "medium",
-                "detail": "Loop-shaped code appears near filesystem, subprocess, database, or network I/O; inspect for N+1 or repeated setup work.",
-                "sources": [
-                  "utils/req-res-log-validator.py"
-                ]
-              },
-              {
-                "id": "io_boundary",
-                "label": "I/O or process boundary",
+                "id": "churn_hotspot",
+                "label": "High churn",
                 "dimension": "defect",
-                "severity": "low",
-                "detail": "File touches filesystem, network, database, or subprocess boundaries; changes need concrete runtime proof.",
+                "severity": "high",
+                "detail": "Recent git history shows 195 changed lines in this file; combine review with history and tests.",
                 "sources": [
-                  "utils/req-res-log-validator.py"
+                  "utils/generate-module-api-doc.rb"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "utils/generate-module-api-doc.rb"
                 ]
               }
             ],
             "refactoring_targets": [
-              "Flatten guard-heavy branches before adding behavior.",
-              "Hoist repeated I/O or batch loop work where behavior allows."
+              "Flatten guard-heavy branches before adding behavior."
             ]
           },
           {
             "path": "utils/generate-commands-json.py",
-            "score": 8.5,
-            "bucket": "healthy",
+            "score": 7.1,
+            "bucket": "watch",
             "lines": 148,
             "bytes": 5576,
-            "churn": 0,
+            "churn": 148,
             "has_test_signal": false,
             "findings": [
               {
@@ -26686,6 +27642,26 @@
                 ]
               },
               {
+                "id": "churn_hotspot",
+                "label": "Moderate churn",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "Recent git history shows 148 changed lines in this file; it is a change hotspot.",
+                "sources": [
+                  "utils/generate-commands-json.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "utils/generate-commands-json.py"
+                ]
+              },
+              {
                 "id": "io_boundary",
                 "label": "I/O or process boundary",
                 "dimension": "defect",
@@ -26701,70 +27677,42 @@
             ]
           },
           {
-            "path": "deps/jemalloc/scripts/gen_travis.py",
-            "score": 8.8,
-            "bucket": "healthy",
-            "lines": 327,
-            "bytes": 9184,
-            "churn": 0,
+            "path": "utils/lru/test-lru.rb",
+            "score": 7.4,
+            "bucket": "watch",
+            "lines": 223,
+            "bytes": 5545,
+            "churn": 223,
             "has_test_signal": false,
             "findings": [
               {
                 "id": "deep_nesting",
                 "label": "Deep nesting",
                 "dimension": "defect",
-                "severity": "high",
-                "detail": "Maximum indentation depth is about 8; deeply nested branches are bug-prone review targets.",
+                "severity": "medium",
+                "detail": "Maximum indentation depth is about 6; inspect branch-heavy paths before risky edits.",
                 "sources": [
-                  "deps/jemalloc/scripts/gen_travis.py"
+                  "utils/lru/test-lru.rb"
                 ]
-              }
-            ],
-            "refactoring_targets": [
-              "Flatten guard-heavy branches before adding behavior."
-            ]
-          },
-          {
-            "path": "modules/vector-sets/test.py",
-            "score": 8.8,
-            "bucket": "healthy",
-            "lines": 294,
-            "bytes": 10229,
-            "churn": 0,
-            "has_test_signal": false,
-            "findings": [
+              },
               {
-                "id": "deep_nesting",
-                "label": "Deep nesting",
+                "id": "churn_hotspot",
+                "label": "High churn",
                 "dimension": "defect",
                 "severity": "high",
-                "detail": "Maximum indentation depth is about 13; deeply nested branches are bug-prone review targets.",
+                "detail": "Recent git history shows 223 changed lines in this file; combine review with history and tests.",
                 "sources": [
-                  "modules/vector-sets/test.py"
+                  "utils/lru/test-lru.rb"
                 ]
-              }
-            ],
-            "refactoring_targets": [
-              "Flatten guard-heavy branches before adding behavior."
-            ]
-          },
-          {
-            "path": "utils/generate-module-api-doc.rb",
-            "score": 8.8,
-            "bucket": "healthy",
-            "lines": 195,
-            "bytes": 6494,
-            "churn": 0,
-            "has_test_signal": false,
-            "findings": [
+              },
               {
-                "id": "deep_nesting",
-                "label": "Deep nesting",
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
                 "dimension": "defect",
-                "severity": "high",
-                "detail": "Maximum indentation depth is about 11; deeply nested branches are bug-prone review targets.",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
                 "sources": [
-                  "utils/generate-module-api-doc.rb"
+                  "utils/lru/test-lru.rb"
                 ]
               }
             ],
@@ -26774,11 +27722,11 @@
           },
           {
             "path": "modules/vector-sets/examples/cli-tool/cli.py",
-            "score": 8.8,
-            "bucket": "healthy",
+            "score": 7.4,
+            "bucket": "watch",
             "lines": 160,
             "bytes": 5375,
-            "churn": 0,
+            "churn": 160,
             "has_test_signal": false,
             "findings": [
               {
@@ -26790,6 +27738,26 @@
                 "sources": [
                   "modules/vector-sets/examples/cli-tool/cli.py"
                 ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "Moderate churn",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "Recent git history shows 160 changed lines in this file; it is a change hotspot.",
+                "sources": [
+                  "modules/vector-sets/examples/cli-tool/cli.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "modules/vector-sets/examples/cli-tool/cli.py"
+                ]
               }
             ],
             "refactoring_targets": [
@@ -26798,11 +27766,11 @@
           },
           {
             "path": "deps/jemalloc/scripts/gen_run_tests.py",
-            "score": 8.8,
-            "bucket": "healthy",
+            "score": 7.4,
+            "bucket": "watch",
             "lines": 130,
             "bytes": 4047,
-            "churn": 0,
+            "churn": 130,
             "has_test_signal": false,
             "findings": [
               {
@@ -26814,6 +27782,26 @@
                 "sources": [
                   "deps/jemalloc/scripts/gen_run_tests.py"
                 ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "Moderate churn",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "Recent git history shows 130 changed lines in this file; it is a change hotspot.",
+                "sources": [
+                  "deps/jemalloc/scripts/gen_run_tests.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "deps/jemalloc/scripts/gen_run_tests.py"
+                ]
               }
             ],
             "refactoring_targets": [
@@ -26822,11 +27810,11 @@
           },
           {
             "path": "src/redis-trib.rb",
-            "score": 8.8,
-            "bucket": "healthy",
+            "score": 7.4,
+            "bucket": "watch",
             "lines": 129,
             "bytes": 3600,
-            "churn": 0,
+            "churn": 129,
             "has_test_signal": false,
             "findings": [
               {
@@ -26838,6 +27826,26 @@
                 "sources": [
                   "src/redis-trib.rb"
                 ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "Moderate churn",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "Recent git history shows 129 changed lines in this file; it is a change hotspot.",
+                "sources": [
+                  "src/redis-trib.rb"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "src/redis-trib.rb"
+                ]
               }
             ],
             "refactoring_targets": [
@@ -26846,11 +27854,11 @@
           },
           {
             "path": "utils/hyperloglog/hll-gnuplot-graph.rb",
-            "score": 8.8,
-            "bucket": "healthy",
+            "score": 7.4,
+            "bucket": "watch",
             "lines": 91,
             "bytes": 2757,
-            "churn": 0,
+            "churn": 91,
             "has_test_signal": false,
             "findings": [
               {
@@ -26862,29 +27870,25 @@
                 "sources": [
                   "utils/hyperloglog/hll-gnuplot-graph.rb"
                 ]
-              }
-            ],
-            "refactoring_targets": [
-              "Flatten guard-heavy branches before adding behavior."
-            ]
-          },
-          {
-            "path": "modules/vector-sets/examples/glove-100/recall.py",
-            "score": 8.8,
-            "bucket": "healthy",
-            "lines": 87,
-            "bytes": 3157,
-            "churn": 0,
-            "has_test_signal": false,
-            "findings": [
+              },
               {
-                "id": "deep_nesting",
-                "label": "Deep nesting",
+                "id": "churn_hotspot",
+                "label": "Moderate churn",
                 "dimension": "defect",
-                "severity": "high",
-                "detail": "Maximum indentation depth is about 10; deeply nested branches are bug-prone review targets.",
+                "severity": "medium",
+                "detail": "Recent git history shows 91 changed lines in this file; it is a change hotspot.",
                 "sources": [
-                  "modules/vector-sets/examples/glove-100/recall.py"
+                  "utils/hyperloglog/hll-gnuplot-graph.rb"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "utils/hyperloglog/hll-gnuplot-graph.rb"
                 ]
               }
             ],
@@ -29884,8 +30888,8 @@
     "profiles": [
       {
         "stage": "full_scan",
-        "total_ms": 54,
-        "peak_rss_bytes": 34095104,
+        "total_ms": 144,
+        "peak_rss_bytes": 34111488,
         "steps": [
           {
             "id": "git_metadata",
@@ -29896,8 +30900,8 @@
           {
             "id": "file_walk",
             "label": "Parallel file walk",
-            "ms": 11,
-            "pct": 20.37037037037037
+            "ms": 12,
+            "pct": 8.333333333333332
           },
           {
             "id": "languages",
@@ -29933,25 +30937,25 @@
             "id": "source_previews",
             "label": "Source preview cache",
             "ms": 2,
-            "pct": 3.7037037037037033
+            "pct": 1.3888888888888888
           },
           {
             "id": "repo_graph",
             "label": "Deterministic graph scan",
             "ms": 14,
-            "pct": 25.925925925925924
+            "pct": 9.722222222222223
           },
           {
             "id": "history",
             "label": "Git history & decision scan",
-            "ms": 16,
-            "pct": 29.629629629629626
+            "ms": 18,
+            "pct": 12.5
           },
           {
             "id": "repo_health",
             "label": "Deterministic health scoring",
-            "ms": 7,
-            "pct": 12.962962962962962
+            "ms": 95,
+            "pct": 65.97222222222221
           },
           {
             "id": "dir_tree",
@@ -29963,8 +30967,8 @@
       },
       {
         "stage": "local_scan_persist",
-        "total_ms": 4,
-        "peak_rss_bytes": 37634048,
+        "total_ms": 2,
+        "peak_rss_bytes": 37683200,
         "steps": [
           {
             "id": "serialize",
@@ -29975,8 +30979,8 @@
           {
             "id": "db_insert",
             "label": "SQLite insert",
-            "ms": 3,
-            "pct": 75
+            "ms": 2,
+            "pct": 100
           },
           {
             "id": "touch_project",

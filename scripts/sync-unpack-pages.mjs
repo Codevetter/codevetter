@@ -15,6 +15,86 @@ const KB = 1024;
 const fmtBytes = (n) =>
   n >= KB * KB ? `${(n / KB / KB).toFixed(1)} MB` : `${Math.round(n / KB)} KB`;
 
+const DOC_LANGUAGES = new Set(['Markdown', 'HTML', 'CSS', 'JSON', 'YAML', 'Text']);
+// README previews are markdown: strip HTML tags, links/images (keep link text),
+// and heading/emphasis markers, then take the first readable sentence.
+const stripHtml = (s) => {
+  if (!s) return null;
+  const text = s
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/!\[[^\]]*\]\([^)]*\)/g, ' ')
+    .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
+    .replace(/^\s*#{1,6}\s*/gm, ' ')
+    .replace(/[*_`>~]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+  const match = text.match(/^(.{40,260}?[.!])(?:\s|$)/) ?? text.match(/^(.{0,260})/);
+  return match ? match[1].trim() : null;
+};
+
+// Common source roots, roughly in "most likely to hold the product" order.
+const SOURCE_ROOTS = ['src', 'lib', 'crates', 'packages', 'pkg', 'app', 'source', 'core'];
+const ENTRY_PATTERNS = [
+  /^index\.(js|ts|mjs|cjs|jsx|tsx)$/,
+  /^src\/(index|main|mod|lib)\.(js|ts|mjs|cjs|jsx|tsx|rs|py|go)$/,
+  /^lib\/(index|main)\.(js|ts|mjs|cjs)$/,
+  /^main\.(rs|go|py|c|cc|cpp)$/,
+  /^cmd\//,
+  /^(app|application)\.(py|js|ts)$/,
+  /^setup\.(py|cfg)$/,
+  /^pyproject\.toml$/,
+  /^Cargo\.toml$/,
+  /^go\.mod$/,
+];
+
+// Primary source roots from the reliable `top_level_dirs` (the tree preview is
+// breadth-capped on big repos like curl and fastapi).
+const sourceRoots = (inventory, repoName) => {
+  const dirs = inventory.top_level_dirs ?? [];
+  const roots = dirs.filter((d) => SOURCE_ROOTS.includes(d.path) || d.path === repoName);
+  if (roots.length) return roots.slice(0, 3);
+  return dirs
+    .filter((d) => !/^(\.|test|tests|docs?|examples?|benchmarks?|scripts?|tools?)/.test(d.path))
+    .slice(0, 3);
+};
+
+// Module-level layout from the (capped) dir tree — only shown when the chosen
+// source root actually appears in the preview, so we never claim coverage the
+// scan didn't capture.
+const sourceLayout = (tree, roots) => {
+  const dirs = (tree?.children ?? []).filter((c) => c.is_dir);
+  for (const root of roots) {
+    const hit = dirs.find((d) => d.path === root.path);
+    if (hit?.children?.length) return { path: hit.path, children: hit.children.slice(0, 14) };
+  }
+  return null;
+};
+
+// The scanner's `entrypoints` skew toward CI/config files; derive the probable
+// *source* entry from known conventions. Returns null rather than guessing at
+// an unrelated file.
+const probableEntry = (tree, inventory, roots) => {
+  const paths = [];
+  const walk = (node) => {
+    paths.push(node.path);
+    for (const c of node.children ?? []) if (!c.is_dir || paths.length < 4000) walk(c);
+  };
+  walk(tree);
+  for (const pattern of ENTRY_PATTERNS) {
+    const hit = paths.find((p) => pattern.test(p));
+    if (hit) return hit;
+  }
+  const root = roots[0]?.path;
+  if (root) {
+    const children =
+      (tree?.children ?? []).find((c) => c.is_dir && c.path === root)?.children ?? [];
+    const main = children.find((c) => !c.is_dir && /^(index|main|lib|mod|__init__)\./.test(c.name));
+    if (main) return main.path;
+    return `${root}/`;
+  }
+  return inventory.entrypoints.find((e) => e.kind !== 'config')?.path ?? null;
+};
+
 const reports = [];
 for (const file of readdirSync(CORPUS)
   .filter((f) => f.endsWith('.json'))
@@ -40,7 +120,19 @@ for (const file of readdirSync(CORPUS)
       maxFilesHit: inv.max_files_hit,
       strategy: inv.coverage?.strategy ?? null,
     },
-    languages: (inv.coverage?.languages ?? inv.languages).slice(0, 8),
+    // File-share across non-doc languages — byte share over-weights Markdown.
+    languages: (() => {
+      const langs = inv.coverage?.languages ?? inv.languages;
+      const code = langs.filter((l) => !DOC_LANGUAGES.has(l.language));
+      const total = code.reduce((s, l) => s + l.files, 0) || 1;
+      return langs.slice(0, 8).map((l) => ({
+        ...l,
+        codeShare: DOC_LANGUAGES.has(l.language) ? null : Math.round((l.files / total) * 100),
+      }));
+    })(),
+    sourceRoots: sourceRoots(inv, inv.repo_name),
+    sourceLayout: sourceLayout(inv.dir_tree_preview, sourceRoots(inv, inv.repo_name)),
+    probableEntry: probableEntry(inv.dir_tree_preview, inv, sourceRoots(inv, inv.repo_name)),
     manifest: manifest
       ? {
           path: manifest.path,
@@ -68,11 +160,12 @@ for (const file of readdirSync(CORPUS)
           })),
         }
       : null,
-    history: (inv.history_brief?.recent_commits ?? []).slice(0, 3),
+    history: (inv.history_brief?.recent_commits ?? []).slice(0, 5),
     qaReadiness: inv.qa_readiness
       ? { status: inv.qa_readiness.status, summary: inv.qa_readiness.summary }
       : null,
-    readmePreview: inv.docs?.find((d) => /readme/i.test(d.path))?.preview?.slice(0, 280) ?? null,
+    readmePreview:
+      stripHtml(inv.docs?.find((d) => /readme/i.test(d.path))?.preview)?.slice(0, 280) ?? null,
   });
 }
 

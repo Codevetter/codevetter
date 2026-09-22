@@ -300,6 +300,23 @@ const unpackBody = (report: (typeof unpackReports)[number]) => {
     '',
     ...report.topDirs.map((d) => `- ${d.path}/ — ${d.file_count} files`),
   ];
+  if (report.probableEntry) {
+    lines.push(
+      '',
+      `Probable source entrypoint: \`${report.probableEntry}\` (inferred from the tree, not upstream docs)`
+    );
+  }
+  if (report.sourceLayout) {
+    lines.push(
+      '',
+      `## Source layout — ${report.sourceLayout.path}/`,
+      '',
+      ...report.sourceLayout.children.map(
+        (c) =>
+          `- ${c.is_dir ? `${c.path}/` : c.path} — ${c.file_count} file${c.file_count === 1 ? '' : 's'}`
+      )
+    );
+  }
   if (report.manifest) {
     lines.push(
       '',

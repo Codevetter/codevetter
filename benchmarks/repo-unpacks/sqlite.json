@@ -3,7 +3,7 @@
   "repo": "sqlite/sqlite",
   "slug": "sqlite",
   "codevetter_version": "codevetter 1.12.0",
-  "collected_at": "2026-09-22T05:15:37.718Z",
+  "collected_at": "2026-09-22T06:01:37.709Z",
   "last_commit": {
     "sha": "fde3a84dddf35f4c19797c8afad04a44c596f4d8",
     "date": "2026-09-21",
@@ -11,11 +11,11 @@
   },
   "scan": {
     "schema_version": "codevetter.unpack-scan/v1",
-    "report_id": "d5d797bb-0024-4fd1-839f-5f92613bf53c",
+    "report_id": "5a8e69b6-a507-4462-8619-03bd01606f43",
     "status": "scan_only",
-    "created_at": "2026-09-22T05:15:37.711940+00:00",
+    "created_at": "2026-09-22T06:01:37.702179+00:00",
     "inventory": {
-      "repo_path": "/private/var/folders/9_/1109_2dd1qz6zyvmxb5zp8pc0000gn/T/unpack-pilot-r4x2id/sqlite",
+      "repo_path": "/private/var/folders/9_/1109_2dd1qz6zyvmxb5zp8pc0000gn/T/unpack-pilot-Hlre93/sqlite",
       "repo_name": "sqlite",
       "commit_sha": "fde3a84dddf35f4c19797c8afad04a44c596f4d8",
       "branch": "master",
@@ -27219,38 +27219,92 @@
       },
       "history_brief": {
         "schema_version": 2,
-        "summary": "Local history brief captured 1 recent commit, 0 decision markers, 11 test hints, and 0 co-change clusters for Repo Unpacked. Treat commit subjects as leads and rely on cited files for durable constraints.",
+        "summary": "Local history brief captured 12 recent commits, 0 decision markers, 11 test hints, and 0 co-change clusters for Repo Unpacked. Treat commit subjects as leads and rely on cited files for durable constraints.",
         "recent_commits": [
           {
             "sha": "fde3a84dddf3",
             "date": "2026-09-21",
             "subject": "Latest preprocessor for various cleanups and fixes. Duplicate the tester1 concurrency warning in the worker-based copy.",
             "files": [
-              "AGENTS.md",
-              "LICENSE.md",
-              "README.md",
-              "autosetup/README.md",
-              "autosetup/jimsh0.c",
-              "doc/compile-for-unix.md",
-              "doc/compile-for-windows.md",
-              "doc/json-enhancements.md",
-              "doc/jsonb.md",
-              "doc/tcl-extension-testing.md",
-              "doc/testrunner.md",
-              "doc/trusted-schema.md",
-              "doc/vdbesort-memory.md",
-              "doc/wal-lock.md",
-              "ext/README.md",
-              "ext/expert/README.md",
-              "ext/expert/expert.c",
-              "ext/expert/sqlite3expert.c",
-              "ext/expert/sqlite3expert.h",
-              "ext/expert/test_expert.c",
-              "ext/fts3/fts3.c",
-              "ext/fts3/fts3.h",
-              "ext/fts3/fts3Int.h",
-              "ext/fts3/fts3_aux.c"
+              "ext/wasm/libcmpp.c"
             ]
+          },
+          {
+            "sha": "5636f0f4a4c9",
+            "date": "2026-09-21",
+            "subject": "Fix potential buffer overreads in demo program ext/fts3/tool/fts3view.c. Bug [bugs:/info/2026-09-21T13:50:52Z | 2026-09-21T13:50:52Z].",
+            "files": [
+              "ext/fts3/tool/fts3view.c"
+            ]
+          },
+          {
+            "sha": "9fe7e4dd3127",
+            "date": "2026-09-21",
+            "subject": "Update sessionChangesetFindTable() so that it honors the contract defined in its header comment and always returns non-zero if the table is not found.",
+            "files": []
+          },
+          {
+            "sha": "3a81fb982969",
+            "date": "2026-09-21",
+            "subject": "Teach 'make libtcl' to honor the --disable-rpath configure flag. Addresses [forum:2026-09-21T10:24:56Z|forum post 2026-09-21T10:24:56Z].",
+            "files": [
+              "main.mk"
+            ]
+          },
+          {
+            "sha": "5f8b6a782de3",
+            "date": "2026-09-21",
+            "subject": "Fix truncation of 64-bit integer values passed to the fts3 snippet() function. Report [bugs:/info/2026-09-21T02:41:49Z | 2026-09-21T02:41:49Z].",
+            "files": [
+              "ext/fts3/fts3.c",
+              "ext/fts3/fts3_snippet.c"
+            ]
+          },
+          {
+            "sha": "c908175cbe40",
+            "date": "2026-09-21",
+            "subject": "Add new test cases for the sqlite3.oo1.Stmt.get() overloads which take both a client-specified type ID and an array or object target.",
+            "files": [
+              "ext/wasm/tester1.c-pp.js"
+            ]
+          },
+          {
+            "sha": "93d6a90fe983",
+            "date": "2026-09-20",
+            "subject": "Adjustments to the substr() function so that it can accommodate ridiculous values for the second argument. [bugs:/info/2026-09-20T18:42:27Z|Bug 2026-09-20T18:42:27Z]",
+            "files": [
+              "src/func.c"
+            ]
+          },
+          {
+            "sha": "5bd0f37f60b6",
+            "date": "2026-09-19",
+            "subject": "Add test cases to sessionchange2.test.",
+            "files": []
+          },
+          {
+            "sha": "9e0959ca03c4",
+            "date": "2026-09-19",
+            "subject": "Fix test cases due to improved error messages from this branch.",
+            "files": []
+          },
+          {
+            "sha": "b52b635a19a1",
+            "date": "2026-09-19",
+            "subject": "Merge test cases fixes from trunk",
+            "files": []
+          },
+          {
+            "sha": "30fbf300af10",
+            "date": "2026-09-19",
+            "subject": "Fix test cases added by [f847298c8d424071] so that they work on all configurations.",
+            "files": []
+          },
+          {
+            "sha": "ac2685b0713a",
+            "date": "2026-09-19",
+            "subject": "Fix new test cases added by [c77ff6089de242d8] so that they work on all configurations.",
+            "files": []
           }
         ],
         "decisions": [],
@@ -27305,6 +27359,127 @@
           "schema_version": 2,
           "nodes": [
             {
+              "id": "commit:30fbf300af10",
+              "kind": "commit",
+              "label": "Fix test cases added by [f847298c8d424071] so that they work on all configurations.",
+              "path": null,
+              "detail": "2026-09-19",
+              "citations": [
+                "git:30fbf300af10"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:3a81fb982969",
+              "kind": "commit",
+              "label": "Teach 'make libtcl' to honor the --disable-rpath configure flag. Addresses [forum:2026-09-21T10:24:56Z|forum post 2026-09-21T10:24:56Z].",
+              "path": null,
+              "detail": "2026-09-21",
+              "citations": [
+                "git:3a81fb982969"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:5636f0f4a4c9",
+              "kind": "commit",
+              "label": "Fix potential buffer overreads in demo program ext/fts3/tool/fts3view.c. Bug [bugs:/info/2026-09-21T13:50:52Z | 2026-09-21T13:50:52Z].",
+              "path": null,
+              "detail": "2026-09-21",
+              "citations": [
+                "git:5636f0f4a4c9"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:5bd0f37f60b6",
+              "kind": "commit",
+              "label": "Add test cases to sessionchange2.test.",
+              "path": null,
+              "detail": "2026-09-19",
+              "citations": [
+                "git:5bd0f37f60b6"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:5f8b6a782de3",
+              "kind": "commit",
+              "label": "Fix truncation of 64-bit integer values passed to the fts3 snippet() function. Report [bugs:/info/2026-09-21T02:41:49Z | 2026-09-21T02:41:49Z].",
+              "path": null,
+              "detail": "2026-09-21",
+              "citations": [
+                "git:5f8b6a782de3"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:93d6a90fe983",
+              "kind": "commit",
+              "label": "Adjustments to the substr() function so that it can accommodate ridiculous values for the second argument. [bugs:/info/2026-09-20T18:42:27Z|Bug 2026-09-20T18:42:27Z]",
+              "path": null,
+              "detail": "2026-09-20",
+              "citations": [
+                "git:93d6a90fe983"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:9e0959ca03c4",
+              "kind": "commit",
+              "label": "Fix test cases due to improved error messages from this branch.",
+              "path": null,
+              "detail": "2026-09-19",
+              "citations": [
+                "git:9e0959ca03c4"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:9fe7e4dd3127",
+              "kind": "commit",
+              "label": "Update sessionChangesetFindTable() so that it honors the contract defined in its header comment and always returns non-zero if the table is not found.",
+              "path": null,
+              "detail": "2026-09-21",
+              "citations": [
+                "git:9fe7e4dd3127"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:ac2685b0713a",
+              "kind": "commit",
+              "label": "Fix new test cases added by [c77ff6089de242d8] so that they work on all configurations.",
+              "path": null,
+              "detail": "2026-09-19",
+              "citations": [
+                "git:ac2685b0713a"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:b52b635a19a1",
+              "kind": "commit",
+              "label": "Merge test cases fixes from trunk",
+              "path": null,
+              "detail": "2026-09-19",
+              "citations": [
+                "git:b52b635a19a1"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:c908175cbe40",
+              "kind": "commit",
+              "label": "Add new test cases for the sqlite3.oo1.Stmt.get() overloads which take both a client-specified type ID and an array or object target.",
+              "path": null,
+              "detail": "2026-09-21",
+              "citations": [
+                "git:c908175cbe40"
+              ],
+              "trust": "git_observed"
+            },
+            {
               "id": "commit:fde3a84dddf3",
               "kind": "commit",
               "label": "Latest preprocessor for various cleanups and fixes. Duplicate the tester1 concurrency warning in the worker-based copy.",
@@ -27312,204 +27487,6 @@
               "detail": "2026-09-21",
               "citations": [
                 "git:fde3a84dddf3"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:agents-md",
-              "kind": "file",
-              "label": "AGENTS.md",
-              "path": "AGENTS.md",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                "AGENTS.md"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:autosetup-jimsh0-c",
-              "kind": "file",
-              "label": "autosetup/jimsh0.c",
-              "path": "autosetup/jimsh0.c",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                "autosetup/jimsh0.c"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:autosetup-readme-md",
-              "kind": "file",
-              "label": "autosetup/README.md",
-              "path": "autosetup/README.md",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                "autosetup/README.md"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:doc-compile-for-unix-md",
-              "kind": "file",
-              "label": "doc/compile-for-unix.md",
-              "path": "doc/compile-for-unix.md",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                "doc/compile-for-unix.md"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:doc-compile-for-windows-md",
-              "kind": "file",
-              "label": "doc/compile-for-windows.md",
-              "path": "doc/compile-for-windows.md",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                "doc/compile-for-windows.md"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:doc-json-enhancements-md",
-              "kind": "file",
-              "label": "doc/json-enhancements.md",
-              "path": "doc/json-enhancements.md",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                "doc/json-enhancements.md"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:doc-jsonb-md",
-              "kind": "file",
-              "label": "doc/jsonb.md",
-              "path": "doc/jsonb.md",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                "doc/jsonb.md"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:doc-tcl-extension-testing-md",
-              "kind": "file",
-              "label": "doc/tcl-extension-testing.md",
-              "path": "doc/tcl-extension-testing.md",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                "doc/tcl-extension-testing.md"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:doc-testrunner-md",
-              "kind": "file",
-              "label": "doc/testrunner.md",
-              "path": "doc/testrunner.md",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                "doc/testrunner.md"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:doc-trusted-schema-md",
-              "kind": "file",
-              "label": "doc/trusted-schema.md",
-              "path": "doc/trusted-schema.md",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                "doc/trusted-schema.md"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:doc-vdbesort-memory-md",
-              "kind": "file",
-              "label": "doc/vdbesort-memory.md",
-              "path": "doc/vdbesort-memory.md",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                "doc/vdbesort-memory.md"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:doc-wal-lock-md",
-              "kind": "file",
-              "label": "doc/wal-lock.md",
-              "path": "doc/wal-lock.md",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                "doc/wal-lock.md"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:ext-expert-expert-c",
-              "kind": "file",
-              "label": "ext/expert/expert.c",
-              "path": "ext/expert/expert.c",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                "ext/expert/expert.c"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:ext-expert-readme-md",
-              "kind": "file",
-              "label": "ext/expert/README.md",
-              "path": "ext/expert/README.md",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                "ext/expert/README.md"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:ext-expert-sqlite3expert-c",
-              "kind": "file",
-              "label": "ext/expert/sqlite3expert.c",
-              "path": "ext/expert/sqlite3expert.c",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                "ext/expert/sqlite3expert.c"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:ext-expert-sqlite3expert-h",
-              "kind": "file",
-              "label": "ext/expert/sqlite3expert.h",
-              "path": "ext/expert/sqlite3expert.h",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                "ext/expert/sqlite3expert.h"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:ext-expert-test-expert-c",
-              "kind": "file",
-              "label": "ext/expert/test_expert.c",
-              "path": "ext/expert/test_expert.c",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                "ext/expert/test_expert.c"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "id": "file:ext-fts3-fts3-aux-c",
-              "kind": "file",
-              "label": "ext/fts3/fts3_aux.c",
-              "path": "ext/fts3/fts3_aux.c",
-              "detail": "Changed in recent local git history",
-              "citations": [
-                "ext/fts3/fts3_aux.c"
               ],
               "trust": "git_observed"
             },
@@ -27525,24 +27502,24 @@
               "trust": "git_observed"
             },
             {
-              "id": "file:ext-fts3-fts3-h",
+              "id": "file:ext-fts3-fts3-snippet-c",
               "kind": "file",
-              "label": "ext/fts3/fts3.h",
-              "path": "ext/fts3/fts3.h",
+              "label": "ext/fts3/fts3_snippet.c",
+              "path": "ext/fts3/fts3_snippet.c",
               "detail": "Changed in recent local git history",
               "citations": [
-                "ext/fts3/fts3.h"
+                "ext/fts3/fts3_snippet.c"
               ],
               "trust": "git_observed"
             },
             {
-              "id": "file:ext-fts3-fts3int-h",
+              "id": "file:ext-fts3-tool-fts3view-c",
               "kind": "file",
-              "label": "ext/fts3/fts3Int.h",
-              "path": "ext/fts3/fts3Int.h",
+              "label": "ext/fts3/tool/fts3view.c",
+              "path": "ext/fts3/tool/fts3view.c",
               "detail": "Changed in recent local git history",
               "citations": [
-                "ext/fts3/fts3Int.h"
+                "ext/fts3/tool/fts3view.c"
               ],
               "trust": "git_observed"
             },
@@ -27580,13 +27557,24 @@
               "trust": "source_backed"
             },
             {
-              "id": "file:ext-readme-md",
+              "id": "file:ext-wasm-libcmpp-c",
               "kind": "file",
-              "label": "ext/README.md",
-              "path": "ext/README.md",
+              "label": "ext/wasm/libcmpp.c",
+              "path": "ext/wasm/libcmpp.c",
               "detail": "Changed in recent local git history",
               "citations": [
-                "ext/README.md"
+                "ext/wasm/libcmpp.c"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:ext-wasm-tester1-c-pp-js",
+              "kind": "file",
+              "label": "ext/wasm/tester1.c-pp.js",
+              "path": "ext/wasm/tester1.c-pp.js",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "ext/wasm/tester1.c-pp.js"
               ],
               "trust": "git_observed"
             },
@@ -27679,24 +27667,24 @@
               "trust": "source_backed"
             },
             {
-              "id": "file:license-md",
+              "id": "file:main-mk",
               "kind": "file",
-              "label": "LICENSE.md",
-              "path": "LICENSE.md",
+              "label": "main.mk",
+              "path": "main.mk",
               "detail": "Changed in recent local git history",
               "citations": [
-                "LICENSE.md"
+                "main.mk"
               ],
               "trust": "git_observed"
             },
             {
-              "id": "file:readme-md",
+              "id": "file:src-func-c",
               "kind": "file",
-              "label": "README.md",
-              "path": "README.md",
+              "label": "src/func.c",
+              "path": "src/func.c",
               "detail": "Changed in recent local git history",
               "citations": [
-                "README.md"
+                "src/func.c"
               ],
               "trust": "git_observed"
             },
@@ -27824,266 +27812,79 @@
           ],
           "edges": [
             {
-              "from": "commit:fde3a84dddf3",
-              "to": "file:agents-md",
+              "from": "commit:3a81fb982969",
+              "to": "file:main-mk",
               "kind": "changed",
-              "evidence": "fde3a84dddf3 changed this file",
+              "evidence": "3a81fb982969 changed this file",
               "citations": [
-                "git:fde3a84dddf3",
-                "AGENTS.md"
+                "git:3a81fb982969",
+                "main.mk"
               ],
               "trust": "git_observed"
             },
             {
-              "from": "commit:fde3a84dddf3",
-              "to": "file:autosetup-jimsh0-c",
+              "from": "commit:5636f0f4a4c9",
+              "to": "file:ext-fts3-tool-fts3view-c",
               "kind": "changed",
-              "evidence": "fde3a84dddf3 changed this file",
+              "evidence": "5636f0f4a4c9 changed this file",
               "citations": [
-                "git:fde3a84dddf3",
-                "autosetup/jimsh0.c"
+                "git:5636f0f4a4c9",
+                "ext/fts3/tool/fts3view.c"
               ],
               "trust": "git_observed"
             },
             {
-              "from": "commit:fde3a84dddf3",
-              "to": "file:autosetup-readme-md",
-              "kind": "changed",
-              "evidence": "fde3a84dddf3 changed this file",
-              "citations": [
-                "git:fde3a84dddf3",
-                "autosetup/README.md"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:fde3a84dddf3",
-              "to": "file:doc-compile-for-unix-md",
-              "kind": "changed",
-              "evidence": "fde3a84dddf3 changed this file",
-              "citations": [
-                "git:fde3a84dddf3",
-                "doc/compile-for-unix.md"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:fde3a84dddf3",
-              "to": "file:doc-compile-for-windows-md",
-              "kind": "changed",
-              "evidence": "fde3a84dddf3 changed this file",
-              "citations": [
-                "git:fde3a84dddf3",
-                "doc/compile-for-windows.md"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:fde3a84dddf3",
-              "to": "file:doc-json-enhancements-md",
-              "kind": "changed",
-              "evidence": "fde3a84dddf3 changed this file",
-              "citations": [
-                "git:fde3a84dddf3",
-                "doc/json-enhancements.md"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:fde3a84dddf3",
-              "to": "file:doc-jsonb-md",
-              "kind": "changed",
-              "evidence": "fde3a84dddf3 changed this file",
-              "citations": [
-                "git:fde3a84dddf3",
-                "doc/jsonb.md"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:fde3a84dddf3",
-              "to": "file:doc-tcl-extension-testing-md",
-              "kind": "changed",
-              "evidence": "fde3a84dddf3 changed this file",
-              "citations": [
-                "git:fde3a84dddf3",
-                "doc/tcl-extension-testing.md"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:fde3a84dddf3",
-              "to": "file:doc-testrunner-md",
-              "kind": "changed",
-              "evidence": "fde3a84dddf3 changed this file",
-              "citations": [
-                "git:fde3a84dddf3",
-                "doc/testrunner.md"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:fde3a84dddf3",
-              "to": "file:doc-trusted-schema-md",
-              "kind": "changed",
-              "evidence": "fde3a84dddf3 changed this file",
-              "citations": [
-                "git:fde3a84dddf3",
-                "doc/trusted-schema.md"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:fde3a84dddf3",
-              "to": "file:doc-vdbesort-memory-md",
-              "kind": "changed",
-              "evidence": "fde3a84dddf3 changed this file",
-              "citations": [
-                "git:fde3a84dddf3",
-                "doc/vdbesort-memory.md"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:fde3a84dddf3",
-              "to": "file:doc-wal-lock-md",
-              "kind": "changed",
-              "evidence": "fde3a84dddf3 changed this file",
-              "citations": [
-                "git:fde3a84dddf3",
-                "doc/wal-lock.md"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:fde3a84dddf3",
-              "to": "file:ext-expert-expert-c",
-              "kind": "changed",
-              "evidence": "fde3a84dddf3 changed this file",
-              "citations": [
-                "git:fde3a84dddf3",
-                "ext/expert/expert.c"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:fde3a84dddf3",
-              "to": "file:ext-expert-readme-md",
-              "kind": "changed",
-              "evidence": "fde3a84dddf3 changed this file",
-              "citations": [
-                "git:fde3a84dddf3",
-                "ext/expert/README.md"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:fde3a84dddf3",
-              "to": "file:ext-expert-sqlite3expert-c",
-              "kind": "changed",
-              "evidence": "fde3a84dddf3 changed this file",
-              "citations": [
-                "git:fde3a84dddf3",
-                "ext/expert/sqlite3expert.c"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:fde3a84dddf3",
-              "to": "file:ext-expert-sqlite3expert-h",
-              "kind": "changed",
-              "evidence": "fde3a84dddf3 changed this file",
-              "citations": [
-                "git:fde3a84dddf3",
-                "ext/expert/sqlite3expert.h"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:fde3a84dddf3",
-              "to": "file:ext-expert-test-expert-c",
-              "kind": "changed",
-              "evidence": "fde3a84dddf3 changed this file",
-              "citations": [
-                "git:fde3a84dddf3",
-                "ext/expert/test_expert.c"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:fde3a84dddf3",
-              "to": "file:ext-fts3-fts3-aux-c",
-              "kind": "changed",
-              "evidence": "fde3a84dddf3 changed this file",
-              "citations": [
-                "git:fde3a84dddf3",
-                "ext/fts3/fts3_aux.c"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:fde3a84dddf3",
+              "from": "commit:5f8b6a782de3",
               "to": "file:ext-fts3-fts3-c",
               "kind": "changed",
-              "evidence": "fde3a84dddf3 changed this file",
+              "evidence": "5f8b6a782de3 changed this file",
               "citations": [
-                "git:fde3a84dddf3",
+                "git:5f8b6a782de3",
                 "ext/fts3/fts3.c"
               ],
               "trust": "git_observed"
             },
             {
-              "from": "commit:fde3a84dddf3",
-              "to": "file:ext-fts3-fts3-h",
+              "from": "commit:5f8b6a782de3",
+              "to": "file:ext-fts3-fts3-snippet-c",
               "kind": "changed",
-              "evidence": "fde3a84dddf3 changed this file",
+              "evidence": "5f8b6a782de3 changed this file",
               "citations": [
-                "git:fde3a84dddf3",
-                "ext/fts3/fts3.h"
+                "git:5f8b6a782de3",
+                "ext/fts3/fts3_snippet.c"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:93d6a90fe983",
+              "to": "file:src-func-c",
+              "kind": "changed",
+              "evidence": "93d6a90fe983 changed this file",
+              "citations": [
+                "git:93d6a90fe983",
+                "src/func.c"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:c908175cbe40",
+              "to": "file:ext-wasm-tester1-c-pp-js",
+              "kind": "changed",
+              "evidence": "c908175cbe40 changed this file",
+              "citations": [
+                "git:c908175cbe40",
+                "ext/wasm/tester1.c-pp.js"
               ],
               "trust": "git_observed"
             },
             {
               "from": "commit:fde3a84dddf3",
-              "to": "file:ext-fts3-fts3int-h",
+              "to": "file:ext-wasm-libcmpp-c",
               "kind": "changed",
               "evidence": "fde3a84dddf3 changed this file",
               "citations": [
                 "git:fde3a84dddf3",
-                "ext/fts3/fts3Int.h"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:fde3a84dddf3",
-              "to": "file:ext-readme-md",
-              "kind": "changed",
-              "evidence": "fde3a84dddf3 changed this file",
-              "citations": [
-                "git:fde3a84dddf3",
-                "ext/README.md"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:fde3a84dddf3",
-              "to": "file:license-md",
-              "kind": "changed",
-              "evidence": "fde3a84dddf3 changed this file",
-              "citations": [
-                "git:fde3a84dddf3",
-                "LICENSE.md"
-              ],
-              "trust": "git_observed"
-            },
-            {
-              "from": "commit:fde3a84dddf3",
-              "to": "file:readme-md",
-              "kind": "changed",
-              "evidence": "fde3a84dddf3 changed this file",
-              "citations": [
-                "git:fde3a84dddf3",
-                "README.md"
+                "ext/wasm/libcmpp.c"
               ],
               "trust": "git_observed"
             },
@@ -28217,19 +28018,19 @@
       },
       "repo_health": {
         "schema_version": 1,
-        "summary": "Deterministic scan scored 93 source files across simple size, churn, structural, test-adjacency, and performance-risk signals. 12 hotspots surfaced; average score is 9.0/10. Treat these as review leads, not proof of a bug.",
-        "average_score": 9,
-        "hotspot_count": 12,
+        "summary": "Deterministic scan scored 93 source files across simple size, churn, structural, test-adjacency, and performance-risk signals. 24 hotspots surfaced; average score is 7.7/10. Treat these as review leads, not proof of a bug.",
+        "average_score": 7.7,
+        "hotspot_count": 24,
         "files_analyzed": 93,
         "files_with_test_signal": 0,
         "top_files": [
           {
             "path": "ext/wasm/api/sqlite3-opfs-async-proxy.c-pp.js",
-            "score": 5.9,
+            "score": 4.7,
             "bucket": "hotspot",
             "lines": 978,
             "bytes": 37582,
-            "churn": 0,
+            "churn": 1956,
             "has_test_signal": false,
             "findings": [
               {
@@ -28263,6 +28064,16 @@
                 ]
               },
               {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 1956 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "ext/wasm/api/sqlite3-opfs-async-proxy.c-pp.js"
+                ]
+              },
+              {
                 "id": "untested_hotspot",
                 "label": "No adjacent test signal",
                 "dimension": "defect",
@@ -28290,11 +28101,11 @@
           },
           {
             "path": "ext/wasm/tester1.c-pp.js",
-            "score": 6.2,
+            "score": 5,
             "bucket": "hotspot",
             "lines": 2129,
             "bytes": 184421,
-            "churn": 0,
+            "churn": 9324,
             "has_test_signal": false,
             "findings": [
               {
@@ -28328,6 +28139,16 @@
                 ]
               },
               {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 9324 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "ext/wasm/tester1.c-pp.js"
+                ]
+              },
+              {
                 "id": "untested_hotspot",
                 "label": "No adjacent test signal",
                 "dimension": "defect",
@@ -28344,122 +28165,12 @@
             ]
           },
           {
-            "path": "ext/wasm/api/sqlite3-vfs-kvvfs.c-pp.js",
-            "score": 6.2,
-            "bucket": "hotspot",
-            "lines": 2094,
-            "bytes": 74840,
-            "churn": 0,
-            "has_test_signal": false,
-            "findings": [
-              {
-                "id": "large_file",
-                "label": "Large file",
-                "dimension": "maintainability",
-                "severity": "high",
-                "detail": "2094 lines in one source file; inspect whether the module hides multiple responsibilities.",
-                "sources": [
-                  "ext/wasm/api/sqlite3-vfs-kvvfs.c-pp.js"
-                ]
-              },
-              {
-                "id": "deep_nesting",
-                "label": "Deep nesting",
-                "dimension": "defect",
-                "severity": "high",
-                "detail": "Maximum indentation depth is about 23; deeply nested branches are bug-prone review targets.",
-                "sources": [
-                  "ext/wasm/api/sqlite3-vfs-kvvfs.c-pp.js"
-                ]
-              },
-              {
-                "id": "long_block",
-                "label": "Long function/block",
-                "dimension": "maintainability",
-                "severity": "medium",
-                "detail": "A brace-delimited block spans roughly 2004 lines; consider extracting a helper when touching it.",
-                "sources": [
-                  "ext/wasm/api/sqlite3-vfs-kvvfs.c-pp.js"
-                ]
-              },
-              {
-                "id": "untested_hotspot",
-                "label": "No adjacent test signal",
-                "dimension": "defect",
-                "severity": "medium",
-                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
-                "sources": [
-                  "ext/wasm/api/sqlite3-vfs-kvvfs.c-pp.js"
-                ]
-              }
-            ],
-            "refactoring_targets": [
-              "Split file or extract helper around the largest cohesive flow.",
-              "Flatten guard-heavy branches before adding behavior."
-            ]
-          },
-          {
-            "path": "ext/wasm/api/sqlite3-api-prologue.js",
-            "score": 6.2,
-            "bucket": "hotspot",
-            "lines": 2075,
-            "bytes": 89067,
-            "churn": 0,
-            "has_test_signal": false,
-            "findings": [
-              {
-                "id": "large_file",
-                "label": "Large file",
-                "dimension": "maintainability",
-                "severity": "high",
-                "detail": "2075 lines in one source file; inspect whether the module hides multiple responsibilities.",
-                "sources": [
-                  "ext/wasm/api/sqlite3-api-prologue.js"
-                ]
-              },
-              {
-                "id": "deep_nesting",
-                "label": "Deep nesting",
-                "dimension": "defect",
-                "severity": "high",
-                "detail": "Maximum indentation depth is about 23; deeply nested branches are bug-prone review targets.",
-                "sources": [
-                  "ext/wasm/api/sqlite3-api-prologue.js"
-                ]
-              },
-              {
-                "id": "long_block",
-                "label": "Long function/block",
-                "dimension": "maintainability",
-                "severity": "medium",
-                "detail": "A brace-delimited block spans roughly 314 lines; consider extracting a helper when touching it.",
-                "sources": [
-                  "ext/wasm/api/sqlite3-api-prologue.js"
-                ]
-              },
-              {
-                "id": "untested_hotspot",
-                "label": "No adjacent test signal",
-                "dimension": "defect",
-                "severity": "medium",
-                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
-                "sources": [
-                  "ext/wasm/api/sqlite3-api-prologue.js"
-                ]
-              }
-            ],
-            "refactoring_targets": [
-              "Split file or extract helper around the largest cohesive flow.",
-              "Flatten guard-heavy branches before adding behavior."
-            ]
-          },
-          {
             "path": "ext/wasm/api/sqlite3-api-oo1.c-pp.js",
-            "score": 6.2,
+            "score": 5,
             "bucket": "hotspot",
             "lines": 2050,
             "bytes": 97647,
-            "churn": 0,
+            "churn": 5022,
             "has_test_signal": false,
             "findings": [
               {
@@ -28493,6 +28204,16 @@
                 ]
               },
               {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 5022 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "ext/wasm/api/sqlite3-api-oo1.c-pp.js"
+                ]
+              },
+              {
                 "id": "untested_hotspot",
                 "label": "No adjacent test signal",
                 "dimension": "defect",
@@ -28509,12 +28230,142 @@
             ]
           },
           {
+            "path": "ext/wasm/api/sqlite3-api-prologue.js",
+            "score": 5,
+            "bucket": "hotspot",
+            "lines": 2075,
+            "bytes": 89067,
+            "churn": 4500,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "high",
+                "detail": "2075 lines in one source file; inspect whether the module hides multiple responsibilities.",
+                "sources": [
+                  "ext/wasm/api/sqlite3-api-prologue.js"
+                ]
+              },
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 23; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "ext/wasm/api/sqlite3-api-prologue.js"
+                ]
+              },
+              {
+                "id": "long_block",
+                "label": "Long function/block",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "A brace-delimited block spans roughly 314 lines; consider extracting a helper when touching it.",
+                "sources": [
+                  "ext/wasm/api/sqlite3-api-prologue.js"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 4500 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "ext/wasm/api/sqlite3-api-prologue.js"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "ext/wasm/api/sqlite3-api-prologue.js"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow.",
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "ext/wasm/api/sqlite3-vfs-kvvfs.c-pp.js",
+            "score": 5,
+            "bucket": "hotspot",
+            "lines": 2094,
+            "bytes": 74840,
+            "churn": 4188,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "high",
+                "detail": "2094 lines in one source file; inspect whether the module hides multiple responsibilities.",
+                "sources": [
+                  "ext/wasm/api/sqlite3-vfs-kvvfs.c-pp.js"
+                ]
+              },
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 23; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "ext/wasm/api/sqlite3-vfs-kvvfs.c-pp.js"
+                ]
+              },
+              {
+                "id": "long_block",
+                "label": "Long function/block",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "A brace-delimited block spans roughly 2004 lines; consider extracting a helper when touching it.",
+                "sources": [
+                  "ext/wasm/api/sqlite3-vfs-kvvfs.c-pp.js"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 4188 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "ext/wasm/api/sqlite3-vfs-kvvfs.c-pp.js"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "ext/wasm/api/sqlite3-vfs-kvvfs.c-pp.js"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow.",
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
             "path": "ext/wasm/api/sqlite3-api-glue.c-pp.js",
-            "score": 6.2,
+            "score": 5,
             "bucket": "hotspot",
             "lines": 1971,
             "bytes": 81153,
-            "churn": 0,
+            "churn": 3942,
             "has_test_signal": false,
             "findings": [
               {
@@ -28548,6 +28399,16 @@
                 ]
               },
               {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 3942 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "ext/wasm/api/sqlite3-api-glue.c-pp.js"
+                ]
+              },
+              {
                 "id": "untested_hotspot",
                 "label": "No adjacent test signal",
                 "dimension": "defect",
@@ -28565,11 +28426,11 @@
           },
           {
             "path": "ext/wasm/api/sqlite3-vfs-opfs-sahpool.c-pp.js",
-            "score": 6.2,
+            "score": 5,
             "bucket": "hotspot",
             "lines": 1469,
             "bytes": 53744,
-            "churn": 0,
+            "churn": 2938,
             "has_test_signal": false,
             "findings": [
               {
@@ -28603,6 +28464,16 @@
                 ]
               },
               {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 2938 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "ext/wasm/api/sqlite3-vfs-opfs-sahpool.c-pp.js"
+                ]
+              },
+              {
                 "id": "untested_hotspot",
                 "label": "No adjacent test signal",
                 "dimension": "defect",
@@ -28620,11 +28491,11 @@
           },
           {
             "path": "ext/jni/src/org/sqlite/jni/capi/SQLTester.java",
-            "score": 6.2,
+            "score": 5,
             "bucket": "hotspot",
             "lines": 1449,
             "bytes": 44363,
-            "churn": 0,
+            "churn": 2898,
             "has_test_signal": false,
             "findings": [
               {
@@ -28658,6 +28529,16 @@
                 ]
               },
               {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 2898 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "ext/jni/src/org/sqlite/jni/capi/SQLTester.java"
+                ]
+              },
+              {
                 "id": "untested_hotspot",
                 "label": "No adjacent test signal",
                 "dimension": "defect",
@@ -28675,11 +28556,11 @@
           },
           {
             "path": "ext/wasm/api/opfs-common-shared.c-pp.js",
-            "score": 6.2,
+            "score": 5,
             "bucket": "hotspot",
             "lines": 1306,
             "bytes": 50190,
-            "churn": 0,
+            "churn": 2612,
             "has_test_signal": false,
             "findings": [
               {
@@ -28713,6 +28594,16 @@
                 ]
               },
               {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 2612 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "ext/wasm/api/opfs-common-shared.c-pp.js"
+                ]
+              },
+              {
                 "id": "untested_hotspot",
                 "label": "No adjacent test signal",
                 "dimension": "defect",
@@ -28730,11 +28621,11 @@
           },
           {
             "path": "ext/jni/src/org/sqlite/jni/wrapper1/Tester2.java",
-            "score": 6.2,
+            "score": 5,
             "bucket": "hotspot",
             "lines": 1212,
             "bytes": 39968,
-            "churn": 0,
+            "churn": 2424,
             "has_test_signal": false,
             "findings": [
               {
@@ -28768,6 +28659,16 @@
                 ]
               },
               {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 2424 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "ext/jni/src/org/sqlite/jni/wrapper1/Tester2.java"
+                ]
+              },
+              {
                 "id": "untested_hotspot",
                 "label": "No adjacent test signal",
                 "dimension": "defect",
@@ -28785,11 +28686,11 @@
           },
           {
             "path": "ext/wasm/jaccwabyt/jaccwabyt.js",
-            "score": 6.2,
+            "score": 5,
             "bucket": "hotspot",
             "lines": 1198,
             "bytes": 42271,
-            "churn": 0,
+            "churn": 2396,
             "has_test_signal": false,
             "findings": [
               {
@@ -28823,6 +28724,16 @@
                 ]
               },
               {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 2396 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "ext/wasm/jaccwabyt/jaccwabyt.js"
+                ]
+              },
+              {
                 "id": "untested_hotspot",
                 "label": "No adjacent test signal",
                 "dimension": "defect",
@@ -28840,11 +28751,11 @@
           },
           {
             "path": "ext/wasm/fiddle/fiddle.js",
-            "score": 6.2,
+            "score": 5,
             "bucket": "hotspot",
             "lines": 902,
             "bytes": 34617,
-            "churn": 0,
+            "churn": 1804,
             "has_test_signal": false,
             "findings": [
               {
@@ -28873,6 +28784,16 @@
                 "dimension": "maintainability",
                 "severity": "medium",
                 "detail": "A brace-delimited block spans roughly 886 lines; consider extracting a helper when touching it.",
+                "sources": [
+                  "ext/wasm/fiddle/fiddle.js"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 1804 changed lines in this file; combine review with history and tests.",
                 "sources": [
                   "ext/wasm/fiddle/fiddle.js"
                 ]
@@ -31837,8 +31758,8 @@
     "profiles": [
       {
         "stage": "full_scan",
-        "total_ms": 79,
-        "peak_rss_bytes": 40140800,
+        "total_ms": 345,
+        "peak_rss_bytes": 39944192,
         "steps": [
           {
             "id": "git_metadata",
@@ -31849,8 +31770,8 @@
           {
             "id": "file_walk",
             "label": "Parallel file walk",
-            "ms": 12,
-            "pct": 15.18987341772152
+            "ms": 11,
+            "pct": 3.1884057971014492
           },
           {
             "id": "languages",
@@ -31880,31 +31801,31 @@
             "id": "entrypoints",
             "label": "Entrypoints, workspace units & QA readiness",
             "ms": 1,
-            "pct": 1.2658227848101267
+            "pct": 0.2898550724637681
           },
           {
             "id": "source_previews",
             "label": "Source preview cache",
-            "ms": 3,
-            "pct": 3.79746835443038
+            "ms": 2,
+            "pct": 0.5797101449275363
           },
           {
             "id": "repo_graph",
             "label": "Deterministic graph scan",
-            "ms": 33,
-            "pct": 41.77215189873418
+            "ms": 32,
+            "pct": 9.27536231884058
           },
           {
             "id": "history",
             "label": "Git history & decision scan",
-            "ms": 19,
-            "pct": 24.050632911392405
+            "ms": 21,
+            "pct": 6.086956521739131
           },
           {
             "id": "repo_health",
             "label": "Deterministic health scoring",
-            "ms": 8,
-            "pct": 10.126582278481013
+            "ms": 275,
+            "pct": 79.71014492753623
           },
           {
             "id": "dir_tree",
@@ -31917,7 +31838,7 @@
       {
         "stage": "local_scan_persist",
         "total_ms": 1,
-        "peak_rss_bytes": 43089920,
+        "peak_rss_bytes": 41517056,
         "steps": [
           {
             "id": "serialize",
