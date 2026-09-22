@@ -66,6 +66,10 @@ jobs:
 
       - name: Run background-safe native qualification
         id: background
+        env:
+          # The current xcode-27 hosted class is a 3-core VM. Keep workstation
+          # reference budgets unchanged while recording an explicit CI envelope.
+          CODEVETTER_NATIVE_PERFORMANCE_BUDGET_SCALE: "1.5"
         run: pnpm test:native:background
 
       - name: Finalize deterministic owner-review packet

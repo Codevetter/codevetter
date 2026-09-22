@@ -935,6 +935,20 @@ func nativePerformanceGateEnabled() -> Bool {
   ProcessInfo.processInfo.environment["CODEVETTER_NATIVE_PERFORMANCE_GATE"] == "1"
 }
 
+func nativePerformanceBudgetScale() -> Double {
+  guard let raw = ProcessInfo.processInfo.environment[
+    "CODEVETTER_NATIVE_PERFORMANCE_BUDGET_SCALE"
+  ] else { return 1 }
+  guard let scale = Double(raw), scale >= 1, scale <= 2 else {
+    preconditionFailure("CODEVETTER_NATIVE_PERFORMANCE_BUDGET_SCALE must be between 1 and 2")
+  }
+  return scale
+}
+
+func nativePerformanceBudget(_ referenceMicroseconds: UInt64) -> UInt64 {
+  UInt64(ceil(Double(referenceMicroseconds) * nativePerformanceBudgetScale()))
+}
+
 func unpackFixturePayload(
   snapshotCount: Int,
   nodeCount: Int,

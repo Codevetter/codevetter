@@ -3586,7 +3586,7 @@ func largeUsageReportDecodesAndRendersWithinTheNativeGate() throws {
   for _ in 0..<3 { renderUsage(model) }
   // Sixty samples keep p95 meaningful on noisy hosted runners: with 20 samples
   // the two slowest draws decide the gate; with 60 it takes four outliers to
-  // trip the same unchanged 50 ms budget.
+  // trip the same reference budget.
   var renderSamples = [UInt64]()
   var renderCPUSamples = [UInt64]()
   for _ in 0..<60 {
@@ -3604,12 +3604,21 @@ func largeUsageReportDecodesAndRendersWithinTheNativeGate() throws {
   let renderP95 = percentile95(renderSamples)
   let renderP50 = percentile(renderSamples, 0.50)
   let renderMax = renderSamples.max() ?? 0
+  let decodeBudget = nativePerformanceBudget(30_000)
+  let projectionBudget = nativePerformanceBudget(50_000)
+  let cachedProjectionBudget = nativePerformanceBudget(1_000)
+  let snapshotRestoreBudget = nativePerformanceBudget(50_000)
+  let renderBudget = nativePerformanceBudget(50_000)
   if nativePerformanceGateEnabled() {
-    #expect(decodeP95 < 30_000, "Large usage decoding must stay below 30 ms p95")
-    #expect(projectionP95 < 50_000, "A cold Usage selection must stay below 50 ms p95")
-    #expect(cachedProjectionP95 < 1_000, "A repeated Usage selection must stay below 1 ms p95")
-    #expect(snapshotRestoreP95 < 50_000, "A saved Usage snapshot must restore below 50 ms p95")
-    #expect(renderP95 < 50_000, "Large usage rendering must stay below 50 ms p95")
+    #expect(decodeP95 < decodeBudget, "Large usage decoding exceeded its p95 budget")
+    #expect(projectionP95 < projectionBudget, "A cold Usage selection exceeded its p95 budget")
+    #expect(
+      cachedProjectionP95 < cachedProjectionBudget,
+      "A repeated Usage selection exceeded its p95 budget")
+    #expect(
+      snapshotRestoreP95 < snapshotRestoreBudget,
+      "A saved Usage snapshot exceeded its p95 budget")
+    #expect(renderP95 < renderBudget, "Large usage rendering exceeded its p95 budget")
   }
   // Raw samples and machine metadata make hosted repeatability auditable: a
   // flat distribution at the budget is a real regression, while a lone tail
@@ -3618,6 +3627,9 @@ func largeUsageReportDecodesAndRendersWithinTheNativeGate() throws {
     "NATIVE_USAGE_BENCHMARK_JSON "
       + "{\"decode_p95_us\":\(decodeP95),\"projection_p95_us\":\(projectionP95),"
       + "\"cached_projection_p95_us\":\(cachedProjectionP95),\"render_p95_us\":\(renderP95),"
+      + "\"budget_scale\":\(nativePerformanceBudgetScale()),\"decode_budget_us\":\(decodeBudget),"
+      + "\"projection_budget_us\":\(projectionBudget),\"cached_projection_budget_us\":\(cachedProjectionBudget),"
+      + "\"snapshot_restore_budget_us\":\(snapshotRestoreBudget),\"render_budget_us\":\(renderBudget),"
       + "\"decode_cpu_p95_us\":\(percentile95(decodeCPUSamples)),\"render_cpu_p95_us\":\(percentile95(renderCPUSamples)),"
       + "\"render_p50_us\":\(renderP50),\"render_max_us\":\(renderMax),"
       + "\"snapshot_restore_p95_us\":\(snapshotRestoreP95),"

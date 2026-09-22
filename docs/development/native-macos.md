@@ -64,6 +64,13 @@ visible model/session rows. This measures canonical JSON decoding and native
 host rendering, not ccusage process startup, filesystem scanning,
 window-server frame pacing, or interactive scrolling.
 
+The 30 ms decode and 50 ms render limits remain the local/reference Usage
+budgets. GitHub's current `xcode-27` 3-core hosted runner applies an explicit
+1.5× envelope to those same checks; every benchmark line records the scale and
+effective limits. This keeps hosted scheduling and runner-class variance from
+silently redefining the workstation target while retaining a deterministic CI
+ceiling.
+
 Additional Codex history recovery is checked at
 `evidence/verification/native-history-roots-2026-09-02.md`. Native Usage
 settings and `codevetter history-roots` share one Rust-owned bounded receipt.

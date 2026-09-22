@@ -26,7 +26,7 @@ test('hosted interaction evidence survives a background failure without masking 
     new URL('../.github/workflows/native-qualification.yml', import.meta.url),
     'utf8'
   );
-  assert.match(workflow, /id: background\n\s+run: pnpm test:native:background/);
+  assert.match(workflow, /id: background[\s\S]*?run: pnpm test:native:background/);
   assert.ok(
     workflow.includes(
       "!cancelled() && inputs.run_interaction && (steps.background.outcome == 'success' || steps.background.outcome == 'failure')"
@@ -34,6 +34,7 @@ test('hosted interaction evidence survives a background failure without masking 
   );
   assert.doesNotMatch(workflow, /continue-on-error/);
   assert.match(workflow, /pnpm test:native:ui -- --foreground --desktop-idle/);
+  assert.match(workflow, /CODEVETTER_NATIVE_PERFORMANCE_BUDGET_SCALE: "1\.5"/);
 });
 
 test('native automation defaults to the non-activating background lane', () => {

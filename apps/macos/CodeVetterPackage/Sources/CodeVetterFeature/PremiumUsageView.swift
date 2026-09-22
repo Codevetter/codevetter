@@ -270,7 +270,31 @@ struct PremiumUsageView: View {
     self.startsUsageLifecycle = startsUsageLifecycle
   }
 
+  @ViewBuilder
   var body: some View {
+    if startsUsageLifecycle {
+      content
+        .onAppear { model.setUsageAutoRefreshSuspended(!NSApp.isActive) }
+        .task {
+          await model.prepareUsage()
+          await model.runUsageAutoRefresh()
+        }
+        .onReceive(
+          NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)
+        ) { _ in
+          model.usageWindowBecameActive()
+        }
+        .onReceive(
+          NotificationCenter.default.publisher(for: NSApplication.didResignActiveNotification)
+        ) { _ in
+          model.setUsageAutoRefreshSuspended(true)
+        }
+    } else {
+      content
+    }
+  }
+
+  private var content: some View {
     VStack(spacing: 0) {
       header
       Rectangle().fill(EvidenceStyle.separator).frame(height: 1)
@@ -278,27 +302,6 @@ struct PremiumUsageView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
     .background(EvidenceStyle.canvas)
-    .onAppear {
-      guard startsUsageLifecycle else { return }
-      model.setUsageAutoRefreshSuspended(!NSApp.isActive)
-    }
-    .task {
-      guard startsUsageLifecycle else { return }
-      await model.prepareUsage()
-      await model.runUsageAutoRefresh()
-    }
-    .onReceive(
-      NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)
-    ) { _ in
-      guard startsUsageLifecycle else { return }
-      model.usageWindowBecameActive()
-    }
-    .onReceive(
-      NotificationCenter.default.publisher(for: NSApplication.didResignActiveNotification)
-    ) { _ in
-      guard startsUsageLifecycle else { return }
-      model.setUsageAutoRefreshSuspended(true)
-    }
   }
 
   private var header: some View {
