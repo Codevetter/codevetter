@@ -1,6 +1,6 @@
 # Project Status
 
-Last updated: 2026-09-15
+Last updated: 2026-09-22
 
 ## Why / What
 
@@ -21,8 +21,9 @@ silently redefine or displace the core.
 
 ## Current investment decision
 
-As of 2026-08-15, CodeVetter remains a maintained local product and empirical
-verification/performance research asset, but broad feature expansion is paused.
+As of 2026-09-22, CodeVetter is feature-complete for its current maintained
+scope and remains an empirical verification/performance research asset. Broad
+feature expansion is paused.
 The repository has strong deterministic infrastructure, caught-bug evidence,
 and several measured optimization case studies; it does **not** have the planned
 ten active external users, three team pilots, or complete authenticated
@@ -35,40 +36,24 @@ opt-in, authenticated provider comparisons remain claim-closed, and no hosted
 profiling or production-load system should be added until external pull and a
 separately approved safety design justify renewed investment.
 
-## Current verification repair
+## Current shipped state
 
-- #296: reconcile the overlapping Usage implementations after the main-branch
-  merge. A single metric and grouping state now drives the approved bounded
-  Canvas history and exact-value breakdown. Period-level attribution and cache
-  reads are retained; whole-session totals are not substituted for daily
-  history. Native qualification now runs on main pushes as well as PRs so a
-  green Linux-only run cannot conceal a broken native merge. Qualification is
-  in progress; no new release is implied.
-
-- **v1.14.1 candidate:** owner-approved Usage cards/history, Review branch/base
-  controls, and Testing/Performance/Runs/Settings coherence repairs are ready
-  for hosted qualification. Local checks pass: 118 Swift tests, 15 navigator
-  tests, five isolated performance gates, and native Debug build. This release
-  keeps the existing visual system; the operator's Mac remains background-only.
-  See [surface behavior](docs/product/surfaces.md). Publication is pending the
-  protected signing, notarization, migration, and asset-manifest gates.
-
-- #285: Review/Explore is implemented in local source, with the primary import
-  and semantic navigation flows foreground-checked. VoiceOver work is deferred
-  by the owner; actual display-frame timing remains unmeasured and v1.14.0 is
-  undergoing release qualification. GitHub URL import, pinned Git source/diffs,
-  in-process Rust navigation, virtual source windows, indexed search, and
-  source-linked Unpack/evidence are integrated. The continuation adds sandboxed
-  TypeScript 7.0.2 semantic definitions/references and source/diff accessibility
-  selection repair, qualified with background tests. See
-  [surface behavior and limits](docs/product/surfaces.md#review-and-explore-navigation).
-  No release or production update is implied by the local implementation.
-
-- #272: the shared check preparation now rejects missing, non-file and repository-escaping runtime targets before preflight readiness or execution. Reproduced in the published v1.13.7 CLI; 15 local-check tests, the shared-service preflight/execution regression, and the rebuilt CLI reproduction pass. Published v1.13.8 includes the repair; the downloaded signed/notarized package rejects the missing target. Issue #272 is closed.
-
-- Runtime CLI launch-path repair: symlinked and URL-encoded entry paths are normalized before main-module detection; the 18-test runtime suite passes. Published v1.13.8 passes the same symlink-with-spaces reproduction; issue #273 is closed.
-
-- #276: a real Codex-backed check in published v1.13.8 exposed unavailable performance evidence being counted as failed QA. The source diagnostic now distinguishes passed, failed, and unqualified execution, preserving conservative intent closure. Five focused regression tests pass; release-package verification remains pending.
+- **v1.14.1 is the current published desktop release.** The protected release
+  workflow published the arm64 DMG, ZIP, and Sparkle appcast on 2026-09-18.
+  Usage coherence (#296), Review/Explore (#285), and unavailable-performance
+  classification (#276) are closed. See
+  [surface behavior](docs/product/surfaces.md).
+- Review/Explore supports GitHub URL import, pinned Git source and diffs,
+  in-process Rust navigation, virtual source windows, indexed search,
+  TypeScript semantic definitions/references, and source-linked Unpack and
+  evidence. VoiceOver expansion remains intentionally deferred and is not a
+  release blocker.
+- The post-release `main` branch adds public Repo Unpack evidence and comparison
+  pages. These landing-page additions do not imply a newer desktop release;
+  desktop release truth remains the published `v1.14.1` tag.
+- Maintenance is limited to core verification reliability, regressions,
+  security, dependency hygiene, and evidence requested by real users. New
+  product surfaces require an explicit change in the investment decision.
 
 ## Dependencies
 

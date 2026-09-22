@@ -151,7 +151,7 @@ host executable is `CodeVetterNative` so the lowercase `codevetter` CLI remains
 distinct on the default case-insensitive filesystem.
 
 The current checked local run is recorded in
-[Native package qualification](../../evidence/verification/native-package-qualification-2026-09-01.md).
+[Native package qualification](https://github.com/Codevetter/codevetter/blob/main/evidence/verification/native-package-qualification-2026-09-01.md).
 The current package-only candidate is 62,060 KiB with a 17,427,235-byte ZIP
 and 20,034,510-byte DMG. It embeds Sparkle 2.9.6, passes three executable
 companion smokes, preserves framework symlinks, requires rich repository-query
@@ -162,7 +162,7 @@ Performance-workspace evidence at 117,424 KiB median settled RSS; the current
 package-only check does not silently inherit a new launch or memory claim.
 
 The first complete isolated hosted run is recorded in
-[Native hosted qualification](../../evidence/verification/native-hosted-qualification-2026-09-02.md).
+[Native hosted qualification](https://github.com/Codevetter/codevetter/blob/main/evidence/verification/native-hosted-qualification-2026-09-02.md).
 At commit `824a9e8b`, it passed 81 Swift tests, all nine XCUITests, Debug and
 coverage-free Release builds, the 33-state packet, package qualification, and
 the read-only readiness inspector on GitHub's arm64 runner. Its ZIP, DMG, app,
@@ -205,14 +205,14 @@ and optional notarization and installed-upgrade proofs. It emits
 enumerates identities, or reads credentials.
 
 The current preview result is recorded in
-[Native release-readiness inspection](../../evidence/verification/native-release-readiness-2026-09-02.md).
+[Native release-readiness inspection](https://github.com/Codevetter/codevetter/blob/main/evidence/verification/native-release-readiness-2026-09-02.md).
 Seven of 17 local checks pass and ten production gates remain blocked. The
 additional gate requires an offline-verified Sparkle appcast bound to the exact
 production feed, public key, version, build, and qualified archive.
 The exact current-source candidate is
 `artifacts/native-package/qualification-5r7JG4/CodeVetter.app`; its package
 receipt, archive hashes, and exact bundled-MCP smoke are recorded in
-[Native macOS package qualification](../../evidence/verification/native-package-qualification-2026-09-01.md).
+[Native macOS package qualification](https://github.com/Codevetter/codevetter/blob/main/evidence/verification/native-package-qualification-2026-09-01.md).
 
 Installed migration evidence uses `pnpm native:data-continuity`. With every
 CodeVetter process fully quit, `capture` reads only durable record identities
@@ -299,7 +299,7 @@ at source commit `824a9e8b`. It passed the quiet lane, all nine opt-in
 XCUITests, the Release build, unsigned preview packaging, and the fail-closed
 readiness inspection without using the operator's desktop. The artifact is
 retained for seven days; durable results and hashes live in
-[the checked evidence](../../evidence/verification/native-hosted-qualification-2026-09-02.md).
+[the checked evidence](https://github.com/Codevetter/codevetter/blob/main/evidence/verification/native-hosted-qualification-2026-09-02.md).
 
 `native-production-qualification.yml` is the separately protected, manual-only
 production-candidate lane. It has read-only repository permission, performs

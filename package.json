@@ -87,7 +87,7 @@
     "test:retrieval": "node --test scripts/context-retrieval/*.test.mjs scripts/context-retrieval/adapters/*.test.mjs",
     "test:runtime-failure-capsule": "node --test scripts/runtime-failure-capsule/*.test.mjs",
     "test:verification-receipts": "node --test scripts/verification-receipts/*.test.mjs",
-    "test:automation": "node --test scripts/emit-foundry-receipt.test.mjs",
+    "test:automation": "node --test scripts/emit-foundry-receipt.test.mjs scripts/run-biome-sarif.test.mjs",
     "test:native-data-continuity": "node --test scripts/qualify-native-data-continuity.test.mjs",
     "test:native-installed-upgrade": "node --test scripts/qualify-native-installed-upgrade.test.mjs",
     "test:native-package": "node --test scripts/qualify-native-package.test.mjs",

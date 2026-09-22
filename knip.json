@@ -7,23 +7,23 @@
     },
     "apps/landing-page-astro": {
       "entry": ["src/pages/**/*.{astro,ts}"],
-      "project": ["src/**/*.{ts,astro}"]
+      "project": ["src/**/*.{ts,astro,css}"]
     }
   },
-  "ignoreDependencies": ["ccusage", "tailwindcss"],
+  "ignoreDependencies": ["ccusage"],
   "ignoreBinaries": [
     "actionlint",
     "cargo-deny",
+    "codex",
+    "codevetter",
     "ditto",
     "du",
     "go",
     "gitleaks",
     "lsappinfo",
-    "lsof",
     "netstat",
     "osascript",
     "plutil",
-    "ps",
     "rustc",
     "sips",
     "spctl",

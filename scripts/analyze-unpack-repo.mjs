@@ -11,9 +11,7 @@
 import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-
-const ROOT = new URL('..', import.meta.url).pathname;
-const CORPUS = join(ROOT, 'benchmarks/repo-unpacks');
+import { gitHeadSha, repoUnpackCorpusPath } from './repo-unpack-corpus.mjs';
 
 const [slug, ...rest] = process.argv.slice(2);
 const cloneFlag = rest.indexOf('--clone');
@@ -27,13 +25,11 @@ if (!slug || !cloneDir) {
   process.exit(1);
 }
 
-const corpusPath = join(CORPUS, `${slug}.json`);
+const corpusPath = repoUnpackCorpusPath(slug);
 const record = JSON.parse(readFileSync(corpusPath, 'utf8'));
 const inv = record.scan.inventory;
 
-const headSha = execFileSync('git', ['-C', cloneDir, 'rev-parse', 'HEAD'], {
-  encoding: 'utf8',
-}).trim();
+const headSha = gitHeadSha(cloneDir);
 if (headSha !== inv.commit_sha) {
   console.error(
     `clone is at ${headSha.slice(0, 7)} but the scan is of ${inv.commit_sha.slice(0, 7)} — refusing to mix commits`

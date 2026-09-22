@@ -101,7 +101,7 @@ declares all three collector executables plus the advisory snapshot as
 resources, and release qualification checks exact versions and paths in the
 final app. These are unreleased package receipts, not evidence that a signed or
 notarized collector bundle has shipped. See the
-[qualification receipt](../../evidence/verification/tool-collector-qualification-2026-09-03.md)
+[qualification receipt](https://github.com/Codevetter/codevetter/blob/main/evidence/verification/tool-collector-qualification-2026-09-03.md)
 and issue #198.
 
 ### `osv-scanner` — offline repository runner wired, remediation required

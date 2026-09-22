@@ -1,5 +1,5 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.5.1/schema.json",
+  "$schema": "https://biomejs.dev/schemas/2.5.13/schema.json",
   "extends": [
     "ultracite/biome/core",
     "ultracite/biome/react",
@@ -31,9 +31,9 @@
       "!**/*.css",
       "!**/*.svg",
       "!**/*.astro",
+      "!apps/landing-page-astro/src/data/unpack-reports.json",
       "!benchmarks/public-catch-rate/cases",
-      "!benchmarks/repo-unpacks",
-      "!apps/landing-page-astro/src/data/unpack-reports.json"
+      "!benchmarks/repo-unpacks"
     ]
   },
   "formatter": {

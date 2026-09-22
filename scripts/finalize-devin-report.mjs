@@ -6,10 +6,7 @@
 
 import { execFileSync } from 'node:child_process';
 import { readFileSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
-
-const ROOT = new URL('..', import.meta.url).pathname;
-const CORPUS = join(ROOT, 'benchmarks/repo-unpacks');
+import { gitHeadSha, repoUnpackCorpusPath } from './repo-unpack-corpus.mjs';
 const [slug, ...rest] = process.argv.slice(2);
 const get = (f) => {
   const i = rest.indexOf(f);
@@ -37,13 +34,11 @@ const SECTIONS = [
   'agent_handoff',
 ];
 
-const corpusPath = join(CORPUS, `${slug}.json`);
+const corpusPath = repoUnpackCorpusPath(slug);
 const record = JSON.parse(readFileSync(corpusPath, 'utf8'));
 const report = JSON.parse(readFileSync(reportPath, 'utf8'));
 
-const headSha = execFileSync('git', ['-C', cloneDir, 'rev-parse', 'HEAD'], {
-  encoding: 'utf8',
-}).trim();
+const headSha = gitHeadSha(cloneDir);
 if (headSha !== record.scan.inventory.commit_sha) {
   console.error(`${slug}: clone not at scanned commit — refusing`);
   process.exit(1);

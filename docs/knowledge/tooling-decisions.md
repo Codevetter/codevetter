@@ -51,7 +51,7 @@ questions, not findings.
 | `libkrun` | Apache-2.0 | In-process VMM in `crates/codevetter-core/` | [sandboxing](./tooling-sandboxing.md) |
 
 These are product-lane decisions. The three collector resources now also have
-an unreleased [implementation and qualification receipt](../../evidence/verification/tool-collector-qualification-2026-09-03.md).
+an unreleased [implementation and qualification receipt](https://github.com/Codevetter/codevetter/blob/main/evidence/verification/tool-collector-qualification-2026-09-03.md).
 A signed/notarized production archive remains a separate release gate.
 
 ## Repository and maintainer tooling

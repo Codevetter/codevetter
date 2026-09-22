@@ -121,7 +121,7 @@ curation still stands before external head-to-head claims.
 The real `codevetter check --agent cross` path ran all 27 public cases with one
 generic task and fresh isolated repositories. Human review corrected one narrow
 keyword-mapper miss; the exact summary and limitations are recorded in the
-[cross-review evidence](../../evidence/verification/native-cross-review-2026-09-02.md).
+[cross-review evidence](https://github.com/Codevetter/codevetter/blob/main/evidence/verification/native-cross-review-2026-09-02.md).
 
 | Strategy | Catch rate | Findings | Strict precision | F1 | Mean review time |
 | --- | ---: | ---: | ---: | ---: | ---: |

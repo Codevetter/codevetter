@@ -1,108 +1,6 @@
 use super::*;
 
 #[cfg(test)]
-mod transaction_tests {
-    use super::*;
-
-    type Prune = fn(&Connection) -> Result<usize, String>;
-    const PRUNERS: [Prune; 2] = [
-        |connection| prune_unreachable_history(connection, &[], "/fixture"),
-        |connection| prune_incompatible_history_checkpoints(connection, "/fixture"),
-    ];
-
-    fn fixture() -> Connection {
-        let connection = Connection::open_in_memory().unwrap();
-        crate::db::schema::run_migrations(&connection).unwrap();
-        connection.execute_batch(
-            "INSERT INTO history_graph_repositories
-              (repo_path, repository_fingerprint, indexed_head, status, created_at, updated_at)
-              VALUES ('/fixture', 'fixture', 'old-head', 'ready', '2026-01-01', '2026-01-01');
-             INSERT INTO history_graph_revisions
-              (repo_path, sha, ordinal, committed_at, author_name, subject, parents_json, tags_json)
-              VALUES ('/fixture', 'old-head', 0, '2026-01-01', 'Fixture', 'old', '[]', '[]');
-             INSERT INTO structural_graph_snapshots
-              (id, repo_path, repo_head, schema_version, engine_id, engine_version,
-               engine_json, coverage_json, created_at)
-              VALUES ('old-snapshot', 'history:fixture', 'old-head', 1, 'old-engine', '0', '{}', '{}', '2026-01-01');
-             INSERT INTO history_graph_checkpoints
-              (repo_path, revision_sha, snapshot_id, engine_id, engine_version, schema_version, created_at)
-              VALUES ('/fixture', 'old-head', 'old-snapshot', 'old-engine', '0', 1, '2026-01-01');"
-        ).unwrap();
-        connection
-    }
-
-    fn assert_preserved(connection: &Connection) {
-        let head: String = connection
-            .query_row(
-                "SELECT indexed_head FROM history_graph_repositories WHERE repo_path = '/fixture'",
-                [],
-                |row| row.get(0),
-            )
-            .unwrap();
-        assert_eq!(head, "old-head");
-        for table in [
-            "history_graph_revisions",
-            "history_graph_checkpoints",
-            "structural_graph_snapshots",
-        ] {
-            let count: usize = connection
-                .query_row(&format!("SELECT COUNT(*) FROM {table}"), [], |row| {
-                    row.get(0)
-                })
-                .unwrap();
-            assert_eq!(count, 1, "{table}");
-        }
-    }
-
-    #[test]
-    fn cleanup_joins_outer_publication_without_committing_it() {
-        for prune in PRUNERS {
-            let connection = fixture();
-            let publication = connection.unchecked_transaction().unwrap();
-            publication
-                .execute(
-                    "UPDATE history_graph_repositories SET indexed_head = 'new-head'",
-                    [],
-                )
-                .unwrap();
-            assert!(prune(&publication).unwrap() > 0);
-            drop(publication);
-            assert_preserved(&connection);
-            assert!(
-                prune(&connection).unwrap() > 0,
-                "standalone cleanup commits"
-            );
-            assert!(connection.is_autocommit());
-        }
-    }
-
-    #[test]
-    fn cleanup_failure_rolls_back_standalone_and_outer_publication() {
-        for prune in PRUNERS {
-            for nested in [false, true] {
-                let connection = fixture();
-                connection.execute_batch("CREATE TRIGGER reject_snapshot_delete BEFORE DELETE ON structural_graph_snapshots BEGIN SELECT RAISE(ABORT, 'injected prune failure'); END;").unwrap();
-                let publication = nested.then(|| connection.unchecked_transaction().unwrap());
-                if let Some(publication) = &publication {
-                    publication
-                        .execute(
-                            "UPDATE history_graph_repositories SET indexed_head = 'new-head'",
-                            [],
-                        )
-                        .unwrap();
-                }
-                assert!(prune(&connection)
-                    .unwrap_err()
-                    .contains("injected prune failure"));
-                drop(publication);
-                assert_preserved(&connection);
-                assert!(connection.is_autocommit());
-            }
-        }
-    }
-}
-
-#[cfg(test)]
 pub(in crate::commands::history_graph) fn repair_derived_history(
     connection: &Connection,
     repo_path: &str,
@@ -839,4 +737,106 @@ pub(in crate::commands::history_graph) fn publish_release_catalog(
             .map_err(|error| format!("Persist release catalog row: {error}"))?;
     }
     Ok(index_identity)
+}
+
+#[cfg(test)]
+mod transaction_tests {
+    use super::*;
+
+    type Prune = fn(&Connection) -> Result<usize, String>;
+    const PRUNERS: [Prune; 2] = [
+        |connection| prune_unreachable_history(connection, &[], "/fixture"),
+        |connection| prune_incompatible_history_checkpoints(connection, "/fixture"),
+    ];
+
+    fn fixture() -> Connection {
+        let connection = Connection::open_in_memory().unwrap();
+        crate::db::schema::run_migrations(&connection).unwrap();
+        connection.execute_batch(
+            "INSERT INTO history_graph_repositories
+              (repo_path, repository_fingerprint, indexed_head, status, created_at, updated_at)
+              VALUES ('/fixture', 'fixture', 'old-head', 'ready', '2026-01-01', '2026-01-01');
+             INSERT INTO history_graph_revisions
+              (repo_path, sha, ordinal, committed_at, author_name, subject, parents_json, tags_json)
+              VALUES ('/fixture', 'old-head', 0, '2026-01-01', 'Fixture', 'old', '[]', '[]');
+             INSERT INTO structural_graph_snapshots
+              (id, repo_path, repo_head, schema_version, engine_id, engine_version,
+               engine_json, coverage_json, created_at)
+              VALUES ('old-snapshot', 'history:fixture', 'old-head', 1, 'old-engine', '0', '{}', '{}', '2026-01-01');
+             INSERT INTO history_graph_checkpoints
+              (repo_path, revision_sha, snapshot_id, engine_id, engine_version, schema_version, created_at)
+              VALUES ('/fixture', 'old-head', 'old-snapshot', 'old-engine', '0', 1, '2026-01-01');"
+        ).unwrap();
+        connection
+    }
+
+    fn assert_preserved(connection: &Connection) {
+        let head: String = connection
+            .query_row(
+                "SELECT indexed_head FROM history_graph_repositories WHERE repo_path = '/fixture'",
+                [],
+                |row| row.get(0),
+            )
+            .unwrap();
+        assert_eq!(head, "old-head");
+        for table in [
+            "history_graph_revisions",
+            "history_graph_checkpoints",
+            "structural_graph_snapshots",
+        ] {
+            let count: usize = connection
+                .query_row(&format!("SELECT COUNT(*) FROM {table}"), [], |row| {
+                    row.get(0)
+                })
+                .unwrap();
+            assert_eq!(count, 1, "{table}");
+        }
+    }
+
+    #[test]
+    fn cleanup_joins_outer_publication_without_committing_it() {
+        for prune in PRUNERS {
+            let connection = fixture();
+            let publication = connection.unchecked_transaction().unwrap();
+            publication
+                .execute(
+                    "UPDATE history_graph_repositories SET indexed_head = 'new-head'",
+                    [],
+                )
+                .unwrap();
+            assert!(prune(&publication).unwrap() > 0);
+            drop(publication);
+            assert_preserved(&connection);
+            assert!(
+                prune(&connection).unwrap() > 0,
+                "standalone cleanup commits"
+            );
+            assert!(connection.is_autocommit());
+        }
+    }
+
+    #[test]
+    fn cleanup_failure_rolls_back_standalone_and_outer_publication() {
+        for prune in PRUNERS {
+            for nested in [false, true] {
+                let connection = fixture();
+                connection.execute_batch("CREATE TRIGGER reject_snapshot_delete BEFORE DELETE ON structural_graph_snapshots BEGIN SELECT RAISE(ABORT, 'injected prune failure'); END;").unwrap();
+                let publication = nested.then(|| connection.unchecked_transaction().unwrap());
+                if let Some(publication) = &publication {
+                    publication
+                        .execute(
+                            "UPDATE history_graph_repositories SET indexed_head = 'new-head'",
+                            [],
+                        )
+                        .unwrap();
+                }
+                assert!(prune(&connection)
+                    .unwrap_err()
+                    .contains("injected prune failure"));
+                drop(publication);
+                assert_preserved(&connection);
+                assert!(connection.is_autocommit());
+            }
+        }
+    }
 }

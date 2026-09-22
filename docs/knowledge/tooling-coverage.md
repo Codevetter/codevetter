@@ -64,7 +64,7 @@ an eligible changed file absent from LCOV as uncovered. A second report-only
 pass keeps bounded LLVM regions for changed paths; raw project-wide JSON is
 hashed but not persisted. Its real CodeVetter qualification completed in 82.4
 seconds with a 15.1 MiB raw region report and cleaned the private target. See
-the [collector qualification](../../evidence/verification/tool-collector-qualification-2026-09-03.md).
+the [collector qualification](https://github.com/Codevetter/codevetter/blob/main/evidence/verification/tool-collector-qualification-2026-09-03.md).
 
 **`cargo-tarpaulin` is a viable cross-check, and the "Linux x86_64 only" belief
 about it is out of date.** Its LLVM engine is the default on macOS and Windows,

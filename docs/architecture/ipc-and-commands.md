@@ -11,7 +11,7 @@ sidebar:
 
 CodeVetter has three synchronized product surfaces:
 
-- the SwiftUI/AppKit desktop app in [`apps/macos`](../../apps/macos/README.md);
+- the SwiftUI/AppKit desktop app in [`apps/macos`](https://github.com/Codevetter/codevetter/blob/main/apps/macos/README.md);
 - the `codevetter` CLI in [`crates/codevetter-core/src/bin/codevetter.rs`](../../crates/codevetter-core/src/bin/codevetter.rs);
 - the read-only MCP server in [`crates/codevetter-core/src/bin/codevetter-mcp.rs`](../../crates/codevetter-core/src/bin/codevetter-mcp.rs).
 
@@ -24,7 +24,7 @@ policy. MCP exposes a bounded read-only projection of the same evidence.
 The native process adapter is
 [`VerificationRunner.swift`](../../apps/macos/CodeVetterPackage/Sources/CodeVetterFeature/VerificationRunner.swift).
 Rust command implementations live under
-[`crates/codevetter-core/src/commands`](../../crates/codevetter-core/src/commands).
+[`crates/codevetter-core/src/commands`](https://github.com/Codevetter/codevetter/tree/main/crates/codevetter-core/src/commands).
 
 ## Command map
 

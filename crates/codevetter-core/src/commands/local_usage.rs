@@ -875,10 +875,7 @@ fn claude_project_index(needed: &BTreeSet<String>) -> BTreeMap<String, String> {
     claude_project_index_in(&projects, needed)
 }
 
-fn claude_project_index_in(
-    projects: &Path,
-    needed: &BTreeSet<String>,
-) -> BTreeMap<String, String> {
+fn claude_project_index_in(projects: &Path, needed: &BTreeSet<String>) -> BTreeMap<String, String> {
     let mut index = BTreeMap::new();
     let Ok(entries) = std::fs::read_dir(projects) else {
         return index;
@@ -1283,9 +1280,7 @@ mod tests {
     #[test]
     fn attributes_claude_sessions_from_project_directories() {
         let directory = TempDir::new().unwrap();
-        let project_dir = directory
-            .path()
-            .join("-Users-test-fleet-codevetter");
+        let project_dir = directory.path().join("-Users-test-fleet-codevetter");
         fs::create_dir_all(&project_dir).unwrap();
         fs::write(project_dir.join("session-a.jsonl"), "{}").unwrap();
         fs::write(project_dir.join("session-b.json"), "{}").unwrap();

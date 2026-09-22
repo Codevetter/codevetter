@@ -284,7 +284,20 @@ for (const content of Object.values(articlesContent)) {
   );
 }
 
-const unpackBody = (report: (typeof unpackReports)[number]) => {
+type UnpackReport = (typeof unpackReports)[number];
+type UnpackClaim = { claim: string; sources?: string[]; kind?: string };
+
+function unpackClaimMarkdown(report: UnpackReport, claim: UnpackClaim): string {
+  const sources = (claim.sources ?? [])
+    .map(
+      (source) =>
+        `[${source}](https://github.com/${report.repo}/blob/${report.commit.sha}/${source.split('#')[0]})`
+    )
+    .join(' ');
+  return `- ${claim.claim}${claim.kind === 'inference' ? ' (inferred)' : ''}${sources ? ` — ${sources}` : ''}`;
+}
+
+const unpackBody = (report: UnpackReport) => {
   const lines = [
     `This is a deterministic Repo Unpack scan of ${report.repo} — a structural map, not a review, security audit, or maintainer-endorsed description.`,
     '',
@@ -359,15 +372,7 @@ const unpackBody = (report: (typeof unpackReports)[number]) => {
       if (!section) continue;
       lines.push('', `## ${title}`, '', section.summary ?? '');
       for (const claim of section.claims ?? []) {
-        const srcs = (claim.sources ?? [])
-          .map(
-            (s) =>
-              `[${s}](https://github.com/${report.repo}/blob/${report.commit.sha}/${s.split('#')[0]})`
-          )
-          .join(' ');
-        lines.push(
-          `- ${claim.claim}${claim.kind === 'inference' ? ' (inferred)' : ''}${srcs ? ` — ${srcs}` : ''}`
-        );
+        lines.push(unpackClaimMarkdown(report, claim));
       }
     }
   }
@@ -421,15 +426,7 @@ for (const report of unpackReports) {
       section.summary ?? '',
     ];
     for (const claim of section.claims ?? []) {
-      const srcs = (claim.sources ?? [])
-        .map(
-          (s) =>
-            `[${s}](https://github.com/${report.repo}/blob/${report.commit.sha}/${s.split('#')[0]})`
-        )
-        .join(' ');
-      lines.push(
-        `- ${claim.claim}${claim.kind === 'inference' ? ' (inferred)' : ''}${srcs ? ` — ${srcs}` : ''}`
-      );
+      lines.push(unpackClaimMarkdown(report, claim));
     }
     lines.push(
       '',
