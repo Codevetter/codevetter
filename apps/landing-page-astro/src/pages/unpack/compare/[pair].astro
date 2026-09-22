@@ -10,11 +10,11 @@ export function getStaticPaths() {
     .filter((p) => p.a && p.b)
     .map(({ a, b, angle }) => ({
       params: { pair: `${a.slug}-vs-${b.slug}` },
-      props: { a, b, angle },
+      props: { a, b, angle, pair: `${a.slug}-vs-${b.slug}` },
     }));
 }
 
-const { a, b, angle } = Astro.props;
+const { a, b, angle, pair } = Astro.props;
 const rows = [
   ['Files scanned', a.stats.filesScanned, b.stats.filesScanned],
   ['Size', a.stats.size, b.stats.size],
@@ -45,6 +45,7 @@ const rows = [
 <Layout
   title={`${a.name} vs ${b.name} — codebase comparison`}
   description={`Structural codebase comparison of ${a.repo} and ${b.repo}: architectures, entrypoints, and evidence — scanned at pinned commits by CodeVetter Repo Unpack.`}
+  path={`/unpack/compare/${pair}`}
 >
   <main class="report">
     <a class="back" href="/unpack">← All unpacks</a>

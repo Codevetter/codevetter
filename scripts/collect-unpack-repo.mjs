@@ -28,6 +28,10 @@ const slug =
     .split('/')[1]
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-');
+if (!/^[a-z0-9][a-z0-9-]*$/.test(slug)) {
+  console.error(`invalid slug ${JSON.stringify(slug)} — must match /^[a-z0-9][a-z0-9-]*$/`);
+  process.exit(1);
+}
 
 const work = mkdtempSync(join(tmpdir(), 'unpack-pilot-'));
 try {

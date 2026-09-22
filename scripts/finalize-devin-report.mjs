@@ -5,17 +5,26 @@
 //   node scripts/finalize-devin-report.mjs <slug> --clone <path> --report <path>
 
 import { execFileSync } from 'node:child_process';
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 const ROOT = new URL('..', import.meta.url).pathname;
 const CORPUS = join(ROOT, 'benchmarks/repo-unpacks');
 const [slug, ...rest] = process.argv.slice(2);
-const get = (f) => rest[rest.indexOf(f) + 1];
+const get = (f) => {
+  const i = rest.indexOf(f);
+  return i < 0 ? undefined : rest[i + 1];
+};
 const cloneDir = get('--clone');
 const reportPath = get('--report');
 const runtimeMs = Number(get('--runtime-ms') ?? 0);
 const model = get('--model') ?? 'swe-2';
+if (!slug || !cloneDir || !reportPath) {
+  console.error(
+    'usage: node scripts/finalize-devin-report.mjs <slug> --clone <path> --report <path>'
+  );
+  process.exit(1);
+}
 
 const SECTIONS = [
   'system_map',
@@ -49,25 +58,52 @@ if (missing.length) {
   process.exit(1);
 }
 
+// Citations must resolve against the pinned commit object — `git cat-file -e
+// <sha>:<path>` rejects `../` traversal, files that only exist at a different
+// revision, and untracked working-tree files alike.
+const safePath = (p) => p && !p.startsWith('/') && !p.split('/').includes('..');
+const pinnedExists = (p) => {
+  if (!safePath(p)) return false;
+  try {
+    execFileSync('git', ['-C', cloneDir, 'cat-file', '-e', `${headSha}:${p}`], {
+      stdio: 'ignore',
+    });
+    return true;
+  } catch {
+    return false;
+  }
+};
+
 let total = 0;
 let bad = 0;
+let dropped = 0;
 for (const key of SECTIONS) {
   for (const claim of report[key].claims) {
-    claim.sources = (claim.sources ?? []).map(
-      (s) =>
-        s
-          .split('#')[0]
-          .trim()
-          .replace(/\s*\([^)]*\)\s*$/, '') + (s.includes('#L') ? `#L${s.split('#L')[1]}` : '')
-    );
+    claim.sources = (claim.sources ?? []).map((s) => {
+      const path = s
+        .split('#')[0]
+        .trim()
+        .replace(/\s*\([^)]*\)\s*$/, '');
+      return s.includes('#L') ? `${path}#L${s.split('#L')[1]}` : path;
+    });
     for (const src of claim.sources) {
       total += 1;
-      if (!existsSync(join(cloneDir, src.split('#')[0]))) bad += 1;
+      if (!pinnedExists(src.split('#')[0])) bad += 1;
     }
   }
+  const kept = report[key].claims.filter((c) =>
+    (c.sources ?? []).every((s) => pinnedExists(s.split('#')[0]))
+  );
+  dropped += report[key].claims.length - kept.length;
+  report[key].claims = kept;
 }
-console.log(`${record.repo}: ${total} citations, ${bad} unresolvable`);
-if (total === 0) process.exit(1);
+console.log(
+  `${record.repo}: ${total} citations, ${bad} unresolvable${dropped ? `, ${dropped} claims dropped` : ''}`
+);
+if (total === 0 || SECTIONS.some((k) => report[k].claims.length === 0)) {
+  console.error(`${slug}: report unusable after pruning — not merging`);
+  process.exit(1);
+}
 
 record.report = report;
 record.analysis = {
