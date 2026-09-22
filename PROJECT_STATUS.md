@@ -38,8 +38,8 @@ separately approved safety design justify renewed investment.
 
 ## Current shipped state
 
-- **v1.14.1 is the current published desktop release.** The protected release
-  workflow published the arm64 DMG, ZIP, and Sparkle appcast on 2026-09-18.
+- **v1.14.2 is the current published desktop release.** The protected release
+  workflow published the arm64 DMG, ZIP, and Sparkle appcast on 2026-09-22.
   Usage coherence (#296), Review/Explore (#285), and unavailable-performance
   classification (#276) are closed. See
   [surface behavior](docs/product/surfaces.md).
@@ -48,9 +48,9 @@ separately approved safety design justify renewed investment.
   TypeScript semantic definitions/references, and source-linked Unpack and
   evidence. VoiceOver expansion remains intentionally deferred and is not a
   release blocker.
-- The post-release `main` branch adds public Repo Unpack evidence and comparison
-  pages. These landing-page additions do not imply a newer desktop release;
-  desktop release truth remains the published `v1.14.1` tag.
+- The post-release `main` branch adds code-health and native qualification
+  repairs. These maintenance changes do not imply a newer desktop release;
+  desktop release truth remains the published `v1.14.2` tag.
 - Maintenance is limited to core verification reliability, regressions,
   security, dependency hygiene, and evidence requested by real users. New
   product surfaces require an explicit change in the investment decision.
