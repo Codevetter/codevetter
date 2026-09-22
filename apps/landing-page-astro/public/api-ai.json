@@ -135,6 +135,13 @@
       "description": "Comparison of static code review and executable verification"
     },
     {
+      "id": "ai-code-validation",
+      "url": "https://codevetter.com/ai-code-validation",
+      "md": "https://codevetter.com/ai-code-validation.md",
+      "kind": "static",
+      "description": "Validation vs verification vs review for agent-generated code, with a practical validation pass"
+    },
+    {
       "id": "compare",
       "url": "https://codevetter.com/compare",
       "md": "https://codevetter.com/compare.md",
@@ -238,6 +245,174 @@
       "md": "https://codevetter.com/xray/py-path-traversal.md",
       "kind": "static",
       "description": "Adjudicated Python path-traversal example"
+    },
+    {
+      "id": "xray-go-errcheck",
+      "url": "https://codevetter.com/xray/go-errcheck",
+      "md": "https://codevetter.com/xray/go-errcheck.md",
+      "kind": "static",
+      "description": "Adjudicated go unchecked error example"
+    },
+    {
+      "id": "xray-go-hardcoded-credentials",
+      "url": "https://codevetter.com/xray/go-hardcoded-credentials",
+      "md": "https://codevetter.com/xray/go-hardcoded-credentials.md",
+      "kind": "static",
+      "description": "Adjudicated go hardcoded secret example"
+    },
+    {
+      "id": "xray-go-nil-pointer",
+      "url": "https://codevetter.com/xray/go-nil-pointer",
+      "md": "https://codevetter.com/xray/go-nil-pointer.md",
+      "kind": "static",
+      "description": "Adjudicated go nil dereference example"
+    },
+    {
+      "id": "xray-go-sql-injection",
+      "url": "https://codevetter.com/xray/go-sql-injection",
+      "md": "https://codevetter.com/xray/go-sql-injection.md",
+      "kind": "static",
+      "description": "Adjudicated go sql injection example"
+    },
+    {
+      "id": "xray-java-insecure-random",
+      "url": "https://codevetter.com/xray/java-insecure-random",
+      "md": "https://codevetter.com/xray/java-insecure-random.md",
+      "kind": "static",
+      "description": "Adjudicated java insecure random example"
+    },
+    {
+      "id": "xray-js-eval-injection",
+      "url": "https://codevetter.com/xray/js-eval-injection",
+      "md": "https://codevetter.com/xray/js-eval-injection.md",
+      "kind": "static",
+      "description": "Adjudicated javascript code injection example"
+    },
+    {
+      "id": "xray-js-open-redirect",
+      "url": "https://codevetter.com/xray/js-open-redirect",
+      "md": "https://codevetter.com/xray/js-open-redirect.md",
+      "kind": "static",
+      "description": "Adjudicated javascript open redirect example"
+    },
+    {
+      "id": "xray-py-bare-except",
+      "url": "https://codevetter.com/xray/py-bare-except",
+      "md": "https://codevetter.com/xray/py-bare-except.md",
+      "kind": "static",
+      "description": "Adjudicated python swallowed error example"
+    },
+    {
+      "id": "xray-py-command-injection",
+      "url": "https://codevetter.com/xray/py-command-injection",
+      "md": "https://codevetter.com/xray/py-command-injection.md",
+      "kind": "static",
+      "description": "Adjudicated python command injection example"
+    },
+    {
+      "id": "xray-py-hardcoded-secret",
+      "url": "https://codevetter.com/xray/py-hardcoded-secret",
+      "md": "https://codevetter.com/xray/py-hardcoded-secret.md",
+      "kind": "static",
+      "description": "Adjudicated python hardcoded secret example"
+    },
+    {
+      "id": "xray-py-insecure-deserialization",
+      "url": "https://codevetter.com/xray/py-insecure-deserialization",
+      "md": "https://codevetter.com/xray/py-insecure-deserialization.md",
+      "kind": "static",
+      "description": "Adjudicated python insecure deserialization example"
+    },
+    {
+      "id": "xray-py-sql-injection",
+      "url": "https://codevetter.com/xray/py-sql-injection",
+      "md": "https://codevetter.com/xray/py-sql-injection.md",
+      "kind": "static",
+      "description": "Adjudicated python sql injection example"
+    },
+    {
+      "id": "xray-py-ssrf",
+      "url": "https://codevetter.com/xray/py-ssrf",
+      "md": "https://codevetter.com/xray/py-ssrf.md",
+      "kind": "static",
+      "description": "Adjudicated python ssrf example"
+    },
+    {
+      "id": "xray-py-weak-hash",
+      "url": "https://codevetter.com/xray/py-weak-hash",
+      "md": "https://codevetter.com/xray/py-weak-hash.md",
+      "kind": "static",
+      "description": "Adjudicated python weak crypto example"
+    },
+    {
+      "id": "xray-py-zip-bomb",
+      "url": "https://codevetter.com/xray/py-zip-bomb",
+      "md": "https://codevetter.com/xray/py-zip-bomb.md",
+      "kind": "static",
+      "description": "Adjudicated python resource exhaustion example"
+    },
+    {
+      "id": "xray-rust-integer-overflow",
+      "url": "https://codevetter.com/xray/rust-integer-overflow",
+      "md": "https://codevetter.com/xray/rust-integer-overflow.md",
+      "kind": "static",
+      "description": "Adjudicated rust integer overflow example"
+    },
+    {
+      "id": "xray-ts-dead-code",
+      "url": "https://codevetter.com/xray/ts-dead-code",
+      "md": "https://codevetter.com/xray/ts-dead-code.md",
+      "kind": "static",
+      "description": "Adjudicated typescript dead code example"
+    },
+    {
+      "id": "xray-ts-hardcoded-credentials",
+      "url": "https://codevetter.com/xray/ts-hardcoded-credentials",
+      "md": "https://codevetter.com/xray/ts-hardcoded-credentials.md",
+      "kind": "static",
+      "description": "Adjudicated typescript hardcoded secret example"
+    },
+    {
+      "id": "xray-ts-insecure-cookie",
+      "url": "https://codevetter.com/xray/ts-insecure-cookie",
+      "md": "https://codevetter.com/xray/ts-insecure-cookie.md",
+      "kind": "static",
+      "description": "Adjudicated typescript insecure cookie example"
+    },
+    {
+      "id": "xray-ts-missing-await",
+      "url": "https://codevetter.com/xray/ts-missing-await",
+      "md": "https://codevetter.com/xray/ts-missing-await.md",
+      "kind": "static",
+      "description": "Adjudicated typescript missing await example"
+    },
+    {
+      "id": "xray-ts-prototype-pollution",
+      "url": "https://codevetter.com/xray/ts-prototype-pollution",
+      "md": "https://codevetter.com/xray/ts-prototype-pollution.md",
+      "kind": "static",
+      "description": "Adjudicated typescript prototype pollution example"
+    },
+    {
+      "id": "xray-ts-regex-dos",
+      "url": "https://codevetter.com/xray/ts-regex-dos",
+      "md": "https://codevetter.com/xray/ts-regex-dos.md",
+      "kind": "static",
+      "description": "Adjudicated typescript regex dos example"
+    },
+    {
+      "id": "xray-ts-type-confusion",
+      "url": "https://codevetter.com/xray/ts-type-confusion",
+      "md": "https://codevetter.com/xray/ts-type-confusion.md",
+      "kind": "static",
+      "description": "Adjudicated typescript type confusion example"
+    },
+    {
+      "id": "xray-ts-xss",
+      "url": "https://codevetter.com/xray/ts-xss",
+      "md": "https://codevetter.com/xray/ts-xss.md",
+      "kind": "static",
+      "description": "Adjudicated typescript xss example"
     }
   ],
   "auth": {
