@@ -188,27 +188,42 @@ if (agent === 'grok') {
       'agent_prompt',
     ],
   });
-  const raw = execFileSync(
-    '/Users/sarthak/.grok/bin/grok',
-    [
-      '-p',
-      prompt,
-      '--output-format',
-      'json',
-      '--json-schema',
-      schema,
-      '--allow',
-      'Read,Glob,Grep,LS',
-    ],
-    {
-      encoding: 'utf8',
-      cwd: cloneDir,
-      input: '',
-      maxBuffer: 128 * 1024 * 1024,
-      timeout: 30 * 60 * 1000,
+  let raw;
+  try {
+    raw = execFileSync(
+      '/Users/sarthak/.grok/bin/grok',
+      [
+        '-p',
+        prompt,
+        '--output-format',
+        'json',
+        '--json-schema',
+        schema,
+        '--allow',
+        'Read,Glob,Grep,LS',
+      ],
+      {
+        encoding: 'utf8',
+        cwd: cloneDir,
+        input: '',
+        maxBuffer: 128 * 1024 * 1024,
+        timeout: 30 * 60 * 1000,
+      }
+    );
+  } catch (e) {
+    // grok exits nonzero on transient "Internal error" but may still have
+    // emitted a usable envelope before dying.
+    if (e.stdout) {
+      const start = e.stdout.indexOf('{');
+      if (start >= 0) raw = e.stdout.slice(start);
     }
-  );
+    if (!raw) throw e;
+  }
   const env = JSON.parse(raw);
+  if (env.http_status || (env.message && !env.structuredOutput && !env.result)) {
+    console.error(`${record.repo}: grok API error — ${env.message ?? env.http_status}`);
+    process.exit(1);
+  }
   if (env.structuredOutput) {
     // Schema-constrained output is already the report object.
     const report = env.structuredOutput;

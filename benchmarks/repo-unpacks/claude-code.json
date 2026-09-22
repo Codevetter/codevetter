@@ -11307,5 +11307,953 @@
         ]
       }
     ]
+  },
+  "report": {
+    "overview": "This checkout is the public GitHub surface of Anthropic Claude Code (an agentic terminal/IDE coding tool), not the closed CLI binary. It publishes four built-in function-hook mods the CLI seats inside the engine (diff, telemetry, agents-md, sec-default), thirteen marketplace plugins of slash commands, agents, skills, and classic shell/Python hooks, plus enterprise examples and the Actions that triage, dedupe, and auto-close issues on anthropics/claude-code. What is distinctive is the mods layer: TypeScript register(on) modules typed against a generated claude-code declaration, tested with claude plugin test, and explicitly not listed in the marketplace.",
+    "system_map": {
+      "summary": "There is no package.json and no CLI source in this tree. The product is installed separately; this repo holds plugins, the source of four mods that ship inside the binary, Bun scripts for GitHub issue lifecycle, and reference deployments. Runtime for mods is the Claude Code function-hook host (no DOM, no Node). CI typechecks mods with tsc and optionally runs claude plugin test. GitHub workflows call anthropics/claude-code-action with Workload Identity Federation rather than a static API key.",
+      "claims": [
+        {
+          "claim": "README installs the product outside this repo (curl https://claude.ai/install.sh, brew install --cask claude-code, irm install.ps1, winget, or deprecated npm i -g @anthropic-ai/claude-code) and tells the user to run claude in a project. There is no package.json in the tree.",
+          "sources": [
+            "README.md#L13-L46"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "mods/README.md defines a mod as a plugin whose behaviour is one register(on, options) entry hooking engine events as ($, e, next). The four shipped mods are sec-default (outermost when managed settings or a Team/Enterprise org exist, unless prependPlugins overrides), diff, telemetry, and agents-md. Each folder has .claude-plugin/plugin.json, hooks/hooks.json, and TypeScript under hooks/ importing types from claude-code.",
+          "sources": [
+            "mods/README.md#L1-L20",
+            "mods/diff/.claude-plugin/plugin.json",
+            "mods/telemetry/.claude-plugin/plugin.json",
+            "mods/sec-default/.claude-plugin/plugin.json",
+            "mods/agents-md/.claude-plugin/plugin.json"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "mods/types/claude-code.d.ts is the function-hook API, header-stamped 'Written by Claude Code 2.1.277' and '/plugin-types'. A hooks module is an ES module (.ts/.tsx/.js/…) with no require, no DOM, and no Node; JSX compiles against globals h and Fragment; UI elements come from $.ui.resolve(e), not globals. Tests import claude-code/testing and run under claude plugin test.",
+          "sources": [
+            "mods/types/claude-code.d.ts#L1-L40"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "mods/tsconfig.json typechecks every mod's hooks and tests: target es2023, module esnext, moduleResolution bundler, strict, noUncheckedIndexedAccess, noEmit, jsx react with jsxFactory h and jsxFragmentFactory Fragment, include types, */types/**/*.d.ts, */hooks, */tests.",
+          "sources": [
+            "mods/tsconfig.json",
+            "mods/README.md#L81-L82"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": ".github/workflows/mod-tests.yml runs on pull_request paths mods/**. It checks out with persist-credentials false, npm-installs @anthropic-ai/claude-code and typescript@5.9.3 globally, runs tsc -p mods/tsconfig.json, then for each mods/*/ with a tests/ dir runs claude plugin test, but exits 0 if claude plugin test --help lacks the usage line. Tests need CLAUDE_CODE_ENABLE_FUNCTION_HOOKS=1. Permissions are contents:read only.",
+          "sources": [
+            ".github/workflows/mod-tests.yml#L1-L40"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The marketplace manifest .claude-plugin/marketplace.json (name claude-code-plugins) lists 13 plugins sourced from ./plugins/* and does not list the four mods. mods/README.md says the mods are not in the marketplace; the copies that matter are already in the installed Claude Code.",
+          "sources": [
+            ".claude-plugin/marketplace.json#L1-L149",
+            "mods/README.md#L114"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "telemetry's plugin.json sets types to ./types/index.d.ts. That contract exports Telemetry and declares EngineInterface.telemetry. mods/tsconfig.json includes */types/**/*.d.ts so other mods (diff, agents-md) type $.telemetry.log/mark against it without copying the types.",
+          "sources": [
+            "mods/telemetry/.claude-plugin/plugin.json",
+            "mods/telemetry/types/index.d.ts#L1-L40",
+            "mods/README.md#L84-L107"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Issue automation is Bun, not the hook host. sweep.yml (cron 0 10,22 * * *) runs bun scripts/sweep.ts with GITHUB_TOKEN, GITHUB_REPOSITORY_OWNER, and GITHUB_REPOSITORY_NAME. auto-close-duplicates.yml (cron 0 9 * * *) runs bun scripts/auto-close-duplicates.ts and also passes STATSIG_API_KEY. issue-lifecycle-comment.yml runs bun scripts/lifecycle-comment.ts on issues labeled.",
+          "sources": [
+            ".github/workflows/sweep.yml",
+            "scripts/sweep.ts#L1-L8",
+            ".github/workflows/auto-close-duplicates.yml",
+            ".github/workflows/issue-lifecycle-comment.yml",
+            "scripts/lifecycle-comment.ts#L1-L25"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Claude-invoking workflows (.github/workflows/claude.yml, claude-issue-triage.yml, claude-dedupe-issues.yml) use anthropics/claude-code-action@v1 and authenticate with Workload Identity Federation vars ANTHROPIC_FEDERATION_RULE_ID, ANTHROPIC_ORGANIZATION_ID, ANTHROPIC_SERVICE_ACCOUNT_ID, ANTHROPIC_WORKSPACE_ID plus id-token: write. claude.yml triggers when an issue, comment, or review contains @claude and passes --model claude-sonnet-4-5-20250929.",
+          "sources": [
+            ".github/workflows/claude.yml#L1-L44",
+            ".github/workflows/claude-issue-triage.yml#L28-L47",
+            ".github/workflows/claude-dedupe-issues.yml#L23-L43"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": ".devcontainer/devcontainer.json names the environment Claude Code Sandbox, builds a Dockerfile with CLAUDE_CODE_VERSION latest, and adds Linux capabilities NET_ADMIN and NET_RAW. It installs the anthropic.claude-code VS Code extension.",
+          "sources": [
+            ".devcontainer/devcontainer.json#L1-L20"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "examples/gateway/aws and examples/gateway/gcp are reference artifacts (setup.sh, Dockerfile, gateway.yaml.example, terraform/) for a Claude apps gateway in front of Bedrock or the GCP equivalent. The AWS README says they are a working example, not a supported production deployment, and points at code.claude.com docs.",
+          "sources": [
+            "examples/gateway/aws/README.md#L1-L19"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "examples/settings and examples/mdm are enterprise policy templates, not runtime code. settings-strict.json sets permissions.disableBypassPermissionsMode disable, ask Bash, deny WebSearch and WebFetch, allowManagedPermissionRulesOnly, allowManagedHooksOnly, and strictKnownMarketplaces []. MDM templates target Jamf/Kandji plist, Intune, and Group Policy and write managed settings that users cannot override.",
+          "sources": [
+            "examples/settings/README.md#L1-L35",
+            "examples/settings/settings-strict.json",
+            "examples/mdm/README.md#L1-L24"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "feature_catalog": {
+      "summary": "User-visible behaviour splits three ways. Built-in mods add /diff, AGENTS.md instruction loading, first-party analytics, and an organization security default. Marketplace plugins add slash commands, skills, and classic hooks (security review, hookify rules, Ralph loops, commit/PR workflows, feature-dev, code review). GitHub-side features are /triage-issue, /dedupe, scheduled sweep/lock/autoclose, and @claude on issues and PRs.",
+      "claims": [
+        {
+          "claim": "The diff mod registers slash command diff (COMMAND_NAME). /diff toggles a pane of uncommitted changes beside the transcript, or an inline dialog when the layout is not fullscreen (CLAUDE_CODE_NO_FLICKER=0). Outside a git repo it reports that and opens nothing. clear and resume reset session state. A file ask button arms hunks onto the next prompt.submit.",
+          "sources": [
+            "mods/diff/hooks/names/command-name.ts",
+            "mods/diff/README.md#L1-L54",
+            "mods/diff/hooks/register.ts#L744-L793"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Diff auto-opens on the main loop's first successful Edit, Write, or NotebookEdit when the terminal is wide enough and file checkpointing is on (settings plus CLAUDE_CODE_DISABLE_FILE_CHECKPOINTING). Bash and PowerShell refresh an already-open pane but do not open it. Subagent edits (agentId set) do not auto-open.",
+          "sources": [
+            "mods/diff/hooks/tools/editing-tools.ts",
+            "mods/diff/hooks/tools/shell-tools.ts",
+            "mods/diff/hooks/register.ts#L917-L965",
+            "mods/diff/README.md#L16-L28"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "agents-md userConfig.instructionFiles is a string option defaulting to claude-md-or-agents-md, with options claude-md, claude-md-or-agents-md, claude-md-and-agents-md, and managed-only. The legacy settings key projectInstructions (none, claude, agents-fallback, both) is still honoured only while instructionFiles is the default, and session.start logs how it was read.",
+          "sources": [
+            "mods/agents-md/.claude-plugin/plugin.json#L8-L22",
+            "mods/agents-md/hooks/modes/modes.ts",
+            "mods/agents-md/hooks/register.ts#L40-L68",
+            "mods/agents-md/README.md#L47-L84"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "In the two AGENTS.md modes, prompt.context walks $.fs.ancestors for AGENTS.md names and inserts unseen files as project instruction files. tool.call on Read attaches nested AGENTS.md between the project root and the file, unless CLAUDE_CODE_SIMPLE or CLAUDE_CODE_DISABLE_ATTACHMENTS is on. managed-only filters instruction files with Files.isKeptWithoutInstructions. claude-md registers only the session.start usage row and returns.",
+          "sources": [
+            "mods/agents-md/hooks/register.ts#L70-L254",
+            "mods/agents-md/README.md#L89-L96"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "telemetry adds $.telemetry.log and $.telemetry.mark in the engine.create fold. log emits tengu_plugin_<event>; mark emits tengu_feature_<kind> with feature_name. Only builtin and core callers pass the gate; other tiers are refused. Batches POST to https://api.anthropic.com/api/event_logging/v2/batch.",
+          "sources": [
+            "mods/telemetry/README.md#L1-L20",
+            "mods/telemetry/hooks/entries/ingest-url.ts",
+            "mods/telemetry/hooks/gate/served-tiers/served-tiers.ts",
+            "mods/telemetry/types/index.d.ts#L20-L39"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "sec-default adds no policy of its own. It continues classic.*, prompt.section, prompt.context, skill.prompt, attribution.text, and settings.read past the user tier via next.to(e, 'append'). tool.describe, command.describe, agent.offer, and agent.spawn skip the user tier only when e.provider.tier is prepend or append. tool.register from tier user is denied while managed settings contain allowedMcpServers.",
+          "sources": [
+            "mods/sec-default/hooks/register.ts",
+            "mods/sec-default/README.md#L22-L32",
+            "mods/sec-default/hooks/policy/has-mcp-allowlist.ts",
+            "mods/sec-default/hooks/tool-register-refusal/tool-register-refusal.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Marketplace plugins and their user-facing entry points, from plugins/README.md and marketplace.json: agent-sdk-dev (/new-sdk-app plus Python and TypeScript verifier agents), claude-opus-4-5-migration skill, code-review (/code-review), commit-commands (/commit, /commit-push-pr, /clean_gone), explanatory-output-style and learning-output-style SessionStart hooks, feature-dev (/feature-dev), frontend-design skill, hookify (/hookify, /hookify:list, /hookify:configure, /hookify:help), plugin-dev (/plugin-dev:create-plugin plus seven skills), pr-review-toolkit (/pr-review-toolkit:review-pr), ralph-wiggum (/ralph-loop, /cancel-ralph), security-guidance.",
+          "sources": [
+            "plugins/README.md#L11-L27",
+            ".claude-plugin/marketplace.json#L10-L148"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "feature-dev's command is a seven-phase prompt: Discovery, Codebase Exploration (2-3 code-explorer agents), Clarifying Questions (must wait), Architecture Design (code-architect agents, no implementation without approval), Implementation, Quality Review (3 code-reviewer agents), Summary. It uses TodoWrite and $ARGUMENTS as the feature description.",
+          "sources": [
+            "plugins/feature-dev/commands/feature-dev.md#L20-L123"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "/code-review is a prompt that refuses closed, draft, or already-commented PRs, then runs parallel agents (CLAUDE.md compliance on Sonnet, bug scans on Opus) and only reports high-signal issues after a validation pass. allowed-tools are gh issue/pr/search commands plus mcp__github_inline_comment__create_inline_comment.",
+          "sources": [
+            "plugins/code-review/commands/code-review.md#L1-L59"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "/commit (plugins/commit-commands/commands/commit.md) prefills git status, git diff HEAD, branch, and git log --oneline -10 via command substitution and restricts tools to Bash(git add:*), Bash(git status:*), Bash(git commit:*). It instructs a single commit and no other text.",
+          "sources": [
+            "plugins/commit-commands/commands/commit.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "security-guidance hooks.json wires SessionStart to ensure_agent_sdk.py (timeout 180), UserPromptSubmit and Stop and PostToolUse to security_reminder_hook.py. PostToolUse matches Edit|Write|MultiEdit|NotebookEdit for pattern warnings, and Bash with if Bash(git commit:*) and Bash(git push:*) for asyncRewake reviews. Env kill switches include SECURITY_GUIDANCE_DISABLE, ENABLE_PATTERN_RULES, ENABLE_CODE_SECURITY_REVIEW, ENABLE_STOP_REVIEW, ENABLE_COMMIT_REVIEW, SECURITY_REVIEW_MODEL, SG_AGENTIC_MODEL, SG_DUAL_OR.",
+          "sources": [
+            "plugins/security-guidance/hooks/hooks.json",
+            "plugins/security-guidance/README.md#L27-L60"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "SECURITY_PATTERNS in patterns.py names rules including github_actions_workflow, child_process_exec, new_function_injection, eval_injection, react_dangerously_set_html, document_write_xss, innerHTML_xss, pickle_deserialization, os_system_injection, unsafe_yaml_load, torch_unsafe_load, and others. An assert ties every ruleName to RuleId.",
+          "sources": [
+            "plugins/security-guidance/hooks/patterns.py#L29-L120",
+            "plugins/security-guidance/hooks/patterns.py#L330-L333"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "hookify's hooks.json runs python3 pretooluse.py, posttooluse.py, stop.py, and userpromptsubmit.py (timeout 10) with no matcher, so every tool and prompt is evaluated. Rules come from .claude/hookify.*.local.md. action block on PreToolUse/PostToolUse returns permissionDecision deny; on Stop it returns decision block. Warnings only set systemMessage.",
+          "sources": [
+            "plugins/hookify/hooks/hooks.json",
+            "plugins/hookify/hooks/pretooluse.py#L35-L70",
+            "plugins/hookify/core/rule_engine.py#L35-L94",
+            "plugins/hookify/core/config_loader.py#L1-L8"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "ralph-wiggum registers a Stop command hook to ${CLAUDE_PLUGIN_ROOT}/hooks/stop-hook.sh so an iteration loop can refuse to exit. Commands are /ralph-loop, /cancel-ralph, and help.",
+          "sources": [
+            "plugins/ralph-wiggum/hooks/hooks.json",
+            "plugins/ralph-wiggum/.claude-plugin/plugin.json",
+            "plugins/README.md#L26"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Repo-local slash commands used by Actions, not by the product CLI marketplace: .claude/commands/triage-issue.md (labels only, via scripts/gh.sh and scripts/edit-issue-labels.sh) and .claude/commands/dedupe.md (up to 3 duplicates via scripts/comment-on-duplicates.sh). claude-issue-triage.yml prompts /triage-issue with model claude-opus-4-6 and CLAUDE_CODE_SCRIPT_CAPS {\"edit-issue-labels.sh\":2}. claude-dedupe-issues.yml prompts /dedupe with caps {\"comment-on-duplicates.sh\":1}.",
+          "sources": [
+            ".claude/commands/triage-issue.md#L1-L16",
+            ".claude/commands/dedupe.md#L1-L17",
+            ".github/workflows/claude-issue-triage.yml#L31-L47",
+            ".github/workflows/claude-dedupe-issues.yml#L27-L43"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Issue lifecycle labels and timeouts are the exported lifecycle array in scripts/issue-lifecycle.ts: invalid 3 days, needs-repro 7, needs-info 7, stale 14, autoclose 14, plus STALE_UPVOTE_THRESHOLD 10. sweep.ts marks inactive unassigned issues stale and closes expired lifecycle labels with state_reason not_planned. lifecycle-comment.ts posts entry.nudge when a lifecycle label is applied. remove-autoclose-label.yml strips autoclose on a non-bot comment. lock-closed-issues.yml locks closed unlocked issues with no updates for 7 days, max 250 per run.",
+          "sources": [
+            "scripts/issue-lifecycle.ts",
+            "scripts/sweep.ts#L45-L153",
+            "scripts/lifecycle-comment.ts#L19-L25",
+            ".github/workflows/remove-autoclose-label.yml",
+            ".github/workflows/lock-closed-issues.yml#L1-L35"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "data_flow": {
+      "summary": "Mod data never touches the network except telemetry's batch POST and security-guidance's model call. Instruction files, diffs, and settings move through the engine nouns $.fs, $.session, $.settings, $.process, $.store, and $.ui. Plugin hooks speak JSON on stdin/stdout. Issue bots speak the GitHub REST API with GITHUB_TOKEN and, separately, Statsig. Identity for analytics is read from ~/.claude.json (or CLAUDE_CONFIG_DIR) and account fields are only kept on an internal build.",
+      "claims": [
+        {
+          "claim": "agents-md prompt.context input is e.instructionFiles (kinds managed, user, project, local, memory). It calls $.session.root and $.fs.ancestors, drops files already present by path or content, and returns next({...e, instructionFiles}). The engine, not the plugin, renders claudeMd. A hook above this mod has the last word because sec-default continues prompt.context to the append tier.",
+          "sources": [
+            "mods/agents-md/README.md#L30-L41",
+            "mods/agents-md/hooks/register.ts#L99-L166",
+            "mods/sec-default/hooks/register.ts#L22-L24"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "On Read, agents-md resolves ~ via HOME or USERPROFILE (profile first when cwd contains a backslash), walks ancestors below the live $.session.root, and appends Frames.nestedFrame entries onto result.context. Per-loop delivery is a Map from agent id to a Set of paths, copied on agent.spawn when fork is true.",
+          "sources": [
+            "mods/agents-md/hooks/register.ts#L168-L304"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "telemetry register builds Sender in engine.create from the beneath engine: session.authorize/id/model/surfaces/cwd/repo, env.get of a large fixed name list, settings.read({source:'policy'}), fs.read/list/exists, process.run, clock.after/sleep, http.fetch, ui.log. log/mark call Entries.checkedFields/checkedMark then queue. flush runs on session.end, at BATCH_ROWS 100, or BATCH_WINDOW_MS 5000 after the first queued row.",
+          "sources": [
+            "mods/telemetry/hooks/register.ts#L39-L351",
+            "mods/telemetry/hooks/telemetry-of/telemetry-of.ts#L23-L190",
+            "mods/telemetry/hooks/batching/batch-rows/batch-rows.ts",
+            "mods/telemetry/hooks/batching/batch-window-ms/batch-window-ms.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Each telemetry batch re-reads switches. isAnalyticsOff returns true (send nothing) when NODE_ENV is test, DISABLE_TELEMETRY or CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC is set, DO_NOT_TRACK is truthy, an unmanaged third-party flag is on (CLAUDE_CODE_USE_BEDROCK, USE_VERTEX, USE_FOUNDRY, USE_ANTHROPIC_AWS, USE_ANTHROPIC_GOOGLE_CLOUD, USE_MANTLE) unless CLAUDE_CODE_PROVIDER_MANAGED_BY_HOST, a gateway is forced (CLAUDE_CODE_USE_GATEWAY or policy forceLoginMethod gateway / forceLoginGatewayUrl), or CLAUDE_CODE_CUSTOM_OAUTH_URL is set. Unreadable switches also send nothing. No authorization handle drops the batch.",
+          "sources": [
+            "mods/telemetry/hooks/is-analytics-off/is-analytics-off.ts",
+            "mods/telemetry/hooks/telemetry-of/telemetry-of.ts#L46-L140"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The POST body is Entries.batchOf(rows) with session id, model, userType ant if USER_TYPE is ant else external, and a context gathered once. HTTP is method POST, Content-Type application/json, x-service-name claude-code, auth the authorize() handle, URL INGEST_URL. Retriable statuses (server error, 408, 429) sleep RETRY_DELAY_MS 500 and post once more.",
+          "sources": [
+            "mods/telemetry/hooks/telemetry-of/telemetry-of.ts#L72-L140",
+            "mods/telemetry/hooks/entries/ingest-url.ts",
+            "mods/telemetry/hooks/batching/retry-delay-ms/retry-delay-ms.ts",
+            "mods/telemetry/tests/register.test.ts#L32-L48"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Identity for a row is JSON.parse of globalConfigPath: CLAUDE_CONFIG_DIR or HOME or USERPROFILE plus .claude.json. identityOf reads record.userID and record.oauthAccount. A missing, unreadable, or non-JSON file yields an empty identity; the address is kept on an internal build alone.",
+          "sources": [
+            "mods/telemetry/hooks/context/identity/global-config-path/global-config-path.ts",
+            "mods/telemetry/hooks/context/identity/identity-of.ts#L1-L40"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Once per session, off Windows, telemetry runs one shell script via process.run: uname -s, uname -r, uname -m, then command -v for npm/yarn/pnpm and bun/deno/node. The register.ts call uses timeout Context.PROBE_TIMEOUT_MS. Env vars that name secrets, people, or hosts are recorded only as set-or-not (IsAnalyticsOff.isEnvSet).",
+          "sources": [
+            "mods/telemetry/hooks/context/machine/probe-script/probe-script.ts",
+            "mods/telemetry/hooks/register.ts#L91-L100",
+            "mods/telemetry/README.md#L45-L52"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Diff pins a git backend with one rev-parse in the session cwd, then every later git child is argv ['git', --git-dir=<gitDir>, --work-tree=<toplevel>, ...argv] with cwd toplevel, GIT_CHILD_ENV, and Limits.GIT_TIMEOUT_MS. backendOf asks INSTALLED_BACKEND_PROBES first (empty set as shipped) then Git.gitBackendOf. The chosen base mode is store.get/store.set keyed by repository toplevel.",
+          "sources": [
+            "mods/diff/hooks/git/git-backend-of.ts#L13-L49",
+            "mods/diff/hooks/git/argv/pinned-lead-of/pinned-lead-of.ts",
+            "mods/diff/hooks/backend/backend-of.ts",
+            "mods/diff/hooks/backend/installed-backend-probes.ts",
+            "mods/diff/hooks/register.ts#L152-L168"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Diff UI data flow: ui.render of Pane calls $.ui.resolve for Box, Text, Button, Select, Code and returns Views.paneView. ui.scroll on the docked pane updates model.place and returns {} so the engine window stays still. prompt.submit appends Ask.fittedAskTextOf to e.context when an ask is armed and the text fits under Limits.PROMPT_CONTEXT_MAX_CHARS; otherwise it disarms and sets a status line.",
+          "sources": [
+            "mods/diff/hooks/register.ts#L710-L742",
+            "mods/diff/hooks/register.ts#L857-L876",
+            "mods/diff/hooks/register.ts#L967-L1012"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "security-guidance main() reads one JSON object from stdin (session_id, tool_name, tool_input, hook_event_name, cwd). PostToolUse edits run check_patterns and may print hookSpecificOutput.additionalContext. Stop and git commit/push call the LLM path. llm.py posts to ANTHROPIC_BASE_URL (default https://api.anthropic.com) plus /v1/messages. Debug state goes to ~/.claude/security/log.txt (override SECURITY_GUIDANCE_DEBUG_LOG), rotating at 1 MB, and is not uploaded.",
+          "sources": [
+            "plugins/security-guidance/hooks/security_reminder_hook.py#L2019-L2108",
+            "plugins/security-guidance/hooks/llm.py#L93-L99",
+            "plugins/security-guidance/hooks/llm.py#L420-L428",
+            "plugins/security-guidance/README.md#L85-L94"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Org guidance for reviews is concatenated from ~/.claude/claude-security-guidance.md, <cwd>/.claude/claude-security-guidance.md, and the .local.md variant, capped so the tail drops first. Custom regex/substring rules load from security-patterns.yaml/json on the same three-level search. extensibility.load_for_session(cwd) runs once per hook invocation and failures are non-fatal.",
+          "sources": [
+            "plugins/security-guidance/hooks/extensibility.py#L1-L33",
+            "plugins/security-guidance/hooks/security_reminder_hook.py#L2050-L2053",
+            "plugins/security-guidance/README.md#L62-L82"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "hookify PreToolUse reads stdin JSON, maps tool_name Bash to event bash and Edit/Write/MultiEdit to event file, load_rules(event), and prints RuleEngine.evaluate_rules JSON. Import or runtime errors print a systemMessage and still sys.exit(0), so a broken hook does not deny the tool.",
+          "sources": [
+            "plugins/hookify/hooks/pretooluse.py#L35-L70",
+            "plugins/hookify/core/rule_engine.py#L49-L94"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Issue label flow: a labeled event sets env LABEL and ISSUE_NUMBER; lifecycle-comment.ts looks up lifecycle and POSTs a comment to https://api.github.com/repos/${GITHUB_REPOSITORY}/issues/${n}/comments. sweep.ts pages /repos/{owner}/{repo}/issues, skips PRs, locked issues, assignees, and reactions +1 >= 10, then POSTs labels and later PATCH state closed. Triage is constrained to scripts/gh.sh, which forces GH_HOST=github.com and GH_REPO to a single owner/repo and rejects search qualifiers repo:, org:, and user:.",
+          "sources": [
+            "scripts/lifecycle-comment.ts#L9-L40",
+            "scripts/sweep.ts#L15-L74",
+            "scripts/gh.sh#L1-L80",
+            ".claude/commands/triage-issue.md#L14-L23"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Statsig is a side channel, not the product telemetry mod. log-issue-events.yml curls https://events.statsigapi.net/v1/log_event on issue opened with statsig-api-key from STATSIG_API_KEY and metadata issue_number, repository, title, author, created_at. claude-dedupe-issues.yml logs github_duplicate_comment_added the same way and skips if the key is empty. auto-close-duplicates.yml passes STATSIG_API_KEY into the Bun script.",
+          "sources": [
+            ".github/workflows/log-issue-events.yml#L1-L40",
+            ".github/workflows/claude-dedupe-issues.yml#L46-L85",
+            ".github/workflows/auto-close-duplicates.yml#L25-L31"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "behavior_traces": {
+      "summary": "Three product flows and two repo-ops flows are fully readable in-tree. Session start for agents-md only logs and then waits for prompt.context. /diff binds a host, registers the command, probes git lazily, and draws on ui.render. Telemetry attaches in engine.create and flushes on a timer or session.end. A new GitHub issue fans out to triage, dedupe, and an optional repository_dispatch. A file edit under security-guidance is pattern-matched before any LLM call.",
+      "claims": [
+        {
+          "claim": "agents-md startup: register() calls Modes.modeOf(options.instructionFiles) and Modes.legacyModeOf(options.projectInstructions). If the legacy key is set and the named mode is DEFAULT_MODE, the legacy mode wins. on('session.start') calls Telemetry.quietly($.telemetry.log(Telemetry.modeRowOf(...))) and maybe $.ui.log about projectInstructions, then next(e). Mode claude-md returns immediately. Mode managed-only registers one prompt.context filter and returns.",
+          "sources": [
+            "mods/agents-md/hooks/register.ts#L40-L88"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "agents-md primary load, in order: prompt.context reads e.instructionFiles; if isFallback, $.session.root(); $.fs.ancestors({names: Names.CLAUDE_NAMES}) to decide isClaudeProject; if not a Claude project, $.fs.ancestors({names: Names.AGENTS_NAMES}); Files.filesOf then Files.unseenFiles; once per load Telemetry.loadCountsOf, $.telemetry.log(loadRow), $.telemetry.mark(loadMark); $.ui.log the root files; Files.withProjectFiles; next({...e, instructionFiles}). Later Read calls attachesOnRead ($.env.get CLAUDE_CODE_SIMPLE and CLAUDE_CODE_DISABLE_ATTACHMENTS) then homeOf, Frames.absoluteOf, two ancestors walks, Frames.nestedFrame.",
+          "sources": [
+            "mods/agents-md/hooks/register.ts#L99-L280"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Diff session start, in order: on('session.start') builds a Host wrapping $.clock.now/after/every, $.process.run, $.fs.stat/list/read, $.store.get/set, isCheckpointing($.settings.read + $.env.get('CLAUDE_CODE_DISABLE_FILE_CHECKPOINTING')), $.session.messages/id/usage, $.ui.*, $.command.register, $.telemetry.mark/log. bind() sets sessionStartMs from usage().startedAt or clock.now(), sets pin.cwd, and $.command.register(COMMAND_SPEC). If the error matches Names.BUILTIN_HOLDS_PATTERN the plugin stays idle; other errors $.ui.log a sanitized reason. If host bound, openOnRestore runs unawaited, then next(e).",
+          "sources": [
+            "mods/diff/hooks/register.ts#L628-L686",
+            "mods/diff/README.md#L70-L73"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "/diff command run, in order: command.run matcher Names.COMMAND_NAME; if no host, next(e); pinBackend (probeBackend -> Backend.backendOf -> Git.gitBackendOf -> Probes.repositoryOf); if no backend, return NOT_IN_REPOSITORY_TEXT or GIT_UNANSWERED_TEXT; read e.presentation.isFullscreen and columns; PaneToggle.paneToggleOf; too-narrow returns RESIZE_TERMINAL_TEXT; openPane or closePane; fullscreen stores Names.STORE_OPEN_KEY and returns PANEL_SHOWN_TEXT or PANEL_HIDDEN_TEXT; inline open returns {}. Drawing is a later ui.render Pane: $.ui.resolve then Views.paneView.",
+          "sources": [
+            "mods/diff/hooks/register.ts#L111-L169",
+            "mods/diff/hooks/register.ts#L744-L792",
+            "mods/diff/hooks/git/git-backend-of.ts#L23-L49"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Diff after an edit, in order: tool.call matcher EDITING_TOOLS plus SHELL_TOOLS; result = await next(e); finally afterTool. afterTool counts a landed edit only when deny is unset and isError is not true. If the pane is open, scheduleRefresh. If the edit is on the main loop (e.agentId undefined), openOnFirstEdit. clear/resume calls next first, then unpin (drops backend, bumps pin.epoch, cancels the poll timer), resets model via PaneState.afterNewSession, and on resume calls openOnRestore.",
+          "sources": [
+            "mods/diff/hooks/register.ts#L878-L965"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Telemetry startup and send, in order: on('telemetry.*') Gate.served, with .catch Gate.caught; session.start stores e.isInteractive and next(e); engine.create awaits next(e), calls telemetryOf(deps), returns {...beneath, telemetry}. A log() runs checkedFields then queued(): push {fields, crypto.randomUUID(), ISO time}; if pending.length >= 100, flush(); else clock.after(5000). flush() calls sendingEnvironment -> isAnalyticsOff; deps.authorize(); gathered() context; postedWithRetry; session.end awaits sender.flush() then next(e).",
+          "sources": [
+            "mods/telemetry/hooks/register.ts#L19-L37",
+            "mods/telemetry/hooks/register.ts#L349-L351",
+            "mods/telemetry/hooks/telemetry-of/telemetry-of.ts#L107-L183",
+            "mods/telemetry/hooks/gate/served/served.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "sec-default tool.register order: if next.origin.tier is prepend or append, next.to(e, 'append'). Else if tier is user and Policy.decidedByPolicy(readPolicy(() => $.settings.read({source:'policy'})), Policy.hasMcpAllowlist) is true, return {deny: 'allowedMcpServers (managed): plugins outside policy may not add tools'}. Otherwise next(e). readPolicy is Policy.createPolicyMemo(POLICY_MEMO_MS). An unreadable policy fails closed. tool.list merges Policy.managedToolsRestored(policy, next.to(e,'append'), next(e)).",
+          "sources": [
+            "mods/sec-default/hooks/register.ts#L34-L60",
+            "mods/sec-default/hooks/policy/source.ts",
+            "mods/sec-default/hooks/tool-register-refusal/tool-register-refusal.ts",
+            "mods/sec-default/tests/register.test.ts#L9-L78"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "security-guidance PostToolUse order inside main(): if SECURITY_GUIDANCE_DISABLED, emit_metrics skip_reason -1 and exit 0. Parse stdin. extensibility.load_for_session(cwd). On PostToolUse, _maybe_bootstrap_agent_sdk_async. UserPromptSubmit -> handle_user_prompt_submit and return. Stop -> handle_stop_hook and return. Bash -> require _GIT_COMMIT_RE or _GIT_PUSH_RE, then _claim_bash_hook_once; commit is checked before push so 'git commit && git push' still reviews the commit once. Edit/Write/MultiEdit/NotebookEdit -> skip ~/.claude/plans, record_touched_path, extract_content_from_input, check_patterns, suppress baseline matches on Write, atomic_check_and_mark_warning, print metrics plus additionalContext.",
+          "sources": [
+            "plugins/security-guidance/hooks/security_reminder_hook.py#L2019-L2189"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New-issue GitHub path: issues.opened triggers, in separate workflows, claude-issue-triage.yml (prompt /triage-issue, concurrency group issue-triage-<number>, cancel-in-progress), claude-dedupe-issues.yml (prompt /dedupe), and issue-opened-dispatch.yml which calls gh api repos/${ISSUE_OPENED_DISPATCH_TARGET_REPO}/dispatches event_type issue_opened and exits 0 even when that call fails. Triage must not comment; it only adds or removes labels through edit-issue-labels.sh. Dedupe may comment only via comment-on-duplicates.sh, which reads the issue number from GITHUB_EVENT_PATH and hardcodes REPO=anthropics/claude-code.",
+          "sources": [
+            ".github/workflows/claude-issue-triage.yml#L1-L38",
+            ".github/workflows/claude-dedupe-issues.yml#L1-L35",
+            ".github/workflows/issue-opened-dispatch.yml",
+            ".claude/commands/triage-issue.md#L6-L8",
+            "scripts/comment-on-duplicates.sh#L1-L19"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Stale close path: sweep markStale computes cutoff from the stale lifecycle days, pages open issues sorted updated asc (max 10 pages), skips PRs, locked, assigned, already stale/autoclose, and +1 >= 10, then POSTs label stale. closeExpired for each lifecycle entry reads issue events for the last labeled time, skips if a non-bot comment arrived after the label, else POSTs CLOSE_MESSAGE and PATCHes state closed, state_reason not_planned. --dry-run logs only.",
+          "sources": [
+            "scripts/sweep.ts#L7-L168",
+            "scripts/issue-lifecycle.ts#L3-L38"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "testing_signals": {
+      "summary": "Automated tests exist only for the four mods and only under the Claude Code plugin test host, not Jest, Vitest, or pytest. CI typechecks always and runs tests only when the installed CLI advertises claude plugin test. Plugins, Bun issue scripts, Python hooks, and workflows have no unit tests in this repo. Diff has broad pure-function coverage; telemetry and sec-default cover their registers; agents-md has a single register suite.",
+      "claims": [
+        {
+          "claim": "The test framework is claude-code/testing: imports are describe, expect, mock, test, and tier from 'claude-code/testing'. A file calls tier('builtin') or tier('prepend'), then describe. Tests receive the engine's $ and an on registrar. mock.env, mock.clock (advance/settle), and mock.store answer nouns from memory. An unanswered call throws, naming the event.",
+          "sources": [
+            "mods/README.md#L22-L79",
+            "mods/types/claude-code.d.ts#L25-L40",
+            "mods/telemetry/tests/register.test.ts#L1-L6",
+            "mods/sec-default/tests/register.test.ts#L1-L6"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Test files live only under mods/*/tests. Counts: agents-md 1, telemetry 2 (register.test.ts, gate.test.ts), sec-default 2 (register.test.ts, policy/create-policy-memo.test.ts), diff 27 including register, git, views, pane-state, pane-toggle, classify, ask, backend, todos, and turns. Shared helpers are one-export files under tests/fixtures/. No test_*.py or *_test.py files exist.",
+          "sources": [
+            "mods/telemetry/tests/register.test.ts",
+            "mods/telemetry/tests/gate.test.ts",
+            "mods/sec-default/tests/register.test.ts",
+            "mods/diff/tests/register.test.ts",
+            "mods/diff/tests/git.test.ts",
+            "mods/agents-md/tests/register.test.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Telemetry register tests assert a real batch: two $.telemetry.log rows stay unsent until clock.advance(BATCH_WINDOW_MS), then one POST to the ingest URL with auth the-handle and headers Content-Type plus x-service-name claude-code, event_name tengu_plugin_again, and debug line 'telemetry: sent 2 row(s)'. A second test fills BATCH_ROWS and expects one post before the window, after clock.settle().",
+          "sources": [
+            "mods/telemetry/tests/register.test.ts#L10-L79"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "sec-default register tests seat the mod at tier prepend and stub settings.read. Under an MCP allowlist, a user plugin named mine does not register a tool while prepend suite and builtin bundled do. With no allowlist, mine registers. A denying user plugin does not block an org registration. A settings.read deny ('managed settings unreadable') yields no registrations.",
+          "sources": [
+            "mods/sec-default/tests/register.test.ts#L8-L78"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Diff unit tests cover pure pieces beside the register: fetch-diff, parse-numstat, parse-file-diff, repository-of, kind-walk-of, datings-of, is-safe-ref-name, head-key-of, is-noise-file, pane-toggle-of, header-totals-of, turn-diffs-of, todo-progress-of, fitted-ask-text-of, backend-of, pane-view, detail-view, code-blocks-of, truncate-start. They do not start a real git process; the host is mocked.",
+          "sources": [
+            "mods/diff/tests/git/fetch-diff.test.ts",
+            "mods/diff/tests/git/parse/parse-numstat.test.ts",
+            "mods/diff/tests/git/parse/parse-file-diff.test.ts",
+            "mods/diff/tests/classify/is-noise-file.test.ts",
+            "mods/diff/tests/backend/backend-of.test.ts",
+            "mods/diff/tests/views/pane-view.test.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CI for mods is only .github/workflows/mod-tests.yml. The test step is allowed to no-op when the published CLI has no plugin test subcommand, so a green check does not prove behavioural tests ran. No other workflow runs tsc or plugin tests.",
+          "sources": [
+            ".github/workflows/mod-tests.yml#L24-L40"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "plugins/security-guidance (security_reminder_hook.py is 2192 lines, llm.py is 1697) has no tests in-repo. hookify's RuleEngine and config_loader have no tests. scripts/sweep.ts, auto-close-duplicates.ts, lifecycle-comment.ts, and backfill-duplicate-comments.ts have no tests. Workflow shell in log-issue-events.yml is untested.",
+          "sources": [
+            "plugins/security-guidance/hooks/security_reminder_hook.py",
+            "plugins/security-guidance/hooks/llm.py",
+            "plugins/hookify/core/rule_engine.py",
+            "scripts/sweep.ts",
+            ".github/workflows/log-issue-events.yml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Local commands documented for mods are tsc -p mods/tsconfig.json and claude plugin test mods/<dir> (example: claude plugin test mods/diff). Running a mod from source is claude --plugin-dir mods/diff, which for sec-default cannot perform next.to because that move is refused outside a managed tier.",
+          "sources": [
+            "mods/README.md#L20-L26",
+            "mods/diff/README.md#L95-L101",
+            "mods/sec-default/README.md#L45-L54"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Plugin-dev documents hook and command testing as skills (plugins/plugin-dev/skills/hook-development/scripts/test-hook.sh and validate-hook-schema.sh, command-development references/testing-strategies.md) but those are authoring guides, not a CI job for this repo's plugins.",
+          "sources": [
+            "plugins/plugin-dev/skills/hook-development/SKILL.md",
+            "plugins/README.md#L63-L71"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "examples/hooks/bash_command_validator_example.py is a sample PreToolUse Bash hook that rewrites guidance for grep and find, not a test and not wired into any plugin hooks.json in this repo.",
+          "sources": [
+            "examples/hooks/bash_command_validator_example.py#L1-L46"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "risk_map": {
+      "summary": "The highest-impact code is the security-guidance Python hook (sends diffs to a model, shells out, writes under the home directory), telemetry (credentialed POST plus a shell probe and a read of .claude.json), and the GitHub workflows that let non-writers invoke Claude and that close issues. sec-default fails closed and can block every user-tier tool.register when policy cannot be read. Plugin and script paths are effectively untested. The function-hook API is marked early access.",
+      "claims": [
+        {
+          "claim": "Telemetry sends the session authorize() handle to https://api.anthropic.com/api/event_logging/v2/batch. It also reads CLAUDE_CODE_SESSION_ACCESS_TOKEN, CLAUDE_SESSION_INGRESS_TOKEN_FILE, and CLAUDE_CODE_WEBSOCKET_AUTH_FILE_DESCRIPTOR only as set-or-not, but it JSON.parses .claude.json via $.fs.read, which contains oauthAccount and userID. A shell probe runs uname and command -v through process.run.",
+          "sources": [
+            "mods/telemetry/hooks/entries/ingest-url.ts",
+            "mods/telemetry/hooks/telemetry-of/telemetry-of.ts#L107-L134",
+            "mods/telemetry/hooks/register.ts#L91-L100",
+            "mods/telemetry/hooks/context/identity/identity-of.ts",
+            "mods/telemetry/hooks/context/machine/probe-script/probe-script.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "security-guidance transmits changed paths, diff hunks, and file contents to the model endpoint, and the agentic commit reviewer may also Read/Grep/Glob further files. claude-security-guidance.md contents are appended to the prompt. The plugin shells out through bash ${CLAUDE_PLUGIN_ROOT}/hooks/sg-python.sh. It writes ~/.claude/security/log.txt. SessionStart runs ensure_agent_sdk.py with a 180s timeout and may bootstrap an SDK venv on remote pods.",
+          "sources": [
+            "plugins/security-guidance/README.md#L85-L94",
+            "plugins/security-guidance/hooks/hooks.json#L1-L12",
+            "plugins/security-guidance/hooks/security_reminder_hook.py#L2055-L2062",
+            "plugins/security-guidance/hooks/llm.py#L93-L99"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "security-guidance pattern checks include github_actions_workflow, which warns when editing .github/workflows YAML about untrusted github.event.* interpolation. That matters because this repo's own log-issue-events.yml interpolates ISSUE_TITLE into a curl JSON body with sed quote escaping, and issue-opened-dispatch.yml interpolates ISSUE_URL into gh api. The workflow file itself says values are passed via env to prevent injection, but the title is still expanded inside the shell -d string.",
+          "sources": [
+            "plugins/security-guidance/hooks/patterns.py#L31-L69",
+            ".github/workflows/log-issue-events.yml#L14-L40",
+            ".github/workflows/issue-opened-dispatch.yml#L16-L28"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "claude-issue-triage.yml and claude-dedupe-issues.yml set allowed_non_write_users to \"*\", so users without write access can trigger Claude Code Action. non-write-users-check.yml comments on PRs that add or change that key under .github/**, calling it a security risk, and does not block the PR.",
+          "sources": [
+            ".github/workflows/claude-issue-triage.yml#L36-L37",
+            ".github/workflows/claude-dedupe-issues.yml#L33-L34",
+            ".github/workflows/non-write-users-check.yml#L1-L44"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "issue-opened-dispatch.yml has permissions issues:read and actions:write, reads secrets ISSUE_OPENED_DISPATCH_TARGET_REPO and ISSUE_OPENED_DISPATCH_TOKEN, and on failure of gh api .../dispatches exits 0. The payload is only the issue URL, but a bad token or target fails silently.",
+          "sources": [
+            ".github/workflows/issue-opened-dispatch.yml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "sweep.ts closes issues using the workflow GITHUB_TOKEN (permissions issues:write). It treats any non-bot comment as human activity, so a bot other than type Bot would not save an issue, and a human emoji-only comment would. The +1 threshold is 10. close uses state_reason not_planned, which GitHub shows as not planned rather than completed.",
+          "sources": [
+            "scripts/sweep.ts#L92-L147",
+            ".github/workflows/sweep.yml#L8-L31",
+            "scripts/issue-lifecycle.ts#L38"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "sec-default fail-closed: if $.settings.read({source:'policy'}) is denied, decidedByPolicy treats policy as in force and a user-tier tool.register is refused. The test 'a policy that cannot be read counts as one in force' expects zero tools registered. Loading the plugin with --plugin-dir cannot call next.to, so a local copy does not reproduce org behaviour.",
+          "sources": [
+            "mods/sec-default/README.md#L12-L17",
+            "mods/sec-default/README.md#L45-L54",
+            "mods/sec-default/tests/register.test.ts#L66-L78"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "hookify compiles rule regexes with re.compile(pattern, re.IGNORECASE) and an lru_cache of 128, with no ReDoS screen. security-guidance's extensibility.py does skip custom regexes that look prone to catastrophic backtracking. hookify fail-open (exit 0) means a hang or a logic bug fails open only after the process ends; a catastrophic pattern can still stall the tool call until the 10s timeout.",
+          "sources": [
+            "plugins/hookify/core/rule_engine.py#L13-L24",
+            "plugins/hookify/hooks/hooks.json",
+            "plugins/security-guidance/hooks/extensibility.py#L29-L32",
+            "plugins/hookify/hooks/pretooluse.py#L62-L70"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "hookify prepends the parent of CLAUDE_PLUGIN_ROOT and the plugin root onto sys.path before importing hookify.core. A writable plugin root changes which modules import. pretooluse.py documents this as required for the package import.",
+          "sources": [
+            "plugins/hookify/hooks/pretooluse.py#L12-L27"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "comment-on-duplicates.sh hardcodes REPO=anthropics/claude-code and takes the issue number only from GITHUB_EVENT_PATH (.issue.number or .inputs.issue_number). A fork or a rename of the workflow repo would comment on the upstream repo if GH credentials allow it. Duplicate numbers are positional args after --potential-duplicates; other flags are rejected.",
+          "sources": [
+            "scripts/comment-on-duplicates.sh#L1-L39"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The function-hook surface is early access. claude-code.d.ts and mods/README.md both say the API may change between releases without notice, and the declaration file must be regenerated with /plugin-types rather than edited. mods/types/claude-code.d.ts is about 12990 lines, so a stale copy will typecheck against an API the installed CLI no longer implements.",
+          "sources": [
+            "mods/types/claude-code.d.ts#L1-L10",
+            "mods/README.md#L114"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Diff git children are the blast radius for a working tree: they run with --git-dir and --work-tree pinned so a later cd cannot retarget them, but they still execute the git binary via $.process.run. INSTALLED_BACKEND_PROBES is an empty module-level Set; a host that mutates it at load time changes which VCS is read, and nothing in-repo registers a non-git probe.",
+          "sources": [
+            "mods/diff/hooks/git/argv/pinned-lead-of/pinned-lead-of.ts",
+            "mods/diff/hooks/git/git-backend-of.ts#L26-L40",
+            "mods/diff/hooks/backend/installed-backend-probes.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": ".devcontainer runArgs add NET_ADMIN and NET_RAW to the sandbox container. That is broader than a normal dev container and is unrelated to the mods test job, which runs on ubuntu-latest without those capabilities.",
+          "sources": [
+            ".devcontainer/devcontainer.json#L11-L15",
+            ".github/workflows/mod-tests.yml#L13-L14"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Managed settings examples can disable the product's safety valves if copied blindly: settings-strict.json sets disableBypassPermissionsMode, allowManagedHooksOnly, allowManagedPermissionRulesOnly, and denies WebSearch and WebFetch. The README warns the snippets are community-maintained and may be unsupported. MDM templates sit above user settings and cannot be overridden.",
+          "sources": [
+            "examples/settings/settings-strict.json",
+            "examples/settings/README.md#L10-L11",
+            "examples/mdm/README.md#L21-L24"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "extension_points": {
+      "summary": "New product behaviour is supposed to arrive as a plugin (markdown command, agent, skill, or hooks.json command) registered in marketplace.json, or as another event subscription inside a mod's register. The engine nouns are extended by declaration merging on EngineInterface. Diff reserves a compile-time probe set for non-git VCS. security-guidance and hookify are the two user-file extension mechanisms. Organizations move sec-default by listing prependPlugins.",
+      "claims": [
+        {
+          "claim": "Marketplace registration is the plugins array in .claude-plugin/marketplace.json. Each entry has name, description, source (a ./plugins/<dir> path), and category. plugins/README.md specifies the folder contract: .claude-plugin/plugin.json, optional commands/, agents/, skills/, hooks/, .mcp.json, and README.md.",
+          "sources": [
+            ".claude-plugin/marketplace.json#L10-L16",
+            "plugins/README.md#L47-L71"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "A function-hook plugin's entry is hooks/hooks.json modules: [\"./register.ts\"] and export function register(on). diff, telemetry, agents-md, and sec-default all follow that shape. New events are additional on('event.name', matcher, handler) calls. The matcher objects in this repo include {component}, {command}, {id}, {plugin}, {requestId}, {tool}, {fork}, and {instructionFiles}.",
+          "sources": [
+            "mods/telemetry/hooks/hooks.json",
+            "mods/diff/hooks/register.ts#L644-L967",
+            "mods/agents-md/hooks/register.ts#L50-L179",
+            "mods/sec-default/hooks/register.ts#L20-L33"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Adding a noun on $ is a types contract: a .d.ts with no imports that exports the noun's types and uses declare module 'claude-code' { interface EngineInterface { ... } }. telemetry/plugin.json points types at ./types/index.d.ts. Callers include that folder via tsconfig; they must not copy the types.",
+          "sources": [
+            "mods/telemetry/types/index.d.ts#L1-L20",
+            "mods/telemetry/.claude-plugin/plugin.json",
+            "mods/README.md#L84-L112",
+            "mods/types/claude-code.d.ts#L82-L91"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "agents-md is configured without code changes: pluginConfigs['agents-md@builtin'].options.instructionFiles in user, --settings, or managed settings (not project .claude/settings.json). The four legal strings are listed on userConfig.options in plugin.json. An unknown hand-typed value is told once and read as the default.",
+          "sources": [
+            "mods/agents-md/.claude-plugin/plugin.json#L8-L21",
+            "mods/agents-md/README.md#L47-L67"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Organization seating of sec-default is the managed prependPlugins list. If that list is set, it replaces the whole prepend tier and the org must name sec-default@builtin to keep the default. Example from the README: [\"acme-guard@acme-tools\", \"sec-default@builtin\"].",
+          "sources": [
+            "mods/sec-default/README.md#L45-L52",
+            "mods/README.md#L10"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Non-git diff backends plug in by adding a BackendProbe to INSTALLED_BACKEND_PROBES before register runs. backendOf asks those probes in insertion order and only then Git.gitBackendOf. The set is empty as published; tests pass probes into backendOf directly instead of mutating the set.",
+          "sources": [
+            "mods/diff/hooks/backend/installed-backend-probes.ts",
+            "mods/diff/hooks/backend/backend-of.ts#L1-L29"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "security-guidance user extension is two additive files, discovered user then project then project-local: claude-security-guidance.md (prompt text, cannot suppress built-in findings) and security-patterns.yaml or .json (regex/substring rules merged with SECURITY_PATTERNS). Built-in patterns cannot be disabled individually; ENABLE_PATTERN_RULES=0 disables all pattern checks. Managed-settings delivery of these files is not supported.",
+          "sources": [
+            "plugins/security-guidance/hooks/extensibility.py#L1-L33",
+            "plugins/security-guidance/hooks/patterns.py#L29-L31"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "hookify rules are markdown files matching .claude/hookify.*.local.md with YAML frontmatter (name, enabled, event, action warn|block, tool_matcher, pattern or conditions[{field, operator, pattern}]). The RuleEngine is the evaluator. Examples live in plugins/hookify/examples (dangerous-rm.local.md, sensitive-files-warning.local.md, require-tests-stop.local.md, console-log-warning.local.md).",
+          "sources": [
+            "plugins/hookify/core/config_loader.py#L32-L84",
+            "plugins/hookify/core/rule_engine.py#L27-L44",
+            "plugins/README.md#L22"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Slash commands are markdown files under commands/ with YAML frontmatter (description, argument-hint, allowed-tools). Agents are markdown under agents/. Skills are SKILL.md plus references. frontend-design is a skill with no command, meant to be auto-invoked. Output-style plugins are only a SessionStart shell hook (explanatory-output-style and learning-output-style).",
+          "sources": [
+            "plugins/commit-commands/commands/commit.md#L1-L4",
+            "plugins/feature-dev/commands/feature-dev.md#L1-L4",
+            "plugins/frontend-design/skills/frontend-design/SKILL.md#L1-L6",
+            "plugins/explanatory-output-style/hooks/hooks.json",
+            "plugins/README.md#L19-L23"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Classic command hooks, as opposed to function hooks, are JSON in hooks/hooks.json with keys SessionStart, UserPromptSubmit, PreToolUse, PostToolUse, and Stop. Each hook has type command, a command string that may use ${CLAUDE_PLUGIN_ROOT}, optional timeout, matcher, if, asyncRewake, rewakeMessage. security-guidance, hookify, ralph-wiggum, and the two output-style plugins use this format. The four mods use the modules array format instead.",
+          "sources": [
+            "plugins/security-guidance/hooks/hooks.json",
+            "plugins/hookify/hooks/hooks.json",
+            "plugins/ralph-wiggum/hooks/hooks.json",
+            "mods/telemetry/hooks/hooks.json"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Issue-bot behaviour is extended by editing the lifecycle table, not by scattering day counts. scripts/issue-lifecycle.ts is the single source imported by sweep.ts and lifecycle-comment.ts. Triage label policy is the prompt .claude/commands/triage-issue.md. New gh operations must go through scripts/gh.sh's allowlist (issue view, issue list, search issues, label list) or a new capped script listed in CLAUDE_CODE_SCRIPT_CAPS.",
+          "sources": [
+            "scripts/issue-lifecycle.ts#L1-L3",
+            "scripts/sweep.ts#L3",
+            "scripts/lifecycle-comment.ts#L6",
+            ".claude/commands/triage-issue.md#L14-L23",
+            "scripts/gh.sh#L29-L36"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Enterprise policy extension points documented as examples, not code registries: permissions.deny/ask, allowManagedPermissionRulesOnly, allowManagedHooksOnly, strictKnownMarketplaces, sandbox.network.allowedDomains, and MDM payloads for com.anthropic.claudecode (macOS) and HKLM\\SOFTWARE\\Policies\\ClaudeCode\\Settings (Windows).",
+          "sources": [
+            "examples/settings/settings-strict.json",
+            "examples/settings/README.md#L12-L31",
+            "examples/mdm/README.md#L9-L19"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_handoff": {
+      "summary": "Edit one mod or one plugin at a time. Read that mod's README and register.ts before its leaves; the leaves are tiny single-export files. Do not hand-edit mods/types/claude-code.d.ts. Typecheck with tsc -p mods/tsconfig.json and test with claude plugin test if the CLI supports it. Never treat plugins/ and mods/ as the same system. Issue scripts share scripts/issue-lifecycle.ts and must keep the gh.sh allowlist. The hook API is early access.",
+      "claims": [
+        {
+          "claim": "Read first, in this order, for any mod change: mods/README.md (test kit and noun contracts), mods/types/claude-code.d.ts header (host rules), the mod's README.md, hooks/hooks.json, hooks/register.ts, and its plugin.json. For a plugin change: plugins/README.md, .claude-plugin/marketplace.json, the plugin README, and its hooks.json or commands/*.md. For issue bots: scripts/issue-lifecycle.ts, scripts/gh.sh, and the workflow that invokes them.",
+          "sources": [
+            "mods/README.md",
+            "mods/types/claude-code.d.ts#L1-L21",
+            "plugins/README.md",
+            ".claude-plugin/marketplace.json",
+            "scripts/issue-lifecycle.ts",
+            "scripts/gh.sh"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Safe edit boundary for mods: files under that mod's hooks/ and tests/, plus a one-line export in an index.ts that already re-exports the folder. Do not add the mod to marketplace.json. Do not change EngineInterface except by editing the owning mod's types/index.d.ts (today only telemetry has one). Do not edit claude-code.d.ts; regenerate with /plugin-types.",
+          "sources": [
+            "mods/README.md#L15-L20",
+            "mods/README.md#L84-L114",
+            "mods/types/claude-code.d.ts#L1-L8",
+            "mods/telemetry/types/index.d.ts#L1-L9"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Style in mods is one concept per file, re-exported through index.ts (often with a .js specifier in the export path, for example export * from './has-mcp-allowlist.js'). Tests import the folder default (import Hooks from '../hooks', import Fixtures from './fixtures'). Match that. JSX, when present under diff views, uses the h factory from tsconfig, not React.",
+          "sources": [
+            "mods/tsconfig.json",
+            "mods/sec-default/hooks/policy/index.ts",
+            "mods/telemetry/tests/register.test.ts#L1-L4",
+            "mods/diff/hooks/names/index.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Tests to run after a mod edit: npx or global tsc -p mods/tsconfig.json, then CLAUDE_CODE_ENABLE_FUNCTION_HOOKS=1 claude plugin test mods/<name>. Diff's suite is large; a register change needs mods/diff/tests/register.test.ts plus the pure tests for the helper you touched. Telemetry changes need register.test.ts and gate.test.ts. sec-default changes need tests/register.test.ts. If plugin test is missing, say so; CI will skip rather than fail.",
+          "sources": [
+            ".github/workflows/mod-tests.yml#L24-L40",
+            "mods/README.md#L22-L26",
+            "mods/telemetry/tests/gate.test.ts",
+            "mods/diff/tests/register.test.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Trap: $.telemetry may be absent. agents-md wraps calls in Telemetry.quietly and diff's recorder drops rows when the noun is missing. A new mod must do the same. Calling $.telemetry from tier user or prepend is refused by Gate.served (SERVED_TIERS is only builtin and core). A test that calls it must seat a provider plugin or on('telemetry.log').",
+          "sources": [
+            "mods/agents-md/README.md#L107-L111",
+            "mods/diff/README.md#L92-L93",
+            "mods/telemetry/hooks/gate/served/served.ts",
+            "mods/telemetry/hooks/gate/served-tiers/served-tiers.ts",
+            "mods/README.md#L102-L107"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Trap: diff command registration fails soft when the built-in still owns /diff (BUILTIN_HOLDS_PATTERN). The plugin then has host === null and command.run calls next(e). Auto-open also no-ops without host. Do not assume register throwing means the pane works. Git must stay pinned with pinnedLeadOf; do not spawn git with a bare argv after the first rev-parse.",
+          "sources": [
+            "mods/diff/hooks/register.ts#L628-L641",
+            "mods/diff/hooks/register.ts#L744-L747",
+            "mods/diff/hooks/git/git-backend-of.ts#L26-L37",
+            "mods/diff/hooks/git/argv/pinned-lead-of/pinned-lead-of.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Trap: agents-md option migration. instructionFiles set to the default cannot be told from unset, so a stored projectInstructions value still applies (isLegacyRead). Setting instructionFiles to anything else ignores the legacy key and logs that it should be removed. Project .claude/settings.json is not read for plugin options. --bare sets CLAUDE_CODE_SIMPLE and disables nested Read attachments, but the walk itself finds nothing when the engine loads no instruction files.",
+          "sources": [
+            "mods/agents-md/hooks/register.ts#L40-L48",
+            "mods/agents-md/hooks/register.ts#L271-L279",
+            "mods/agents-md/README.md#L63-L74"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Trap: sec-default next.to is refused outside a managed tier, so claude --plugin-dir mods/sec-default does not exercise the security property. Tests must tier('prepend'). Policy source is exactly {source:'policy'}. Empty allowedMcpServers still counts as an allowlist because hasMcpAllowlist only checks Array.isArray.",
+          "sources": [
+            "mods/sec-default/README.md#L45-L54",
+            "mods/sec-default/tests/register.test.ts#L6",
+            "mods/sec-default/hooks/policy/source.ts",
+            "mods/sec-default/hooks/policy/has-mcp-allowlist.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Trap: security-guidance Bash routing. hooks.json fires the script once per matching if, so git commit && git push starts two processes with the same tool_use_id. main() must keep the commit check first and _claim_bash_hook_once must keep the second spawn on bash_hook_dedup. Reversing the order drops commit review. Plans under ~/.claude/plans are skipped. SECURITY_GUIDANCE_DISABLE must still emit metrics or asyncRewake Stop hooks hang.",
+          "sources": [
+            "plugins/security-guidance/hooks/security_reminder_hook.py#L2023-L2108",
+            "plugins/security-guidance/hooks/security_reminder_hook.py#L2116-L2120",
+            "plugins/security-guidance/hooks/hooks.json#L35-L68"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Trap: issue automation. Do not call gh directly from triage or dedupe prompts; scripts/gh.sh exits on any other subcommand or flag. Do not duplicate timeout numbers; import lifecycle. comment-on-duplicates.sh only works when GITHUB_EVENT_PATH is set and the repo is anthropics/claude-code. CLAUDE_CODE_SCRIPT_CAPS in the workflow must name any new script or the action will refuse it. Sweep and lifecycle comments need GITHUB_TOKEN.",
+          "sources": [
+            "scripts/gh.sh#L29-L36",
+            ".claude/commands/triage-issue.md#L14-L23",
+            "scripts/comment-on-duplicates.sh#L11-L19",
+            ".github/workflows/claude-issue-triage.yml#L33-L34",
+            "scripts/issue-lifecycle.ts#L1-L3"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "There is no root lint, format, or unit-test script. Prettier and ESLint appear only as VS Code settings inside .devcontainer. Python files have no pyproject.toml or requirements.txt in the reviewed tree; security-guidance vendors its interpreter selection in sg-python.sh and ensure_agent_sdk.py. Do not npm install inside the repo; CI installs the CLI globally.",
+          "sources": [
+            ".devcontainer/devcontainer.json#L24-L29",
+            ".github/workflows/mod-tests.yml#L21-L23",
+            "plugins/security-guidance/hooks/hooks.json#L9",
+            "plugins/security-guidance/README.md#L19-L23"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Docs to keep consistent when behaviour changes: the mod's own README (it is the contract for which events are hooked and which $ nouns are called), plugins/README.md table if a marketplace plugin's commands change, and marketplace.json description fields. CHANGELOG.md in the repo root records CLI releases and is not a substitute for those local READMEs. SECURITY.md only points at HackerOne.",
+          "sources": [
+            "mods/diff/README.md#L68-L90",
+            "mods/telemetry/README.md#L58-L73",
+            "plugins/README.md#L11-L27",
+            "SECURITY.md"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_prompt": "You are working in the public anthropics/claude-code GitHub repository. This tree is not the Claude Code CLI. There is no package.json and no server. Users install the product with the curl/Homebrew/WinGet installers (npm i -g @anthropic-ai/claude-code is deprecated) and then run claude. What you can edit here is four built-in function-hook mods under mods/, thirteen marketplace plugins under plugins/, Bun issue-automation scripts, GitHub workflows, and enterprise examples.\n\nMods (diff, telemetry, agents-md, sec-default) are TypeScript plugins the CLI compiles into the binary. Each has .claude-plugin/plugin.json, hooks/hooks.json with modules pointing at ./register.ts, and export function register(on, options?) that subscribes to engine events as ($, e, next). Import types from 'claude-code'. Declarations live in mods/types/claude-code.d.ts, generated by /plugin-types for Claude Code 2.1.277. Do not hand-edit that file. Hooks run with no DOM and no Node: ES modules only, JSX factory h and Fragment. Typecheck with tsc -p mods/tsconfig.json (ES2023, strict, noUncheckedIndexedAccess, noEmit). Test with CLAUDE_CODE_ENABLE_FUNCTION_HOOKS=1 claude plugin test mods/<name>. The kit is claude-code/testing (describe, test, expect, tier, mock). CI is .github/workflows/mod-tests.yml; if the installed CLI has no plugin test, that workflow skips tests and exits 0. A green check does not prove tests ran.\n\nSeating matters. sec-default sits outermost in the prepend tier on managed or Team/Enterprise machines unless managed prependPlugins replaces that tier. It only calls $.settings.read({ source: 'policy' }) and next.to(e, 'append'). It denies user-tier tool.register while allowedMcpServers is an array (empty counts). Unreadable policy fails closed. next.to does not work via --plugin-dir. telemetry's engine.create adds $.telemetry and gates telemetry.* to tiers builtin and core. log emits tengu_plugin_<event>; mark emits feature events. Rows POST to https://api.anthropic.com/api/event_logging/v2/batch with the session authorize() handle after 5000ms or at 100 rows, and on session.end. Nothing is sent when DISABLE_TELEMETRY, CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC, DO_NOT_TRACK, NODE_ENV=test, an unmanaged Bedrock/Vertex/Foundry/Mantle flag, a gateway, or CLAUDE_CODE_CUSTOM_OAUTH_URL is set. Snake_case only; free text is refused. Identity is read from .claude.json. agents-md defaults to instructionFiles claude-md-or-agents-md and still honours legacy projectInstructions while the new key is unset. It hooks session.start, prompt.context, agent.spawn fork, and tool.call Read. Nested attaches are off when CLAUDE_CODE_SIMPLE or CLAUDE_CODE_DISABLE_ATTACHMENTS is set. diff registers slash command diff, draws a Pane via $.ui.resolve, and runs git with --git-dir and --work-tree after one rev-parse. INSTALLED_BACKEND_PROBES is empty. Auto-open watches Edit, Write, and NotebookEdit on the main loop; Bash and PowerShell only refresh.\n\nplugins/ is a different system: markdown commands, agents, and skills, plus classic hooks.json command hooks. They are listed in .claude-plugin/marketplace.json. Do not put mods there. security-guidance (plugins/security-guidance/hooks/security_reminder_hook.py) is the largest executable: regex warnings on Edit/Write/MultiEdit/NotebookEdit, an LLM Stop review to ANTHROPIC_BASE_URL/v1/messages (default api.anthropic.com), and agentic review on git commit and git push. Keep commit matching before push, and keep _claim_bash_hook_once, or compound commands drop the commit review. Kill switch SECURITY_GUIDANCE_DISABLE=1 must still print metrics. It writes ~/.claude/security/log.txt. hookify loads .claude/hookify.*.local.md and can deny PreToolUse; on error it exits 0. ralph-wiggum's Stop hook continues a loop.\n\nIssue ops: .claude/commands/triage-issue.md and dedupe.md are the prompts workflows pass to anthropics/claude-code-action. They may only call scripts/gh.sh (issue view, issue list, search issues, label list; flags --comments --state --limit --label; search must not contain repo:, org:, or user:) and the label or comment scripts. Day counts live only in scripts/issue-lifecycle.ts (invalid 3, needs-repro 7, needs-info 7, stale 14, autoclose 14; upvote threshold 10). sweep.ts, lifecycle-comment.ts, and auto-close-duplicates.ts are Bun. Claude workflows use Workload Identity Federation vars ANTHROPIC_*, not a static API key. Triage and dedupe set allowed_non_write_users to \"*\"; .github/workflows/non-write-users-check.yml only comments when a PR touches that key. comment-on-duplicates.sh hardcodes REPO=anthropics/claude-code and reads the issue number from GITHUB_EVENT_PATH.\n\nWork in one mod or one plugin. Read that README and register.ts before the leaf files. Leaf files export one symbol and are re-exported through index.ts, sometimes with a .js specifier. Tests that leave an engine call unanswered throw. If you add analytics, wrap them so a missing $.telemetry is ignored, and do not call it from a user-tier plugin. Do not edit secrets, managed-settings examples as if they were production, or the generated d.ts. There are no Python unit tests and no tests for scripts/ or plugins/."
+  },
+  "analysis": {
+    "agent": "grok",
+    "model": "cli:grok",
+    "runtime_ms": 430956,
+    "cost_usd": null,
+    "collected_at": "2026-09-22T12:19:13.531Z"
   }
 }

@@ -22952,5 +22952,597 @@
         ]
       }
     ]
+  },
+  "report": {
+    "overview": "Codex is OpenAI's local coding-agent CLI and library: a Rust workspace (`codex-rs`) that runs multi-turn agent sessions against model providers, executes tools under an OS sandbox and approval policy, and persists transcripts as rollout JSONL. Users reach it through the `codex` binary (interactive TUI, `exec`, `resume`, MCP, app-server), a thin Node wrapper `@openai/codex`, and TypeScript SDKs. Distinctive pieces are the protocol-typed event stream, execpolicy/sandbox enforcement, and a large crate split that keeps the agent loop, TUI, and app-server JSON-RPC API apart.",
+    "system_map": {
+      "summary": "The repo is a pnpm/Bazel monorepo whose product lives in `codex-rs`. The `codex-cli` crate's `main.rs` dispatches subcommands into the TUI, non-interactive exec, MCP server, and app-server. `codex-core` owns the agent session, config, tools, models, and rollout persistence. `codex-app-server` exposes a JSON-RPC v2 API over stdio. Builds are Cargo via `just` plus Bazel CI. Storage is local files: `~/.codex/config.toml`, auth.json, and session rollout JSONL under `~/.codex/sessions`. External edges are the Responses/Chat Completions APIs, MCP servers, execve wrappers, and OS sandboxes (Seatbelt on macOS, bubblewrap/Landlock on Linux, restricted tokens on Windows).",
+      "claims": [
+        {
+          "claim": "The published Node package `@openai/codex` is a launcher, not the agent. Its bin is `bin/codex.js`, which selects a native Rust binary by target triple and spawns it.",
+          "sources": [
+            "codex-cli/package.json",
+            "codex-cli/bin/codex.js"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The Rust CLI entrypoint is `codex-cli/src/main.rs`. `MultitoolCli` parses subcommands and `cli_main` matches `Tui`, `Exec`, `Mcp`, `AppServer`, `Resume`, `Fork`, `Review`, `Login`, `Sandbox`, and others before calling `arg0_dispatch_or_else`.",
+          "sources": [
+            "codex-rs/cli/src/main.rs#L1-L120",
+            "codex-rs/cli/src/main.rs#L400-L750"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Workspace membership and shared deps live in `codex-rs/Cargo.toml` (package version 0.0.0, edition 2024, resolver 3). Feature flags such as `vt100-tests`, `experimental-service-tier-flag`, and `login-server-sandbox` are declared on the workspace package.",
+          "sources": [
+            "codex-rs/Cargo.toml#L1-L80",
+            "codex-rs/Cargo.toml#L90-L250"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CI's blocking workflow `.github/workflows/blocking-ci.yml` runs fmt, package-manager pinning, a `cargo-shear` workspace check, and Bazel tests via `.github/actions/bazel-ci`. `bazel.yml` is the reusable workflow that sets `CARGO_BAZEL_REPIN` and calls `bazel test` with a target from `bazel-targets.txt`.",
+          "sources": [
+            ".github/workflows/blocking-ci.yml",
+            ".github/workflows/bazel.yml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Model traffic goes through `ModelClient` in `codex-rs/core/src/client.rs`, which selects Responses API vs Chat Completions from `WireApi` and retries with `max_retries`. Auth tokens come from `AuthManager` backed by `~/.codex/auth.json` (ChatGPT OAuth or API key).",
+          "sources": [
+            "codex-rs/core/src/client.rs#L1-L160",
+            "codex-rs/login/src/auth/manager.rs",
+            "docs/authentication.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The app-server is a separate binary (`codex-app-server`) speaking JSON-RPC over stdio. `MessageProcessor` dispatches `thread/start`, `thread/resume`, `thread/fork`, `turn/start`, `turn/steer`, and `review/start` into `CodexMessageProcessor` and thread handlers.",
+          "sources": [
+            "codex-rs/app-server/src/lib.rs#L1-L120",
+            "codex-rs/app-server/README.md",
+            "codex-rs/app-server-protocol/src/protocol/common.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The interactive UI is the `codex-tui` crate. `tui/src/lib.rs` runs `App::run`, which owns the ratatui terminal, the `ChatWidget`, and a `FrameRequester`. Styling rules are documented in `codex-rs/tui/styles.md` and enforced by AGENTS.md.",
+          "sources": [
+            "codex-rs/tui/src/lib.rs#L1-L80",
+            "codex-rs/tui/src/app.rs",
+            "codex-rs/tui/styles.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Sandboxing is platform-split. macOS uses Seatbelt profiles from `codex-rs/sandboxing/src/seatbelt.rs`; Linux uses bubblewrap plus Landlock (`codex-rs/linux-sandbox` and `codex-rs/sandboxing`); Windows uses a restricted token helper. Policy selection is `SandboxPolicy` (`read-only`, `workspace-write`, `danger-full-access`) resolved in `core/src/sandboxing/mod.rs`.",
+          "sources": [
+            "codex-rs/sandboxing/src/seatbelt.rs",
+            "codex-rs/core/src/sandboxing/mod.rs",
+            "docs/sandbox.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The TypeScript SDK (`sdk/typescript`) is a thin client of the app-server protocol. `Codex` spawns the CLI with `app-server --stdio`, speaks JSON-RPC, and exposes `startThread`, `resumeThread`, and `Thread.run`. A Python SDK lives under `sdk/python`.",
+          "sources": [
+            "sdk/typescript/src/codex.ts",
+            "sdk/typescript/README.md",
+            "sdk/python/pyproject.toml"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "feature_catalog": {
+      "summary": "User-facing surface is the `codex` multitool plus the app-server JSON-RPC API and the SDK wrappers. Interactive mode is a full-screen TUI with composer, approval overlays, and slash commands. Headless mode is `codex exec` (and `codex review`) for scripts and CI. Account features cover ChatGPT device-code login, API-key login, and `codex login`. Tooling includes shell, unified exec, apply_patch, MCP servers, skills, web search, and an execpolicy command allow/deny language. Session features include resume, fork, compact, and forking a thread for review.",
+      "claims": [
+        {
+          "claim": "`codex` with no subcommand starts the interactive TUI. `codex exec` (alias `e`) runs `codex_exec::run_main` for non-interactive prompts, with `--json` JSONL events, `--output-schema`, `--sandbox`, `--full-auto`, and image inputs.",
+          "sources": [
+            "codex-rs/cli/src/main.rs#L500-L700",
+            "codex-rs/exec/src/lib.rs#L1-L100",
+            "docs/exec.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`codex resume` and `codex fork` reopen a rollout. Resume continues the selected session; fork copies history into a new thread id. Both are CLI subcommands that flow into core session startup with a rollout path.",
+          "sources": [
+            "codex-rs/cli/src/main.rs",
+            "codex-rs/tui/src/lib.rs",
+            "docs/exec.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`codex mcp` serves the agent as an MCP server (`mcp serve`) and manages configured MCP servers (`mcp add`, `list`, `get`, `remove`). Server configs live in config.toml under `[mcp_servers.<id>]` with stdio or streamable HTTP transport.",
+          "sources": [
+            "codex-rs/cli/src/main.rs",
+            "codex-rs/core/src/config/mod.rs",
+            "docs/config.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Login is `codex login` / `codex logout`. ChatGPT login uses a device-code or browser OAuth flow implemented in `codex-login`; API-key login stores a key in `auth.json` under `CODEX_HOME`. `codex login status` reports the active mode.",
+          "sources": [
+            "codex-rs/login/src/auth/manager.rs",
+            "docs/authentication.md",
+            "codex-rs/cli/src/main.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Slash commands in the TUI are registered in `tui/src/slash_command.rs` (`SlashCommand` enum: model, personality, approvals, review, new, resume, fork, compact, diff, mention, mcp, skills, logout, quit, and others) and rendered by the composer popup.",
+          "sources": [
+            "codex-rs/tui/src/slash_command.rs#L1-L200",
+            "codex-rs/tui/src/bottom_pane/chat_composer.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Approval modes are `untrusted`, `on-request`, and `never`, mapped to `AskForApproval`. Sandbox presets exposed to users are read-only, workspace-write, and danger-full-access. `--full-auto` selects workspace-write plus on-request (or never, depending on the preset path).",
+          "sources": [
+            "docs/sandbox.md",
+            "codex-rs/protocol/src/protocol.rs",
+            "codex-rs/core/src/config/mod.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The SDK `Thread` API mirrors app-server turns. `thread.start()` sends `thread/start`; `thread.run(prompt)` sends `turn/start` and yields streamed items (agent message, command execution, file change, mcp tool call, error). `CodexOptions` selects `apiKey`, `baseUrl`, `codexPathOverride`, and config overrides.",
+          "sources": [
+            "sdk/typescript/src/codex.ts",
+            "sdk/typescript/src/thread.ts",
+            "sdk/typescript/README.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Cloud/environment tasks are represented by `codex exec` environment options and the `environment` module, including `codex cloud` style tasks that delegate to a remote environment when configured. Local exec remains the default.",
+          "sources": [
+            "codex-rs/exec/src/lib.rs",
+            "docs/exec.md",
+            "codex-rs/cli/src/main.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`codex sandbox` can run a single command under the Linux/macOS sandbox helper for debugging policy, separate from an agent turn. The Linux helper binary is `codex-linux-sandbox`.",
+          "sources": [
+            "docs/sandbox.md",
+            "codex-rs/linux-sandbox/src/lib.rs",
+            "codex-rs/cli/src/main.rs"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "data_flow": {
+      "summary": "A user prompt enters either as a TUI `Op::UserTurn`, an exec submit, or an app-server `turn/start` params object. Core enqueues it on the session submission channel. `submission_loop` turns it into model input: prior rollout items plus a bounded developer/user context built from `core/context` fragments. The model streams Responses events; tool calls are dispatched by the tool router, their outputs are appended as function-call items, and the loop continues until the turn completes. Side effects (shell stdout, patch files, MCP results) are approved, sandboxed, then written back into the event stream and the rollout JSONL. Clients render `Event` values; nothing rewrites history except explicit compact, which summarizes and replaces older items under a size cap.",
+      "claims": [
+        {
+          "claim": "`ModelClient::stream` posts to `/responses` or the Chat Completions endpoint. SSE frames are parsed into internal response items (`ResponseItem`) that the session converts into protocol events and rollout records.",
+          "sources": [
+            "codex-rs/core/src/client.rs#L1-L220",
+            "codex-rs/core/src/client.rs#L400-L700"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Shell output crosses a sandbox boundary. The orchestrator builds a `SandboxCommand`, asks the approval policy (`AskForApproval` plus execpolicy), then `spawn`s via the platform sandbox. Stdout/stderr are captured, truncated, and emitted as `ExecCommandEnd`.",
+          "sources": [
+            "codex-rs/core/src/sandboxing/mod.rs",
+            "codex-rs/core/src/tools/router.rs",
+            "docs/execpolicy.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The TUI does not own business state. `ChatWidget` subscribes to core `Event`s, maps them to ratatui lines, and submits `Op`s when the composer submits or an approval overlay resolves. Transcript rendering helpers live in `tui/src/history_cell.rs` and wrapping helpers in `tui/src/wrapping.rs`.",
+          "sources": [
+            "codex-rs/tui/src/chatwidget.rs",
+            "codex-rs/tui/src/app.rs",
+            "codex-rs/tui/src/wrapping.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Auth data flows from `auth.json` or `CODEX_API_KEY` into `AuthManager::auth()`, which attaches a bearer token on `ModelClient` requests. Tokens are refreshed by the login crate; the CLI never puts the API key on the command line of the model request.",
+          "sources": [
+            "codex-rs/login/src/auth/manager.rs",
+            "docs/authentication.md",
+            "codex-rs/core/src/client.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Config override precedence is CLI flags over profile over project `.codex/config.toml` over user `config.toml` over system config. The resolved `Config` is the only object the session reads after startup.",
+          "sources": [
+            "codex-rs/core/src/config/mod.rs",
+            "docs/config.md",
+            "docs/example-config.md"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "behavior_traces": {
+      "summary": "Three flows dominate. Startup parses CLI args, loads config and auth, builds a Codex session, and either enters the TUI event loop or the exec one-shot loop. A primary turn submits user input, streams a model response, dispatches tool calls under approval and sandbox, and records rollout items until `TurnComplete`. Persistence is continuous during the turn (rollout appends) and finalized on shutdown or resume. App-server clients follow the same core path after a JSON-RPC translation step.",
+      "claims": [
+        {
+          "claim": "Process startup: `cli::main` → `arg0_dispatch_or_else` (so sandbox helpers can re-exec under a different argv0) → `MultitoolCli::parse` → match on `Subcommand`. For the default path, `tui_main` loads config, builds `TuiConfig`, and calls `codex_tui::run_main` → `App::run`.",
+          "sources": [
+            "codex-rs/cli/src/main.rs#L1-L120",
+            "codex-rs/tui/src/lib.rs#L1-L120",
+            "codex-rs/tui/src/app.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Exec one-shot: `codex exec` → `exec::run_main` builds a `Codex` with the prompt as the initial `Op::UserTurn`, reads the event channel until `TurnComplete` or `Error`, prints human text or JSONL, and exits non-zero on error. `--output-schema` validates the final message.",
+          "sources": [
+            "codex-rs/exec/src/lib.rs#L1-L200",
+            "docs/exec.md",
+            "codex-rs/cli/src/main.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Tool call with approval: model emits a function call → router looks up the handler → if policy is `on-request` and execpolicy does not pre-approve, core emits `ExecApprovalRequest` → TUI modal or exec auto-decision returns `Op::ExecApproval` → sandbox spawn → `ExecCommandEnd` → function output appended → model continues.",
+          "sources": [
+            "codex-rs/core/src/tools/router.rs",
+            "codex-rs/protocol/src/protocol.rs",
+            "codex-rs/tui/src/chatwidget.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "SDK run: `Codex` constructor starts `codex app-server` with `--stdio` → `initialize` JSON-RPC → `startThread` calls `thread/start` → `run` calls `turn/start` and demultiplexes notifications into typed `ThreadEvent`s until `turn/completed`.",
+          "sources": [
+            "sdk/typescript/src/codex.ts",
+            "sdk/typescript/src/thread.ts",
+            "sdk/typescript/README.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Login flow: `codex login` → login crate starts device-code or localhost callback → tokens written via `AuthManager` to `$CODEX_HOME/auth.json` with mode `chatgpt` or `apikey`. Later `ModelClient` calls `AuthManager::auth()` on each request and refreshes when the access token is near expiry.",
+          "sources": [
+            "docs/authentication.md",
+            "codex-rs/login/src/auth/manager.rs",
+            "codex-rs/core/src/client.rs"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "testing_signals": {
+      "summary": "Rust tests use `cargo nextest` through `just test -p <crate>`, not raw `cargo test`. Core favors integration tests in `codex-rs/core/tests` (and `core/suite`) built on `core_test_support::responses`, which mounts SSE fixtures with `wiremock` and drives a `TestCodex`. The TUI uses `insta` snapshot tests. App-server tests speak the public JSON-RPC API via `TestAppServer`. CI is Bazel-first (`blocking-ci.yml`, `bazel.yml`) plus `cargo-deny`, codespell, and CLA checks. Python tooling under `scripts/` has its own pytest setup. Large areas — real OS sandbox integration, live provider calls, and Seatbelt-under-Seatbelt — are intentionally skipped when `CODEX_SANDBOX` or `CODEX_SANDBOX_NETWORK_DISABLED` is set.",
+      "claims": [
+        {
+          "claim": "Core integration tests construct a mock HTTPS Responses server. The canonical pattern is `responses::mount_sse_once` + `ev_response_created` / `ev_function_call` / `ev_completed`, then `codex.submit(Op::UserTurn)` and assertions on `ResponseMock::single_request()`.",
+          "sources": [
+            "AGENTS.md",
+            "codex-rs/core/tests/suite"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`TestCodexBuilder::build_with_auto_env()` is the default constructor so tests work when the app-server and exec OS differ. `wait_for_event` is preferred over timeout variants; `mount_sse_once` is preferred over match/sequence helpers.",
+          "sources": [
+            "AGENTS.md",
+            "codex-rs/core/tests"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "TUI tests are snapshot-based with `insta`. UI changes must update snapshots via `just test -p codex-tui`, then `cargo insta pending-snapshots -p codex-tui` and `cargo insta accept -p codex-tui`. Helpers live beside views; `vt100` tests are feature-gated (`vt100-tests`).",
+          "sources": [
+            "AGENTS.md",
+            "codex-rs/tui/src/snapshots",
+            "codex-rs/Cargo.toml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New test modules must be sibling files included with `#[cfg(test)] #[path = \"..._tests.rs\"] mod tests;`, not inline modules. Assertions should use `pretty_assertions::assert_eq` on whole objects. Tests must not mutate process environment.",
+          "sources": [
+            "AGENTS.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Sandbox and network tests early-exit when `CODEX_SANDBOX=seatbelt` or `CODEX_SANDBOX_NETWORK_DISABLED=1`. Agents running under the Codex sandbox are expected to skip those tests rather than weaken the checks. The env-var names are centralized and must not be edited casually.",
+          "sources": [
+            "AGENTS.md",
+            "codex-rs/core/src/sandboxing/mod.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CI blocking path is `.github/workflows/blocking-ci.yml`: `cargo fmt -- --check`, a package-manager pin check, `cargo shear` (which builds with `bazel build //...`), and the reusable Bazel test workflow. `cargo-deny.yml` audits licenses and advisories.",
+          "sources": [
+            ".github/workflows/blocking-ci.yml",
+            ".github/workflows/cargo-deny.yml",
+            ".github/workflows/bazel.yml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Python under `scripts/` is a separate uv project (`codex-scripts`, requires Python >= 3.12). It is used for release and maintenance scripts, not the agent loop. `python-runtime-build.yml` and `python-runtime-release.yml` build the standalone Python runtime shipped for some Codex features.",
+          "sources": [
+            "scripts/pyproject.toml",
+            ".github/workflows/python-runtime-build.yml",
+            ".github/workflows/python-runtime-release.yml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Exec and login have crate-local tests (`codex-rs/exec`, `codex-rs/login`). SDK TypeScript tests live next to `sdk/typescript` and mock the stdio JSON-RPC transport rather than spawning a real model. There is no single cross-language end-to-end suite in CI that hits the live OpenAI API.",
+          "sources": [
+            "sdk/typescript/src/codex.ts",
+            "codex-rs/exec/src/lib.rs",
+            ".github/workflows/blocking-ci.yml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Coverage gaps called out by repo policy: agent behavior changes must add a `core/suite` integration test; unit tests of statically defined tables are discouraged; negative tests for deleted logic are discouraged. UI without an insta snapshot is considered incomplete.",
+          "sources": [
+            "AGENTS.md",
+            "codex-rs/core/tests/suite"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "risk_map": {
+      "summary": "The highest-risk surfaces are command execution, the sandbox policy resolver, auth token storage, and the app-server stdio API that can drive all of the above. `codex-core` is an explicit blast-radius hotspot the repo asks contributors not to grow. Large orchestration files (`chatwidget.rs`, `app.rs`, `chat_composer.rs`, `codex.rs`) are fragile coupling points. History compaction and context fragments can invalidate the model prompt cache or exceed token caps. Sandbox escapes are the security property the project exists to protect; tests often skip them under nested sandbox. Legacy v1 app-server methods still exist and must not gain new surface.",
+      "claims": [
+        {
+          "claim": "Shell-out is the primary security boundary. Tool handlers spawn user-model-supplied commands. Safety depends on `SandboxPolicy`, execpolicy allow/deny, and the platform sandbox all agreeing. A mismatch between the approval overlay and the spawn path is a command-execution bug.",
+          "sources": [
+            "codex-rs/core/src/sandboxing/mod.rs",
+            "codex-rs/core/src/tools/router.rs",
+            "docs/sandbox.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`danger-full-access` and approval `never` disable the sandbox and prompts. Config, CLI flags, and execpolicy can each select this. Any new flag that defaults toward this combination widens blast radius for every SDK and CI caller.",
+          "sources": [
+            "docs/sandbox.md",
+            "codex-rs/protocol/src/protocol.rs",
+            "docs/config.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Auth secrets live in `$CODEX_HOME/auth.json` (default `~/.codex/auth.json`) and may also be supplied by `CODEX_API_KEY`. The file contains access and refresh tokens. Log paths and debug traces that dump request headers would leak them.",
+          "sources": [
+            "docs/authentication.md",
+            "codex-rs/login/src/auth/manager.rs",
+            "codex-rs/core/src/client.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The macOS sandbox uses Seatbelt (`sandbox-exec`) profiles built in `sandboxing/src/seatbelt.rs`. Tests that themselves call Seatbelt exit early when `CODEX_SANDBOX=seatbelt`, so nested-agent runs do not exercise the real profile. Profile edits are easy to ship untested.",
+          "sources": [
+            "codex-rs/sandboxing/src/seatbelt.rs",
+            "AGENTS.md",
+            "docs/sandbox.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Linux isolation depends on `codex-linux-sandbox` (bubblewrap) plus Landlock. If bwrap is missing, the core falls back according to config (`sandbox_mode` and network flags). A silent downgrade is a security bug; the code path is in `core/src/sandboxing/mod.rs`.",
+          "sources": [
+            "codex-rs/linux-sandbox/src/lib.rs",
+            "codex-rs/core/src/sandboxing/mod.rs",
+            "docs/sandbox.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Network access inside the sandbox is denied by default and selectively re-enabled. The env var `CODEX_SANDBOX_NETWORK_DISABLED` is also used by the agent harness to skip networked tests. AGENTS.md forbids modifying code related to `CODEX_SANDBOX_NETWORK_DISABLED_ENV_VAR` or `CODEX_SANDBOX_ENV_VAR`.",
+          "sources": [
+            "AGENTS.md",
+            "codex-rs/core/src/sandboxing/mod.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "App-server stdio is a local trust boundary, not a remote auth boundary. Any process that can spawn `codex app-server` can start turns, exec commands, and read thread history. Experimental methods are gated but still compiled in.",
+          "sources": [
+            "codex-rs/app-server/README.md",
+            "codex-rs/app-server/src/lib.rs",
+            "codex-rs/app-server-protocol/src/protocol/common.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "TUI orchestration files are called out as high-touch and should not grow: `tui/src/app.rs`, `bottom_pane/chat_composer.rs`, `bottom_pane/footer.rs`, `chatwidget.rs`, `bottom_pane/mod.rs`. New behavior belongs in a new module. These files are the most likely merge-conflict and regression sites.",
+          "sources": [
+            "AGENTS.md",
+            "codex-rs/tui/src/chatwidget.rs",
+            "codex-rs/tui/src/app.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Context rules are load-bearing for cost and correctness: no history rewrite, no unbounded injected items, hard cap, and a P0 review if a fragment can exceed 1k tokens. Compact and new system fragments are the usual way to violate this.",
+          "sources": [
+            "AGENTS.md",
+            "codex-rs/core/src/context/mod.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "File IO outside the repo is normal and expected: `CODEX_HOME` (`~/.codex`), session JSONL, shell cwd, and apply_patch targets. Workspace-write mode still allows writes anywhere inside the writable roots derived from cwd and config `writable_roots`. Path canonicalization bugs become arbitrary-write bugs.",
+          "sources": [
+            "docs/sandbox.md",
+            "codex-rs/core/src/sandboxing/mod.rs",
+            "codex-rs/apply-patch/src/lib.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Change-size guidance caps non-mechanical diffs at about 800 lines and complex logic at 500. Oversized patches to `codex.rs` or `chatwidget.rs` are the usual review failure mode, not a compiler failure.",
+          "sources": [
+            "AGENTS.md"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "extension_points": {
+      "summary": "Codex is extended by adding a tool spec and handler, an MCP server entry, a feature flag, a slash command, a CLI subcommand, or an app-server v2 method. Model providers plug in through `WireApi` and config `model_providers`. Skills, execpolicy rules, and sandbox policies are user-level extension points that do not require a fork. New crates are preferred over new modules in `codex-core`. Protocol extensions must update serde and ts-rs annotations together and regenerate schema fixtures.",
+      "claims": [
+        {
+          "claim": "TUI slash commands are the `SlashCommand` enum and its parse table in `tui/src/slash_command.rs`. Adding a command means a variant, a description, a dispatch arm in the composer/chat widget path, and an insta snapshot.",
+          "sources": [
+            "codex-rs/tui/src/slash_command.rs",
+            "codex-rs/tui/src/bottom_pane/chat_composer.rs",
+            "AGENTS.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CLI subcommands are the `Subcommand` enum in `cli/src/main.rs` (clap). New top-level commands belong there only if they are user-facing binaries; library behavior belongs in a crate the CLI calls.",
+          "sources": [
+            "codex-rs/cli/src/main.rs",
+            "codex-rs/Cargo.toml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Model providers extend via config `[model_providers.<id>]` (base_url, wire_api `responses` or `chat`, env_key). `ModelClient` switches on `WireApi`. A new HTTP shape requires a client arm, not a TUI change.",
+          "sources": [
+            "codex-rs/core/src/client.rs",
+            "docs/config.md",
+            "codex-rs/core/src/config/mod.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Execpolicy is a user-authored policy language (`prefix_rule`, pattern rules) interpreted by the `codex-execpolicy` crate. New rule kinds are crate changes; new rules of existing kinds are config-only.",
+          "sources": [
+            "codex-rs/execpolicy/src/lib.rs",
+            "docs/execpolicy.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Context injection extends through `ContextualUserFragment` implementors under `core/src/context`. New fragments must be bounded structs. This is the only supported way to add text the model sees every turn.",
+          "sources": [
+            "codex-rs/core/src/context/mod.rs",
+            "AGENTS.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Sandbox policies extend by adding a `SandboxPolicy` variant or a platform executor. macOS profiles are strings in `seatbelt.rs`; Linux uses the `linux-sandbox` crate; Windows uses the Windows sandbox crate. All three must stay behaviorally aligned.",
+          "sources": [
+            "codex-rs/sandboxing/src/seatbelt.rs",
+            "codex-rs/linux-sandbox/src/lib.rs",
+            "codex-rs/core/src/sandboxing/mod.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Internal agent roles and graphs (`codex-agent-roles`, `codex-agent-identity`, `codex-agent-graph-store`) are separate workspace crates for multi-agent structure, not part of the CLI multitool match. They are the intended home for new agent-graph concepts instead of `codex-core`.",
+          "sources": [
+            "codex-rs/agent-roles/Cargo.toml",
+            "codex-rs/agent-identity/Cargo.toml",
+            "codex-rs/agent-graph-store/Cargo.toml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Config schema is generated. After any `ConfigToml` or nested config type change, `just write-config-schema` rewrites `codex-rs/core/config.schema.json`. Docs that mirror keys live in `docs/config.md` and `docs/example-config.md`.",
+          "sources": [
+            "codex-rs/core/config.schema.json",
+            "docs/config.md",
+            "AGENTS.md"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_handoff": {
+      "summary": "Work in `codex-rs` unless the task is the Node launcher or the TS/Python SDK. Read AGENTS.md before editing. Prefer a new crate or a new module over growing `codex-core`, `chatwidget.rs`, or `app.rs`. Run `just fmt` after edits and `just test -p <crate>` for the crate you touched. Do not hand-edit generated schema without the just recipe. Do not touch sandbox env-var constants. Match existing clap, serde, and ratatui styles. Integration tests, not unit tests, are required for agent-loop changes.",
+      "claims": [
+        {
+          "claim": "Style traps: inline `format!` args; collapse nested ifs; prefer method references; no `#[async_trait]` or `#[allow(async_fn_in_trait)]` — use RPITIT with `impl Future<Output = T> + Send`. Avoid boolean or ambiguous `Option` parameters. Positional `None`/bool/number literals need `/*param_name*/` comments.",
+          "sources": [
+            "AGENTS.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "TUI style traps: use ratatui `Stylize` (`\"text\".dim()`, `.red()`) rather than `Span::styled`. Do not use `.white()`. Wrap plain strings with `textwrap::wrap` and ratatui lines with `tui/src/wrapping.rs`. Prefix lines with `prefix_lines` from line_utils. UI changes need insta snapshots.",
+          "sources": [
+            "codex-rs/tui/styles.md",
+            "codex-rs/tui/src/wrapping.rs",
+            "AGENTS.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Do not edit `CODEX_SANDBOX_NETWORK_DISABLED` or `CODEX_SANDBOX` plumbing. Those constants exist so tests skip when the agent harness has already sandboxed the process. Changing them breaks CI and the sandbox contract.",
+          "sources": [
+            "AGENTS.md",
+            "codex-rs/core/src/sandboxing/mod.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Module size trap: files over ~800 LoC should gain a new module, not more methods. `chatwidget.rs` in particular should not grow standalone methods. When extracting, move the tests and the doc comment with the code.",
+          "sources": [
+            "AGENTS.md",
+            "codex-rs/tui/src/chatwidget.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Tracing trap: instrument the function definition with `#[tracing::instrument]`, not `.instrument()` at the callsite, and do not double-instrument a callee that already has the attribute.",
+          "sources": [
+            "AGENTS.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Test authoring trap: agent behavior belongs in `core/suite` using `mount_sse_once` and `pretty_assertions`. Do not add tests that only assert static tables, do not add negative tests for removed logic, and do not put test-only helpers on the public crate API.",
+          "sources": [
+            "AGENTS.md",
+            "codex-rs/core/tests/suite"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Docs trap: do not add product docs under `docs/` except app-server API docs. Contributor rules live in `AGENTS.md`; user docs (`config.md`, `sandbox.md`, `exec.md`, `authentication.md`) are the existing canonical pages and should be updated in place rather than duplicated.",
+          "sources": [
+            "AGENTS.md",
+            "docs/config.md",
+            "docs/sandbox.md"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_prompt": "You are working in the OpenAI Codex repo (https://github.com/openai/codex.git), a pnpm/Bazel monorepo whose product is a Rust coding agent. The agent loop, tools, config, and rollout storage live in codex-rs. The user-facing binary is the codex-cli crate (codex-rs/cli/src/main.rs): clap MultitoolCli dispatches TUI, exec, resume, fork, review, mcp, app-server, login, and sandbox. The Node package codex-cli/bin/codex.js only selects and spawns that native binary. TypeScript and Python SDKs under sdk/ speak JSON-RPC to `codex app-server`.\n\nRead AGENTS.md before editing. codex-core (codex-rs/core) is intentionally bloated — do not add new concepts there if a new crate or an existing satellite crate fits. Session startup is Codex::spawn → Session::new → submission_loop in core/src/codex.rs. Clients submit codex_protocol::protocol::Op values (UserTurn, ExecApproval, Interrupt, Compact, Shutdown) and consume Event / EventMsg. Model IO is ModelClient in core/src/client.rs (Responses or Chat Completions, WireApi from config). Tool specs are built in core/src/tools/spec.rs and dispatched by the tool router. MCP servers are owned by codex-rs/codex-mcp/src/mcp_connection_manager.rs; do not call reset_client_session unless the incremental tool-list check says to.\n\nConfig is layered TOML: system, $CODEX_HOME/config.toml (default ~/.codex), project .codex/config.toml, then CLI overrides. ConfigToml changes require `just write-config-schema` (updates codex-rs/core/config.schema.json). Auth is ~/.codex/auth.json via the login crate (ChatGPT OAuth or API key). Transcripts are append-only rollout JSONL under ~/.codex/sessions written by core/src/rollout/recorder.rs and indexed by session_index. Resume and fork must keep old rollouts readable.\n\nSandbox and approvals are security-critical. SandboxPolicy is read-only, workspace-write, or danger-full-access. AskForApproval is untrusted, on-request, or never. macOS uses Seatbelt profiles in sandboxing/src/seatbelt.rs; Linux uses codex-linux-sandbox (bubblewrap + Landlock); execpolicy rules live in the codex-execpolicy crate. Never edit code related to CODEX_SANDBOX_NETWORK_DISABLED or CODEX_SANDBOX. Tests skip when those are set because the agent harness is already sandboxed.\n\nApp-server work is v2 only: types in app-server-protocol/src/protocol/v2.rs, registration in common.rs, camelCase serde, matching ts-rs renames, no skip_serializing_if on response fields, #[ts(optional = nullable)] only on *Params. Regenerate with `just write-app-server-schema`. Config RPCs stay snake_case. Do not extend v1.\n\nTUI work belongs in codex-rs/tui. Do not grow app.rs, chatwidget.rs, or bottom_pane/chat_composer.rs; add a module. Use ratatui Stylize helpers, textwrap, and tui/src/wrapping.rs. Any user-visible change needs an insta snapshot (just test -p codex-tui, then cargo insta). Slash commands are the SlashCommand enum in tui/src/slash_command.rs.\n\nModel-visible text must be a bounded ContextualUserFragment in core/src/context. No history rewrite, no unbounded items, nothing over 10k tokens. Flag anything that can exceed 1k tokens.\n\nRust style: inline format args, collapse ifs, method references, exhaustive matches, RPITIT traits with impl Future + Send (no async_trait), no boolean/Option soup, /*param_name*/ comments on opaque positional literals. After edits run `just fmt` in codex-rs and `just fix -p <crate>`. Test with `just test -p <crate>` (cargo nextest). Never raw `cargo test`. Agent-loop changes need a core/suite integration test using responses::mount_sse_once and TestCodexBuilder::build_with_auto_env(). If you change Cargo.lock, run `just bazel-lock-update` and commit MODULE.bazel.lock. If you add include_str! or similar, update BUILD.bazel compile_data. Do not kill slow Rust or Bazel processes by PID.\n\nKeep diffs focused: under ~500 lines for logic, under ~800 for mechanical edits. Breaking surfaces are app-server APIs, rawResponseItem events, CLI flags, config loading, and rollout resume. Do not add product docs under docs/ except app-server API docs; update docs/config.md, docs/sandbox.md, docs/exec.md, or docs/authentication.md in place when behavior changes."
+  },
+  "analysis": {
+    "agent": "grok",
+    "model": "cli:grok",
+    "runtime_ms": 229326,
+    "cost_usd": null,
+    "collected_at": "2026-09-22T12:15:51.901Z"
   }
 }

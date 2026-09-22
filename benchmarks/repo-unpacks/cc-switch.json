@@ -11564,5 +11564,842 @@
         ]
       }
     ]
+  },
+  "report": {
+    "overview": "CC Switch 3.20.3 is a Tauri 2 desktop app (React/Vite renderer, Rust library crate cc_switch_lib) that stores AI-coding-tool provider configs in a local SQLite database and writes them into each tool's live config files. It targets people who switch among Claude Code, Claude Desktop, Codex, Gemini CLI, Grok Build, OpenCode, OpenClaw, Hermes, Pi, and MiniMax Code, plus MCP servers, Skills, prompts, and a local HTTP proxy with failover. Distinctive pieces are exclusive-vs-additive live writes, proxy takeover that rewrites CLI base URLs to 127.0.0.1 while keeping a restore backup, and ccswitch:// deep-link import. Device UI settings stay in ~/.cc-switch/settings.json and are intentionally not part of WebDAV/S3 database sync.",
+    "system_map": {
+      "summary": "The process entry is src-tauri/src/main.rs, which only adjusts Linux WebKit environment variables and calls cc_switch_lib::run(). lib.rs owns the Tauri builder: single-instance, deep-link, dialog, updater, window-state, and a very large invoke_handler. Shared state is AppState { db, proxy_service, usage_cache, codex_oauth_manager }. Durable app data is rusqlite at ~/.cc-switch/cc-switch.db (SCHEMA_VERSION 19); device settings are a separate JSON file. The renderer is Vite rooted at src/, dev server port 3000, production output ../dist. CI splits frontend (pnpm) and backend (cargo on three OSes plus a Windows+WSL2 job). Tagged v* pushes build Windows, macOS, and Linux artifacts, including arm64, with a signed updater.",
+      "claims": [
+        {
+          "claim": "package.json name cc-switch version 3.20.3 describes the app as an assistant for Claude Code, Codex, and Gemini CLI; scripts are dev (pnpm tauri dev), build (pnpm tauri build), dev:renderer (vite), build:renderer (vite build), typecheck (tsc --noEmit), format/format:check (Prettier on src), and test:unit (vitest run). There is no lint script.",
+          "sources": [
+            "package.json"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The Rust package cc-switch 3.20.3 (edition 2021, rust-version 1.85, rust-toolchain channel 1.95) builds library cc_switch_lib as staticlib, cdylib, and rlib. Default features are empty; feature test-hooks exists only to expose test hooks. Release profile uses thin LTO, opt-level s, panic=unwind, and strip=symbols.",
+          "sources": [
+            "src-tauri/Cargo.toml",
+            "rust-toolchain.toml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Tauri productName is CC Switch, identifier com.ccswitch.desktop, window label main starts hidden at 1000x650 with Overlay title bar. frontendDist is ../dist, devUrl is http://localhost:3000, beforeDevCommand is pnpm run dev:renderer. Deep-link scheme is ccswitch. Updater pubkey is embedded and endpoints are https://dl.ccswitch.io/latest.json and the GitHub latest.json asset. CSP script-src is 'self' plus one sha256; connect-src allows ipc, https, and http.",
+          "sources": [
+            "src-tauri/tauri.conf.json",
+            "vite.config.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "main() on Linux sets WEBKIT_DISABLE_DMABUF_RENDERER=1 and WEBKIT_DISABLE_COMPOSITING_MODE=1 when unset, and if CC_SWITCH_GDK_BACKEND is non-empty copies it onto GDK_BACKEND, then calls cc_switch_lib::run().",
+          "sources": [
+            "src-tauri/src/main.rs#L4-34"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "run() installs a panic hook writing ~/.cc-switch/crash.log, registers tauri_plugin_single_instance (which can exit lightweight mode, parse ccswitch:// args, and focus the main window), deep-link, process, dialog, opener, store, window-state, and updater. CloseRequested hides to tray when minimize_to_tray_on_close is set, otherwise exits; db_version_too_new recovery always exits.",
+          "sources": [
+            "src-tauri/src/lib.rs#L347-400",
+            "src-tauri/src/lib.rs#L418-527"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The invoke_handler beginning at lib.rs registers commands for providers, Claude Desktop, settings, MCP, prompts, Pi, profiles, skills, proxy start/stop/takeover, failover, usage, stream check, sessions, WebDAV, S3, deep link, env conflicts, and universal providers. Frontend wrappers in src/lib/api/index.ts re-export providersApi, proxyApi, mcpApi, skillsApi, usageApi, and others that call invoke().",
+          "sources": [
+            "src-tauri/src/lib.rs#L1388-1649",
+            "src-tauri/src/commands/mod.rs",
+            "src/lib/api/index.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "AppState holds Arc<Database>, ProxyService (constructed with the same CodexOAuthManager), Arc<UsageCache>, and Arc<CodexOAuthManager> rooted at get_app_config_dir().",
+          "sources": [
+            "src-tauri/src/store.rs#L7-31"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Database::init opens ~/.cc-switch/cc-switch.db via get_app_config_dir(), enables foreign_keys, registers an update hook that notifies WebDAV and S3 auto-sync, creates tables, and migrates when user_version is between 1 and SCHEMA_VERSION (19). A newer on-disk user_version is detected by stored_user_version_exceeds_supported and treated as db_version_too_new.",
+          "sources": [
+            "src-tauri/src/database/mod.rs#L54-183",
+            "src-tauri/src/config.rs#L258-291"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "AppType has ten variants: Claude, ClaudeDesktop, Codex, Gemini, GrokBuild, OpenCode, OpenClaw, Hermes, Pi, Mcode. is_additive_mode is true for OpenCode, OpenClaw, Hermes, Pi, and Mcode. supports_local_proxy is true only for Claude, Codex, Gemini, and GrokBuild.",
+          "sources": [
+            "src-tauri/src/app_config.rs#L393-448",
+            "src/config/appConfig.tsx#L19-72"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Live config path helpers: Claude ~/.claude/settings.json (legacy claude.json if present), Codex ~/.codex/config.toml and auth.json, Gemini ~/.gemini/settings.json plus .env, Grok ~/.grok/config.toml, OpenCode ~/.config/opencode/opencode.json, OpenClaw ~/.openclaw/openclaw.json, Hermes ~/.hermes/config.yaml, Pi ~/.pi/agent/models.json (override via settings or PI_CODING_AGENT_DIR), MiniMax ~/.minimax/config.yaml or MINIMAX_DATA_DIR/MAVIS_DATA_DIR. Directory overrides exist on AppSettings.",
+          "sources": [
+            "src-tauri/src/config.rs#L243-256",
+            "src-tauri/src/codex_config.rs#L462-473",
+            "src-tauri/src/codex_config.rs#L987-990",
+            "src-tauri/src/gemini_config.rs#L340-345",
+            "src-tauri/src/grok_config.rs#L25-33",
+            "src-tauri/src/opencode_config.rs#L48-59",
+            "src-tauri/src/openclaw_config.rs#L31-48",
+            "src-tauri/src/hermes_config.rs#L98-103",
+            "src-tauri/src/pi_config/mod.rs#L34-77",
+            "src-tauri/src/mcode_config.rs#L12-60"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CI on pull_request and push to main path-filters frontend versus src-tauri. Frontend job runs pnpm install --frozen-lockfile, pnpm typecheck, pnpm format:check, pnpm test:unit on Node 20. Backend matrix is ubuntu-22.04, windows-latest, macos-latest and runs cargo fmt --check, cargo clippy -D warnings, and cargo test. A separate windows-2025 job runs tests against a WSL2 home. Release workflow triggers on tags v* and builds windows-2022, windows-11-arm, ubuntu-22.04, ubuntu-22.04-arm, and macos-14.",
+          "sources": [
+            ".github/workflows/ci.yml#L1-153",
+            ".github/workflows/release.yml#L1-52"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The default Tauri capability grants the main window core, opener, updater, log, a short list of window controls, process exit/restart, and dialog. It does not grant shell or fs plugins; filesystem and process work goes through Rust commands.",
+          "sources": [
+            "src-tauri/capabilities/default.json"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "feature_catalog": {
+      "summary": "The shell in App.tsx is a single window with an app switcher and views for providers, settings, prompts, skills, MCP, agents, universal providers, sessions, workspace files, OpenClaw env/tools/agent defaults, and Hermes memory. Provider management is the primary surface: presets, add/edit/delete, drag sort, tray switching, and per-provider terminals. Four apps can be taken over by a local proxy with failover and circuit breaking. Cross-tool panels cover MCP, Skills, and prompts. Extra utilities include usage scripts, subscription and coding-plan quotas, session browsing, WebDAV and S3 sync, deep-link import, env-conflict checks, and Claude Desktop direct versus proxy routing.",
+      "claims": [
+        {
+          "claim": "README positions the app as one manager for Claude Code, Claude Desktop, Codex, Gemini CLI, Grok Build, OpenCode, OpenClaw, Hermes, and MiniMax Code, with provider presets, unified MCP and Skills, tray switching, and cloud sync via Dropbox, OneDrive, iCloud, or WebDAV. The user manual TOC matches providers, MCP, prompts, skills, sessions, workspace, proxy takeover, failover, and usage.",
+          "sources": [
+            "README.md#L213-249",
+            "docs/user-manual/en/README.md#L1-44"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "App view union is providers, settings, prompts, skills, skillsDiscovery, mcp, agents, universal, sessions, workspace, openclawEnv, openclawTools, openclawAgents, and hermesMemory. Last app and last view persist in localStorage keys cc-switch-last-app and cc-switch-last-view. Default app is claude. claude-desktop shares feature panels with claude via sharedFeatureApp.",
+          "sources": [
+            "src/App.tsx#L116-174"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "providersApi exposes getAll, getCurrent, add, update, delete, removeFromLiveConfig, switch, importDefault, Claude Desktop import/status, official-provider seed ensure for Claude Desktop, Codex, and Grok Build, tray refresh, sort order, provider-switched events, and openTerminal. OpenCode, OpenClaw, and Hermes also have live-id and import-from-live helpers.",
+          "sources": [
+            "src/lib/api/providers.ts#L49-199"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Preset catalogs live in src/config as separate modules: claudeProviderPresets, claudeDesktopProviderPresets, codexProviderPresets, geminiProviderPresets, grokBuildProviderPresets, hermesProviderPresets, mcodeProviderPresets, openclawProviderPresets, opencodeProviderPresets, piProviderPresets, plus universalProviderPresets, mcpPresets, and codingPlanProviders. ProviderPreset fields include settingsConfig, apiKeyField, endpointCandidates, category, and partner flags.",
+          "sources": [
+            "src/config/claudeProviderPresets.ts#L25-50",
+            "src/config/universalProviderPresets.ts#L1-37"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Universal providers are one shared config stored under settings key universal_providers and synced to Claude, Codex, and Gemini. Commands include get_universal_providers, upsert_universal_provider, delete_universal_provider, and sync_universal_provider.",
+          "sources": [
+            "src-tauri/src/database/dao/universal_providers.rs#L10-39",
+            "src/config/universalProviderPresets.ts#L1-6",
+            "src-tauri/src/lib.rs#L1644-1649"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The local proxy default listen address is 127.0.0.1:15721 with per-app rows for claude, codex, gemini, and grokbuild. Routes include /v1/messages, /claude-desktop/v1/messages, OpenAI chat/completions and responses (with /codex and /v1/v1 prefixes), /grokbuild/v1/responses, /alpha/search, and image generations. Frontend PROXY_APP_IDS matches those four apps.",
+          "sources": [
+            "src-tauri/src/database/schema.rs#L127-184",
+            "src-tauri/src/proxy/server.rs#L291-370",
+            "src/config/appConfig.tsx#L57-72"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Proxy commands split start (no live rewrite) from set_proxy_takeover_for_app, stop_proxy_server (refuses while any takeover flag is set, including opencode and openclaw fields), and stop_proxy_with_restore. Failover commands cover queue membership, auto-failover toggle, circuit-breaker config, reset, and stats.",
+          "sources": [
+            "src-tauri/src/commands/proxy.rs#L20-72",
+            "src-tauri/src/lib.rs#L1574-1607"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CircuitState is Closed, Open, or HalfOpen. CircuitBreakerConfig uses failure_threshold, success_threshold, timeout_seconds, error_rate_threshold, and min_requests. ProviderRouter::select_providers returns only the current provider when auto-failover is off, otherwise the failover queue. Codex official providers are excluded from failover so an inbound Authorization header is not retried against another account.",
+          "sources": [
+            "src-tauri/src/proxy/circuit_breaker.rs#L13-49",
+            "src-tauri/src/proxy/provider_router.rs#L15-80"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Unified MCP commands are get_mcp_servers, upsert_mcp_server, delete_mcp_server, toggle_mcp_app, and import_mcp_from_apps. validate_mcp_command only checks that the binary is on PATH and does not execute it. McpApps has flags for claude, codex, gemini, grokbuild, opencode, hermes, and mcode; OpenClaw, Pi, and Claude Desktop are hard-disabled.",
+          "sources": [
+            "src-tauri/src/commands/mcp.rs#L38-200",
+            "src-tauri/src/app_config.rs#L8-56",
+            "src-tauri/src/database/schema.rs#L63-75"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Skills use a unified skills table (id, directory, repo owner/name/branch, per-app enabled flags including pi, content_hash). Commands cover install, uninstall, toggle, scan unmanaged, discover, check updates, zip install, and repo list. SkillApps enables the same apps as MCP plus Pi, and not OpenClaw or Claude Desktop. Prompts have get/upsert/delete/enable plus Pi prompt-file commands.",
+          "sources": [
+            "src-tauri/src/database/schema.rs#L84-118",
+            "src-tauri/src/app_config.rs#L98-149",
+            "src-tauri/src/lib.rs#L1474-1557"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Session manager commands are list_sessions, get_session_messages, delete_session(s), launch_session_terminal, get_tool_versions, run_tool_lifecycle_action, and probe_tool_installations. open_provider_terminal launches a terminal with env extracted from that provider's settings_config without requiring it to be current.",
+          "sources": [
+            "src-tauri/src/commands/session_manager.rs#L5-80",
+            "src-tauri/src/commands/misc.rs#L3798-3856",
+            "src-tauri/src/lib.rs#L1633-1643"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Deep links use resource types provider, prompt, mcp, and skill. DeepLinkImportRequest carries endpoint, apiKey, base64 config, configUrl, and usage-script fields. usageEnabled defaults to unset so a script payload is not itself permission to run it. Parser entry is parse_deeplink_url; import helpers are import_provider_from_deeplink, import_mcp_from_deeplink, import_prompt_from_deeplink, and import_skill_from_deeplink.",
+          "sources": [
+            "src-tauri/src/deeplink/mod.rs#L1-139"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Usage and billing commands include queryProviderUsage, testUsageScript, get_subscription_quota, get_codex_oauth_quota, get_codex_oauth_models, get_xai_oauth_quota, get_xai_oauth_models, get_coding_plan_quota, and get_balance, plus usage summary, trends, request logs, and models.dev pricing sync. Claude plugin commands can apply or clear an onboarding skip and official-vs-third-party plugin config.",
+          "sources": [
+            "src-tauri/src/lib.rs#L1439-1461",
+            "src-tauri/src/lib.rs#L1608-1632",
+            "src/hooks/useProviderActions.ts#L57-81"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Cloud sync commands are webdav_test_connection, webdav_sync_upload/download, webdav_sync_save_settings, s3_test_connection, s3_sync_upload/download, and s3_sync_save_settings. WebDAV accepts only http/https. S3 uses AWS SigV4, virtual-hosted URLs for amazonaws.com, and path-style URLs for custom endpoints. Local DB backup commands are create/list/restore/rename/delete.",
+          "sources": [
+            "src-tauri/src/services/webdav.rs#L31-57",
+            "src-tauri/src/services/s3.rs#L21-74",
+            "src-tauri/src/lib.rs#L1516-1534"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "OpenCode categories omo and omo-slim switch by writing one Oh My OpenCode config and deleting the other. Claude Desktop switches through switch_normal and apply_provider rather than the generic live writer. Pi switch short-circuits to pi::enable. Grok import of an official live config ensures the grokbuild-official seed instead of erroring.",
+          "sources": [
+            "src-tauri/src/services/provider/mod.rs#L5712-5831",
+            "src-tauri/src/commands/provider.rs#L135-174",
+            "src-tauri/src/claude_desktop_config.rs#L128-128"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "data_flow": {
+      "summary": "The renderer never writes CLI configs itself. It calls invoke(); command wrappers parse AppType and delegate to services, which lock the rusqlite connection, update SQLite, and atomically rewrite live files under the user home directory. Exclusive apps backfill the outgoing provider from the live file before the new provider is written. Additive apps keep every provider in one native document. When proxy takeover is active, live files point at the local listener and the real upstream config sits in a live backup. Request bodies hit Axum routes, ProviderRouter, format adapters, then reqwest/hyper upstream. Usage scripts are data: QuickJS builds a request descriptor, Rust performs HTTP, QuickJS extracts the result. SQLite mutations wake WebDAV and S3 auto-sync.",
+      "claims": [
+        {
+          "claim": "UI switch path is useProviderActions.switchProvider to providersApi.switch, which invokes switch_provider. The command parses AppType, spawn_blocking's onto switch_provider_internal, which calls ProviderService::switch.",
+          "sources": [
+            "src/hooks/useProviderActions.ts#L168-180",
+            "src/lib/api/providers.ts#L90-92",
+            "src-tauri/src/commands/provider.rs#L101-132"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Exclusive switch order in switch_normal: resolve effective current id, sync common-config snippet from live, strip that snippet, save the outgoing provider (backfill), preflight managed Codex OAuth, then write the target live files and update current pointers. Additive apps skip backfill because all providers already coexist. Codex managed OAuth captures a four-file snapshot and restores it if the live commit fails.",
+          "sources": [
+            "src-tauri/src/services/provider/mod.rs#L5700-5929"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "If a live backup row exists or detect_takeover_in_live_config_for_app is true, switch takes proxy_service.lock_switch_for_app and calls hot_switch_provider_inner instead of writing upstream live config. Official providers that fail official_provider_supports_proxy_takeover are rejected with switch.official_blocked_by_proxy. MCP sync is skipped during takeover.",
+          "sources": [
+            "src-tauri/src/services/provider/mod.rs#L5739-5797"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "read_live_settings dispatches per AppType: Codex reads live TOML/auth and merges the cc-switch model catalog projection; Claude reads settings JSON; Gemini joins .env and settings.json; OpenCode, OpenClaw, Hermes, and Grok read their native documents; Mcode returns custom_provider entries; Pi and Claude Desktop refuse generic live import.",
+          "sources": [
+            "src-tauri/src/services/provider/live.rs#L1744-1860"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "sync_current_to_live walks AppType::all(), skips Pi and Mcode, syncs all providers for additive apps, and for exclusive apps writes only the current provider unless takeover is active (then it updates the restore backup). It then calls McpService::sync_all_enabled and SkillService::sync_to_app, aggregating failures.",
+          "sources": [
+            "src-tauri/src/services/provider/live.rs#L1689-1741"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "atomic_write creates a sibling temp file (pid, timestamp, counter), flushes, then renames over the target. atomic_write_private forces Unix mode 0600 for credential files. MiniMax write_and_commit rolls the previous YAML bytes back if the database commit fails.",
+          "sources": [
+            "src-tauri/src/config.rs#L382-449",
+            "src-tauri/src/mcode_config.rs#L29-56"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "ProxyServer::start binds listen_address:listen_port, records the actual port for system-proxy detection, and accepts with a manual hyper HTTP/1.1 loop that peeks raw bytes so OriginalHeaderCases can preserve client header casing. ProviderRouter plus FailoverSwitchManager live on ProxyState and survive across requests. GeminiShadowStore and CodexChatHistoryStore hold in-memory protocol bridge state.",
+          "sources": [
+            "src-tauri/src/proxy/server.rs#L32-120",
+            "src-tauri/src/proxy/server.rs#L138-180",
+            "src-tauri/src/proxy/failover_switch.rs#L15-40"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "execute_usage_script substitutes template variables, optionally validates base_url, evals the script in rquickjs to extract a request object, performs the HTTP call in Rust, then calls the script extractor on the response. Runtime limits are 5 seconds, 16 MiB, and a 256 KiB stack.",
+          "sources": [
+            "src-tauri/src/usage_script.rs#L8-67",
+            "src-tauri/src/usage_script.rs#L69-120"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Every SQLite insert, update, or delete fires register_db_change_hook, which calls webdav_auto_sync::notify_db_changed and s3_auto_sync::notify_db_changed with the table name. AppSettings in settings.json is documented as device-local and not part of that database sync. get_settings_for_frontend clears webdav password and s3 secret_access_key before they reach the UI.",
+          "sources": [
+            "src-tauri/src/database/mod.rs#L84-94",
+            "src-tauri/src/settings.rs#L345-348",
+            "src-tauri/src/settings.rs#L771-793"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Startup also pulls models.dev pricing from the renderer via syncModelsDevPricingOnStartup after the React tree mounts, then invalidates usage and models-dev query keys. Failure is logged and does not block boot. Session usage sync runs once immediately (including cost backfill) and then every 60 seconds unless session_auto_sync_enabled is false.",
+          "sources": [
+            "src/main.tsx#L135-152",
+            "src-tauri/src/lib.rs#L1283-1332",
+            "src-tauri/src/settings.rs#L381-386"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "handle_deeplink_url accepts only ccswitch:// strings, parses them, emits deeplink-import or deeplink-error to the webview, and can focus the main window. The single-instance callback does the same for argv. URL logs go through url_for_log, which strips userinfo, query, and fragment and then replaces known secret substrings of length at least 8.",
+          "sources": [
+            "src-tauri/src/lib.rs#L102-212",
+            "src-tauri/src/lib.rs#L242-310",
+            "src-tauri/src/lib.rs#L369-376"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "behavior_traces": {
+      "summary": "Three flows dominate daily use: process startup (DB open, crash recovery, proxy restore, then the React shell), an exclusive provider switch (backfill then atomic live write, or a proxy hot-switch), and proxy takeover (backup live config, point the CLI at localhost, route through ProviderRouter). Deep-link import and usage-script execution are the two untrusted-input paths that still end in the same database and live-file writers.",
+      "claims": [
+        {
+          "claim": "Startup, backend: main sets Linux WebKit vars; run() installs the panic hook; setup refreshes the app-config-dir Store override, starts the log plugin at ~/.cc-switch/logs/cc-switch.log (20 MiB, KeepSome 4), installs the rustls ring provider, opens or migrates cc-switch.db from legacy config.json, and if user_version is newer than the binary records kind db_version_too_new instead of applying DDL.",
+          "sources": [
+            "src-tauri/src/main.rs#L4-34",
+            "src-tauri/src/lib.rs#L462-577",
+            "src-tauri/src/database/mod.rs#L169-183"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Startup, after the DB is up: a background task checks has_any_live_backup and detect_takeover_in_live_configs; if either is set it calls proxy_service.recover_from_crash. It then scrubs leaked Gemini common-config credentials, initialize_common_config_snippets, restore_proxy_state_on_startup, runs periodic_backup_if_needed, and arms a 24-hour backup timer plus the 60-second session sync loop. Silent startup hides the main window and, on Windows, sets skip_taskbar.",
+          "sources": [
+            "src-tauri/src/lib.rs#L1221-1365"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Startup, renderer: main.tsx installs global error handlers, listens for configLoadError, then bootstrap() invokes get_init_error. kind db_version_too_new renders DatabaseUpgrade and returns. Any other path/error shows a dialog and calls plugin-process exit(1). Otherwise it mounts QueryClientProvider, ThemeProvider, UpdateProvider, and App, then fires syncModelsDevPricingOnStartup.",
+          "sources": [
+            "src/main.tsx#L28-155"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Exclusive provider switch: UI calls providersApi.switch; switch_provider spawn_blocking calls ProviderService::switch; if not taken over, switch_normal backfills via read_live_settings and save_provider, writes the target with write_live helpers, syncs MCP when not in takeover, and returns SwitchResult.warnings (for example backfill_failed:<id>). The UI may then apply Claude plugin config when enableClaudePluginIntegration is on and refresh the tray.",
+          "sources": [
+            "src/lib/api/providers.ts#L90-139",
+            "src-tauri/src/services/provider/mod.rs#L5804-5878",
+            "src/hooks/useProviderActions.ts#L57-81",
+            "src/hooks/useProviderActions.ts#L148-166"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Proxy takeover switch: set_proxy_takeover_for_app enables takeover for one app. Later switch_provider sees the backup or live placeholder, refuses unsupported official targets, and calls hot_switch_provider_inner so the proxy's current provider map changes while live files stay pointed at the local listener. Stopping the process with stop_proxy_server errors if any takeover flag remains; stop_proxy_with_restore is the path that puts the original live files back.",
+          "sources": [
+            "src-tauri/src/commands/proxy.rs#L20-72",
+            "src-tauri/src/services/provider/mod.rs#L5739-5797"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Normal live persistence for Codex is write_codex_live_atomic to ~/.codex/config.toml and auth.json, plus an optional model-catalog sidecar that is never inlined into those files. Claude writes settings JSON through the shared atomic writer. Gemini writes .env and patches security.auth.selectedType in ~/.gemini/settings.json without dropping other keys. Grok writes ~/.grok/config.toml.",
+          "sources": [
+            "src-tauri/src/codex_config.rs#L471-473",
+            "src-tauri/src/codex_config.rs#L987-994",
+            "src-tauri/src/services/provider/live.rs#L1747-1810",
+            "src-tauri/src/gemini_config.rs#L347-368",
+            "src-tauri/src/grok_config.rs#L25-33"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Deep-link flow: OS or second-instance argv hits handle_deeplink_url; parse_deeplink_url fills DeepLinkImportRequest; the webview receives deeplink-import; the user confirms in DeepLinkImportDialog; import commands (import_from_deeplink, import_from_deeplink_unified, merge_deeplink_config) write the provider, MCP, prompt, or skill through the same services as the UI. usageEnabled must be explicitly true before a carried usage script is treated as enabled.",
+          "sources": [
+            "src-tauri/src/lib.rs#L242-275",
+            "src-tauri/src/deeplink/mod.rs#L30-139",
+            "src/App.tsx#L92-93",
+            "src-tauri/src/lib.rs#L1535-1539"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Usage query flow: the provider card calls queryProviderUsage or testUsageScript; execute_usage_script builds a sandboxed QuickJS runtime, evals user code to a request config, Rust issues the HTTP request, then the extractor function maps the response JSON. A 5-second interrupt handler aborts runaway scripts.",
+          "sources": [
+            "src-tauri/src/usage_script.rs#L8-65",
+            "src-tauri/src/usage_script.rs#L79-120",
+            "src-tauri/src/lib.rs#L1451-1454"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Failover flow: an upstream failure is recorded on the per-provider CircuitBreaker inside ProviderRouter. When auto_failover_enabled is set, select_providers walks the failover queue and skips open circuits. FailoverSwitchManager dedupes concurrent promotions and emits UI plus tray updates. Codex official cards stay a single route even if failover was left on.",
+          "sources": [
+            "src-tauri/src/proxy/provider_router.rs#L15-80",
+            "src-tauri/src/proxy/circuit_breaker.rs#L13-49",
+            "src-tauri/src/proxy/failover_switch.rs#L15-40"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Tray switch: update_tray_menu rebuilds the menu from AppState via tray::create_tray_menu and set_menu on tray id TRAY_ID. Menu text follows the same locale order as the renderer (zh-TW, zh, ja, en, default zh). Provider-switched events from the backend are subscribed in providersApi.onSwitched.",
+          "sources": [
+            "src-tauri/src/lib.rs#L312-331",
+            "src-tauri/src/tray.rs#L55-80",
+            "src/lib/api/providers.ts#L133-139"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "testing_signals": {
+      "summary": "Frontend tests are Vitest 2 with jsdom, Testing Library, and MSW, configured in vitest.config.ts and rooted in tests/. Backend tests are cargo test: large module-level Rust tests plus integration binaries in src-tauri/tests that drive the library through test-hooks. CI runs both on pull requests when the matching paths change, and always on pushes to main. There is no browser or Tauri-driver end-to-end job. Coverage exists as a Vitest reporter option but is not a CI gate.",
+      "claims": [
+        {
+          "claim": "vitest.config.ts uses @vitejs/plugin-react, alias @ to ./src, environment jsdom, globals, setup files tests/setupGlobals.ts and tests/setupTests.ts, and coverage reporters text and lcov. package.json test:unit is vitest run; test:unit:watch is vitest watch.",
+          "sources": [
+            "vitest.config.ts",
+            "package.json"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "tests/setupTests.ts starts an MSW server with onUnhandledRequest warn, initializes i18next with empty zh and en catalogs, and after each test runs Testing Library cleanup, resetProviderState, server.resetHandlers, and vi.clearAllMocks. Tauri is mocked from tests/msw/tauriMocks.",
+          "sources": [
+            "tests/setupTests.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Frontend test dirs are tests/components, tests/config, tests/hooks, tests/integration (App.test.tsx and SettingsDialog.test.tsx), tests/lib, tests/msw, tests/types, and tests/utils. Config tests include codexProviderPresets, codingPlanProviders, grokBuildProviderPresets, jiekouProviderPresets, and ppioProviderPresets.",
+          "sources": [
+            "tests/setupTests.ts",
+            "src/config/codexProviderPresets.test.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Rust dev-dependencies are serial_test and tempfile. Feature test-hooks is off by default. switch_provider_test_hook and import_default_config_test_hook are the integration entry points; they call the same internals as the Tauri commands. src-tauri/tests/provider_commands.rs imports them from cc_switch_lib and uses a process-wide test mutex plus CC_SWITCH_TEST_HOME.",
+          "sources": [
+            "src-tauri/Cargo.toml#L18-20",
+            "src-tauri/Cargo.toml#L119-121",
+            "src-tauri/src/commands/provider.rs#L101-116",
+            "src-tauri/tests/provider_commands.rs#L1-40"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Integration test files under src-tauri/tests cover app config load, app type parse, deeplink import, Hermes roundtrip, import/export sync, mcode commands, MCP commands, profile roundtrip, prompt live sync, provider commands, provider service, proxy commands, and skill sync, with a shared support.rs.",
+          "sources": [
+            "src-tauri/tests/provider_commands.rs",
+            "src-tauri/tests/deeplink_import.rs",
+            "src-tauri/tests/proxy_commands.rs",
+            "src-tauri/tests/skill_sync.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Home-directory isolation for tests is CC_SWITCH_TEST_HOME inside get_home_dir(). Windows CI can also set CC_SWITCH_WSL_TEST_DIR. Comments in skill and session-usage tests warn that calling dirs::home_dir() directly bypasses the override and will touch the real user profile.",
+          "sources": [
+            "src-tauri/src/config.rs#L18-33",
+            "src-tauri/src/services/skill.rs#L6550-6568"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CI frontend job runs typecheck, Prettier, and Vitest, not cargo. Backend jobs run fmt, clippy -D warnings, and cargo test after creating an empty dist/ directory so the Tauri build script has a frontend placeholder. Pull requests skip a side when paths-filter says it did not change.",
+          "sources": [
+            ".github/workflows/ci.yml#L34-153"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Database::memory() builds an in-memory rusqlite connection with the same schema and change hook for unit tests. schema and DAO behavior also live in src-tauri/src/database/tests.rs. Proxy switch behavior has an in-module test switch_proxy_target_updates_live_backup_when_taken_over.",
+          "sources": [
+            "src-tauri/src/database/mod.rs#L185-200",
+            "src-tauri/src/services/proxy.rs#L7571-7571"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CONTRIBUTING lists pnpm lint and locale files at src/locales/{en,zh,ja}/translation.json. package.json has no lint script, and the real catalogs are src/i18n/locales/{en,zh,zh-TW,ja}.json loaded by src/i18n/index.ts. The documented pre-submit command that matches the repo is pnpm typecheck && pnpm format:check && pnpm test:unit, then cargo fmt --check, clippy, and cargo test.",
+          "sources": [
+            "CONTRIBUTING.md#L45-92",
+            "CONTRIBUTING.md#L119-128",
+            "package.json",
+            "src/i18n/index.ts#L1-11"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "No workflow file in the CI or release paths starts a Tauri webview, Playwright, or browser suite. UI behavior of invoke-backed screens is covered only through MSW mocks of the Tauri API. Proxy protocol conversion and live-file takeover are covered by Rust tests, not by a running Axum server in CI.",
+          "sources": [
+            ".github/workflows/ci.yml#L55-153",
+            "tests/setupTests.ts",
+            "vitest.config.ts"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "risk_map": {
+      "summary": "The trust boundary is documented in SECURITY.md: the bundled renderer is trusted, but deep links, proxy listeners, sync payloads, imports, and upstream responses are not. The highest-impact code is the local proxy (optionally non-loopback), QuickJS usage scripts, and shell launches for terminals and session resume. Live config writes sit outside the repo and can brick Claude, Codex, Gemini, or Grok sessions if a takeover backup is mishandled. A few docs and defaults disagree with the code (i18n paths, Hermes visibility, AppType error text).",
+      "claims": [
+        {
+          "claim": "SECURITY.md states there is no project cloud backend. The local HTTP proxy listen address is user-configurable and may be non-loopback; inbound requests are in scope. Also in scope: ccswitch:// payloads, WebDAV/S3 restores, SQL and config imports, proxy upstream responses, and credential leakage into logs or shared snippets. DevTools-only IPC calls are explicitly out of scope.",
+          "sources": [
+            "SECURITY.md#L14-80"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CSP allows connect-src http: and https: plus ipc, and img-src http/https. script-src stays 'self' plus one hash. SECURITY.md says introducing eval, new Function, an iframe, or a wider script-src voids the renderer trust decision. launch_session_terminal documents that it forwards the renderer command string to a shell because of that trust decision, while cwd is shell-escaped.",
+          "sources": [
+            "src-tauri/tauri.conf.json#L28-34",
+            "SECURITY.md#L24-62",
+            "src-tauri/src/commands/session_manager.rs#L27-70"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "execute_usage_script evals attacker-influenceable JavaScript (deep link or imported provider) inside rquickjs. Mitigations present in code are a 5-second interrupt, 16 MiB memory cap, 256 KiB stack, and base_url validation except for custom templates that embed their own URL. The HTTP request itself is performed by Rust after the script returns a request object.",
+          "sources": [
+            "src-tauri/src/usage_script.rs#L8-67",
+            "src-tauri/src/deeplink/mod.rs#L115-138",
+            "SECURITY.md#L70-79"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "open_provider_terminal extracts env vars, including API keys, from provider settings_config and passes them to launch_terminal_with_env. That function uses std::process::Command for bash, cmd, wsl.exe, osascript, and user-selected terminal binaries. MCP server commands are stored and later executed by the external CLI, not by validate_mcp_command, which only does a PATH lookup.",
+          "sources": [
+            "src-tauri/src/commands/misc.rs#L3798-3856",
+            "src-tauri/src/commands/mcp.rs#L38-42",
+            "SECURITY.md#L90-93"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "macOS subscription quota reads credentials by spawning the security CLI. Device names for sync can come from CC_SWITCH_DEVICE_NAME or a hostname command. These are local process launches with the user's privileges.",
+          "sources": [
+            "src-tauri/src/services/subscription.rs#L133-133",
+            "src-tauri/src/services/sync_protocol.rs#L402-411"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Provider API keys and live auth tokens are stored in SQLite providers.settings_config and in CLI files such as ~/.codex/auth.json. settings.json is written mode 0600 on Unix and secrets are stripped only in get_settings_for_frontend. Log redaction is exact-string based (minimum 8 characters) plus URL userinfo/query stripping, not a general secret scanner.",
+          "sources": [
+            "src-tauri/src/settings.rs#L692-720",
+            "src-tauri/src/settings.rs#L771-779",
+            "src-tauri/src/lib.rs#L132-178",
+            "src-tauri/src/database/schema.rs#L26-43"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Switching while a takeover backup exists must not overwrite the stub live file with the real upstream URL. recover_from_crash on the next launch is what restores live configs after a crash. A bug in hot_switch_provider_inner or the backup row can leave Claude/Codex/Gemini/Grok pointed at a dead local port or lose the pre-takeover file.",
+          "sources": [
+            "src-tauri/src/services/provider/mod.rs#L5739-5801",
+            "src-tauri/src/lib.rs#L1221-1244",
+            "src-tauri/src/services/provider/live.rs#L1704-1711"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "AppType::from_str accepts mcode but the localized error string lists only claude, claude-desktop, codex, gemini, grokbuild, opencode, openclaw, hermes, and pi. Backend VisibleApps::default sets hermes to false while src/config/appConfig.tsx DEFAULT_VISIBLE_APPS sets hermes to true, so a missing settings value can disagree across the IPC boundary.",
+          "sources": [
+            "src-tauri/src/app_config.rs#L467-488",
+            "src-tauri/src/settings.rs#L47-68",
+            "src/config/appConfig.tsx#L32-43"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CONTRIBUTING.md tells contributors to edit src/locales/*/translation.json and to run pnpm lint. Neither the path nor the script exists. Locale edits that follow the doc will not ship; the loaded files are src/i18n/locales/en.json, zh.json, zh-TW.json, and ja.json. package.json's description still names only Claude, Codex, and Gemini.",
+          "sources": [
+            "CONTRIBUTING.md#L66-128",
+            "src/i18n/index.ts#L4-7",
+            "package.json"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The SQLite connection is a single Mutex<Connection>. Provider switches, MCP sync, and the 60-second session scanner all take that lock, sometimes inside spawn_blocking or block_on from async commands. Long writes (skill sync, usage rollup) stall every other command.",
+          "sources": [
+            "src-tauri/src/database/mod.rs#L76-81",
+            "src-tauri/src/services/provider/mod.rs#L5743-5746",
+            "src-tauri/src/lib.rs#L1283-1316"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "God-module concentration: ProviderService::switch is in services/provider/mod.rs past line 5700, open_provider_terminal is in commands/misc.rs past line 3800, and proxy takeover lives in services/proxy.rs (a test at line 7571). A drive-by edit in those files can change every app's live write.",
+          "sources": [
+            "src-tauri/src/services/provider/mod.rs#L5712-5801",
+            "src-tauri/src/commands/misc.rs#L3803-3826",
+            "src-tauri/src/services/proxy.rs#L3416-3416"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Legacy compatibility still in the boot path: JSON config.json migration when no database exists, Windows HOME/.cc-switch fallback when the default db is missing, Claude settings.json versus claude.json, and deprecated get_mcp_config marked allow(deprecated). Official seed ids are special-cased so an import does not resurrect deleted official rows on ordinary startup, but a manual import does re-seed them.",
+          "sources": [
+            "src-tauri/src/lib.rs#L534-567",
+            "src-tauri/src/config.rs#L258-288",
+            "src-tauri/src/config.rs#L243-255",
+            "src-tauri/src/commands/provider.rs#L135-174",
+            "src-tauri/src/commands/mcp.rs#L53-55"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "extension_points": {
+      "summary": "New coding tools plug in through AppType plus a live-config module and a frontend preset file. New proxy vendors plug in through ProviderAdapter and a route on the Axum router. New UI features plug in as a Tauri command in commands/, a line in invoke_handler, and a wrapper in src/lib/api. Deep links, MCP/Skill app flags, and the settings KV table are the other registries. Schema changes must bump SCHEMA_VERSION and add a migration.",
+      "claims": [
+        {
+          "claim": "Adding a tool requires a new AppType variant, as_str, FromStr, all(), is_additive_mode or supports_local_proxy, and the matching frontend AppId in APP_IDS. MCP and Skills need a new bool on McpApps and SkillApps plus an enabled_* column. VisibleApps on both the Rust settings struct and the TypeScript default must be updated together.",
+          "sources": [
+            "src-tauri/src/app_config.rs#L8-214",
+            "src-tauri/src/app_config.rs#L393-465",
+            "src/config/appConfig.tsx#L19-89",
+            "src-tauri/src/settings.rs#L24-88"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Live IO for each tool is a dedicated module: claude via config.rs, claude_desktop_config.rs, codex_config.rs, gemini_config.rs, grok_config.rs, opencode_config.rs, openclaw_config.rs, hermes_config.rs, mcode_config.rs, and pi_config/mod.rs. read_live_settings and the write path in services/provider/live.rs are the dispatch tables a new app must join.",
+          "sources": [
+            "src-tauri/src/services/provider/live.rs#L1744-1860",
+            "src-tauri/src/pi_config/mod.rs#L1-7",
+            "src-tauri/src/mcode_config.rs#L1-60"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "ProviderAdapter in proxy/providers/adapter.rs is the proxy plugin trait: name, extract_base_url, extract_auth, build_url, get_auth_headers, and optional transform_request/transform_response. Concrete adapters live under proxy/providers (claude, codex, gemini, copilot, xAI OAuth, streaming transforms). auth_header_value rejects CR/LF in credentials instead of panicking.",
+          "sources": [
+            "src-tauri/src/proxy/providers/adapter.rs#L16-69"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New proxy endpoints are registered in ProxyServer::build_router. App-specific prefixes already used are /claude, /claude-desktop, /codex, and /grokbuild. A fifth proxied app would also need a proxy_config CHECK constraint change, a seed row, supports_local_proxy, and PROXY_APP_IDS.",
+          "sources": [
+            "src-tauri/src/proxy/server.rs#L291-370",
+            "src-tauri/src/database/schema.rs#L127-184",
+            "src/config/appConfig.tsx#L57-68"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The command table is tauri::generate_handler! in lib.rs. Each command module is declared and star-exported from commands/mod.rs. Frontend call sites must use the Rust function name; several parameters are intentionally camelCase (addToLive, originalId, providerId) under allow(non_snake_case).",
+          "sources": [
+            "src-tauri/src/lib.rs#L1388-1400",
+            "src-tauri/src/commands/mod.rs#L1-74",
+            "src-tauri/src/commands/provider.rs#L38-44"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Provider presets are plain TypeScript arrays in src/config/*ProviderPresets.ts, not a runtime plugin loader. Universal providers are a second registry: UniversalProviderPreset in universalProviderPresets.ts and the universal_providers JSON blob in the settings table, with sync_universal_provider pushing one record into Claude, Codex, and Gemini.",
+          "sources": [
+            "src/config/claudeProviderPresets.ts#L25-50",
+            "src/config/universalProviderPresets.ts#L15-37",
+            "src-tauri/src/database/dao/universal_providers.rs#L10-14"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Deep link resources are a string discriminant on DeepLinkImportRequest (provider, prompt, mcp, skill) parsed in deeplink/parser.rs and imported by per-resource modules. New resource types need a parser arm, an import function, and a frontend confirm dialog branch.",
+          "sources": [
+            "src-tauri/src/deeplink/mod.rs#L11-40",
+            "src-tauri/src/deeplink/mod.rs#L104-114"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Schema evolution is SCHEMA_VERSION in database/mod.rs, currently 19, with migrations in database/schema.rs. New databases get CREATE TABLE IF NOT EXISTS; existing databases run apply_schema_migrations only when the stored user_version is lower. A higher on-disk version aborts into the upgrade UI instead of writing DDL.",
+          "sources": [
+            "src-tauri/src/database/mod.rs#L54-56",
+            "src-tauri/src/database/mod.rs#L126-183",
+            "src-tauri/src/database/schema.rs#L16-24"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "i18n resources are four JSON files registered in src/i18n/index.ts. getInitialLanguage reads localStorage language, then navigator, with default zh. Tray locale mapping in tray.rs is documented to mirror that order. User-facing Rust errors use AppError::localized(key, zh, en).",
+          "sources": [
+            "src/i18n/index.ts#L4-60",
+            "src-tauri/src/tray.rs#L68-80",
+            "src-tauri/src/app_config.rs#L483-487"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "OMO is an OpenCode category pair (omo and omo-slim) handled inside switch_normal by OmoService::write_config_to_file and delete_config_file, not by the generic provider writer. A similar exclusive sidecar should follow that branch rather than is_additive_mode.",
+          "sources": [
+            "src-tauri/src/services/provider/mod.rs#L5723-5831"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Per-app config directory overrides are fields on AppSettings (claude_config_dir, codex_config_dir, gemini_config_dir, grok_config_dir, opencode_config_dir, openclaw_config_dir, hermes_config_dir, pi_config_dir) resolved by the matching get_*_dir helpers. The whole ~/.cc-switch directory can be moved via the Tauri Store override read in app_store::refresh_app_config_dir_override before the database opens.",
+          "sources": [
+            "src-tauri/src/settings.rs#L549-556",
+            "src-tauri/src/lib.rs#L465-467",
+            "src-tauri/src/config.rs#L258-263",
+            "src-tauri/src/openclaw_config.rs#L31-40"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_handoff": {
+      "summary": "Read the AppType dispatch, the switch function, and the live-path module for the tool you are touching before editing. Keep frontend AppId lists and Rust enums in lockstep, and update all four locale files for UI strings. Run the narrow Vitest file plus cargo test for the module; home-dir tests must set CC_SWITCH_TEST_HOME. Do not rewrite live CLI files while a takeover backup exists, do not relax CSP, and do not log raw provider settings. CONTRIBUTING.md is partly stale.",
+      "claims": [
+        {
+          "claim": "First files for any change: src-tauri/src/app_config.rs (AppType), src-tauri/src/services/provider/mod.rs ProviderService::switch, src-tauri/src/services/provider/live.rs, src/config/appConfig.tsx, src/lib/api/providers.ts, and src/App.tsx. Proxy work also starts at src-tauri/src/proxy/server.rs, provider_router.rs, and services/proxy.rs.",
+          "sources": [
+            "src-tauri/src/app_config.rs#L393-448",
+            "src-tauri/src/services/provider/mod.rs#L5700-5801",
+            "src/config/appConfig.tsx#L19-72",
+            "src/App.tsx#L116-174"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Safe UI edits are components under src/components and hooks under src/hooks, as long as invoke names stay aligned with commands. Safe backend edits for one tool stay inside that tool's *_config.rs module plus its preset TS file. Cross-cutting switch, takeover, and schema changes are not safe to make without the recovery and backfill paths.",
+          "sources": [
+            "src/hooks/useProviderActions.ts#L44-92",
+            "src-tauri/src/commands/provider.rs#L118-132",
+            "src-tauri/src/services/provider/live.rs#L1696-1711"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Command names registered with Tauri are the Rust function names (snake_case), despite CONTRIBUTING saying camelCase. Match existing argument renaming: the frontend passes app, id, provider, addToLive, originalId, providerId. New commands must be added both in commands/*.rs and in the generate_handler list.",
+          "sources": [
+            "CONTRIBUTING.md#L66-71",
+            "src-tauri/src/lib.rs#L1388-1396",
+            "src/lib/api/providers.ts#L49-92",
+            "src-tauri/src/commands/provider.rs#L38-44"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "i18n edits belong in src/i18n/locales/en.json, zh.json, zh-TW.json, and ja.json. The renderer defaults to zh. Rust user-visible errors should use AppError::localized so both zh and en exist even when the key is missing on one side.",
+          "sources": [
+            "src/i18n/index.ts#L4-11",
+            "CONTRIBUTING.md#L119-128",
+            "src-tauri/src/commands/provider.rs#L135-141"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Tests to run: pnpm test:unit for TS, filtered to the nearest tests/** file; cargo test --manifest-path src-tauri/Cargo.toml <name> for Rust. Integration tests that import switch_provider_test_hook need the library built with the test hooks that those tests already reference. Set CC_SWITCH_TEST_HOME and take the serial mutex before touching ~/.claude or ~/.codex. cargo fmt and clippy -D warnings match CI.",
+          "sources": [
+            "src-tauri/tests/provider_commands.rs#L1-40",
+            "src-tauri/src/config.rs#L18-33",
+            ".github/workflows/ci.yml#L145-153",
+            "package.json"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Do not point tests or manual runs at the developer's real home. get_home_dir honors CC_SWITCH_TEST_HOME only; dirs::home_dir and a raw HOME on Windows are explicitly called out as ways to split or leak the database. get_app_config_dir on Windows will adopt a legacy HOME/.cc-switch database if the default file is absent.",
+          "sources": [
+            "src-tauri/src/config.rs#L9-33",
+            "src-tauri/src/config.rs#L258-288",
+            "src-tauri/src/services/skill.rs#L6554-6568"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Exclusive versus additive is the main behavioral trap. OpenCode, OpenClaw, Hermes, Pi, and Mcode must not go through backfill-and-replace. remove_provider_from_live_config exists for additive apps and refuses other app types. Pi is not in the generic live sync loop.",
+          "sources": [
+            "src-tauri/src/app_config.rs#L430-440",
+            "src-tauri/src/services/provider/mod.rs#L5674-5714",
+            "src-tauri/src/services/provider/live.rs#L1699-1703"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Proxy takeover owns the live file. Edits that call write_live while a backup row or placeholder is present will clobber the stub or the backup. Use lock_switch_for_app and the hot-switch path. Official Codex can pass through native auth; other official providers are blocked while takeover is on.",
+          "sources": [
+            "src-tauri/src/services/provider/mod.rs#L5739-5797",
+            "src-tauri/src/commands/proxy.rs#L28-50"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Logging and error strings must not include raw API keys. Use url_for_log / redact_known_secrets. Frontend settings reads must keep using get_settings_for_frontend, which clears WebDAV and S3 secrets. Credential files should use atomic_write_private (0600), not a plain fs::write.",
+          "sources": [
+            "src-tauri/src/lib.rs#L116-178",
+            "src-tauri/src/settings.rs#L771-779",
+            "src-tauri/src/config.rs#L382-390"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Before finishing a user-facing flow, check db_version_too_new still renders DatabaseUpgrade, configLoadError still exits, and Hermes visibility defaults if you touched VisibleApps. Prettier only formats src/**, not tests/, so a format:check pass does not prove tests are formatted. Clippy denies warnings on the whole crate.",
+          "sources": [
+            "src/main.tsx#L88-111",
+            "src-tauri/src/settings.rs#L47-68",
+            "package.json",
+            ".github/workflows/ci.yml#L145-150"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_prompt": "You are working in cc-switch v3.20.3, a Tauri 2 desktop app that manages provider configuration for Claude Code, Claude Desktop, Codex, Gemini CLI, Grok Build, OpenCode, OpenClaw, Hermes, Pi, and MiniMax Code. The React 18 / Vite 7 renderer lives under src/ (entry src/main.tsx, shell src/App.tsx, Tailwind, Radix, TanStack Query, i18next). The Rust library crate is cc_switch_lib. src-tauri/src/main.rs only sets Linux WebKit variables (WEBKIT_DISABLE_DMABUF_RENDERER, WEBKIT_DISABLE_COMPOSITING_MODE, optional CC_SWITCH_GDK_BACKEND) and calls run() in src-tauri/src/lib.rs.\n\nIPC is Tauri commands listed in lib.rs invoke_handler. Frontend wrappers are src/lib/api/*.ts and call invoke() with the Rust function name, almost always snake_case (switch_provider, get_providers). Some argument names are camelCase on purpose (addToLive, originalId, providerId) via allow(non_snake_case). CONTRIBUTING.md says command names must be camelCase; that note is stale. Do not rename commands.\n\nPersistence has two stores. SQLite is ~/.cc-switch/cc-switch.db, opened by Database::init, SCHEMA_VERSION 19 in src-tauri/src/database/mod.rs. Providers, MCP, prompts, skills, proxy_config, request logs, and a settings KV table live there. Device UI state and current-provider pointers live in ~/.cc-switch/settings.json (AppSettings). That file is mode 0600 on Unix and is not part of WebDAV/S3 sync. get_settings_for_frontend clears the WebDAV password and S3 secret before they reach the UI. The DB settings table is a different KV store (common-config snippets, universal_providers, one-shot flags).\n\nLive CLI files are outside the repo and are the product. Paths: ~/.claude/settings.json, ~/.codex/config.toml plus auth.json, ~/.gemini/.env plus settings.json, ~/.grok/config.toml, ~/.config/opencode/opencode.json, ~/.openclaw/openclaw.json, ~/.hermes/config.yaml, ~/.pi/agent/models.json (or PI_CODING_AGENT_DIR), ~/.minimax/config.yaml (or MINIMAX_DATA_DIR / MAVIS_DATA_DIR). Each tool has a *_config.rs module. Writes go through config::atomic_write or atomic_write_private. AppSettings holds per-tool directory overrides. The whole ~/.cc-switch directory can be moved via the Tauri Store override, which is refreshed before the database opens.\n\nAppType in src-tauri/src/app_config.rs is the central enum and must match APP_IDS in src/config/appConfig.tsx. is_additive_mode is true for opencode, openclaw, hermes, pi, and mcode: providers coexist in one native file, and remove_provider_from_live_config only deletes one entry. Claude, Claude Desktop, Codex, Gemini, and Grok Build are exclusive. ProviderService::switch in services/provider/mod.rs backfills the outgoing live file onto the current provider row, updates current_provider_* in settings.json and is_current in SQLite, then writes the target. If a live-backup row or takeover placeholder exists, it instead calls hot_switch_provider_inner and must not put the real upstream URL back into the live file. Official providers that do not pass official_provider_supports_proxy_takeover are rejected while takeover is on (Codex official uses native auth passthrough and is also excluded from failover).\n\nThe local proxy is Axum plus a manual hyper HTTP/1.1 accept loop in proxy/server.rs. Default bind is 127.0.0.1:15721 but the address is user-configurable and may be non-loopback; SECURITY.md treats inbound requests as untrusted. Only claude, codex, gemini, and grokbuild support takeover. Routes include /v1/messages, /claude-desktop/v1/messages, chat completions, responses, /grokbuild/v1/responses, alpha search, and image generations. ProviderAdapter is the extension trait. ProviderRouter plus CircuitBreaker implement failover; FailoverSwitchManager updates the tray and UI. Do not widen CSP script-src, do not add eval or new Function, and do not introduce iframes. Usage scripts already eval inside rquickjs (5 second interrupt, 16 MiB, 256 KiB stack) in usage_script.rs; keep new script execution on that path. launch_session_terminal intentionally passes a renderer string to the shell; cwd is escaped. Deep links (ccswitch://) are untrusted: resource types are provider, prompt, mcp, and skill, and usageEnabled must be explicit before a script runs.\n\nStartup order matters. Backend: panic hook, log to ~/.cc-switch/logs/cc-switch.log, migrate legacy config.json if no database, refuse DDL when user_version is newer than 19 (frontend renders DatabaseUpgrade). Then recover crashed takeover via proxy_service.recover_from_crash, scrub leaked Gemini common config, restore proxy, daily backup timer, and a 60 second session-usage sync. Renderer bootstrap() in main.tsx calls get_init_error before painting App. configLoadError exits the process.\n\nWhen you add a tool, update AppType (as_str, FromStr, all, additive vs proxy), both VisibleApps defaults (Rust hermes defaults to hidden; the TS DEFAULT_VISIBLE_APPS currently sets hermes true), McpApps/SkillApps and their SQL columns if applicable, a preset file under src/config, and all four locales in src/i18n/locales (en, zh, zh-TW, ja). Ignore CONTRIBUTING paths under src/locales and the documented pnpm lint script; they do not exist. Checks that match CI: pnpm typecheck, pnpm format:check, pnpm test:unit, then cargo fmt --check, cargo clippy -- -D warnings, and cargo test from src-tauri. Tests that touch home must set CC_SWITCH_TEST_HOME and the serial mutex. Integration tests in src-tauri/tests call switch_provider_test_hook. Prefer a small diff. Do not log raw settings_config. Use AppError::localized(key, zh, en) for new user-visible backend errors."
+  },
+  "analysis": {
+    "agent": "grok",
+    "model": "cli:grok",
+    "runtime_ms": 408040,
+    "cost_usd": null,
+    "collected_at": "2026-09-22T12:18:50.616Z"
   }
 }

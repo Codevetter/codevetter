@@ -15960,5 +15960,865 @@
         ]
       }
     ]
+  },
+  "report": {
+    "overview": "Clash Verge Rev (package clash-verge 2.5.5, GPL-3.0) is a Tauri 2 desktop GUI for the Mihomo/Clash.Meta core, aimed at people who run a local rule-based proxy on Windows, macOS, and Linux. A React 19 frontend drives profiles, proxies, rules, connections, and settings, while the Rust backend owns config enhancement, the system proxy, TUN, and either a privileged helper service or a bundled verge-mihomo sidecar. What sets it apart from a thin Mihomo wrapper is the profile chain (merge and sandboxed JavaScript), copy-on-write drafts, service-or-sidecar core lifecycle, and local-only storage of config and logs.",
+    "system_map": {
+      "summary": "The process starts in src-tauri/src/main.rs, which installs a capped Tokio runtime and calls app_lib::run in src-tauri/src/lib.rs. That builder registers Tauri plugins and the IPC command table, then resolve_setup brings up config, the core, the tray, and the window. The UI is a Vite app rooted at src/ on port 3000. Persistent state lives in the OS data directory under the bundle id, not in the repo. The Mihomo core is an external binary, started either by clash-verge-service over IPC or as a sidecar. Release builds are GitHub Actions tag workflows; day-to-day dev is pnpm plus Cargo.",
+      "claims": [
+        {
+          "claim": "Product identity is Clash Verge, npm name clash-verge and Rust package clash-verge version 2.5.5, bundle id io.github.clash-verge-rev.clash-verge-rev, license GPL-3.0-only, with lib app_lib built as staticlib, cdylib, and rlib.",
+          "sources": [
+            "package.json",
+            "src-tauri/Cargo.toml",
+            "src-tauri/tauri.conf.json"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "main() in src-tauri/src/main.rs builds a multi-thread Tokio runtime named clash-verge-runtime-* with at most 8 worker threads and twice that many blocking threads, sets it as the Tauri async runtime, then calls app_lib::run(). The perf-harness feature on macOS swaps in scripts/perf/app.rs instead.",
+          "sources": [
+            "src-tauri/src/main.rs#L16-L37"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "app_init::setup_plugins registers sysinfo, notification, updater (with a custom comparator that also treats build-to-stable as newer), clipboard, process, global-shortcut, fs, dialog, shell, opener, deep-link, http, and tauri-plugin-mihomo over a local socket at IClashTemp::guard_external_controller_ipc. Devtools load only for debug builds with tauri-dev and without tokio-trace.",
+          "sources": [
+            "src-tauri/src/lib.rs#L42-L78"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The only IPC command table is app_init::generate_handlers, covering listener probes, proxy ports, profiles, clash/DNS, service install, runtime YAML, UWP, backups, WebDAV, and media-unlock checks.",
+          "sources": [
+            "src-tauri/src/lib.rs#L126-L216"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Frontend bootstrap is src/main.tsx: Vite root src, dev server port 3000, React 19 StrictMode, SWR, WindowProvider, AppDataProvider, and a createBrowserRouter whose children come from navItems. beforeDevCommand is pnpm run web:dev and frontendDist is ../dist.",
+          "sources": [
+            "src/main.tsx#L43-L74",
+            "src/pages/_routers.tsx",
+            "vite.config.mts",
+            "src-tauri/tauri.conf.json#L23-L28"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The Cargo workspace members are src-tauri plus crates clash-verge-draft, clash-verge-media-unlock, clash-verge-logging, clash-verge-signal, tauri-plugin-clash-verge-sysinfo, clash-verge-i18n, and clash-verge-limiter. tray-icon is patched from Tunglies/tray-icon branch fix/macos-27-click-reentrancy.",
+          "sources": [
+            "Cargo.toml#L1-L63"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Bundled externalBin sidecars are sidecar/verge-mihomo and sidecar/verge-mihomo-alpha. scripts/prebuild.mjs downloads the Mihomo core and the clash-verge-service binary into src-tauri/sidecar or src-tauri/resources (Linux service binaries go to the sidecar dir).",
+          "sources": [
+            "src-tauri/tauri.conf.json#L17",
+            "scripts/prebuild.mjs#L67-L70"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "App home is dirs::data_dir() joined with APP_ID (the .dev id when feature verge-dev is on). Files there include verge.yaml, config.yaml, profiles.yaml, profiles/, logs/, icons/, clash-verge.yaml, dns_config.yaml, and window_state.json.",
+          "sources": [
+            "src-tauri/src/utils/dirs.rs#L11-L31",
+            "src-tauri/src/utils/dirs.rs#L95-L111",
+            "src-tauri/src/constants.rs#L56-L61"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Privileged core control uses clash_verge_service_ipc 2.7.3 with the client feature. Feature verge-dev also enables that crate's development-channel. CoreManager::start_core_inner picks StartupDecision::Service or Sidecar from ServiceStatus, with a Windows sidecar fallback.",
+          "sources": [
+            "src-tauri/Cargo.toml#L102-L104",
+            "src-tauri/Cargo.toml#L17-L21",
+            "src-tauri/src/core/manager/lifecycle.rs#L40-L49",
+            "src-tauri/src/core/manager/lifecycle.rs#L572-L633"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Deep-link desktop schemes are clash and clash-verge. The updater plugin pins a minisign pubkey and three endpoints, trying update.hwdns.net and gh-proxy.org before the GitHub update.json. Windows install mode is passive.",
+          "sources": [
+            "src-tauri/tauri.conf.json#L32-L48"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Rust toolchain file pins channel 1.98.1 with rustfmt and clippy. The crate rust-version is 1.95 and edition 2024. pnpm scripts are dev, dev:service, dev:sidecar, build, web:build, typecheck, lint, and test (vitest run).",
+          "sources": [
+            "rust-toolchain.toml",
+            "src-tauri/Cargo.toml#L10-L11",
+            "package.json#L5-L41"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Release workflow .github/workflows/release.yml runs on tags v*.*.*, requires the tag commit to be on main, and requires the tag to equal v plus package.json version. dev.yml is a manual matrix of Windows, macOS aarch64, and Linux deb/nsis/dmg bundles and does not run unit tests.",
+          "sources": [
+            ".github/workflows/release.yml#L1-L59",
+            ".github/workflows/dev.yml#L1-L63"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "feature_catalog": {
+      "summary": "The user-facing surface is an eight-route desktop shell plus a tray menu and global hotkeys. Profiles can be remote subscriptions, local YAML, merge patches, or JavaScript enhancers. Clash controls cover mode, ports, DNS override, system proxy, TUN, and switching between the stable and alpha Mihomo cores. Backup is local files or WebDAV. A media-unlock page probes streaming and AI sites through the mixed port. There is no first-party cloud account; the external integrations are Mihomo, the OS proxy APIs, the helper service, WebDAV, and the GitHub updater.",
+      "claims": [
+        {
+          "claim": "Routes from navigationItems are / (home), /proxies, /profile, /connections, /rules, /logs, /unlock, and /settings, each mapped to a page component in navItems.",
+          "sources": [
+            "src/pages/_navigation-meta.ts",
+            "src/pages/_navigation.tsx#L37-L78",
+            "src/pages/_routers.tsx"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Home renders ClashModeCard, CurrentProxyCard, EnhancedCard, EnhancedTrafficStats, HomeProfileCard, and ProxyTunCard, and can call entry_lightweight_mode.",
+          "sources": [
+            "src/pages/home.tsx#L29-L37"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Settings is four panels: SettingSystem, SettingClash, SettingVergeBasic, and SettingVergeAdvanced, plus external links to the docs site, Telegram, and the GitHub repo.",
+          "sources": [
+            "src/pages/settings.tsx#L6-L36",
+            "src/pages/settings.tsx#L77-L116"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Profile item itype is one of remote, local, script, or merge. Creating a remote profile also ensures linked merge and script items exist. import_profile downloads via PrfItem::from_url and appends the item.",
+          "sources": [
+            "src-tauri/src/config/prfitem.rs#L145-L225",
+            "src-tauri/src/cmd/profile.rs#L65-L93"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The frontend share-link parser parseUri dispatches schemes ss, ssr, vmess, vless, trojan, anytls, hysteria, hysteria2, tuic, wireguard, http, https, and socks5.",
+          "sources": [
+            "src/utils/uri-parser/index.ts#L17-L40"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Tray menu ids cover dashboard, rule/global/direct modes, profiles, proxies, system proxy, TUN, close-all-connections, lightweight mode, copy env, open dirs and logs, restart core, restart app, and exit. TrayAction only classifies system_proxy, tun_mode, main_window, and tray_menu.",
+          "sources": [
+            "src-tauri/src/core/tray/menu_def.rs#L27-L70"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "HotkeyFunction names are open_or_close_dashboard, clash_mode_rule, clash_mode_global, clash_mode_direct, toggle_system_proxy, toggle_tun_mode, entry_lightweight_mode, reactivate_profiles, and quit, plus macOS hide.",
+          "sources": [
+            "src-tauri/src/core/hotkey.rs#L23-L74"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Service commands are install_service, uninstall_service, reinstall_service, repair_service, continue_with_sidecar, and sync_runtime_providers, plus one-shot notices for sidecar fallback and service repair.",
+          "sources": [
+            "src-tauri/src/cmd/service.rs#L29-L71",
+            "src-tauri/src/lib.rs#L147-L151"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Clash commands include patch_clash_config, patch_clash_mode, change_clash_core, restart_core, upgrade_clash_core, test_delay, and DNS save/apply/override/validate. Default ports are mixed 7897, socks 7898, http 7899, external controller 127.0.0.1:9097.",
+          "sources": [
+            "src-tauri/src/cmd/clash.rs#L18-L50",
+            "src-tauri/src/cmd/clash.rs#L104-L147",
+            "src-tauri/src/constants.rs#L3-L14"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Local backup commands are create/list/delete/restore/import/export. WebDAV commands are save_webdav_config, create_webdav_backup, list_webdav_backup, delete_webdav_backup, and restore_webdav_backup.",
+          "sources": [
+            "src-tauri/src/cmd/backup.rs#L6-L28",
+            "src-tauri/src/cmd/webdav.rs#L10-L46"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Media unlock lists Bilibili (mainland and HK/MO/TW), ChatGPT, Claude, Gemini, YouTube Premium, Bahamut, Netflix, Disney+, Prime Video, Spotify, and TikTok, with MAX_CONCURRENT_CHECKS of 4. The command builds a reqwest client proxied at the effective mixed port.",
+          "sources": [
+            "crates/clash-verge-media-unlock/src/lib.rs#L26-L55",
+            "src-tauri/src/cmd/media_unlock_checker/mod.rs#L6-L35"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "README-listed product features match the code: built-in Mihomo with an alpha core switch, theme color and CSS injection, merge/script profile enhancement, system-proxy guard, TUN, visual node and rule editing, and WebDAV backup. The app states it does not collect user data.",
+          "sources": [
+            "README.md#L79-L87",
+            "README.md#L130-L135"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "invoke_uwp_tool calls core::win_uwp::invoke_uwptools on Windows and is a no-op on other platforms.",
+          "sources": [
+            "src-tauri/src/cmd/uwp.rs#L3-L26"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "SilentUpdater::try_install_on_startup runs during resolve_setup and calls feat::restart_app if an update installs; a background check is then spawned.",
+          "sources": [
+            "src-tauri/src/utils/resolve/mod.rs#L167-L186"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "data_flow": {
+      "summary": "User input enters through Tauri invoke, the Mihomo plugin's local socket, deep links, or the localhost warp server. Rust turns profiles and verge/clash settings into one runtime YAML via enhance::enhance, validates it by executing the Mihomo sidecar with -t, then applies it to the running core. Live proxy and traffic data flow the other way: the UI polls get_proxy_view and Mihomo HTTP, and the backend pushes verge:// events. Durable files are YAML under the app home. WebDAV credentials are encrypted only while the task-local encryption flag is on.",
+      "claims": [
+        {
+          "claim": "src/services/cmds.ts is the typed invoke() boundary. Examples: get_profiles, import_profile, get_proxy_view (rejects schemaVersion other than 1), patch_verge_config, and save_profile_file, which treats ValidationOutcome.status === 'valid' as success.",
+          "sources": [
+            "src/services/cmds.ts#L13-L58",
+            "src/services/cmds.ts#L136-L142"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Live Mihomo data does not all go through cmds.ts. AppDataProvider uses tauri-plugin-mihomo-api getBaseConfig, getRules, and getRuleProviders, and polls getProxyView every 15 seconds via an SWR wrapper in src/services/query-client.ts.",
+          "sources": [
+            "src/providers/app-data-provider.tsx#L1-L30",
+            "src/providers/app-data-provider.tsx#L56-L77",
+            "src/services/query-client.ts#L1-L40"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Backend events subscribed in src/services/events.ts include verge://refresh-clash-config, verge://refresh-verge-config, verge://refresh-profiles, verge://notice-message, verge://run-state-changed, profile-changed, and profile-update-started/completed.",
+          "sources": [
+            "src/services/events.ts#L6-L20"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "In-memory config is Draft<T> from clash-verge-draft: data_arc is the committed snapshot, latest_arc prefers the uncommitted draft, edit_draft clones only when the Arc is shared, and apply commits the draft.",
+          "sources": [
+            "crates/clash-verge-draft/src/lib.rs#L31-L79"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Config::generate_with_profiles calls enhance::enhance, resolves provider path conflicts, sanitizes tunnels, optionally injects MixedPort::session_fallback, and stores the mapping on the runtime draft as IRuntime { config, dns_override, exists_keys, chain_logs }. generate_file writes that YAML to app_home/clash-verge.yaml with a generated-by header.",
+          "sources": [
+            "src-tauri/src/config/config.rs#L196-L248"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "enhance() order is: collect current profile items; process seq rules/proxies/groups; merge GUI clash defaults and port toggles; apply builtin scripts; use_tun; merge dns_config.yaml when DNS settings are enabled; run global merge then global script; run profile merge then profile script; enforce authoritative fields; cleanup proxy groups and sort keys.",
+          "sources": [
+            "src-tauri/src/enhance/mod.rs#L872-L969"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Script enhancers run in Boa. The stock tmpl::ITEM_SCRIPT skips the engine. Other scripts get a 5 second timeout, a 10_000_000 loop-iteration cap, a 10MB JSON input cap, and a console that only calls __verge_log__. Exceptions return the input config unchanged plus an exception log.",
+          "sources": [
+            "src-tauri/src/enhance/script.rs#L12-L66",
+            "src-tauri/src/enhance/script.rs#L123-L132"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Builtin script src-tauri/src/enhance/builtin/meta_guard.js rewrites config.mode from script to rule. It is applied from the Rust enhancer, not from the webview.",
+          "sources": [
+            "src-tauri/src/enhance/builtin/meta_guard.js#L1-L7",
+            "src-tauri/src/enhance/mod.rs#L930"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "verge.yaml WebDAV url, username, and password use serialize_encrypted / deserialize_encrypted. AES-256-GCM runs only when ENCRYPTION_ACTIVE is set by with_encryption. help.rs reads and writes YAML inside that scope. The 32-byte key is created with getrandom and stored at app_home/.encryption_key.",
+          "sources": [
+            "src-tauri/src/config/verge.rs#L168-L190",
+            "src-tauri/src/config/encrypt.rs#L18-L92",
+            "src-tauri/src/utils/dirs.rs#L155-L170",
+            "src-tauri/src/utils/help.rs#L1-L23"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Core config validation shells out to the selected sidecar: app_handle.shell().sidecar(clash_core) with args -t -d <app dir> -f <config path>, timeout 5 seconds. ValidationOutcome is Valid, Invalid, Skipped (exiting or debounced), or Busy.",
+          "sources": [
+            "src-tauri/src/core/validate.rs#L20-L21",
+            "src-tauri/src/core/validate.rs#L113-L136",
+            "src-tauri/src/core/validate.rs#L361-L364"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "A node click calls Mihomo selectNodeForGroup or unfixedProxy, then sync_tray_proxy_selection, then record_selected_node or forget_selected_node. If auto_close_connection is set, connections whose chain includes the previous proxy are closed.",
+          "sources": [
+            "src/hooks/use-proxy-selection.ts#L66-L96",
+            "src-tauri/src/cmd/proxy.rs#L19-L32"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The embedded warp server binds 127.0.0.1. /commands/visible and /commands/scheme require header x-instance-token. /commands/pac does not: it substitutes %mixed-port% into pac_file_content or DEFAULT_PAC and is fail-closed until PAC_AVAILABLE is set.",
+          "sources": [
+            "src-tauri/src/utils/server.rs#L51-L94",
+            "src-tauri/src/utils/server.rs#L198-L266",
+            "src-tauri/src/config/mod.rs#L17-L20"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Deep-link import parses clash or clash-verge URLs, takes the raw url= query (percent-decoded at most twice), builds a PrfItem with PrfItem::from_url, appends and saves profiles, refreshes Timer, and calls CoreManager::update_config_forced only when that import becomes the first current profile.",
+          "sources": [
+            "src-tauri/src/utils/resolve/scheme.rs#L13-L158"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "behavior_traces": {
+      "summary": "Startup is a singleton check, then a Tauri setup that always tries to open a window even if pre-init panics, then resolve_setup which starts the core in parallel with tray, hotkeys, timers, and the updater. The primary proxy action is a Mihomo select followed by a profile selection write and a tray refresh. Persistence of a subscription is download, append to profiles.yaml, then a forced enhance-and-apply. Quitting is not window-close: close hides the window, and a real exit runs feat::quit, which can cancel if the core will not stop.",
+      "claims": [
+        {
+          "claim": "Before the Tauri builder, Windows runs preinit_app_data_dir and owner_identity::repair_app_data_root_owner. Every platform then calls server::check_singleton. Primary continues; Secondary returns exit code success with no error dialog; a lock or bind error returns failure.",
+          "sources": [
+            "src-tauri/src/lib.rs#L247-L261",
+            "src-tauri/src/utils/server.rs#L45-L94",
+            "src-tauri/src/lib.rs#L523-L545"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "check_singleton locks singleton-instance.lock, binds 127.0.0.1 on the previous port or port 0, writes singleton-instance.json {port, token}, and starts the warp server before the UI exists. A second process POSTs to the primary and exits.",
+          "sources": [
+            "src-tauri/src/utils/server.rs#L21-L23",
+            "src-tauri/src/utils/server.rs#L51-L94"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "setup() sets APP_HANDLE, calls init_work_dir_and_logger (init_config then logger::init), autostart, deep links, and window state inside a panic catch. A second catch always runs resolve_setup_async, resolve_setup_sync, and init_signal so a pre-init panic still attempts the window and core.",
+          "sources": [
+            "src-tauri/src/lib.rs#L269-L320",
+            "src-tauri/src/utils/resolve/mod.rs#L30-L50"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "resolve_setup order is migrate_short_update_intervals, macOS dock policy, startup_script, ServiceManager::detect_startup_status, Config::init_config_before_window, WindowManager::create_window (skipped visibly when enable_silent_start), reconcile_startup_tun_availability, init_resources, init_dns_config, Config::init_runtime_config, verify_config_initialization, then a join of core init, tray, timer, hotkey, auto lightweight, auto backup, and silent updater, then Handle::refresh_clash and tray update_part.",
+          "sources": [
+            "src-tauri/src/utils/resolve/mod.rs#L52-L96",
+            "src-tauri/src/utils/resolve/mod.rs#L213-L236"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CoreManager::init retries start_core up to 3 times when Config::resolve_startup_mixed_port reports a fallback. start_core takes the config-update flag, then start_core_inner: if ServiceStatus is Ready it calls start_core_by_service; if not installed or sidecar-allowed it calls start_core_by_sidecar. On Windows a service start failure can fall through to the sidecar and spawn_service_handoff_watcher.",
+          "sources": [
+            "src-tauri/src/core/manager/mod.rs#L256-L305",
+            "src-tauri/src/core/manager/lifecycle.rs#L339-L360",
+            "src-tauri/src/core/manager/lifecycle.rs#L572-L633"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "RunEvent::Ready calls set_commands_ready, which opens the embedded visible and scheme routes. macOS reopen while in lightweight mode calls exit_lightweight_mode; otherwise it shows the main window. CloseRequested on the main window prevent_close and hides the window.",
+          "sources": [
+            "src-tauri/src/lib.rs#L346-L387",
+            "src-tauri/src/lib.rs#L452-L516",
+            "src-tauri/src/utils/server.rs#L288-L290"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "ExitRequested prevent_exit when lightweight mode is on, or when the event has no exit code, in which case it block_on feat::quit. feat::quit sets is_exiting, Config::apply_all_and_save_file, stops the core, shuts down the embedded server, and app_handle.exit. If the core does not stop it clears is_exiting, emits app_quit::core_stop_failed, and returns ShutdownOutcome::Canceled.",
+          "sources": [
+            "src-tauri/src/lib.rs#L487-L498",
+            "src-tauri/src/feat/window.rs#L113-L141"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Unpreventable RunEvent::Exit (Windows session end) sets is_exiting if needed and runs feat::clean_session_ending_best_effort, then flushes logs. clash_verge_signal::register(feat::quit) is installed from init_signal.",
+          "sources": [
+            "src-tauri/src/lib.rs#L470-L486",
+            "src-tauri/src/utils/resolve/mod.rs#L189-L192",
+            "crates/clash-verge-signal/src/lib.rs#L16-L20"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Manual subscription import: cmd::import_profile -> PrfItem::from_url -> profiles_append_item_safe -> profiles_save_file_safe -> Timer::global().refresh -> Handle::notify_profile_changed. Failures use codes PROFILE_IMPORT_FAILED. The URL is masked in the tracing span.",
+          "sources": [
+            "src-tauri/src/cmd/profile.rs#L65-L93"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Applying profiles: cmd::enhance_profiles -> feat::enhance_profiles -> CoreManager::update_config_forced -> update_config_with_force(true) -> perform_config_update. Busy and exiting short-circuit as ValidationOutcome::Busy or Skipped. A valid outcome also calls Config::sync_dns_override.",
+          "sources": [
+            "src-tauri/src/cmd/profile.rs#L41-L42",
+            "src-tauri/src/feat/profile.rs#L230-L237",
+            "src-tauri/src/core/manager/config.rs#L152-L183"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Verge setting changes: patch_verge_config -> feat::patch_verge -> apply_verge_patch_locked, which begins a DraftTransaction, edit_draft patch_config, process_terminated_flags, commit, refresh_verge, refresh auto-backup, and save_file unless not_save_file. TUN patches then call reconcile_tun_availability. System-proxy patches attach FailedOperation::SystemProxyEnable or SystemProxyDisable.",
+          "sources": [
+            "src-tauri/src/cmd/verge.rs#L16-L33",
+            "src-tauri/src/feat/config.rs#L279-L326"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "If startup_script in verge config is a path ending in .sh, .ps1, or .bat, init::startup_script runs bash or powershell on that path via tauri_plugin_shell during resolve_setup, using the script's parent as the working directory.",
+          "sources": [
+            "src-tauri/src/utils/init.rs#L599-L635",
+            "src-tauri/src/utils/resolve/mod.rs#L61"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "First-boot runtime validation failure does not abort startup. Config::init_runtime_config logs the outcome and CoreManager::use_default_config replaces the runtime with a minimal config, emitting config_validate::boot_error, process_terminated, or error.",
+          "sources": [
+            "src-tauri/src/config/config.rs#L151-L193"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "testing_signals": {
+      "summary": "Tests are real but narrow and mostly not wired into CI. Vitest covers a handful of frontend delay, event, and proxy-sort units. Rust tests sit next to the core manager, run state, enhancer, and command-error types and are the safety net for lifecycle decisions. The workflows that were read format-check or build release artifacts; they do not invoke pnpm test or cargo test. CONTRIBUTING.md treats new tests as optional and asks for clippy, eslint, and rustfmt instead.",
+      "claims": [
+        {
+          "claim": "package.json test is vitest run. vitest.config.mts includes tests/**/*.test.ts and src/**/*.test.ts in the node environment. There is no top-level tests/ directory, so only src/**/*.test.ts files run.",
+          "sources": [
+            "package.json#L35",
+            "vitest.config.mts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Frontend Vitest files found are src/services/delay.test.ts, src/services/events.test.ts, src/pages/_layout/hooks/use-layout-events.test.ts, src/utils/delay.test.ts, and src/components/proxy/use-filter-sort.test.ts. They cover delay sorting, event subscription readiness, and DNS/service notice draining, not pages or IPC.",
+          "sources": [
+            "src/services/delay.test.ts",
+            "src/services/events.test.ts",
+            "src/pages/_layout/hooks/use-layout-events.test.ts",
+            "src/utils/delay.test.ts",
+            "src/components/proxy/use-filter-sort.test.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "scripts/perf/report.test.mjs uses node:test for perf-report quantiles and schema. package.json perf:test runs it. macOS perf-harness is a separate Cargo feature pulling tauri-plugin-wdio-webdriver.",
+          "sources": [
+            "scripts/perf/report.test.mjs",
+            "package.json#L38-L41",
+            "src-tauri/Cargo.toml#L26"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Rust #[cfg(test)] modules include command failure wire format in cmd/mod.rs, singleton startup actions in lib.rs, fake-ip DNS defaults in enhance/mod.rs, CoreManager lifecycle decisions in core/manager/lifecycle.rs, and PAC fail-closed behavior in utils/server.rs.",
+          "sources": [
+            "src-tauri/src/cmd/mod.rs#L166-L215",
+            "src-tauri/src/lib.rs#L523-L545",
+            "src-tauri/src/enhance/mod.rs#L971-L996",
+            "src-tauri/src/core/manager/lifecycle.rs#L1426-L1458",
+            "src-tauri/src/utils/server.rs#L459"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Further Rust tests live beside core/runstate, core/proxy_view.rs, core/owner_identity.rs, core/timer.rs, core/runtime_bundle.rs, core/manager/state.rs, and enhance/seq.rs. clash-verge-draft has tests/test_me.rs and a criterion bench at bench/benche_me.rs.",
+          "sources": [
+            "src-tauri/src/core/proxy_view.rs#L479",
+            "src-tauri/src/core/manager/state.rs#L499",
+            "crates/clash-verge-draft/tests/test_me.rs",
+            "crates/clash-verge-draft/bench/benche_me.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Makefile.toml tasks are rust-format, rust-clippy with -D warnings on all targets and features, pnpm typecheck, knip, lint-staged, and i18n format/types. It has no test task.",
+          "sources": [
+            "Makefile.toml#L9-L74"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CONTRIBUTING.md tells contributors to run cargo clippy-all, pnpm lint, and cargo fmt. It says not to add tests unless the linked issue needs them. docs/CONTRIBUTING_i18n.md says to run pnpm test when translation-consuming code changes.",
+          "sources": [
+            "CONTRIBUTING.md#L19-L20",
+            "CONTRIBUTING.md#L120-L132",
+            "docs/CONTRIBUTING_i18n.md#L68"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "rustfmt.yml runs on pull requests only when Rust paths change, and only checks formatting. release.yml checks tag versus package.json and builds. dev.yml is a manual installer matrix. None of those three workflows invoke cargo test or pnpm test.",
+          "sources": [
+            ".github/workflows/rustfmt.yml",
+            " .github/workflows/release.yml#L1-L59",
+            ".github/workflows/dev.yml#L1-L63"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Workspace clippy lints are deny for panic, unwrap is warn, expect_used is warn, cognitive_complexity is deny, and correctness/suspicious are deny. Tests in the repo often allow clippy::expect_used locally.",
+          "sources": [
+            "Cargo.toml#L113-L167",
+            "src-tauri/src/cmd/proxy.rs#L113-L115"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "No Vitest file covers profile import, the settings panels, the router, WebDAV, or service install. Those flows are only exercised by the Rust command and lifecycle tests where such tests exist, and those tests are not started by the CI workflows above.",
+          "sources": [
+            "vitest.config.mts",
+            "src/pages/settings.tsx",
+            "src-tauri/src/cmd/profile.rs"
+          ],
+          "kind": "inference"
+        }
+      ]
+    },
+    "risk_map": {
+      "summary": "The highest-impact code is the core lifecycle and the system-proxy/TUN apply path: a bad transition can leave the OS proxy half-set or the core unguarded. The webview is loosely sandboxed (CSP off, filesystem scope **). Profile JavaScript is sandboxed in Boa but can still rewrite the config that Mihomo will load. Secrets at rest are only as private as the app-data directory, because the AES key sits beside verge.yaml. Deep links import remote subscriptions immediately, and a user-configured startup script is executed as a shell.",
+      "claims": [
+        {
+          "claim": "tauri.conf.json sets CSP to null and enables the asset protocol with allow ** and requireLiteralLeadingDot false. Capability migrated grants fs:allow-read-file and fs:allow-write-file with scope $APPDATA/**, $RESOURCE/../**, and **. desktop-capability allows http and https to any host via http:allow-fetch.",
+          "sources": [
+            "src-tauri/tauri.conf.json#L50-L61",
+            "src-tauri/capabilities/migrated.json#L7-L18",
+            "src-tauri/capabilities/desktop.json#L20-L27"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "PAC is mounted with .or(pac) outside instance_auth. Any local process that can reach 127.0.0.1 on the embedded port can read the PAC body, including the mixed port, once PAC_AVAILABLE is true. Window-restore and scheme import stay behind x-instance-token.",
+          "sources": [
+            "src-tauri/src/utils/server.rs#L140-L153",
+            "src-tauri/src/utils/server.rs#L225-L266"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "startup_script executes an arbitrary existing .sh via bash or .ps1/.bat via powershell from a path stored in verge config, during every startup, with the script directory as cwd.",
+          "sources": [
+            "src-tauri/src/utils/init.rs#L599-L635"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "resolve_scheme imports a subscription as soon as the URL parses. There is no confirm command on that path. A clash:// or clash-verge:// link that reaches the primary instance therefore downloads and saves a remote profile.",
+          "sources": [
+            "src-tauri/src/utils/resolve/scheme.rs#L13-L38",
+            "src-tauri/src/utils/resolve/scheme.rs#L82-L112"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "WebDAV secrets are encrypted in verge.yaml, but get_encryption_key stores the raw 32-byte key in app_home/.encryption_key with no OS keychain. A local reader of that directory can decrypt the fields.",
+          "sources": [
+            "src-tauri/src/utils/dirs.rs#L155-L170",
+            "src-tauri/src/config/encrypt.rs#L18-L31",
+            "src-tauri/src/config/verge.rs#L168-L190"
+          ],
+          "kind": "inference"
+        },
+        {
+          "claim": "check_media_unlock's HTTP client sets danger_accept_invalid_certs(true) and danger_accept_invalid_hostnames(true) and forces traffic through http://127.0.0.1:<mixed port>. Unlock checks can succeed against intercepted TLS.",
+          "sources": [
+            "src-tauri/src/cmd/media_unlock_checker/mod.rs#L11-L26"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "System proxy writes are classified as SysproxyFailure: SYSPROXY_PRIVILEGE_REQUIRED, SYSPROXY_DIRECT_FALLBACK, SYSPROXY_SIDECAR_WHILE_SERVICE_READY, SYSPROXY_GUARD_STOPPED, SYSPROXY_CORE_NOT_READY, and SYSPROXY_SYSTEM_CALL_FAILED. SystemProxyStateUnknown means a write was left partly applied and a turn-off was attempted. rollback_failure keeps the actionable code.",
+          "sources": [
+            "src-tauri/src/core/proxy_control.rs#L31-L120"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Windows service start uses run_service_start_with_sidecar_fallback. A non-location ServiceStartRefusal is returned rather than ignored. An unclear occupancy probe blocks sidecar fallback. Sidecar continuation is rejected unless can_allow_sidecar_for_session matches mode and status, and a failed sidecar attempt withdraws the allowance and rolls back the proxy.",
+          "sources": [
+            "src-tauri/src/core/manager/lifecycle.rs#L188-L228",
+            "src-tauri/src/core/manager/lifecycle.rs#L362-L426"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Updater endpoints prefer https://update.hwdns.net/... and https://gh-proxy.org/... ahead of the GitHub release update.json. Payloads are still checked with the configured minisign pubkey, but availability depends on those proxies.",
+          "sources": [
+            "src-tauri/tauri.conf.json#L32-L39"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Config validation and the running core shell out to a sidecar binary named by verge's clash core (verge-mihomo or verge-mihomo-alpha). Replacing that binary in the install or sidecar directory changes what -t and the runtime execute.",
+          "sources": [
+            "src-tauri/src/core/validate.rs#L361-L364",
+            "src-tauri/tauri.conf.json#L17"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Profile scripts are not a browser sandbox escape, but they do receive the full clash mapping and their returned object becomes the runtime config after authoritative-field enforcement. A malicious local script profile can still rewrite rules and proxies within those limits. Remote subscriptions are YAML fetched by PrfItem::from_url, not executed as JavaScript by themselves.",
+          "sources": [
+            "src-tauri/src/enhance/script.rs#L22-L60",
+            "src-tauri/src/enhance/mod.rs#L936-L959",
+            "src-tauri/src/config/prfitem.rs#L250-L285"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Lock order is documented as config write lock then lifecycle lock. continue_with_sidecar and uninstall_service_and_start_sidecar both comment that taking them in the other order can commit another transaction's staged verge patch.",
+          "sources": [
+            "src-tauri/src/core/manager/lifecycle.rs#L370-L373",
+            "src-tauri/src/core/manager/lifecycle.rs#L437-L439"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Linux desktop file template declares only MimeType x-scheme-handler/clash, while init_scheme registers both clash and clash-verge via xdg-mime. A packaging drift can leave clash-verge:// unregistered even though Tauri lists both schemes.",
+          "sources": [
+            "src-tauri/packages/linux/clash-verge.desktop#L10",
+            "src-tauri/src/utils/init.rs#L569-L597",
+            "src-tauri/tauri.conf.json#L44-L47"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "extension_points": {
+      "summary": "New behavior is expected to plug into a few explicit tables rather than into new processes. IPC commands go in cmd/ and generate_handlers. UI routes go in navigationItems. Hotkeys, tray items, URI schemes, and media-unlock checks are enums or maps. Profile enhancement is a fixed chain of merge and script items plus two builtin JS files, not a dynamic plugin loader. The Draft type and Run State are the shared extension surfaces for config and service status.",
+      "claims": [
+        {
+          "claim": "New Tauri commands must be added as #[tauri::command] functions under src-tauri/src/cmd/ and listed in app_init::generate_handlers. The module re-exports each command module from cmd/mod.rs.",
+          "sources": [
+            "src-tauri/src/lib.rs#L126-L216",
+            "src-tauri/src/cmd/mod.rs#L94-L129"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Frontend routes are data, not a nested route file tree. Adding a page means a navigationItems entry plus a navItems Component. The router maps those path/Component pairs and nothing else.",
+          "sources": [
+            "src/pages/_navigation-meta.ts",
+            "src/pages/_navigation.tsx#L37-L78",
+            "src/pages/_routers.tsx"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Hotkey functions are the HotkeyFunction enum plus FromStr names. Adding a shortcut means extending that enum and the register path in core/hotkey.rs; unknown names bail with invalid hotkey function.",
+          "sources": [
+            "src-tauri/src/core/hotkey.rs#L21-L74"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Tray labels and ids are generated by the define_menu! macro in core/tray/menu_def.rs, with display strings looked up through clash_verge_i18n::t. A new tray row is a new macro entry, not a free-form menu builder at the call site.",
+          "sources": [
+            "src-tauri/src/core/tray/menu_def.rs#L1-L51"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Share-link import extends URI_PARSERS in src/utils/uri-parser/index.ts. Each scheme maps to a function (uri) => IProxyConfig.",
+          "sources": [
+            "src/utils/uri-parser/index.ts#L15-L40"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "A new streaming check is an UnlockCheck variant in crates/clash-verge-media-unlock/src/lib.rs, a name() match arm, an ALL entry, and a module such as netflix.rs. The UI calls get_unlock_items and check_media_unlock; it does not hardcode the list.",
+          "sources": [
+            "crates/clash-verge-media-unlock/src/lib.rs#L26-L80",
+            "src-tauri/src/cmd/media_unlock_checker/mod.rs#L6-L9"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Profile enhancement extension points are per-profile and global ChainItems of type merge, script, rules, proxies, and groups, applied by process_seq_items, process_global_items, and process_profile_items. Builtin JS is the fixed pair meta_guard.js and meta_hy_alpn.js under enhance/builtin/, gated by enable_builtin_enhanced.",
+          "sources": [
+            "src-tauri/src/enhance/mod.rs#L50-L98",
+            "src-tauri/src/enhance/mod.rs#L914-L956"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Backend user-visible strings go through crates/clash-verge-i18n, which loads YAML locales with rust_i18n and falls back to zh. Frontend strings are JSON under src/locales, with generated key types from pnpm i18n:types.",
+          "sources": [
+            "crates/clash-verge-i18n/src/lib.rs#L1-L8",
+            "Makefile.toml#L58-L74"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Service vs sidecar policy is the startup_decision function over ServiceStatus, plus Run State in core/runstate. New install/repair outcomes should map there rather than grow a second status enum in the UI.",
+          "sources": [
+            "src-tauri/src/core/manager/lifecycle.rs#L40-L49",
+            "src-tauri/src/core/service.rs#L154-L180"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Verge and profile mutations are supposed to go through DraftTransaction and Config::lock_config_write, not direct YAML writes. patch_verge and generate_with_profiles are the two patterns.",
+          "sources": [
+            "src-tauri/src/feat/config.rs#L296-L321",
+            "src-tauri/src/config/config.rs#L224-L248"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Frontend event names are the VergeEvents map in src/services/events.ts. A new backend emit is invisible to React until that map and a subscribeVergeEvents handler both include it.",
+          "sources": [
+            "src/services/events.ts#L6-L36"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Command failures that the UI can classify should use CommandFailure::coded or SysproxyFailure codes. proxy_aware_coded_error lets a proxy classification outrank the operation fallback such as CORE_RESTART_FAILED.",
+          "sources": [
+            "src-tauri/src/cmd/mod.rs#L6-L91",
+            "src-tauri/src/cmd/mod.rs#L204-L214"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_handoff": {
+      "summary": "Read AGENTS.md before editing: non-trivial work needs an existing issue, the diff must match that issue, and tests are not a default. Start from lib.rs generate_handlers, cmds.ts, and the config/core modules that own the behavior you touch. Respect draft transactions and the config-then-lifecycle lock order. Verify with pnpm typecheck, pnpm lint, and targeted cargo tests; do not assume CI runs the suite. Do not hand-edit the AI-slop review lockfile, and do not treat the webview capability set as a tight sandbox.",
+      "claims": [
+        {
+          "claim": "AGENTS.md requires a pre-existing issue for non-trivial changes, English Conventional Commits, changelog lines per template/Changelog.md, and no drive-by refactors or dependency bumps. Tests are added only when the issue needs a regression guard. AI-assisted PRs append an Assisted by footer. The policy file pr-ai-slop-review.md is compiled; never edit pr-ai-slop-review.lock.yml by hand.",
+          "sources": [
+            "AGENTS.md",
+            "CONTRIBUTING.md#L9-L23"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Files to read first for any behavior change: src-tauri/src/lib.rs (startup and command table), src-tauri/src/utils/resolve/mod.rs (init order), src-tauri/src/config/config.rs and enhance/mod.rs (runtime YAML), src-tauri/src/core/manager/lifecycle.rs (service vs sidecar), and src/services/cmds.ts plus src/services/events.ts (UI seam).",
+          "sources": [
+            "src-tauri/src/lib.rs",
+            "src-tauri/src/utils/resolve/mod.rs",
+            "src-tauri/src/enhance/mod.rs",
+            "src/services/cmds.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "A command implemented only in Rust or only in cmds.ts will not complete a user action. generate_handlers and the invoke wrappers are separate registries and nothing generates one from the other.",
+          "sources": [
+            "src-tauri/src/lib.rs#L126-L216",
+            "src/services/cmds.ts#L9-L14"
+          ],
+          "kind": "inference"
+        },
+        {
+          "claim": "Safe local checks that match repo tooling: pnpm typecheck, pnpm lint (eslint max-warnings 0), pnpm test, cargo fmt, and cargo clippy --all-targets --all-features -- -D warnings as in Makefile.toml. pnpm dev preserves an existing dev-channel service; pnpm dev:service installs it; pnpm dev:sidecar forces the unprivileged sidecar.",
+          "sources": [
+            "package.json#L5-L36",
+            "Makefile.toml#L15-L18",
+            "README.md#L103-L113"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Feature verge-dev changes APP_ID to io.github.clash-verge-rev.clash-verge-rev.dev and the backup directory name, and selects the service IPC development channel. Production and dev installs do not share app data. Do not point tests at the production id.",
+          "sources": [
+            "src-tauri/src/utils/dirs.rs#L11-L19",
+            "src-tauri/Cargo.toml#L20-L21"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Window close is hide, not quit. Exit and lightweight mode both call prevent_exit. A change that calls app.exit or stops the core must go through feat::quit or the session-ending cleanup, or the singleton server and system proxy can be left up.",
+          "sources": [
+            "src-tauri/src/lib.rs#L374-L387",
+            "src-tauri/src/lib.rs#L487-L498",
+            "src-tauri/src/feat/window.rs#L113-L141"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Do not write verge.yaml by calling serde outside with_encryption. WebDAV fields serialize as plaintext unless ENCRYPTION_ACTIVE is set. help::save_yaml is the path that turns the flag on.",
+          "sources": [
+            "src-tauri/src/config/encrypt.rs#L52-L92",
+            "src-tauri/src/utils/help.rs#L1-L23",
+            "src-tauri/src/config/verge.rs#L168-L190"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Hold Config::lock_config_write before the core lifecycle lock when a patch also starts or stops the core. The comments on continue_with_sidecar and uninstall_service_and_start_sidecar describe cross-transaction draft commits if that order flips.",
+          "sources": [
+            "src-tauri/src/core/manager/lifecycle.rs#L370-L374",
+            "src-tauri/src/feat/config.rs#L291-L294"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Mixed-port startup can rewrite the runtime port up to three retries. UI code should use MixedPort helpers and use-displayed-mixed-port rather than assuming 7897 after a failed bind.",
+          "sources": [
+            "src-tauri/src/core/manager/mod.rs#L256-L287",
+            "src-tauri/src/constants.rs#L11",
+            "src/utils/mixed-port.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "i18n key types are generated. After editing locale JSON, pnpm i18n:types and the cleanup script are the repo's own tools; do not hand-maintain src/types/generated if the script owns it. Backend tray strings live in crates/clash-verge-i18n locales, default zh.",
+          "sources": [
+            "package.json#L30-L32",
+            "crates/clash-verge-i18n/src/lib.rs#L5-L6",
+            "Makefile.toml#L58-L74"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "pnpm run prebuild is required before a real core start because Mihomo and the service binary are downloaded, not stored as source. CI requires an explicit rustc target triple or prebuild throws.",
+          "sources": [
+            "scripts/prebuild.mjs#L54-L70",
+            "CONTRIBUTING.md#L74-L78",
+            "README.md#L103-L107"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Edition 2024 and the deny-level workspace clippy set mean new unwrap, panic, todo, and unimplemented will fail lint. Match surrounding Result/CommandFailure style instead of adding unwrap.",
+          "sources": [
+            "Cargo.toml#L137-L162",
+            "src-tauri/Cargo.toml#L10-L11"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_prompt": "You are working in clash-verge-rev, a GPL-3.0 Tauri 2 desktop app (product Clash Verge, npm package clash-verge, Rust lib app_lib) at version 2.5.5. It is a GUI for Mihomo (Clash.Meta) on Windows, macOS, and Linux. Config and logs stay on the machine under the OS data directory; there is no account backend.\n\nThe React 19 frontend lives in src/. Entry is src/main.tsx. Routes are the navItems list: /, /proxies, /profile, /connections, /rules, /logs, /unlock, /settings. Vite serves that tree at port 3000. Talk to Rust through invoke wrappers in src/services/cmds.ts and through tauri-plugin-mihomo-api for live proxies, rules, connections, and logs. Client cache is the SWR wrapper in src/services/query-client.ts. Backend-to-UI events are the VergeEvents map in src/services/events.ts.\n\nRust starts in src-tauri/src/main.rs (Tokio, at most 8 workers) and app_lib::run in src-tauri/src/lib.rs. Every IPC command is listed in app_init::generate_handlers. Add a command in src-tauri/src/cmd, register it there, and add a typed wrapper in cmds.ts. Failures are CommandFailure { code, detail, operation }. System-proxy failures use SysproxyFailure codes from core/proxy_control.rs and must outrank generic operation codes.\n\nStartup: singleton lock and a localhost warp server (utils/server.rs) that serves authenticated /commands/visible and /commands/scheme plus an unauthenticated PAC route. Then resolve_setup starts the service manager, window, TUN reconcile, DNS, runtime config, and in parallel the core, tray, hotkeys, timers, auto-backup, and silent updater. Closing the main window hides it. Real quit is feat::quit, which can cancel if the core will not stop. Lightweight mode also prevent_exit.\n\nThe core runs in the privileged clash-verge-service (clash_verge_service_ipc 2.7.3) or as sidecar verge-mihomo / verge-mihomo-alpha. CoreManager::start_core_inner chooses. On Windows a failed service start can fall back to the sidecar and later hand off. Lock order is config write lock, then the lifecycle lock. Do not invert it.\n\nConfig files in the app home: verge.yaml, config.yaml, profiles.yaml, profiles/, and generated clash-verge.yaml. In-memory state is Draft<T> in crates/clash-verge-draft. enhance::enhance merges the current profile with seq editors, GUI defaults, builtin JS, TUN, dns_config.yaml, then global and per-profile merge and script items. Scripts run in Boa with a 5s timeout. Validation shells out to the sidecar with -t before apply. WebDAV url, username, and password are AES-256-GCM only inside with_encryption; the key file is app_home/.encryption_key. Saving verge.yaml outside that scope writes plaintext.\n\nProfile itype is remote, local, script, or merge. Subscription import is import_profile or a clash:// / clash-verge:// deep link, which imports immediately. Proxy clicks call Mihomo selectNodeForGroup, then record_selected_node, then tray sync.\n\nAGENTS.md is binding: pre-existing issue, diff limited to that issue, no drive-by refactors, no new dependencies, tests only when they guard the reported bug, English Conventional Commits, changelog lines per template/Changelog.md. Never hand-edit .github/workflows/pr-ai-slop-review.lock.yml. Disclose AI assistance in the PR body.\n\nChecks: pnpm typecheck, pnpm lint, pnpm test (Vitest; few files, no tests/ directory), cargo fmt, cargo clippy --all-targets --all-features -- -D warnings. Rust unit tests sit beside core/manager, runstate, enhance, and cmd. CI workflows you will see first format or build; they do not run that suite. pnpm dev keeps the dev service channel; pnpm dev:sidecar forces sidecar. pnpm prebuild downloads Mihomo and the service binary. Feature verge-dev uses a .dev app id so it does not share production data.\n\nTraps: CSP is null, asset protocol allow is **, migrated fs scope is **. PAC on the embedded server has no instance token. A verge startup_script path is executed as bash or powershell. Updater endpoints try third-party proxies before GitHub but pin a minisign pubkey. The media-unlock client accepts invalid TLS certs and uses the mixed port. Do not assume port 7897 after a mixed-port fallback. Edition is 2024 and workspace clippy denies panic, unwrap-as-error, and todo."
+  },
+  "analysis": {
+    "agent": "grok",
+    "model": "cli:grok",
+    "runtime_ms": 388318,
+    "cost_usd": null,
+    "collected_at": "2026-09-22T12:18:30.894Z"
   }
 }
