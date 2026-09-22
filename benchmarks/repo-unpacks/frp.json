@@ -333,7 +333,7 @@
         {
           "path": "README.md",
           "bytes": 45016,
-          "preview": "# frp\n\n[![Build Status](https://circleci.com/gh/fatedier/frp.svg?style=shield)](https://circleci.com/gh/fatedier/frp)\n[![GitHub release](https://img.shields.io/github/tag/fatedier/frp.svg?label=release)](https://github.com/fatedier/frp/releases)\n[![GitHub Releases Stats](https://img.shields.io/github/downloads/fatedier/frp/total.svg?logo=github)](https://somsubhra.github.io/github-release-stats/?username=fatedier&repository=frp)\n\n[README](README.md) | [\u4e2d\u6587\u6587\u6863](README_zh.md)\n\n## Sponsors\n\nfrp is an open source project with its ongoing development made possible entirely by the support of our awesome sponsors. If you'd like to join them, please consider [sponsoring frp's development](https://github.com/sponsors/fatedier).\n\n<h3 align=\"center\">Gold Sponsors</h3>\n<!--gold sponsors start-->\n<p align=\"center\">\n  <a href=\"https://www.rapidproxy.io/?ref=frp\" target=\"_blank\">\n    <img width=\"420px\" src=\"https://raw.githubusercontent.com/fatedier/frp/dev/doc/pic/sponsor_rapidproxy.png\">\n    <br>\n    <b>High-performance residential and ISP proxies for developers</b>\n  </a>\n  <br>\n  <sub>90M+ residential IPs worldwide. Rotating IPs, sticky sessions, and traffic that never expires.</sub>\n  <br>\n  <sub>From $0.55/GB. Use RAPID10 for 10% off. Try it for free.</sub>\n</p>\n\n<p align=\"center\">\n  <a href=\"https://jb.gg/frp\" target=\"_blank\">\n    <img width=\"420px\" src=\"https://raw.githubusercontent.com/fatedier/frp/dev/doc/pic/sponsor_jetbrains.jpg\">\n\t<br>\n\t<b>The complete IDE crafted for professional Go developers</b>\n  </a>\n</p>\n\n<p align=\"center\">\n  <a href=\"https://github.com/beclab/Olares\" target=\"_blank\">\n    <img width=\"420px\" src=\"https://raw.githubusercontent.com/fatedier/frp/dev/doc/pic/sponsor_olares.jpeg\">\n\t<br>\n\t<b>The sovereign cloud that puts you in control</b>\n\t<br>\n\t<sub>An open source, self-hosted alternative to public clouds, built for data ownership and privacy</sub>\n  </a>\n</p>\n\n<div align=\"center\">\n\n## Recall.ai - API for meeting recordings\n\nIf you're looking for a meeting recording API, consider checking out [Recall.ai](https://www.recall.ai/?utm_source=github&utm_medium=sponsorship&utm_campaign=fatedier-frp),\n\nan API that records Zoom, Google Meet, Microsoft Teams, in-person meetings, and more.\n\n</div>\n\n<!--gold sponsors end-->\n\n## What is frp?\n\nfrp is a fast reverse proxy that allows you to expose a local server located behind a NAT or firewall to the Internet. It currently supports **TCP** and **UDP**, as well as **HTTP** and **HTTPS** protocols, enabling requests to be forwarded to internal services via domain name.\n\nfrp also offers a P2P connect mode.\n\n## Table of Contents\n\n<!-- vim-markdown-toc GFM -->\n\n* [Development Status](#development-status)\n    * [About V2](#about-v2)\n* [Architecture](#architecture)\n* [Example Usage](#example-usage)\n    * [Access your computer in a LAN network via SSH](#access-your-computer-in-a-lan-network-via-ssh)\n    * [Multiple SSH services sharing the same port](#multiple-ssh-services-sharing-the-same-port)\n    * [Accessing Internal Web Services with Custom Domains in LAN](#accessing-internal-web-services-with-custom-domains-in-lan)\n    * [Forward DNS query requests](#forward-dns-query-requests)\n    * [Forward Unix Domain Socket](#forward-unix-domain-socket)\n    * [Expose a simple HTTP file server](#expose-a-simple-http-file-server)\n    * [Enable HTTPS for a local HTTP(S) service](#enable-https-for-a-local-https-service)\n    * [Expose your service privately](#expose-your-service-privately)\n    * [P2P Mode](#p2p-mode)\n* [Features](#features)\n    * [Configuration Files](#configuration-files)\n    * [Using Environment Variables](#using-environment-variables)\n    * [Split Configures Into Different Files](#split-configures-into-different-files)\n    * [Server Dashboard](#server-dashboard)\n    * [Client Admin UI](#client-admin-ui)\n        * [Dynamic Proxy Management (Store)](#dynamic-proxy-management-store)\n    * [Monitor](#monitor)\n        * [Prometheus](#prometheus)\n    * [Authenticating the Client](#authenticating-the-client)\n        * [Token Authentication](#token-authentication)\n        * [OIDC Authentication](#oidc-authentication)\n    * [Encryption and Compression](#encryption-and-compression)\n        * [TLS](#tls)\n    * [Hot-Reloading frpc configuration](#hot-reloading-frpc-configuration)\n    * [Get proxy status from client](#get-proxy-status-from-client)\n    * [Only allowing certain ports on the server](#only-allowing-certain-ports-on-the-server)\n    * [Port Reuse](#port-reuse)\n    * [Bandwidth Limit](#bandwidth-limit)\n        * [For Each Proxy](#for-each-proxy)\n    * [TCP Stream Multiplexing](#tcp-stream-multiplexing)\n    * [Support KCP Protocol](#support-kcp-protocol)\n    * [Support QUIC Protocol](#support-quic-protocol)\n    * [Connection Pooling](#connection-pooling)\n    * [Load balancing](#load-balancing)\n    * [Service Health Check](#service-health-check)\n    * [Rewriting the HTTP Host Header](#rewriting-the-http-host-header)\n    * [Setting other HTTP Headers](#setting-other-http-headers)\n    * [Get Real IP](#get-real-ip)\n        * [HTTP X-Forwarded-For](#http-x-forwarded-for)\n        * [Proxy Protocol](#proxy-protocol)\n    * [Require HTTP Basic Auth (Password) for Web Services](#require-http-basic-auth-password-for-web-services)\n    * [Custom Subdomain Names](#custom-subdomain-names)\n    * [URL Routing](#url-routing)\n    * [TCP Port Multiplexing](#tcp-port-multiplexing)\n    * [Connecting to frps via PROXY](#connecting-to-frps-via-proxy)\n    * [Port range mapping](#port-range-mapping)\n    * [Client Plugins](#client-plugins)\n    * [Server Manage Plugins](#server-manage-plugins)\n    * [SSH Tunnel Gateway](#ssh-tunnel-gateway)\n    * [Virtual Network (VirtualNet)](#virtual-network-virtualnet)\n* [Feature Gates](#feature-gates)\n    * [Available Feature Gates](#available-feature-gates)\n    * [Enabling Feature Gates](#enabling-feature-gates)\n    * [Feature Lifecycle](#feature-lifecycle)\n* [Related Projects](#related-projects)\n* [Contributing](#contributing)\n* [Donation](#donation)\n    * [GitHub Sponsors](#github-sponsors)\n    * [PayPal](#paypal)\n\n<!-- vim-markdown-toc -->\n\n## Development Status\n\nfrp is currently under development. You can try the latest release version in the `master` branch, or use the `dev` branch to access the version currently in development.\n\nWe are currently working on version 2 and attempting to perform some code refactoring and improvements. However, please note that it will not be compatible with version 1.\n\nWe will transition from version 0 to version 1 at the appropriate time and will only accept bug fixes and improvements, rather than big feature requests.\n\n### About V2\n\nThe complexity and difficulty of the v2 version are much higher than anticipated. I can only work on its development during fragmented time periods, and the constant interruptions disrupt productivity significantly. Given this situation, we will continue to optimize and iterate on the current version until we have more free time to proceed with the major version overhaul.\n\nThe concept behind v2 is based on my years of experience and reflection in the cloud-native domain, particularly in K8s and ServiceMesh. Its core is a modernized four-layer and seven-layer proxy, similar to envoy. This proxy itself is highly scalable, not only capable of implementing the functionality of intranet penetration but also applicable to various other domains. Building upon this highly scalable core, we aim to implement all the capabilities of frp v1 while also addressing the functionalities that were previously unachievable or difficult to implement in an elegant manner. Furthermore, we will maintain efficient development and iteration capabilities.\n\nIn addition, I envision frp itself becoming a highly extensible system and platform, similar to how we can provide a range of extension capabilities based on K8s. In K8s, we can customize development according to enterprise needs, utilizing features such as CRD, controller mode, webhook, CSI, and CNI. In frp v1, we introduced the concept of server plugins, which implemented some basic extensibility. However, it relies on a simple HTTP protocol and requires users to start independ"
+          "preview": "# frp\n\n[![Build Status](https://circleci.com/gh/fatedier/frp.svg?style=shield)](https://circleci.com/gh/fatedier/frp)\n[![GitHub release](https://img.shields.io/github/tag/fatedier/frp.svg?label=release)](https://github.com/fatedier/frp/releases)\n[![GitHub Releases Stats](https://img.shields.io/github/downloads/fatedier/frp/total.svg?logo=github)](https://somsubhra.github.io/github-release-stats/?username=fatedier&repository=frp)\n\n[README](README.md) | [中文文档](README_zh.md)\n\n## Sponsors\n\nfrp is an open source project with its ongoing development made possible entirely by the support of our awesome sponsors. If you'd like to join them, please consider [sponsoring frp's development](https://github.com/sponsors/fatedier).\n\n<h3 align=\"center\">Gold Sponsors</h3>\n<!--gold sponsors start-->\n<p align=\"center\">\n  <a href=\"https://www.rapidproxy.io/?ref=frp\" target=\"_blank\">\n    <img width=\"420px\" src=\"https://raw.githubusercontent.com/fatedier/frp/dev/doc/pic/sponsor_rapidproxy.png\">\n    <br>\n    <b>High-performance residential and ISP proxies for developers</b>\n  </a>\n  <br>\n  <sub>90M+ residential IPs worldwide. Rotating IPs, sticky sessions, and traffic that never expires.</sub>\n  <br>\n  <sub>From $0.55/GB. Use RAPID10 for 10% off. Try it for free.</sub>\n</p>\n\n<p align=\"center\">\n  <a href=\"https://jb.gg/frp\" target=\"_blank\">\n    <img width=\"420px\" src=\"https://raw.githubusercontent.com/fatedier/frp/dev/doc/pic/sponsor_jetbrains.jpg\">\n\t<br>\n\t<b>The complete IDE crafted for professional Go developers</b>\n  </a>\n</p>\n\n<p align=\"center\">\n  <a href=\"https://github.com/beclab/Olares\" target=\"_blank\">\n    <img width=\"420px\" src=\"https://raw.githubusercontent.com/fatedier/frp/dev/doc/pic/sponsor_olares.jpeg\">\n\t<br>\n\t<b>The sovereign cloud that puts you in control</b>\n\t<br>\n\t<sub>An open source, self-hosted alternative to public clouds, built for data ownership and privacy</sub>\n  </a>\n</p>\n\n<div align=\"center\">\n\n## Recall.ai - API for meeting recordings\n\nIf you're looking for a meeting recording API, consider checking out [Recall.ai](https://www.recall.ai/?utm_source=github&utm_medium=sponsorship&utm_campaign=fatedier-frp),\n\nan API that records Zoom, Google Meet, Microsoft Teams, in-person meetings, and more.\n\n</div>\n\n<!--gold sponsors end-->\n\n## What is frp?\n\nfrp is a fast reverse proxy that allows you to expose a local server located behind a NAT or firewall to the Internet. It currently supports **TCP** and **UDP**, as well as **HTTP** and **HTTPS** protocols, enabling requests to be forwarded to internal services via domain name.\n\nfrp also offers a P2P connect mode.\n\n## Table of Contents\n\n<!-- vim-markdown-toc GFM -->\n\n* [Development Status](#development-status)\n    * [About V2](#about-v2)\n* [Architecture](#architecture)\n* [Example Usage](#example-usage)\n    * [Access your computer in a LAN network via SSH](#access-your-computer-in-a-lan-network-via-ssh)\n    * [Multiple SSH services sharing the same port](#multiple-ssh-services-sharing-the-same-port)\n    * [Accessing Internal Web Services with Custom Domains in LAN](#accessing-internal-web-services-with-custom-domains-in-lan)\n    * [Forward DNS query requests](#forward-dns-query-requests)\n    * [Forward Unix Domain Socket](#forward-unix-domain-socket)\n    * [Expose a simple HTTP file server](#expose-a-simple-http-file-server)\n    * [Enable HTTPS for a local HTTP(S) service](#enable-https-for-a-local-https-service)\n    * [Expose your service privately](#expose-your-service-privately)\n    * [P2P Mode](#p2p-mode)\n* [Features](#features)\n    * [Configuration Files](#configuration-files)\n    * [Using Environment Variables](#using-environment-variables)\n    * [Split Configures Into Different Files](#split-configures-into-different-files)\n    * [Server Dashboard](#server-dashboard)\n    * [Client Admin UI](#client-admin-ui)\n        * [Dynamic Proxy Management (Store)](#dynamic-proxy-management-store)\n    * [Monitor](#monitor)\n        * [Prometheus](#prometheus)\n    * [Authenticating the Client](#authenticating-the-client)\n        * [Token Authentication](#token-authentication)\n        * [OIDC Authentication](#oidc-authentication)\n    * [Encryption and Compression](#encryption-and-compression)\n        * [TLS](#tls)\n    * [Hot-Reloading frpc configuration](#hot-reloading-frpc-configuration)\n    * [Get proxy status from client](#get-proxy-status-from-client)\n    * [Only allowing certain ports on the server](#only-allowing-certain-ports-on-the-server)\n    * [Port Reuse](#port-reuse)\n    * [Bandwidth Limit](#bandwidth-limit)\n        * [For Each Proxy](#for-each-proxy)\n    * [TCP Stream Multiplexing](#tcp-stream-multiplexing)\n    * [Support KCP Protocol](#support-kcp-protocol)\n    * [Support QUIC Protocol](#support-quic-protocol)\n    * [Connection Pooling](#connection-pooling)\n    * [Load balancing](#load-balancing)\n    * [Service Health Check](#service-health-check)\n    * [Rewriting the HTTP Host Header](#rewriting-the-http-host-header)\n    * [Setting other HTTP Headers](#setting-other-http-headers)\n    * [Get Real IP](#get-real-ip)\n        * [HTTP X-Forwarded-For](#http-x-forwarded-for)\n        * [Proxy Protocol](#proxy-protocol)\n    * [Require HTTP Basic Auth (Password) for Web Services](#require-http-basic-auth-password-for-web-services)\n    * [Custom Subdomain Names](#custom-subdomain-names)\n    * [URL Routing](#url-routing)\n    * [TCP Port Multiplexing](#tcp-port-multiplexing)\n    * [Connecting to frps via PROXY](#connecting-to-frps-via-proxy)\n    * [Port range mapping](#port-range-mapping)\n    * [Client Plugins](#client-plugins)\n    * [Server Manage Plugins](#server-manage-plugins)\n    * [SSH Tunnel Gateway](#ssh-tunnel-gateway)\n    * [Virtual Network (VirtualNet)](#virtual-network-virtualnet)\n* [Feature Gates](#feature-gates)\n    * [Available Feature Gates](#available-feature-gates)\n    * [Enabling Feature Gates](#enabling-feature-gates)\n    * [Feature Lifecycle](#feature-lifecycle)\n* [Related Projects](#related-projects)\n* [Contributing](#contributing)\n* [Donation](#donation)\n    * [GitHub Sponsors](#github-sponsors)\n    * [PayPal](#paypal)\n\n<!-- vim-markdown-toc -->\n\n## Development Status\n\nfrp is currently under development. You can try the latest release version in the `master` branch, or use the `dev` branch to access the version currently in development.\n\nWe are currently working on version 2 and attempting to perform some code refactoring and improvements. However, please note that it will not be compatible with version 1.\n\nWe will transition from version 0 to version 1 at the appropriate time and will only accept bug fixes and improvements, rather than big feature requests.\n\n### About V2\n\nThe complexity and difficulty of the v2 version are much higher than anticipated. I can only work on its development during fragmented time periods, and the constant interruptions disrupt productivity significantly. Given this situation, we will continue to optimize and iterate on the current version until we have more free time to proceed with the major version overhaul.\n\nThe concept behind v2 is based on my years of experience and reflection in the cloud-native domain, particularly in K8s and ServiceMesh. Its core is a modernized four-layer and seven-layer proxy, similar to envoy. This proxy itself is highly scalable, not only capable of implementing the functionality of intranet penetration but also applicable to various other domains. Building upon this highly scalable core, we aim to implement all the capabilities of frp v1 while also addressing the functionalities that were previously unachievable or difficult to implement in an elegant manner. Furthermore, we will maintain efficient development and iteration capabilities.\n\nIn addition, I envision frp itself becoming a highly extensible system and platform, similar to how we can provide a range of extension capabilities based on K8s. In K8s, we can customize development according to enterprise needs, utilizing features such as CRD, controller mode, webhook, CSI, and CNI. In frp v1, we introduced the concept of server plugins, which implemented some basic extensibility. However, it relies on a simple HTTP protocol and requires users to start independ"
         }
       ],
       "config_files": [],
@@ -7325,7 +7325,7 @@
         "steps": [
           {
             "id": "serialize",
-            "label": "JSON serialize (inventory \u2192 SQLite)",
+            "label": "JSON serialize (inventory → SQLite)",
             "ms": 0,
             "pct": 0
           },
@@ -7344,5 +7344,911 @@
         ]
       }
     ]
+  },
+  "report": {
+    "overview": "frp is a fast reverse proxy written in Go that exposes services behind NATs/firewalls via a public server (frps) and an in-NAT client (frpc). It supports TCP, UDP, HTTP, HTTPS, TCPMUX, and secret/P2P modes (stcp, sudp, xtcp) over TCP, KCP, QUIC, WebSocket, or TLS control transports, with token/OIDC auth, HTTP-based server plugins, embedded Vue dashboards, and optional dynamic proxy persistence. The codebase is split into cmd/ entrypoints, server/ and client/ runtimes, and a large pkg/ shared library (config v1, msg protocol, wire v2, auth, nathole, plugins, vnet).",
+    "system_map": {
+      "summary": "The repo builds two binaries from a single Go module: frps (server, cmd/frps) and frpc (client, cmd/frpc), both driven by cobra. server/service.go constructs a Service that multiplexes control-plane listeners (TCP mux, KCP, QUIC, WebSocket, raw TLS, internal SSH pipe) on shared ports and owns the ControlManager, proxy.Manager, plugin.Manager, ports.Manager and vhost routers. client/service.go constructs a Service that dials frps through a pluggable Connector and keeps a Control session alive with backoff retries. Shared protocol and config code lives under pkg/ (msg, proto/wire, config/v1, auth, transport, util). State is entirely in-memory except an optional client-side JSON store for dynamic proxies. Two Vue 3 apps under web/ provide dashboards and are embedded via the assets package, or excluded with the 'noweb' build tag.",
+      "claims": [
+        {
+          "claim": "frps entrypoint is cmd/frps/root.go: cobra rootCmd.RunE loads config via config.LoadServerConfig, validates with validation.NewConfigValidator, then calls runServer -> server.NewService -> svr.Run.",
+          "sources": [
+            "cmd/frps/root.go#L53-127",
+            "server/service.go#L139"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "frpc entrypoint is cmd/frpc/sub/root.go: runClient -> config.LoadClientConfigResult -> source.NewAggregator -> client.NewService -> svr.Run; a --config_dir flag runs one Service per file via runMultipleClients.",
+          "sources": [
+            "cmd/frpc/sub/root.go#L59-134",
+            "client/service.go#L163"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "server.Service multiplexes the bind port with golib mux.Mux: default listener for TCP control, a prefix-matched websocket listener ('GET /~frp'), and a TLS listener that sniffs first byte 0x16 / FRPTLSHeadByte.",
+          "sources": [
+            "server/service.go#L245-253",
+            "server/service.go#L290-294",
+            "server/service.go#L352-355"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Optional listeners are created for KCP (netpkg.ListenKcp on KCPBindPort), QUIC (quic.ListenAddr with ALPN 'frp'), SSH tunnel gateway (ssh.NewGateway), and a tcpmux HTTPConnect multiplexer on TCPMuxHTTPConnectPort.",
+          "sources": [
+            "server/service.go#L256-287",
+            "server/service.go#L191-204",
+            "pkg/ssh/gateway.go"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The wire protocol has two versions: acceptConnection calls wire.CheckMagic to detect v2, then negotiates crypto/UDP-codec via ClientHello/ServerHello frames before reading the first msg.",
+          "sources": [
+            "server/service.go#L555-593",
+            "server/service.go#L623-680",
+            "pkg/proto/wire"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The client dials frps through a Connector interface (client/connector.go) supporting tcp, kcp, quic (one quic.Conn, streams converted via QuicStreamToNetConn), websocket/wss, and tls; ServiceOptions.ConnectorCreator allows swapping in a virtual pipe connector.",
+          "sources": [
+            "client/connector.go#L33-60",
+            "client/connector.go#L104-137",
+            "client/connector.go#L216-226",
+            "client/service.go#L83-90"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Server state is in-memory: registry.ClientRegistry tracks logical clients by user.clientID, proxy.Manager tracks live proxies, ports.Manager allocates TCP/UDP remote ports honoring AllowPorts, and vhost.Routers route HTTP(S) vhosts.",
+          "sources": [
+            "server/service.go#L167-180",
+            "server/registry",
+            "server/ports/ports.go",
+            "pkg/util/vhost"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The only persistent state is the optional client-side StoreSource: a JSON file (store.path) holding dynamic proxies/visitors, merged with file config by source.Aggregator.",
+          "sources": [
+            "pkg/config/source/store.go",
+            "pkg/config/source/aggregator.go",
+            "cmd/frpc/sub/root.go#L143-163"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Dashboards are Vue 3 apps web/frps and web/frpc (npm workspaces under web/), embedded into Go via the assets package; Makefile adds a 'noweb' build tag when web/*/dist is absent.",
+          "sources": [
+            "web/package.json",
+            "assets/assets.go",
+            "Makefile#L4",
+            "web/frps/package.json",
+            "web/frpc/package.json"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Build produces CGO_ENABLED=0 binaries with build tags 'frps'/'frpc' plus optional 'noweb' (Makefile frps/frpc targets); go.mod pins go 1.25.0 with quic-go, kcp-go, yamux, gorilla/mux, go-oidc, prometheus, wireguard as key deps.",
+          "sources": [
+            "Makefile#L40-44",
+            "go.mod#L3-39"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "server/http and client/http packages implement admin API controllers behind gorilla/mux routers registered by registerRouteHandlers on each Service's webServer (httppkg.Server).",
+          "sources": [
+            "server/api_router.go#L27-71",
+            "client/api_router.go#L26-64",
+            "server/http",
+            "client/http"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Both services disable quic-go receive-buffer warnings and ECN via env vars in package init, and set crypto.DefaultSalt = 'frp' for golib crypto.",
+          "sources": [
+            "server/service.go#L70-78",
+            "client/service.go#L47-55"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "feature_catalog": {
+      "summary": "frp exposes eight proxy types (tcp, udp, http, https, tcpmux, stcp, sudp, xtcp) plus three visitor types (stcp, sudp, xtcp) for private/P2P access. Features include token and OIDC auth, per-proxy encryption/compression/bandwidth limits, load-balancer groups, health checks, PROXY protocol and host-header rewriting, HTTP server plugins, client plugins (static_file, unix_domain_socket, http(s) converters, socks5, tls2raw, virtual_net), NAT hole punching via STUN, an SSH tunnel gateway, a WireGuard-based VirtualNet, Prometheus metrics, dashboards for both daemons, and a rich frpc CLI with per-type subcommands, verify, nathole discover and admin commands.",
+      "claims": [
+        {
+          "claim": "Eight proxy types are defined by proxyConfigTypeMap in pkg/config/v1/proxy.go (TCP, UDP, HTTP, HTTPS, TCPMUX, STCP, XTCP, SUDP); NewProxyConfigurerByType instantiates typed configurers via reflection.",
+          "sources": [
+            "pkg/config/v1/proxy.go#L242-261"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "frpc auto-generates a cobra subcommand per proxy type (tcp, udp, tcpmux, http, https, stcp, sudp, xtcp) plus visitor subcommands for stcp/sudp/xtcp, wiring flags via config.RegisterClientCommonConfigFlags/RegisterProxyFlags.",
+          "sources": [
+            "cmd/frpc/sub/proxy.go#L45-87"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Auth supports token and OIDC methods: NewAuthSetter picks NewTokenAuth or Oidc setters/verifiers, and TokenSource can dynamically resolve tokens (file/exec) via Resolve.",
+          "sources": [
+            "pkg/auth/auth.go#L64-81",
+            "pkg/auth/auth.go#L118-127",
+            "pkg/auth/oidc.go",
+            "pkg/auth/token.go"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Client-side plugins registered via init() include static_file, unix_domain_socket, http2http, http2https, https2http, https2https, socks5, tls2raw, virtual_net, and http_proxy; each registers a CreatorFn into pkg/plugin/client's creators map.",
+          "sources": [
+            "pkg/plugin/client/plugin.go#L33-49",
+            "pkg/plugin/client/static_file.go",
+            "pkg/plugin/client/unix_domain_socket.go",
+            "pkg/plugin/client/socks5.go"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Server manage plugins are HTTP webhooks configured via HTTPPlugins; plugin.Manager supports six ops (Login, NewProxy, CloseProxy, Ping, NewWorkConn, NewUserConn) that can reject or mutate request content.",
+          "sources": [
+            "server/service.go#L207-211",
+            "pkg/plugin/server/manager.go#L27-44",
+            "pkg/plugin/server/manager.go#L108-170",
+            "pkg/plugin/server/http.go"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "xtcp P2P mode uses NAT hole punching: client/visitor exchange NatHoleVisitor/NatHoleClient messages through frps' nathole.Controller, with STUN discovery defaulting to stun.easyvoip.com:3478 (natHoleStunServer).",
+          "sources": [
+            "pkg/nathole/controller.go",
+            "pkg/nathole/nathole.go#L118-120",
+            "pkg/config/v1/client.go#L50-89",
+            "server/control.go#L730-732"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "stcp/sudp 'secret' proxies require a shared secretKey; visitors bind a local port and connect through frps visitor-manager admission (admitVisitorByRunID / visitor.Manager).",
+          "sources": [
+            "server/control.go#L289-303",
+            "server/visitor",
+            "client/visitor"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Load balancing groups exist for TCP (TCPGroupCtl), HTTP (HTTPGroupCtl), HTTPS and TCPMux, letting multiple proxies share a group key and remote port.",
+          "sources": [
+            "server/service.go#L214-220",
+            "server/service.go#L348",
+            "server/proxy/tcp.go#L51-65",
+            "server/group"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "SSH tunnel gateway (SSHTunnelGateway.BindPort) accepts native ssh connections and forwards them into frps via an InternalListener handled like regular frp connections.",
+          "sources": [
+            "server/service.go#L101",
+            "server/service.go#L280-287",
+            "server/service.go#L381",
+            "pkg/ssh/gateway.go"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "VirtualNet creates a TUN device (water + wireguard-go) so visitors get an IP on a virtual network; enabled via featureGates.VirtualNet and virtualNet.address, and cannot be enabled by hot reload alone.",
+          "sources": [
+            "client/service.go#L220-222",
+            "client/service.go#L515-520",
+            "pkg/vnet/controller.go",
+            "pkg/vnet/tun_linux.go"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "frps dashboard API exposes /healthz, /api/serverinfo, /api/proxy/{type}[/{name}], /api/traffic/{name}, /api/clients, DELETE /api/proxies, plus a parallel /api/v2 surface (users, system/info, system/prune, clients, proxies) and /metrics when EnablePrometheus.",
+          "sources": [
+            "server/api_router.go#L27-60",
+            "server/http"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "frpc admin API exposes /api/reload, /api/stop, /api/status, GET/PUT /api/config, per-proxy/visitor config reads, and CRUD under /api/store/proxies|visitors when the store source is enabled.",
+          "sources": [
+            "client/api_router.go#L36-55"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "frpc CLI extras: 'verify' subcommand validates auth against a server, 'nathole discover' probes NAT behavior, and admin subcommands call the admin API.",
+          "sources": [
+            "cmd/frpc/sub/verify.go#L27-30",
+            "cmd/frpc/sub/nathole.go#L34-47",
+            "cmd/frpc/sub/admin.go#L48-54"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Per-proxy transport features include useEncryption/useCompression (golib io wrappers), bandwidthLimit with client/server mode (rate.Limiter), and proxyProtocolVersion headers built by BuildProxyProtocolHeaderStruct.",
+          "sources": [
+            "client/proxy/proxy.go#L66-70",
+            "client/proxy/proxy.go#L134-154",
+            "client/proxy/proxy.go#L210-215"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Health checking of local services lives in client/health, and event hooks in client/event let proxies react to lifecycle events.",
+          "sources": [
+            "client/health/health.go",
+            "client/event/event.go"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "data_flow": {
+      "summary": "Config enters as TOML/YAML/JSON (or deprecated INI), is template-rendered with environment variables, decoded into pkg/config/v1 types, completed, and validated before use. Control-plane data flows as typed msg structs (Login, NewProxy, NewWorkConn, Ping, NatHole*) over a single muxed connection, versioned by the v1/v2 wire protocol. User traffic flows: public listener on frps -> proxy -> pooled work connection -> frpc -> optional plugin -> local service, joined byte streams via libio.Join. Admin data flows through gorilla/mux routers into adminapi controllers, and reloads re-merge config via the source.Aggregator.",
+      "claims": [
+        {
+          "claim": "Config loading: LoadFileContentWithTemplate renders Go templates exposing .Envs plus parseNumberRange helpers, then LoadConfigure tries TOML->JSON marshal, JSON detection via yaml.IsJSONBuffer, or YAML (with dot-field stripping), honoring strict mode.",
+          "sources": [
+            "pkg/config/load.go#L84-128",
+            "pkg/config/load.go#L176-217"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Legacy INI configs are detected by a 'common' section and converted through pkg/config/legacy converters (Convert_ServerCommonConf_To_v1, Convert_ClientCommonConf_To_v1) before joining the v1 path.",
+          "sources": [
+            "pkg/config/load.go#L65-82",
+            "pkg/config/load.go#L295-324",
+            "pkg/config/legacy"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Client proxy/visitor configs come from inline [[proxies]]/[[visitors]] plus includeConfigFiles globs (LoadAdditionalClientConfigs), dedup-checked by validateNoDuplicateNames, filtered by common.Start and enabled flags in FilterClientConfigurers.",
+          "sources": [
+            "pkg/config/load.go#L379-402",
+            "pkg/config/load.go#L427-447",
+            "pkg/config/load.go#L465-500",
+            "pkg/config/load.go#L502-538"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Login handshake: client sends msg.Login over the control conn; server runs pluginManager.Login hooks, wraps the conn in an encrypted ReadWriter (AEAD for v2, crypto RW for v1), then RegisterControl admits and activates the Control, replying LoginResp{RunID}.",
+          "sources": [
+            "server/service.go#L454-511",
+            "server/service.go#L607-621",
+            "server/control.go#L109-220"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Proxy registration: client pm.UpdateAll sends msg.NewProxy; server handleNewProxy runs NewProxy plugin hooks, builds a configurer via config.NewProxyConfigurerFromMsg, creates a Proxy through proxyFactoryRegistry, runs it (acquiring ports/vhost routes) and answers NewProxyResp.",
+          "sources": [
+            "server/control.go#L736-755",
+            "pkg/config/load.go#L278-293",
+            "server/proxy/proxy.go#L43-47",
+            "server/proxy/tcp.go#L49-89"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Work connections are pooled: server keeps workConnCh buffered at poolCount+10, sends msg.ReqWorkConn on demand; client handleReqWorkConn dials a fresh conn, writes authenticated NewWorkConn, waits for StartWorkConn, then hands the conn to the owning proxy.",
+          "sources": [
+            "server/control.go#L595-637",
+            "client/control.go#L124-162",
+            "server/control.go#L49"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "TCP user traffic path on frpc: BaseProxy.InWorkConn -> HandleTCPWorkConnection -> wrapWorkConn (limiter -> encryption -> compression) -> optional proxyPlugin.Handle or dial localIP:localPort -> libio.Join(localConn, remote).",
+          "sources": [
+            "client/proxy/proxy.go#L160-167",
+            "client/proxy/proxy.go#L170-258"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "HTTP(S) traffic is routed by hostname through vhost.Routers into the matching proxy; frps can share the bind port with vhost ports by muxing HTTP/HTTPS listeners off mux.Mux when BindPort == VhostHTTP(S)Port.",
+          "sources": [
+            "server/service.go#L296-349",
+            "server/service.go#L229-236",
+            "pkg/util/vhost"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "UDP traffic uses msg.UDPPacket frames; the negotiated codec (udpPacketCodec) is fixed per session via the v2 ServerHello and passed into proxy/visitor managers.",
+          "sources": [
+            "server/service.go#L678",
+            "client/control.go#L50-52",
+            "pkg/msg/msg.go#L186"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Hot reload path: /api/reload -> apiController.Reload -> Service.UpdateConfigSource -> configSource.ReplaceAll -> reloadConfigFromSourcesLocked -> aggregator.Load -> Filter/Complete -> UpdateAllConfigurer -> ctl.pm/vm.UpdateAll.",
+          "sources": [
+            "client/api_router.go#L36",
+            "client/service.go#L385-412",
+            "client/service.go#L496-527",
+            "client/control.go#L294-298"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Metrics flow: server/metrics.Server records NewClient/NewProxy/CloseProxy events during Control lifecycle; pkg/metrics EnableMem/EnablePrometheus are activated when webServer.Port > 0 and exposed at /metrics.",
+          "sources": [
+            "server/control.go#L685",
+            "server/control.go#L717",
+            "server/service.go#L156-159",
+            "server/api_router.go#L35-37",
+            "pkg/metrics/metrics.go"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "NatHole orchestration: NatHoleVisitor/NatHoleClient/NatHoleReport messages are dispatched as async handlers on the server Control and routed to nathole.Controller, which analyzes NAT behavior and replies NatHoleResp to visitors.",
+          "sources": [
+            "server/control.go#L730-732",
+            "pkg/nathole/controller.go",
+            "pkg/msg/msg.go#L192-244"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "behavior_traces": {
+      "summary": "Four flows were traced end-to-end. (1) frps startup: cobra -> LoadServerConfig -> validate -> NewService wires all listeners/managers -> Run spawns per-listener goroutines. (2) frpc startup+login: cobra -> LoadClientConfigResult -> aggregator merge -> NewService -> Run -> loopLoginUntilSuccess -> controlSessionDialer.Dial -> NewControl -> ctl.Run. (3) TCP proxy request path: TCPProxy.Run listens -> user conn -> GetWorkConn -> ReqWorkConn -> client NewWorkConn -> StartWorkConn -> InWorkConn -> join to local service. (4) Admin reload: GET /api/reload -> Reload -> UpdateConfigSource -> reloadConfigFromSourcesLocked -> UpdateAllConfigurer.",
+      "claims": [
+        {
+          "claim": "frps startup order: rootCmd.RunE -> config.LoadServerConfig (legacy INI detection -> template render -> decode -> Complete) -> security.NewUnsafeFeatures + ValidateServerConfig -> runServer -> log.InitLogger -> server.NewService -> svr.Run.",
+          "sources": [
+            "cmd/frps/root.go#L56-127",
+            "pkg/config/load.go#L295-324"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "server.NewService order: build TLS config -> optional webServer (+metrics) -> BuildServerAuth -> construct managers (ctlManager, pxyManager, pluginManager, ResourceController with port managers) -> register HTTP plugins -> group controllers -> bind muxed TCP listener -> optional KCP/QUIC/SSH/vhost listeners -> NatHoleController.",
+          "sources": [
+            "server/service.go#L139-363"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "svr.Run spawns goroutines: webServer.Run, HandleListener(sshTunnelListener internal=true), HandleListener(kcp), HandleQUICListener, HandleListener(websocket), HandleListener(tls), NatHoleController.CleanWorker, sshTunnelGateway.Run, then blocks in HandleListener(main listener).",
+          "sources": [
+            "server/service.go#L366-407"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Inbound conn handling: HandleListener -> handleConnection -> acceptConnection (CheckMagic v1/v2, ClientHello negotiation, read first msg) -> switch on msg.Login/msg.NewWorkConn/msg.NewVisitorConn -> RegisterControl / RegisterWorkConn / RegisterVisitorConn.",
+          "sources": [
+            "server/service.go#L443-593"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Control lifecycle is generation-guarded: ControlManager.Add installs ctl as pending generation keyed by runID (replacing the old control and inheriting its runMu), Activate registers user.clientID in ClientRegistry (conflict -> error), completeLogin writes LoginResp then startLocked flips state to running and launches ctl.worker.",
+          "sources": [
+            "server/control.go#L109-171",
+            "server/control.go#L175-220",
+            "server/control.go#L226-248",
+            "server/control.go#L520-527"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "frpc startup order: runClient -> LoadClientConfigResult -> NewConfigSource.ReplaceAll -> optional NewStoreSource -> NewAggregator.Load -> Filter/Complete configurers -> ValidateAllClientConfig -> startServiceWithAggregator -> client.NewService -> svr.Run.",
+          "sources": [
+            "cmd/frpc/sub/root.go#L122-212"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "client.Service.Run order: optional DNSServer override -> vnetController.Init/Run -> admin webServer -> loopLoginUntilSuccess (first login failure can exit when loginFailExit) -> keepControllerWorking reconnection loop with FastBackoff (3 fast retries/min then exponential to 20s).",
+          "sources": [
+            "client/service.go#L226-306"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Client login + proxy bring-up: loopLoginUntilSuccess -> controlSessionDialer.Dial(runID) -> NewControl -> ctl.SetInWorkConnCallback -> ctl.Run -> pm.UpdateAll(proxyCfgs) sends NewProxy per proxy and vm.UpdateAll(visitorCfgs); worker starts heartbeatWorker and msgDispatcher.",
+          "sources": [
+            "client/service.go#L308-357",
+            "client/control.go#L110-118",
+            "client/control.go#L280-292"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Work conn establishment on demand: server GetWorkConn drains pool else sends ReqWorkConn and waits up to UserConnTimeout; client handleReqWorkConn -> connectServer -> authenticated NewWorkConn -> server RegisterWorkConn pushes into workConnCh -> proxy.Start writes StartWorkConn back to client.",
+          "sources": [
+            "server/control.go#L595-637",
+            "client/control.go#L124-162",
+            "server/proxy/proxy.go#L57-62"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "TCP data path completion: client receives StartWorkConn -> pm.HandleWorkConn(proxyName) -> Proxy.InWorkConn -> HandleTCPWorkConnection wraps conn (limit/encrypt/compress) -> writes PROXY protocol header if configured -> dials localIP:localPort -> libio.Join for bidirectional copy.",
+          "sources": [
+            "client/control.go#L158-162",
+            "client/proxy/proxy.go#L160-258"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Heartbeat: client heartbeatWorker sends authenticated msg.Ping every HeartbeatInterval with backoff and closes session when lastPong exceeds HeartbeatTimeout; server heartbeatWorker closes the Control when lastPing exceeds Transport.HeartbeatTimeout.",
+          "sources": [
+            "client/control.go#L240-278",
+            "server/control.go#L639-652"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Admin reload trace: GET /api/reload -> apiController.Reload -> Service.UpdateConfigSource (reloadMu serialized) -> cfgSource.ReplaceAll -> reloadConfigFromSourcesLocked -> aggregator.Load -> VirtualNet requirement check -> UpdateAllConfigurer -> ctl.vm.UpdateAll + ctl.pm.UpdateAll.",
+          "sources": [
+            "client/api_router.go#L36",
+            "client/service.go#L385-412",
+            "client/service.go#L496-527"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "testing_signals": {
+      "summary": "Unit tests use Go's testing with testify and rodaine/table, spread through pkg/, client/, server/ and cmd/ (run via `make test`/`gotest` with the noweb tag). End-to-end tests use Ginkgo/Gomega under test/e2e with a framework that spawns real frps/frpc binaries, organized into v1/basic, v1/features, plugin, legacy and mock server helpers; `make e2e` runs hack/run-e2e.sh with 16-way parallelism. Cross-version compatibility suites run released binaries via hack/run-e2e-compatibility.sh and download scripts. The web workspace uses Vitest + @vue/test-utils; linting is via golangci-lint (.golangci.yml) plus gofmt/gofumpt/gci/vet make targets and GitHub Actions workflows.",
+      "claims": [
+        {
+          "claim": "make gotest runs `go test -tags noweb -v --cover` over ./assets/..., ./cmd/..., ./client/..., ./server/..., ./pkg/...; make alltest adds vet and e2e.",
+          "sources": [
+            "Makefile#L46-56",
+            "Makefile#L84"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "E2E harness: test/e2e/e2e.go RunE2ETests registers Gomega fail handler, enables EmitSpecProgress and RandomizeAllSpecs; hack/run-e2e.sh installs ginkgo v2.23.4 and runs against bin/frpc and bin/frps (overridable via FRPC_PATH/FRPS_PATH).",
+          "sources": [
+            "test/e2e/e2e.go",
+            "hack/run-e2e.sh",
+            "Makefile#L55-59"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "E2E framework provides process management, port allocation, mock servers and request helpers under test/e2e/framework and test/e2e/pkg (cert, plugin, port, process, relay, request, rpc, ssh).",
+          "sources": [
+            "test/e2e/framework/framework.go",
+            "test/e2e/framework/process.go",
+            "test/e2e/mock"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "E2E coverage areas include basic client/server behavior, config, HTTP, tcpmux, xtcp, OIDC, token_source, wire protocol, plus features: bandwidth_limit, chaos, control_replacement, group, heartbeat, monitor, real_ip, ssh_tunnel, store.",
+          "sources": [
+            "test/e2e/v1/basic",
+            "test/e2e/v1/features"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Compatibility testing: make e2e-compatibility runs hack/run-e2e-compatibility.sh against FRP_COMPAT_BASELINE_COUNT released versions (floor 0.61.0); e2e-compatibility-last-frpc/last-frps download the last release into ./lastversion and run the suite with one side pinned old.",
+          "sources": [
+            "Makefile#L5-6",
+            "Makefile#L61-82",
+            "test/e2e/compatibility"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Unit tests exist for config decode/load (pkg/config/v1 *_test.go, pkg/config/load_test.go), msg codecs (pkg/msg msg_test.go, wire_v2_test.go, udp_binary_test.go + benchmarks), auth OIDC (pkg/auth/oidc_test.go), source aggregator/store, client service/config_manager/control_session, server control/service/proxy, nathole analysis/discovery, vnet controller, health.",
+          "sources": [
+            "pkg/config/load_test.go",
+            "pkg/msg/wire_v2_test.go",
+            "pkg/auth/oidc_test.go",
+            "client/service_test.go",
+            "server/control_test.go",
+            "pkg/nathole/analysis_test.go"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "cmd/frpc/sub has verify_test.go covering the verify subcommand; most other cmd code (proxy/admin/nathole subcommands) has no direct unit tests.",
+          "sources": [
+            "cmd/frpc/sub/verify_test.go"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Web frontend testing: web/package.json defines test:unit via vitest run (vitest 4.1.10, jsdom, @vue/test-utils) across workspaces shared/frpc/frps; Makefile web-ci runs npm ci, lint:check, test:unit and builds.",
+          "sources": [
+            "web/package.json",
+            "Makefile#L19-20"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Lint/format toolchain: golangci-lint run configured by .golangci.yml; make fmt (go fmt), fmt-more (gofumpt), gci (import grouping with frp prefix), vet; CI workflows include golangci-lint.yml and goreleaser.yml.",
+          "sources": [
+            ".golangci.yml",
+            "Makefile#L28-38",
+            ".github/workflows/golangci-lint.yml",
+            ".github/workflows/goreleaser.yml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "runMultipleClients (--config_dir) is explicitly documented as 'only designed for testing. It's not guaranteed to be stable' yet is reachable via a public flag.",
+          "sources": [
+            "cmd/frpc/sub/root.go#L70-75"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Ginkgo parallel runs default to CONCURRENCY=16 in run-e2e.sh and framework.RunID isolates per-node resources.",
+          "sources": [
+            "hack/run-e2e.sh",
+            "test/e2e/e2e.go"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "risk_map": {
+      "summary": "The highest-risk areas are command-execution token sources (gated behind the TokenSourceExec unsafe feature), filesystem-serving and socket-exposing client plugins (static_file, unix_domain_socket which can expose docker.sock), the VirtualNet TUN setup that shells out to ifconfig/route on macOS, and admin web servers that depend on auth middleware correctness. Concurrency risk concentrates in server/control.go's ControlManager, which enforces a documented lock order (runMu -> cm.mu -> lifecycleMu -> registry) and generation handoff barriers; regressions there cause deadlocks or leaked controls. The deprecated INI path (pkg/config/legacy) and the testing-only --config_dir mode are legacy surface. Plugin content mutation uses a deliberate panic on wrong types.",
+      "claims": [
+        {
+          "claim": "ExecSource.Resolve executes arbitrary commands (exec.CommandContext with env passthrough) to produce auth tokens; it is gated by the TokenSourceExec entry in both ClientUnsafeFeatures and ServerUnsafeFeatures requiring --allow-unsafe.",
+          "sources": [
+            "pkg/config/v1/value_source.go#L136-160",
+            "pkg/policy/security/unsafe.go#L1-30"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "VirtualNet setup on Darwin shells out to ifconfig and route to configure the TUN device; tun_linux.go uses netlink. Errors here are runtime-privilege dependent.",
+          "sources": [
+            "pkg/vnet/tun_darwin.go#L51-80",
+            "pkg/vnet/tun_linux.go"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "unix_domain_socket and static_file client plugins expose local filesystem paths/sockets remotely; README documents exposing /var/run/docker.sock as a TCP proxy, an intentionally dangerous capability.",
+          "sources": [
+            "pkg/plugin/client/unix_domain_socket.go",
+            "pkg/plugin/client/static_file.go",
+            "README.md#L334-385"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Admin APIs (client /api/config PUT, /api/stop, /api/store/*; server DELETE /api/proxies, /api/v2/system/prune) are powerful mutation endpoints guarded only by helper.AuthMiddleware on the dashboard port — misconfiguration of webServer auth exposes full control.",
+          "sources": [
+            "client/api_router.go#L33-55",
+            "server/api_router.go#L29-60"
+          ],
+          "kind": "inference"
+        },
+        {
+          "claim": "ControlManager implements a strict multi-lock protocol (never wait on runMu holding cm.mu; order runMu -> cm.mu -> ctl.lifecycleMu -> registry locks) with generation IDs and handoff barriers; the complexity concentrates deadlock/race risk in control.go.",
+          "sources": [
+            "server/control.go#L51-105",
+            "server/control.go#L222-248"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "GetWorkConn recovers from panics and the worker teardown closes pooled conns, but a full workConnCh silently discards registered work conns ('work connection pool is full, discarding').",
+          "sources": [
+            "server/control.go#L595-637",
+            "server/control.go#L329-337"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Plugin content mutation in handleMutableContent does retContent.(*T) with a comment 'Buggy Plugin implementations still panic here, by design' — a malicious/broken server plugin path can panic the handler goroutine.",
+          "sources": [
+            "pkg/plugin/server/manager.go#L99-103"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Server plugins make outbound HTTP calls to user-configured addresses during login/proxy/workconn events; a plugin failure rejects the operation (errors fail closed for mutable ops like Login/NewProxy).",
+          "sources": [
+            "pkg/plugin/server/manager.go#L90-98",
+            "pkg/plugin/server/http.go",
+            "server/service.go#L461-476"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Legacy INI support is deprecated and routed through pkg/config/legacy converters; conf/legacy holds reference INI files. New features are TOML/YAML/JSON-only, so the legacy path is dead-end code that still runs when a 'common' section is detected.",
+          "sources": [
+            "pkg/config/load.go#L65-82",
+            "pkg/config/legacy",
+            "conf/legacy",
+            "cmd/frps/root.go#L73-76"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "xtcp relies on public STUN (default stun.easyvoip.com:3478) and NAT-behavior heuristics in nathole; P2P may silently fail on incompatible NATs — README itself recommends stcp fallback.",
+          "sources": [
+            "pkg/config/v1/client.go#L89",
+            "pkg/nathole/analysis.go",
+            "README.md#L455-459"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "SSH tunnel gateway accepts native SSH connections on a dedicated port and pipes them into the control plane (InternalListener); it expands the server's attack surface to the SSH protocol.",
+          "sources": [
+            "server/service.go#L280-287",
+            "pkg/ssh/gateway.go"
+          ],
+          "kind": "inference"
+        },
+        {
+          "claim": "Duplicate proxy/visitor names across merged config sources are rejected at load by validateNoDuplicateNames; before this check a duplicate would have been silently dropped — indicates historically fragile merge semantics.",
+          "sources": [
+            "pkg/config/load.go#L424-447"
+          ],
+          "kind": "inference"
+        },
+        {
+          "claim": "frpc tlsListener sniffs first bytes to distinguish frp TLS from HTTPS; misclassification risk exists when vhostHTTPS shares the bind port (comment notes 0x16 ambiguity).",
+          "sources": [
+            "server/service.go#L352-355"
+          ],
+          "kind": "inference"
+        }
+      ]
+    },
+    "extension_points": {
+      "summary": "frp is built around registries. New proxy types plug in through three coordinated tables: proxyConfigTypeMap in pkg/config/v1, server-side RegisterProxyFactory (init() per type in server/proxy), and client-side RegisterProxyFactory (init() in client/proxy). Client connection-handling plugins register via pkg/plugin/client's Register/Create; server hooks come from external HTTP plugin processes managed by pkg/plugin/server. frpc CLI subcommands are generated automatically from the proxy type list. Config extensibility goes through source.Source implementations aggregated by source.Aggregator, and embedding is supported via pkg/virtual.Client plus ServiceOptions hooks (ConnectorCreator, HandleWorkConnCb). Feature gates (pkg/policy/featuregate) guard experimental features.",
+      "claims": [
+        {
+          "claim": "server/proxy uses a reflect.Type-keyed factory registry: each type file (tcp.go, udp.go, http.go, https.go, tcpmux.go, stcp.go, sudp.go, xtcp.go) calls RegisterProxyFactory in init(); adding a server proxy type means adding a config type + factory init.",
+          "sources": [
+            "server/proxy/proxy.go#L43-47",
+            "server/proxy/tcp.go#L26-28"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "client/proxy mirrors the pattern: RegisterProxyFactory keyed by configurer reflect.Type, invoked from NewProxy which first builds a BaseProxy with limiter/encryption key/msgTransporter.",
+          "sources": [
+            "client/proxy/proxy.go#L42-89",
+            "client/proxy/general_tcp.go#L23",
+            "client/proxy/xtcp.go#L36"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Client plugins register a CreatorFn by name via plugin.Register (panics on duplicate) and are instantiated lazily in BaseProxy.Run when baseCfg.Plugin.Type is set; the Plugin interface is Handle(ctx, *ConnectionInfo) + Close.",
+          "sources": [
+            "pkg/plugin/client/plugin.go#L30-55",
+            "client/proxy/proxy.go#L109-121"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Server plugin ops are an open enum: Manager.Register bins each Plugin by IsSupport(op) into per-op slices for Login, NewProxy, CloseProxy, Ping, NewWorkConn, NewUserConn; new ops require extending the manager dispatch.",
+          "sources": [
+            "pkg/plugin/server/manager.go#L27-44",
+            "pkg/plugin/server/manager.go#L108-127"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "frpc single-proxy subcommands are generated in a loop over proxyTypes, so a new type automatically gains a CLI command and (for stcp/sudp/xtcp) a nested visitor command.",
+          "sources": [
+            "cmd/frpc/sub/proxy.go#L45-87"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Config sources are pluggable: source.Aggregator merges a ConfigSource (in-memory/file) with an optional StoreSource; Service consumes aggregator.Load() at boot and on reload, so new persistence backends slot in as Source implementations.",
+          "sources": [
+            "pkg/config/source/aggregator.go",
+            "pkg/config/source/source.go",
+            "cmd/frpc/sub/root.go#L137-168"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Embedding hooks: client.ServiceOptions exposes ConnectorCreator (custom transports/virtual clients) and HandleWorkConnCb (intercept work conns); pkg/virtual.Client demonstrates running frpc against an in-process InternalListener.",
+          "sources": [
+            "client/service.go#L83-96",
+            "pkg/virtual/client.go"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "pkg/sdk/client provides a programmatic client API for running proxies from Go code rather than config files.",
+          "sources": [
+            "pkg/sdk/client"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Admin routes are registered centrally in each Service's registerRouteHandlers, so new endpoints slot into the gorilla/mux subRouter (with auth middleware already applied); server has a separate encoded-path subrouter for /api/v2 names.",
+          "sources": [
+            "server/api_router.go#L27-71",
+            "client/api_router.go#L26-64"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Feature gates: ClientCommonConfig.FeatureGates map plus pkg/policy/featuregate control rollout of features like VirtualNet; reload path validates gate-dependent config against runtime capabilities.",
+          "sources": [
+            "pkg/config/v1/client.go#L68-70",
+            "pkg/policy/featuregate/feature_gate.go",
+            "client/service.go#L514-520"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "vhost.Routers + vhost.NewHTTPReverseProxy/NewHTTPSMuxer are the extension seam for HTTP(S) routing behavior; group controllers (TCP/HTTP/HTTPS/TCPMux) encapsulate shared-port load balancing.",
+          "sources": [
+            "server/service.go#L296-349",
+            "pkg/util/vhost",
+            "server/group"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Message/protocol extension: msg.Dispatcher.RegisterHandler maps message structs to handlers on both sides; adding a control message means defining it in pkg/msg and registering handlers in client/control.go and server/control.go.",
+          "sources": [
+            "client/control.go#L232-237",
+            "server/control.go#L727-734",
+            "pkg/msg/msg.go"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_handoff": {
+      "summary": "Start with AGENTS.md for the command surface: `make build|frps|frpc|test|e2e|fmt|fmt-more|gci|vet`, `golangcici-lint run`, `make web`. Read cmd/frps/root.go + cmd/frpc/sub/root.go, then server/service.go and client/service.go for wiring, and server/control.go for the lifecycle/locking protocol before touching session code. Config changes must go through pkg/config/v1 types + validation and be tested for TOML/YAML/JSON and strict mode. Protocol changes must update pkg/msg on both sides and consider the v2 wire negotiation in pkg/proto/wire. E2E tests need built binaries and Ginkgo; unit tests run with the noweb tag when dashboards aren't built.",
+      "claims": [
+        {
+          "claim": "AGENTS.md documents the canonical commands: make build/frps/frpc/test/e2e/e2e-trace/alltest/fmt/fmt-more/gci/vet, make web for dashboards, and points to doc/agents/ runbooks (release.md).",
+          "sources": [
+            "AGENTS.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "First files to read: cmd/frps/root.go and cmd/frpc/sub/root.go (entrypoints), server/service.go and client/service.go (composition roots), server/control.go (session lifecycle/locking), pkg/config/v1 (config schema), pkg/msg/msg.go (protocol).",
+          "sources": [
+            "cmd/frps/root.go",
+            "cmd/frpc/sub/root.go",
+            "server/service.go",
+            "client/service.go",
+            "server/control.go",
+            "pkg/msg/msg.go"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Build tags matter: 'frps'/'frpc' select per-binary code and 'noweb' is auto-added when web/*/dist is missing — run go test/vet with -tags noweb or build dashboards first.",
+          "sources": [
+            "Makefile#L4",
+            "Makefile#L40-53"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "When editing server/control.go, respect the documented global lock order (runMu, cm.mu, ctl.lifecycleMu, then registry locks) and the pending/activated/running state machine — generation handoff uses barriers between replaced controls.",
+          "sources": [
+            "server/control.go#L51-105",
+            "server/control.go#L378-435"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Config edits require updating v1 types, Complete() defaults, validation.Validate* and ideally e2e coverage; strict_config=true by default rejects unknown fields, so new fields break older parsers cross-version.",
+          "sources": [
+            "cmd/frps/root.go#L46",
+            "pkg/config/load.go#L176-217",
+            "pkg/config/v1/validation"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Client config now flows through source.Aggregator (ConfigSource + StoreSource); bypassing it breaks /api/reload and store CRUD. Keep Service.reloadMu semantics when touching UpdateConfigSource.",
+          "sources": [
+            "cmd/frpc/sub/root.go#L137-183",
+            "client/service.go#L385-412",
+            "pkg/config/source/aggregator.go"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Run `go test -tags noweb ./pkg/... ./client/... ./server/...` for unit tests; `make e2e` requires bin/frps+bin/frpc built first and ginkgo installed (script auto-installs).",
+          "sources": [
+            "Makefile#L46-56",
+            "hack/run-e2e.sh"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Don't add proxy types piecemeal: a type needs a configurer in proxyConfigTypeMap, marshal/unmarshal to msg, server factory init, client factory init, validation, and usually e2e — the CLI subcommand is then auto-generated.",
+          "sources": [
+            "pkg/config/v1/proxy.go#L242-261",
+            "server/proxy/tcp.go#L26-28",
+            "client/proxy/general_tcp.go#L23",
+            "cmd/frpc/sub/proxy.go#L45-87"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Auth token bytes double as the work-conn encryption key (ClientAuth/ServerAuth key = []byte(resolved.Token)) — changing token handling affects transport encryption.",
+          "sources": [
+            "pkg/auth/auth.go#L58-61",
+            "pkg/auth/auth.go#L112-115",
+            "server/service.go#L468"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Version pinning/compat is enforced by tests: FRP_COMPAT_FLOOR_VERSION=0.61.0 and baseline-count e2e runs mean wire/protocol changes must remain compatible across ~8 released versions.",
+          "sources": [
+            "Makefile#L5-6",
+            "Makefile#L61-68"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Logging uses pkg/util/log and xlog (context-scoped, prefixed by runID); follow existing xl.Debugf/Tracef patterns rather than fmt.Println in service code (entrypoints print user-facing errors via fmt).",
+          "sources": [
+            "client/service.go#L330-332",
+            "server/control.go#L331-334",
+            "pkg/util/log"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Panic-on-duplicate registries (plugin.Register, proxy factories) run in init() — import cycles or double registration crash at startup, so new plugins/types must use unique names/types.",
+          "sources": [
+            "pkg/plugin/client/plugin.go#L33-39",
+            "server/proxy/proxy.go#L43-47"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_prompt": "You are working on frp (github.com/fatedier/frp), a Go reverse proxy that exposes services behind NATs. Two binaries share one module: frps (server, cmd/frps) and frpc (client, cmd/frpc). Read AGENTS.md first for commands: `make build` (or `make frps`/`make frpc`), `make test` (unit, uses -tags noweb), `make e2e` (Ginkgo suite in test/e2e, needs built binaries), `make fmt`/`gofumpt`/`gci`/`vet`, `golangci-lint run`, `make web` for the Vue dashboards.\n\nArchitecture: cmd/frps/root.go and cmd/frpc/sub/root.go parse config (TOML/YAML/JSON via pkg/config/load.go with Go-template env substitution; legacy INI auto-converted via pkg/config/legacy) and call server.NewService / client.NewService. server/service.go wires a muxed bind-port listener (TCP + websocket prefix + TLS sniff), optional KCP/QUIC/SSH/vhost listeners, ControlManager, proxy.Manager, ports.Manager, plugin.Manager and vhost routers. client/service.go dials frps via a pluggable Connector (tcp/kcp/quic/websocket/tls), logs in (msg.Login -> LoginResp{runID}), then runs a Control session that registers proxies (NewProxy) and fills a work-conn pool on ReqWorkConn. User traffic: server proxy listener -> pooled work conn -> StartWorkConn -> client proxy InWorkConn -> optional client plugin -> dial localIP:localPort -> libio.Join.\n\nKey extension points: proxy types require coordinated changes — proxyConfigTypeMap in pkg/config/v1/proxy.go, server/proxy RegisterProxyFactory init, client/proxy RegisterProxyFactory init, msg marshal/unmarshal, validation; frpc subcommands auto-generate from the type list. Client plugins register in pkg/plugin/client (Register/Create); server plugins are external HTTP webhooks (pkg/plugin/server ops: Login, NewProxy, CloseProxy, Ping, NewWorkConn, NewUserConn). Config sources go through pkg/config/source.Aggregator (ConfigSource + optional JSON StoreSource backing /api/store/*).\n\nTraps: server/control.go enforces a strict lock order (runMu -> cm.mu -> ctl.lifecycleMu -> registry) with control-generation barriers — read it before touching session lifecycle. The auth token is also the work-conn encryption key. ExecSource (auth token via subprocess) is gated behind --allow-unsafe TokenSourceExec. VirtualNet needs the feature gate at startup and shells out to ifconfig/route on macOS. E2E compatibility tests pin ~8 released versions (floor 0.61.0) — protocol changes must stay wire-compatible across v1/v2 negotiation in pkg/proto/wire. Config strict mode is on by default. When in doubt, mirror an existing proxy type (tcp) end-to-end."
+  },
+  "analysis": {
+    "agent": "devin",
+    "model": "swe-2",
+    "runtime_ms": null,
+    "cost_usd": null,
+    "collected_at": "2026-09-22T16:18:54.696Z"
   }
 }

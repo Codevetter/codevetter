@@ -126,12 +126,12 @@
         {
           "path": "CONTRIBUTING.md",
           "bytes": 11187,
-          "preview": "# CONTRIBUTING GUIDELINES\n\nOh-My-Zsh is a community-driven project. Contribution is welcome, encouraged, and appreciated.\nIt is also essential for the development of the project.\n\nFirst, please take a moment to review our [code of conduct](CODE_OF_CONDUCT.md).\n\nThese guidelines are an attempt at better addressing the huge amount of pending\nissues and pull requests. Please read them closely.\n\nForemost, be so kind as to [search](#use-the-search-luke). This ensures any contribution\nyou would make is not already covered.\n\n<!-- TOC updateonsave:true depthfrom:2 -->\n\n- [Reporting Issues](#reporting-issues)\n  - [You have a problem](#you-have-a-problem)\n  - [You have a suggestion](#you-have-a-suggestion)\n- [Submitting Pull Requests](#submitting-pull-requests)\n  - [Getting started](#getting-started)\n  - [You have a solution](#you-have-a-solution)\n  - [You have an addition](#you-have-an-addition)\n- [A note on AI-assisted contributions](#a-note-on-ai-assisted-contributions)\n- [Use the Search, Luke](#use-the-search-luke)\n- [Commit Guidelines](#commit-guidelines)\n  - [Format](#format)\n  - [Style](#style)\n- [Volunteer](#volunteer)\n\n<!-- /TOC -->\n\n## Reporting Issues\n\n### You have a problem\n\nPlease be so kind as to [search](#use-the-search-luke) for any open issue already covering\nyour problem.\n\nIf you find one, comment on it, so we know more people are experiencing it.\n\nIf not, look at the [Troubleshooting](https://github.com/ohmyzsh/ohmyzsh/wiki/Troubleshooting)\npage for instructions on how to gather data to better debug your problem.\n\nThen, you can go ahead and create an issue with as much detail as you can provide.\nIt should include the data gathered as indicated above, along with the following:\n\n1. How to reproduce the problem\n2. What the correct behavior should be\n3. What the actual behavior is\n\nPlease copy to anyone relevant (e.g. plugin maintainers) by mentioning their GitHub handle\n(starting with `@`) in your message.\n\nWe will do our very best to help you.\n\n### You have a suggestion\n\nPlease be so kind as to [search](#use-the-search-luke) for any open issue already covering\nyour suggestion.\n\nIf you find one, comment on it, so we know more people are supporting it.\n\nIf not, you can go ahead and create an issue. Please copy to anyone relevant (e.g. plugin\nmaintainers) by mentioning their GitHub handle (starting with `@`) in your message.\n\n## Submitting Pull Requests\n\n### Getting started\n\nYou should be familiar with the basics of\n[contributing on GitHub](https://help.github.com/articles/using-pull-requests) and have a fork\n[properly set up](https://github.com/ohmyzsh/ohmyzsh/wiki/Contribution-Technical-Practices).\n\nYou MUST always create PRs with _a dedicated branch_ based on the latest upstream tree.\n\nIf you create your own PR, please make sure you do it right. Also be so kind as to reference\nany issue that would be solved in the PR description body,\n[for instance](https://help.github.com/articles/closing-issues-via-commit-messages/)\n_\"Fixes #XXXX\"_ for issue number XXXX.\n\n### You have a solution\n\nPlease be so kind as to [search](#use-the-search-luke) for any open issue already covering\nyour [problem](#you-have-a-problem), and any pending/merged/rejected PR covering your solution.\n\nIf the solution is already reported, try it out and +1 the pull request if the\nsolution works ok. On the other hand, if you think your solution is better, post\nit with reference to the other one so we can have both solutions to compare.\n\nIf not, then go ahead and submit a PR. Please copy to anyone relevant (e.g. plugin\nmaintainers) by mentioning their GitHub handle (starting with `@`) in your message.\n\n### You have an addition\n\nPlease [do not](https://github.com/ohmyzsh/ohmyzsh/wiki/Themes#dont-send-us-your-theme-for-now)\nsend themes for now.\n\nPlease be so kind as to [search](#use-the-search-luke) for any pending, merged or rejected Pull Requests\ncovering or related to what you want to add.\n\nIf you find one, try it out and work with the author on a common solution.\n\nIf not, then go ahead and submit a PR. Please copy to anyone relevant (e.g. plugin\nmaintainers) by mentioning their GitHub handle (starting with `@`) in your message.\n\nFor any extensive change, such as a new plugin, you will have to find testers to +1 your PR.\n\n### New plugin aliases\n\nWe acknowledge that aliases are a core part of Oh My Zsh. There are plugins that have +100 aliases!\n\nThis has become an issue for two opposing reasons:\n\n- Some users want to have their personal aliases in Oh My Zsh.\n- Some users don't want any aliases at all and feel that there are too many.\n\nBecause of this, from now on, we require that new aliases follow these conditions:\n\n1. They will be used by many people, not just a few.\n2. The aliases will be used many times and for common tasks.\n3. Prefer one generic alias over many specific ones.\n4. When justifying the need for an alias, talk about workflows where you'll use it,\n   preferably in combination with other aliases.\n5. If a command with the same name exists, look for a different alias name.\n\nThis list is not exhaustive! Please remember that your alias will be in the machines of many people,\nso it should be justified why they should have it.\n\n## A note on AI-assisted contributions\n\nWe'll admit it: AI tools can be pretty helpful for coding tasks, and we're not here to gatekeep how you get your work done. We use these tools ourselves! \ud83e\udd16\n\nBut here's the thing\u2014Oh My Zsh is maintained by a small team of volunteers who do this in their spare time. We already have hundreds of pending PRs, and we want to make sure we're spending our limited time effectively.\n\nIf you used AI tools meaningfully in your contribution (code generation, agentic coding assistants, etc.), please mention it in your PR description. Basic autocomplete doesn't count, but if an AI wrote substantial parts of your code, just let us know.\n\n**Examples of good disclosure:**\n- \"Used ChatGPT to help generate the initial regex pattern for parsing git status output\"\n- \"Claude assisted with writing the unit tests for this feature\"  \n- \"Generated with Gemini and then reviewed/tested manually\"\n- Or simply: \"AI-assisted\" in your PR description\n\nHere's what we're looking for:\n\n- **You understand your code**: You should be able to explain what your contribution does and how it works. We want to collaborate with humans who are invested in the project.\n- **Context matters**: Tell us what problem you're solving, how you tested it, and link to relevant docs. Small, incremental changes work better than massive generated overhauls.\n- **Quality over quantity**: We'd rather have one thoughtful, well-tested contribution than ten AI-generated PRs that need extensive review.\n\nThe disclosure helps us know how much guidance to offer. If we're just reviewing AI output that you can't explain or improve, that changes the dynamic\u2014and frankly, it's not a great use of anyone's time.\n\nAs always, we reserve the right to decline any contribution. PRs that appear to be unreviewed AI output, or code the contributor can't explain, may be closed without extensive feedback.\n\n----\n\n## Use the Search, Luke\n\n_May the Force (of past experiences) be with you_\n\nGitHub offers [many search features](https://help.github.com/articles/searching-github/)\nto help you check whether a similar contribution to yours already exists. Please search\nbefore making any contribution, it avoids duplicates and eases maintenance. Trust me,\nthat works 90% of the time.\n\nYou can also take a look at the [FAQ](https://github.com/ohmyzsh/ohmyzsh/wiki/FAQ)\nto be sure your contribution has not already come up.\n\nIf all fails, your thing has probably not been reported yet, so you can go ahead\nand [create an issue](#reporting-issues) or [submit a PR](#submitting-pull-requests).\n\n----\n\n## Commit Guidelines\n\nOh My Zsh uses the [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/)\nspecification. The automatic changelog tool uses these to automatically generate\na changelog based on the commit messages. Here's a guide to writing a commit message\nto allow this:\n\n### Format\n\n```\ntype(scope)!: subject\n```\n\n- `type`: the type of the commit is one of the following:\n\n  - `feat"
+          "preview": "# CONTRIBUTING GUIDELINES\n\nOh-My-Zsh is a community-driven project. Contribution is welcome, encouraged, and appreciated.\nIt is also essential for the development of the project.\n\nFirst, please take a moment to review our [code of conduct](CODE_OF_CONDUCT.md).\n\nThese guidelines are an attempt at better addressing the huge amount of pending\nissues and pull requests. Please read them closely.\n\nForemost, be so kind as to [search](#use-the-search-luke). This ensures any contribution\nyou would make is not already covered.\n\n<!-- TOC updateonsave:true depthfrom:2 -->\n\n- [Reporting Issues](#reporting-issues)\n  - [You have a problem](#you-have-a-problem)\n  - [You have a suggestion](#you-have-a-suggestion)\n- [Submitting Pull Requests](#submitting-pull-requests)\n  - [Getting started](#getting-started)\n  - [You have a solution](#you-have-a-solution)\n  - [You have an addition](#you-have-an-addition)\n- [A note on AI-assisted contributions](#a-note-on-ai-assisted-contributions)\n- [Use the Search, Luke](#use-the-search-luke)\n- [Commit Guidelines](#commit-guidelines)\n  - [Format](#format)\n  - [Style](#style)\n- [Volunteer](#volunteer)\n\n<!-- /TOC -->\n\n## Reporting Issues\n\n### You have a problem\n\nPlease be so kind as to [search](#use-the-search-luke) for any open issue already covering\nyour problem.\n\nIf you find one, comment on it, so we know more people are experiencing it.\n\nIf not, look at the [Troubleshooting](https://github.com/ohmyzsh/ohmyzsh/wiki/Troubleshooting)\npage for instructions on how to gather data to better debug your problem.\n\nThen, you can go ahead and create an issue with as much detail as you can provide.\nIt should include the data gathered as indicated above, along with the following:\n\n1. How to reproduce the problem\n2. What the correct behavior should be\n3. What the actual behavior is\n\nPlease copy to anyone relevant (e.g. plugin maintainers) by mentioning their GitHub handle\n(starting with `@`) in your message.\n\nWe will do our very best to help you.\n\n### You have a suggestion\n\nPlease be so kind as to [search](#use-the-search-luke) for any open issue already covering\nyour suggestion.\n\nIf you find one, comment on it, so we know more people are supporting it.\n\nIf not, you can go ahead and create an issue. Please copy to anyone relevant (e.g. plugin\nmaintainers) by mentioning their GitHub handle (starting with `@`) in your message.\n\n## Submitting Pull Requests\n\n### Getting started\n\nYou should be familiar with the basics of\n[contributing on GitHub](https://help.github.com/articles/using-pull-requests) and have a fork\n[properly set up](https://github.com/ohmyzsh/ohmyzsh/wiki/Contribution-Technical-Practices).\n\nYou MUST always create PRs with _a dedicated branch_ based on the latest upstream tree.\n\nIf you create your own PR, please make sure you do it right. Also be so kind as to reference\nany issue that would be solved in the PR description body,\n[for instance](https://help.github.com/articles/closing-issues-via-commit-messages/)\n_\"Fixes #XXXX\"_ for issue number XXXX.\n\n### You have a solution\n\nPlease be so kind as to [search](#use-the-search-luke) for any open issue already covering\nyour [problem](#you-have-a-problem), and any pending/merged/rejected PR covering your solution.\n\nIf the solution is already reported, try it out and +1 the pull request if the\nsolution works ok. On the other hand, if you think your solution is better, post\nit with reference to the other one so we can have both solutions to compare.\n\nIf not, then go ahead and submit a PR. Please copy to anyone relevant (e.g. plugin\nmaintainers) by mentioning their GitHub handle (starting with `@`) in your message.\n\n### You have an addition\n\nPlease [do not](https://github.com/ohmyzsh/ohmyzsh/wiki/Themes#dont-send-us-your-theme-for-now)\nsend themes for now.\n\nPlease be so kind as to [search](#use-the-search-luke) for any pending, merged or rejected Pull Requests\ncovering or related to what you want to add.\n\nIf you find one, try it out and work with the author on a common solution.\n\nIf not, then go ahead and submit a PR. Please copy to anyone relevant (e.g. plugin\nmaintainers) by mentioning their GitHub handle (starting with `@`) in your message.\n\nFor any extensive change, such as a new plugin, you will have to find testers to +1 your PR.\n\n### New plugin aliases\n\nWe acknowledge that aliases are a core part of Oh My Zsh. There are plugins that have +100 aliases!\n\nThis has become an issue for two opposing reasons:\n\n- Some users want to have their personal aliases in Oh My Zsh.\n- Some users don't want any aliases at all and feel that there are too many.\n\nBecause of this, from now on, we require that new aliases follow these conditions:\n\n1. They will be used by many people, not just a few.\n2. The aliases will be used many times and for common tasks.\n3. Prefer one generic alias over many specific ones.\n4. When justifying the need for an alias, talk about workflows where you'll use it,\n   preferably in combination with other aliases.\n5. If a command with the same name exists, look for a different alias name.\n\nThis list is not exhaustive! Please remember that your alias will be in the machines of many people,\nso it should be justified why they should have it.\n\n## A note on AI-assisted contributions\n\nWe'll admit it: AI tools can be pretty helpful for coding tasks, and we're not here to gatekeep how you get your work done. We use these tools ourselves! 🤖\n\nBut here's the thing—Oh My Zsh is maintained by a small team of volunteers who do this in their spare time. We already have hundreds of pending PRs, and we want to make sure we're spending our limited time effectively.\n\nIf you used AI tools meaningfully in your contribution (code generation, agentic coding assistants, etc.), please mention it in your PR description. Basic autocomplete doesn't count, but if an AI wrote substantial parts of your code, just let us know.\n\n**Examples of good disclosure:**\n- \"Used ChatGPT to help generate the initial regex pattern for parsing git status output\"\n- \"Claude assisted with writing the unit tests for this feature\"  \n- \"Generated with Gemini and then reviewed/tested manually\"\n- Or simply: \"AI-assisted\" in your PR description\n\nHere's what we're looking for:\n\n- **You understand your code**: You should be able to explain what your contribution does and how it works. We want to collaborate with humans who are invested in the project.\n- **Context matters**: Tell us what problem you're solving, how you tested it, and link to relevant docs. Small, incremental changes work better than massive generated overhauls.\n- **Quality over quantity**: We'd rather have one thoughtful, well-tested contribution than ten AI-generated PRs that need extensive review.\n\nThe disclosure helps us know how much guidance to offer. If we're just reviewing AI output that you can't explain or improve, that changes the dynamic—and frankly, it's not a great use of anyone's time.\n\nAs always, we reserve the right to decline any contribution. PRs that appear to be unreviewed AI output, or code the contributor can't explain, may be closed without extensive feedback.\n\n----\n\n## Use the Search, Luke\n\n_May the Force (of past experiences) be with you_\n\nGitHub offers [many search features](https://help.github.com/articles/searching-github/)\nto help you check whether a similar contribution to yours already exists. Please search\nbefore making any contribution, it avoids duplicates and eases maintenance. Trust me,\nthat works 90% of the time.\n\nYou can also take a look at the [FAQ](https://github.com/ohmyzsh/ohmyzsh/wiki/FAQ)\nto be sure your contribution has not already come up.\n\nIf all fails, your thing has probably not been reported yet, so you can go ahead\nand [create an issue](#reporting-issues) or [submit a PR](#submitting-pull-requests).\n\n----\n\n## Commit Guidelines\n\nOh My Zsh uses the [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/)\nspecification. The automatic changelog tool uses these to automatically generate\na changelog based on the commit messages. Here's a guide to writing a commit message\nto allow this:\n\n### Format\n\n```\ntype(scope)!: subject\n```\n\n- `type`: the type of the commit is one of the following:\n\n  - `feat"
         },
         {
           "path": "README.md",
           "bytes": 22073,
-          "preview": "<p align=\"center\"><img src=\"https://ohmyzsh.s3.amazonaws.com/omz-ansi-github.png\" alt=\"Oh My Zsh\"></p>\n\nOh My Zsh is an open source, community-driven framework for managing your [zsh](https://www.zsh.org/)\nconfiguration.\n\nSounds boring. Let's try again.\n\n**Oh My Zsh will not make you a 10x developer...but you may feel like one.**\n\nOnce installed, your terminal shell will become the talk of the town _or your money back!_ With each keystroke\nin your command prompt, you'll take advantage of the hundreds of powerful plugins and beautiful themes.\nStrangers will come up to you in caf\u00e9s and ask you, _\"that is amazing! are you some sort of genius?\"_\n\nFinally, you'll begin to get the sort of attention that you have always felt you deserved. ...or maybe you'll\nuse the time that you're saving to start flossing more often. \ud83d\ude2c\n\nTo learn more, visit [ohmyz.sh](https://ohmyz.sh), follow [@ohmyzsh](https://x.com/ohmyzsh) on X (formerly\nTwitter), and join us on [Discord](https://discord.gg/ohmyzsh).\n\n[![CI](https://github.com/ohmyzsh/ohmyzsh/workflows/CI/badge.svg)](https://github.com/ohmyzsh/ohmyzsh/actions?query=workflow%3ACI)\n[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/10713/badge)](https://www.bestpractices.dev/projects/10713)\n[![X (formerly Twitter) Follow](https://img.shields.io/twitter/follow/ohmyzsh?label=%40ohmyzsh&logo=x&style=flat)](https://twitter.com/intent/follow?screen_name=ohmyzsh)\n[![Mastodon Follow](https://img.shields.io/mastodon/follow/111169632522566717?label=%40ohmyzsh&domain=https%3A%2F%2Fmstdn.social&logo=mastodon&style=flat)](https://mstdn.social/@ohmyzsh)\n[![Discord server](https://img.shields.io/discord/642496866407284746)](https://discord.gg/ohmyzsh)\n\n<a href=\"https://commitgoods.com/collections/oh-my-zsh?utm_source=github\">\n  <picture>\n    <source media=\"(prefers-color-scheme: dark)\" srcset=\"https://cdn.shopify.com/s/files/1/0101/8752/files/commitgoods-badge-stacked-navy-dark.svg\">\n    <img src=\"https://cdn.shopify.com/s/files/1/0101/8752/files/commitgoods-badge-stacked-navy.svg\" height=\"28\" alt=\"Official merch on commitgoods.com\">\n  </picture>\n</a>\n\n\n<details>\n<summary>Table of Contents</summary>\n\n- [Getting Started](#getting-started)\n  - [Operating System Compatibility](#operating-system-compatibility)\n  - [Prerequisites](#prerequisites)\n  - [Basic Installation](#basic-installation)\n    - [Manual Inspection](#manual-inspection)\n- [Using Oh My Zsh](#using-oh-my-zsh)\n  - [Plugins](#plugins)\n    - [Enabling Plugins](#enabling-plugins)\n    - [Using Plugins](#using-plugins)\n  - [Themes](#themes)\n    - [Selecting A Theme](#selecting-a-theme)\n  - [FAQ](#faq)\n- [Advanced Topics](#advanced-topics)\n  - [Advanced Installation](#advanced-installation)\n    - [Custom Directory](#custom-directory)\n    - [Unattended Install](#unattended-install)\n    - [Installing From A Forked Repository](#installing-from-a-forked-repository)\n    - [Manual Installation](#manual-installation)\n  - [Installation Problems](#installation-problems)\n  - [Custom Plugins And Themes](#custom-plugins-and-themes)\n  - [Enable GNU ls In macOS And FreeBSD Systems](#enable-gnu-ls-in-macos-and-freebsd-systems)\n  - [Skip Aliases](#skip-aliases)\n  - [Async git prompt](#async-git-prompt)\n- [Getting Updates](#getting-updates)\n  - [Updates Verbosity](#updates-verbosity)\n  - [Manual Updates](#manual-updates)\n- [Uninstalling Oh My Zsh](#uninstalling-oh-my-zsh)\n- [How Do I Contribute To Oh My Zsh?](#how-do-i-contribute-to-oh-my-zsh)\n  - [Do Not Send Us Themes](#do-not-send-us-themes)\n- [Contributors](#contributors)\n- [Follow Us](#follow-us)\n- [Merchandise](#merchandise)\n- [License](#license)\n- [About Planet Argon](#about-planet-argon)\n\n</details>\n\n## Getting Started\n\n### Operating System Compatibility\n\n| O/S            | Status |\n| :------------- | :----: |\n| Android        |   \u2705   |\n| FreeBSD        |   \u2705   |\n| LCARS          |   \ud83d\udef8   |\n| Linux          |   \u2705   |\n| macOS          |   \u2705   |\n| OS/2 Warp      |   \u274c   |\n| Windows (WSL2) |   \u2705   |\n\n### Prerequisites\n\n- [Zsh](https://www.zsh.org) should be installed (v4.3.9 or more recent is fine but we prefer 5.0.8 and\n  newer). If not pre-installed (run `zsh --version` to confirm), check the following wiki instructions here:\n  [Installing ZSH](https://github.com/ohmyzsh/ohmyzsh/wiki/Installing-ZSH)\n- `curl` or `wget` should be installed\n- `git` should be installed (recommended v2.4.11 or higher)\n\n### Basic Installation\n\nOh My Zsh is installed by running one of the following commands in your terminal. You can install this via the\ncommand-line with either `curl`, `wget` or another similar tool.\n\n| Method    | Command                                                                                           |\n| :-------- | :------------------------------------------------------------------------------------------------ |\n| **curl**  | `sh -c \"$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)\"` |\n| **wget**  | `sh -c \"$(wget -O- https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)\"`   |\n| **fetch** | `sh -c \"$(fetch -o - https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)\"` |\n\nAlternatively, the installer is also mirrored outside GitHub. Using this URL instead may be required if you're\nin a country like China or India (for certain ISPs), that blocks `raw.githubusercontent.com`:\n\n| Method    | Command                                           |\n| :-------- | :------------------------------------------------ |\n| **curl**  | `sh -c \"$(curl -fsSL https://install.ohmyz.sh/)\"` |\n| **wget**  | `sh -c \"$(wget -O- https://install.ohmyz.sh/)\"`   |\n| **fetch** | `sh -c \"$(fetch -o - https://install.ohmyz.sh/)\"` |\n\n_Note that any previous `.zshrc` will be renamed to `.zshrc.pre-oh-my-zsh`. After installation, you can move\nthe configuration you want to preserve into the new `.zshrc`._\n\n#### Manual Inspection\n\nIt's a good idea to inspect the install script from projects you don't yet know. You can do that by\ndownloading the install script first, looking through it so everything looks normal, then running it:\n\n```sh\nwget https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh\nsh install.sh\n```\n\nIf the above URL times out or otherwise fails, you may have to substitute the URL for\n`https://install.ohmyz.sh` to be able to get the script.\n\n## Using Oh My Zsh\n\n### Plugins\n\nOh My Zsh comes with a shitload of plugins for you to take advantage of. You can take a look in the\n[plugins](https://github.com/ohmyzsh/ohmyzsh/tree/master/plugins) directory and/or the\n[wiki](https://github.com/ohmyzsh/ohmyzsh/wiki/Plugins) to see what's currently available.\n\n#### Enabling Plugins\n\nOnce you spot a plugin (or several) that you'd like to use with Oh My Zsh, you'll need to enable them in the\n`.zshrc` file. You'll find the zshrc file in your `$HOME` directory. Open it with your favorite text editor\nand you'll see a spot to list all the plugins you want to load.\n\n```sh\nvi ~/.zshrc\n```\n\nFor example, this might begin to look like this:\n\n```sh\nplugins=(\n  git\n  bundler\n  dotenv\n  macos\n  rake\n  rbenv\n  ruby\n)\n```\n\n_Note that the plugins are separated by whitespace (spaces, tabs, new lines...). **Do not** use commas between\nthem or it will break._\n\n#### Using Plugins\n\nEach built-in plugin includes a **README**, documenting it. This README should show the aliases (if the plugin\nadds any) and extra goodies that are included in that particular plugin.\n\n### Themes\n\nWe'll admit it. Early in the Oh My Zsh world, we may have gotten a bit too theme-happy. We have over one\nhundred and fifty themes now bundled. Most of them have\n[screenshots](https://github.com/ohmyzsh/ohmyzsh/wiki/Themes) on the wiki (We are working on updating this!).\nCheck them out!\n\n#### Selecting A Theme\n\n_Robby's theme is the default one. It's not the fanciest one. It's not the simplest one. It's just the right\none (for him)._\n\nOnce you find a theme that you'd like to use, you will need to edit the `~/.zshrc` file. You'll see an\nenvironment variable (all caps) in there that looks like:\n\n```sh\nZSH_THEME=\"robbyrussell\"\n```\n\nTo use a different theme, simply change the value to matc"
+          "preview": "<p align=\"center\"><img src=\"https://ohmyzsh.s3.amazonaws.com/omz-ansi-github.png\" alt=\"Oh My Zsh\"></p>\n\nOh My Zsh is an open source, community-driven framework for managing your [zsh](https://www.zsh.org/)\nconfiguration.\n\nSounds boring. Let's try again.\n\n**Oh My Zsh will not make you a 10x developer...but you may feel like one.**\n\nOnce installed, your terminal shell will become the talk of the town _or your money back!_ With each keystroke\nin your command prompt, you'll take advantage of the hundreds of powerful plugins and beautiful themes.\nStrangers will come up to you in cafés and ask you, _\"that is amazing! are you some sort of genius?\"_\n\nFinally, you'll begin to get the sort of attention that you have always felt you deserved. ...or maybe you'll\nuse the time that you're saving to start flossing more often. 😬\n\nTo learn more, visit [ohmyz.sh](https://ohmyz.sh), follow [@ohmyzsh](https://x.com/ohmyzsh) on X (formerly\nTwitter), and join us on [Discord](https://discord.gg/ohmyzsh).\n\n[![CI](https://github.com/ohmyzsh/ohmyzsh/workflows/CI/badge.svg)](https://github.com/ohmyzsh/ohmyzsh/actions?query=workflow%3ACI)\n[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/10713/badge)](https://www.bestpractices.dev/projects/10713)\n[![X (formerly Twitter) Follow](https://img.shields.io/twitter/follow/ohmyzsh?label=%40ohmyzsh&logo=x&style=flat)](https://twitter.com/intent/follow?screen_name=ohmyzsh)\n[![Mastodon Follow](https://img.shields.io/mastodon/follow/111169632522566717?label=%40ohmyzsh&domain=https%3A%2F%2Fmstdn.social&logo=mastodon&style=flat)](https://mstdn.social/@ohmyzsh)\n[![Discord server](https://img.shields.io/discord/642496866407284746)](https://discord.gg/ohmyzsh)\n\n<a href=\"https://commitgoods.com/collections/oh-my-zsh?utm_source=github\">\n  <picture>\n    <source media=\"(prefers-color-scheme: dark)\" srcset=\"https://cdn.shopify.com/s/files/1/0101/8752/files/commitgoods-badge-stacked-navy-dark.svg\">\n    <img src=\"https://cdn.shopify.com/s/files/1/0101/8752/files/commitgoods-badge-stacked-navy.svg\" height=\"28\" alt=\"Official merch on commitgoods.com\">\n  </picture>\n</a>\n\n\n<details>\n<summary>Table of Contents</summary>\n\n- [Getting Started](#getting-started)\n  - [Operating System Compatibility](#operating-system-compatibility)\n  - [Prerequisites](#prerequisites)\n  - [Basic Installation](#basic-installation)\n    - [Manual Inspection](#manual-inspection)\n- [Using Oh My Zsh](#using-oh-my-zsh)\n  - [Plugins](#plugins)\n    - [Enabling Plugins](#enabling-plugins)\n    - [Using Plugins](#using-plugins)\n  - [Themes](#themes)\n    - [Selecting A Theme](#selecting-a-theme)\n  - [FAQ](#faq)\n- [Advanced Topics](#advanced-topics)\n  - [Advanced Installation](#advanced-installation)\n    - [Custom Directory](#custom-directory)\n    - [Unattended Install](#unattended-install)\n    - [Installing From A Forked Repository](#installing-from-a-forked-repository)\n    - [Manual Installation](#manual-installation)\n  - [Installation Problems](#installation-problems)\n  - [Custom Plugins And Themes](#custom-plugins-and-themes)\n  - [Enable GNU ls In macOS And FreeBSD Systems](#enable-gnu-ls-in-macos-and-freebsd-systems)\n  - [Skip Aliases](#skip-aliases)\n  - [Async git prompt](#async-git-prompt)\n- [Getting Updates](#getting-updates)\n  - [Updates Verbosity](#updates-verbosity)\n  - [Manual Updates](#manual-updates)\n- [Uninstalling Oh My Zsh](#uninstalling-oh-my-zsh)\n- [How Do I Contribute To Oh My Zsh?](#how-do-i-contribute-to-oh-my-zsh)\n  - [Do Not Send Us Themes](#do-not-send-us-themes)\n- [Contributors](#contributors)\n- [Follow Us](#follow-us)\n- [Merchandise](#merchandise)\n- [License](#license)\n- [About Planet Argon](#about-planet-argon)\n\n</details>\n\n## Getting Started\n\n### Operating System Compatibility\n\n| O/S            | Status |\n| :------------- | :----: |\n| Android        |   ✅   |\n| FreeBSD        |   ✅   |\n| LCARS          |   🛸   |\n| Linux          |   ✅   |\n| macOS          |   ✅   |\n| OS/2 Warp      |   ❌   |\n| Windows (WSL2) |   ✅   |\n\n### Prerequisites\n\n- [Zsh](https://www.zsh.org) should be installed (v4.3.9 or more recent is fine but we prefer 5.0.8 and\n  newer). If not pre-installed (run `zsh --version` to confirm), check the following wiki instructions here:\n  [Installing ZSH](https://github.com/ohmyzsh/ohmyzsh/wiki/Installing-ZSH)\n- `curl` or `wget` should be installed\n- `git` should be installed (recommended v2.4.11 or higher)\n\n### Basic Installation\n\nOh My Zsh is installed by running one of the following commands in your terminal. You can install this via the\ncommand-line with either `curl`, `wget` or another similar tool.\n\n| Method    | Command                                                                                           |\n| :-------- | :------------------------------------------------------------------------------------------------ |\n| **curl**  | `sh -c \"$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)\"` |\n| **wget**  | `sh -c \"$(wget -O- https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)\"`   |\n| **fetch** | `sh -c \"$(fetch -o - https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)\"` |\n\nAlternatively, the installer is also mirrored outside GitHub. Using this URL instead may be required if you're\nin a country like China or India (for certain ISPs), that blocks `raw.githubusercontent.com`:\n\n| Method    | Command                                           |\n| :-------- | :------------------------------------------------ |\n| **curl**  | `sh -c \"$(curl -fsSL https://install.ohmyz.sh/)\"` |\n| **wget**  | `sh -c \"$(wget -O- https://install.ohmyz.sh/)\"`   |\n| **fetch** | `sh -c \"$(fetch -o - https://install.ohmyz.sh/)\"` |\n\n_Note that any previous `.zshrc` will be renamed to `.zshrc.pre-oh-my-zsh`. After installation, you can move\nthe configuration you want to preserve into the new `.zshrc`._\n\n#### Manual Inspection\n\nIt's a good idea to inspect the install script from projects you don't yet know. You can do that by\ndownloading the install script first, looking through it so everything looks normal, then running it:\n\n```sh\nwget https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh\nsh install.sh\n```\n\nIf the above URL times out or otherwise fails, you may have to substitute the URL for\n`https://install.ohmyz.sh` to be able to get the script.\n\n## Using Oh My Zsh\n\n### Plugins\n\nOh My Zsh comes with a shitload of plugins for you to take advantage of. You can take a look in the\n[plugins](https://github.com/ohmyzsh/ohmyzsh/tree/master/plugins) directory and/or the\n[wiki](https://github.com/ohmyzsh/ohmyzsh/wiki/Plugins) to see what's currently available.\n\n#### Enabling Plugins\n\nOnce you spot a plugin (or several) that you'd like to use with Oh My Zsh, you'll need to enable them in the\n`.zshrc` file. You'll find the zshrc file in your `$HOME` directory. Open it with your favorite text editor\nand you'll see a spot to list all the plugins you want to load.\n\n```sh\nvi ~/.zshrc\n```\n\nFor example, this might begin to look like this:\n\n```sh\nplugins=(\n  git\n  bundler\n  dotenv\n  macos\n  rake\n  rbenv\n  ruby\n)\n```\n\n_Note that the plugins are separated by whitespace (spaces, tabs, new lines...). **Do not** use commas between\nthem or it will break._\n\n#### Using Plugins\n\nEach built-in plugin includes a **README**, documenting it. This README should show the aliases (if the plugin\nadds any) and extra goodies that are included in that particular plugin.\n\n### Themes\n\nWe'll admit it. Early in the Oh My Zsh world, we may have gotten a bit too theme-happy. We have over one\nhundred and fifty themes now bundled. Most of them have\n[screenshots](https://github.com/ohmyzsh/ohmyzsh/wiki/Themes) on the wiki (We are working on updating this!).\nCheck them out!\n\n#### Selecting A Theme\n\n_Robby's theme is the default one. It's not the fanciest one. It's not the simplest one. It's just the right\none (for him)._\n\nOnce you find a theme that you'd like to use, you will need to edit the `~/.zshrc` file. You'll see an\nenvironment variable (all caps) in there that looks like:\n\n```sh\nZSH_THEME=\"robbyrussell\"\n```\n\nTo use a different theme, simply change the value to matc"
         }
       ],
       "config_files": [
@@ -8462,7 +8462,7 @@
         "steps": [
           {
             "id": "serialize",
-            "label": "JSON serialize (inventory \u2192 SQLite)",
+            "label": "JSON serialize (inventory → SQLite)",
             "ms": 0,
             "pct": 0
           },
@@ -8481,5 +8481,881 @@
         ]
       }
     ]
+  },
+  "report": {
+    "overview": "Oh My Zsh is a community-driven framework for managing zsh configuration: a user's .zshrc exports ZSH, ZSH_THEME and a plugins array, then sources oh-my-zsh.sh which wires up $fpath, runs compinit, and loads ~22 lib files, ~368 bundled plugins, and ~143 themes. It ships a self-updater that polls the GitHub API and re-pulls the repo via git, an `omz` CLI (lib/cli.zsh) that rewrites .zshrc to manage plugins/themes, and a curl|sh installer (tools/install.sh) that is deployed to install.ohmyz.sh via Vercel. Distinctive traits: everything is pure zsh sourced into the live shell, customization is layered through a $ZSH_CUSTOM shadow directory, and behavior is tunable via zstyle contexts under ':omz:...'.",
+    "system_map": {
+      "summary": "Oh My Zsh is a sourced shell framework, not a daemon: oh-my-zsh.sh is the single entrypoint sourced from ~/.zshrc and it orchestrates fpath setup, compinit, lib files, plugins, custom overrides, and the theme. Runtime state lives in $ZSH_CACHE_DIR (completion dump, .zsh-update epoch file, probe caches) and $ZSH/log (update.lock). External integrations are git (self-update via pull --rebase), the GitHub REST API (update check, PR label check), curl/wget/fetch, and chsh. CI is GitHub Actions: syntax checking, installer testing, a Vercel deploy of install.sh, vendored-dependency updates, and OpenSSF Scorecard.",
+      "claims": [
+        {
+          "claim": "oh-my-zsh.sh is the sole runtime entrypoint, sourced from .zshrc after the user sets ZSH/ZSH_THEME/plugins; it aborts with a process-tree dump if loaded by a non-zsh shell and refuses non-zsh emulation modes.",
+          "sources": [
+            "oh-my-zsh.sh#L10-46",
+            "templates/zshrc.zsh-template#L78"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Three env vars define the layout: ZSH (repo dir, defaulting to the script's own dir), ZSH_CUSTOM (default $ZSH/custom, a gitignored shadow tree), and ZSH_CACHE_DIR (default $ZSH/cache, falling back to ${XDG_CACHE_HOME:-$HOME/.cache}/oh-my-zsh when unwritable).",
+          "sources": [
+            "oh-my-zsh.sh#L50-68",
+            ".gitignore"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Before compinit, each name in the $plugins array is resolved by is_plugin() to $ZSH_CUSTOM/plugins/<name> or $ZSH/plugins/<name> (a dir containing <name>.plugin.zsh or _<name>) and prepended to $fpath.",
+          "sources": [
+            "oh-my-zsh.sh#L81-98"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Completion init writes $ZSH_COMPDUMP (default ${ZDOTDIR:-$HOME}/.zcompdump-<SHORT_HOST>-<ZSH_VERSION>), deletes and rebuilds it when embedded '#omz revision'/'#omz fpath' metadata lines go stale, and zrecompile-compiles it under a .lock mkdir.",
+          "sources": [
+            "oh-my-zsh.sh#L129-185"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "_omz_source() implements the override layer: for each lib/plugins path it prefers $ZSH_CUSTOM/<path> over $ZSH/<path>, and honors 'zstyle :omz:lib:<name>|plugins:<name> aliases no' by snapshotting and restoring the alias tables around the source.",
+          "sources": [
+            "oh-my-zsh.sh#L187-226",
+            "README.md#L374-424"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Load order is fixed: all lib/*.zsh files, then each plugin's <name>.plugin.zsh, then every $ZSH_CUSTOM/*.zsh, then the theme resolved from $ZSH_CUSTOM, $ZSH_CUSTOM/themes, or $ZSH/themes.",
+          "sources": [
+            "oh-my-zsh.sh#L230-264"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "lib/cli.zsh defines the `omz` dispatcher: it maps argv[1] to functions named _omz::<command> (changelog, help, plugin, pr, reload, shop, theme, update, version) and registers a `_omz` compdef completer.",
+          "sources": [
+            "lib/cli.zsh#L3-21",
+            "lib/cli.zsh#L23-117"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Self-update is split across two files: tools/check_for_upgrade.sh is sourced at every shell start to gate and trigger updates, while tools/upgrade.sh does the actual `git pull --rebase $remote $branch` using per-repo git config keys oh-my-zsh.remote and oh-my-zsh.branch.",
+          "sources": [
+            "tools/check_for_upgrade.sh#L151-176",
+            "tools/upgrade.sh#L205-264"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "tools/install.sh is a POSIX sh installer meant to be run via curl|sh: it does a manual `git init` + `git fetch --depth=1` into $ZSH, materializes .zshrc from templates/zshrc.zsh-template with a sed-substituted ZSH path, and optionally chsh's the login shell to zsh.",
+          "sources": [
+            "tools/install.sh#L307-352",
+            "tools/install.sh#L354-416",
+            "tools/install.sh#L418-515"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The installer is deployed to install.ohmyz.sh by the installer.yml workflow: it copies tools/install.sh into .github/workflows/installer/ and runs `vc deploy --prod` against a Vercel project whose vercel.json rewrites '/' to '/install.sh'.",
+          "sources": [
+            ".github/workflows/installer.yml",
+            ".github/workflows/installer/vercel.json"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "lib/git.zsh wraps all prompt-time git calls in __git_prompt_git (GIT_OPTIONAL_LOCKS=0) and exposes git_prompt_info/git_prompt_status plus helpers like git_current_branch; lib/async_prompt.zsh provides an experimental fork-pipe-zle async framework that git.zsh registers into via _omz_register_handler.",
+          "sources": [
+            "lib/git.zsh#L10-12",
+            "lib/git.zsh#L171-236",
+            "lib/async_prompt.zsh#L28-43"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The repo vendors 368 plugin directories under plugins/ (each with <name>.plugin.zsh and usually a README.md; some only ship a _<name> completion file) and 143 *.zsh-theme files under themes/.",
+          "sources": [
+            "plugins/git/git.plugin.zsh",
+            "plugins/github/github.plugin.zsh",
+            "themes/random.zsh-theme"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Vendored plugin dependencies are declared in .github/dependencies.yml (repo/branch/version plus pre/post-copy shell snippets) and synced weekly by .github/workflows/dependencies/updater.py under the dependencies.yml workflow.",
+          "sources": [
+            ".github/dependencies.yml",
+            ".github/workflows/dependencies/updater.py",
+            ".github/workflows/dependencies.yml"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "feature_catalog": {
+      "summary": "User-facing surface = (a) the `omz` CLI with plugin/theme/update/pr/changelog subcommands, (b) a large catalog of plugins and themes enabled via zshrc variables, (c) lib features that reshape the interactive shell (directory stack aliases, history behavior, key bindings, completion tuning, clipboard helpers, terminal title/OSC7 integration, git prompt API), and (d) lifecycle tooling (install, upgrade, changelog, uninstall, diagnostics).",
+      "claims": [
+        {
+          "claim": "`omz plugin enable|disable|info|list|load` manage the plugins array: enable/disable rewrite .zshrc with an awk program, back up to .zshrc.bck, syntax-check the result with `zsh -n`, and reload the shell; load sources a plugin for the current session only.",
+          "sources": [
+            "lib/cli.zsh#L228-322",
+            "lib/cli.zsh#L324-416",
+            "lib/cli.zsh#L493-539"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`omz theme list|set|use` enumerate and switch themes; `set` rewrites the ZSH_THEME= line in .zshrc (or prepends one) with the same backup + `zsh -n` + rollback discipline as the plugin commands.",
+          "sources": [
+            "lib/cli.zsh#L748-797",
+            "lib/cli.zsh#L799-886"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`omz update` shells out to `zsh -f $ZSH/tools/upgrade.sh -i -v <mode> -c <days>`, writes LAST_EPOCH into $ZSH_CACHE_DIR/.zsh-update, removes the update lock, and execs a fresh zsh if HEAD changed.",
+          "sources": [
+            "lib/cli.zsh#L888-931"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`omz pr test <N|URL>` fetches a pull request into branch ohmyzsh/pull-N, first querying api.github.com for the 'testers needed' label (node_id MDU6TGFiZWw4NzY1NTkwNA==) and requiring a typed 'yes' if the PR is unlabeled, then rebases onto master and spawns `zsh -l` for testing.",
+          "sources": [
+            "lib/cli.zsh#L591-724"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`omz changelog` delegates to tools/changelog.sh, a Conventional-Commits parser that buckets subjects by type (feat/fix/perf/docs main; refactor/style/other grouped; chore/ci/etc ignored) and renders them per release.",
+          "sources": [
+            "lib/cli.zsh#L185-203",
+            "tools/changelog.sh",
+            "CONTRIBUTING.md#L172-241"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The git plugin (plugins/git/git.plugin.zsh) ships ~200 aliases plus functions like git_main_branch (probing main/trunk/mainline/default/stable/master then remote HEAD), git_develop_branch, and gbcopy (branch name to clipboard via clipcopy).",
+          "sources": [
+            "plugins/git/git.plugin.zsh",
+            "plugins/git/README.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "ZSH_THEME='random' is implemented as a real theme file themes/random.zsh-theme: it gathers candidates from ZSH_THEME_RANDOM_CANDIDATES or the theme dirs minus ZSH_THEME_RANDOM_IGNORED, picks one with $RANDOM, sources it, and records it in $RANDOM_THEME.",
+          "sources": [
+            "themes/random.zsh-theme",
+            "templates/zshrc.zsh-template#L7-17"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "lib/directories.zsh enables auto_cd/auto_pushd and defines the `...`=`../..` global aliases, numeric `1..9`=`cd -N` aliases, `d` for the dir stack, and ls listing aliases (l, ll, la, lsa).",
+          "sources": [
+            "lib/directories.zsh"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "lib/history.zsh replaces `history` with omz_history (supports -c clear with confirmation and HIST_STAMPS-driven date formats), sets HISTFILE=~/.zsh_history, floors HISTSIZE=50000/SAVEHIST=10000, and enables share_history/hist_verify.",
+          "sources": [
+            "lib/history.zsh"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "lib/completion.zsh configures the completer: matcher-list driven by CASE_SENSITIVE/HYPHEN_INSENSITIVE, menu select, use-cache into $ZSH_CACHE_DIR, ignored system users, COMPLETION_WAITING_DOTS spinner widget, and bashcompinit for bash completions.",
+          "sources": [
+            "lib/completion.zsh"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "lib/termsupport.zsh auto-sets terminal/tab titles via title() on precmd/preexec (special-casing `fg` job resolution and sudo/ssh prefixes) and emits OSC 7 file://host/path cwd notifications via omz_termsupport_cwd, skipped under Emacs/SSH.",
+          "sources": [
+            "lib/termsupport.zsh#L9-116",
+            "lib/termsupport.zsh#L131-170"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "lib/clipboard.zsh defines clipcopy/clippaste dispatching across pbcopy, cygwin, wl-copy, xsel, xclip, lemonade, doitclient, win32yank, and tmux depending on platform and WAYLAND_DISPLAY/DISPLAY/TMUX.",
+          "sources": [
+            "lib/clipboard.zsh"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "lib/functions.zsh provides grab-bag utilities: take/mkcd/takedir (mkdir+cd), takeurl/takezip/takegit (download/extract+cd), open_command (cross-platform opener honoring $BROWSER), omz_urlencode/omz_urldecode, zsh_stats, and uninstall_oh_my_zsh.",
+          "sources": [
+            "lib/functions.zsh#L1-88",
+            "lib/functions.zsh#L176-284"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "lib/diagnostics.zsh ships omz_diagnostic_dump, a defensive (builtin/command-prefixed) troubleshooting-report generator with -v/-V verbosity levels that cats config state into a single postable file.",
+          "sources": [
+            "lib/diagnostics.zsh"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "plugins/themes/themes.plugin.zsh adds an interactive `theme` command (default random) plus `lstheme` listing, and tools/theme_chooser.sh previews every theme interactively after sourcing oh-my-zsh.sh.",
+          "sources": [
+            "plugins/themes/themes.plugin.zsh",
+            "tools/theme_chooser.sh"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "data_flow": {
+      "summary": "Configuration flows inward from .zshrc variables (ZSH_THEME, plugins array, zstyle settings, DISABLE_* flags) which oh-my-zsh.sh reads while sourcing; state flows outward into $ZSH_CACHE_DIR (zcompdump, .zsh-update, probe/alias caches) and back into .zshrc itself when `omz` commands mutate it. Prompt rendering is the hot path: git status data moves from porcelain output through regex parsing into ZSH_THEME_* variables, either synchronously or through a forked async pipe read by a zle -F callback.",
+      "claims": [
+        {
+          "claim": "Input boundary: .zshrc defines export ZSH, ZSH_THEME, plugins=(...) and optional zstyle ':omz:...' settings, then `source $ZSH/oh-my-zsh.sh` — the template file is generated by the installer via sed replacing the ZSH= line.",
+          "sources": [
+            "templates/zshrc.zsh-template#L5-78",
+            "tools/install.sh#L405-413"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Plugin data flow: $plugins names -> is_plugin() dir resolution -> dir prepended to $fpath -> <name>.plugin.zsh sourced via _omz_source, with $ZSH_CUSTOM/plugins shadowing $ZSH/plugins at both stages.",
+          "sources": [
+            "oh-my-zsh.sh#L81-98",
+            "oh-my-zsh.sh#L206-211",
+            "oh-my-zsh.sh#L235-239"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Completion pipeline: plugin dirs + $ZSH_CACHE_DIR/completions enter $fpath, compaudit/compinit -i produce $ZSH_COMPDUMP, OMZ metadata comments are appended, and zrecompile emits $ZSH_COMPDUMP.zwc guarded by a mkdir lock.",
+          "sources": [
+            "oh-my-zsh.sh#L66-68",
+            "oh-my-zsh.sh#L146-185"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Update state lives in $ZSH_CACHE_DIR/.zsh-update (sourced to read LAST_EPOCH, EXIT_STATUS, ERROR) written by update_last_updated_file(); mutual exclusion is a mkdir on $ZSH/log/update.lock cleaned by an EXIT/INT/QUIT trap.",
+          "sources": [
+            "tools/check_for_upgrade.sh#L136-149",
+            "tools/check_for_upgrade.sh#L209-235"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Update-availability check: reads git config oh-my-zsh.remote/oh-my-zsh.branch, fetches the remote HEAD sha from api.github.com via curl/wget/fetch (2s timeout), then compares with local HEAD via `git merge-base`; non-GitHub remotes are assumed to have updates.",
+          "sources": [
+            "tools/check_for_upgrade.sh#L62-134"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Git prompt flow: __git_prompt_git runs `git rev-parse --git-dir --abbrev-ref HEAD` and `git status --porcelain -b`; _omz_git_prompt_status_match forces LC_ALL=C for regex parsing (workaround for REG_ILLSEQ on non-UTF-8 bytes); results map through ZSH_THEME_GIT_PROMPT_* variables into the prompt string.",
+          "sources": [
+            "lib/git.zsh#L14-50",
+            "lib/git.zsh#L52-70",
+            "lib/git.zsh#L72-169"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Async prompt flow: precmd hook _omz_async_request forks each registered handler writing to a pipe fd, stores fd/pid in _OMZ_ASYNC_FDS/_OMZ_ASYNC_PIDS, and zle -F triggers _omz_async_callback which stores output in _OMZ_ASYNC_OUTPUT[handler] and calls `zle .reset-prompt` only if it changed.",
+          "sources": [
+            "lib/async_prompt.zsh#L46-142"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": ".zshrc mutation flow (plugin enable/disable, theme set): awk program reads ${ZDOTDIR:-$HOME}/.zshrc -> writes .zshrc.new -> copies original to .zshrc.bck -> mv into place -> `zsh -n` syntax check -> on failure mv .zshrc.bck back -> _omz::reload execs a fresh zsh.",
+          "sources": [
+            "lib/cli.zsh#L249-322",
+            "lib/cli.zsh#L814-863"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Startup-cost caching: expensive probes are persisted in $ZSH_CACHE_DIR — grep alias flags (grep-alias), macOS scutil LocalHostName (localhostname, keyed by $HOST), and appearance command probes (appearance-probes, an associative array dumped via print -r).",
+          "sources": [
+            "lib/grep.zsh",
+            "oh-my-zsh.sh#L101-127",
+            "lib/theme-and-appearance.zsh#L16-38"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "upgrade.sh normalizes legacy robbyrussell/oh-my-zsh remotes to ohmyzsh/ohmyzsh, stores the chosen remote in `git config oh-my-zsh.remote`, records pre-update HEAD in oh-my-zsh.lastVersion, and temporarily forces rebase.autoStash before restoring it.",
+          "sources": [
+            "tools/upgrade.sh#L205-243",
+            "tools/upgrade.sh#L268-341"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Terminal output boundary: termsupport precmd/preexec hooks emit OSC 0/1/2 title sequences and OSC 7 cwd notifications (percent-encoded via omz_urlencode) only when TERM/TERM_PROGRAM whitelists match and not inside Emacs or SSH.",
+          "sources": [
+            "lib/termsupport.zsh#L19-45",
+            "lib/termsupport.zsh#L130-170",
+            "lib/functions.zsh#L176-238"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Installer data flow: env vars ZSH/ZDOTDIR/REPO/REMOTE/BRANCH/CHSH/RUNZSH/KEEP_ZSHRC drive behavior; git writes repo to $ZSH; existing .zshrc moves to .zshrc.pre-oh-my-zsh (older backups get datestamped); the old shell path is saved to ~/.shell.pre-oh-my-zsh for uninstall.sh to restore.",
+          "sources": [
+            "tools/install.sh#L18-40",
+            "tools/install.sh#L354-416",
+            "tools/uninstall.sh#L1-38"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "behavior_traces": {
+      "summary": "Three flows matter most. Startup: .zshrc -> oh-my-zsh.sh guards -> env defaults -> check_for_upgrade -> fpath/compinit -> lib -> plugins -> custom -> theme. Update: startup hook -> epoch/frequency gates -> GitHub API compare -> upgrade.sh git rebase -> epoch write -> optional exec. Config mutation: omz subcommand -> awk rewrite of .zshrc -> zsh -n validation -> rollback or reload. Install is a fourth boundary: curl|sh -> git init/fetch -> .zshrc template -> chsh -> exec zsh.",
+      "claims": [
+        {
+          "claim": "Startup sequence in order: ZSH_VERSION guard with omz_ptree diagnostics -> `emulate` mode check -> ZSH/ZSH_CUSTOM/ZSH_CACHE_DIR defaults -> mkdir cache/completions + fpath -> source tools/check_for_upgrade.sh -> plugin dirs into fpath -> SHORT_HOST -> compinit/zcompdump -> _omz_source each lib/*.zsh -> each plugin -> each $ZSH_CUSTOM/*.zsh -> theme -> LS_COLORS zstyle.",
+          "sources": [
+            "oh-my-zsh.sh#L10-267"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Auto-update trace: check_for_upgrade.sh resolves zstyle ':omz:update' mode (legacy DISABLE_UPDATE_PROMPT/DISABLE_AUTO_UPDATE mapped to auto/disabled) -> bails on disabled/unwritable/non-tty -> sources .zsh-update and returns early inside the frequency window (default 13 days) -> handle_update takes update.lock -> is_update_available -> prompt ('Would you like to update? [Y/n]') or silent modes -> update_ohmyzsh runs upgrade.sh.",
+          "sources": [
+            "tools/check_for_upgrade.sh#L14-55",
+            "tools/check_for_upgrade.sh#L203-289"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "background-alpha update mode registers _omz_bg_update on precmd which forks handle_update and installs _omz_bg_update_status to report EXIT_STATUS/ERROR from .zsh-update on a later prompt.",
+          "sources": [
+            "tools/check_for_upgrade.sh#L291-341"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "upgrade.sh execution order: re-exec under zsh if needed -> cd $ZSH -> parse -v/-i/-c flags -> rewrite legacy robbyrussell remotes -> set core.eol/autocrlf/fsck/rebase.autoStash git config -> checkout update branch -> git pull --rebase (or cooldown path: fetch + find first FETCH_HEAD commit older than cooldown days + merge --ff-only) -> run changelog.sh if interactive -> restore previous HEAD and autoStash.",
+          "sources": [
+            "tools/upgrade.sh#L7-49",
+            "tools/upgrade.sh#L205-341"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Insecure-completion handling: unless ZSH_DISABLE_COMPFIX=true, compfix.zsh is sourced, compinit runs with -i to skip insecure dirs, and handle_completion_insecurities lists `compaudit` output with a chmod g-w,o-w fix hint.",
+          "sources": [
+            "oh-my-zsh.sh#L153-164",
+            "lib/compfix.zsh"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`omz plugin disable git` trace: omz -> _omz::plugin -> _omz::plugin::disable validates names against $plugins -> builds gsub() awk program -> awk .zshrc > .zshrc.new -> cp .zshrc .zshrc.bck -> mv .zshrc.new .zshrc -> `zsh -n` check -> rollback mv on syntax error -> _omz::reload execs ${ZSH_ARGZERO:-zsh} (with -l for login shells).",
+          "sources": [
+            "lib/cli.zsh#L228-322",
+            "lib/cli.zsh#L735-746"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Git prompt render trace (async default on zsh >= 5.0.6): precmd -> _defer_async_git_register checks whether $(git_prompt_info)/$(git_prompt_status) appear in PS1/RPROMPT/etc -> _omz_register_handler -> _omz_async_request forks _omz_git_prompt_info -> _omz_async_callback fills _OMZ_ASYNC_OUTPUT -> zle reset-prompt -> git_prompt_info stub echoes the cached output.",
+          "sources": [
+            "lib/git.zsh#L171-236",
+            "lib/async_prompt.zsh#L46-142"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Install trace: main() detects non-tty stdin -> forces RUNZSH=no CHSH=no OVERWRITE_CONFIRMATION=no -> setup_ohmyzsh (umask g-w,o-w; git init; core.eol=lf, autocrlf=false, zeroPaddedFilemode ignores; fetch --depth=1; checkout $BRANCH) -> setup_zshrc (backup, sed template) -> setup_shell (locate zsh in /etc/shells, save old shell, sudo chsh) -> print_success -> exec zsh -l.",
+          "sources": [
+            "tools/install.sh#L538-604"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`omz pr test 123` trace: URL basename normalized -> digit check -> git symbolic-ref saves current branch -> remote list scanned for ohmyzsh/ohmyzsh -> curl api.github.com/repos/ohmyzsh/ohmyzsh/pulls/123 -> 'testers needed' label check (jq or grep on node_id) -> typed 'yes' gate if unlabeled -> git fetch refs/pull/123/head:ohmyzsh/pull-123 -> rebase onto master with commit.gpgsign temporarily disabled -> `zsh -l` test shell -> optional checkout back.",
+          "sources": [
+            "lib/cli.zsh#L591-724"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Uninstall trace: uninstall_oh_my_zsh -> tools/uninstall.sh restores shell from ~/.shell.pre-oh-my-zsh via chsh, confirms, rm -rf ~/.oh-my-zsh, renames ~/.zshrc to .zshrc.omz-uninstalled-<timestamp>, and restores .zshrc.pre-oh-my-zsh.",
+          "sources": [
+            "lib/functions.zsh#L7-9",
+            "tools/uninstall.sh"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "testing_signals": {
+      "summary": "Testing is thin for a project of this reach. CI (main.yml) does only `zsh -n` syntax checking over the entrypoint, lib files, plugin entrypoints/completions, and themes — no behavioral test runs. Real tests exist but are scattered and not wired into workflows: lib/tests/cli.test.zsh exercises the plugin-disable awk script, and a few plugins (alias-finder, dotenv) ship zunit suites. The installer gets its own matrix test on ubuntu+macos, and all workflows run step-security/harden-runner in audit mode.",
+      "claims": [
+        {
+          "claim": "main.yml's only test step is a `zsh -n` syntax sweep over ./oh-my-zsh.sh, lib/*.zsh, plugins/*/*.plugin.zsh, plugins/*/_*, and themes/*.zsh-theme on ubuntu-latest; the job is gated on github.repository == 'ohmyzsh/ohmyzsh'.",
+          "sources": [
+            ".github/workflows/main.yml#L20-43"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "lib/tests/cli.test.zsh duplicates the plugin-disable awk program inline and tests it against oneline/multiline/mixed plugins=(...) formats, asserting both `zsh -n` validity and exact diff output via run_awk_and_test.",
+          "sources": [
+            "lib/tests/cli.test.zsh#L1-169"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The awk script tested by lib/tests/cli.test.zsh is a copy of the one embedded in _omz::plugin::disable in lib/cli.zsh, so the test validates a clone of the logic rather than the shipped code path.",
+          "sources": [
+            "lib/tests/cli.test.zsh#L9-55",
+            "lib/cli.zsh#L250-295"
+          ],
+          "kind": "inference"
+        },
+        {
+          "claim": "Plugin-level tests exist in zunit format: plugins/alias-finder/tests/test_run.sh (@setup/@test/@assert blocks) and plugins/dotenv/tests/{basic-parsing,compatibility,security}.zunit.",
+          "sources": [
+            "plugins/alias-finder/tests/test_run.sh",
+            "plugins/dotenv/tests/security.zunit"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Neither the zunit suites nor cli.test.zsh are invoked by any workflow; grep of .github/workflows shows only the syntax-check job and the installer test, so these tests run only when a developer runs them manually.",
+          "sources": [
+            ".github/workflows/main.yml",
+            ".github/workflows/installer.yml"
+          ],
+          "kind": "inference"
+        },
+        {
+          "claim": "installer.yml runs `sh ./tools/install.sh` on ubuntu-latest and macos-latest on pushes touching tools/install.sh, then deploys install.sh to Vercel (install.ohmyz.sh) on master via `vc deploy --prod` with VERCEL_* secrets.",
+          "sources": [
+            ".github/workflows/installer.yml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Every workflow pins actions by SHA and prepends step-security/harden-runner with egress-policy: audit; permissions are minimal (contents: read) except dependencies.yml which grants contents: write for pushing update branches.",
+          "sources": [
+            ".github/workflows/main.yml#L26-29",
+            ".github/workflows/dependencies.yml#L16-24",
+            ".github/workflows/scorecard.yml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "scorecard.yml runs OpenSSF Scorecard analysis weekly and on master pushes, uploading results to the code-scanning dashboard (security-events: write).",
+          "sources": [
+            ".github/workflows/scorecard.yml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "dependencies.yml runs updater.py weekly: it reads .github/dependencies.yml entries (upstream repo/branch/pinned version + precopy/postcopy shell), fetches upstream releases, and opens/commits vendored-plugin updates authenticated as the ohmyzsh[bot] GitHub App.",
+          "sources": [
+            ".github/workflows/dependencies/updater.py",
+            ".github/dependencies.yml",
+            ".github/workflows/dependencies.yml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "project.yml uses pull_request_target with an empty default permission set plus a GitHub App token to add new issues/PRs to the ohmyzsh org Project board and set Plugin/Theme fields.",
+          "sources": [
+            ".github/workflows/project.yml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CONTRIBUTING.md mandates Conventional Commits (type(scope)!: subject) because tools/changelog.sh generates the user-facing changelog from commit subjects — so commit-message discipline is itself part of the test/release pipeline.",
+          "sources": [
+            "CONTRIBUTING.md#L172-241",
+            "tools/changelog.sh"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "No test covers oh-my-zsh.sh init order, compfix/compinit handling, upgrade.sh, check_for_upgrade.sh, or lib/git.zsh prompt parsing — the riskiest shell logic is verified only by the syntax sweep.",
+          "sources": [
+            ".github/workflows/main.yml#L35-43"
+          ],
+          "kind": "inference"
+        }
+      ]
+    },
+    "risk_map": {
+      "summary": "The dominant risks are supply-chain and self-modification: every user runs curl|sh installer code and an auto-updater that git-pulls new shell code into a live config; `omz` commands rewrite the user's .zshrc with awk; and 368 community plugins execute unchecked code at every shell start. Mitigations exist (compfix permission checks, PR-test label gating, .zshrc backups + syntax validation, hardened CI), but coverage of the critical paths is minimal.",
+      "claims": [
+        {
+          "claim": "The documented install path is `sh -c \"$(curl -fsSL .../tools/install.sh)\"` — remote code executed with user privileges; the script then chsh's the login shell (via sudo when available) and execs zsh.",
+          "sources": [
+            "tools/install.sh#L1-8",
+            "tools/install.sh#L497-504",
+            "tools/install.sh#L601"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "install.sh resolves $HOME via `eval echo ~\"$USER\"` when HOME is unset — an acknowledged CWE-78-adjacent path that is only safe because $USER is first restricted to [alnum, _, ., -].",
+          "sources": [
+            "tools/install.sh#L52-76"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Auto-update executes freshly fetched code: upgrade.sh does `git pull --rebase` on master and the new oh-my-zsh.sh/plugins run at next shell start; the 'cooldown' zstyle exists specifically to delay applying new commits as a supply-chain buffer.",
+          "sources": [
+            "tools/upgrade.sh#L259-265",
+            "tools/check_for_upgrade.sh#L74-88",
+            "README.md#L477-491"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Every plugin file is arbitrary code sourced into every interactive shell; the only vetting is maintainer review, and `omz pr test` explicitly warns unlabeled PRs 'may contain malicious code' before fetching and running them.",
+          "sources": [
+            "oh-my-zsh.sh#L235-239",
+            "lib/cli.zsh#L652-666"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "omz plugin/theme commands write directly into ${ZDOTDIR:-$HOME}/.zshrc via awk transformations; mitigations are the .zshrc.bck backup and the post-write `zsh -n` syntax check with automatic rollback, but a semantically-wrong-but-parseable edit would stick.",
+          "sources": [
+            "lib/cli.zsh#L297-315",
+            "lib/cli.zsh#L832-856"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "compinit -i skips completion dirs that fail compaudit ownership/permission checks; users hitting this get a warning via handle_completion_insecurities — ZSH_DISABLE_COMPFIX=true bypasses the check entirely by switching to compinit -u.",
+          "sources": [
+            "oh-my-zsh.sh#L153-164",
+            "lib/compfix.zsh"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "check_for_upgrade.sh's GitHub API call uses a 2s connect timeout and treats non-GitHub remotes as always-updateable; is_update_available returning 0 on merge-base failure assumes updates exist — fail-open rather than fail-closed.",
+          "sources": [
+            "tools/check_for_upgrade.sh#L90-134"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "uninstall.sh runs `rm -rf ~/.oh-my-zsh` and `chsh` after a single y/N prompt, and install.sh's setup_shell runs `sudo chsh` — destructive/account-level operations driven by tty prompts that are bypassed only in unattended mode.",
+          "sources": [
+            "tools/uninstall.sh#L13-28",
+            "tools/install.sh#L497-512"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "update.lock is a stale-able mkdir lock under $ZSH/log: the code deletes locks older than a day, and the EXIT/INT/QUIT trap must return $ret correctly so Ctrl+C actually interrupts — a fragile bit of signal semantics the comments call out.",
+          "sources": [
+            "tools/check_for_upgrade.sh#L209-235"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Async prompt handler cancellation kills the process group only under MONITOR; without job control it can only TERM the direct child, and the file itself notes forked grandchildren 'may be orphaned and left behind'.",
+          "sources": [
+            "lib/async_prompt.zsh#L60-77"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "lib/vcs_info.zsh exists specifically to %-quote hook_com fields before vcs_info hooks run — a workaround for CVE-2021-45444 where crafted branch/repo data could trigger command substitution in prompts on zsh 5.0.3-5.8.",
+          "sources": [
+            "lib/vcs_info.zsh"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "git.zsh documents real-world fragility: a =~ regex on non-UTF-8 git output aborted with REG_ILLSEQ (fixed via LC_ALL=C scoping), and async prompt is behind ':omz:alpha:lib:git' with 'force'/opt-out because of known issue reports; the CentOS-7 workaround carries a dated TODO.",
+          "sources": [
+            "lib/git.zsh#L52-70",
+            "lib/git.zsh#L171-236"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "SECURITY.md states only the latest master commit is supported and relies on 'automated updates to minimize the time between vulnerability publication and patch release' — there is no stable/release line to pin.",
+          "sources": [
+            "SECURITY.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The dependencies updater executes precopy/postcopy shell snippets declared in .github/dependencies.yml inside CI with a write-capable token — a code-execution path driven by YAML data.",
+          "sources": [
+            ".github/dependencies.yml",
+            ".github/workflows/dependencies/updater.py",
+            ".github/workflows/dependencies.yml"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "extension_points": {
+      "summary": "Oh My Zsh is built to be extended without editing upstream files: $ZSH_CUSTOM shadows every lib file, plugin, and theme; new plugins are just directories with a <name>.plugin.zsh or _<name> completion; new themes are *.zsh-theme files; behavior is tuned via zstyle contexts and env-var flags; and the `omz` CLI dispatches to _omz::<cmd> functions. Theme authors integrate through prompt-info functions and ZSH_THEME_* variables.",
+      "claims": [
+        {
+          "claim": "$ZSH_CUSTOM is the primary extension root: files in $ZSH_CUSTOM/*.zsh load last (after lib and plugins), and $ZSH_CUSTOM/<path> shadows $ZSH/<path> inside _omz_source, letting users override any lib file or plugin without touching the repo.",
+          "sources": [
+            "oh-my-zsh.sh#L206-211",
+            "oh-my-zsh.sh#L241-245",
+            "custom/example.zsh",
+            "README.md#L349-358"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "A plugin is any directory under plugins/ or $ZSH_CUSTOM/plugins/ containing <name>.plugin.zsh (sourced at load) or _<name> (a compinit completion); is_plugin() is the registry check and simply enabling the name in plugins=(...) wires it in.",
+          "sources": [
+            "oh-my-zsh.sh#L81-98"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "A theme is a *.zsh-theme file found in $ZSH_CUSTOM/, $ZSH_CUSTOM/themes/, or $ZSH/themes/ (search order); it typically sets PROMPT/RPROMPT and consumes ZSH_THEME_* styling variables plus *_prompt_info functions.",
+          "sources": [
+            "oh-my-zsh.sh#L248-264",
+            "lib/theme-and-appearance.zsh#L8-13"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "zstyle contexts form a typed config API: ':omz:update' mode/frequency/cooldown/verbose, ':omz:lib:theme-and-appearance' gnu-ls, ':omz:alpha:lib:git' async-prompt, and ':omz:lib:<n>'/':omz:plugins:<n>' aliases toggles.",
+          "sources": [
+            "tools/check_for_upgrade.sh#L14-20",
+            "lib/theme-and-appearance.zsh#L89-91",
+            "lib/git.zsh#L177-214",
+            "oh-my-zsh.sh#L191-197"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Env-var feature flags read at startup include DISABLE_MAGIC_FUNCTIONS, DISABLE_LS_COLORS, DISABLE_AUTO_TITLE, ENABLE_CORRECTION, CASE_SENSITIVE, HYPHEN_INSENSITIVE, COMPLETION_WAITING_DOTS, DISABLE_UNTRACKED_FILES_DIRTY, HIST_STAMPS, ZSH_DISABLE_COMPFIX — all documented in the zshrc template.",
+          "sources": [
+            "templates/zshrc.zsh-template#L19-66",
+            "lib/misc.zsh#L4-16",
+            "lib/correction.zsh",
+            "oh-my-zsh.sh#L153"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Theme-facing integration contract: themes call git_prompt_info/git_prompt_status/ruby_prompt_info/nvm_prompt_info etc.; lib/prompt_info_functions.zsh predefines no-op stubs (chruby, rbenv, hg, pyenv, svn, vi_mode, virtualenv, jenv, azure, tf, conda, go) so themes don't error when plugins are absent.",
+          "sources": [
+            "lib/prompt_info_functions.zsh",
+            "lib/git.zsh#L179-236",
+            "lib/nvm.zsh"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Prompt-status symbols are themselves a plugin/theme API: ZSH_THEME_GIT_PROMPT_{PREFIX,SUFFIX,DIRTY,CLEAN,UNTRACKED,ADDED,MODIFIED,RENAMED,DELETED,UNMERGED,AHEAD,BEHIND,DIVERGED,STASHED} map parsed statuses to glyphs.",
+          "sources": [
+            "lib/git.zsh#L77-116",
+            "lib/theme-and-appearance.zsh#L8-13"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Async prompt extension: any function can be registered with _omz_register_handler and its output surfaced via $_OMZ_ASYNC_OUTPUT[handler] inside a stub prompt function — documented in the file header as the intended (but unstable) API.",
+          "sources": [
+            "lib/async_prompt.zsh#L8-43"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The `omz` CLI is open for new subcommands: `omz foo` dispatches to _omz::foo if the function exists, and the _omz completer's cmds/subcmds arrays are the registry to extend; plugin/theme/pr use $0::subcommand namespacing.",
+          "sources": [
+            "lib/cli.zsh#L3-21",
+            "lib/cli.zsh#L25-35",
+            "lib/cli.zsh#L205-226"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Random-theme selection is extensible via ZSH_THEME_RANDOM_CANDIDATES and ZSH_THEME_RANDOM_IGNORED arrays; the themes plugin additionally provides `theme`/`lstheme` for ad-hoc switching.",
+          "sources": [
+            "themes/random.zsh-theme",
+            "plugins/themes/themes.plugin.zsh"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Vendored upstream completions are an extension surface managed declaratively: adding an entry to .github/dependencies.yml (repo, branch, version, pre/postcopy hooks) lets the weekly updater pull new upstream completion sources into plugins/.",
+          "sources": [
+            ".github/dependencies.yml",
+            ".github/workflows/dependencies/updater.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "add-zsh-hook (precmd/preexec) is the sanctioned way libs hook the prompt lifecycle — termsupport registers omz_termsupport_precmd/preexec/cwd, async_prompt registers _omz_async_request, and git.zsh prepends _defer_async_git_register to precmd_functions.",
+          "sources": [
+            "lib/termsupport.zsh#L111-116",
+            "lib/async_prompt.zsh#L144-145",
+            "lib/git.zsh#L207-213"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Plugin README convention: `omz plugin info <name>` looks for $ZSH_CUSTOM/plugins/<name>/README.md then $ZSH/plugins/<name>/README.md and pages it through glow/bat/less — each plugin is expected to ship a README documenting its aliases.",
+          "sources": [
+            "lib/cli.zsh#L418-454",
+            "README.md#L167-170"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_handoff": {
+      "summary": "This is a pure-shell repo: no build step, no package manifest, no unit-test harness wired to CI. The safe edit boundary is 'add or modify files, don't reorder init'. Read oh-my-zsh.sh first (it defines load order and the _omz_source override contract), then the specific lib/ or plugins/ file. Validate changes with `zsh -n` on every touched file — that is literally all CI runs. Mind zsh-only syntax (emulate modes, zstyle, zparseopts, associative arrays), POSIX-sh vs zsh script split (install.sh is sh; upgrade.sh/tools are zsh), and that many variables/hooks are user-facing API you cannot rename.",
+      "claims": [
+        {
+          "claim": "Read order for any task: oh-my-zsh.sh (init order, _omz_source, compinit handling) -> templates/zshrc.zsh-template (the user-facing config contract) -> the target lib/*.zsh or plugins/<n>/<n>.plugin.zsh -> CONTRIBUTING.md commit conventions.",
+          "sources": [
+            "oh-my-zsh.sh",
+            "templates/zshrc.zsh-template",
+            "CONTRIBUTING.md#L172-241"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Never reorder the load sequence in oh-my-zsh.sh: plugin fpath entries must precede compinit, lib files precede plugins, $ZSH_CUSTOM/*.zsh loads last, and the theme loads after everything so it can use lib-defined functions.",
+          "sources": [
+            "oh-my-zsh.sh#L88-98",
+            "oh-my-zsh.sh#L228-264"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "tools/install.sh is POSIX sh (#!/bin/sh, run via curl|sh) while tools/upgrade.sh, tools/check_for_upgrade.sh, and tools/changelog.sh are zsh scripts — do not use zsh-isms in install.sh or assume sh semantics in the tools.",
+          "sources": [
+            "tools/install.sh#L1",
+            "tools/upgrade.sh#L1-14",
+            "tools/changelog.sh#L1-3"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The only CI gate is `zsh -n` over oh-my-zsh.sh, lib/*.zsh, plugins/*/*.plugin.zsh, plugins/*/_*, and themes/*.zsh-theme — replicate it locally before submitting; there is no formatter config for shell (only .prettierrc for docs at 110 cols).",
+          "sources": [
+            ".github/workflows/main.yml#L35-43",
+            ".prettierrc"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Public API you must not break: plugin/theme/env-var names (ZSH_THEME, plugins, ZSH_CUSTOM, ZSH_CACHE_DIR, DISABLE_*, HIST_STAMPS), zstyle contexts ':omz:...', prompt functions (git_prompt_info, parse_git_dirty, *_prompt_info stubs), and aliases — all are consumed by user dotfiles and external themes/plugins.",
+          "sources": [
+            "templates/zshrc.zsh-template",
+            "lib/prompt_info_functions.zsh",
+            "lib/git.zsh#L230-236"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "When writing shell that runs at startup, avoid forks and subshells; the codebase caches probes in $ZSH_CACHE_DIR (grep-alias, localhostname, appearance-probes) precisely to avoid per-start process spawns — follow that pattern for new probes.",
+          "sources": [
+            "lib/grep.zsh",
+            "lib/theme-and-appearance.zsh#L16-38",
+            "oh-my-zsh.sh#L101-127"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Quote % in anything that reaches the prompt: git.zsh escapes % to %% in branch names and upstreams, vcs_info.zsh exists because unquoted hook_com fields enabled command substitution (CVE-2021-45444), and _omz::log sets nopromptsubst for the same reason.",
+          "sources": [
+            "lib/git.zsh#L49",
+            "lib/vcs_info.zsh",
+            "lib/cli.zsh#L137-141"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Use `command`/`builtin` prefixes for external calls in lib code (diagnostics.zsh documents why: users redefine echo/which), and route git prompt calls through __git_prompt_git so GIT_OPTIONAL_LOCKS=0 is set.",
+          "sources": [
+            "lib/diagnostics.zsh",
+            "lib/git.zsh#L3-12"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "ZDOTDIR is a first-class citizen: all .zshrc-mutating code resolves ${ZDOTDIR:-$HOME}, and the installer picks $ZDOTDIR/ohmyzsh as $ZSH when ZDOTDIR is set and != HOME — replicate this resolution rather than hardcoding ~/.zshrc.",
+          "sources": [
+            "lib/cli.zsh#L297-299",
+            "tools/install.sh#L82-92"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Trap: editing the plugin-enable/disable awk logic means updating two copies — lib/cli.zsh and the duplicated copy inside lib/tests/cli.test.zsh.",
+          "sources": [
+            "lib/cli.zsh#L250-295",
+            "lib/tests/cli.test.zsh#L9-55"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The devcontainer (.devcontainer/devcontainer.json) symlinks the workspace to ~/.oh-my-zsh and installs templates/minimal.zshrc as ~/.zshrc — the fastest way to smoke-test a change is a new container or `zsh -f` with a minimal zshrc sourcing the repo.",
+          "sources": [
+            ".devcontainer/devcontainer.json",
+            "templates/minimal.zshrc"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New aliases face an explicit bar in CONTRIBUTING.md (used by many, common tasks, prefer generic over specific, don't shadow existing commands), and new themes are currently not accepted at all — check these policies before generating either.",
+          "sources": [
+            "CONTRIBUTING.md#L93-127",
+            "README.md#L65-66"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Known fragile spots to test manually: compfix/compinit interaction (ZSH_DISABLE_COMPFIX), async prompt registration ordering (_defer_async_git_register must run before _omz_async_request), and the update.lock EXIT trap's $ret propagation for SIGINT.",
+          "sources": [
+            "oh-my-zsh.sh#L153-164",
+            "lib/git.zsh#L193-213",
+            "tools/check_for_upgrade.sh#L223-235"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Commit messages must follow Conventional Commits with scope = plugin/theme name (e.g. feat(git):, fix(agnoster):) because tools/changelog.sh parses subjects into the user-facing changelog; '!' marks breaking changes.",
+          "sources": [
+            "CONTRIBUTING.md#L172-219",
+            "tools/changelog.sh"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_prompt": "You are working on Oh My Zsh, a community-driven framework for managing zsh configuration, written almost entirely in zsh/sh. There is no build system or package manifest; the product is a set of files sourced into the user's live shell.\n\nARCHITECTURE. The single entrypoint is oh-my-zsh.sh, sourced from ~/.zshrc after the user sets `export ZSH=...`, `ZSH_THEME=\"...\"`, and `plugins=(git ...)`. Init order is fixed and load-bearing: (1) non-zsh and emulation-mode guards; (2) defaults for ZSH_CUSTOM ($ZSH/custom) and ZSH_CACHE_DIR ($ZSH/cache, falling back to XDG cache); (3) source tools/check_for_upgrade.sh (auto-update gate); (4) push each enabled plugin dir onto $fpath; (5) compinit into $ZSH_COMPDUMP with OMZ revision/fpath metadata invalidation and zrecompile; (6) _omz_source each lib/*.zsh (compfix, completion, git, async_prompt, key-bindings, termsupport, etc.); (7) source each plugin's <name>.plugin.zsh; (8) source $ZSH_CUSTOM/*.zsh; (9) source the theme from $ZSH_CUSTOM, $ZSH_CUSTOM/themes, or $ZSH/themes. _omz_source prefers $ZSH_CUSTOM/<path> over $ZSH/<path>, so custom/ shadows everything — never reorder this sequence.\n\nKEY FILES. lib/cli.zsh implements the `omz` CLI (plugin enable/disable/info/list/load, theme list/set/use, update, pr test/clean, changelog, reload, version) by dispatching to _omz::<cmd> functions; its plugin/theme subcommands rewrite the user's .zshrc with awk, back up to .zshrc.bck, validate with `zsh -n`, and reload via exec. tools/check_for_upgrade.sh gates updates via zstyle ':omz:update' (mode/frequency/cooldown) and a LAST_EPOCH file; tools/upgrade.sh does `git pull --rebase`. lib/git.zsh + lib/async_prompt.zsh implement the (optionally async) git prompt. tools/install.sh is POSIX sh (curl|sh installer); tools/*.sh other than install.sh/uninstall.sh are zsh.\n\nCONVENTIONS. Commits are Conventional Commits, scope = plugin/theme name (feat(git):, fix(agnoster):) — the changelog generator parses them. Config API = env vars (DISABLE_*, ZSH_THEME_*, HIST_STAMPS) plus zstyle contexts ':omz:...'; these are public API, don't rename. Quote % as %% in anything reaching the prompt (CVE-2021-45444). Use `command`/`builtin` prefixes; resolve .zshrc as ${ZDOTDIR:-$HOME}/.zshrc; avoid per-startup forks (cache probes in $ZSH_CACHE_DIR).\n\nTESTING/VALIDATION. CI only runs `zsh -n` over the entrypoint, lib, plugin entrypoints/completions, and themes — replicate locally. Sparse zunit tests live in plugins/*/tests and lib/tests/cli.test.zsh (which duplicates the plugin-disable awk — update both copies). Smoke-test in the devcontainer or `zsh -f` with templates/minimal.zshrc. New themes are not accepted; new aliases must clear the CONTRIBUTING.md bar."
+  },
+  "analysis": {
+    "agent": "devin",
+    "model": "swe-2",
+    "runtime_ms": null,
+    "cost_usd": null,
+    "collected_at": "2026-09-22T16:18:55.197Z"
   }
 }

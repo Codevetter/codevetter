@@ -136,7 +136,7 @@
         {
           "path": "README.md",
           "bytes": 2924,
-          "preview": "# v2rayN\n\n### A GUI client for Windows, Linux and macOS. Support [Xray](https://github.com/XTLS/Xray-core) and [sing-box](https://github.com/SagerNet/sing-box) and [others](https://github.com/2dust/v2rayN/wiki/List-of-supported-cores)\n\n[![CodeFactor](https://www.codefactor.io/repository/github/2dust/v2rayn/badge)](https://www.codefactor.io/repository/github/2dust/v2rayn)\n[![Release](https://img.shields.io/github/v/release/2dust/v2rayN?logo=github&label=Release)](https://github.com/2dust/v2rayN/releases)\n[![Downloads](https://img.shields.io/github/downloads/2dust/v2rayN/latest/total?logo=github&label=Downloads)](https://github.com/2dust/v2rayN/releases)\n[![Telegram](https://img.shields.io/badge/Telegram-Chat-26A5E4?logo=telegram)](https://t.me/v2rayn)\n \n[![Windows](https://img.shields.io/badge/Windows-supported-0078D6?logo=windows)](https://github.com/2dust/v2rayN) \n[![Linux](https://img.shields.io/badge/Linux-supported-FCC624?logo=linux&logoColor=000)](https://github.com/2dust/v2rayN) \n[![macOS](https://img.shields.io/badge/macOS-supported-000000?logo=apple)](https://github.com/2dust/v2rayN) \n[![GPG Signed](https://img.shields.io/badge/GPG-signed-4B32C3?logo=gnuprivacyguard)](https://github.com/2dust/v2rayN)\n\n\n---\n\n## Download / \u4e0b\u8f7d\n\nDownload the latest release here:\n\n\u5728\u8fd9\u91cc\u4e0b\u8f7d\u6700\u65b0\u7248\u672c\uff1a\n\n[https://github.com/2dust/v2rayN/releases](https://github.com/2dust/v2rayN/releases)\n\n\n> [!TIP]\n> v2rayN is the desktop version. For the mobile version, please visit the v2rayNG \\\n> v2rayN \u662f\u7535\u8111\u7248\uff0c\u624b\u673a\u7248\u8bf7\u8bbf\u95ee v2rayNG\n>\n> https://github.com/2dust/v2rayNG\n\n---\n\n## Documentation / \u4f7f\u7528\u6587\u6863\n\nRead the Wiki for usage guides and configuration details.\n\n\u8bf7\u9605\u8bfb Wiki \u83b7\u53d6\u4f7f\u7528\u8bf4\u660e\u548c\u914d\u7f6e\u6559\u7a0b\u3002\n\n[https://github.com/2dust/v2rayN/wiki](https://github.com/2dust/v2rayN/wiki)\n\n---\n\n## Supported Platforms / \u652f\u6301\u5e73\u53f0\n\n| Platform / \u5e73\u53f0 | x64 | x86 | arm64 | riscv64 | loong64 |\n| --- | --- | --- | --- | --- | --- |\n| Windows | \u2705 | \u2705 | \u2705 | - | - |\n| Linux | \u2705 | - | \u2705 | \u2705 | \u2705 |\n| macOS | \u2705 | - | \u2705 | - | - |\n\nMinimum OS requirements: [Release files introduction](https://github.com/2dust/v2rayN/wiki/Release-files-introduction) / \u6700\u4f4e\u7cfb\u7edf\u8981\u6c42\uff1a[\u53d1\u5e03\u6587\u4ef6\u4ecb\u7ecd](https://github.com/2dust/v2rayN/wiki/Release-files-introduction)\n\n---\n\n## GPG Verification / GPG \u7b7e\u540d\u6821\u9a8c\n\nRelease files are signed with GPG to verify authenticity and integrity, helping prevent mirror, ISP, or CDN hijacking.\n\n\u53d1\u5e03\u6587\u4ef6\u5df2\u4f7f\u7528 GPG \u7b7e\u540d\uff0c\u53ef\u7528\u4e8e\u6821\u9a8c\u6587\u4ef6\u771f\u5b9e\u6027\u4e0e\u5b8c\u6574\u6027\uff0c\u9884\u9632\u955c\u50cf\u7ad9\u3001\u8fd0\u8425\u5546\u6216 CDN \u52ab\u6301\u3002\n\n### Fingerprint / \u516c\u94a5\u6307\u7eb9\n\n```text\n7694 5E9F 3E9A 168F 8070 F195 805D 661C\n134D FAF6 8903 C199 463C 31E5 AE90 3AE0\n```\n\n---\n\n## Community / \u793e\u533a\n\nTelegram Group / Telegram \u7fa4\u7ec4\uff1a\n\n[https://t.me/v2rayN](https://t.me/v2rayN)\n\nTelegram Channel / Telegram \u9891\u9053\uff1a\n\n[https://t.me/github_2dust](https://t.me/github_2dust)\n"
+          "preview": "# v2rayN\n\n### A GUI client for Windows, Linux and macOS. Support [Xray](https://github.com/XTLS/Xray-core) and [sing-box](https://github.com/SagerNet/sing-box) and [others](https://github.com/2dust/v2rayN/wiki/List-of-supported-cores)\n\n[![CodeFactor](https://www.codefactor.io/repository/github/2dust/v2rayn/badge)](https://www.codefactor.io/repository/github/2dust/v2rayn)\n[![Release](https://img.shields.io/github/v/release/2dust/v2rayN?logo=github&label=Release)](https://github.com/2dust/v2rayN/releases)\n[![Downloads](https://img.shields.io/github/downloads/2dust/v2rayN/latest/total?logo=github&label=Downloads)](https://github.com/2dust/v2rayN/releases)\n[![Telegram](https://img.shields.io/badge/Telegram-Chat-26A5E4?logo=telegram)](https://t.me/v2rayn)\n \n[![Windows](https://img.shields.io/badge/Windows-supported-0078D6?logo=windows)](https://github.com/2dust/v2rayN) \n[![Linux](https://img.shields.io/badge/Linux-supported-FCC624?logo=linux&logoColor=000)](https://github.com/2dust/v2rayN) \n[![macOS](https://img.shields.io/badge/macOS-supported-000000?logo=apple)](https://github.com/2dust/v2rayN) \n[![GPG Signed](https://img.shields.io/badge/GPG-signed-4B32C3?logo=gnuprivacyguard)](https://github.com/2dust/v2rayN)\n\n\n---\n\n## Download / 下载\n\nDownload the latest release here:\n\n在这里下载最新版本：\n\n[https://github.com/2dust/v2rayN/releases](https://github.com/2dust/v2rayN/releases)\n\n\n> [!TIP]\n> v2rayN is the desktop version. For the mobile version, please visit the v2rayNG \\\n> v2rayN 是电脑版，手机版请访问 v2rayNG\n>\n> https://github.com/2dust/v2rayNG\n\n---\n\n## Documentation / 使用文档\n\nRead the Wiki for usage guides and configuration details.\n\n请阅读 Wiki 获取使用说明和配置教程。\n\n[https://github.com/2dust/v2rayN/wiki](https://github.com/2dust/v2rayN/wiki)\n\n---\n\n## Supported Platforms / 支持平台\n\n| Platform / 平台 | x64 | x86 | arm64 | riscv64 | loong64 |\n| --- | --- | --- | --- | --- | --- |\n| Windows | ✅ | ✅ | ✅ | - | - |\n| Linux | ✅ | - | ✅ | ✅ | ✅ |\n| macOS | ✅ | - | ✅ | - | - |\n\nMinimum OS requirements: [Release files introduction](https://github.com/2dust/v2rayN/wiki/Release-files-introduction) / 最低系统要求：[发布文件介绍](https://github.com/2dust/v2rayN/wiki/Release-files-introduction)\n\n---\n\n## GPG Verification / GPG 签名校验\n\nRelease files are signed with GPG to verify authenticity and integrity, helping prevent mirror, ISP, or CDN hijacking.\n\n发布文件已使用 GPG 签名，可用于校验文件真实性与完整性，预防镜像站、运营商或 CDN 劫持。\n\n### Fingerprint / 公钥指纹\n\n```text\n7694 5E9F 3E9A 168F 8070 F195 805D 661C\n134D FAF6 8903 C199 463C 31E5 AE90 3AE0\n```\n\n---\n\n## Community / 社区\n\nTelegram Group / Telegram 群组：\n\n[https://t.me/v2rayN](https://t.me/v2rayN)\n\nTelegram Channel / Telegram 频道：\n\n[https://t.me/github_2dust](https://t.me/github_2dust)\n"
         }
       ],
       "config_files": [],
@@ -4418,7 +4418,7 @@
         "steps": [
           {
             "id": "serialize",
-            "label": "JSON serialize (inventory \u2192 SQLite)",
+            "label": "JSON serialize (inventory → SQLite)",
             "ms": 0,
             "pct": 0
           },
@@ -4437,5 +4437,892 @@
         ]
       }
     ]
+  },
+  "report": {
+    "overview": "v2rayN is a cross-platform desktop GUI proxy client written in C# on .NET 10 that orchestrates external proxy cores — primarily Xray and sing-box, plus mihomo, hysteria, tuic and others — for Windows, Linux and macOS users. It ships as two shells over a shared ServiceLib core: a WPF app (v2rayN) for Windows and an Avalonia app (v2rayN.Desktop) for Windows/Linux/macOS, both ReactiveUI-based MVVM. Its distinctive role is translating user-managed server profiles, subscriptions, routing/DNS rules and TUN settings into generated core config JSON, spawning the right core binary, and wiring the OS-level system proxy.",
+    "system_map": {
+      "summary": "The solution (v2rayN.sln) has five projects: ServiceLib (all shared logic, ViewModels, managers, config generation), v2rayN (WPF Windows shell), v2rayN.Desktop (Avalonia cross-platform shell), AmazTool (a tiny console updater/relocator invoked after self-upgrade downloads), and ServiceLib.UdpTest (UDP-over-SOCKS5 tester library referenced by ServiceLib). Persistence is a JSON file guiNConfig.json plus a SQLite database guiNDB.db accessed via the SQLiteHelper singleton. External runtime boundaries are the spawned core processes (xray, sing-box, mihomo, etc. under bin/<coreType>/), OS facilities (WinInet/registry, launchctl, .desktop autostart, sudo bash scripts), a loopback Clash API, and GitHub release endpoints for updates. Build/test is .NET 10 with GitHub Actions workflows; GlobalHotKeys is a git submodule used only by the Desktop project.",
+      "claims": [
+        {
+          "claim": "The WPF Windows shell entrypoint is App.OnStartup in v2rayN/v2rayN/App.xaml.cs: it enforces a single instance via an EventWaitHandle keyed on the MD5 of the exe path, honors a 'rebootas' arg, calls AppManager.Instance.InitApp()/InitComponents(), builds the ReactiveUI builder, and shows MainWindow resolved through SimpleViewLocator.",
+          "sources": [
+            "v2rayN/v2rayN/App.xaml.cs#L24-61",
+            "v2rayN/v2rayN/Common/SimpleViewLocator.cs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The Avalonia shell entrypoint is Program.Main in v2rayN.Desktop which does single-instance locking (EventWaitHandle on Windows, a named Mutex 'v2rayN' on Linux/macOS), calls AppManager.Instance.InitApp(), then builds AppBuilder with UsePlatformDetect/UseReactiveUI and macOS dock options.",
+          "sources": [
+            "v2rayN/v2rayN.Desktop/Program.cs#L14-77",
+            "v2rayN/v2rayN.Desktop/App.axaml.cs#L16-41"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "ServiceLib is the shared library referenced by both shells (ProjectReference in each csproj); it contains ViewModels, Manager singletons, Handler statics, Services, Fmt parsers, Models, ResUI localization resx files and embedded Sample templates.",
+          "sources": [
+            "v2rayN/ServiceLib/ServiceLib.csproj",
+            "v2rayN/v2rayN/v2rayN.csproj#L39",
+            "v2rayN/v2rayN.Desktop/v2rayN.Desktop.csproj#L40-42"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "AmazTool is a standalone console exe whose Main dispatches on args[0]: 'rebootas' restarts v2rayN via Utils.StartV2RayN, 'help' prints usage, and anything else is treated as a URL-escaped zip path passed to UpgradeApp.Upgrade for self-update extraction.",
+          "sources": [
+            "v2rayN/AmazTool/Program.cs#L24-45",
+            "v2rayN/AmazTool/UpgradeApp.cs#L9-19"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "App state lives in two stores under StartupPath()/guiConfigs: the JSON file guiNConfig.json deserialized by ConfigHandler.LoadConfig into the Config model, and the SQLite db guiNDB.db opened once by the SQLiteHelper singleton (sqlite-net-e / Repobot.SQLite.Unofficial packages).",
+          "sources": [
+            "v2rayN/ServiceLib/Handler/ConfigHandler.cs#L19-36",
+            "v2rayN/ServiceLib/Helper/SqliteHelper.cs#L9-19",
+            "v2rayN/ServiceLib/Global.cs#L12",
+            "v2rayN/ServiceLib/Models/Configs/Config.cs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "AppManager.InitApp creates eight SQLite tables at startup (SubItem, ProfileItem, ServerStatItem, RoutingItem, ProfileExItem, DNSItem, FullConfigTemplateItem, plus the obsolete ProfileGroupItem) and sets the process UI culture from config.UiItem.CurrentLanguage.",
+          "sources": [
+            "v2rayN/ServiceLib/Manager/AppManager.cs#L63-96"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "If the app directory is not writable (HasWritePermission fails, e.g. WinGet installs or a NotStoreConfigHere.txt marker), InitApp sets env var V2RAYN_LOCAL_APPLICATION_DATA_V2=1 which makes StartupPath() resolve to %LocalApplicationData%/v2rayN instead of the exe directory — i.e. portable-by-default storage with a per-user fallback.",
+          "sources": [
+            "v2rayN/ServiceLib/Manager/AppManager.cs#L65-68",
+            "v2rayN/ServiceLib/Common/Utils.cs#L1097-1160",
+            "v2rayN/ServiceLib/Global.cs#L90"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "External proxy cores are enumerated in CoreInfoManager.InitCoreInfo — a hard-coded registry of 14 ECoreType entries (v2rayN self, v2fly, Xray, mihomo, hysteria, naiveproxy, tuic, sing_box, juicity, hysteria2, brook, overtls, shadowquic, mieru) each declaring exe names, argument template, GitHub release/download URLs and optional environment variables.",
+          "sources": [
+            "v2rayN/ServiceLib/Manager/CoreInfoManager.cs#L97-293"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Core processes are spawned by ProcessService (System.Diagnostics.Process, no shell, UTF8-redirected stdout/stderr piped to an updateFunc callback) and on Windows are attached to a Job Object via WindowsJobService so children die with the parent.",
+          "sources": [
+            "v2rayN/ServiceLib/Services/ProcessService.cs#L24-71",
+            "v2rayN/ServiceLib/Manager/CoreManager.cs#L334-376",
+            "v2rayN/ServiceLib/Services/WindowsJobService.cs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Cross-component messaging uses the static AppEvents/EventChannel bus (SendMsgViewRequested, SendSnackMsgRequested, AppExitRequested, SysProxyChangeRequested, etc.) rather than direct references; NoticeManager publishes snack/log messages onto it.",
+          "sources": [
+            "v2rayN/ServiceLib/Events/AppEvents.cs",
+            "v2rayN/ServiceLib/Manager/NoticeManager.cs#L8-34"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Directory.Build.props pins net10.0, version 7.25.2, GPL-3.0, Nullable annotations + ImplicitUsings, and Release builds force PublishSingleFile with DebugType embedded; package versions are centrally managed in Directory.Packages.props and global.json pins the SDK.",
+          "sources": [
+            "v2rayN/Directory.Build.props",
+            "v2rayN/Directory.Packages.props",
+            "global.json"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CI/CD is GitHub Actions only: test.yml runs 'dotnet test' on ServiceLib.Tests (ubuntu-latest, .NET 10.x) on pushes/PRs touching ServiceLib paths, while build.yml is a reusable workflow building x64+arm64 for windows/linux/macos and build-*.yml/package-*.yml wrappers package and publish releases (winget, zip, GPG keys).",
+          "sources": [
+            ".github/workflows/test.yml#L31-52",
+            ".github/workflows/build.yml",
+            ".github/workflows/build-windows.yml",
+            ".github/workflows/package-zip.yml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "v2rayN/GlobalHotKeys is a git submodule (github.com/2dust/GlobalHotKeys) referenced by v2rayN.Desktop.csproj for global hotkeys; workflows checkout with submodules: 'recursive'.",
+          "sources": [
+            ".gitmodules",
+            "v2rayN/v2rayN.Desktop/v2rayN.Desktop.csproj#L40",
+            ".github/workflows/build.yml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Localization is centralized in ServiceLib/Resx/ResUI*.resx (en plus zh-Hans, zh-Hant, ru, fa, fr, hu, id, az satellite assemblies), consumed as the generated ResUI.Designer.cs class across ViewModels, handlers and services.",
+          "sources": [
+            "v2rayN/ServiceLib/ServiceLib.csproj#L59-98",
+            "v2rayN/ServiceLib/Resx/ResUI.resx"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "feature_catalog": {
+      "summary": "User-facing features center on managing proxy server profiles (11 share-URI protocols plus custom/outbound/group types), subscription groups with scheduled updates and optional subconvert rewriting, and one-click activation that generates a core config and launches the matching core. Around that are system-proxy control per OS (including a PAC file server on Windows), TUN mode with privilege escalation, a full Clash-compatible API panel (proxies/connections/mode switch), batch latency/speed/mixed/UDP testing, per-server traffic statistics, self/core/geo-file updating from GitHub, WebDAV backup, global hotkeys, autostart, QR/clipboard/image import, and regional presets for Russia and Iran.",
+      "claims": [
+        {
+          "claim": "Servers can be added per-protocol via dedicated ReactiveCommands (VMess, VLESS, Shadowsocks, SOCKS, HTTP, Trojan, Hysteria2, TUIC, WireGuard, Anytls, Naive) plus Custom, Custom-Outbound, PolicyGroup and ProxyChain types, or bulk-imported from clipboard, screen QR scan, or image file.",
+          "sources": [
+            "v2rayN/ServiceLib/ViewModels/MainWindowViewModel.cs#L23-42",
+            "v2rayN/ServiceLib/ViewModels/MainWindowViewModel.cs#L449-559"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "FmtHandler.ResolveConfig dispatches on share-URI prefixes (vmess://, ss://, vless://, trojan://, socks://, socks4/5://, hysteria2://, hy2://, hysteria2+realm://, tuic://, wireguard://, anytls://, naive://, naive+https/quic://) to per-protocol Fmt classes that parse into ProfileItem; GetShareUri does the reverse for export/QR.",
+          "sources": [
+            "v2rayN/ServiceLib/Handler/Fmt/FmtHandler.cs#L7-110",
+            "v2rayN/ServiceLib/Global.cs#L238-250"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Subscription update (SubscriptionHandler.UpdateProcess) validates http(s) URLs, honors per-sub custom request headers and User-Agent, supports a 'MoreUrl' list of extra subscription links merged into the result, and optionally rewrites the URL through a subconvert service (default https://sub.xeton.dev/sub?url=) with target/config params.",
+          "sources": [
+            "v2rayN/ServiceLib/Handler/SubscriptionHandler.cs#L60-195",
+            "v2rayN/ServiceLib/Global.cs#L142-162"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "ConfigHandler.AddBatchServers tries in order: base64/plain share-URI lists, SS SIP008 JSON, WireGuard INI-style config, inner 'v2rayn://' URIs, then foreign-subscription custom formats; when isSub it first removes the group's old servers, then restores the previously-active node and clones traffic stats onto the new IndexIds.",
+          "sources": [
+            "v2rayN/ServiceLib/Handler/ConfigHandler.cs#L2037-2135"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "System proxy control (SysProxyHandler.UpdateSysProxy) supports ForcedChange/ForcedClear/Pac/Unchanged per OS: WinInet InternetSetOption + registry fallback on Windows, embedded proxy_set_linux_sh/proxy_set_osx_sh scripts on Linux/macOS, and a PAC mode that hosts a generated pac.txt on a local TcpListener port.",
+          "sources": [
+            "v2rayN/ServiceLib/Handler/SysProxy/SysProxyHandler.cs#L7-117",
+            "v2rayN/ServiceLib/Handler/SysProxy/ProxySettingWindows.cs#L58-198",
+            "v2rayN/ServiceLib/Manager/PacManager.cs#L15-93"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "TUN mode is supported end-to-end: TunModeItem settings feed CoreConfigContext.IsTunEnabled, sing-box TUN inbound/rule embedded templates exist (tun_singbox_inbound/tun_singbox_rules/tun_singbox_dns), and on Linux/macOS the core is relaunched via sudo when ShouldRunAsSudo(coreType in sing_box/mihomo/Xray) is true.",
+          "sources": [
+            "v2rayN/ServiceLib/Handler/Builder/CoreConfigContextBuilder.cs#L45-53",
+            "v2rayN/ServiceLib/ServiceLib.csproj#L52-54",
+            "v2rayN/ServiceLib/Manager/CoreManager.cs#L298-322"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "A Clash-compatible dashboard is provided by ClashApiManager talking to http://127.0.0.1:{StatePort2}: GET /proxies and /providers/proxies merged into ClashItem, delay tests via /proxies/{name}/delay, proxy selection via PUT /proxies/{group}, mode switch via PATCH /configs, and connections list/kill.",
+          "sources": [
+            "v2rayN/ServiceLib/Manager/ClashApiManager.cs#L9-195",
+            "v2rayN/ServiceLib/ViewModels/MainWindowViewModel.cs#L14-15"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "SpeedtestService.RunLoop supports ESpeedActionType modes over selected servers with a configurable page size and delay interval; UDP testing is delegated to ServiceLib.UdpTest's Socks5UdpChannel; mixed/concurrency counts are floored at Global.SpeedTestConcurrencyCountMin=10.",
+          "sources": [
+            "v2rayN/ServiceLib/Services/SpeedtestService.cs#L12-80",
+            "v2rayN/ServiceLib.UdpTest/Socks5UdpChannel.cs",
+            "v2rayN/ServiceLib/Global.cs#L94-95"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Per-server traffic statistics are collected by StatisticsManager via StatisticsXrayService and StatisticsSingboxService polling core APIs, stored in ServerStatItem rows with daily counters reset in InitData, and pushed to the UI through the DispatcherStatisticsRequested event.",
+          "sources": [
+            "v2rayN/ServiceLib/Manager/StatisticsManager.cs#L18-98",
+            "v2rayN/ServiceLib/Services/Statistics/StatisticsXrayService.cs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Self/core update (UpdateService) queries GitHub release APIs or follows the /releases/latest redirect, compares SemanticVersions (with sing-box locked to <=1.14.x via LockedMaxVersion), picks an arch-appropriate download URL per OS (incl. linux riscv64/loongarch64), downloads via DownloadService, and for v2rayN itself hands the zip to AmazTool.",
+          "sources": [
+            "v2rayN/ServiceLib/Services/UpdateService.cs#L9-363",
+            "v2rayN/ServiceLib/Manager/CoreInfoManager.cs#L232"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Geo data updates download geosite.dat/geoip.dat (default Loyalsoldier v2ray-rules-dat or user-configured GeoSourceUrl) plus sing-box .srs rule-sets collected from routing rules and DNS config into bin/srss/.",
+          "sources": [
+            "v2rayN/ServiceLib/Services/UpdateService.cs#L139-148",
+            "v2rayN/ServiceLib/Services/UpdateService.cs#L369-531",
+            "v2rayN/ServiceLib/Global.cs#L8-9"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "A background TaskManager long-running loop performs scheduled work: every minute it refreshes subscriptions whose AutoUpdateInterval elapsed, every 20 min saves config+ProfileEx, hourly deletes expired temp/log/test files and refreshes geo files, and daily runs CheckHasUpdateOnlyAll which can publish HasUpdateNotified.",
+          "sources": [
+            "v2rayN/ServiceLib/Manager/TaskManager.cs#L22-154"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "WebDAV backup/restore is implemented in WebDavManager (WebDav.Client package) which uploads a 'backup.zip' into a '<AppName>_backup' directory on a user-configured server with basic-auth credentials.",
+          "sources": [
+            "v2rayN/ServiceLib/Manager/WebDavManager.cs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Autostart is per-OS in AutoStartupHandler: Windows writes HKCU Run key 'v2rayNAutoRun_<md5>' or registers a highest-privilege logon task when admin; Linux writes ~/.config/autostart/v2rayN.desktop from an embedded template; macOS writes and launchctl-loads a LaunchAgent plist.",
+          "sources": [
+            "v2rayN/ServiceLib/Handler/AutoStartupHandler.cs#L9-251",
+            "v2rayN/ServiceLib/Global.cs#L78-79"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Regional presets (ApplyRegionalPreset for Default/Russia/Iran) swap routing/DNS/geo sources (runetfreedom, Chocolate4U lists) and re-download geo files; global hotkeys are configurable per action via Config.GlobalHotkeys and registered through user32 RegisterHotKey on WPF.",
+          "sources": [
+            "v2rayN/ServiceLib/ViewModels/MainWindowViewModel.cs#L780-792",
+            "v2rayN/ServiceLib/Global.cs#L185-211",
+            "v2rayN/v2rayN/Manager/HotkeyManager.cs#L62-101"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "data_flow": {
+      "summary": "Input boundaries are subscription URLs, share URIs (clipboard/QR/image), dialogs, and GitHub release APIs. Everything lands in the Config object (guiNConfig.json) or SQLite guiNDB.db entities via AppManager query helpers and ConfigHandler writers. The hot path to the network boundary is: ProfileItem + Config -> CoreConfigContextBuilder.Build/BuildAll -> immutable CoreConfigContext snapshot -> CoreConfigSingboxService/CoreConfigV2rayService -> config.json under binConfigs/ -> ProcessService spawning the core binary. Output boundaries are the spawned core's local SOCKS/API ports, the OS system proxy, and files under bin/, guiConfigs/, guiLogs/, guiTemps/, guiBackups/.",
+      "claims": [
+        {
+          "claim": "Config is loaded at startup by ConfigHandler.LoadConfig from guiNConfig.json and normalized with ~40 defaults (inbound socks on 10808, TunModeItem MTU 9000, SpeedTestItem urls, mux/fragment/happy-eyeballs blocks, language from culture); SaveConfig writes it back and TaskManager re-saves every 20 minutes.",
+          "sources": [
+            "v2rayN/ServiceLib/Handler/ConfigHandler.cs#L19-197",
+            "v2rayN/ServiceLib/Manager/TaskManager.cs#L43-56"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "SQLiteHelper is the single owner of guiNDB.db, exposing sync CreateTable and async TableAsync/QueryAsync/ExecuteAsync; AppManager wraps it with typed queries (ProfileItems, SubItems, RoutingItems, DNSItems, ProfileModels join query with subRemarks).",
+          "sources": [
+            "v2rayN/ServiceLib/Helper/SqliteHelper.cs#L14-88",
+            "v2rayN/ServiceLib/Manager/AppManager.cs#L175-230"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Subscription text flows: DownloadService.TryDownloadString (HttpClient with proxy fallback to Downloader library) -> optional base64 decode -> ConfigHandler.AddBatchServers -> FmtHandler.Resolve per line -> ProfileItem rows tagged with the SubItem id; the sub's UpdateTime is stamped by TaskManager for the auto-update interval.",
+          "sources": [
+            "v2rayN/ServiceLib/Handler/SubscriptionHandler.cs#L102-229",
+            "v2rayN/ServiceLib/Services/DownloadService.cs#L195-251",
+            "v2rayN/ServiceLib/Handler/ConfigHandler.cs#L2037-2135"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CoreConfigContextBuilder.Build assembles an immutable CoreConfigContext: resolves the effective node (possibly wrapping it in a subscription prev/next ProxyChain via BuildSubscriptionChainNodeAsync), registers routing-rule outbound nodes into AllProxiesMap, validates TunModeItem.RouteExcludeAddress CIDRs with IPNetwork2, and snapshots DNS/routing/template items from SQLite.",
+          "sources": [
+            "v2rayN/ServiceLib/Handler/Builder/CoreConfigContextBuilder.cs#L34-138",
+            "v2rayN/ServiceLib/Handler/Builder/CoreConfigContextBuilder.cs#L258-315"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "BuildAll optionally produces a second 'pre-socks' context (BuildPreSocksIfNeeded) used for TUN protection or upstream chaining; when present the main context gets IsTunEnabled=false and merged ProtectDomainList/ProtectCoreTypeList so the generated config and launch mode always agree.",
+          "sources": [
+            "v2rayN/ServiceLib/Handler/Builder/CoreConfigContextBuilder.cs#L145-214"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CoreConfigHandler.GenerateClientConfig dispatches on node type: Custom -> file copy (or CoreConfigClashService for mihomo mixin), RunCoreType==sing_box -> CoreConfigSingboxService.GenerateClientConfigContent, otherwise CoreConfigV2rayService; the result JSON is written to binConfigs/config.json (or configPre.json for the pre-socks core).",
+          "sources": [
+            "v2rayN/ServiceLib/Handler/CoreConfigHandler.cs#L10-42",
+            "v2rayN/ServiceLib/Manager/CoreManager.cs#L74-104",
+            "v2rayN/ServiceLib/Global.cs#L13-15"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Per-core config generation is decomposed into services per concern: Singbox = Log/Inbound/Outbound/Routing/Dns/Ruleset/Statistic/ConfigTemplate services; V2ray = Log/Inbound/Outbound/Routing/Dns/Balancer/Statistic/ConfigTemplate services — each mutating a shared config model rooted at Models/CoreConfigs.",
+          "sources": [
+            "v2rayN/ServiceLib/Services/CoreConfig/Singbox/CoreConfigSingboxService.cs",
+            "v2rayN/ServiceLib/Services/CoreConfig/V2ray/CoreConfigV2rayService.cs",
+            "v2rayN/ServiceLib/Models/CoreConfigs/V2rayConfig.cs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Outbound traffic routing decisions come from RoutingItem.RuleSet JSON deserialized to List<RulesItem>; rules whose OutboundTag is not a built-in tag are resolved by remarks to ProfileItems and injected into AllProxiesMap as 'remark:<tag>' entries.",
+          "sources": [
+            "v2rayN/ServiceLib/Handler/Builder/CoreConfigContextBuilder.cs#L63-98"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "All outbound HTTP(S) fetching funnels through DownloadService: it builds a WebProxy socks5://127.0.0.1:{localPort} only after SocksPortCheck confirms the local core answers a SOCKS5 greeting, applies CertPemManager certificate chain policy when configured, sets Basic auth from URL userinfo, and uses short connect timeouts (5s direct / 10s proxy).",
+          "sources": [
+            "v2rayN/ServiceLib/Services/DownloadService.cs#L256-427",
+            "v2rayN/ServiceLib/Manager/CertPemManager.cs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Statistics flow: StatisticsXrayService/StatisticsSingboxService poll the running cores -> UpdateServerStatHandler aggregates into ServerStatItem rows -> AppEvents.DispatcherStatisticsRequested pushes ServerSpeedItem to the status bar; SaveTo persists on exit and CloneServerStatItem carries stats across subscription refreshes.",
+          "sources": [
+            "v2rayN/ServiceLib/Manager/StatisticsManager.cs#L18-98",
+            "v2rayN/ServiceLib/Handler/ConfigHandler.cs#L2120-2132"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The local API ports derive from the socks inbound localPort (default 10808): AppManager.GetLocalPort(protocol) = localPort + (int)EInboundProtocol, with StatePort/StatePort2 lazily reassigned to free ports via Utils.GetFreePort.",
+          "sources": [
+            "v2rayN/ServiceLib/Manager/AppManager.cs#L15-31",
+            "v2rayN/ServiceLib/Manager/AppManager.cs#L165-169"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Self-update flow terminates in AmazTool: UpdateService downloads the release zip to guiTemps, the app launches AmazTool with the URL-encoded path, and UpgradeApp.Upgrade kills running v2rayN processes, renames its own exe to .tmp, extracts the zip (skipping existing bin/ payloads), then restarts via Utils.StartV2RayN.",
+          "sources": [
+            "v2rayN/AmazTool/UpgradeApp.cs#L9-107",
+            "v2rayN/AmazTool/Program.cs#L39-44",
+            "v2rayN/ServiceLib/Services/UpdateService.cs#L9-47"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "File-system layout under StartupPath(): bin/ holds core binaries and geo files (per-core subdirs by lowercase CoreType), binConfigs/ holds generated config.json/configPre.json/configTest*.json, guiConfigs/ holds guiNConfig.json + guiNDB.db + pac.txt, guiTemps/ downloads, guiBackups/ backups, guiLogs/ NLog output.",
+          "sources": [
+            "v2rayN/ServiceLib/Common/Utils.cs#L1152-1288",
+            "v2rayN/ServiceLib/Manager/TaskManager.cs#L61-65"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "behavior_traces": {
+      "summary": "Three flows were traced end-to-end. Startup goes through single-instance guard, config load, SQLite table creation, ViewModel init, core init and a first Reload. Server activation goes through GetDefaultServer, CoreConfigContextBuilder.BuildAll, config generation, process spawn, system proxy update and an availability ping. Subscription update iterates SubItems, downloads with proxy fallback, parses into ProfileItem rows, and conditionally triggers Reload. Self-update and app-exit are also traced below.",
+      "claims": [
+        {
+          "claim": "Startup (WPF): App.OnStartup -> Utils.GetMd5(GetExePath) EventWaitHandle single-instance check -> AppManager.InitApp (HasWritePermission fallback, Logging.Setup, ConfigHandler.LoadConfig, culture set, CreateTable x8) -> AppManager.InitComponents (StatePort/StatePort2 resolve, MigrateProfileExtra) -> MainWindowViewModel ctor -> Init(): InitBuiltinDNS, InitBuiltinFullConfigTemplate, ProfileExManager.Init, CoreManager.Init (copies bin/ when in local-appdata mode, chmods core exes on non-Windows), CertPemManager.Init, TaskManager.RegUpdateTask, StatisticsManager.Init -> RefreshServersDispatcherAsync -> Reload().",
+          "sources": [
+            "v2rayN/v2rayN/App.xaml.cs#L24-61",
+            "v2rayN/ServiceLib/Manager/AppManager.cs#L63-113",
+            "v2rayN/ServiceLib/ViewModels/MainWindowViewModel.cs#L319-343",
+            "v2rayN/ServiceLib/Manager/CoreManager.cs#L21-61"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Startup (Avalonia): Program.Main -> OnStartup (Windows EventWaitHandle or non-Windows Mutex 'v2rayN' single-instance, InitApp, WindowDialog) -> BuildAvaloniaApp(UsePlatformDetect, UseReactiveUI, macOS ShowInDock option) -> StartWithClassicDesktopLifetime -> App.OnFrameworkInitializationCompleted registers SimpleViewLocator DataTemplate, calls InitComponents, then constructs MainWindowViewModel + MainWindow.",
+          "sources": [
+            "v2rayN/v2rayN.Desktop/Program.cs#L14-77",
+            "v2rayN/v2rayN.Desktop/App.axaml.cs#L16-41"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Server activation (Reload): ConfigHandler.GetDefaultServer -> CoreConfigContextBuilder.BuildAll (main context + optional pre-socks) -> NoticeManager.NotifyValidatorResult (early-return on errors) -> CoreManager.LoadCore: CoreConfigHandler.GenerateClientConfig writes binConfigs/config.json -> CoreStop + 100ms delay -> Windows-only RemoveTunDevice when TUN -> CoreStart/RunProcess -> WaitForProxyPort does SOCKS5 greeting handshake with the pre-socks node -> CoreStartPreService writes and launches configPre.json -> SysProxyHandler.UpdateSysProxy -> StatusBarViewModel.TestServerAvailability -> SetSpeedTestResult -> optional ClashProxiesViewModel.ProxiesReload.",
+          "sources": [
+            "v2rayN/ServiceLib/ViewModels/MainWindowViewModel.cs#L664-774",
+            "v2rayN/ServiceLib/Manager/CoreManager.cs#L65-212",
+            "v2rayN/ServiceLib/Manager/CoreManager.cs#L219-286"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Reload concurrency is guarded by a SemaphoreSlim: a concurrent Reload sets _hasNextReloadJob and returns; after the semaphore is released a queued reload runs once — so rapid toggles collapse to at most one extra pass.",
+          "sources": [
+            "v2rayN/ServiceLib/ViewModels/MainWindowViewModel.cs#L661-751"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Subscription update: MainWindowViewModel.UpdateSubscriptionProcess -> Task.Run(SubscriptionHandler.UpdateProcess) -> per SubItem: IsValidSubscription (http/https only, id match, enabled) -> CreateDownloadHandler parses custom request headers (throws FormatException if invalid) -> DownloadSubscriptionContent via proxy then direct fallback -> ProcessDownloadResult -> ConfigHandler.AddBatchServers(isSub=true) -> UpdateTaskHandler refreshes the list and Reload()s only if the active profile's IndexId changed or belongs to the updated group.",
+          "sources": [
+            "v2rayN/ServiceLib/ViewModels/MainWindowViewModel.cs#L574-577",
+            "v2rayN/ServiceLib/Handler/SubscriptionHandler.cs#L5-229",
+            "v2rayN/ServiceLib/ViewModels/MainWindowViewModel.cs#L359-387"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Clipboard/QR/image import: AddServerViaClipboardAsync reads text via ReadTextFromClipboardInteraction -> ConfigHandler.AddBatchServers -> RefreshSubscriptions + RefreshServersDispatcherAsync; scan flows go through ScanScreenInteraction/BrowseImageFileInteraction -> QRCodeUtils.ParseBarcode -> AddScanResultAsync -> same AddBatchServers path.",
+          "sources": [
+            "v2rayN/ServiceLib/ViewModels/MainWindowViewModel.cs#L484-559"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Core process launch (normal): RunProcess -> CoreInfoManager.GetCoreExecFile finds first existing exe under bin/<coretype>/ -> RunProcessNormal formats Arguments template with the config path and env vars (e.g. XRAY_LOCATION_ASSET) -> ProcessService.StartAsync redirects stdout/stderr to UpdateFunc -> AddProcessJob attaches the handle to a Windows Job Object.",
+          "sources": [
+            "v2rayN/ServiceLib/Manager/CoreManager.cs#L305-376",
+            "v2rayN/ServiceLib/Manager/CoreInfoManager.cs#L32-51",
+            "v2rayN/ServiceLib/Services/ProcessService.cs#L56-71"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Core launch with TUN on Linux/macOS: ShouldRunAsSudo(isTunLaunch && coreType in {sing_box, mihomo, Xray} && IsNonWindows) -> CoreAdminManager.RunProcessAsLinuxSudo writes run_as_sudo.sh containing 'exec sudo -S -- env ... <core> <args>' -> ProcessService with redirectInput writes AppManager.LinuxSudoPwd to stdin -> CoreStop later calls KillProcessAsLinuxSudo which runs embedded kill_as_sudo_*_sh via bash -c with the saved PID and sudo -S.",
+          "sources": [
+            "v2rayN/ServiceLib/Manager/CoreManager.cs#L298-322",
+            "v2rayN/ServiceLib/Manager/CoreAdminManager.cs#L32-104"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Self-update: CheckUpdateGuiN -> CheckUpdateAsync -> GetRemoteVersion (GitHub releases API when preRelease/LockedMaxVersion, else /releases/latest redirect) -> ParseDownloadUrl picks arch URL and compares versions -> DownloadService.DownloadFileAsync to guiTemps/<guid> -> UpdateCompleted invokes updateFunc with UrlEncoded filename -> AmazTool launched with the path -> UpgradeApp.Upgrade kills v2rayN processes, extracts zip entries (strip first path segment, skip existing bin/*), restarts app.",
+          "sources": [
+            "v2rayN/ServiceLib/Services/UpdateService.cs#L9-100",
+            "v2rayN/ServiceLib/Services/UpdateService.cs#L153-220",
+            "v2rayN/AmazTool/UpgradeApp.cs#L21-107"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "App exit: AppManager.AppExitAsync -> SysProxyHandler.UpdateSysProxy(config, forceDisable:true) restores/clears system proxy -> AppEvents.AppExitRequested.Publish + 50ms wait -> ConfigHandler.SaveConfig -> ProfileExManager.SaveTo -> StatisticsManager.SaveTo -> CoreManager.CoreStop (sudo kill if needed, then ProcessService.StopAsync/Dispose) -> StatisticsManager.Close -> optionally Shutdown() publishing ShutdownRequested.",
+          "sources": [
+            "v2rayN/ServiceLib/Manager/AppManager.cs#L122-159",
+            "v2rayN/ServiceLib/Manager/CoreManager.cs#L147-175"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Reboot-as-admin path: RebootAsAdminCmd -> AppManager.RebootAsAdmin -> ProcUtils.RebootAsAdmin starts the exe with Verb='runas' and arg 'rebootas' -> AppExitAsync(true) shuts down; on the new process OnStartup sees Global.RebootAs in args and bypasses the single-instance exit so the elevated instance takes over.",
+          "sources": [
+            "v2rayN/ServiceLib/Manager/AppManager.cs#L155-159",
+            "v2rayN/ServiceLib/Common/ProcUtils.cs#L49-67",
+            "v2rayN/v2rayN/App.xaml.cs#L26-35"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "testing_signals": {
+      "summary": "Tests live exclusively in ServiceLib.Tests and use TUnit (not xUnit/NUnit) with TUnit.Assertions.Should fluent assertions. Coverage concentrates on the pure/parsing layers: Fmt share-URI round-trips, V2ray and sing-box config generation, CoreConfigContextBuilder behavior, HTTP request-header parsing, a regex guard, and CoreManager helpers. The CI test workflow runs 'dotnet test' on ubuntu-latest against .NET 10.x and publishes TRX results to PRs. There are no UI tests for either shell and no tests over SQLite persistence, process spawning, sysproxy, or the updater.",
+      "claims": [
+        {
+          "claim": "ServiceLib.Tests targets net10.0 with TUnit + TUnit.Assertions.Should packages and ProjectReference to ServiceLib; tests use [Test] attributes and 'await x.Should().BeEqualTo(...)' assertions.",
+          "sources": [
+            "v2rayN/ServiceLib.Tests/ServiceLib.Tests.csproj",
+            "v2rayN/ServiceLib.Tests/Fmt/FmtHandlerTests.cs#L24-43"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CI test job (.github/workflows/test.yml) runs only when ServiceLib, ServiceLib.UdpTest, ServiceLib.Tests, Directory.Build.*, Directory.Packages.props, global.json or the workflow itself change — edits confined to v2rayN/ or v2rayN.Desktop/ UI code never trigger tests.",
+          "sources": [
+            ".github/workflows/test.yml#L3-45"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "FmtHandlerTests contains a coverage contract: ShareProfileFactories must match Global.ProtocolShares keys exactly, then every exportable protocol is round-tripped ExportThenImport asserting ConfigType/Address/Port survive — so adding a new protocol without a test fails the suite.",
+          "sources": [
+            "v2rayN/ServiceLib.Tests/Fmt/FmtHandlerTests.cs#L10-43",
+            "v2rayN/ServiceLib/Global.cs#L238-250"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Core config generation has dedicated large suites: CoreConfigV2rayServiceTests (~716 lines) and CoreConfigSingboxServiceTests (~755 lines) plus CoreConfigContextBuilderTests and a shared CoreConfigTestFactory for building test configs.",
+          "sources": [
+            "v2rayN/ServiceLib.Tests/CoreConfig/V2ray/CoreConfigV2rayServiceTests.cs",
+            "v2rayN/ServiceLib.Tests/CoreConfig/Singbox/CoreConfigSingboxServiceTests.cs",
+            "v2rayN/ServiceLib.Tests/CoreConfig/Context/CoreConfigContextBuilderTests.cs",
+            "v2rayN/ServiceLib.Tests/CoreConfig/CoreConfigTestFactory.cs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Other covered units: per-Fmt tests (InnerFmtTests, WireguardFmtTests, ShareUriQueryTests, Hysteria2FmtTests, HyRealmTests), HttpRequestHeadersHelperTests, RegexGuardTests, DownloadServiceHeadersTests and CoreManagerTests (which can exercise ShouldRunAsSudo logic).",
+          "sources": [
+            "v2rayN/ServiceLib.Tests/Fmt/InnerFmtTests.cs",
+            "v2rayN/ServiceLib.Tests/Helper/HttpRequestHeadersHelperTests.cs",
+            "v2rayN/ServiceLib.Tests/Helper/RegexGuardTests.cs",
+            "v2rayN/ServiceLib.Tests/Services/DownloadServiceHeadersTests.cs",
+            "v2rayN/ServiceLib.Tests/Manager/CoreManagerTests.cs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Untested surfaces include both UI shells (no test project references v2rayN or v2rayN.Desktop), SQLite migrations in AppManager.MigrateProfileExtra*, SysProxyHandler/PacManager OS integration, ProcessService/WindowsJobService process lifecycle, AmazTool, and UpdateService download/upgrade — none have test files.",
+          "sources": [
+            "v2rayN/ServiceLib.Tests/ServiceLib.Tests.csproj",
+            "v2rayN/ServiceLib/Manager/AppManager.cs#L328-475",
+            "v2rayN/AmazTool/UpgradeApp.cs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "ServiceLib.UdpTest is a referenced library project (not a test suite despite the name) providing Socks5UdpChannel used by SpeedtestService for UDP testing.",
+          "sources": [
+            "v2rayN/ServiceLib/ServiceLib.csproj#L100-102",
+            "v2rayN/ServiceLib.UdpTest/Socks5UdpChannel.cs",
+            "v2rayN/ServiceLib/Services/SpeedtestService.cs#L1"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Test results are published back to PRs as TRX via EnricoMi/publish-unit-test-result-action with comment_mode 'failures'; the test command is 'dotnet test --project ./v2rayN/ServiceLib.Tests -c Release'.",
+          "sources": [
+            ".github/workflows/test.yml#L44-52"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "No lint/static-analysis workflow exists beyond a CodeFactor badge in the README; there is no code-coverage collection in the test workflow (no coverlet/collector packages in the test csproj).",
+          "sources": [
+            "README.md#L5",
+            "v2rayN/ServiceLib.Tests/ServiceLib.Tests.csproj",
+            ".github/workflows/test.yml"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "risk_map": {
+      "summary": "The biggest risk surface is OS-level mutation: registry/WinInet proxy changes, autostart registration, sudo shell scripts carrying a GUI-entered sudo password, and a self-updater that extracts a network-downloaded zip over the install directory. SQL built by string interpolation in ProfileModels is only partially sanitized. The GlobalHotKeys submodule and ServiceLib.UdpTest project reference are easy build breakers. Heavy catch-all swallowing and a 3000-line ConfigHandler concentrate blast radius, and the ProfileItem ConfigVersion migration chain is delicate and untested.",
+      "claims": [
+        {
+          "claim": "Linux/macOS TUN mode stores the user's sudo password in memory (AppManager.LinuxSudoPwd) and pipes it into 'sudo -S' via generated run_as_sudo.sh / kill_as_sudo.sh scripts under binConfigs — a plaintext credential-in-shell path that also leaves a world-visible generated script.",
+          "sources": [
+            "v2rayN/ServiceLib/Manager/AppManager.cs#L33",
+            "v2rayN/ServiceLib/Manager/CoreAdminManager.cs#L32-104"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "AppManager.ProfileModels builds raw SQL with interpolated subid and a user-supplied filter; the only sanitization is stripping single quotes from filter, so other injection-adjacent characters pass through into SQLite QueryAsync.",
+          "sources": [
+            "v2rayN/ServiceLib/Manager/AppManager.cs#L202-230"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Self-update downloads a zip from GitHub over (optionally proxied) HTTPS and AmazTool extracts it over the install dir with only a 'bin/' skip rule — no in-app signature/hash verification is performed on the archive (GPG verification is offered manually per README).",
+          "sources": [
+            "v2rayN/AmazTool/UpgradeApp.cs#L41-107",
+            "v2rayN/ServiceLib/Services/UpdateService.cs#L9-47",
+            "README.md#L57-68"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "AmazTool.Upgrade kills every process named 'v2rayN' whose MainModule path starts with the app dir, then extracts entries by stripping the first path segment — a maliciously crafted zip entry name could still resolve outside intended paths (no explicit traversal check on entry.FullName).",
+          "sources": [
+            "v2rayN/AmazTool/UpgradeApp.cs#L21-90"
+          ],
+          "kind": "inference"
+        },
+        {
+          "claim": "ProxySettingWindows uses raw WinInet P/Invoke with manually allocated marshaled buffers (five 'remember to deallocate' sites); the code frees them but any early-return/exception path between alloc and free leaks unmanaged memory, and failure falls back to direct registry writes under 'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings'.",
+          "sources": [
+            "v2rayN/ServiceLib/Handler/SysProxy/ProxySettingWindows.cs#L8-34",
+            "v2rayN/ServiceLib/Handler/SysProxy/ProxySettingWindows.cs#L79-198"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Custom server configs read arbitrary file paths: node.Address is used directly as a filesystem path (GenerateClientCustomConfig copies it; RegisterSingleNodeAsync reads it into CustomOutboundContent) — a crafted profile could point at any readable file.",
+          "sources": [
+            "v2rayN/ServiceLib/Handler/CoreConfigHandler.cs#L44-91",
+            "v2rayN/ServiceLib/Handler/Builder/CoreConfigContextBuilder.cs#L343-363"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "PacManager.RunListener creates a TcpListener on the PAC port and answers every connection with the PAC bytes without request parsing or binding check — the listener inherits default binding behavior and any local (or LAN, if bound broadly) client can fetch the PAC file.",
+          "sources": [
+            "v2rayN/ServiceLib/Manager/PacManager.cs#L60-93"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The ProfileItem schema migration chain (ConfigVersion <3 -> MigrateProfileExtraV2ToV3 rewriting per-protocol fields into ProtocolExtra JSON; =3 -> MigrateProfileTransportV3ToV4 reshaping transport fields) runs synchronously-blocked at startup and has no test coverage — a bad batch permanently corrupts stored profiles.",
+          "sources": [
+            "v2rayN/ServiceLib/Manager/AppManager.cs#L107-113",
+            "v2rayN/ServiceLib/Manager/AppManager.cs#L328-475"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "ConfigHandler.cs is ~3000 lines containing config load/save, profile CRUD, batch import of five formats, sub/group management, routing/DNS/template init and regional presets — a single static god-class where a mistake in one feature can break unrelated persistence.",
+          "sources": [
+            "v2rayN/ServiceLib/Handler/ConfigHandler.cs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "v2rayN/GlobalHotKeys is a git submodule that is empty in a non-recursive clone; v2rayN.Desktop.csproj references GlobalHotKeys/src/GlobalHotKeys/GlobalHotKeys.csproj so the Desktop build fails outright without 'submodules: recursive' (which the workflows do set).",
+          "sources": [
+            ".gitmodules",
+            "v2rayN/v2rayN.Desktop/v2rayN.Desktop.csproj#L40",
+            ".github/workflows/build.yml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Exceptions are swallowed broadly: AppExitAsync wraps the whole shutdown in catch{}, ProcessService.StopAsync/Dispose have nested empty catches, SysProxyHandler.UpdateSysProxy catches and returns true on failure — masking cleanup failures that leave cores running or the system proxy stuck.",
+          "sources": [
+            "v2rayN/ServiceLib/Manager/AppManager.cs#L122-148",
+            "v2rayN/ServiceLib/Services/ProcessService.cs#L73-117",
+            "v2rayN/ServiceLib/Handler/SysProxy/SysProxyHandler.cs#L62-66"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Subscription download supports http:// URLs and an optional third-party subconvert proxy chain; subscription content is base64-decoded and imported wholesale into the profile DB — a hostile/compromised subscription can inject arbitrary outbound definitions or Custom nodes pointing to local files.",
+          "sources": [
+            "v2rayN/ServiceLib/Handler/SubscriptionHandler.cs#L75-195",
+            "v2rayN/ServiceLib/Handler/ConfigHandler.cs#L2037-2135"
+          ],
+          "kind": "inference"
+        },
+        {
+          "claim": "WPF OnExit force-kills the current process (Process.GetCurrentProcess().Kill()) after logging — any async persistence still in flight at that point is truncated.",
+          "sources": [
+            "v2rayN/v2rayN/App.xaml.cs#L82-87"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Timeouts for outbound fetches are asymmetric and short (DirectFetch 10s, ProxyFetch 30s, LocalFetch 5s); silent empty-string failures propagate as 'IsNullOrEmpty -> return null' so download errors frequently surface only as a generic failure message.",
+          "sources": [
+            "v2rayN/ServiceLib/Global.cs#L100-104",
+            "v2rayN/ServiceLib/Services/DownloadService.cs#L195-251"
+          ],
+          "kind": "inference"
+        }
+      ]
+    },
+    "extension_points": {
+      "summary": "Extension happens at four levels: (1) protocol support via a new *Fmt class plus entries in FmtHandler's switch/prefix dispatch, Global.ProtocolShares/ProtocolTypes, EConfigType and the two SupportConfigType sets; (2) new cores via a CoreInfo record in CoreInfoManager.InitCoreInfo and Global.CoreUrls; (3) core config generation via the per-concern services under Services/CoreConfig/{Singbox,V2ray} plus embedded Sample templates and FullConfigTemplateItem overrides; (4) UI via shared ViewModels + per-shell SimpleViewLocator view resolution and AppEvents channels. Group-type profiles (PolicyGroup/ProxyChain) and subscription prev/next chains are the built-in composition mechanism.",
+      "claims": [
+        {
+          "claim": "Adding a share-URI protocol requires: a new Fmt class in ServiceLib/Handler/Fmt implementing Resolve/ToUri, a switch arm in FmtHandler.ResolveConfig and GetShareUri, and entries in Global.ProtocolShares/ProtocolTypes — FmtHandlerTests enforces the ProtocolShares/factory parity so a missing test fails.",
+          "sources": [
+            "v2rayN/ServiceLib/Handler/Fmt/FmtHandler.cs#L7-110",
+            "v2rayN/ServiceLib/Global.cs#L238-265",
+            "v2rayN/ServiceLib.Tests/Fmt/FmtHandlerTests.cs#L10-43"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New proxy cores plug into CoreInfoManager.InitCoreInfo's list of CoreInfo records (CoreExes, Arguments template with {0}=config path, Environment dict, VersionArg/Match for version detection, per-arch DownloadUrl* fields for auto-update).",
+          "sources": [
+            "v2rayN/ServiceLib/Manager/CoreInfoManager.cs#L104-293"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Core config generation is decomposed so a single concern (e.g. DNS) can be changed in isolation: CoreConfigSingboxService composes SingboxLog/Inbound/Outbound/Routing/Dns/Ruleset/Statistic/ConfigTemplate services, mirrored by the V2ray set — each is independently instantiable against a CoreConfigContext.",
+          "sources": [
+            "v2rayN/ServiceLib/Services/CoreConfig/Singbox/CoreConfigSingboxService.cs",
+            "v2rayN/ServiceLib/Services/CoreConfig/V2ray/CoreConfigV2rayService.cs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Embedded Sample resources (ServiceLib/Sample/* registered in ServiceLib.csproj and read via EmbedUtils.GetEmbedText) are the template extension point for default client configs, inbounds, TUN blocks, DNS presets, PAC script, autostart units, sudo/kill scripts, routing presets and root-cert PEMs.",
+          "sources": [
+            "v2rayN/ServiceLib/ServiceLib.csproj#L28-57",
+            "v2rayN/ServiceLib/Common/EmbedUtils.cs",
+            "v2rayN/ServiceLib/Global.cs#L18-44"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Users/agents can override generated config wholesale per core type through FullConfigTemplateItem rows fetched in CoreConfigContextBuilder (GetFullConfigTemplateItem) and through per-node EConfigType.Custom/Outbound types that inject literal config/outbound files.",
+          "sources": [
+            "v2rayN/ServiceLib/Handler/Builder/CoreConfigContextBuilder.cs#L44",
+            "v2rayN/ServiceLib/Handler/CoreConfigHandler.cs#L16-31",
+            "v2rayN/ServiceLib/ViewModels/MainWindowViewModel.cs#L35-36"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Routing/DNS customization is data-driven: RoutingItem.RuleSet JSON -> RulesItem list where any OutboundTag not in Global.OutboundTags resolves to a profile by remarks and is injected into AllProxiesMap — enabling per-rule per-node routing without code changes; DNSItem rows store per-core normal/tun DNS JSON.",
+          "sources": [
+            "v2rayN/ServiceLib/Handler/Builder/CoreConfigContextBuilder.cs#L63-98",
+            "v2rayN/ServiceLib/Models/Entities/RulesItem.cs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Group-type profiles compose nodes without new code: EConfigType.PolicyGroup/ProxyChain nodes carry ProtocolExtraItem.ChildItems, traversed recursively by CoreConfigContextBuilder.TraverseGroupNodeAsync with cycle detection via ancestor/visited sets, and GroupProfileManager resolves child IndexIds.",
+          "sources": [
+            "v2rayN/ServiceLib/Handler/Builder/CoreConfigContextBuilder.cs#L418-509",
+            "v2rayN/ServiceLib/Manager/GroupProfileManager.cs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Subscriptions gain proxy chains declaratively: SubItem.PrevProfile/NextProfile name profiles by remarks which BuildSubscriptionChainNodeAsync wraps into a virtual 'inner-<guid>' ProxyChain node around the selected node.",
+          "sources": [
+            "v2rayN/ServiceLib/Handler/Builder/CoreConfigContextBuilder.cs#L252-315",
+            "v2rayN/ServiceLib/Models/Entities/SubItem.cs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New UI screens follow the ReactiveUI + SimpleViewLocator convention: create a ViewModel in ServiceLib/ViewModels, a View per shell (v2rayN/Views/*.xaml, v2rayN.Desktop/Views/*.axaml), wire commands through ReactiveCommand.CreateFromTask, dialogs through AppManager.Instance.WindowDialog.ShowDialogAsync, and notifications through NoticeManager.",
+          "sources": [
+            "v2rayN/v2rayN/Common/SimpleViewLocator.cs",
+            "v2rayN/v2rayN.Desktop/Common/SimpleViewLocator.cs",
+            "v2rayN/ServiceLib/ViewModels/MainWindowViewModel.cs#L565-631"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "AppEvents/EventChannel is the extension point for cross-VM signaling — new events are added as static EventChannel<T> fields and consumed via .AsObservable().ObserveOn(RxSchedulers.MainThreadScheduler).SubscribeAsync.",
+          "sources": [
+            "v2rayN/ServiceLib/Events/AppEvents.cs",
+            "v2rayN/ServiceLib/Events/EventChannel.cs",
+            "v2rayN/ServiceLib/ViewModels/MainWindowViewModel.cs#L257-315"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New user-facing strings go into ServiceLib/Resx/ResUI.resx (plus satellites); new global option lists (e.g. fingerprints, networks, mux protocols, subconvert endpoints, geo sources) are centralized as public static lists in Global.cs.",
+          "sources": [
+            "v2rayN/ServiceLib/Resx/ResUI.resx",
+            "v2rayN/ServiceLib/Global.cs#L330-419"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "UpdateService's download-source indirection (ConstItem.GeoSourceUrl/SrsSourceUrl/SubConvertUrl with Global.* defaults) is a designed extension seam for alternate geo/rule-set/subconvert providers, including the Russia and Iran preset sources.",
+          "sources": [
+            "v2rayN/ServiceLib/Services/UpdateService.cs#L369-413",
+            "v2rayN/ServiceLib/Global.cs#L185-211"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_handoff": {
+      "summary": "All logic changes belong in ServiceLib; the two shells should stay thin views over shared ViewModels. Read the order below before editing: Global.cs constants, ConfigHandler, CoreConfigContextBuilder, the relevant CoreConfig service, FmtHandler, and the target ViewModel. Build requires .NET 10 SDK (global.json) and a recursive submodule checkout for the Desktop project; test via 'dotnet test v2rayN/ServiceLib.Tests'. Respect the ConfigVersion migration chain, the {0} argument-template convention, embedded Sample resource names, and the LoadCore ordering (main config -> stop -> remove tun -> start -> wait for pre-socks port -> start pre-service).",
+      "claims": [
+        {
+          "claim": "Read-first files for any change: v2rayN/ServiceLib/Global.cs (all constants/tag names/URL templates), ServiceLib/Handler/ConfigHandler.cs (config + profile persistence), ServiceLib/Manager/AppManager.cs (singleton state + SQLite query helpers), and ServiceLib/Handler/Builder/CoreConfigContextBuilder.cs (node resolution pipeline).",
+          "sources": [
+            "v2rayN/ServiceLib/Global.cs",
+            "v2rayN/ServiceLib/Handler/ConfigHandler.cs",
+            "v2rayN/ServiceLib/Manager/AppManager.cs",
+            "v2rayN/ServiceLib/Handler/Builder/CoreConfigContextBuilder.cs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Conventions: managers are 'public sealed class X { private static readonly Lazy<X> _instance = new(() => new()); public static X Instance => _instance.Value; }'; handlers are static classes; string checks use IsNullOrEmpty/IsNotEmpty/TrimEx extension methods; user-facing text must come from ResUI.* generated from resx.",
+          "sources": [
+            "v2rayN/ServiceLib/Manager/AppManager.cs#L7-11",
+            "v2rayN/ServiceLib/Handler/Fmt/FmtHandler.cs#L41-42",
+            "v2rayN/ServiceLib/Common/Extension.cs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "ReactiveUI conventions: ViewModels derive from MyReactiveObject, commands via ReactiveCommand.CreateFromTask, properties via [Reactive] partial properties from ReactiveUI.SourceGenerators, and UI-marshaling via RxSchedulers.MainThreadScheduler.Schedule or Signal.FromAsync(...).SubscribeOn(...).ToTask().",
+          "sources": [
+            "v2rayN/ServiceLib/ViewModels/MainWindowViewModel.cs#L71-84",
+            "v2rayN/ServiceLib/ViewModels/MainWindowViewModel.cs#L99-236",
+            "v2rayN/Directory.Packages.props"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Never persist mutable config references into CoreConfigContext — it is an immutable record snapshot so the generated config and the process launch mode (e.g. sudo/TUN decision in ShouldRunAsSudo) agree even if settings change mid-reload; clone via JsonUtils.DeepCopy before mutating.",
+          "sources": [
+            "v2rayN/ServiceLib/Manager/CoreManager.cs#L292-303",
+            "v2rayN/ServiceLib/Handler/Builder/CoreConfigContextBuilder.cs#L100-135"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "ProfileItem carries legacy flat fields plus JSON 'extra' blobs accessed via GetProtocolExtra/SetProtocolExtra/GetTransportExtra/SetTransportExtra; new fields must respect the ConfigVersion migration ladder (v2->v3 moved protocol extras, v3->v4 moved transport extras) — add a new migration step rather than reparsing inline.",
+          "sources": [
+            "v2rayN/ServiceLib/Manager/AppManager.cs#L337-475",
+            "v2rayN/ServiceLib/Models/Entities/ProfileItem.cs",
+            "v2rayN/ServiceLib/Models/Entities/ProtocolExtraItem.cs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Build commands: 'dotnet build v2rayN/v2rayN.slnx' or per-project; WPF project targets net10.0-windows10.0.19041.0 and needs Windows or EnableWindowsTargeting; Desktop needs 'git submodule update --init --recursive' first or GlobalHotKeys.csproj is missing; tests: 'dotnet test v2rayN/ServiceLib.Tests -c Release'.",
+          "sources": [
+            "v2rayN/v2rayN/v2rayN.csproj#L5",
+            ".github/workflows/build.yml",
+            ".gitmodules",
+            ".github/workflows/test.yml#L45"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "When changing share-URI parse/export, update both directions (Fmt Resolve + ToUri) and add a factory in FmtHandlerTests.ShareProfileFactories — the suite asserts parity with Global.ProtocolShares so a one-sided change fails CI.",
+          "sources": [
+            "v2rayN/ServiceLib.Tests/Fmt/FmtHandlerTests.cs#L10-43",
+            "v2rayN/ServiceLib/Handler/Fmt/FmtHandler.cs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Safe edit boundaries: new ViewModels/services in ServiceLib; per-shell code limited to Views, Converters, platform utils (WindowsUtils, MacAppUtils) and Managers like HotkeyManager/WindowDialog; do not add UI dependencies to ServiceLib (it must stay runnable by the test project on Linux CI).",
+          "sources": [
+            "v2rayN/v2rayN/Manager/HotkeyManager.cs",
+            "v2rayN/ServiceLib/ServiceLib.csproj",
+            ".github/workflows/test.yml#L33"
+          ],
+          "kind": "inference"
+        },
+        {
+          "claim": "Known traps: generated config filenames are constants (config.json, configPre.json, configTest{0}.json) under binConfigs — TaskManager deletes files matching 'Test' older than 1h there; ports are derived as socksPort + (int)EInboundProtocol; sing-box updates are version-locked at <=1.14.x.",
+          "sources": [
+            "v2rayN/ServiceLib/Global.cs#L13-15",
+            "v2rayN/ServiceLib/Manager/TaskManager.cs#L61-63",
+            "v2rayN/ServiceLib/Manager/AppManager.cs#L165-169",
+            "v2rayN/ServiceLib/Manager/CoreInfoManager.cs#L232"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Core exe argument strings are string.Format templates where {0} is the config path (AbsolutePath flag controls quoting via GetBinConfigPath); keep the format-string contract when adding cores and provide env vars via CoreInfo.Environment (e.g. XRAY_LOCATION_ASSET).",
+          "sources": [
+            "v2rayN/ServiceLib/Manager/CoreManager.cs#L334-350",
+            "v2rayN/ServiceLib/Manager/CoreInfoManager.cs#L149-171"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Logging goes through Logging.SaveLog (NLog, guiLogs/) gated by config.GuiItem.EnableLog set in InitComponents; updateFunc callbacks carry (notify:bool, msg) where notify=true means surface a snackbar via NoticeManager.Enqueue.",
+          "sources": [
+            "v2rayN/ServiceLib/Manager/AppManager.cs#L98-113",
+            "v2rayN/ServiceLib/ViewModels/MainWindowViewModel.cs#L349-357",
+            "v2rayN/ServiceLib/Common/Logging.cs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Do not call ViewModel constructors expecting side effects in design mode: MainWindowViewModel.Init short-circuits on DesignMode, and design-time data lives in v2rayN.Desktop/DesignData; both shells share the same ServiceLib ViewModels so VM changes must remain toolkit-agnostic (use WindowDialog/Interactions, not dialogs).",
+          "sources": [
+            "v2rayN/ServiceLib/ViewModels/MainWindowViewModel.cs#L319-326",
+            "v2rayN/v2rayN.Desktop/DesignData",
+            "v2rayN/ServiceLib/ViewModels/MainWindowViewModel.cs#L5-8"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_prompt": "You are working on v2rayN, a C#/.NET 10 cross-platform proxy GUI client. It drives external proxy cores (Xray, sing-box, mihomo, hysteria, tuic, etc.) by generating core JSON configs, spawning the binaries, and setting the OS system proxy. Two shells share all logic: v2rayN/v2rayN is WPF for Windows; v2rayN/v2rayN.Desktop is Avalonia for Windows/Linux/macOS. Both consume v2rayN/ServiceLib, which holds ViewModels (ReactiveUI + source generators), Manager singletons (AppManager, CoreManager, CoreInfoManager, StatisticsManager, TaskManager...), static Handler classes (ConfigHandler, CoreConfigHandler, SubscriptionHandler, FmtHandler, SysProxyHandler, AutoStartupHandler), Services (ProcessService, DownloadService, UpdateService, SpeedtestService, CoreConfig/{Singbox,V2ray} generation), and ResUI resx localization. AmazTool is a console helper that extracts self-update zips. ServiceLib.UdpTest is a referenced library (not tests). ServiceLib.Tests uses TUnit; run 'dotnet test v2rayN/ServiceLib.Tests -c Release'. CI only tests ServiceLib.\n\nKey facts: state = guiNConfig.json (Config via ConfigHandler.LoadConfig) + SQLite guiNDB.db (SQLiteHelper singleton; tables created in AppManager.InitApp). Storage root is StartupPath(): exe dir, or %LocalApplicationData%/v2rayN when env V2RAYN_LOCAL_APPLICATION_DATA_V2=1 (set when the exe dir isn't writable). Cores live in bin/<coretype>/, generated configs in binConfigs/ (config.json, configPre.json for the pre-socks core, configTest*.json). Core registry: CoreInfoManager.InitCoreInfo with Arguments '{0}' = config path template. Activation flow: MainWindowViewModel.Reload -> CoreConfigContextBuilder.BuildAll -> CoreConfigHandler.GenerateClientConfig -> CoreManager.LoadCore -> ProcessService; TUN on Linux/macOS escalates via generated sudo -S scripts using AppManager.LinuxSudoPwd.\n\nConventions: singletons via Lazy<T>.Instance; static handlers; IsNullOrEmpty/IsNotEmpty/TrimEx extensions; all user strings from ResUI; UI messages via NoticeManager -> AppEvents EventChannel<T>; dialogs via AppManager.Instance.WindowDialog.ShowDialogAsync; immutability via record 'with' + JsonUtils.DeepCopy (CoreConfigContext must stay a snapshot — ShouldRunAsSudo reads it). ProfileItem has a ConfigVersion migration ladder (v2->v3 protocol extras, v3->v4 transport extras); extend by adding a migration, not inline parsing.\n\nTraps: GlobalHotKeys is a git submodule (Desktop build fails without --recursive); ConfigHandler.cs is ~3000 lines — search before editing; FmtHandlerTests enforces parity between Global.ProtocolShares and test factories; sing-box update is locked <=1.14.x; test CI only triggers on ServiceLib paths; exceptions are widely swallowed — check Logging.SaveLog output when debugging. Verify every file path exists before citing it."
+  },
+  "analysis": {
+    "agent": "devin",
+    "model": "swe-2",
+    "runtime_ms": null,
+    "cost_usd": null,
+    "collected_at": "2026-09-22T16:29:37.264Z"
   }
 }

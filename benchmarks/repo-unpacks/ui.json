@@ -1010,7 +1010,7 @@
         {
           "path": "CONTRIBUTING.md",
           "bytes": 6569,
-          "preview": "# Contributing\n\nThanks for your interest in contributing to ui.shadcn.com. We're happy to have you here.\n\nPlease take a moment to review this document before submitting your first pull request. We also strongly recommend that you check for open issues and pull requests to see if someone else is working on something similar.\n\nIf you need any help, feel free to reach out to [@shadcn](https://twitter.com/shadcn).\n\n## About this repository\n\nThis repository is a monorepo.\n\n- We use [pnpm](https://pnpm.io) and [`workspaces`](https://pnpm.io/workspaces) for development.\n- We use [Turborepo](https://turbo.build/repo) as our build system.\n- We use [changesets](https://github.com/changesets/changesets) for managing releases.\n\n## Structure\n\nThis repository is structured as follows:\n\n```\napps\n\u2514\u2500\u2500 v4\n    \u251c\u2500\u2500 app\n    \u251c\u2500\u2500 components\n    \u251c\u2500\u2500 content\n    \u2514\u2500\u2500 registry\n        \u2514\u2500\u2500 new-york-v4\n            \u251c\u2500\u2500 example\n            \u2514\u2500\u2500 ui\npackages\n\u2514\u2500\u2500 shadcn\n```\n\n| Path                 | Description                              |\n| -------------------- | ---------------------------------------- |\n| `apps/v4/app`        | The Next.js application for the website. |\n| `apps/v4/components` | The React components for the website.    |\n| `apps/v4/content`    | The content for the website.             |\n| `apps/v4/registry`   | The registry for the components.         |\n| `packages/shadcn`    | The `shadcn` package.                    |\n\n## Development\n\n### Fork this repo\n\nYou can fork this repo by clicking the fork button in the top right corner of this page.\n\n### Clone on your local machine\n\n```bash\ngit clone https://github.com/your-username/ui.git\n```\n\n### Navigate to project directory\n\n```bash\ncd ui\n```\n\n### Create a new Branch\n\n```bash\ngit checkout -b my-new-branch\n```\n\n### Install dependencies\n\n```bash\npnpm install\n```\n\n### Run a workspace\n\nYou can use the `pnpm --filter=[WORKSPACE]` command to start the development process for a workspace.\n\n#### Examples\n\n1. To run the `ui.shadcn.com` website:\n\n```bash\npnpm --filter=v4 dev\n```\n\n> **Fresh clone?** The generated styles are not checked into git. Run\n> `pnpm --filter=v4 registry:build --style all` once before starting the dev\n> server. If you forget, the dev server will fail fast and tell you exactly\n> this.\n\n2. To run the `shadcn` package:\n\n```bash\npnpm --filter=shadcn dev\n```\n\n## Running the CLI Locally\n\nTo run the CLI locally, you can follow the workflow:\n\n1. Start by running the dev server:\n\n   ```bash\n   pnpm dev\n   ```\n\n2. In another terminal tab, test the CLI by running:\n\n   ```bash\n   pnpm shadcn\n   ```\n\n   To test the CLI in a specific app, use a command like:\n\n   ```bash\n   pnpm shadcn <init | add | ...> -c ~/Desktop/my-app\n   ```\n\nThis workflow ensures that you are running the most recent version of the registry and testing the CLI properly in your local environment.\n\n## Documentation\n\nThe documentation for this project is located in the `v4` workspace. You can run the documentation locally by running the following command:\n\n```bash\npnpm --filter=v4 dev\n```\n\nDocumentation is written using [MDX](https://mdxjs.com). You can find the documentation files in the `apps/v4/content/docs` directory.\n\n## Components\n\nWe use a registry system for developing components. You can find the source code for the components under `apps/v4/registry`. The components are organized by styles.\n\n```bash\napps\n\u2514\u2500\u2500 v4\n    \u2514\u2500\u2500 registry\n        \u2514\u2500\u2500 new-york-v4\n            \u251c\u2500\u2500 example\n            \u2514\u2500\u2500 ui\n```\n\nWhen adding or modifying components, please ensure that:\n\n1. You make the changes for every style.\n2. You update the documentation.\n3. You run `pnpm registry:build` to update the registry.\n\nSee [`apps/v4/registry/README.md`](apps/v4/registry/README.md) for how the\nregistry pipeline is structured and for the faster targeted build modes\n(`--style`, `--registry`, `--examples`, `--indexes`) you can use while\niterating locally. Always run the full `pnpm registry:build` before committing.\n\nNote that most generated output is not tracked in git: the installable JSON\nunder `apps/v4/public/r/styles` and the compiled styles under `apps/v4/styles`\nare gitignored and rebuilt on every deploy. Running `registry:build` will not\ndirty your working tree with generated files \u2014 only changes to the authored\nsources (e.g. `registry/bases`) and the tracked indexes are committed.\n\n## Commit Convention\n\nBefore you create a Pull Request, please check whether your commits comply with\nthe commit conventions used in this repository.\n\nWhen you create a commit we kindly ask you to follow the convention\n`category(scope or module): message` in your commit message while using one of\nthe following categories:\n\n- `feat / feature`: all changes that introduce completely new code or new\n  features\n- `fix`: changes that fix a bug (ideally you will additionally reference an\n  issue if present)\n- `refactor`: any code related change that is not a fix nor a feature\n- `docs`: changing existing or creating new documentation (i.e. README, docs for\n  usage of a lib or cli usage)\n- `build`: all changes regarding the build of the software, changes to\n  dependencies or the addition of new dependencies\n- `test`: all changes regarding tests (adding new tests or changing existing\n  ones)\n- `ci`: all changes regarding the configuration of continuous integration (i.e.\n  github actions, ci system)\n- `chore`: all changes to the repository that do not fit into any of the above\n  categories\n\n  e.g. `feat(components): add new prop to the avatar component`\n\nIf you are interested in the detailed specification you can visit\nhttps://www.conventionalcommits.org/ or check out the\n[Angular Commit Message Guidelines](https://github.com/angular/angular/blob/22b96b9/CONTRIBUTING.md#-commit-message-guidelines).\n\n## Requests for new components\n\nIf you have a request for a new component, please open a discussion on GitHub. We'll be happy to help you out.\n\n## CLI\n\nThe `shadcn` package is a CLI for adding components to your project. You can find the documentation for the CLI [here](https://ui.shadcn.com/docs/cli).\n\nAny changes to the CLI should be made in the `packages/shadcn` directory. If you can, it would be great if you could add tests for your changes.\n\n## Testing\n\nTests are written using [Vitest](https://vitest.dev). You can run all the tests from the root of the repository.\n\n```bash\npnpm test\n```\n\nPlease ensure that the tests are passing when submitting a pull request. If you're adding new features, please include tests.\n"
+          "preview": "# Contributing\n\nThanks for your interest in contributing to ui.shadcn.com. We're happy to have you here.\n\nPlease take a moment to review this document before submitting your first pull request. We also strongly recommend that you check for open issues and pull requests to see if someone else is working on something similar.\n\nIf you need any help, feel free to reach out to [@shadcn](https://twitter.com/shadcn).\n\n## About this repository\n\nThis repository is a monorepo.\n\n- We use [pnpm](https://pnpm.io) and [`workspaces`](https://pnpm.io/workspaces) for development.\n- We use [Turborepo](https://turbo.build/repo) as our build system.\n- We use [changesets](https://github.com/changesets/changesets) for managing releases.\n\n## Structure\n\nThis repository is structured as follows:\n\n```\napps\n└── v4\n    ├── app\n    ├── components\n    ├── content\n    └── registry\n        └── new-york-v4\n            ├── example\n            └── ui\npackages\n└── shadcn\n```\n\n| Path                 | Description                              |\n| -------------------- | ---------------------------------------- |\n| `apps/v4/app`        | The Next.js application for the website. |\n| `apps/v4/components` | The React components for the website.    |\n| `apps/v4/content`    | The content for the website.             |\n| `apps/v4/registry`   | The registry for the components.         |\n| `packages/shadcn`    | The `shadcn` package.                    |\n\n## Development\n\n### Fork this repo\n\nYou can fork this repo by clicking the fork button in the top right corner of this page.\n\n### Clone on your local machine\n\n```bash\ngit clone https://github.com/your-username/ui.git\n```\n\n### Navigate to project directory\n\n```bash\ncd ui\n```\n\n### Create a new Branch\n\n```bash\ngit checkout -b my-new-branch\n```\n\n### Install dependencies\n\n```bash\npnpm install\n```\n\n### Run a workspace\n\nYou can use the `pnpm --filter=[WORKSPACE]` command to start the development process for a workspace.\n\n#### Examples\n\n1. To run the `ui.shadcn.com` website:\n\n```bash\npnpm --filter=v4 dev\n```\n\n> **Fresh clone?** The generated styles are not checked into git. Run\n> `pnpm --filter=v4 registry:build --style all` once before starting the dev\n> server. If you forget, the dev server will fail fast and tell you exactly\n> this.\n\n2. To run the `shadcn` package:\n\n```bash\npnpm --filter=shadcn dev\n```\n\n## Running the CLI Locally\n\nTo run the CLI locally, you can follow the workflow:\n\n1. Start by running the dev server:\n\n   ```bash\n   pnpm dev\n   ```\n\n2. In another terminal tab, test the CLI by running:\n\n   ```bash\n   pnpm shadcn\n   ```\n\n   To test the CLI in a specific app, use a command like:\n\n   ```bash\n   pnpm shadcn <init | add | ...> -c ~/Desktop/my-app\n   ```\n\nThis workflow ensures that you are running the most recent version of the registry and testing the CLI properly in your local environment.\n\n## Documentation\n\nThe documentation for this project is located in the `v4` workspace. You can run the documentation locally by running the following command:\n\n```bash\npnpm --filter=v4 dev\n```\n\nDocumentation is written using [MDX](https://mdxjs.com). You can find the documentation files in the `apps/v4/content/docs` directory.\n\n## Components\n\nWe use a registry system for developing components. You can find the source code for the components under `apps/v4/registry`. The components are organized by styles.\n\n```bash\napps\n└── v4\n    └── registry\n        └── new-york-v4\n            ├── example\n            └── ui\n```\n\nWhen adding or modifying components, please ensure that:\n\n1. You make the changes for every style.\n2. You update the documentation.\n3. You run `pnpm registry:build` to update the registry.\n\nSee [`apps/v4/registry/README.md`](apps/v4/registry/README.md) for how the\nregistry pipeline is structured and for the faster targeted build modes\n(`--style`, `--registry`, `--examples`, `--indexes`) you can use while\niterating locally. Always run the full `pnpm registry:build` before committing.\n\nNote that most generated output is not tracked in git: the installable JSON\nunder `apps/v4/public/r/styles` and the compiled styles under `apps/v4/styles`\nare gitignored and rebuilt on every deploy. Running `registry:build` will not\ndirty your working tree with generated files — only changes to the authored\nsources (e.g. `registry/bases`) and the tracked indexes are committed.\n\n## Commit Convention\n\nBefore you create a Pull Request, please check whether your commits comply with\nthe commit conventions used in this repository.\n\nWhen you create a commit we kindly ask you to follow the convention\n`category(scope or module): message` in your commit message while using one of\nthe following categories:\n\n- `feat / feature`: all changes that introduce completely new code or new\n  features\n- `fix`: changes that fix a bug (ideally you will additionally reference an\n  issue if present)\n- `refactor`: any code related change that is not a fix nor a feature\n- `docs`: changing existing or creating new documentation (i.e. README, docs for\n  usage of a lib or cli usage)\n- `build`: all changes regarding the build of the software, changes to\n  dependencies or the addition of new dependencies\n- `test`: all changes regarding tests (adding new tests or changing existing\n  ones)\n- `ci`: all changes regarding the configuration of continuous integration (i.e.\n  github actions, ci system)\n- `chore`: all changes to the repository that do not fit into any of the above\n  categories\n\n  e.g. `feat(components): add new prop to the avatar component`\n\nIf you are interested in the detailed specification you can visit\nhttps://www.conventionalcommits.org/ or check out the\n[Angular Commit Message Guidelines](https://github.com/angular/angular/blob/22b96b9/CONTRIBUTING.md#-commit-message-guidelines).\n\n## Requests for new components\n\nIf you have a request for a new component, please open a discussion on GitHub. We'll be happy to help you out.\n\n## CLI\n\nThe `shadcn` package is a CLI for adding components to your project. You can find the documentation for the CLI [here](https://ui.shadcn.com/docs/cli).\n\nAny changes to the CLI should be made in the `packages/shadcn` directory. If you can, it would be great if you could add tests for your changes.\n\n## Testing\n\nTests are written using [Vitest](https://vitest.dev). You can run all the tests from the root of the repository.\n\n```bash\npnpm test\n```\n\nPlease ensure that the tests are passing when submitting a pull request. If you're adding new features, please include tests.\n"
         },
         {
           "path": "LICENSE.md",
@@ -16784,7 +16784,7 @@
         "steps": [
           {
             "id": "serialize",
-            "label": "JSON serialize (inventory \u2192 SQLite)",
+            "label": "JSON serialize (inventory → SQLite)",
             "ms": 0,
             "pct": 0
           },
@@ -16803,5 +16803,890 @@
         ]
       }
     ]
+  },
+  "report": {
+    "overview": "shadcn/ui is a pnpm+turbo monorepo centered on the `shadcn` CLI (packages/shadcn, v4.21.0), which scaffolds projects and copies registry-hosted component source files directly into a user's codebase, transforming imports/CSS vars/RSC markers per project config. apps/v4 is ui.shadcn.com — a Next.js 16 + fumadocs site that authors the component registry (registry/bases, registry/styles) and publishes it as static JSON under public/r, which the CLI fetches by default from https://ui.shadcn.com/r. Supporting published packages are @shadcn/react (unstyled primitives) and @shadcn/helpers (AI/chat utilities); the CLI also embeds a stdio MCP server and ships agent skills under skills/.",
+    "system_map": {
+      "summary": "The repo is a pnpm 10 + turbo monorepo. The shippable core is packages/shadcn (the `shadcn` CLI, commander-based, bundled to dist/ by tsup). apps/v4 is the Next.js site that both documents components and produces the installable registry JSON consumed by the CLI. packages/react and packages/helpers are small published support libraries. templates/* are standalone starter apps (outside the pnpm workspace) used by `shadcn init`. skills/ holds agent-facing SKILL.md bundles. CI is GitHub Actions; releases go through changesets plus npm publish scripts.",
+      "claims": [
+        {
+          "claim": "Monorepo orchestration: root package.json scripts delegate to turbo (build/lint/typecheck/format) and pnpm filters; pnpm-workspace.yaml scopes workspaces to apps/* and packages/* — templates/* are deliberately NOT workspace packages and are synced via scripts/sync-templates.sh.",
+          "sources": [
+            "package.json",
+            "pnpm-workspace.yaml",
+            "turbo.json",
+            "scripts/sync-templates.sh"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CLI entrypoint: packages/shadcn/src/index.ts creates a commander program named 'shadcn' and registers 13 subcommands (init/create, apply, add, diff, docs, view, search, migrate, eject, info, build, mcp, preset, registry) then calls program.parse().",
+          "sources": [
+            "packages/shadcn/src/index.ts#L23-52"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The CLI ships as the `shadcn` npm package with bin=dist/index.js, built by tsup (ESM, minified, dts) with subpath exports ./registry, ./schema, ./mcp, ./utils, ./icons, ./preset, and ./tailwind.css (copied post-build via tsup onSuccess).",
+          "sources": [
+            "packages/shadcn/package.json",
+            "packages/shadcn/tsup.config.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "apps/v4 is the ui.shadcn.com site: Next.js 16.3.3 with fumadocs docs, an app router tree under app/(app) (docs, blocks, charts, examples, create flow) plus dynamic route handlers (app/r/registries.json/route.ts, app/(app)/llm/[[...slug]]/route.ts, app/api/search/route.ts).",
+          "sources": [
+            "apps/v4/package.json",
+            "apps/v4/app/r/registries.json/route.ts",
+            "apps/v4/app/api/search/route.ts",
+            "apps/v4/source.config.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The site doubles as the default registry server: `pnpm registry:build` builds @shadcn/react, @shadcn/helpers, and shadcn, then runs scripts/build-registry.mts, which exports installable item JSON into apps/v4/public/r (871 generated files are committed to git).",
+          "sources": [
+            "apps/v4/package.json",
+            "apps/v4/scripts/build-registry.mts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The CLI's default registry endpoint is https://ui.shadcn.com/r (REGISTRY_URL env override) and the built-in '@shadcn' namespace maps to `${REGISTRY_URL}/styles/{style}/{name}.json`.",
+          "sources": [
+            "packages/shadcn/src/registry/constants.ts#L5-46"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "@shadcn/react publishes unstyled React primitives (message-scroller, questionnaire, use-render) with both node and browser vitest configs; @shadcn/helpers publishes AI chat/stream helpers split into core, ai-sdk, and tanstack-ai modules.",
+          "sources": [
+            "packages/react/package.json",
+            "packages/react/vitest.browser.config.ts",
+            "packages/helpers/package.json"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Project scaffolding uses a template registry (packages/shadcn/src/templates/index.ts) mapping keys next/vite/start/react-router/astro/laravel to createTemplate configs whose templateDir resolves under SHADCN_TEMPLATE_DIR (dev) pointing at templates/*-app / *-monorepo dirs.",
+          "sources": [
+            "packages/shadcn/src/templates/index.ts#L11-18",
+            "packages/shadcn/src/templates/create-template.ts",
+            "packages/shadcn/package.json"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "An MCP server is embedded in the CLI: `shadcn mcp` loads env files then connects a @modelcontextprotocol/sdk Server over StdioServerTransport; `shadcn mcp init` writes client config for claude, cursor, vscode, codex, and opencode.",
+          "sources": [
+            "packages/shadcn/src/commands/mcp.ts#L90-107",
+            "packages/shadcn/src/mcp/index.ts#L27-53"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Test orchestration is a vitest workspace joining the root config (unit tests, fixtures/templates excluded) with packages/tests (e2e). The root `pnpm test` first builds the v4 registry and starts the site on :4000 via start-server-and-test.",
+          "sources": [
+            "vitest.workspace.ts",
+            "vitest.config.ts",
+            "package.json"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Releases are driven by changesets (.changeset/config.json ignores v4 and tests) and .github/workflows/release.yml, which publishes the shadcn package to npm on main pushes and on PRs labeled 'release: beta'/'release: rc' (pub:beta/pub:rc/pub:next/pub:release scripts).",
+          "sources": [
+            ".changeset/config.json",
+            ".github/workflows/release.yml",
+            "packages/shadcn/package.json"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "skills/ ships agent-facing skill bundles: skills/shadcn (SKILL.md + cli.md/mcp.md/registry.md + rules/ + evals/) and skills/migrate-radix-to-base (mapping docs) — consumed by AI coding tools, not by the CLI at runtime.",
+          "sources": [
+            "skills/shadcn/SKILL.md",
+            "skills/migrate-radix-to-base/SKILL.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Node engine requirement is >=20.18.1 and packageManager is pinned to pnpm@10.33.4; pnpm-workspace.yaml sets minimumReleaseAge=2880 (48h) with explicit excludes for fresh deps — a supply-chain guard.",
+          "sources": [
+            "packages/shadcn/package.json",
+            "package.json",
+            "pnpm-workspace.yaml"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "feature_catalog": {
+      "summary": "User-facing surface is dominated by the CLI's subcommands plus the website's create/registry endpoints. The CLI covers project init/scaffolding, component add/search/view/docs, migrations, registry authoring (build/validate/add), presets, dry-run/diff, an MCP server for AI clients, and eject. The site adds docs pages, a /init endpoint returning registry:base items for the create flow, an LLM docs feed, registry directory, and fuzzy search API.",
+      "claims": [
+        {
+          "claim": "`shadcn init` (alias `create`): scaffolds new projects from templates or initializes existing ones; flags include --template, --base (base/radix/aria), --monorepo, --preset, --defaults, --rtl/--no-rtl, --pointer, --reinstall, --css-variables; resolves presets to /init URLs and merges a registry:base item into config.",
+          "sources": [
+            "packages/shadcn/src/commands/init.ts#L125-163"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`shadcn add`: installs registry items addressed by name, URL, local file, github: address, or @namespace/item; supports --all, --overwrite, --path, --dry-run, --diff [path], --view [path]; falls back to an interactive multiselect over the registry index filtered to registry:ui entries.",
+          "sources": [
+            "packages/shadcn/src/commands/add.ts#L50-66",
+            "packages/shadcn/src/commands/add.ts#L330-385"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`shadcn build`: compiles a registry.json (default ./registry.json) into per-item JSON files under an output dir (default ./public/r), supporting include-resolution via readRegistryWithIncludes and writing a catalog registry.json alongside items.",
+          "sources": [
+            "packages/shadcn/src/commands/build.ts#L21-102",
+            "packages/shadcn/src/registry/loader.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`shadcn search` performs fuzzy search across configured registries using fuzzysort over item names/descriptions with type filtering and pagination (SEARCH_CONCURRENCY=8).",
+          "sources": [
+            "packages/shadcn/src/commands/search.ts",
+            "packages/shadcn/src/registry/search.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`shadcn view` prints item details and `shadcn docs` returns docs/API/usage examples for components; `shadcn info` reports project config (used by the agent skill via `info --json`).",
+          "sources": [
+            "packages/shadcn/src/commands/view.ts",
+            "packages/shadcn/src/commands/docs.ts",
+            "packages/shadcn/src/commands/info.ts",
+            "skills/shadcn/SKILL.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`shadcn migrate` runs codemods living in src/migrations: migrate-radix (Radix→Base UI), migrate-icons, migrate-base-color, migrate-rtl, migrate-cn.",
+          "sources": [
+            "packages/shadcn/src/commands/migrate.ts",
+            "packages/shadcn/src/migrations/migrate-radix.ts",
+            "packages/shadcn/src/migrations/migrate-icons.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`shadcn apply` applies a preset to an existing project; `shadcn preset` groups decode/url/open/resolve subcommands for preset codes; `shadcn eject` inlines shadcn/tailwind.css and removes the dependency; `shadcn diff` is deprecated in favor of `add --diff`.",
+          "sources": [
+            "packages/shadcn/src/commands/apply.ts",
+            "packages/shadcn/src/commands/preset.ts#L216-217",
+            "packages/shadcn/src/commands/eject.ts",
+            "packages/shadcn/src/commands/diff.ts#L42-43"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`shadcn registry` group currently exposes `registry add` (add registries to components.json) and `registry validate` (validate a shadcn registry); deprecated/unused registry:mcp and registry build modules exist under commands/registry but are not registered.",
+          "sources": [
+            "packages/shadcn/src/commands/registry/index.ts",
+            "packages/shadcn/src/commands/registry/add.ts",
+            "packages/shadcn/src/commands/registry/validate.ts",
+            "packages/shadcn/src/commands/registry/mcp.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The MCP server exposes 7 tools: get_project_registries, list_items_in_registries, search_items_in_registries, view_items_in_registries, get_item_examples_from_registries, get_add_command_for_items, get_audit_checklist — all reading the project's components.json via getMcpConfig.",
+          "sources": [
+            "packages/shadcn/src/mcp/index.ts#L55-187"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Site create flow: GET /init returns a registry:base item JSON built from query params (theme/font/base/radius) via buildRegistryBase/parseDesignSystemConfig; /init/md returns markdown setup instructions; /init/v0 is a separate v0 variant; ?track=1 fires a Vercel analytics 'create_app' event.",
+          "sources": [
+            "apps/v4/app/(app)/(create)/init/route.ts",
+            "apps/v4/app/(app)/(create)/init/md/route.ts",
+            "apps/v4/app/(app)/(create)/lib/parse-config.ts",
+            "apps/v4/registry/config.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Site registry surface: /r/registries.json route serves the registries index; public/r/** serves per-item JSON; /llm/[[...slug]] emits LLM-friendly MDX (base detection for base/radix/aria styles); /api/search is fumadocs createFromSource.",
+          "sources": [
+            "apps/v4/app/r/registries.json/route.ts",
+            "apps/v4/app/(app)/llm/[[...slug]]/route.ts",
+            "apps/v4/app/api/search/route.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Registry item taxonomy: registryItemTypeSchema enumerates types (registry:ui, block, component, lib, hook, theme, style, base, font, file, item, example, internal, page, etc.) driving install behavior (e.g. registry:theme/style/base skip style-index install and trigger CSS-var overwrite prompts).",
+          "sources": [
+            "packages/shadcn/src/registry/schema.ts#L81-100",
+            "packages/shadcn/src/commands/add.ts#L117-153"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Namespaces: items can be addressed as @registry/item with per-registry URL templates in components.json registries; ensureRegistriesInConfig can discover registries from the served registries index and package.json-declared registries.",
+          "sources": [
+            "packages/shadcn/src/registry/builder.ts#L22-56",
+            "packages/shadcn/src/utils/registries.ts",
+            "packages/shadcn/src/registry/namespaces.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Deprecated/hidden component gating: DEPRECATED_COMPONENTS (toast, toaster) hard-exit with a warning on Tailwind v4 projects unless allowed per base; COMPONENTS_HIDDEN_FROM_SELECTION hides sonner for base projects.",
+          "sources": [
+            "packages/shadcn/src/registry/constants.ts#L179-203",
+            "packages/shadcn/src/commands/add.ts#L387-430"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "data_flow": {
+      "summary": "Input boundaries are CLI args, components.json (cosmiconfig), env files (.env*), and registry item JSON fetched over HTTP(S)/local disk/GitHub. Zod schemas validate all external data. Resolution turns item addresses into URLs via per-registry templates with {name}/{style} placeholders and ${ENV} expansion; resolveRegistryTree recursively merges items+dependencies into one install tree. Updaters then write package.json deps, tailwind config, env files, fonts, transformed source files, and finally CSS. The website's build-registry.mts is the upstream producer of the JSON the CLI consumes.",
+      "claims": [
+        {
+          "claim": "Config input: a cosmiconfig explorer (searchPlaces: ['components.json']) loads raw config, rawConfigSchema validates, then resolveConfigPaths resolves tsconfig/jsconfig path aliases (components/ui/lib/hooks/utils) into resolvedPaths — tsconfig load failure throws.",
+          "sources": [
+            "packages/shadcn/src/utils/get-config.ts#L26-116"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Item address resolution order in fetchRegistryItems: github: scheme → fetchGitHubRegistryItem; local file → fetchRegistryLocal (with ~ expansion, zod parse); URL → fetchRegistry+parse; '@ns/item' → resolveRegistryItemsFromRegistries; bare name → `styles/{config.style ?? 'new-york-v4'}/{name}.json` under REGISTRY_URL.",
+          "sources": [
+            "packages/shadcn/src/registry/resolver.ts#L81-133",
+            "packages/shadcn/src/registry/fetcher.ts#L143-176"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Registry URL building substitutes {name} and {style} placeholders, expands ${ENV_VAR} via expandEnvVars (from AsyncLocalStorage registry env context), appends configured query params, and builds auth headers that are dropped if expansion leaves them empty.",
+          "sources": [
+            "packages/shadcn/src/registry/builder.ts#L58-146",
+            "packages/shadcn/src/registry/env.ts",
+            "packages/shadcn/src/registry/context.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "HTTP fetch path: fetchRegistry → resolveRegistryUrl (v0 /chat/b/ URLs get /json suffix; relative paths prefixed with REGISTRY_URL) → fetchWithProxy (manual redirect loop, SOCKS via ALL_PROXY, EnvHttpProxyAgent for HTTP(S)_PROXY, per-origin header re-scoping) → status-mapped errors (401/403/404/410) → response.json().",
+          "sources": [
+            "packages/shadcn/src/registry/fetcher.ts#L26-127",
+            "packages/shadcn/src/registry/builder.ts#L155-168",
+            "packages/shadcn/src/registry/proxy.ts#L93-173"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "resolveRegistryTree recursively resolves registryDependencies (re-rewriting @namespaced deps through the registries config, erroring RegistryNotConfiguredError when unset) and merges each item's files/cssVars/css/envVars/dependencies/devDependencies/fonts into a single install tree validated by registryResolvedItemsTreeSchema.",
+          "sources": [
+            "packages/shadcn/src/registry/resolver.ts#L148-200",
+            "packages/shadcn/src/registry/schema.ts#L272"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Install pipeline: addComponents → getWorkspaceConfig decides monorepo path (addWorkspaceComponents routes files to ui/hooks/lib workspace targets) vs addProjectComponents; both run resolveAndValidateRegistryTree → massageTreeForFonts → updateDependencies → updateTailwindConfig → updateEnvVars → updateFonts → updateFiles → updateCss (CSS written last so watchers rebuild after files land).",
+          "sources": [
+            "packages/shadcn/src/utils/add-components.ts#L53-152",
+            "packages/shadcn/src/utils/add-components.ts#L154-392"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "File writing: updateFiles resolves each file's target path (alias-aware, src-dir aware, --path override), skips identical content via isContentSame, merges .env files instead of overwriting, and runs the transformer chain: transformImport, transformRsc, transformCssVars, transformTwPrefixes, transformIcons, transformMenu, transformAsChild, transformRtl, conditional transformNext (Next 16 middleware), transformFont, transformCleanup.",
+          "sources": [
+            "packages/shadcn/src/utils/updaters/update-files.ts#L107-220"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Env input boundary: loadEnvFiles loads .env.local, .env.development.local, .env.development, .env from cwd via @dotenvx (no overload) so private-registry ${ENV} placeholders in URLs/headers/params resolve at fetch time.",
+          "sources": [
+            "packages/shadcn/src/utils/env-loader.ts",
+            "packages/shadcn/src/registry/env.ts",
+            "packages/shadcn/src/commands/add.ts#L75"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "components.json write path (init): existing config (or backup) is deepmerged with new config; discovered registries are appended (built-ins filtered out); registry:base config merged last; design settings (menuColor/menuAccent/rtl/iconLibrary) are propagated into each workspace package's components.json; file written with 2-space JSON.",
+          "sources": [
+            "packages/shadcn/src/commands/init.ts#L713-823"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Registry production: authored sources live in apps/v4/registry/bases/{base,radix,aria} plus registry/styles/style-*.css; build-registry.mts builds STYLE_COMBINATIONS (base × style), invokes the shadcn CLI to export public/r/styles/<style>/*.json, emits ui-rtl variants for nova styles, and formats outputs.",
+          "sources": [
+            "apps/v4/scripts/build-registry.mts",
+            "apps/v4/registry/styles",
+            "apps/v4/registry/bases"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Dependency writes: updateDependencies resolves the package manager (npm/pnpm/yarn/bun/deno/expo special-cased) and execa's an install of registry-declared dependencies/devDependencies; React 19 + npm triggers a peer-deps warning pointing at ui.shadcn.com/react-19.",
+          "sources": [
+            "packages/shadcn/src/utils/updaters/update-dependencies.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "In-process caching: fetchRegistry dedupes in-flight fetches in a module-level Map keyed by url + sha256 of sorted headers; registry headers themselves live in AsyncLocalStorage context set by setRegistryHeaders and cleared via clearRegistryContext in each command's finally.",
+          "sources": [
+            "packages/shadcn/src/registry/fetcher.ts#L20-24",
+            "packages/shadcn/src/registry/context.ts",
+            "packages/shadcn/src/commands/add.ts#L325-327"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Init URL contract: the site's /init endpoint emits a registry:base item whose `config` field the CLI reads via resolveRegistryBaseConfig; the CLI also strips the 'track' param before fetching and force-sets the 'base' param on the first component URL.",
+          "sources": [
+            "apps/v4/app/(app)/(create)/init/route.ts",
+            "packages/shadcn/src/commands/init.ts#L558-578",
+            "packages/shadcn/src/preset/presets.ts"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "behavior_traces": {
+      "summary": "Traced flows: CLI startup, `init` (including empty-project scaffold and registry:base merge), `add` (including missing-config fallback into runInit and dry-run), the install pipeline inside addComponents, the registry fetch pipeline, `build`, the MCP server, and the website's registry:build production path.",
+      "claims": [
+        {
+          "claim": "Startup: node dist/index.js → imports 13 command modules → new Command().name('shadcn').version(pkg.version) → addCommand(init, apply, add, diff, docs, view, search, migrate, eject, info, build, mcp, preset, registry) → program.parse() → per-command .action handler; SIGINT/SIGTERM exit 0.",
+          "sources": [
+            "packages/shadcn/src/index.ts#L1-52"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "init flow: initOptionsSchema.parse → validate --template/--preset → monorepo-root guard → existing components.json overwrite prompt + optional --reinstall component enumeration → template/base/preset prompts → resolveInitUrl → loadEnvFiles → createFileBackup(components.json) → resolveRegistryBaseConfig(first URL) → runInit.",
+          "sources": [
+            "packages/shadcn/src/commands/init.ts#L163-601",
+            "packages/shadcn/src/utils/file-helper.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "runInit: resolveTemplate(template,{monorepo}) → (skip preflight for monorepo template init) preFlightInit → on MISSING_DIR_OR_EMPTY_PROJECT createProject() → getProjectConfig → template.init(...) early-return for template-managed init, else promptForMinimalConfig/promptForConfig → confirm write → ensureRegistriesInConfig → write components.json → getWorkspaceConfig propagation → explorer.clearCaches() → addComponents(['index', url..., 'button']) → templatePostInit.",
+          "sources": [
+            "packages/shadcn/src/commands/init.ts#L603-842",
+            "packages/shadcn/src/preflights/preflight-init.ts",
+            "packages/shadcn/src/utils/create-project.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "add flow: addOptionsSchema.parse → loadEnvFiles → getConfig (createConfig fallback) → ensureRegistriesInConfig → getProjectInfo → warnForDeprecatedComponents → getRegistryItems([first]) to learn item type (theme/style/base skip index, universal items short-circuit to addComponents) → promptForRegistryComponents if none → preFlightAdd → on MISSING_CONFIG prompt then runInit(...) → on MISSING_DIR createProject+runInit → dryRunComponents+formatDryRunResult if --dry-run/--diff/--view → addComponents → updateAppIndex for v0 /chat/b/ blocks.",
+          "sources": [
+            "packages/shadcn/src/commands/add.ts#L67-328",
+            "packages/shadcn/src/preflights/preflight-add.ts",
+            "packages/shadcn/src/utils/update-app-index.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Install internals: addComponents → getWorkspaceConfig → addWorkspaceComponents (files grouped by TargetAliasKey ui/hooks/lib, per-target updateFiles) or addProjectComponents → resolveAndValidateRegistryTree → validateFilesTarget → massageTreeForFonts → getSupportedFontMarkers → updateDependencies → updateTailwindConfig → updateEnvVars → updateFonts → updateFiles → resolveOverwriteCssVars → updateCss → log tree.docs.",
+          "sources": [
+            "packages/shadcn/src/utils/add-components.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Fetch trace: resolveRegistryItemsFromRegistries (URL+headers per item, setRegistryHeaders) → fetchRegistryItems → per-item dispatch → fetchRegistry → resolveRegistryUrl → getRegistryHeadersFromContext → fetchWithProxy manual redirect loop → non-ok maps to RegistryUnauthorized/NotFound/Gone/Forbidden/FetchError with RFC-7807 detail parsing → registryItemSchema.parse → RegistryParseError on failure.",
+          "sources": [
+            "packages/shadcn/src/registry/resolver.ts#L46-133",
+            "packages/shadcn/src/registry/fetcher.ts#L26-141",
+            "packages/shadcn/src/registry/errors.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "build trace: preFlightBuild(resolvePaths) → readRegistryWithIncludes(registryFile) → createRegistryCatalog → per item createRegistryItem → mkdir+write outputDir/<name>.json (nested names OK) → write/copy registry.json to outputDir.",
+          "sources": [
+            "packages/shadcn/src/commands/build.ts#L35-102",
+            "packages/shadcn/src/registry/loader.ts",
+            "packages/shadcn/src/preflights/preflight-registry.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "mcp serve trace: shadcn mcp → loadEnvFiles(cwd) → new StdioServerTransport → server.connect → ListToolsRequestSchema returns 7 tools → CallToolRequestSchema → withRegistryContext(handleCallTool, {onGitHubAuthNotice}) → per-tool zod arg parse → getMcpConfig(process.cwd()) → searchRegistries/getRegistryItems → text content responses; errors return isError content blocks.",
+          "sources": [
+            "packages/shadcn/src/commands/mcp.ts#L98-107",
+            "packages/shadcn/src/mcp/index.ts#L189-598"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Site registry:build trace: pnpm registry:build → build @shadcn/react → @shadcn/helpers → shadcn → bun scripts/build-registry.mts → STYLE_COMBINATIONS from BASES×STYLES → writes registry/bases/__index__.tsx, temp registry/<base-style> trees, registry/__index__.tsx, examples/__index__.tsx → exports public/r/* via the shadcn CLI → copies compiled ui/* into styles/<style>/ui (+ui-rtl for nova) → prettier → cleanup.",
+          "sources": [
+            "apps/v4/package.json",
+            "apps/v4/scripts/build-registry.mts",
+            "apps/v4/registry/bases.ts",
+            "apps/v4/registry/styles.tsx"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Dry-run trace: --dry-run/--diff/--view short-circuit before writes — ensureRegistriesInConfig with writeFile:false → dryRunComponents(components, config, {overwrite}) runs the same resolve+transform machinery in memory → formatDryRunResult prints per-file diff or content.",
+          "sources": [
+            "packages/shadcn/src/commands/add.ts#L289-311",
+            "packages/shadcn/src/utils/dry-run.ts",
+            "packages/shadcn/src/utils/dry-run-formatter.ts"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "testing_signals": {
+      "summary": "Vitest is the single framework. packages/shadcn has dense colocated unit tests plus fixture dirs; packages/tests is a heavier e2e layer that executes the built CLI against copied project fixtures and a stub registry server; @shadcn/react adds browser-mode tests. apps/v4 has only a handful of tests and no coverage config exists anywhere. The root `pnpm test` gate requires building the registry and running the v4 dev server on :4000.",
+      "claims": [
+        {
+          "claim": "Root vitest workspace = ./vitest.config.ts (excludes node_modules/fixtures/templates/packages/tests) + ./packages/tests/vitest.config.ts; vite-tsconfig-paths plugin resolves the '@/src/*' alias used throughout packages/shadcn.",
+          "sources": [
+            "vitest.workspace.ts",
+            "vitest.config.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "packages/shadcn unit tests are colocated *.test.ts across commands/, registry/, utils/, migrations/, preflights/, preset/ (e.g. resolver.test.ts 2588 LOC, update-files.test.ts 2634 LOC) with 8s testTimeout; fixtures live in test/fixtures (config-*, frameworks/*, project-* variants).",
+          "sources": [
+            "packages/shadcn/vitest.config.ts",
+            "packages/shadcn/src/registry/resolver.test.ts",
+            "packages/shadcn/test/fixtures"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "HTTP mocking uses msw (devDep); proxy.ts deliberately keeps globalThis.fetch because MSW's Node adapter patches it — importing undici fetch would bypass interception and break registry tests (documented in-code).",
+          "sources": [
+            "packages/shadcn/package.json",
+            "packages/shadcn/src/registry/proxy.ts#L144-147"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "packages/tests e2e: vitest globals, 120s timeouts, maxConcurrency 4, globalSetup src/utils/setup.ts; helpers copy fixtures (next-app, vite-app, remix-app, vite-monorepo-imports, registry, etc.) to a temp dir and run `node packages/shadcn/dist/index.js` via execa with CI=true.",
+          "sources": [
+            "packages/tests/vitest.config.ts",
+            "packages/tests/src/utils/helpers.ts",
+            "packages/tests/src/utils/setup.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "e2e registry isolation: src/utils/registry.ts spins a real http server (default port 4444) serving fake /r endpoints incl. registries.json; REGISTRY_URL env (default http://localhost:4000/r) points tests at the v4 dev server for the full suite.",
+          "sources": [
+            "packages/tests/src/utils/registry.ts",
+            "packages/tests/src/utils/helpers.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "e2e coverage: packages/tests/src/tests covers init, add, apply, view, search, registries, typeset — asserting written components.json shape, lib/utils.ts content, package.json deps, and globals.css variables.",
+          "sources": [
+            "packages/tests/src/tests/init.test.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CI test.yml runs three jobs per PR: `pnpm test` (root — which itself spins up v4 on :4000), `pnpm --filter=@shadcn/react test`, `pnpm --filter=@shadcn/helpers test`, all on Node 22 + pnpm 10.33.4; browser-tests.yml additionally runs @shadcn/react browser tests only when packages/react changes.",
+          "sources": [
+            ".github/workflows/test.yml",
+            ".github/workflows/browser-tests.yml",
+            "package.json"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "@shadcn/react has dedicated browser tests (vitest.browser.config.ts + vitest.browser.setup.ts) including a perf browser test for message-scroller; @shadcn/helpers has colocated unit tests for core/ai-sdk modules.",
+          "sources": [
+            "packages/react/vitest.browser.config.ts",
+            "packages/react/src/message-scroller/message-scroller.perf.browser.test.tsx",
+            "packages/helpers/src/core/chat.test.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "apps/v4 is sparsely tested: only a few *.test.ts exist (registry/calendar.test.ts, registry/config.test.ts, app/r/registries.json/route.test.ts); the Next.js UI, create-flow routes, and build-registry.mts pipeline have no direct tests — correctness relies on registry:health/monitor CI jobs.",
+          "sources": [
+            "apps/v4/registry/calendar.test.ts",
+            "apps/v4/app/r/registries.json/route.test.ts",
+            "apps/v4/scripts/monitor-registries.mts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Registry integrity is CI-gated: validate-registries.yml runs scripts/validate-registries.mts (and blocks reserved namespaces) when apps/v4/registry/directory.json changes; monitor-registries.yml runs phased health prepare/check/publish scripts.",
+          "sources": [
+            ".github/workflows/validate-registries.yml",
+            "apps/v4/scripts/validate-registries.mts",
+            "apps/v4/registry/directory.json"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "No coverage tooling, snapshots exist only for transformers/updaters (__snapshots__ dirs), and there are no tests for the MCP tools layer (mcp/utils.test.ts exists but server handlers are untested) — likely gap areas.",
+          "sources": [
+            "packages/shadcn/src/utils/transformers/__snapshots__",
+            "packages/shadcn/src/mcp/utils.test.ts",
+            "packages/shadcn/src/mcp/index.ts"
+          ],
+          "kind": "inference"
+        }
+      ]
+    },
+    "risk_map": {
+      "summary": "The dominant risk is supply-chain-style: remote registry JSON drives arbitrary file writes, env-file edits, and package installs inside user projects. Mitigations exist (isSafeTarget path validation, per-origin header scoping on redirects, typed errors, header-safe token checks) but content itself is trusted. Secondary risks: a huge init.ts action with process.exit calls, dead command modules, committed generated registry output, canary deps in the site, and an always-`latest` MCP install instruction.",
+      "claims": [
+        {
+          "claim": "Registry items are a remote-code trust boundary: fetched file.content is written into the user's project after validateFilesTarget checks each target/path with isSafeTarget (null bytes, iterative URL-decode traversal, drive letters, absolute-path containment inside cwd) — paths are guarded, file contents are not.",
+          "sources": [
+            "packages/shadcn/src/utils/add-components.ts#L452-471",
+            "packages/shadcn/src/utils/is-safe-target.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Private-registry secrets ride in headers/params expanded from ${ENV}; fetchWithProxy follows up to 5 redirects manually and re-attaches caller headers only for same-origin hops (Accept/User-Agent survive cross-origin) — deliberate leak prevention that must be preserved.",
+          "sources": [
+            "packages/shadcn/src/registry/proxy.ts#L84-132",
+            "packages/shadcn/src/registry/builder.ts#L84-146"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Shell-out surface: updateDependencies execa's package-manager installs of registry-declared deps; `mcp init` runs `<pm> add -D shadcn@latest`; github-cli transport execa's `gh api` with 15s timeout — item-controlled dependency names reach the package manager.",
+          "sources": [
+            "packages/shadcn/src/utils/updaters/update-dependencies.ts",
+            "packages/shadcn/src/commands/mcp.ts#L155-217",
+            "packages/shadcn/src/registry/github-cli.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "GitHub item fetching supports GH_TOKEN/GITHUB_TOKEN tokens or the `gh` CLI; tokens are validated against a printable-ASCII pattern before use and GitHubTransportError carries only sanitized fields — raw subprocess output is intentionally never attached.",
+          "sources": [
+            "packages/shadcn/src/registry/github-cli.ts",
+            "packages/shadcn/src/registry/github-auth.ts",
+            "packages/shadcn/src/registry/github.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "init.ts is a 1049-line commander action with ~10 process.exit calls inside prompts; components.json is backed up via FILE_BACKUP_SUFFIX and restored through a process 'exit' listener — fragile control flow where early exits must not leak backups or half-written config.",
+          "sources": [
+            "packages/shadcn/src/commands/init.ts#L163-601",
+            "packages/shadcn/src/utils/file-helper.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Dead command modules: packages/shadcn/src/commands/registry/build.ts and commands/registry/mcp.ts are exported but never registered — the `registry` command only adds `add` and `validate`; stale duplicates of live functionality (build lives at commands/build.ts).",
+          "sources": [
+            "packages/shadcn/src/commands/registry/index.ts",
+            "packages/shadcn/src/commands/registry/build.ts",
+            "packages/shadcn/src/commands/registry/mcp.ts",
+            "packages/shadcn/src/commands/build.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Generated output is committed: 871 files under apps/v4/public/r are tracked in git while also being build-registry.mts 'persistent outputs' — drift between authored registry sources and committed artifacts is possible if build is skipped before commit.",
+          "sources": [
+            "apps/v4/scripts/build-registry.mts",
+            "apps/v4/package.json"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Registry items can merge env vars into user .env files (updateEnvVars + env-file merge logic in update-files) — a malicious registry could inject or overwrite environment config.",
+          "sources": [
+            "packages/shadcn/src/utils/updaters/update-env-vars.ts",
+            "packages/shadcn/src/utils/updaters/update-files.ts#L137-142",
+            "packages/shadcn/src/utils/env-helpers.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "apps/v4 pins canary/prerelease deps (@ai-sdk/* canary builds, ai: 'canary', @tanstack/ai betas) — the site/registry build is exposed to upstream instability.",
+          "sources": [
+            "apps/v4/package.json"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "MCP install instructions hardcode `shadcn@latest` (SHADCN_MCP_VERSION='latest') and tell clients to run `npx shadcn@latest mcp` — no version pinning for the server AI clients will execute.",
+          "sources": [
+            "packages/shadcn/src/commands/mcp.ts#L20-88"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Module-level registryCache in fetcher.ts persists for the process lifetime keyed by url+headers hash; in the long-lived MCP server this can serve stale items (mitigated by useCache:false in MCP tool calls).",
+          "sources": [
+            "packages/shadcn/src/registry/fetcher.ts#L20-24",
+            "packages/shadcn/src/mcp/index.ts#L284-292"
+          ],
+          "kind": "inference"
+        },
+        {
+          "claim": "init propagates design settings into every workspace package's components.json (writes outside the top-level cwd's own config) — a failed run mid-loop could leave inconsistent workspace configs.",
+          "sources": [
+            "packages/shadcn/src/commands/init.ts#L779-823"
+          ],
+          "kind": "inference"
+        }
+      ]
+    },
+    "extension_points": {
+      "summary": "Primary plug-in surfaces: the templates registry + createTemplate factory for new frameworks; the ordered transformer array for content rewrites; the updaters pipeline for new install concerns; registry item types + FILE_TYPE_TO_CONFIG_KEY for new artifact kinds; the components.json registries map for third-party registries; migrations registry for codemods; commander command table and MCP tools array for new CLI/MCP surface; presets and the /init URL contract for create flows; directory.json + validation for the public registry index.",
+      "claims": [
+        {
+          "claim": "New framework templates: add a templates/<name>-app (+ -monorepo) dir and a createTemplate entry in src/templates (fields: scaffold/create/init/postInit/files/monorepo overrides, frameworks list for getTemplateForFramework inference).",
+          "sources": [
+            "packages/shadcn/src/templates/index.ts",
+            "packages/shadcn/src/templates/create-template.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Content transforms: add a Transformer module under utils/transformers and append it to the ordered transform() array in update-files.ts (position matters — e.g. transformCleanup runs last, transformNext is conditional).",
+          "sources": [
+            "packages/shadcn/src/utils/updaters/update-files.ts#L164-198",
+            "packages/shadcn/src/utils/transformers/index.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Install concerns plug in as updaters under utils/updaters invoked from addProjectComponents/addWorkspaceComponents in a fixed order (deps → tailwind config → env vars → fonts → files → css).",
+          "sources": [
+            "packages/shadcn/src/utils/add-components.ts#L104-147"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New registry item types require extending registryItemTypeSchema/registryItemSchema (discriminated union on type) plus the FILE_TYPE_TO_CONFIG_KEY map that routes files to workspace targets, with parity on the site schema.",
+          "sources": [
+            "packages/shadcn/src/registry/schema.ts#L81-193",
+            "packages/shadcn/src/utils/add-components.ts#L227-246"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Third-party registries: users add entries to components.json `registries` with {name}/{style}/${ENV} templated URLs (+ optional headers/params); `shadcn registry add` writes them and ensureRegistriesInConfig auto-discovers @namespaces from item addresses and the registries index.",
+          "sources": [
+            "packages/shadcn/src/registry/schema.ts#L6-26",
+            "packages/shadcn/src/registry/builder.ts#L22-56",
+            "packages/shadcn/src/commands/registry/add.ts",
+            "packages/shadcn/src/utils/registries.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New CLI command: create a commander Command module under src/commands and addCommand it in index.ts; subcommand groups follow the commands/registry pattern (parent Command + .command children).",
+          "sources": [
+            "packages/shadcn/src/index.ts#L33-47",
+            "packages/shadcn/src/commands/registry/index.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New codemods: add a module under src/migrations and register it in commands/migrate.ts (existing: migrate-radix, migrate-icons, migrate-base-color, migrate-rtl, migrate-cn).",
+          "sources": [
+            "packages/shadcn/src/commands/migrate.ts",
+            "packages/shadcn/src/migrations/migrate-radix.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New MCP tool: append to the tools[] literal in the ListToolsRequestSchema handler and add a case in handleCallTool (zod-parse args, return {content:[{type:'text',text}]}; RegistryError gets formatted with code/suggestion/context).",
+          "sources": [
+            "packages/shadcn/src/mcp/index.ts#L55-187",
+            "packages/shadcn/src/mcp/index.ts#L545-598"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Presets: DEFAULT_PRESETS in src/preset + encode/decode preset codes (isPresetCode/decodePreset) resolve to site /init URLs; the site's parseDesignSystemConfig + buildRegistryBase define the server half of the contract.",
+          "sources": [
+            "packages/shadcn/src/preset/presets.ts",
+            "packages/shadcn/src/preset/preset.ts",
+            "apps/v4/app/(app)/(create)/lib/parse-config.ts",
+            "apps/v4/registry/config.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Public registry directory: community registries are listed in apps/v4/registry/directory.json, validated by scripts/validate-registries.mts, and gated by the validate-registries workflow (reserved-namespace blocklist).",
+          "sources": [
+            "apps/v4/registry/directory.json",
+            "apps/v4/scripts/validate-registries.mts",
+            ".github/workflows/validate-registries.yml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Icon libraries are pluggable via src/icons (exported as shadcn/icons) + transform-icons + the iconLibrary config field; styles/themes/fonts/base-colors are data registries under apps/v4/registry consumed by both site and build.",
+          "sources": [
+            "packages/shadcn/src/icons/index.ts",
+            "packages/shadcn/src/utils/transformers/transform-icons.ts",
+            "apps/v4/registry/themes.ts",
+            "apps/v4/registry/fonts.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Agent-facing extension: skills/*/SKILL.md bundles (with rules/ and evals/) encode usage rules for AI tools — adding a skill is a docs-only change, separate from CLI code.",
+          "sources": [
+            "skills/shadcn/SKILL.md",
+            "skills/migrate-radix-to-base/SKILL.md"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_handoff": {
+      "summary": "Most work happens in packages/shadcn (the CLI) and apps/v4 (site + registry authoring). Read the entrypoint, the two big command actions, the resolver/fetcher layer, and the updater pipeline before editing. Build the CLI before running e2e. Respect the invariants: CSS writes last, registry context cleared in finally, globalThis.fetch in proxy.ts, generated public/r is not hand-edited, and components.json is user-owned.",
+      "claims": [
+        {
+          "claim": "Read-first files: packages/shadcn/src/index.ts (command table), commands/init.ts + commands/add.ts (the two complex actions), utils/add-components.ts (install pipeline), registry/resolver.ts + registry/fetcher.ts + registry/builder.ts (fetch/addressing), registry/schema.ts (all zod contracts), utils/updaters/update-files.ts (write+transform).",
+          "sources": [
+            "packages/shadcn/src/index.ts",
+            "packages/shadcn/src/commands/init.ts",
+            "packages/shadcn/src/commands/add.ts",
+            "packages/shadcn/src/utils/add-components.ts",
+            "packages/shadcn/src/registry/schema.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Dev loop: `pnpm install`; build CLI `pnpm --filter=shadcn build` (tsup); run CLI against local site `pnpm shadcn:dev` (REGISTRY_URL=http://localhost:4000/r, SHADCN_TEMPLATE_DIR=../../templates) after `pnpm v4:dev`; unit tests `pnpm shadcn:test` (vitest run in packages/shadcn).",
+          "sources": [
+            "package.json",
+            "packages/shadcn/package.json"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "E2e tests require the built dist and the v4 site: root `pnpm test` = `pnpm --filter=v4 registry:build` + start-server-and-test on http://localhost:4000 + `turbo run test`; packages/tests executes dist/index.js — editing src without rebuilding silently tests stale code.",
+          "sources": [
+            "package.json",
+            "packages/tests/src/utils/helpers.ts",
+            "packages/shadcn/package.json"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Conventions: zod schemas validate every external input (options schemas, registryItemSchema, rawConfigSchema); interactivity via `prompts`; output via logger/highlighter/spinner wrappers; errors are typed RegistryError subclasses with code/suggestion/context; deepmerge for config merges.",
+          "sources": [
+            "packages/shadcn/src/registry/errors.ts",
+            "packages/shadcn/src/commands/init.ts",
+            "packages/shadcn/src/registry/fetcher.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Import alias: packages/shadcn source imports use '@/src/...' resolved by tsconfig paths + vite-tsconfig-paths in vitest — keep new imports on the alias, not relative chains.",
+          "sources": [
+            "vitest.config.ts",
+            "packages/shadcn/vitest.config.ts",
+            "packages/shadcn/src/commands/add.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Trap: registry/proxy.ts must keep calling globalThis.fetch (not undici's) so msw interception works in tests; redirects are manual — don't replace with redirect:'follow' or private-registry headers will leak cross-origin.",
+          "sources": [
+            "packages/shadcn/src/registry/proxy.ts#L84-153"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Trap: every command action must end with clearRegistryContext() in finally (headers/env live in AsyncLocalStorage); new commands that fetch registry items need the same discipline.",
+          "sources": [
+            "packages/shadcn/src/commands/add.ts#L325-327",
+            "packages/shadcn/src/commands/init.ts#L598-600",
+            "packages/shadcn/src/registry/context.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Trap: write CSS last — updateCss is intentionally after updateFiles so file watchers rebuild once; preserve ordering when touching the updater pipeline. Also preserve the components.json FILE_BACKUP_SUFFIX backup/restore dance in init.",
+          "sources": [
+            "packages/shadcn/src/utils/add-components.ts#L132-147",
+            "packages/shadcn/src/commands/init.ts#L164-175"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Do not hand-edit generated artifacts: apps/v4/public/r/**, registry/__index__.tsx, registry/bases/__index__.tsx, styles/<style>/ui/** are build-registry.mts outputs; edit authored sources under registry/bases, registry/styles/*.css, examples/, and registry/new-york-v4 instead.",
+          "sources": [
+            "apps/v4/scripts/build-registry.mts",
+            "apps/v4/registry/new-york-v4/registry.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Release flow: changesets (`pnpm release` = changeset version); publishing is `cd packages/shadcn && pnpm pub:beta|pub:rc|pub:next|pub:release`; release.yml auto-publishes prereleases for PRs labeled 'release: beta'/'release: rc'; commits use conventional-commit lint (.commitlintrc.json).",
+          "sources": [
+            "package.json",
+            "packages/shadcn/package.json",
+            ".github/workflows/release.yml",
+            ".commitlintrc.json"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Env vars that matter: REGISTRY_URL (registry base), SHADCN_TEMPLATE_DIR (template lookup), SHADCN_GITHUB_URL (template repo override), GH_TOKEN/GITHUB_TOKEN (github: item auth), HTTPS_PROXY/HTTP_PROXY/ALL_PROXY (fetch proxying), plus .env* files loaded per-command for ${ENV} expansion.",
+          "sources": [
+            "packages/shadcn/src/registry/constants.ts#L5-6",
+            "packages/shadcn/src/templates/create-template.ts",
+            "packages/shadcn/src/registry/github-cli.ts",
+            "packages/shadcn/src/registry/proxy.ts#L4-11",
+            "packages/shadcn/src/utils/env-loader.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Schema parity: registry/schema.ts is published as shadcn/schema and imported by apps/v4 (registryItemSchema in build-registry.mts and the /init route) — changing item shape requires updating both sides and the 871 committed public/r artifacts via a rebuild.",
+          "sources": [
+            "packages/shadcn/src/registry/schema.ts",
+            "apps/v4/scripts/build-registry.mts",
+            "apps/v4/app/(app)/(create)/init/route.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "templates/* are outside the pnpm workspace (pnpm-workspace only includes apps/*+packages/*); after editing a template, scripts/sync-templates.sh syncs them — CI templates.yml validates them.",
+          "sources": [
+            "pnpm-workspace.yaml",
+            "scripts/sync-templates.sh",
+            ".github/workflows/templates.yml"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_prompt": "You are working in the shadcn/ui monorepo (pnpm 10 + turbo). The core product is packages/shadcn — the `shadcn` CLI (commander, bundled by tsup to dist/, bin=dist/index.js) that scaffolds projects and installs registry components by writing transformed source files into a user's repo. apps/v4 is ui.shadcn.com (Next.js 16 + fumadocs): it authors the registry under apps/v4/registry/{bases,styles,new-york-v4} and emits installable JSON to apps/v4/public/r via scripts/build-registry.mts; the CLI fetches from REGISTRY_URL (default https://ui.shadcn.com/r). packages/react (@shadcn/react, unstyled primitives) and packages/helpers (AI/chat utils) are also published. templates/* are standalone starters (NOT pnpm workspaces) used by `shadcn init`.\n\nKey architecture: CLI commands live in packages/shadcn/src/commands and are registered in src/index.ts. `init` and `add` are the complex actions — both funnel into utils/add-components.ts, which resolves a registry tree (registry/resolver.ts: item addressing — name → styles/{style}/{name}.json, URL, local file, github:, @namespace) via registry/fetcher.ts (fetchWithProxy in registry/proxy.ts: manual redirects, per-origin header re-scoping, proxy env support), then runs ordered updaters: updateDependencies (execa package-manager install) → updateTailwindConfig → updateEnvVars → updateFonts → updateFiles (transformer chain: transformImport, transformRsc, transformCssVars, transformTwPrefixes, transformIcons, transformMenu, transformAsChild, transformRtl, transformNext?, transformFont, transformCleanup) → updateCss LAST (watcher rebuild invariant). Config comes from components.json via cosmiconfig + zod (registry/schema.ts is the contract — published as shadcn/schema and shared with apps/v4). Private registries use ${ENV} placeholders expanded from .env* files loaded by utils/env-loader.ts; per-request auth headers live in AsyncLocalStorage (registry/context.ts) — always call clearRegistryContext() in a command's finally. The CLI also embeds a stdio MCP server (src/mcp) exposing 7 tools over the same registry layer.\n\nRules for edits: validate all external input with zod; use logger/highlighter/spinner and prompts for UX; keep '@/src/*' import alias; never hand-edit generated files (apps/v4/public/r/**, registry/__index__.tsx, styles/*/ui/**); never bypass isSafeTarget path validation or auto-follow redirects in proxy.ts; keep globalThis.fetch there (msw needs it). Commands: build CLI `pnpm --filter=shadcn build`; dev CLI against local site `pnpm shadcn:dev` with `pnpm v4:dev` running; unit tests `pnpm shadcn:test`; full e2e `pnpm test` builds the registry, starts v4 on :4000, and runs packages/tests (which execs dist/index.js — rebuild after src changes). Releases use changesets + `pnpm pub:beta|rc|next|release` in packages/shadcn; commits are conventional-commit linted."
+  },
+  "analysis": {
+    "agent": "devin",
+    "model": "swe-2",
+    "runtime_ms": null,
+    "cost_usd": null,
+    "collected_at": "2026-09-22T16:29:37.198Z"
   }
 }

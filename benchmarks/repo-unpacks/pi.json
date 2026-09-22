@@ -606,7 +606,7 @@
         {
           "path": "README.md",
           "bytes": 6895,
-          "preview": "<p align=\"center\">\n  <a href=\"https://pi.dev\">\n    <img alt=\"pi logo\" src=\"https://pi.dev/logo-auto.svg\" width=\"128\">\n  </a>\n</p>\n<p align=\"center\">\n  <a href=\"https://discord.com/invite/3cU7Bz4UPx\"><img alt=\"Discord\" src=\"https://img.shields.io/badge/discord-community-5865F2?style=flat-square&logo=discord&logoColor=white\" /></a>\n  <a href=\"https://www.npmjs.com/package/@earendil-works/pi-coding-agent\"><img alt=\"npm\" src=\"https://img.shields.io/npm/v/@earendil-works/pi-coding-agent?style=flat-square\" /></a>\n</p>\n\n> New issues and PRs from new contributors are auto-closed by default. Maintainers review auto-closed issues daily. See [CONTRIBUTING.md](CONTRIBUTING.md).\n\n# Pi Agent Harness\n\nThis is the home of the Pi agent harness project including our self extensible coding agent.\n\n* **[@earendil-works/pi-coding-agent](packages/coding-agent)**: Interactive coding agent CLI\n* **[@earendil-works/pi-agent-core](packages/agent)**: Agent runtime with tool calling and state management\n* **[@earendil-works/pi-ai](packages/ai)**: Unified multi-provider LLM API (OpenAI, Anthropic, Google, \u2026)\n\nTo learn more about Pi:\n\n* [Visit pi.dev](https://pi.dev), the project website with demos\n* [Read the documentation](https://pi.dev/docs/latest), but you can also ask the agent to explain itself\n\n## All Packages\n\n| Package | Description |\n|---------|-------------|\n| **[@earendil-works/chord](packages/chord)** | Standalone application-composition runtime for services, replicated state, RPC, and plugins |\n| **[@earendil-works/pi-telemetry](packages/telemetry)** | Vendor-neutral telemetry contracts, reference adapter, conformance tests, and typed schemas |\n| **[@earendil-works/pi-ai](packages/ai)** | Unified multi-provider LLM API (OpenAI, Anthropic, Google, etc.) |\n| **[@earendil-works/pi-durable](packages/durable)** | Durable conversation, task, and document runtime |\n| **[@earendil-works/pi-agent-core](packages/agent)** | Agent runtime with tool calling and state management |\n| **[@earendil-works/pi-coding-agent](packages/coding-agent)** | Interactive coding agent CLI |\n| **[@earendil-works/pi-tui](packages/tui)** | Terminal UI library with differential rendering |\n\nFor Slack/chat automation and workflows see [earendil-works/pi-chat](https://github.com/earendil-works/pi-chat).\n\n## Permissions & Containerization\n\nPi does not include a built-in permission system for restricting filesystem, process, network, or credential access. By default, it runs with the permissions of the user and process that launched it.\n\nIf you need stronger boundaries, containerize or sandbox Pi. See [packages/coding-agent/docs/containerization.md](packages/coding-agent/docs/containerization.md) for three patterns:\n\n- **Gondolin extension**: keep `pi` and provider auth on the host while routing built-in tools and `!` commands into a local Linux micro-VM.\n- **Plain Docker**: run the whole `pi` process in a local container for simple isolation.\n- **OpenShell**: run the whole `pi` process in a policy-controlled sandbox.\n\n## Contributing\n\nSee [CONTRIBUTING.md](CONTRIBUTING.md) for contribution guidelines and [AGENTS.md](AGENTS.md) for project-specific rules (for both humans and agents).  Longer term plans for Pi can also be found in [RFCs](https://rfc.earendil.com/keyword/pi/).\n\n## Development\n\n```bash\nnpm install --ignore-scripts  # Install all dependencies without running lifecycle scripts\nnpm run build         # Refresh model data, then build all packages\nnpm run build:offline # Rebuild using existing model data without network access\nnpm run check         # Lint, format, and type check\n./test.sh            # Run tests (skips LLM-dependent tests without API keys)\n./pi-test.sh         # Run pi from sources (can be run from any directory)\n```\n\n## Building standalone binaries from release source\n\nGitHub releases include a versioned source archive covered by the release's `SHA256SUMS` file. Extract it and run the same build script used for the official standalone binaries:\n\n```bash\nVERSION=\"<release-version>\"\ntar -xzf \"pi-${VERSION}-source.tar.gz\"\ncd \"pi-${VERSION}\"\n./scripts/build-binaries.sh --offline-model-data --platform linux-x64 --out \"$PWD/out\"\n```\n\nThe archive includes release model data and native prebuilds. `--offline-model-data` uses that model data without refreshing provider catalogs. The script installs dependencies and builds the executable with its runtime assets; pass `--skip-install` if dependencies are already provided.\n\n## Supply-chain hardening\n\nWe treat npm dependency changes as reviewed code changes.\n\n- Direct external dependencies are pinned to exact versions. Internal workspace packages remain version-ranged.\n- `.npmrc` sets `save-exact=true` and `min-release-age=2` to avoid same-day dependency releases during npm resolution.\n- `package-lock.json` is the dependency ground truth. Pre-commit blocks accidental lockfile commits unless `PI_ALLOW_LOCKFILE_CHANGE=1` is set.\n- `npm run check` verifies pinned direct deps, native TypeScript import compatibility, and the generated coding-agent shrinkwrap.\n- The published CLI package includes `packages/coding-agent/npm-shrinkwrap.json`, generated from the root lockfile, to pin transitive deps for npm users.\n- Release smoke tests use `npm run release:local` to build, pack, and create isolated npm and Bun installs outside the repo before tagging a release.\n- Local release installs, documented npm installs, and `pi update --self` use `--ignore-scripts` where supported.\n- CI installs with `npm ci --ignore-scripts`, and a scheduled GitHub workflow runs `npm audit --omit=dev` plus `npm audit signatures --omit=dev`.\n- Shrinkwrap generation has an explicit allowlist for dependency lifecycle scripts; new lifecycle-script deps fail checks until reviewed.\n\n## Share your OSS coding agent sessions\n\nIf you use Pi or other coding agents for open source work, please share your sessions.\n\nPublic OSS session data helps improve coding agents with real-world tasks, tool use, failures, and fixes instead of toy benchmarks.\n\nFor the full explanation, see [this post on X](https://x.com/badlogicgames/status/2037811643774652911).\n\nTo publish sessions, use [`badlogic/pi-share-hf`](https://github.com/badlogic/pi-share-hf). Read its README.md for setup instructions. All you need is a Hugging Face account, the Hugging Face CLI, and `pi-share-hf`.\n\nYou can also watch [this video](https://x.com/badlogicgames/status/2041151967695634619), where I show how I publish my `pi-mono` sessions.\n\nI regularly publish my own `pi-mono` work sessions here:\n\n- [badlogicgames/pi-mono on Hugging Face](https://huggingface.co/datasets/badlogicgames/pi-mono)\n\n## License\n\nMIT\n\n<p align=\"center\">\n  <a href=\"https://pi.dev\">pi.dev</a> domain graciously donated by\n  <br /><br />\n  <a href=\"https://exe.dev\"><img src=\"packages/coding-agent/docs/images/exy.png\" alt=\"Exy mascot\" width=\"48\" /><br />exe.dev</a>\n</p>\n"
+          "preview": "<p align=\"center\">\n  <a href=\"https://pi.dev\">\n    <img alt=\"pi logo\" src=\"https://pi.dev/logo-auto.svg\" width=\"128\">\n  </a>\n</p>\n<p align=\"center\">\n  <a href=\"https://discord.com/invite/3cU7Bz4UPx\"><img alt=\"Discord\" src=\"https://img.shields.io/badge/discord-community-5865F2?style=flat-square&logo=discord&logoColor=white\" /></a>\n  <a href=\"https://www.npmjs.com/package/@earendil-works/pi-coding-agent\"><img alt=\"npm\" src=\"https://img.shields.io/npm/v/@earendil-works/pi-coding-agent?style=flat-square\" /></a>\n</p>\n\n> New issues and PRs from new contributors are auto-closed by default. Maintainers review auto-closed issues daily. See [CONTRIBUTING.md](CONTRIBUTING.md).\n\n# Pi Agent Harness\n\nThis is the home of the Pi agent harness project including our self extensible coding agent.\n\n* **[@earendil-works/pi-coding-agent](packages/coding-agent)**: Interactive coding agent CLI\n* **[@earendil-works/pi-agent-core](packages/agent)**: Agent runtime with tool calling and state management\n* **[@earendil-works/pi-ai](packages/ai)**: Unified multi-provider LLM API (OpenAI, Anthropic, Google, …)\n\nTo learn more about Pi:\n\n* [Visit pi.dev](https://pi.dev), the project website with demos\n* [Read the documentation](https://pi.dev/docs/latest), but you can also ask the agent to explain itself\n\n## All Packages\n\n| Package | Description |\n|---------|-------------|\n| **[@earendil-works/chord](packages/chord)** | Standalone application-composition runtime for services, replicated state, RPC, and plugins |\n| **[@earendil-works/pi-telemetry](packages/telemetry)** | Vendor-neutral telemetry contracts, reference adapter, conformance tests, and typed schemas |\n| **[@earendil-works/pi-ai](packages/ai)** | Unified multi-provider LLM API (OpenAI, Anthropic, Google, etc.) |\n| **[@earendil-works/pi-durable](packages/durable)** | Durable conversation, task, and document runtime |\n| **[@earendil-works/pi-agent-core](packages/agent)** | Agent runtime with tool calling and state management |\n| **[@earendil-works/pi-coding-agent](packages/coding-agent)** | Interactive coding agent CLI |\n| **[@earendil-works/pi-tui](packages/tui)** | Terminal UI library with differential rendering |\n\nFor Slack/chat automation and workflows see [earendil-works/pi-chat](https://github.com/earendil-works/pi-chat).\n\n## Permissions & Containerization\n\nPi does not include a built-in permission system for restricting filesystem, process, network, or credential access. By default, it runs with the permissions of the user and process that launched it.\n\nIf you need stronger boundaries, containerize or sandbox Pi. See [packages/coding-agent/docs/containerization.md](packages/coding-agent/docs/containerization.md) for three patterns:\n\n- **Gondolin extension**: keep `pi` and provider auth on the host while routing built-in tools and `!` commands into a local Linux micro-VM.\n- **Plain Docker**: run the whole `pi` process in a local container for simple isolation.\n- **OpenShell**: run the whole `pi` process in a policy-controlled sandbox.\n\n## Contributing\n\nSee [CONTRIBUTING.md](CONTRIBUTING.md) for contribution guidelines and [AGENTS.md](AGENTS.md) for project-specific rules (for both humans and agents).  Longer term plans for Pi can also be found in [RFCs](https://rfc.earendil.com/keyword/pi/).\n\n## Development\n\n```bash\nnpm install --ignore-scripts  # Install all dependencies without running lifecycle scripts\nnpm run build         # Refresh model data, then build all packages\nnpm run build:offline # Rebuild using existing model data without network access\nnpm run check         # Lint, format, and type check\n./test.sh            # Run tests (skips LLM-dependent tests without API keys)\n./pi-test.sh         # Run pi from sources (can be run from any directory)\n```\n\n## Building standalone binaries from release source\n\nGitHub releases include a versioned source archive covered by the release's `SHA256SUMS` file. Extract it and run the same build script used for the official standalone binaries:\n\n```bash\nVERSION=\"<release-version>\"\ntar -xzf \"pi-${VERSION}-source.tar.gz\"\ncd \"pi-${VERSION}\"\n./scripts/build-binaries.sh --offline-model-data --platform linux-x64 --out \"$PWD/out\"\n```\n\nThe archive includes release model data and native prebuilds. `--offline-model-data` uses that model data without refreshing provider catalogs. The script installs dependencies and builds the executable with its runtime assets; pass `--skip-install` if dependencies are already provided.\n\n## Supply-chain hardening\n\nWe treat npm dependency changes as reviewed code changes.\n\n- Direct external dependencies are pinned to exact versions. Internal workspace packages remain version-ranged.\n- `.npmrc` sets `save-exact=true` and `min-release-age=2` to avoid same-day dependency releases during npm resolution.\n- `package-lock.json` is the dependency ground truth. Pre-commit blocks accidental lockfile commits unless `PI_ALLOW_LOCKFILE_CHANGE=1` is set.\n- `npm run check` verifies pinned direct deps, native TypeScript import compatibility, and the generated coding-agent shrinkwrap.\n- The published CLI package includes `packages/coding-agent/npm-shrinkwrap.json`, generated from the root lockfile, to pin transitive deps for npm users.\n- Release smoke tests use `npm run release:local` to build, pack, and create isolated npm and Bun installs outside the repo before tagging a release.\n- Local release installs, documented npm installs, and `pi update --self` use `--ignore-scripts` where supported.\n- CI installs with `npm ci --ignore-scripts`, and a scheduled GitHub workflow runs `npm audit --omit=dev` plus `npm audit signatures --omit=dev`.\n- Shrinkwrap generation has an explicit allowlist for dependency lifecycle scripts; new lifecycle-script deps fail checks until reviewed.\n\n## Share your OSS coding agent sessions\n\nIf you use Pi or other coding agents for open source work, please share your sessions.\n\nPublic OSS session data helps improve coding agents with real-world tasks, tool use, failures, and fixes instead of toy benchmarks.\n\nFor the full explanation, see [this post on X](https://x.com/badlogicgames/status/2037811643774652911).\n\nTo publish sessions, use [`badlogic/pi-share-hf`](https://github.com/badlogic/pi-share-hf). Read its README.md for setup instructions. All you need is a Hugging Face account, the Hugging Face CLI, and `pi-share-hf`.\n\nYou can also watch [this video](https://x.com/badlogicgames/status/2041151967695634619), where I show how I publish my `pi-mono` sessions.\n\nI regularly publish my own `pi-mono` work sessions here:\n\n- [badlogicgames/pi-mono on Hugging Face](https://huggingface.co/datasets/badlogicgames/pi-mono)\n\n## License\n\nMIT\n\n<p align=\"center\">\n  <a href=\"https://pi.dev\">pi.dev</a> domain graciously donated by\n  <br /><br />\n  <a href=\"https://exe.dev\"><img src=\"packages/coding-agent/docs/images/exy.png\" alt=\"Exy mascot\" width=\"48\" /><br />exe.dev</a>\n</p>\n"
         }
       ],
       "config_files": [
@@ -17676,7 +17676,7 @@
         "steps": [
           {
             "id": "serialize",
-            "label": "JSON serialize (inventory \u2192 SQLite)",
+            "label": "JSON serialize (inventory → SQLite)",
             "ms": 0,
             "pct": 0
           },
@@ -17695,5 +17695,965 @@
         ]
       }
     ]
+  },
+  "report": {
+    "overview": "Pi is a TypeScript monorepo for the 'Pi agent harness', published as the `pi` CLI (@earendil-works/pi-coding-agent): a self-extensible terminal coding agent with read/bash/edit/write/grep/find/ls tools, JSONL session persistence under ~/.pi/agent, and a TypeScript extension system loaded via jiti. It is built on in-house libraries: pi-agent-core (event-sourced agent loop), pi-ai (unified LLM API with 41 built-in providers plus OAuth flows), pi-tui (differential-rendering terminal UI with native modules), plus an experimental distributed stack (chord composition runtime, durable runtime, CBOR protocol/client/server, sqlite session backend). Notably it deliberately ships no sandbox — security relies on project-trust gating of project-local resources and external containerization.",
+    "system_map": {
+      "summary": "npm-workspaces monorepo (packages/*, plus packages/session-backends/* and extension examples) built in dependency order by the root build script: chord → tui → telemetry → ai → durable → agent → session-backends/sqlite-node → protocol → client → server → coding-agent. The shippable product is packages/coding-agent whose bin `pi` runs dist/bundle/cli.js (bundled from src/cli.ts → src/main.ts) on Node >=22.19, with an alternative Bun-compiled binary path. The agent runtime lives in pi-agent-core, provider access in pi-ai, terminal rendering in pi-tui (with C native modules per platform), and an experimental RPC/session-server stack in protocol/client/server/durable. State lives in ~/.pi/agent (auth.json, settings.json, models.json, sessions/, themes/, prompts/, bin/).",
+      "claims": [
+        {
+          "claim": "Root package.json defines workspaces covering packages/*, packages/session-backends/*, and several coding-agent extension examples; the `build` script chains package builds in explicit dependency order ending at coding-agent.",
+          "sources": [
+            "package.json#L5-16"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CLI entrypoint is packages/coding-agent/src/cli.ts, a 6-line shim that calls setupCli() then main(process.argv.slice(2)); the published bin `pi` points at dist/bundle/cli.js produced by scripts/build-coding-agent-bundle.mjs via the `build` script.",
+          "sources": [
+            "packages/coding-agent/src/cli.ts",
+            "packages/coding-agent/package.json"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "main() in packages/coding-agent/src/main.ts is the single dispatcher: auth subcommands, package commands (install/remove/update/list), config command, then parseArgs, migrations, SessionManager creation, AgentSessionRuntime creation, and finally mode dispatch to runRpcMode, InteractiveMode, or runPrintMode.",
+          "sources": [
+            "packages/coding-agent/src/main.ts#L566-981"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "resolveAppMode selects between four run modes — rpc, json, print, interactive — from --mode/--print flags and stdin/stdout TTY detection; piped stdin forces print mode.",
+          "sources": [
+            "packages/coding-agent/src/main.ts#L111-126",
+            "packages/coding-agent/src/main.ts#L873-880"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "packages/agent (pi-agent-core) exposes the Agent class and the lower-level agentLoop/runAgentLoop functions plus a harness/ subtree (pico3 session runtime, lane scheduler, session backends) that powers the experimental server packages.",
+          "sources": [
+            "packages/agent/src/agent.ts#L187",
+            "packages/agent/src/agent-loop.ts#L37",
+            "packages/agent/package.json"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "packages/ai (pi-ai) registers 41 built-in LLM providers in builtinProviders() (anthropic, openai, openai-codex, google, google-vertex, amazon-bedrock, github-copilot, openrouter, deepseek, groq, mistral, xai, zai, kimi-coding, moonshotai, minimax, cerebras, fireworks, together, huggingface, nvidia, baseten, meta, opencode, vercel-ai-gateway, cloudflare variants, qwen/xiaomi token plans, ant-ling, radius) backed by the generated MODELS catalog.",
+          "sources": [
+            "packages/ai/src/providers/all.ts#L54-134",
+            "packages/ai/src/models.generated.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Sessions are append-only JSONL trees under ~/.pi/agent/sessions/<encoded-cwd>/ named <timestamp>_<sessionId>.jsonl; the current on-disk format is CURRENT_SESSION_VERSION = 3.",
+          "sources": [
+            "packages/coding-agent/src/core/session-manager.ts#L41-50",
+            "packages/coding-agent/src/core/session-manager.ts#L587-593",
+            "packages/coding-agent/src/core/session-manager.ts#L1080"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "User state roots at getAgentDir() = $PI_CODING_AGENT_DIR or ~/.pi/agent, which holds auth.json, settings.json, models.json, sessions/, themes/, prompts/, tools/, bin/, and the debug log; PI_CODING_AGENT_SESSION_DIR can redirect sessions.",
+          "sources": [
+            "packages/coding-agent/src/config.ts#L508-578"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "packages/tui is a standalone terminal UI library (differential rendering, editor component, overlays, markdown/latex) with platform-specific native modules under packages/tui/native/{darwin,linux,win32} plus clipboard.h/napi.h — the source of the repo's C files.",
+          "sources": [
+            "packages/tui/src/tui.ts",
+            "packages/tui/native/clipboard.h",
+            "packages/tui/src/native-module-path.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The experimental distributed stack: pi-protocol defines a version-handshaken, CBOR-framed envelope protocol (4-byte big-endian length prefix) over byte transports; pi-server hosts routed server/Session services; pi-client is the transport-neutral client; pi-durable provides durable record contracts with an in-memory storage reference.",
+          "sources": [
+            "packages/protocol/README.md",
+            "packages/server/README.md",
+            "packages/client/README.md",
+            "packages/durable/README.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "chord is a standalone application-composition runtime (facets, typed services, replicated state, RPC boundary) that intentionally depends on no other Pi workspace package; durable's Pico runtime and agent's harness/ build on its concepts.",
+          "sources": [
+            "packages/chord/README.md",
+            "packages/chord/src/index.ts",
+            "packages/durable/src/memory-storage.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "session-backends/sqlite-node provides SqliteSessionRepo, a node:sqlite-backed Session repository for pi-agent-core's harness session abstraction — one .sqlite file per Session under a directory.",
+          "sources": [
+            "packages/session-backends/sqlite-node/README.md",
+            "packages/session-backends/sqlite-node/src/index.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Build/test toolchain: tsgo (@typescript/native-preview) for typecheck/emit, biome 2.3.5 for lint+format (tabs, width 3, line 120), vitest for most packages, node:test for packages/tui and scripts/*.test.mjs, esbuild for bundling.",
+          "sources": [
+            "package.json#L21-29",
+            "biome.json",
+            "package.json#L57-70"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "A separate RPC entrypoint (src/rpc-entry.ts, exported as ./rpc-entry) sets process.title to `pi-rpc`, configures the HTTP dispatcher, and calls main(['--mode', 'rpc', ...]) — used for embedding the agent as a child process.",
+          "sources": [
+            "packages/coding-agent/src/rpc-entry.ts",
+            "packages/coding-agent/package.json"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Release artifacts are standalone binaries per platform built by scripts/build-binaries.sh and the `build:binary` script which runs `bun build --compile` over src/bun/cli.ts; GitHub workflow build-binaries.yml automates this.",
+          "sources": [
+            "packages/coding-agent/package.json",
+            "scripts/build-binaries.sh",
+            "README.md#L65-76"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "feature_catalog": {
+      "summary": "User-facing surface = the `pi` CLI plus in-session slash commands, extension hooks, and the RPC/JSON embedding protocols. CLI flags cover model/provider/thinking selection, session lifecycle (continue/resume/fork/session-id), tool scoping, resource paths (extensions, skills, prompt templates, themes), export, and offline mode. Interactive mode adds a full-screen TUI with 20+ built-in slash commands; headless modes expose the same session operations as JSON commands over stdin/stdout. Extensions add LLM tools, commands, providers, UI widgets, and event handlers.",
+      "claims": [
+        {
+          "claim": "CLI flags parsed in parseArgs include: --print/-p, --mode text|json|rpc, --continue/-c, --resume/-r, --session, --session-id, --fork, --session-dir, --name, --provider/--model/--models, --thinking (off|minimal|low|medium|high|xhigh|max), --api-key, --tools/-t, --exclude-tools/-xt, --no-tools, --no-builtin-tools, --extension/-e, --skill, --prompt-template, --theme/--use-theme, --no-* counterparts, --export, --list-models, --offline, --verbose, and @file positional arguments; unknown flags are collected as potential extension flags.",
+          "sources": [
+            "packages/coding-agent/src/cli/args.ts#L13-58",
+            "packages/coding-agent/src/cli/args.ts#L71-200"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Top-level subcommands handled before arg parsing: auth commands (runAuthCommand — login/check/credential printing with --no-refresh and JSON output), `pi config` (interactive settings selector with -l/--local project scope gated on trust), and package commands `pi install|remove|update|list` for npm/git-sourced resource packages.",
+          "sources": [
+            "packages/coding-agent/src/main.ts#L132-208",
+            "packages/coding-agent/src/package-manager-cli.ts#L791-870",
+            "packages/coding-agent/src/package-manager-cli.ts#L864"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Built-in slash commands in interactive mode: /settings /model /tree /thinking /scoped-models /export /import /share /bug /copy /name /session /changelog /hotkeys /fork /clone /trust /login /logout /new /compact /resume /reload /quit.",
+          "sources": [
+            "packages/coding-agent/src/core/slash-commands.ts#L20-43"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Built-in agent tools are read, bash, powershell, edit, write, grep, find, ls — exposed through factory functions (createCodingTools = read+bash+edit+write; createReadOnlyTools = read+grep+find+ls) and selectable via --tools/--exclude-tools/--no-tools.",
+          "sources": [
+            "packages/coding-agent/src/core/tools/index.ts#L95-105",
+            "packages/coding-agent/src/core/tools/index.ts#L195-224"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The bash tool spawns a configurable shell with detached process groups (Unix) so killProcessTree can terminate whole trees on abort/timeout; command transport can go via argv or stdin depending on shell config, and output is accumulated/truncated with DEFAULT_MAX_LINES/DEFAULT_MAX_BYTES.",
+          "sources": [
+            "packages/coding-agent/src/core/tools/bash.ts#L81-120",
+            "packages/coding-agent/src/core/tools/truncate.ts",
+            "packages/coding-agent/src/utils/shell.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Interactive editor supports a `!` prefix bash mode (tracked via editorBashMode) letting users run shell commands directly; user bash executions go through AgentSession.executeBash and emit the user_bash extension event.",
+          "sources": [
+            "packages/coding-agent/src/modes/interactive/interactive-mode.ts#L492",
+            "packages/coding-agent/src/core/bash-executor.ts",
+            "packages/coding-agent/src/core/extensions/types.ts#L1418"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Session tree navigation: sessions form a tree of entries; /fork creates a new branch from an earlier user message, /clone duplicates at the current position, /tree navigates branches, and navigateTree supports LLM-generated branch summaries (BranchSummaryEntry).",
+          "sources": [
+            "packages/coding-agent/src/core/slash-commands.ts#L34-35",
+            "packages/coding-agent/src/core/session-manager.ts#L106-116",
+            "packages/coding-agent/src/core/agent-session-runtime.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Context compaction: /compact runs manual compaction; auto-compaction triggers when shouldCompact(contextTokens, contextWindow, settings) passes; compaction generates an LLM summary, records a CompactionEntry with file-operation details (readFiles/modifiedFiles), then reloads the session projection.",
+          "sources": [
+            "packages/coding-agent/src/core/compaction/compaction.ts",
+            "packages/coding-agent/src/core/agent-session.ts#L2731",
+            "packages/coding-agent/src/core/session-manager.ts#L91-104"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "RPC mode exposes session control as JSON commands on stdin: prompt, steer, follow_up, abort, clear_queue, new_session, get_state, set_model, cycle_model, get_available_models, set_thinking_level, compact, set_auto_compaction, set_auto_retry, bash, abort_bash, export_html, switch_session, fork, clone, get_tree, get_messages, get_commands, and more, with correlated responses and streamed events.",
+          "sources": [
+            "packages/coding-agent/src/modes/rpc/rpc-types.ts#L22-74",
+            "packages/coding-agent/src/modes/rpc/rpc-mode.ts#L54-77"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Skills are Markdown files with YAML frontmatter (name <=64 chars, description <=1024, disable-model-invocation) discovered from .pi/skills, .agents/skills ancestor dirs, and configured paths; when enableSkillCommands is on they register as /skill:<name> commands and skill blocks are injected into the user message.",
+          "sources": [
+            "packages/coding-agent/src/core/skills.ts",
+            "packages/coding-agent/src/core/settings-manager.ts#L140",
+            "packages/coding-agent/src/core/agent-session.ts#L152-160"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Provider auth includes OAuth flows with dedicated modules: openai-codex, github-copilot, anthropic, openrouter, kimi-coding, xai, meta, radius, plus device-code and PKCE helpers; /login and /logout manage credentials in auth.json.",
+          "sources": [
+            "packages/ai/src/auth/oauth/openai-codex.ts",
+            "packages/ai/src/auth/oauth/github-copilot.ts",
+            "packages/ai/src/auth/oauth/anthropic.ts",
+            "packages/ai/src/auth/oauth/device-code.ts",
+            "packages/ai/src/auth/oauth/pkce.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Session export/sharing: --export writes an HTML transcript (exportFromFile with vendored template/CSS/JS); /share publishes a session as a secret GitHub gist viewable at pi.dev/session/#<gist-id>; /import resumes a session from a JSONL file.",
+          "sources": [
+            "packages/coding-agent/src/main.ts#L624-636",
+            "packages/coding-agent/src/config.ts",
+            "packages/coding-agent/src/modes/interactive/session-share.ts",
+            "packages/coding-agent/src/core/export-html/index.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "A hidden built-in extension registers a llama.cpp provider (src/extensions/llama) so local models appear alongside hosted providers; PI_NO_LOCAL_LLM disables local-LLM probing in tests.",
+          "sources": [
+            "packages/coding-agent/src/extensions/index.ts",
+            "packages/coding-agent/src/extensions/llama/provider.ts",
+            "test.sh"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Package manager feature: settings `packages` lists npm/git sources; DefaultPackageManager resolves, installs (with version ranges, glob filtering, ignore-file support), and updates extension/skill/prompt/theme packages, with `pi update` handling self-update including a Windows quarantine cleanup.",
+          "sources": [
+            "packages/coding-agent/src/core/package-manager.ts#L104-112",
+            "packages/coding-agent/src/package-manager-cli.ts",
+            "packages/coding-agent/src/utils/windows-self-update.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Themes are user-authored JSON files validated by validateThemeJson and hot-reloaded by a theme watcher; --use-theme and the /settings UI select them; first-time setup shows a theme picker plus analytics opt-in.",
+          "sources": [
+            "packages/coding-agent/src/main.ts#L885-887",
+            "packages/coding-agent/src/modes/interactive/theme/theme.ts",
+            "packages/coding-agent/src/cli/startup-ui.ts"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "data_flow": {
+      "summary": "A prompt enters via CLI args, piped stdin, or the TUI editor; AgentSession wraps it as a user AgentMessage and hands it to Agent.prompt → runAgentLoop. Per turn the loop transforms AgentMessage[] → LLM Message[] (convertToLlm), streams via the model's provider streamFn, executes toolCall content blocks through tools/extensions, and appends ToolResultMessages. AgentSession subscribes to agent events and persists each message_end to the JSONL session file via SessionManager, while the active mode renders events (TUI components, text, or JSON lines). Credentials come from auth.json (locked, 0600) resolved per-request by ModelRuntime; model catalogs come from generated data + models.json + a remote catalog refresh.",
+      "claims": [
+        {
+          "claim": "streamAssistantResponse is the LLM boundary: it applies transformContext (AgentMessage[]→AgentMessage[]), convertToLlm (AgentMessage[]→Message[]), normalizeContext, resolves a fresh API key via getApiKey(provider), then calls streamFn(model, llmContext, options) and folds stream events into a final AssistantMessage.",
+          "sources": [
+            "packages/agent/src/agent-loop.ts#L380-466"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "runLoop has an outer loop for follow-up messages and an inner loop that alternates: drain steering queue → emit turn_start → prepareRequest hook → stream assistant response → execute tool calls → finishTurn hook → turn_end; the loop ends on agent_end.",
+          "sources": [
+            "packages/agent/src/agent-loop.ts#L162-320"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Tool calls from an assistant message run in parallel by default, sequentially if config.toolExecution or any tool's executionMode requires it; each call goes through prepareToolCall (argument validation via validateToolArguments), execution with progress callbacks, and finalizeExecutedToolCall producing a ToolResultMessage pushed into context.",
+          "sources": [
+            "packages/agent/src/agent-loop.ts#L505-581",
+            "packages/agent/src/agent-loop.ts#L583-641"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Persistence path: AgentSession subscribes to agent events; on message_end it calls sessionManager.appendMessage(event.message) which appends a SessionMessageEntry to the JSONL file; model changes, thinking-level changes, usage, compaction, labels, and custom entries get their own entry types.",
+          "sources": [
+            "packages/coding-agent/src/core/agent-session.ts#L921-943",
+            "packages/coding-agent/src/core/session-manager.ts#L57-160"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Agent state is owned by the Agent class: messages/tools arrays with copy-on-assign setters, pendingToolCalls set, steeringQueue and followUpQueue (PendingMessageQueue with 'all' | 'one-at-a-time' drain modes) polled by the loop via getSteeringMessages/getFollowUpMessages.",
+          "sources": [
+            "packages/agent/src/agent.ts#L142-173",
+            "packages/agent/src/agent.ts#L464-501"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Credential flow: FileAuthStorageBackend reads/writes ~/.pi/agent/auth.json under a proper-lockfile lock (sync retry loop, async 30s stale timeout), always writing with mode 0600; ModelRuntime composes stored credentials, env vars (env-api-keys.ts), and runtime overrides into provider auth.",
+          "sources": [
+            "packages/coding-agent/src/core/auth-storage.ts#L25-114",
+            "packages/coding-agent/src/core/model-runtime.ts#L67-110",
+            "packages/ai/src/env-api-keys.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Model catalog flow: static MODELS catalog (generated) + per-provider dynamic refresh + user models.json + remote catalog provider compose into ModelRuntime; resolveModelScope expands --models/settings enabledModels patterns into ScopedModel list used for selection and Ctrl+P cycling.",
+          "sources": [
+            "packages/coding-agent/src/core/model-runtime.ts",
+            "packages/coding-agent/src/core/model-resolver.ts",
+            "packages/coding-agent/src/core/remote-catalog-provider.ts",
+            "packages/ai/src/models.generated.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Settings are layered: global ~/.pi/agent/settings.json deep-merged with project .pi/settings.json (deepMergeSettings recurses into nested objects); project settings only load when the project is trusted.",
+          "sources": [
+            "packages/coding-agent/src/core/settings-manager.ts#L165-201",
+            "packages/coding-agent/docs/security.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Context files flow into the system prompt: loadContextFileFromDir checks AGENTS.override.md, AGENTS.md, AGENTS.MD, CLAUDE.md, CLAUDE.MD per directory; loadProjectContextFiles walks ancestors from cwd plus the global agent dir, with git-worktree shadowing handled by findShadowedContextFile.",
+          "sources": [
+            "packages/coding-agent/src/core/resource-loader.ts#L71-117",
+            "packages/coding-agent/src/core/resource-loader.ts#L119-140"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Extension events flow through ExtensionRunner (built on an EventBus): AgentSession emits lifecycle events (session_start, turn_start, message_*, tool_*, context, session_compact, ...) which extension handlers observe or mutate; handler errors route to onError listeners rather than crashing the session.",
+          "sources": [
+            "packages/coding-agent/src/core/extensions/types.ts#L1349-1424",
+            "packages/coding-agent/src/core/extensions/runner.ts",
+            "packages/coding-agent/src/core/event-bus.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Output boundaries: interactive mode renders via pi-tui components through InteractiveMode; print mode writes final text or toJsonEvent JSON lines via writeRawStdout (stdout is taken over so extension noise doesn't corrupt the stream); RPC mode serializes responses/events as JSONL on stdout.",
+          "sources": [
+            "packages/coding-agent/src/modes/print-mode.ts#L108-119",
+            "packages/coding-agent/src/modes/rpc/rpc-mode.ts#L54-77",
+            "packages/coding-agent/src/core/output-guard.ts",
+            "packages/coding-agent/src/modes/json-event.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Session reload after compaction or /reload rebuilds state from disk: SessionManager.buildSessionProjection folds entries into messages (skipping compacted ranges via firstKeptEntryId), then the agent context is replaced — this is why CompactionEntry stores the full systemMessage snapshot.",
+          "sources": [
+            "packages/coding-agent/src/core/agent-session.ts#L590-613",
+            "packages/coding-agent/src/core/session-manager.ts#L91-104",
+            "packages/coding-agent/src/core/compaction/compaction.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Piped stdin and @file arguments are merged into the initial message by buildInitialMessage/processFileArguments (images auto-resized later once the model is known); in RPC mode @file args are rejected because stdin carries the protocol.",
+          "sources": [
+            "packages/coding-agent/src/main.ts#L210-229",
+            "packages/coding-agent/src/main.ts#L644-647",
+            "packages/coding-agent/src/cli/file-processor.ts",
+            "packages/coding-agent/src/cli/initial-message.ts"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "behavior_traces": {
+      "summary": "Three flows dominate. Startup: cli.ts → setupCli → main → auth/package/config short-circuits → parseArgs → runMigrations → SettingsManager → SessionManager (create/open/fork/resume) → createAgentSessionRuntime (settings+resourceLoader+modelRuntime+AgentSession) → theme init → mode dispatch. Prompt turn: session.prompt → Agent.prompt → runAgentLoop → streamAssistantResponse → executeToolCalls → agent_end → persisted + rendered. Persistence: every agent event message_end is appended to the session JSONL by AgentSession's subscriber.",
+      "claims": [
+        {
+          "claim": "Startup order in main(): runAuthCommand → Windows self-update quarantine cleanup → cleanupManagedInstall → bootstrap SettingsManager + applyHttpProxySettings/configureHttpDispatcher → handlePackageCommand → handleConfigCommand → parseArgs → --version/--export exits → resolveAppMode → takeOverStdout for non-interactive → validateForkFlags/validateSessionIdFlags → runMigrations.",
+          "sources": [
+            "packages/coding-agent/src/main.ts#L566-654"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Startup continued: startup SettingsManager → optional first-time setup → resolve sessionDir (flag > PI_CODING_AGENT_SESSION_DIR > settings) → createSessionManager → ProjectTrustStore → createRuntime factory → createAgentSessionRuntime → setCapabilityOverrides → initTheme → dispatch to runRpcMode / InteractiveMode.run / runPrintMode.",
+          "sources": [
+            "packages/coding-agent/src/main.ts#L656-981"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "createSessionManager branches: --no-session/help/list-models → SessionManager.inMemory; --fork → resolveSessionPath + SessionManager.forkFrom; --session → open or cross-project fork prompt; --resume → selectSession picker; --continue → continueRecent; else SessionManager.create with optional --session-id.",
+          "sources": [
+            "packages/coding-agent/src/main.ts#L357-448"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Runtime creation (createRuntime factory): resolve project trust (cached per-cwd, trustStore, or resolveProjectTrusted prompt for trust-requiring resources) → SettingsManager.create(cwd, agentDir, {projectTrusted}) → createAgentSessionServices (settings, modelRuntime with 15s refresh timeout, resourceLoader) → resolveModelScope → buildSessionOptions → createAgentSessionFromServices.",
+          "sources": [
+            "packages/coding-agent/src/main.ts#L717-843",
+            "packages/coding-agent/src/core/agent-session-services.ts",
+            "packages/coding-agent/src/core/project-trust.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Print-mode prompt flow: runPrintMode → rebindSession binds extensions (mode 'print'/'json') and subscribes events → session.prompt(initialMessage) → Agent.prompt → runPromptMessages → runWithLifecycle → runAgentLoop emitting agent_start/turn_start/message events → JSON events streamed via toJsonEvent or final text printed → killTrackedDetachedChildren on SIGTERM/SIGHUP → exit code.",
+          "sources": [
+            "packages/coding-agent/src/modes/print-mode.ts#L33-120",
+            "packages/agent/src/agent.ts#L429-455"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Single agent turn: runAgentLoop emits agent_start + turn_start + message_start/end for the prompt → runLoop drains steering queue → prepareRequest → streamAssistantResponse (emits message_update deltas) → on done, toolCalls filtered from content → executeToolCalls → tool_results pushed → finishTurn → turn_end → loop repeats until no tool calls, no queued messages → agent_end with newMessages.",
+          "sources": [
+            "packages/agent/src/agent-loop.ts#L101-125",
+            "packages/agent/src/agent-loop.ts#L162-320"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Tool-call safety path: if the assistant message stops with stopReason 'length', failToolCallsFromTruncatedMessage converts every toolCall into an error ToolResultMessage instead of executing possibly-truncated arguments; otherwise prepareToolCall validates args before execution.",
+          "sources": [
+            "packages/agent/src/agent-loop.ts#L262-277",
+            "packages/agent/src/agent-loop.ts#L475-500"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Bash tool execution: createLocalShellOperations.exec → fsAccess check on cwd → spawn(shell, args or stdin-transported command, {detached: !win32}) → trackDetachedChildPid → stream stdout/stderr via onData → timeout/abort → killProcessTree → exit code reported as {exitCode}, null treated as failure.",
+          "sources": [
+            "packages/coding-agent/src/core/tools/bash.ts#L81-120",
+            "packages/coding-agent/src/utils/shell.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Persistence trace: emit(message_end) → AgentSession._handleAgentEvent → sessionManager.appendMessage → appendFileSync on <timestamp>_<id>.jsonl under sessions/<encoded-cwd>/ → entry gets id + parentId forming the session tree → later builds projections via buildSessionProjection for context rebuild.",
+          "sources": [
+            "packages/coding-agent/src/core/agent-session.ts#L921-943",
+            "packages/coding-agent/src/core/session-manager.ts#L977",
+            "packages/coding-agent/src/core/session-manager.ts#L1080"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Auto-compaction trace: after a turn, AgentSession checks shouldCompact(contextTokens, contextWindow, settings) → spawns compaction under _autoCompactionAbortController → prepareCompaction + compact() calls the LLM to summarize (SUMMARIZATION_SYSTEM_PROMPT, serialized conversation, file-op extraction) → CompactionEntry appended → session context reloaded.",
+          "sources": [
+            "packages/coding-agent/src/core/agent-session.ts#L2731-2767",
+            "packages/coding-agent/src/core/compaction/compaction.ts",
+            "packages/coding-agent/src/core/compaction/utils.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Session replacement flows (new/fork/switch/import/reload) go through AgentSessionRuntime: tear down current services (emitSessionShutdownEvent), run the createRuntime factory for the new cwd/sessionManager, then rebindSession so the active mode re-subscribes and re-binds extensions.",
+          "sources": [
+            "packages/coding-agent/src/core/agent-session-runtime.ts#L67-120",
+            "packages/coding-agent/src/modes/print-mode.ts#L70-104"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "RPC session: rpc-entry.ts → main(['--mode','rpc']) → runRpcMode → takeOverStdout → attachJsonlLineReader on stdin → dispatch RpcCommand (prompt/steer/set_model/bash/...) → session events serialized as JSONL responses + extension_ui_request dialogs awaited via pendingExtensionRequests map keyed by UUID.",
+          "sources": [
+            "packages/coding-agent/src/rpc-entry.ts",
+            "packages/coding-agent/src/modes/rpc/rpc-mode.ts#L54-131"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Failure path: if the loop throws, Agent.handleRunFailure synthesizes an assistant message with stopReason 'error'|'aborted' and emits the full event sequence so subscribers and the session file still see a well-formed turn end; isRetryableAssistantError drives auto-retry in AgentSession.",
+          "sources": [
+            "packages/agent/src/agent.ts#L528-544",
+            "packages/coding-agent/src/core/agent-session.ts#L3329"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "testing_signals": {
+      "summary": "Vitest is the primary framework (packages/coding-agent/test ~297 files, agent+ai ~240 combined), plus node:test for packages/tui and scripts/*.test.mjs. A faux provider (pi-ai providers/faux.ts) enables deterministic agent-loop testing without API keys, and test/suite/harness.ts builds full AgentSession fixtures. ./test.sh runs the whole suite in a scrubbed environment (temp HOME, no API keys) because e2e tests activate when real endpoint/auth env vars exist. CI runs build → check → npm test on ubuntu; supply-chain checks (pinned deps, shrinkwrap, lockfile gate) run in npm run check and the husky pre-commit hook.",
+      "claims": [
+        {
+          "claim": "./test.sh runs `env -i` npm test with a mktemp HOME, empty git config, disabled git prompts, PI_NO_LOCAL_LLM=1, and AWS_EC2_METADATA_DISABLED — deliberately stripping all credentials so tests never hit real providers; cleanup refuses to rm -rf unverified directories.",
+          "sources": [
+            "test.sh"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "AGENTS.md forbids running the raw vitest suite because it includes e2e tests that activate when endpoint/auth env vars are present; prescribed: ./test.sh, per-file vitest via node_modules/vitest CLI, or node --test for packages/tui.",
+          "sources": [
+            "AGENTS.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The coding-agent suite harness (test/suite/harness.ts) creates a real AgentSession + SessionManager + SettingsManager + AuthStorage in a temp dir and registers the faux provider (registerFauxProvider from pi-ai/compat) with scripted FauxResponseStep lists, so session behavior is tested end-to-end without network.",
+          "sources": [
+            "packages/coding-agent/test/suite/harness.ts#L1-100",
+            "packages/ai/src/providers/faux.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "packages/coding-agent/test contains ~297 test files covering session branching, compaction, retry, dynamic tools/providers, extensions, args parsing, auth storage, clipboard, keybindings, Windows quirks, plus a regressions/ subdir.",
+          "sources": [
+            "packages/coding-agent/test/suite/harness.ts",
+            "packages/coding-agent/vitest.config.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "packages/agent has three vitest configs: default unit tests, vitest.harness.config.ts for harness/session conformance tests (test/harness/memory-conformance.test.ts runs a conformance suite over session storage implementations), and vitest.benchmark.config.ts for session benchmarks.",
+          "sources": [
+            "packages/agent/package.json",
+            "packages/agent/vitest.harness.config.ts",
+            "packages/agent/src/harness/session/testing/conformance/session-repo.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "packages/tui tests use node:test (editor, keybindings, overlay, markdown, fuzzy, layout, plus regression files for CJK width, SIGWINCH, regional indicators) alongside bench scripts like alt-screen-large-transcript-bench.ts.",
+          "sources": [
+            "packages/tui/test/editor.test.ts",
+            "packages/tui/test/regression-sigwinch-kill-eacces.test.ts",
+            "AGENTS.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "scripts/*.test.mjs run via `node --test` under test:scripts and cover repo tooling: check-runtime-deps, coding-agent-consumer, publish-release-announcement, sync-versions.",
+          "sources": [
+            "package.json#L39-40",
+            "scripts/check-runtime-deps.test.mjs",
+            "scripts/sync-versions.test.mjs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "packages/evals is a separate vitest-evals harness: *.eval.ts host evals and *.docs.eval.ts documentation-lift comparisons run in docker containers, requiring PI_PROVIDER/PI_MODEL — it is opt-in and not part of npm test.",
+          "sources": [
+            "packages/evals/README.md",
+            "packages/evals/vitest.evals.config.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CI (.github/workflows/ci.yml) is a single job: checkout → setup-node 22 → apt deps (cairo/pango/jpeg/gif/rsvg for native builds, fd, ripgrep) → npm ci --ignore-scripts → npm run build → npm run check → npm test, on ubuntu-latest only.",
+          "sources": [
+            ".github/workflows/ci.yml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "npm run check is the gate: biome check --write --error-on-warnings, pinned-dep verification, runtime-dep check, TS relative-import check, entry-graph check, shrinkwrap --check, install-lock --check, tsgo --noEmit, and a browser smoke check.",
+          "sources": [
+            "package.json#L21-29",
+            "scripts/check-pinned-deps.mjs",
+            "scripts/check-browser-smoke.mjs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The husky pre-commit hook runs scripts/check-lockfile-commit.mjs (blocks lockfile commits unless PI_ALLOW_LOCKFILE_CHANGE=1), then full npm run check, then a browser smoke test when staged files touch packages/ai, packages/web-ui, or the lockfile.",
+          "sources": [
+            ".husky/pre-commit",
+            "scripts/check-lockfile-commit.mjs",
+            "README.md#L78-90"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Coverage gaps: real provider streaming paths, OAuth flows, and end-to-end interactive TUI behavior are only exercised when env keys exist or via manual tmux testing documented in .pi/skills/interactive-testing.md — most CI runs exercise mocks.",
+          "sources": [
+            "AGENTS.md",
+            ".pi/skills/interactive-testing.md",
+            "test.sh"
+          ],
+          "kind": "inference"
+        },
+        {
+          "claim": "A scheduled npm-audit workflow runs npm audit --omit=dev plus npm audit signatures, extending supply-chain checking beyond commit-time checks.",
+          "sources": [
+            ".github/workflows/npm-audit.yml",
+            "README.md#L89"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "risk_map": {
+      "summary": "The dominant risk is intentional: pi is an unsandboxed local agent whose bash/edit/write tools and jiti-loaded extensions run with full user privileges — the docs state this plainly and point to containerization instead. Concrete hotspots: auth.json holds plaintext credentials (mitigated by 0600 + locking); the extension/package system executes third-party code gated only by project trust for project-local sources; RPC/protocol layers have no peer authentication; and giant files (agent-session.ts 4023 lines, interactive-mode.ts 6851 lines, package-manager.ts 2699 lines) concentrate blast radius.",
+      "claims": [
+        {
+          "claim": "No built-in sandbox: docs/security.md states built-in tools can read/write files and run shell commands with the pi process's permissions, and extensions run with the same permissions — isolation is delegated to containers/VMs (docs/containerization.md).",
+          "sources": [
+            "packages/coding-agent/docs/security.md",
+            "README.md#L40-48"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "auth.json stores OAuth/API credentials in plaintext JSON under ~/.pi/agent; writes use mode 0600 and a proper-lockfile lock, but any process running as the user (including extensions and bash commands) can read it.",
+          "sources": [
+            "packages/coding-agent/src/core/auth-storage.ts#L25-66",
+            "packages/coding-agent/src/config.ts#L548"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Extension loader uses jiti to execute arbitrary TypeScript from user dirs, project dirs, npm/git packages, and -e flags; aliases map @earendil-works/*, legacy @mariozechner/* names, and typebox into the host's own modules — so extensions share the host process and its privileges entirely.",
+          "sources": [
+            "packages/coding-agent/src/core/extensions/loader.ts#L45-121",
+            "packages/coding-agent/src/core/extensions/loader.ts#L1-17"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Project trust is the only input-loading guard: .pi/settings.json, .pi/{extensions,skills,prompts,themes}, .pi/SYSTEM.md, and .agents/skills require trust before loading; non-interactive modes never prompt, so defaultProjectTrust 'ask'/'never' skips them — meaning a config mistake can silently auto-trust or a repo's context files (AGENTS.md/CLAUDE.md) always load regardless.",
+          "sources": [
+            "packages/coding-agent/docs/security.md",
+            "packages/coding-agent/src/main.ts#L704-762",
+            "packages/coding-agent/src/core/trust-manager.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The bash tool spawns real shells with detached process groups and tracks detached PIDs for killProcessTree; shellCommandPrefix and custom shellPath settings let projects/users alter every command — a footgun if a trusted-but-malicious project sets them.",
+          "sources": [
+            "packages/coding-agent/src/core/tools/bash.ts#L81-120",
+            "packages/coding-agent/src/core/settings-manager.ts#L126-129"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Package manager installs npm/git sources into the agent dir and can self-update the pi binary (with Windows quarantine handling); supply-chain mitigations exist (exact-pinned direct deps, min-release-age=2, npm-shrinkwrap for the published CLI, lifecycle-script allowlist in shrinkwrap generation) but the installed packages still execute as the user.",
+          "sources": [
+            "packages/coding-agent/src/core/package-manager.ts",
+            "packages/coding-agent/npm-shrinkwrap.json",
+            "README.md#L78-90",
+            "scripts/generate-coding-agent-shrinkwrap.mjs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "RPC mode exposes full session control (bash, prompt, fork, switch_session) on stdin/stdout with no authentication — it trusts whoever spawned it; the experimental pi-protocol README explicitly states peer authentication is not implemented by the transport.",
+          "sources": [
+            "packages/coding-agent/src/modes/rpc/rpc-types.ts#L55-56",
+            "packages/protocol/README.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Blast-radius hotspots: agent-session.ts (4023 lines) mixes session lifecycle, extension dispatch, compaction, retry, bash, export; interactive-mode.ts (6851 lines) is the entire TUI; package-manager.ts (2699 lines) does network + fs + spawn — regressions in these files affect every mode.",
+          "sources": [
+            "packages/coding-agent/src/core/agent-session.ts",
+            "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
+            "packages/coding-agent/src/core/package-manager.ts"
+          ],
+          "kind": "inference"
+        },
+        {
+          "claim": "Truncated tool calls are a real corruption vector deliberately mitigated: when stopReason is 'length', all tool calls are failed with a re-issue error rather than executed, because the JSON salvage parser can produce arguments that validate but are silently incomplete.",
+          "sources": [
+            "packages/agent/src/agent-loop.ts#L262-277",
+            "packages/agent/src/agent-loop.ts#L468-500"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "main() calls process.exit() deep inside helper flows (validateForkFlags, createSessionManager error paths, handlePackageCommand) which complicates embedding and can skip cleanup; a comment notes Windows requires natural drain after `pi update` due to a Node fetch() teardown bug.",
+          "sources": [
+            "packages/coding-agent/src/main.ts#L298-335",
+            "packages/coding-agent/src/main.ts#L590-601"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "models.generated.ts and image-models.generated.ts are machine-generated from live provider catalogs; editing them directly is forbidden — regeneration can pull unrelated upstream metadata changes into a diff, which is explicitly accepted.",
+          "sources": [
+            "AGENTS.md",
+            "packages/ai/scripts/generate-models.ts",
+            "packages/ai/src/models.generated.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Git safety rules exist because concurrent pi sessions work in one repo: AGENTS.md forbids git add -A, reset --hard, stash, clean -fd, and --no-verify; the pre-commit hook additionally blocks lockfile changes without PI_ALLOW_LOCKFILE_CHANGE=1.",
+          "sources": [
+            "AGENTS.md",
+            ".husky/pre-commit",
+            "scripts/check-lockfile-commit.mjs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Provider streaming code paths (api/*.ts, ~1.7k-line openai-completions.ts, bedrock-converse-stream.ts) are largely exercised only when real API keys exist, so provider-specific regressions can slip past CI which runs without keys.",
+          "sources": [
+            "packages/ai/src/api/openai-completions.ts",
+            "packages/ai/src/api/bedrock-converse-stream.ts",
+            "test.sh",
+            ".github/workflows/ci.yml"
+          ],
+          "kind": "inference"
+        }
+      ]
+    },
+    "extension_points": {
+      "summary": "Pi's core is deliberately minimal — CONTRIBUTING.md says features that don't belong in core should be extensions. The main seam is the ExtensionAPI: TypeScript modules loaded by jiti from user/project dirs, CLI -e, settings, or npm/git packages, which can register tools, slash commands, providers, CLI flags, keybindings, UI widgets/renderers, and ~35 lifecycle event handlers. Lower-level seams: pluggable tool Operations (e.g. BashOperations for remote execution), Provider registration in pi-ai, Chord facets/services for the experimental stack, skills/prompt-templates/themes as data resources, and custom session entries for extension persistence.",
+      "claims": [
+        {
+          "claim": "ExtensionAPI is the central registry: on() subscribes to ~35 typed events (project_trust, session_start, session_compact, context, before_provider_headers, after_provider_response, agent_start/end, turn_start/end, message_*, tool_execution_*, tool_call, tool_result, user_bash, input, model_select, thinking_level_select, ui_prompt_start/end, agent_settled, session_tree, session_shutdown, session_info_changed).",
+          "sources": [
+            "packages/coding-agent/src/core/extensions/types.ts#L1349-1424"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Extensions register LLM-callable tools via registerTool (typebox-schema params, execute callback, optional renderers), user commands via registerCommand, and providers via registerProvider(name, ProviderConfig)/unregisterProvider — with doc-commented examples for corporate proxies.",
+          "sources": [
+            "packages/coding-agent/src/core/extensions/types.ts#L1426-1435",
+            "packages/coding-agent/src/core/extensions/types.ts#L1567-1620"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Extensions are discovered from: ~/.pi/agent paths, project .pi/extensions, settings extensions[] arrays, CLI -e, package-managed npm/git sources, and InlineExtension factories passed programmatically; loading uses jiti with module aliases or embedded virtual modules in compiled-binary mode.",
+          "sources": [
+            "packages/coding-agent/src/core/extensions/loader.ts#L40-121",
+            "packages/coding-agent/src/core/resource-loader.ts#L30-52"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Built-in tools accept pluggable Operations interfaces — BashOperations.exec can delegate to SSH or a micro-VM (the Gondolin example extension does exactly this), and EditOperations/ReadOperations etc. follow the same pattern.",
+          "sources": [
+            "packages/coding-agent/src/core/tools/bash.ts#L55-78",
+            "packages/coding-agent/src/core/tools/index.ts#L107-116"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "~70 example extensions under packages/coding-agent/examples/extensions demonstrate every seam: tools.ts, commands.ts, subagent/, plan-mode/, permission-gate.ts, sandbox/, gondolin/, ssh.ts, custom-provider-anthropic/, todo.ts, handoff.ts, confirm-destructive.ts, protected-paths.ts — doubling as living documentation.",
+          "sources": [
+            "packages/coding-agent/examples/extensions/README.md",
+            "packages/coding-agent/examples/extensions/tools.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Skills (Markdown + frontmatter) and prompt templates are pure-data extension points discovered from .pi/skills, .agents/skills ancestors, and configured paths; themes are JSON files with a validator hook (setThemeJsonValidator) that hosts can replace.",
+          "sources": [
+            "packages/coding-agent/src/core/skills.ts",
+            "packages/coding-agent/src/main.ts#L885-887",
+            "packages/coding-agent/src/core/prompt-templates.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Extensions can persist state in the session file via CustomEntry (customType namespaced data, excluded from LLM context) and inject context via CustomMessageEntry — documented in the session-manager type comments.",
+          "sources": [
+            "packages/coding-agent/src/core/session-manager.ts#L118-132",
+            "packages/coding-agent/src/core/session-manager.ts#L147-160"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CLI flag extension: unknown flags are collected into parsed.unknownFlags and passed to the runtime as extensionFlagValues, so extensions can define their own --flags which appear in printHelp output.",
+          "sources": [
+            "packages/coding-agent/src/cli/args.ts#L55-57",
+            "packages/coding-agent/src/main.ts#L740",
+            "packages/coding-agent/src/main.ts#L858-863"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "pi-ai's Models registry is itself an extension point: setProvider() adds a Provider implementation to the mutable registry; the coding-agent composes configured, extension-registered, and remote-catalog providers through provider-composer.",
+          "sources": [
+            "packages/ai/src/models.ts#L239-281",
+            "packages/coding-agent/src/core/provider-composer.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The agent loop exposes hooks for hosts: transformContext, convertToLlm, prepareRequest, prepareNextTurn(WithContext), beforeToolCall, afterToolCall, finishTurn, getSteeringMessages, getFollowUpMessages — Agent maps these to public constructor options.",
+          "sources": [
+            "packages/agent/src/agent.ts#L114-140",
+            "packages/agent/src/agent-loop.ts#L184-238"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "In the experimental stack, Chord facets/plugins declare provided/required services that a host validates and activates in dependency order; pi-server's RoutedSessionHandle.invokeService routes opaque service envelopes so new application services plug in without server-side schema changes.",
+          "sources": [
+            "packages/chord/README.md",
+            "packages/server/README.md",
+            "packages/coding-agent/src/experimental/plugins"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Stream function is injectable: setDefaultStreamFn lets hosts install a default StreamFn for Agent/agentLoop without pi-agent-core depending on a provider catalog; AgentSession wires ModelRuntime's stream through this seam.",
+          "sources": [
+            "packages/agent/src/stream-fn.ts",
+            "packages/agent/src/agent.ts#L195"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "An experimental plugin entry (./experimental/plugin export) plus experimental/ sources (session-worker, coordinator, client-tui, radius-relay, services/) form the in-progress multi-process/plugin architecture — explicitly exported as unstable.",
+          "sources": [
+            "packages/coding-agent/package.json",
+            "packages/coding-agent/src/experimental/plugin.ts",
+            "packages/coding-agent/src/experimental/session-worker.ts"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_handoff": {
+      "summary": "AGENTS.md is unusually prescriptive and must be read first: erasable-TypeScript-only syntax (no enums/namespaces/parameter properties — Node strip-only mode), no inline imports, top-level imports only, no `any` unless necessary, no hardcoded key checks (use DEFAULT_*_KEYBINDINGS). After code changes run `npm run check` fully; never run npm run build or npm test unless asked; use ./test.sh or targeted vitest/node --test. Never edit generated files (models.generated.ts); regenerate via scripts. Stage explicit paths only — concurrent pi sessions share the worktree.",
+      "claims": [
+        {
+          "claim": "Read first: AGENTS.md (all rules), then packages/coding-agent/src/main.ts (dispatch), src/core/agent-session.ts (session core), src/core/extensions/types.ts (ExtensionAPI), src/core/session-manager.ts (persistence), and packages/agent/src/agent-loop.ts (the loop).",
+          "sources": [
+            "AGENTS.md",
+            "packages/coding-agent/src/main.ts",
+            "packages/coding-agent/src/core/agent-session.ts",
+            "packages/agent/src/agent-loop.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Code style: tabs with indentWidth 3, lineWidth 120, biome recommended rules; only erasable TypeScript in packages/*/src and test dirs (no enum, namespace, parameter properties, import=) because Node runs sources in strip-only mode during development.",
+          "sources": [
+            "biome.json",
+            "AGENTS.md",
+            "tsconfig.json"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "After code changes run `npm run check` with full output (no tail) and fix all errors/warnings/infos; it runs biome, pinned-dep checks, tsgo --noEmit, entry-graph, shrinkwrap and browser-smoke checks — it does NOT run tests.",
+          "sources": [
+            "package.json#L21",
+            "AGENTS.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Test commands: ./test.sh for the suite (scrubs env/API keys); single vitest file via node node_modules/vitest/dist/cli.js --run test/x.test.ts from the package root; node --test for packages/tui; harness/suite tests must use test/suite/harness.ts + faux provider — never real provider APIs or paid tokens.",
+          "sources": [
+            "AGENTS.md",
+            "test.sh",
+            "packages/coding-agent/test/suite/harness.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Changelog convention: per-package packages/*/CHANGELOG.md with fixed [Unreleased] subsections (Breaking Changes/Added/Changed/Fixed/Removed); released sections are immutable; attribution format links to issues/PRs.",
+          "sources": [
+            "AGENTS.md",
+            "packages/coding-agent/CHANGELOG.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Dependency changes are treated as reviewed code: direct deps pinned exactly (save-exact=true, min-release-age=2), installs use --ignore-scripts, lockfile commits require PI_ALLOW_LOCKFILE_CHANGE=1, and coding-agent shrinkwrap regeneration goes through scripts/generate-coding-agent-shrinkwrap.mjs with an explicit lifecycle-script allowlist.",
+          "sources": [
+            "README.md#L78-90",
+            "AGENTS.md",
+            "scripts/generate-coding-agent-shrinkwrap.mjs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Git safety: stage only files you changed (git add <paths>, never -A), check git status first, commit format {feat,fix,docs}[(ai,tui,agent,coding-agent)]: msg, never run reset --hard/checkout ./clean -fd/stash/--no-verify — other pi sessions may share the worktree.",
+          "sources": [
+            "AGENTS.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "When fixing a GitHub issue, add a regression test with a comment containing the issue number; when a fix needs a test file, run it and iterate until it passes.",
+          "sources": [
+            "AGENTS.md",
+            "packages/coding-agent/test/suite/regressions"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Trap: models.generated.ts and image-models.generated.ts are generated — edit packages/ai/scripts/generate-models.ts (or generate-image-models.ts) and regenerate instead; the generated diff may include unrelated upstream model metadata and that's acceptable.",
+          "sources": [
+            "AGENTS.md",
+            "packages/ai/scripts/generate-models.ts",
+            "packages/ai/src/models.generated.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Trap: project trust affects behavior — project-local .pi resources (settings, extensions, skills) silently don't load when untrusted, so tests/manual runs may differ from what a repo's .pi directory suggests; use --approve/-a or --no-approve/-na to control it.",
+          "sources": [
+            "packages/coding-agent/docs/security.md",
+            "packages/coding-agent/src/main.ts#L727-762"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Trap: session state leaks between runs under ~/.pi/agent (sessions, auth.json, settings.json, models.json); tests must isolate HOME (as test.sh does) or AgentSession will pick up real credentials and sessions.",
+          "sources": [
+            "test.sh",
+            "packages/coding-agent/src/config.ts#L528-578"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The build order matters — root `build` script chains packages explicitly; coding-agent's build also runs scripts/build-coding-agent-bundle.mjs and copy-assets (themes, export-html template, vendor JS) so asset changes need the copy step, not just tsgo.",
+          "sources": [
+            "package.json#L16-17",
+            "packages/coding-agent/package.json"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Safe edit boundaries: prefer adding extensions/examples over core changes (CONTRIBUTING.md: 'pi's core is minimal; PRs that bloat the core will likely be rejected'); new slash commands go through registerCommand, new tools through createXTool + the index.ts factory switch.",
+          "sources": [
+            "CONTRIBUTING.md",
+            "packages/coding-agent/src/core/extensions/types.ts#L1435",
+            "packages/coding-agent/src/core/tools/index.ts#L118-162"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_prompt": "You are working in the pi monorepo (github.com/earendil-works/pi), a TypeScript npm-workspaces repo that builds the `pi` coding-agent CLI (@earendil-works/pi-coding-agent) plus its libraries.\n\nARCHITECTURE\n- packages/coding-agent: the CLI. Entry: src/cli.ts → src/main.ts (arg parsing via cli/args.ts, mode dispatch). Three run modes: interactive TUI (src/modes/interactive/interactive-mode.ts), single-shot print/json (src/modes/print-mode.ts), and JSON-RPC on stdio (src/modes/rpc/, entry src/rpc-entry.ts). Core session logic in src/core/agent-session.ts (4k lines — session lifecycle, auto-compaction, retry, bash, extension dispatch). Sessions are append-only JSONL trees under ~/.pi/agent/sessions/<encoded-cwd>/ managed by src/core/session-manager.ts.\n- packages/agent (pi-agent-core): the agent loop. src/agent-loop.ts runs turns: transformContext → convertToLlm → streamFn → tool execution (parallel default) → tool results → repeat. src/agent.ts is the stateful wrapper (message/tools state, steer/followUp queues).\n- packages/ai (pi-ai): unified LLM layer. ~38 providers in src/providers/all.ts over generated catalog src/models.generated.ts; API adapters in src/api/; OAuth flows in src/auth/oauth/; env key detection in src/env-api-keys.ts; a deterministic faux provider for tests.\n- packages/tui: terminal UI lib with native modules (native/{darwin,linux,win32}). packages/chord: standalone plugin/service composition runtime. packages/{protocol,client,server,durable,session-backends}: experimental distributed-session stack (CBOR envelopes, node:sqlite backend). packages/evals: opt-in vitest-evals harness.\n\nSTATE & CONFIG\n- ~/.pi/agent/: auth.json (credentials, 0600, lockfile-guarded), settings.json (global; project .pi/settings.json deep-merges when trusted), models.json, sessions/, themes/, prompts/, tools/, bin/. Env: PI_CODING_AGENT_DIR, PI_CODING_AGENT_SESSION_DIR, PI_OFFLINE.\n\nEXTENSIONS\n- Extensions are TypeScript modules loaded via jiti (src/core/extensions/loader.ts) implementing ExtensionAPI (src/core/extensions/types.ts): registerTool, registerCommand, registerProvider, on() for ~35 lifecycle events, UI widgets. Sources: ~/.pi/agent, project .pi/extensions (trust-gated), -e flag, npm/git packages via `pi install`. ~70 examples in packages/coding-agent/examples/extensions. Prefer extending here over core changes.\n\nTOOLS\n- Built-ins: read, bash, powershell, edit, write, grep, find, ls (src/core/tools/, factory index.ts). Each accepts pluggable Operations (e.g. BashOperations.exec) for remote/sandboxed execution.\n\nRULES (from AGENTS.md — read it first)\n- Erasable TS only (no enum/namespace/parameter properties/import=); top-level imports only; tabs, biome check.\n- After code changes: `npm run check` (full output). Never `npm run build` or `npm test` unless asked. Tests: ./test.sh (scrubs credentials), or single-file vitest from package root; node --test for packages/tui. Suite tests use test/suite/harness.ts + faux provider, never real APIs.\n- Never edit packages/ai/src/models.generated.ts; regenerate via packages/ai/scripts/generate-models.ts.\n- Git: stage explicit paths only; never add -A/stash/reset --hard; commit format `{feat,fix,docs}[(ai,tui,agent,coding-agent)]: msg`. Lockfile commits need PI_ALLOW_LOCKFILE_CHANGE=1.\n- Changelog: append under [Unreleased] in packages/*/CHANGELOG.md.\n\nSECURITY MODEL\n- No sandbox: tools and extensions run with full user privileges. Project trust only gates loading project-local resources. Use containers for untrusted work (docs/containerization.md).\n\nKEY FLOWS\n- Startup: main() → auth/package/config short-circuits → parseArgs → migrations → SessionManager → createAgentSessionRuntime (settings+resourceLoader+modelRuntime) → mode dispatch.\n- Turn: session.prompt → Agent.prompt → runAgentLoop → streamAssistantResponse → executeToolCalls → agent_end; each message_end is appended to the session JSONL.\n- Compaction: shouldCompact → compact() LLM summary → CompactionEntry → session reload."
+  },
+  "analysis": {
+    "agent": "devin",
+    "model": "swe-2",
+    "runtime_ms": null,
+    "cost_usd": null,
+    "collected_at": "2026-09-22T16:36:41.506Z"
   }
 }

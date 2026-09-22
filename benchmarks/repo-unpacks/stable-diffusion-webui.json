@@ -4502,7 +4502,7 @@
         "steps": [
           {
             "id": "serialize",
-            "label": "JSON serialize (inventory \u2192 SQLite)",
+            "label": "JSON serialize (inventory → SQLite)",
             "ms": 0,
             "pct": 0
           },
@@ -4521,5 +4521,846 @@
         ]
       }
     ]
+  },
+  "report": {
+    "overview": "AUTOMATIC1111 stable-diffusion-webui is a self-hosted Gradio web UI and FastAPI REST server for running Stable Diffusion (SD1.x/SD2/SDXL/SD3) image generation locally. Its two entry paths — webui.webui() for the Gradio UI and webui.api_only() for a bare FastAPI app — both funnel into the same modules/processing.py pipeline driven by a StableDiffusionProcessing dataclass. Its most distinctive trait is a deep extension system: Python 'scripts', per-file extensions under extensions/ and extensions-builtin/, a ~20-category callback registry in modules/script_callbacks.py, and prompt-embedded 'extra networks' (<lora:...>, <hypernet:...>) that mutate the model at generation time.",
+    "system_map": {
+      "summary": "A single-process Python application with a thin shell launcher (webui.sh/webui.bat) that runs launch.py, which delegates to modules/launch_utils.py to install torch/pip requirements, git-clone pinned dependency repos into repositories/, then imports webui.py. webui.py either builds a Gradio Blocks UI (modules/ui.py create_ui) plus optional REST routes (modules/api/api.py, mounted only with --api/--nowebui), or runs FastAPI-only mode on port 7861. All generation state lives in module-level globals in modules/shared.py (shared.sd_model, shared.opts, shared.state). Checkpoints are loaded by modules/sd_models.py through modules/safe.py's monkeypatched torch.load; settings persist to config.json via modules/options.py; user data roots are computed in modules/paths_internal.py.",
+      "claims": [
+        {
+          "claim": "launch.py is the real entrypoint: main() optionally dumps sysinfo, calls launch_utils.prepare_environment() (pip installs, repo clones, extension installers) unless --skip-prepare-environment, optionally configure_for_tests() for --test-server, then start() which imports webui and calls webui() or api_only().",
+          "sources": [
+            "launch.py#L27-44",
+            "modules/launch_utils.py#L463-469"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "webui.py's webui() runs an outer while-loop that calls initialize.initialize() once, then repeatedly: ui_tempdir.cleanup_tmpdr(), script_callbacks.before_ui_callback(), shared.demo = ui.create_ui(), shared.demo.queue(64), shared.demo.launch(...), then blocks on shared.state.wait_for_server_command(timeout=5) for 'stop'/'restart' to support in-process UI restart.",
+          "sources": [
+            "webui.py#L48-153"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The REST API is an APIRouter-free design: modules/api/api.py's Api class registers ~40 /sdapi/v1/* routes directly on the FastAPI app inside webui.create_api(app), gated behind --api (alongside UI) or --nowebui (api_only, port default 7861).",
+          "sources": [
+            "webui.py#L18-45",
+            "modules/api/api.py#L199-251",
+            "modules/cmd_args.py#L101-104"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "modules/shared.py is a global state bag: it holds cmd_opts, opts (Options), sd_model, state (shared_state.State), demo (gr.Blocks), prompt_styles, total_tqdm, mem_mon, and re-exports paths/constants; nearly every module reads/writes these globals.",
+          "sources": [
+            "modules/shared.py#L14-94"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "modules/paths_internal.py computes all storage roots at import time: script_path (repo root), data_path (--data-dir, default repo root), models_path (--models-dir or data_path/models), extensions_dir (data_path/extensions), extensions_builtin_dir (script_path/extensions-builtin), and reads COMMANDLINE_ARGS env var into sys.argv.",
+          "sources": [
+            "modules/paths_internal.py#L12-36"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "launch_utils.prepare_environment() installs torch (TORCH_COMMAND/TORCH_INDEX_URL env overridable, default cu121 wheels torch==2.1.2), verifies CUDA unless --skip-torch-cuda-test, installs clip/open_clip/xformers, and git-clones five pinned dependency repos (assets, stablediffusion, generative-models, k-diffusion, BLIP) into repositories/ at pinned commit hashes.",
+          "sources": [
+            "modules/launch_utils.py#L318-431"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "initialize.initialize() (modules/initialize.py) is the heavyweight boot: fix_torch_version/tls/sigint utils, sd_models.setup_model(), codeformer and gfpgan model dirs, then initialize_rest() which sets samplers, lists extensions, restores config state, lists models/localizations, calls scripts.load_scripts(), loads upscalers/VAEs/embeddings, registers extra networks, and spawns a background Thread to load the SD model via shared.sd_model.",
+          "sources": [
+            "modules/initialize.py#L51-169"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The Gradio UI is built in modules/ui.py create_ui() which constructs gr.Blocks for txt2img, img2img (with sub-tabs: img2img/Sketch/Inpaint/Inpaint sketch/Inpaint upload/Batch), Extras, PNG Info, Train, Checkpoint Merger, then appends script-provided tabs via script_callbacks.ui_tabs_callback() plus built-in Settings and Extensions tabs, sorted by opts.ui_tab_order.",
+          "sources": [
+            "modules/ui.py#L253-268",
+            "modules/ui.py#L537-593",
+            "modules/ui.py#L1110-1148"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Generation work is serialized through a single modules/call_queue.py queue_lock (a FIFOLock): wrap_gradio_gpu_call wraps every GPU-bound gradio handler and the API shares the same lock via Api(app, queue_lock), so only one generation job runs at a time.",
+          "sources": [
+            "modules/call_queue.py#L8-46",
+            "webui.py#L18-23"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Settings are owned by modules/options.py Options class (data_labels OptionInfo registry defined in modules/shared_options.py) persisted as JSON to shared.config_filename (--ui-settings-file, default data_path/config.json); Options.load() contains migration code for legacy keys (sd_vae_as_default, quicksettings, ui_reorder).",
+          "sources": [
+            "modules/options.py#L82-228",
+            "modules/shared_options.py#L9-12",
+            "modules/shared.py#L20"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "modules/sd_models.py manages the checkpoint registry (checkpoints_list of CheckpointInfo), list_models() scans ckpt dirs, load_model() builds the model via instantiate_from_config + LoadStateDictOnMeta, applies fp16 conversion, and calls sd_hijack.model_hijack.hijack(sd_model); torch.load is globally monkeypatched by modules/safe.py to run a pickle-safety scan (check_pt) unless --disable-safe-unpickle.",
+          "sources": [
+            "modules/sd_models.py#L786-860",
+            "modules/sd_models.py#L318-323",
+            "modules/safe.py#L194-195"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Deployment is user-run local install: webui.sh/webui.bat create/activate a venv (venv_dir configurable in webui-user.sh) and exec launch.py; there is no packaging, docker, or service config in the repo — CI runs it as a plain process on port 7860.",
+          "sources": [
+            "webui.sh",
+            ".github/workflows/run_tests.yaml"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "feature_catalog": {
+      "summary": "User-facing features split across Gradio tabs (txt2img, img2img with six sub-modes, Extras upscaling/face-fix, PNG Info, Train for embeddings/hypernetworks, Checkpoint Merger, Settings, Extensions manager) and a ~40-route /sdapi/v1 REST API. Core generation supports txt2img/img2img/inpainting, hires-fix (second-pass upscale), ~30 samplers across k-diffusion/timesteps/LCM families, prompt scheduling and extra-network syntax, selectable scripts (xyz_grid, prompt_matrix, loopback, outpainting, sd_upscale, custom_code), and training of textual-inversion embeddings and hypernetworks.",
+      "claims": [
+        {
+          "claim": "txt2img: UI calls modules/txt2img.py txt2img() → txt2img_create_processing() builds StableDiffusionProcessingTxt2Img with prompt/negative/styles/batch/cfg/hires-fix params (enable_hr, hr_scale, hr_upscaler, hr_second_pass_steps, hr_checkpoint_name) and per-request override_settings.",
+          "sources": [
+            "modules/txt2img.py#L14-55",
+            "modules/processing.py#L1166-1168"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "img2img + inpainting: modules/img2img.py builds StableDiffusionProcessingImg2Img (init_images, mask, denoising_strength, inpainting fields); the Gradio tab exposes six modes (img2img, Sketch, Inpaint, Inpaint sketch, Inpaint upload, Batch).",
+          "sources": [
+            "modules/img2img.py",
+            "modules/ui.py#L537-593",
+            "modules/processing.py#L1557"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "REST API exposes POST /sdapi/v1/txt2img, /img2img, /extra-single-image, /extra-batch-images, /png-info, /interrogate, /interrupt, /skip, plus GETs for options, samplers, schedulers, upscalers, sd-models, sd-vae, hypernetworks, face-restorers, realesrgan-models, prompt-styles, embeddings, memory, scripts, script-info, extensions; POSTs for options, refresh-*, create/train embedding+hypernetwork, unload/reload-checkpoint.",
+          "sources": [
+            "modules/api/api.py#L211-246"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "API auth is optional HTTP Basic via --api-auth 'user:pass,...' checked with secrets.compare_digest; the API also accepts image payloads as base64 or http(s) URLs, the latter gated by opts.api_enable_requests and SSRF-checked by verify_url() + opts.api_forbid_local_requests.",
+          "sources": [
+            "modules/api/api.py#L58-99",
+            "modules/api/api.py#L274-284"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Sampler catalog is assembled in modules/sd_samplers.py from three families: sd_samplers_kdiffusion.samplers_data_k_diffusion, sd_samplers_timesteps.samplers_data_timesteps, sd_samplers_lcm.samplers_data_lcm; schedulers (Automatic/Karras/Exponential/etc.) live in modules/sd_schedulers.py and can be encoded in the sampler name suffix ('Euler a Karras').",
+          "sources": [
+            "modules/sd_samplers.py#L11-16",
+            "modules/sd_samplers.py#L100-122",
+            "modules/sd_schedulers.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Prompt language supports attention weights ((word), (word:1.2)), prompt editing/scheduling ([a:b:step], [a|b] alternation) parsed by modules/prompt_parser.py get_learned_conditioning_prompt_schedules/parse_prompt_attention, and extra-network tags <name:args> extracted by extra_networks.parse_prompt.",
+          "sources": [
+            "modules/prompt_parser.py#L28-50",
+            "modules/prompt_parser.py#L370",
+            "modules/extra_networks.py#L175-191"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Built-in 'scripts' in scripts/ are user-selectable generation programs: xyz_grid.py (X/Y/Z parameter plots), prompt_matrix.py, loopback.py, sd_upscale.py, outpainting_mk_2.py, poor_mans_outpainting.py, img2imgalt.py, prompts_from_file.py, custom_code.py (arbitrary Python, requires --allow-code), plus postprocessing_* wrappers.",
+          "sources": [
+            "scripts/xyz_grid.py",
+            "scripts/prompt_matrix.py",
+            "scripts/custom_code.py#L38-64",
+            "modules/scripts.py#L487-531"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Extras tab does single/batch image postprocessing (upscale via ESRGAN/RealESRGAN/SwinIR/LDSR/ScuNET/DAT upscalers, GFPGAN/CodeFormer face restoration) via modules/postprocessing.py and modules/ui_postprocessing.py, exposed to API as /sdapi/v1/extra-single-image and /extra-batch-images.",
+          "sources": [
+            "modules/postprocessing.py",
+            "modules/ui_postprocessing.py",
+            "modules/api/api.py#L213-214"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Train tab + API can create and train textual-inversion embeddings (textual_inversion.create_embedding/train_embedding) and hypernetworks (create_hypernetwork/train_hypernetwork), with preview images routed through txt2img params.",
+          "sources": [
+            "modules/textual_inversion/textual_inversion.py#L259-400",
+            "modules/hypernetworks/hypernetwork.py",
+            "modules/api/api.py#L237-240",
+            "modules/ui.py#L899-996"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "PNG Info tab + /sdapi/v1/png-info parse generation parameters ('infotext') embedded in PNG text chunks or JPEG/WEBP EXIF UserComment; modules/infotext_utils.py handles parse_generation_parameters and send-to-txt2img/img2img paste.",
+          "sources": [
+            "modules/infotext_utils.py",
+            "modules/images.py#L777",
+            "modules/api/api.py#L215"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Extra Networks UI (modules/ui_extra_networks.py) renders browsable card pages for checkpoints, textual inversion, hypernetworks, and Lora (registered by extensions-builtin/Lora) with per-file .json user metadata (extra_networks.get_user_metadata) served as in-app HTML pages via add_pages_to_demo.",
+          "sources": [
+            "modules/ui_extra_networks.py",
+            "modules/extra_networks.py#L209-225",
+            "extensions-builtin/Lora/ui_extra_networks_lora.py",
+            "webui.py#L114"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Checkpoint Merger tab (modules/ui_checkpoint_merger.py) merges two/three checkpoints into a new .safetensors file; Settings tab (modules/ui_settings.py) edits the OptionInfo registry with quicksettings bar, search, and per-setting apply/restart semantics.",
+          "sources": [
+            "modules/ui_checkpoint_merger.py",
+            "modules/ui_settings.py",
+            "modules/ui.py#L1110-1128"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Extensions tab (modules/ui_extensions.py) lists installed extensions with git update status (check_updates/fetch_and_reset_hard), installs new ones from a URL or the built-in index, manages disable lists persisted to config.json, and can save/restore whole config states into config_states/ JSON backups.",
+          "sources": [
+            "modules/ui_extensions.py#L26-122",
+            "modules/ui_extensions.py#L344-396",
+            "modules/config_states.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Progress/interruption features: modules/progress.py exposes /internal/progress and /internal/pending-tasks; shared_state.State supports skip/interrupt/stop generation and server stop/restart commands; /sdapi/v1/progress returns live ETA/current image.",
+          "sources": [
+            "modules/progress.py#L76-78",
+            "modules/shared_state.py",
+            "modules/api/api.py#L216-219"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "ngrok tunneling (--ngrok token) and gradio --share provide remote access; TLS via --tls-keyfile/--tls-certfile; --listen/--server-name control bind address; Gradio auth via --gradio-auth/--gradio-auth-path; subpath for reverse proxies via --subpath.",
+          "sources": [
+            "modules/ngrok.py",
+            "modules/cmd_args.py#L47-51",
+            "modules/cmd_args.py#L77-119",
+            "webui.py#L79-96"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "data_flow": {
+      "summary": "Input boundary is either Gradio component values or pydantic API models (modules/api/models.py). Both converge on a StableDiffusionProcessing dataclass ('p') that is the single mutable carrier through the pipeline: scripts mutate it, prompt parsing expands it, sampling consumes it, and a Processed object carries results back out. Persistence flows: settings → config.json, generated images + infotext → outpath_* dirs, last prompt → data_path/params.txt, checkpoint sha256 cache → cache.json, per-model metadata → <name>.json sidecars.",
+      "claims": [
+        {
+          "claim": "UI path: Gradio button handlers call modules/txt2img.py or modules/img2img.py which build StableDiffusionProcessingTxt2Img/Img2Img with shared.sd_model and outpath_samples from opts.outdir_* settings, attach p.scripts=scripts_txt2img/img2img runner and p.script_args (the flattened list of all script UI component values).",
+          "sources": [
+            "modules/txt2img.py#L14-55",
+            "modules/img2img.py",
+            "modules/processing.py#L136-200"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "API path: text2imgapi/img2imgapi convert the pydantic request via apply_infotext() (merges parsed infotext fields the caller didn't set), init_script_args() (merges script_name + alwayson_scripts args into the flat script_args list at args_from/args_to indexes), then call process_images directly under the shared queue_lock.",
+          "sources": [
+            "modules/api/api.py#L335-459",
+            "modules/api/models.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "process_images() snapshots overridden opts, applies p.override_settings via opts.set(k,v,is_api=True) — special-casing sd_model_checkpoint (reload_model_weights) and sd_vae (reload_vae_weights) — applies token merging, fixes invalid sampler/scheduler names, then runs process_images_inner() under profiling.Profiler and restores opts in a finally block.",
+          "sources": [
+            "modules/processing.py#L819-860"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "process_images_inner() order: fix seeds → fill fields from opts → setup_prompts() → load embeddings → p.scripts.process → p.init() once → per-iteration loop: slice prompts/seeds → before_process_batch → parse_extra_network_prompts → extra_networks.activate → process_batch → setup_conds → p.sample() → post_sample → decode_latent_batch → postprocess_batch → per-image face restore/overlay/color-correct → images.save_image → grid assembly → extra_networks.deactivate → Processed.",
+          "sources": [
+            "modules/processing.py#L863-1150"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Extra-network data flows prompt → p.parse_extra_network_prompts() (extra_networks.parse_prompts strips <name:args> tags) → p.extra_network_data dict → extra_networks.activate(p, data) which calls each registered ExtraNetwork.activate (Lora patches model weights, ExtraNetworkHypernet applies hypernets), deactivated after the batch loop.",
+          "sources": [
+            "modules/extra_networks.py#L126-172",
+            "modules/processing.py#L957-961",
+            "extensions-builtin/Lora/scripts/lora_script.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Prompt → conditioning: setup_conds() uses prompt_parser.get_learned_conditioning / get_multicond_learned_conditioning to build ScheduledPromptConditioning lists and MulticondLearnedConditioning, which sd_samplers_cfg_denoiser recombines per step; p.c/p.uc cache positive/negative conditioning (cached_c/cached_uc).",
+          "sources": [
+            "modules/prompt_parser.py#L157-265",
+            "modules/processing.py#L188-199",
+            "modules/sd_samplers_cfg_denoiser.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Latents → pixels: p.sample() returns latent samples; if not already_decoded they are NaN-tested (devices.test_for_nans) then decoded via decode_latent_batch (full VAE or opts.sd_vae_decode_method approximations), converted to uint8 numpy then PIL Image.",
+          "sources": [
+            "modules/processing.py#L988-1046",
+            "modules/sd_samplers_common.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Image persistence: images.save_image(image, p.outpath_samples, ...) writes PNG with infotext in pnginfo 'parameters' chunk (or EXIF for jpg/webp), firing script_callbacks.before_image_saved/image_saved; filenames derive from opts.samples_filename_pattern; the first batch's infotext is also written to data_path/params.txt unless --no-prompt-history.",
+          "sources": [
+            "modules/images.py#L624",
+            "modules/processing.py#L974-977",
+            "modules/processing.py#L1084-1091",
+            "modules/script_callbacks.py#L18-30"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Processed object is the output boundary: fields images, infotexts, info, seed, index_of_first_image; UI returns processed.images + processed.js() (JSON for JS gallery metadata); API base64-encodes images via encode_pil_to_base64 preserving PNG metadata/EXIF.",
+          "sources": [
+            "modules/processing.py#L1137-1150",
+            "modules/txt2img.py#L102-120",
+            "modules/api/api.py#L102-132"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Settings persistence: Options.save() writes JSON to shared.config_filename on any UI settings change; disabled_extensions/disable_all_extensions live in that file and are read back by launch_utils.list_extensions() at next boot; corrupt configs are quarantined to tmp/config.json.",
+          "sources": [
+            "modules/options.py#L182-206",
+            "modules/launch_utils.py#L244-262",
+            "modules/ui_extensions.py#L49-51"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Checkpoint identity flows through sha256 hashes computed in modules/hashes.py (cached in cache.json), producing CheckpointInfo.hash/short sha256 used in infotexts ('Model hash'), extra-network metadata, and the API /sdapi/v1/sd-models listing.",
+          "sources": [
+            "modules/hashes.py",
+            "modules/sd_models.py",
+            "modules/api/api.py#L227"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Shared mutable state coordination: shared_state.State owns job_count/job/interrupted/skipped/stopping_generation and server command queue (wait_for_server_command/request_restart); progress.start_task/finish_task and TotalTQDM update the console and /internal/progress endpoint.",
+          "sources": [
+            "modules/shared_state.py",
+            "modules/progress.py#L76-78",
+            "webui.py#L124-134"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "behavior_traces": {
+      "summary": "Three flows were traced end-to-end. Startup is a two-stage boot: launch.py environment prep, then webui.py UI/API bring-up with a restartable inner loop. txt2img generation flows UI/API → processing dataclass → script-runner hooks → sampler → VAE decode → save. Extension install flows Extensions tab → git clone → arbitrary install.py execution → rescan.",
+      "claims": [
+        {
+          "claim": "STARTUP (shell): webui.sh sources webui-user.sh (and webui-macos-env.sh on darwin), creates/activates venv unless venv_dir='-', then execs 'python launch.py'; launch.main() → launch_utils.prepare_environment() → (pip installs, git clones, run_extensions_installers runs each extension's install.py) → start() → import webui → webui.webui().",
+          "sources": [
+            "webui.sh",
+            "launch.py#L27-48",
+            "modules/launch_utils.py#L265-277",
+            "modules/launch_utils.py#L463-469"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "STARTUP (python): webui.webui() → initialize.initialize() → initialize_util fixups → sd_models.setup_model() → codeformer_model.setup_model/gfpgan_model.setup_model → initialize_rest(): sd_samplers.set_samplers → extensions.list_extensions → restore_config_state_file → sd_models.list_models → localization.list_localizations → scripts.load_scripts (exec_modules every scripts/*.py and extension scripts) → modelloader.load_upscalers → sd_vae.refresh_vae_list → sd_hijack.list_optimizers → sd_unet.list_unets → background Thread(load_model) → ui_extra_networks.initialize/register_default_pages → extra_networks.register_default_extra_networks.",
+          "sources": [
+            "webui.py#L48-54",
+            "modules/initialize.py#L51-169",
+            "modules/scripts.py#L487-531"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "STARTUP (server): ui.create_ui() builds all gr.Blocks → shared.demo.queue(64) → demo.launch(server_name/port/share/auth/tls/subpath) → CORS middleware stripped (app.user_middleware filtered to remove CORSMiddleware, comment cites RyotaK attack) → initialize_util.setup_middleware → progress.setup_progress_api → ui.setup_ui_api → create_api(app) if --api → ui_extra_networks.add_pages_to_demo → app_started_callback → wait_for_server_command loop.",
+          "sources": [
+            "webui.py#L64-134"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "TXT2IMG (UI): Generate button → wrap_gradio_gpu_call (acquires queue_lock, state.begin, progress.start_task) → txt2img() → txt2img_create_processing() → p.scripts.run (returns None if no selectable script) → processing.process_images(p) → processed.js() returned to gallery/HTML outputs; errors are caught into an HTML error div by wrap_gradio_call.",
+          "sources": [
+            "modules/txt2img.py#L102-120",
+            "modules/call_queue.py#L21-62"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "TXT2IMG (inner): process_images() → scripts.before_process → apply override_settings → process_images_inner() → p.init(all_prompts,seeds,subseeds) → loop n_iter: before_process_batch → parse_extra_network_prompts → extra_networks.activate → process_batch → setup_conds → write params.txt (n==0) → p.sample() [Txt2Img: sampler.sample → optional sample_hr_pass for hires fix] → post_sample → decode_latent_batch → postprocess_batch/postprocess_batch_list → per-image postprocess_image → save_image → image_grid → postprocess → Processed.",
+          "sources": [
+            "modules/processing.py#L819-1150",
+            "modules/processing.py#L1307-1466"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "IMG2IMG/INPAINT: img2img() collects init_images/mask/sketch from the six sub-tabs → StableDiffusionProcessingImg2Img.init() encodes init image to latent (latent_image), builds mask (image_mask/inpainting conditioning), p.sample() runs sampler at denoising_strength with img2img_fix_steps; on_mask_blend/postprocess_maskoverlay hooks fire for inpaint compositing before save.",
+          "sources": [
+            "modules/img2img.py",
+            "modules/processing.py#L1557-1780",
+            "modules/scripts.py#L16-26",
+            "modules/ui.py#L537-593"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "API GENERATION: POST /sdapi/v1/txt2img → Api.text2imgapi (behind Depends(self.auth) if --api-auth) → apply_infotext fills unset request fields → get_selectable_script resolves script_name → validate_sampler_name → init_script_args builds flat args (index 0 = selectable script idx+1) → with queue_lock: StableDiffusionProcessingTxt2Img(**args) → p.scripts.run or process_images → base64 images + info JSON in TextToImageResponse.",
+          "sources": [
+            "modules/api/api.py#L274-292",
+            "modules/api/api.py#L432-459"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "EXTENSION INSTALL: Extensions tab → install_extension_from_url(dirname,url) → check_access() asserts not cmd_opts.disable_extension_access → git.Repo.clone_from(url, tmpdir, filter=['blob:none']) + submodule.update → os.rename/shutil.move to extensions_dir → launch.run_extension_installer executes the extension's install.py → extensions.list_extensions() rescans; apply_and_restart triggers restart_program/stop_program.",
+          "sources": [
+            "modules/ui_extensions.py#L344-396",
+            "modules/ui_extensions.py#L26-56",
+            "modules/launch_utils.py#L228-241"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "SETTINGS WRITE: UI settings component change → shared.opts.<key> = value → Options.__setattr__ validates against freeze-settings flags, restricted component_args, frozen sections/keys → data[key]=value → onchange callbacks via opts.set() → opts.save(config_filename) writes config.json; at boot Options.load() runs version migrations (sd_vae_as_default→sd_vae_overrides_per_model_preferences, quicksettings→quicksettings_list, ui_reorder→ui_reorder_list).",
+          "sources": [
+            "modules/options.py#L90-171",
+            "modules/options.py#L197-228",
+            "modules/shared_options.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "MODEL RELOAD: override_settings.sd_model_checkpoint or /sdapi/v1/reload-checkpoint → sd_models.reload_model_weights → get_checkpoint_state_dict (safetensors.load_file or monkeypatched torch.load via safe.load) → send_model_to_trash old model → load_model_weights → LoadStateDictOnMeta streams weights → send_model_to_device → model_hijack.hijack + embedding_db.load_textual_inversion_embeddings(force_reload).",
+          "sources": [
+            "modules/sd_models.py#L786-860",
+            "modules/sd_models.py#L940",
+            "modules/safe.py#L129-195"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "testing_signals": {
+      "summary": "Testing is API-level only: pytest + requests against a live server started with --test-server on CPU using test/test_files/empty.pt as the checkpoint. test/ holds 6 test modules covering txt2img, img2img, extras, face restorers, torch utils, and endpoint smoke tests. CI (run_tests.yaml) launches the real server on ubuntu-latest with coverage, runs pytest with pytest-base-url, then kills it via the /sdapi/v1/server-stop route. Lint CI runs ruff (pinned 0.3.3) and eslint. There are no unit tests of the sampling pipeline, no UI tests, and coverage of modules/ internals is incidental.",
+      "claims": [
+        {
+          "claim": "Test framework is pytest 7.3 + pytest-base-url + pytest-cov (requirements-test.txt); pyproject.toml [tool.pytest.ini_options] sets base_url=http://127.0.0.1:7860; tests use plain requests calls, no fixtures beyond conftest base64 image encoders and an 'initialize' fixture that imports webui.",
+          "sources": [
+            "requirements-test.txt",
+            "pyproject.toml",
+            "test/conftest.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Tests are end-to-end HTTP tests: test_txt2img.py POSTs a minimal 64x64 3-step 'Euler a' request to /sdapi/v1/txt2img; test_img2img.py covers img2img/inpaint modes with base64 fixtures; test_utils.py smoke-tests GET endpoints (samplers, sd-models, embeddings, ...) and a read-write /sdapi/v1/options roundtrip.",
+          "sources": [
+            "test/test_txt2img.py",
+            "test/test_img2img.py",
+            "test/test_utils.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CI runs the actual app: run_tests.yaml does 'python launch.py --skip-torch-cuda-test --exit' to prepare env, then starts 'launch.py --test-server --use-cpu all --api-server-stop' under coverage, waits on port 7860, runs pytest --verify-base-url test, and stops the server via curl -XPOST /sdapi/v1/server-stop.",
+          "sources": [
+            ".github/workflows/run_tests.yaml",
+            "modules/launch_utils.py#L449-460",
+            "modules/api/api.py#L248-251"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "--test-server mode mutates sys.argv to inject --api, --ckpt test/test_files/empty.pt, --skip-torch-cuda-test, --disable-nan-check and blanks COMMANDLINE_ARGS, letting CI run generation-shaped calls without a real model or GPU.",
+          "sources": [
+            "modules/launch_utils.py#L449-460"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "conftest.py sets IGNORE_CMD_ARGS_ERRORS=1 so pytest's own argv doesn't break shared_cmd_options' argparse parse (which otherwise calls parser.parse_args() at import time).",
+          "sources": [
+            "test/conftest.py",
+            "modules/shared_cmd_options.py#L12-15"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Lint coverage: on_pull_request.yaml runs ruff==0.3.3 (config in pyproject.toml, target py39, selects B/C/I/W, excludes extensions/) and eslint via 'npm run lint' (eslint ^8.40.0, scripts lint/fix in package.json).",
+          "sources": [
+            ".github/workflows/on_pull_request.yaml",
+            "pyproject.toml",
+            "package.json"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Coverage artifacts are produced (coverage combine + html uploaded as artifacts), but nothing enforces a coverage floor; the core diff math — sd_samplers_kdiffusion, sd_samplers_cfg_denoiser, prompt_parser, sd_hijack — has no direct unit tests and is only exercised indirectly through the 6 API test files.",
+          "sources": [
+            ".github/workflows/run_tests.yaml",
+            "test/",
+            "modules/sd_samplers_kdiffusion.py",
+            "modules/sd_samplers_cfg_denoiser.py"
+          ],
+          "kind": "inference"
+        },
+        {
+          "claim": "test/test_files contains tiny fixtures (empty.pt fake checkpoint, img2img_basic.png, mask_basic.png, two-faces.jpg); test_outputs/ is an output scratch dir — there is no golden-image regression comparison of generated outputs.",
+          "sources": [
+            "test/test_files",
+            "test/test_img2img.py"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "risk_map": {
+      "summary": "The dominant risk theme is remote-code-execution surface by design: extensions are arbitrary Python loaded at startup, the Extensions tab can git-clone and run install.py, and the Custom code script exec()s user code — mitigated only by flags that auto-disable extension access when the server is non-local. The API is unauthenticated unless --api-auth is set and can fetch remote URLs (SSRF-checked but opt-out-able). Shell-out is pervasive in launch_utils (shell=True subprocess). Checkpoint loading relies on a monkeypatched torch.load pickle scan that --disable-safe-unpickle bypasses.",
+      "claims": [
+        {
+          "claim": "Arbitrary code execution by design: every .py in extensions/*/scripts and extensions/*/preload.py is exec_module'd at startup, and install_extension_from_url runs the extension's install.py; protection is only cmd_opts.disable_extension_access = webui_is_non_local AND not --enable-insecure-extension-access, asserted by check_access().",
+          "sources": [
+            "modules/ui_extensions.py#L22-24",
+            "modules/ui_extensions.py#L344-396",
+            "modules/shared_cmd_options.py#L17-18",
+            "modules/script_loading.py#L19-35"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "scripts/custom_code.py executes arbitrary Python via exec()/eval() (exec_with_return builds an AST and runs it) gated only by --allow-code flag and a re-check inside run().",
+          "sources": [
+            "scripts/custom_code.py#L18-35",
+            "scripts/custom_code.py#L43-64",
+            "modules/cmd_args.py#L38"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The REST API has no auth by default: --api-auth is optional HTTP Basic; without it every /sdapi/v1/* route (including POST /options which can change output dirs, /train/* jobs, and --api-server-stop's /server-kill|restart|stop) is open to anyone who can reach the port.",
+          "sources": [
+            "modules/api/api.py#L199-205",
+            "modules/api/api.py#L220-251",
+            "modules/cmd_args.py#L102-121"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "SSRF surface: decode_base64_to_image fetches http(s) URLs server-side when opts.api_enable_requests; verify_url() checks resolved IPs are global (blocks local addresses only when api_forbid_local_requests), but DNS-rebinding between gethostbyname_ex and requests.get is not closed.",
+          "sources": [
+            "modules/api/api.py#L58-99"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "shell=True subprocess everywhere in launch_utils.run(): pip installs, git clone/pull/fetch/reset built as f-strings; git_clone interpolates URL/dir into a shell string (quoted but not escaped); TORCH_COMMAND/INDEX_URL env vars directly shape pip commands.",
+          "sources": [
+            "modules/launch_utils.py#L89-118",
+            "modules/launch_utils.py#L139-198",
+            "modules/launch_utils.py#L319-346"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Checkpoint deserialization: torch.load is globally replaced by safe.load which scans pickles (check_pt) for malicious code before unsafe_torch_load; --disable-safe-unpickle turns this off entirely; the scan is a blocklist-style heuristic, and safetensors path bypasses it.",
+          "sources": [
+            "modules/safe.py#L79-195",
+            "modules/sd_models.py#L318-323",
+            "modules/cmd_args.py#L100"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Gradio's permissive CORS middleware is manually stripped post-launch (app.user_middleware filter) specifically because a malicious page could otherwise drive the local API to install extensions; any code re-adding middleware could silently reopen this hole.",
+          "sources": [
+            "webui.py#L100-106"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "File-system writes outside repo root: --data-dir/--ckpt-dir/--embeddings-dir and outdir_* options let users/API redirect outputs and model loads to arbitrary paths; images.save_image and Options.save have no sandboxing beyond --gradio-allowed-path for serving and --hide-ui-dir-config for hiding dir settings.",
+          "sources": [
+            "modules/cmd_args.py#L22-37",
+            "modules/shared_options.py#L79-87",
+            "modules/images.py#L624",
+            "modules/options.py#L122-124"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Single global queue_lock + mutable shared.sd_model/shared.opts: process_images mutates global opts via override_settings then restores in finally — an exception or crash between set and restore, or concurrent API calls interleaving opts changes, can leave settings or the loaded checkpoint in an inconsistent state.",
+          "sources": [
+            "modules/processing.py#L819-860",
+            "modules/call_queue.py#L8-18"
+          ],
+          "kind": "inference"
+        },
+        {
+          "claim": "Options.__setattr__ uses assert for freeze-settings enforcement ('assert not cmd_opts.freeze_settings'); running Python with -O would strip these checks, silently disabling the freeze protections.",
+          "sources": [
+            "modules/options.py#L98-120"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Startup update path fetches remote state and prints notices (version_check hits api.github.com; --update-all-extensions runs git pull --autostash across every repo under extensions_dir including subrepos) — network-dependent and can leave extension trees in autostash-conflict states.",
+          "sources": [
+            "modules/launch_utils.py#L201-225",
+            "modules/launch_utils.py#L440-442"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "sys.path is temporarily prepended with each script's basedir during load_scripts() — an extension script can shadow stdlib/modules imports for subsequently loaded scripts (restored in finally per file, but cross-file ordering via metadata.ini Requires/Before/After is attacker-orderable).",
+          "sources": [
+            "modules/scripts.py#L495-524",
+            "modules/scripts.py#L393-468"
+          ],
+          "kind": "inference"
+        }
+      ]
+    },
+    "extension_points": {
+      "summary": "This repo is primarily an extension host. Four plug-in surfaces exist: (1) extensions in extensions/ and extensions-builtin/ — directories with optional preload.py (argparse), install.py (setup), scripts/*.py (Script subclasses), metadata.ini (ordering/deps), and javascript/*.js; (2) the Script base class lifecycle with ~20 hooks from before_process to postprocess; (3) the script_callbacks.py registry with ~20 named callback categories including CFG denoiser per-step hooks; (4) registries for extra networks, samplers, upscalers, optimizers, and UNET patches.",
+      "claims": [
+        {
+          "claim": "Extension discovery: extensions.list_extensions() scans extensions-builtin/ then extensions/, building Extension objects gated by --disable-all-extensions/--disable-extra-extensions and opts.disabled_extensions; ExtensionMetadata reads metadata.ini for canonical Name and [Extension] Requires plus per-script Requires/Before/After ordering fields.",
+          "sources": [
+            "modules/extensions.py#L228-266",
+            "modules/extensions.py#L37-103"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Script loading: scripts.load_scripts() runs list_scripts('scripts','.py') + list_scripts('modules/processing_scripts','.py') over the base dir and every active extension, orders files by topological_sort of metadata dependencies, load_module() exec's each file, and registers every Script or ScriptPostprocessing subclass found into scripts_data/postprocessing_scripts_data.",
+          "sources": [
+            "modules/scripts.py#L393-531",
+            "modules/script_loading.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Script API: subclass modules.scripts.Script, implement title()/ui(is_img2img)/show()/run(p,*args); AlwaysVisible return from show() makes it always-on; lifecycle hooks include setup, before_process, process, before_process_batch, after_extra_networks_activate, process_batch, postprocess_batch, postprocess_batch_list, on_mask_blend, post_sample, postprocess_image, postprocess_image_after_composite, postprocess, before_hr — each documented in the class.",
+          "sources": [
+            "modules/scripts.py#L52-348"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "script_callbacks.py exposes registration functions on_app_started, on_before_reload, on_model_loaded, on_ui_tabs, on_ui_train_tabs, on_ui_settings, on_before_image_saved, on_image_saved, on_extra_noise, on_cfg_denoiser, on_cfg_denoised, on_cfg_after_cfg, on_before_component, on_after_component, on_image_grid, on_infotext_pasted, on_script_unloaded, on_before_ui, on_list_optimizers, on_list_unets, on_before_token_counter — backed by callback_map lists with ordered sorting and per-extension callback naming.",
+          "sources": [
+            "modules/script_callbacks.py#L219-241",
+            "modules/script_callbacks.py#L456-613"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "on_ui_tabs is how extensions add top-level Gradio tabs: callback returns [(blocks, label, elem_id)] tuples appended to interfaces in create_ui(); on_before_component/after_component (or Script.on_before_component(elem_id=...)) lets scripts inject/modify any Gradio component by elem_id.",
+          "sources": [
+            "modules/script_callbacks.py#L278-290",
+            "modules/ui.py#L1124-1148",
+            "modules/scripts.py#L290-328"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Extra networks: call extra_networks.register_extra_network(obj) (name matches <name:...> in prompts) and register_extra_network_alias; obj implements activate(p, params_list)/deactivate(p). extensions-builtin/Lora registers ExtraNetworkLora with alias 'lyco' in its scripts/lora_script.py before_ui callback.",
+          "sources": [
+            "modules/extra_networks.py#L9-29",
+            "modules/extra_networks.py#L48-87",
+            "extensions-builtin/Lora/scripts/lora_script.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "preload.py hook: any extension dir containing preload.py gets load_module'd and its preload(parser) called during shared_cmd_options import, letting extensions add CLI args before cmd_opts is parsed (Lora uses it for --lora-dir/--lyco-dir-backcompat).",
+          "sources": [
+            "modules/script_loading.py#L19-35",
+            "modules/shared_cmd_options.py#L9-10",
+            "extensions-builtin/Lora/preload.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Settings extension: update shared.options_templates with shared.options_section(...) dicts of OptionInfo — Lora adds 'sd_lora', 'lora_*' options this way; each OptionInfo can carry an onchange callback and restrict_api flag.",
+          "sources": [
+            "extensions-builtin/Lora/scripts/lora_script.py",
+            "modules/shared_options.py#L9-34",
+            "modules/options.py#L13-58"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Extra Networks pages: ui_extra_networks.register_page(ExtraNetworksPage subclass) adds browsable card tabs; ui_extra_networks_user_metadata.py shows per-file .json sidecar editing — pages are served to the browser via add_pages_to_demo.",
+          "sources": [
+            "modules/ui_extra_networks.py",
+            "modules/ui_extra_networks_user_metadata.py",
+            "extensions-builtin/Lora/ui_extra_networks_lora.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Sampler/scheduler/upscaler registration: append SamplerData to sd_samplers_*.py lists consumed by all_samplers; sd_schedulers.schedulers; upscaler.Upscaler subclasses discovered by modelloader.load_upscalers() scanning models dirs; optimizers via on_list_optimizers into sd_hijack_optimizations; UNET patches via on_list_unets into sd_unet.",
+          "sources": [
+            "modules/sd_samplers.py#L11-16",
+            "modules/modelloader.py",
+            "modules/initialize.py#L118-137",
+            "modules/sd_unet.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "API surface for scripts is automatic: Api.__init__ initializes scripts_txt2img/img2img runners if empty, builds default_script_arg arrays from each script's ui() default component values, and get_script_info exposes Script.api_info — scripts appear in /sdapi/v1/scripts and are addressable by name in requests' script_name/alwayson_scripts.",
+          "sources": [
+            "modules/api/api.py#L253-333"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Built-in extensions in extensions-builtin/ (canvas-zoom-and-pan, extra-options-section, hypertile, LDSR, Lora, mobile, postprocessing-for-training, prompt-bracket-checker, ScuNET, soft-inpainting, SwinIR) are the reference implementations for each extension pattern — is_builtin=True keeps them loaded even under --disable-extra-extensions.",
+          "sources": [
+            "extensions-builtin",
+            "modules/extensions.py#L20-26"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Frontend extension: every .js file under javascript/ (and extension javascript dirs) is bundled into the Gradio page; they hook DOM lifecycle (onUiLoaded/onOptionsChanged/onAfterUiUpdate etc. defined in script.js/ui.js) — e.g. edit-attention.js, extraNetworks.js, contextMenus.js.",
+          "sources": [
+            "javascript/ui.js",
+            "javascript/edit-attention.js",
+            "javascript/extraNetworks.js",
+            "script.js"
+          ],
+          "kind": "inference"
+        }
+      ]
+    },
+    "agent_handoff": {
+      "summary": "Read webui.py, modules/initialize.py, modules/processing.py, modules/scripts.py, modules/shared.py, and modules/paths_internal.py first — they define the boot order, the p-object pipeline, and the global-state conventions everything else hangs off. Safe edit zones: scripts/ and extensions-builtin/ for new features; modules/api/api.py + modules/api/models.py for new endpoints; shared_options.py for new settings. Traps: import-order sensitivity (paths_internal before torch), the single queue_lock serialization, opts restore semantics, and test mode requiring --test-server conventions.",
+      "claims": [
+        {
+          "claim": "Import-order discipline matters: modules/paths_internal.py and modules/cmd_args.py parse sys.argv at import time and inject COMMANDLINE_ARGS; shared_cmd_options imports launch.py and runs extension preload.py files at import — never import torch-dependent modules before initialize.imports(), and set IGNORE_CMD_ARGS_ERRORS=1 when running pytest/other tools.",
+          "sources": [
+            "modules/paths_internal.py#L12-13",
+            "modules/shared_cmd_options.py",
+            "modules/cmd_args.py#L22",
+            "test/conftest.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Follow the 'p' convention: generation features should be implemented as Script subclasses (scripts/ or extension scripts/) mutating the StableDiffusionProcessing object via the documented hook lifecycle, not by editing process_images_inner directly — the base class docstrings define exactly when each hook fires.",
+          "sources": [
+            "modules/scripts.py#L52-348",
+            "modules/processing.py#L863-1150"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Adding a REST endpoint: add a pydantic model in modules/api/models.py, register with self.add_api_route in Api.__init__ (auto-wraps Depends(auth) when --api-auth is set), reuse init_script_args/apply_infotext for generation endpoints, and wrap generation calls in self.queue_lock.",
+          "sources": [
+            "modules/api/api.py#L199-251",
+            "modules/api/api.py#L274-284",
+            "modules/api/models.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Adding a setting: add an OptionInfo entry to the right options_section in modules/shared_options.py (or shared.options_templates.update from an extension); set restrict_api=True to hide it from /sdapi/v1/options; onchange callbacks run via opts.set(); do_not_save entries never persist.",
+          "sources": [
+            "modules/shared_options.py",
+            "modules/options.py#L14-34",
+            "modules/options.py#L144-171"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Code style is ruff-governed (pyproject.toml: target py39, select B/C/I/W, E501/E721/E731/C901 ignored, extensions/ excluded); run 'ruff .' and 'npm run lint' before committing; CI also requires PRs from forks (lint/test jobs skip same-repo PRs).",
+          "sources": [
+            "pyproject.toml",
+            "package.json",
+            ".github/workflows/on_pull_request.yaml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "To run tests locally you must boot the app first: 'python launch.py --test-server --skip-prepare-environment --skip-torch-cuda-test --use-cpu all --api-server-stop' then 'pytest test' — tests hit a live server on :7860, there is no offline unit-test path for the pipeline.",
+          "sources": [
+            ".github/workflows/run_tests.yaml",
+            "test/conftest.py",
+            "modules/launch_utils.py#L449-460"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Beware mutable module globals: shared.sd_model may be swapped mid-generation by refiner/override_settings (reload_model_weights is called inside the batch loop); shared.opts changes during a job are restored by process_images' finally block only if override_settings_restore_afterwards — keep new opts writes inside that contract.",
+          "sources": [
+            "modules/processing.py#L826-860",
+            "modules/processing.py#L941"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Infotext is the cross-cutting serialization format: paste_fields in modules/infotext_utils.py map infotext labels ↔ gradio components ↔ API fields; any new generation parameter must be added there (and to create_infotext's generation_params dict) to roundtrip through PNG metadata and 'Send to' buttons.",
+          "sources": [
+            "modules/infotext_utils.py",
+            "modules/processing.py#L750-816"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "File-not-found and extension errors should go through modules/errors.py report()/display() (they render in UI and log), not bare exceptions; scripts' callback failures are individually caught by script_callbacks report_exception so one bad extension doesn't kill the run.",
+          "sources": [
+            "modules/errors.py",
+            "modules/script_callbacks.py#L14-15",
+            "modules/scripts.py#L533-535"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Device/memory plumbing is centralized in modules/devices.py (autocast, torch_gc, test_for_nans, dtype selection via --no-half/--precision/--use-cpu) and modules/lowvram.py (--lowvram/--medvram model shuffling) — new GPU work should reuse devices.get_optimal_device/autocast/without_autocast contexts rather than raw torch calls.",
+          "sources": [
+            "modules/devices.py",
+            "modules/lowvram.py",
+            "modules/shared_init.py",
+            "modules/cmd_args.py#L74-75"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_prompt": "You are working on AUTOMATIC1111/stable-diffusion-webui: a self-hosted Gradio UI + FastAPI server for Stable Diffusion image generation (Python, no build step). KEY ARCHITECTURE: Entry is `python launch.py` (or webui.sh/webui.bat which set up a venv). launch.py -> modules/launch_utils.py installs deps and git-clones pinned repos into repositories/, then imports webui.py. webui.py has two modes: webui() builds the Gradio app via modules/ui.py create_ui() and optionally mounts the REST API when --api is passed; api_only() (--nowebui) runs FastAPI alone on port 7861. ALL generation state is module globals in modules/shared.py: shared.sd_model, shared.opts, shared.state, shared.demo. CORE PIPELINE: both UI (modules/txt2img.py, modules/img2img.py) and API (modules/api/api.py text2imgapi/img2imgapi) build a StableDiffusionProcessing dataclass ('p') and call processing.process_images(p) -> process_images_inner(p), which runs: script hooks -> p.init -> per-batch loop {extra_networks.activate, setup_conds, p.sample (sampler), VAE decode, per-image postprocess, images.save_image} -> Processed. Generation is serialized by a single modules/call_queue.py queue_lock (FIFOLock). EXTENDING (preferred over core edits): subclass modules.scripts.Script (title/ui/show/run + hooks: process, before_process_batch, process_batch, post_sample, postprocess_image, postprocess, before_hr...) in scripts/ or an extension's scripts/ dir; or register modules/script_callbacks.py hooks (on_ui_tabs, on_cfg_denoiser, on_image_saved, on_before_ui, ~20 categories); or register an ExtraNetwork via extra_networks.register_extra_network for <name:args> prompt syntax. Extensions live in extensions/ (user) and extensions-builtin/ (shipped; Lora is the reference implementation): optional preload.py adds CLI args, install.py runs at startup, metadata.ini declares Requires/Before/After ordering. SETTINGS: declare OptionInfo in modules/shared_options.py or shared.options_templates; persisted to config.json (data_path). Use restrict_api=True to hide from API. PATHS: modules/paths_internal.py computes data_path/models_path/extensions_dir from --data-dir; import-time argparse happens there and in shared_cmd_options.py — mind import order, and set IGNORE_CMD_ARGS_ERRORS=1 for tooling. CONVENTIONS: errors through modules/errors.report; device/dtype through modules/devices.py autocast/torch_gc; infotext roundtrip via modules/infotext_utils.py paste_fields; ruff + eslint lint (ruff ., npm run lint). TESTS: integration-only — start 'python launch.py --test-server --skip-prepare-environment --use-cpu all --api-server-stop' then pytest test/ (requests against :7860, empty.pt fake checkpoint). SECURITY NOTES: extensions execute arbitrary code; API is unauthenticated without --api-auth; --allow-code enables an exec() script; extension tab is auto-disabled on non-local servers unless --enable-insecure-extension-access."
+  },
+  "analysis": {
+    "agent": "devin",
+    "model": "swe-2",
+    "runtime_ms": null,
+    "cost_usd": null,
+    "collected_at": "2026-09-22T16:29:37.058Z"
   }
 }

@@ -272,42 +272,42 @@
         {
           "path": "CLAUDE.md",
           "bytes": 5562,
-          "preview": "# CLAUDE.md\n\nThis file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.\n\n## Project Overview\n\nUI UX Pro Max is an AI-powered design intelligence toolkit providing searchable databases of UI styles, color palettes, font pairings, chart types, and UX guidelines. It works as a skill/workflow for AI coding assistants (Claude Code, Windsurf, Cursor, etc.).\n\n## Search Command\n\n```bash\npython3 src/ui-ux-pro-max/scripts/search.py \"<query>\" --domain <domain> [-n <max_results>]\n```\n\n**Domain search:**\n- `product` - Product type recommendations (SaaS, e-commerce, portfolio)\n- `style` - UI styles (glassmorphism, minimalism, brutalism) + AI prompts and CSS keywords\n- `typography` - Font pairings with Google Fonts imports\n- `color` - Color palettes by product type\n- `landing` - Page structure and CTA strategies\n- `chart` - Chart types and library recommendations\n- `ux` - Best practices and anti-patterns\n- `icons` - Icon recommendations with import code (Phosphor, Heroicons, Lucide)\n- `react` - React/Next.js performance patterns\n- `web` - App interface guidelines (iOS/Android/React Native)\n- `google-fonts` - Individual Google Fonts lookup\n- `gsap` - GSAP animation skeletons by intensity tier (hover, scroll reveal, stagger, page transition, parallax, loading)\n\n**Design dials (optional, only with `--design-system`):**\n```bash\npython3 src/ui-ux-pro-max/scripts/search.py \"<query>\" --design-system --variance <1-10> --motion <1-10> --density <1-10>\n```\n`--variance` biases style selection (centered/minimal \u2192 bold/asymmetric), `--motion` attaches a matching GSAP snippet from `motion.csv`, `--density` overrides the spacing-scale tokens (spacious \u2192 dense/dashboard). Any dial left unset behaves exactly as before.\n\n**Stack search:**\n```bash\npython3 src/ui-ux-pro-max/scripts/search.py \"<query>\" --stack <stack>\n```\nAvailable stacks: `html-tailwind` (default), `react`, `nextjs`, `astro`, `vue`, `nuxtjs`, `nuxt-ui`, `svelte`, `swiftui`, `react-native`, `flutter`, `shadcn`, `jetpack-compose`, `threejs`, `angular`, `laravel`, `javafx`, `wpf`, `winui`, `avalonia`, `uno`, `uwp`\n\n## Architecture\n\n```\nsrc/ui-ux-pro-max/                # Source of Truth\n\u251c\u2500\u2500 data/                         # Canonical CSV databases\n\u2502   \u251c\u2500\u2500 products.csv, styles.csv, colors.csv, typography.csv, ...\n\u2502   \u2514\u2500\u2500 stacks/                   # Stack-specific guidelines\n\u251c\u2500\u2500 scripts/\n\u2502   \u251c\u2500\u2500 search.py                 # CLI entry point\n\u2502   \u251c\u2500\u2500 core.py                   # BM25 + regex hybrid search engine\n\u2502   \u2514\u2500\u2500 design_system.py          # Design system generation\n\u2514\u2500\u2500 templates/\n    \u251c\u2500\u2500 base/                     # Base templates (skill-content.md, quick-reference.md)\n    \u2514\u2500\u2500 platforms/                # Platform configs (claude.json, cursor.json, ...)\n\ncli/                              # CLI installer (ui-ux-pro-max-cli on npm)\n\u251c\u2500\u2500 src/\n\u2502   \u251c\u2500\u2500 commands/init.ts          # Install command with template generation\n\u2502   \u2514\u2500\u2500 utils/template.ts         # Template rendering engine\n\u251c\u2500\u2500 scripts/sync-assets.mjs       # Mirrors src/ -> cli/assets/ AND src/ -> .claude/skills/ui-ux-pro-max/\n\u2514\u2500\u2500 assets/                       # Bundled assets (~564KB)\n    \u251c\u2500\u2500 data/                     # Copy of src/ui-ux-pro-max/data/\n    \u251c\u2500\u2500 scripts/                  # Copy of src/ui-ux-pro-max/scripts/\n    \u2514\u2500\u2500 templates/                # Copy of src/ui-ux-pro-max/templates/\n\n.claude/skills/ui-ux-pro-max/     # Claude Code skill: hand-authored SKILL.md +\n                                   # data/, scripts/ mirrored from src/ (see Sync Rules)\n.claude-plugin/                   # Claude Marketplace publishing\n```\n\nThe search engine uses BM25 ranking combined with regex matching. Domain auto-detection is available when `--domain` is omitted.\n\n## Sync Rules\n\n**Source of Truth:** `src/ui-ux-pro-max/`\n\nThere are no symlinks in this repo (git-on-Windows checks them out as plain\ntext files pointing at a path, which silently breaks the skill) -- every\nmirrored copy below is a real, independently-committed file kept in sync by\n`cli/scripts/sync-assets.mjs`, enforced by the \"Check asset sync\" CI workflow.\n\nWhen modifying files:\n\n1. **Data & Scripts** - Edit in `src/ui-ux-pro-max/`:\n   - `data/*.csv` and `data/stacks/*.csv`\n   - `scripts/*.py`\n   - Then run the sync below -- changes are NOT automatically reflected anywhere else.\n\n2. **Templates** - Edit in `src/ui-ux-pro-max/templates/`:\n   - `base/skill-content.md` - Common SKILL.md content\n   - `base/quick-reference.md` - Quick reference section (Claude only)\n   - `platforms/*.json` - Platform-specific configs\n\n3. **Sync before publishing / committing data or script changes:**\n   ```bash\n   cd cli\n   npm run sync:assets   # mirrors src/ -> cli/assets/ AND src/ -> .claude/skills/ui-ux-pro-max/{data,scripts}\n   npm run check:assets  # verify, no npm install required\n   ```\n   `.claude/skills/ui-ux-pro-max/SKILL.md` itself is hand-authored, not\n   mirrored or template-generated -- edit it directly.\n\n4. **Reference Folders** - No manual sync needed. The CLI generates these from templates during `uipro init`.\n\n## Prerequisites\n\nPython 3.x (no external dependencies required)\n\n**Note:** On Windows, use `python` instead of `python3` to run the scripts.\n\n## Git Workflow\n\nNever push directly to `main`. Always:\n\n1. Create a new branch: `git checkout -b feat/...` or `fix/...`\n2. Commit changes\n3. Push branch: `git push -u origin <branch>`\n4. Create PR: `gh pr create`\n"
+          "preview": "# CLAUDE.md\n\nThis file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.\n\n## Project Overview\n\nUI UX Pro Max is an AI-powered design intelligence toolkit providing searchable databases of UI styles, color palettes, font pairings, chart types, and UX guidelines. It works as a skill/workflow for AI coding assistants (Claude Code, Windsurf, Cursor, etc.).\n\n## Search Command\n\n```bash\npython3 src/ui-ux-pro-max/scripts/search.py \"<query>\" --domain <domain> [-n <max_results>]\n```\n\n**Domain search:**\n- `product` - Product type recommendations (SaaS, e-commerce, portfolio)\n- `style` - UI styles (glassmorphism, minimalism, brutalism) + AI prompts and CSS keywords\n- `typography` - Font pairings with Google Fonts imports\n- `color` - Color palettes by product type\n- `landing` - Page structure and CTA strategies\n- `chart` - Chart types and library recommendations\n- `ux` - Best practices and anti-patterns\n- `icons` - Icon recommendations with import code (Phosphor, Heroicons, Lucide)\n- `react` - React/Next.js performance patterns\n- `web` - App interface guidelines (iOS/Android/React Native)\n- `google-fonts` - Individual Google Fonts lookup\n- `gsap` - GSAP animation skeletons by intensity tier (hover, scroll reveal, stagger, page transition, parallax, loading)\n\n**Design dials (optional, only with `--design-system`):**\n```bash\npython3 src/ui-ux-pro-max/scripts/search.py \"<query>\" --design-system --variance <1-10> --motion <1-10> --density <1-10>\n```\n`--variance` biases style selection (centered/minimal → bold/asymmetric), `--motion` attaches a matching GSAP snippet from `motion.csv`, `--density` overrides the spacing-scale tokens (spacious → dense/dashboard). Any dial left unset behaves exactly as before.\n\n**Stack search:**\n```bash\npython3 src/ui-ux-pro-max/scripts/search.py \"<query>\" --stack <stack>\n```\nAvailable stacks: `html-tailwind` (default), `react`, `nextjs`, `astro`, `vue`, `nuxtjs`, `nuxt-ui`, `svelte`, `swiftui`, `react-native`, `flutter`, `shadcn`, `jetpack-compose`, `threejs`, `angular`, `laravel`, `javafx`, `wpf`, `winui`, `avalonia`, `uno`, `uwp`\n\n## Architecture\n\n```\nsrc/ui-ux-pro-max/                # Source of Truth\n├── data/                         # Canonical CSV databases\n│   ├── products.csv, styles.csv, colors.csv, typography.csv, ...\n│   └── stacks/                   # Stack-specific guidelines\n├── scripts/\n│   ├── search.py                 # CLI entry point\n│   ├── core.py                   # BM25 + regex hybrid search engine\n│   └── design_system.py          # Design system generation\n└── templates/\n    ├── base/                     # Base templates (skill-content.md, quick-reference.md)\n    └── platforms/                # Platform configs (claude.json, cursor.json, ...)\n\ncli/                              # CLI installer (ui-ux-pro-max-cli on npm)\n├── src/\n│   ├── commands/init.ts          # Install command with template generation\n│   └── utils/template.ts         # Template rendering engine\n├── scripts/sync-assets.mjs       # Mirrors src/ -> cli/assets/ AND src/ -> .claude/skills/ui-ux-pro-max/\n└── assets/                       # Bundled assets (~564KB)\n    ├── data/                     # Copy of src/ui-ux-pro-max/data/\n    ├── scripts/                  # Copy of src/ui-ux-pro-max/scripts/\n    └── templates/                # Copy of src/ui-ux-pro-max/templates/\n\n.claude/skills/ui-ux-pro-max/     # Claude Code skill: hand-authored SKILL.md +\n                                   # data/, scripts/ mirrored from src/ (see Sync Rules)\n.claude-plugin/                   # Claude Marketplace publishing\n```\n\nThe search engine uses BM25 ranking combined with regex matching. Domain auto-detection is available when `--domain` is omitted.\n\n## Sync Rules\n\n**Source of Truth:** `src/ui-ux-pro-max/`\n\nThere are no symlinks in this repo (git-on-Windows checks them out as plain\ntext files pointing at a path, which silently breaks the skill) -- every\nmirrored copy below is a real, independently-committed file kept in sync by\n`cli/scripts/sync-assets.mjs`, enforced by the \"Check asset sync\" CI workflow.\n\nWhen modifying files:\n\n1. **Data & Scripts** - Edit in `src/ui-ux-pro-max/`:\n   - `data/*.csv` and `data/stacks/*.csv`\n   - `scripts/*.py`\n   - Then run the sync below -- changes are NOT automatically reflected anywhere else.\n\n2. **Templates** - Edit in `src/ui-ux-pro-max/templates/`:\n   - `base/skill-content.md` - Common SKILL.md content\n   - `base/quick-reference.md` - Quick reference section (Claude only)\n   - `platforms/*.json` - Platform-specific configs\n\n3. **Sync before publishing / committing data or script changes:**\n   ```bash\n   cd cli\n   npm run sync:assets   # mirrors src/ -> cli/assets/ AND src/ -> .claude/skills/ui-ux-pro-max/{data,scripts}\n   npm run check:assets  # verify, no npm install required\n   ```\n   `.claude/skills/ui-ux-pro-max/SKILL.md` itself is hand-authored, not\n   mirrored or template-generated -- edit it directly.\n\n4. **Reference Folders** - No manual sync needed. The CLI generates these from templates during `uipro init`.\n\n## Prerequisites\n\nPython 3.x (no external dependencies required)\n\n**Note:** On Windows, use `python` instead of `python3` to run the scripts.\n\n## Git Workflow\n\nNever push directly to `main`. Always:\n\n1. Create a new branch: `git checkout -b feat/...` or `fix/...`\n2. Commit changes\n3. Push branch: `git push -u origin <branch>`\n4. Create PR: `gh pr create`\n"
         },
         {
           "path": "CONTRIBUTING.md",
           "bytes": 5403,
-          "preview": "# Contributing to UI/UX Pro Max\n\nThank you for taking the time to contribute! \ud83c\udf89  \nThis guide will help you get started quickly.\n\n---\n\n## Table of Contents\n\n- [Getting Started](#getting-started)\n- [Project Structure](#project-structure)\n- [Ways to Contribute](#ways-to-contribute)\n- [Development Workflow](#development-workflow)\n- [Commit Message Format](#commit-message-format)\n- [Pull Request Guidelines](#pull-request-guidelines)\n- [Reporting Bugs](#reporting-bugs)\n- [Code of Conduct](#code-of-conduct)\n\n---\n\n## Getting Started\n\n### Prerequisites\n\n- **Node.js** 18+ and **npm**\n- **Python 3.x**\n- **Bun** (for building the CLI)\n- **Git**\n\n### Fork & Clone\n\n```bash\n# 1. Fork the repo on GitHub, then clone your fork\ngit clone https://github.com/YOUR_USERNAME/ui-ux-pro-max-skill.git\ncd ui-ux-pro-max-skill\n\n# 2. Add the upstream remote\ngit remote add upstream https://github.com/nextlevelbuilder/ui-ux-pro-max-skill.git\n\n# 3. Install CLI dependencies\ncd cli && npm install && cd ..\n```\n\n---\n\n## Project Structure\n\n```\nui-ux-pro-max-skill/\n\u251c\u2500\u2500 src/ui-ux-pro-max/          # Source of truth \u2014 edit here, not in .claude/\n\u2502   \u251c\u2500\u2500 data/                   # CSV databases (styles, colors, typography, rules)\n\u2502   \u251c\u2500\u2500 scripts/                # Python search engine & design system generator\n\u2502   \u2514\u2500\u2500 templates/              # Platform-specific skill templates\n\u251c\u2500\u2500 cli/                        # npm CLI installer (ui-ux-pro-max-cli)\n\u251c\u2500\u2500 .claude/                    # Local dev/test files for Claude Code\n\u251c\u2500\u2500 .factory/                   # Local dev/test files for Droid (Factory)\n\u251c\u2500\u2500 docs/                       # Documentation\n\u2514\u2500\u2500 preview/                    # Preview screenshots and demos\n```\n\n> **Important:** Always make data/script changes in `src/ui-ux-pro-max/`, then sync to the CLI (see below). Do not edit `.claude/` or `.factory/` directly for permanent changes.\n\n---\n\n## Ways to Contribute\n\n### \ud83d\udc1b Bug Fixes\nCheck the [Issues tab](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill/issues) for bugs labeled `bug`. Comment on the issue before starting so we don't duplicate work.\n\n### \u2728 New UI Styles\nAdd a new entry to `src/ui-ux-pro-max/data/styles.csv`. Each row needs:\n- Style name\n- Description\n- Best for (use cases)\n- Key CSS properties/effects\n\n### \ud83c\udfa8 New Color Palettes\nAdd entries to `src/ui-ux-pro-max/data/colors.csv`. Match the existing format (primary, secondary, CTA, background, text, notes).\n\n### \ud83c\udfed New Industry Reasoning Rules\nAdd rules to `src/ui-ux-pro-max/data/rules.csv`. Each rule needs a product type, recommended pattern, style priority, color mood, typography mood, key effects, and anti-patterns.\n\n### \ud83c\udf0d Translations\nTranslate `README.md` into your language and save it as `README.[lang].md` (e.g., `README.zh.md`, `README.es.md`).\n\n### \ud83d\udcdd Documentation Improvements\nFix typos, clarify confusing sections, or add missing examples in `README.md` or `docs/`.\n\n### \ud83d\udd27 CLI Improvements\nImprovements to the `cli/` installer. Run `cd cli && bun run build` to test locally.\n\n---\n\n## Development Workflow\n\n```bash\n# 1. Create a feature branch from main\ngit checkout -b feat/your-feature-name\n\n# 2. Make your changes in src/ui-ux-pro-max/\n\n# 3. Sync changes to CLI assets and the Claude Code skill\ncd cli && npm run sync:assets && cd ..\n\n# 4. Build and test the CLI locally\ncd cli && bun run build\nmkdir /tmp/test-project && cd /tmp/test-project\nnode /path/to/cli/dist/index.js init --ai claude --offline\n\n# 5. Test the Python search script\ncd /path/to/repo\npython3 src/ui-ux-pro-max/scripts/search.py \"your query\" --design-system\n\n# 6. Push your branch\ngit push -u origin feat/your-feature-name\n```\n\n---\n\n## Commit Message Format\n\nWe follow [Conventional Commits](https://www.conventionalcommits.org/):\n\n```\n<type>: <short description>\n\nTypes:\n  feat     \u2192 New feature or content (new style, rule, palette)\n  fix      \u2192 Bug fix\n  docs     \u2192 Documentation only\n  refactor \u2192 Code change without new feature or fix\n  chore    \u2192 Build process, dependency updates\n  test     \u2192 Adding or fixing tests\n```\n\n**Examples:**\n```\nfeat: add Skeuomorphism 2.0 style to general styles\nfix: correct color palette for fintech industry rule\ndocs: translate README to Spanish\nchore: update ui-ux-pro-max-cli to v2.6.0\n```\n\n---\n\n## Pull Request Guidelines\n\n1. **One PR per change** \u2014 keep PRs focused and small\n2. **Reference related issues** \u2014 use `Closes #123` in the PR description\n3. **Fill out the PR template** \u2014 describe what you changed and why\n4. **Never push directly to `main`** \u2014 always use a feature branch\n5. **Wait for review** \u2014 a maintainer will review within a few days\n\n---\n\n## Reporting Bugs\n\nPlease [open an issue](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill/issues/new) and include:\n\n- Your OS and terminal\n- The AI assistant you're using (Claude Code, Cursor, etc.)\n- The exact command or prompt that triggered the bug\n- Expected vs. actual behavior\n- Any error messages or screenshots\n\n---\n\n## Code of Conduct\n\nBe kind, constructive, and respectful. We're all here to build something useful together.  \nHarassment, spam, or low-effort contributions will be closed without review.\n\n---\n\n## Questions?\n\nOpen a [Discussion](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill/discussions) or check the [README](README.md) first.\n\nHappy contributing! \ud83d\ude80\n"
+          "preview": "# Contributing to UI/UX Pro Max\n\nThank you for taking the time to contribute! 🎉  \nThis guide will help you get started quickly.\n\n---\n\n## Table of Contents\n\n- [Getting Started](#getting-started)\n- [Project Structure](#project-structure)\n- [Ways to Contribute](#ways-to-contribute)\n- [Development Workflow](#development-workflow)\n- [Commit Message Format](#commit-message-format)\n- [Pull Request Guidelines](#pull-request-guidelines)\n- [Reporting Bugs](#reporting-bugs)\n- [Code of Conduct](#code-of-conduct)\n\n---\n\n## Getting Started\n\n### Prerequisites\n\n- **Node.js** 18+ and **npm**\n- **Python 3.x**\n- **Bun** (for building the CLI)\n- **Git**\n\n### Fork & Clone\n\n```bash\n# 1. Fork the repo on GitHub, then clone your fork\ngit clone https://github.com/YOUR_USERNAME/ui-ux-pro-max-skill.git\ncd ui-ux-pro-max-skill\n\n# 2. Add the upstream remote\ngit remote add upstream https://github.com/nextlevelbuilder/ui-ux-pro-max-skill.git\n\n# 3. Install CLI dependencies\ncd cli && npm install && cd ..\n```\n\n---\n\n## Project Structure\n\n```\nui-ux-pro-max-skill/\n├── src/ui-ux-pro-max/          # Source of truth — edit here, not in .claude/\n│   ├── data/                   # CSV databases (styles, colors, typography, rules)\n│   ├── scripts/                # Python search engine & design system generator\n│   └── templates/              # Platform-specific skill templates\n├── cli/                        # npm CLI installer (ui-ux-pro-max-cli)\n├── .claude/                    # Local dev/test files for Claude Code\n├── .factory/                   # Local dev/test files for Droid (Factory)\n├── docs/                       # Documentation\n└── preview/                    # Preview screenshots and demos\n```\n\n> **Important:** Always make data/script changes in `src/ui-ux-pro-max/`, then sync to the CLI (see below). Do not edit `.claude/` or `.factory/` directly for permanent changes.\n\n---\n\n## Ways to Contribute\n\n### 🐛 Bug Fixes\nCheck the [Issues tab](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill/issues) for bugs labeled `bug`. Comment on the issue before starting so we don't duplicate work.\n\n### ✨ New UI Styles\nAdd a new entry to `src/ui-ux-pro-max/data/styles.csv`. Each row needs:\n- Style name\n- Description\n- Best for (use cases)\n- Key CSS properties/effects\n\n### 🎨 New Color Palettes\nAdd entries to `src/ui-ux-pro-max/data/colors.csv`. Match the existing format (primary, secondary, CTA, background, text, notes).\n\n### 🏭 New Industry Reasoning Rules\nAdd rules to `src/ui-ux-pro-max/data/rules.csv`. Each rule needs a product type, recommended pattern, style priority, color mood, typography mood, key effects, and anti-patterns.\n\n### 🌍 Translations\nTranslate `README.md` into your language and save it as `README.[lang].md` (e.g., `README.zh.md`, `README.es.md`).\n\n### 📝 Documentation Improvements\nFix typos, clarify confusing sections, or add missing examples in `README.md` or `docs/`.\n\n### 🔧 CLI Improvements\nImprovements to the `cli/` installer. Run `cd cli && bun run build` to test locally.\n\n---\n\n## Development Workflow\n\n```bash\n# 1. Create a feature branch from main\ngit checkout -b feat/your-feature-name\n\n# 2. Make your changes in src/ui-ux-pro-max/\n\n# 3. Sync changes to CLI assets and the Claude Code skill\ncd cli && npm run sync:assets && cd ..\n\n# 4. Build and test the CLI locally\ncd cli && bun run build\nmkdir /tmp/test-project && cd /tmp/test-project\nnode /path/to/cli/dist/index.js init --ai claude --offline\n\n# 5. Test the Python search script\ncd /path/to/repo\npython3 src/ui-ux-pro-max/scripts/search.py \"your query\" --design-system\n\n# 6. Push your branch\ngit push -u origin feat/your-feature-name\n```\n\n---\n\n## Commit Message Format\n\nWe follow [Conventional Commits](https://www.conventionalcommits.org/):\n\n```\n<type>: <short description>\n\nTypes:\n  feat     → New feature or content (new style, rule, palette)\n  fix      → Bug fix\n  docs     → Documentation only\n  refactor → Code change without new feature or fix\n  chore    → Build process, dependency updates\n  test     → Adding or fixing tests\n```\n\n**Examples:**\n```\nfeat: add Skeuomorphism 2.0 style to general styles\nfix: correct color palette for fintech industry rule\ndocs: translate README to Spanish\nchore: update ui-ux-pro-max-cli to v2.6.0\n```\n\n---\n\n## Pull Request Guidelines\n\n1. **One PR per change** — keep PRs focused and small\n2. **Reference related issues** — use `Closes #123` in the PR description\n3. **Fill out the PR template** — describe what you changed and why\n4. **Never push directly to `main`** — always use a feature branch\n5. **Wait for review** — a maintainer will review within a few days\n\n---\n\n## Reporting Bugs\n\nPlease [open an issue](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill/issues/new) and include:\n\n- Your OS and terminal\n- The AI assistant you're using (Claude Code, Cursor, etc.)\n- The exact command or prompt that triggered the bug\n- Expected vs. actual behavior\n- Any error messages or screenshots\n\n---\n\n## Code of Conduct\n\nBe kind, constructive, and respectful. We're all here to build something useful together.  \nHarassment, spam, or low-effort contributions will be closed without review.\n\n---\n\n## Questions?\n\nOpen a [Discussion](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill/discussions) or check the [README](README.md) first.\n\nHappy contributing! 🚀\n"
         },
         {
           "path": "README.md",
           "bytes": 36993,
-          "preview": "# [UI UX Pro Max](https://uupm.cc)\n\n<p align=\"center\">\n  <a href=\"https://github.com/nextlevelbuilder/ui-ux-pro-max-skill/blob/main/README.id.md\">\ud83c\uddee\ud83c\udde9 Bahasa Indonesia</a> |\n  <a href=\"https://github.com/nextlevelbuilder/ui-ux-pro-max-skill/blob/main/README.ko.md\">\ud83c\uddf0\ud83c\uddf7 \ud55c\uad6d\uc5b4</a> |\n  <a href=\"https://github.com/nextlevelbuilder/ui-ux-pro-max-skill/blob/main/README.vi.md\">\ud83c\uddfb\ud83c\uddf3 Ti\u1ebfng Vi\u1ec7t</a> |\n  <a href=\"https://github.com/nextlevelbuilder/ui-ux-pro-max-skill/blob/main/README.zh.md\">\ud83c\udde8\ud83c\uddf3 \u7b80\u4f53\u4e2d\u6587</a> |\n  <a href=\"https://github.com/nextlevelbuilder/ui-ux-pro-max-skill/blob/main/README.md\">\ud83c\uddfa\ud83c\uddf8 English</a>\n</p>\n\n<p align=\"center\">\n  <a href=\"https://github.com/nextlevelbuilder/ui-ux-pro-max-skill/releases\"><img src=\"https://img.shields.io/github/v/release/nextlevelbuilder/ui-ux-pro-max-skill?style=for-the-badge&color=blue\" alt=\"GitHub Release\"></a>\n  <img src=\"https://img.shields.io/badge/reasoning_rules-192-green?style=for-the-badge\" alt=\"192 Reasoning Rules\">\n  <img src=\"https://img.shields.io/badge/UI_styles-79_searchable-purple?style=for-the-badge\" alt=\"79 searchable UI styles\">\n  <img src=\"https://img.shields.io/badge/python-3.x-yellow?style=for-the-badge&logo=python&logoColor=white\" alt=\"Python 3.x\">\n  <a href=\"https://github.com/nextlevelbuilder/ui-ux-pro-max-skill/blob/main/LICENSE\"><img src=\"https://img.shields.io/github/license/nextlevelbuilder/ui-ux-pro-max-skill?style=for-the-badge&color=green\" alt=\"License\"></a>\n</p>\n\n<p align=\"center\">\n  <a href=\"https://www.npmjs.com/package/ui-ux-pro-max-cli\"><img src=\"https://img.shields.io/npm/v/ui-ux-pro-max-cli?style=flat-square&logo=npm&label=CLI\" alt=\"npm\"></a>\n  <a href=\"https://www.npmjs.com/package/ui-ux-pro-max-cli\"><img src=\"https://img.shields.io/npm/dm/ui-ux-pro-max-cli?style=flat-square&label=downloads\" alt=\"npm downloads\"></a>\n  <a href=\"https://github.com/nextlevelbuilder/ui-ux-pro-max-skill/stargazers\"><img src=\"https://img.shields.io/github/stars/nextlevelbuilder/ui-ux-pro-max-skill?style=flat-square&logo=github\" alt=\"GitHub stars\"></a>\n  <a href=\"https://paypal.me/uiuxpromax\"><img src=\"https://img.shields.io/badge/PayPal-Support%20Development-00457C?style=flat-square&logo=paypal&logoColor=white\" alt=\"PayPal\"></a>\n</p>\n\nAn AI skill that provides design intelligence for building professional UI/UX across multiple platforms and frameworks.\n\n<p align=\"center\">\n  <a href=\"https://uupm.cc\">\n    <img src=\"screenshots/website.png\" alt=\"UI UX Pro Max\" width=\"800\">\n  </a>\n</p>\n\n<p align=\"center\">\n  <b>If you find this useful, consider supporting the project:</b><br><br>\n  <a href=\"https://paypal.me/uiuxpromax\"><img src=\"https://img.shields.io/badge/PayPal-Donate-00457C?style=for-the-badge&logo=paypal&logoColor=white\" alt=\"PayPal Donate\"></a>\n</p>\n\n<p align=\"center\">\n  <i>Other projects</i><br>\n  <a href=\"https://nextlevelbuilder.io\">NextLevelBuilder.io</a> | <a href=\"https://goclaw.sh\">GoClaw.sh</a> | <a href=\"https://agentkit.best\">AgentKit.best</a> | <a href=\"https://tose.sh\">TOSE.sh</a>\n</p>\n\n---\n\n<p align=\"center\">\n  <span>Check Out Our New Skill:</span>\n  <br/>\n  <a href=\"https://github.com/viettranx/3dviz-pro-max\" target=\"_blank\">\n    <picture>\n      <source media=\"(prefers-color-scheme: dark)\" srcset=\"https://cdn.nextlevelbuilder.io/skills/3dviz/wordmark-dark.svg\">\n      <img src=\"https://cdn.nextlevelbuilder.io/skills/3dviz/wordmark.svg\" alt=\"3Dviz Pro Max\" height=\"56\">\n    </picture>\n  </a>\n</p>\n\n<p align=\"center\"><b>Turn an idea into a 3D scene worth exploring.</b></p>\n\n<p align=\"center\">\n  <img src=\"https://cdn.nextlevelbuilder.io/skills/3dviz/harness-village.gif\" width=\"800\" alt=\"Harness Village: a fantasy village with camera navigation and animated creatures\">\n</p>\n\n<p align=\"center\">\n  <sub><b>Visual inspiration, not a benchmark.</b> An author-supplied project recorded <i>before</i> this skill existed; its UI contains Vietnamese. Historical footage, not an English demo or a runtime test of the skill \u2014 see <a href=\"https://github.com/viettranx/3dviz-pro-max/blob/main/docs/demos/README.md\">media provenance</a>.</sub>\n</p>\n\n<p align=\"center\">\n  \ud83e\udd0c Website: <a href=\"https://3dviz.dev/\" target=\"_blank\">https://3dviz.dev/</a>\n</p>\n\n---\n\n## What's New in v2.0\n\n### Intelligent Design System Generation\n\nThe flagship feature of v2.0 is the **Design System Generator** - an AI-powered reasoning engine that analyzes your project requirements and generates a complete, tailored design system in seconds.\n\n```\n+----------------------------------------------------------------------------------------+\n|  TARGET: Serenity Spa - RECOMMENDED DESIGN SYSTEM                                      |\n+----------------------------------------------------------------------------------------+\n|                                                                                        |\n|  PATTERN: Hero-Centric + Social Proof                                                  |\n|     Conversion: Emotion-driven with trust elements                                     |\n|     CTA: Above fold, repeated after testimonials                                       |\n|     Sections:                                                                          |\n|       1. Hero                                                                          |\n|       2. Services                                                                      |\n|       3. Testimonials                                                                  |\n|       4. Booking                                                                       |\n|       5. Contact                                                                       |\n|                                                                                        |\n|  STYLE: Soft UI Evolution                                                              |\n|     Keywords: Soft shadows, subtle depth, calming, premium feel, organic shapes        |\n|     Best For: Wellness, beauty, lifestyle brands, premium services                     |\n|     Performance: cost:low | Accessibility: risk:conditional; verify requirements       |\n|                                                                                        |\n|  COLORS:                                                                               |\n|     Primary:    #E8B4B8 (Soft Pink)                                                    |\n|     Secondary:  #A8D5BA (Sage Green)                                                   |\n|     CTA:        #D4AF37 (Gold)                                                         |\n|     Background: #FFF5F5 (Warm White)                                                   |\n|     Text:       #2D3436 (Charcoal)                                                     |\n|     Notes: Calming palette with gold accents for luxury feel                           |\n|                                                                                        |\n|  TYPOGRAPHY: Cormorant Garamond / Montserrat                                           |\n|     Mood: Elegant, calming, sophisticated                                              |\n|     Best For: Luxury brands, wellness, beauty, editorial                               |\n|     Google Fonts: https://fonts.google.com/share?selection.family=...                  |\n|                                                                                        |\n|  KEY EFFECTS:                                                                          |\n|     Soft shadows + Context-appropriate transitions + Gentle hover states               |\n|                                                                                        |\n|  AVOID (Anti-patterns):                                                                |\n|     Bright neon colors + Harsh animations + Dark mode + AI purple/pink gradients       |\n|                                                                                        |\n|  PRE-DELIVERY CHECKLIST:                                                               |\n|     [ ] No emojis as icons (use SVG: Heroicons/Lucide)                                 |\n|     [ ] cursor-pointer on all clickable elements                     "
+          "preview": "# [UI UX Pro Max](https://uupm.cc)\n\n<p align=\"center\">\n  <a href=\"https://github.com/nextlevelbuilder/ui-ux-pro-max-skill/blob/main/README.id.md\">🇮🇩 Bahasa Indonesia</a> |\n  <a href=\"https://github.com/nextlevelbuilder/ui-ux-pro-max-skill/blob/main/README.ko.md\">🇰🇷 한국어</a> |\n  <a href=\"https://github.com/nextlevelbuilder/ui-ux-pro-max-skill/blob/main/README.vi.md\">🇻🇳 Tiếng Việt</a> |\n  <a href=\"https://github.com/nextlevelbuilder/ui-ux-pro-max-skill/blob/main/README.zh.md\">🇨🇳 简体中文</a> |\n  <a href=\"https://github.com/nextlevelbuilder/ui-ux-pro-max-skill/blob/main/README.md\">🇺🇸 English</a>\n</p>\n\n<p align=\"center\">\n  <a href=\"https://github.com/nextlevelbuilder/ui-ux-pro-max-skill/releases\"><img src=\"https://img.shields.io/github/v/release/nextlevelbuilder/ui-ux-pro-max-skill?style=for-the-badge&color=blue\" alt=\"GitHub Release\"></a>\n  <img src=\"https://img.shields.io/badge/reasoning_rules-192-green?style=for-the-badge\" alt=\"192 Reasoning Rules\">\n  <img src=\"https://img.shields.io/badge/UI_styles-79_searchable-purple?style=for-the-badge\" alt=\"79 searchable UI styles\">\n  <img src=\"https://img.shields.io/badge/python-3.x-yellow?style=for-the-badge&logo=python&logoColor=white\" alt=\"Python 3.x\">\n  <a href=\"https://github.com/nextlevelbuilder/ui-ux-pro-max-skill/blob/main/LICENSE\"><img src=\"https://img.shields.io/github/license/nextlevelbuilder/ui-ux-pro-max-skill?style=for-the-badge&color=green\" alt=\"License\"></a>\n</p>\n\n<p align=\"center\">\n  <a href=\"https://www.npmjs.com/package/ui-ux-pro-max-cli\"><img src=\"https://img.shields.io/npm/v/ui-ux-pro-max-cli?style=flat-square&logo=npm&label=CLI\" alt=\"npm\"></a>\n  <a href=\"https://www.npmjs.com/package/ui-ux-pro-max-cli\"><img src=\"https://img.shields.io/npm/dm/ui-ux-pro-max-cli?style=flat-square&label=downloads\" alt=\"npm downloads\"></a>\n  <a href=\"https://github.com/nextlevelbuilder/ui-ux-pro-max-skill/stargazers\"><img src=\"https://img.shields.io/github/stars/nextlevelbuilder/ui-ux-pro-max-skill?style=flat-square&logo=github\" alt=\"GitHub stars\"></a>\n  <a href=\"https://paypal.me/uiuxpromax\"><img src=\"https://img.shields.io/badge/PayPal-Support%20Development-00457C?style=flat-square&logo=paypal&logoColor=white\" alt=\"PayPal\"></a>\n</p>\n\nAn AI skill that provides design intelligence for building professional UI/UX across multiple platforms and frameworks.\n\n<p align=\"center\">\n  <a href=\"https://uupm.cc\">\n    <img src=\"screenshots/website.png\" alt=\"UI UX Pro Max\" width=\"800\">\n  </a>\n</p>\n\n<p align=\"center\">\n  <b>If you find this useful, consider supporting the project:</b><br><br>\n  <a href=\"https://paypal.me/uiuxpromax\"><img src=\"https://img.shields.io/badge/PayPal-Donate-00457C?style=for-the-badge&logo=paypal&logoColor=white\" alt=\"PayPal Donate\"></a>\n</p>\n\n<p align=\"center\">\n  <i>Other projects</i><br>\n  <a href=\"https://nextlevelbuilder.io\">NextLevelBuilder.io</a> | <a href=\"https://goclaw.sh\">GoClaw.sh</a> | <a href=\"https://agentkit.best\">AgentKit.best</a> | <a href=\"https://tose.sh\">TOSE.sh</a>\n</p>\n\n---\n\n<p align=\"center\">\n  <span>Check Out Our New Skill:</span>\n  <br/>\n  <a href=\"https://github.com/viettranx/3dviz-pro-max\" target=\"_blank\">\n    <picture>\n      <source media=\"(prefers-color-scheme: dark)\" srcset=\"https://cdn.nextlevelbuilder.io/skills/3dviz/wordmark-dark.svg\">\n      <img src=\"https://cdn.nextlevelbuilder.io/skills/3dviz/wordmark.svg\" alt=\"3Dviz Pro Max\" height=\"56\">\n    </picture>\n  </a>\n</p>\n\n<p align=\"center\"><b>Turn an idea into a 3D scene worth exploring.</b></p>\n\n<p align=\"center\">\n  <img src=\"https://cdn.nextlevelbuilder.io/skills/3dviz/harness-village.gif\" width=\"800\" alt=\"Harness Village: a fantasy village with camera navigation and animated creatures\">\n</p>\n\n<p align=\"center\">\n  <sub><b>Visual inspiration, not a benchmark.</b> An author-supplied project recorded <i>before</i> this skill existed; its UI contains Vietnamese. Historical footage, not an English demo or a runtime test of the skill — see <a href=\"https://github.com/viettranx/3dviz-pro-max/blob/main/docs/demos/README.md\">media provenance</a>.</sub>\n</p>\n\n<p align=\"center\">\n  🤌 Website: <a href=\"https://3dviz.dev/\" target=\"_blank\">https://3dviz.dev/</a>\n</p>\n\n---\n\n## What's New in v2.0\n\n### Intelligent Design System Generation\n\nThe flagship feature of v2.0 is the **Design System Generator** - an AI-powered reasoning engine that analyzes your project requirements and generates a complete, tailored design system in seconds.\n\n```\n+----------------------------------------------------------------------------------------+\n|  TARGET: Serenity Spa - RECOMMENDED DESIGN SYSTEM                                      |\n+----------------------------------------------------------------------------------------+\n|                                                                                        |\n|  PATTERN: Hero-Centric + Social Proof                                                  |\n|     Conversion: Emotion-driven with trust elements                                     |\n|     CTA: Above fold, repeated after testimonials                                       |\n|     Sections:                                                                          |\n|       1. Hero                                                                          |\n|       2. Services                                                                      |\n|       3. Testimonials                                                                  |\n|       4. Booking                                                                       |\n|       5. Contact                                                                       |\n|                                                                                        |\n|  STYLE: Soft UI Evolution                                                              |\n|     Keywords: Soft shadows, subtle depth, calming, premium feel, organic shapes        |\n|     Best For: Wellness, beauty, lifestyle brands, premium services                     |\n|     Performance: cost:low | Accessibility: risk:conditional; verify requirements       |\n|                                                                                        |\n|  COLORS:                                                                               |\n|     Primary:    #E8B4B8 (Soft Pink)                                                    |\n|     Secondary:  #A8D5BA (Sage Green)                                                   |\n|     CTA:        #D4AF37 (Gold)                                                         |\n|     Background: #FFF5F5 (Warm White)                                                   |\n|     Text:       #2D3436 (Charcoal)                                                     |\n|     Notes: Calming palette with gold accents for luxury feel                           |\n|                                                                                        |\n|  TYPOGRAPHY: Cormorant Garamond / Montserrat                                           |\n|     Mood: Elegant, calming, sophisticated                                              |\n|     Best For: Luxury brands, wellness, beauty, editorial                               |\n|     Google Fonts: https://fonts.google.com/share?selection.family=...                  |\n|                                                                                        |\n|  KEY EFFECTS:                                                                          |\n|     Soft shadows + Context-appropriate transitions + Gentle hover states               |\n|                                                                                        |\n|  AVOID (Anti-patterns):                                                                |\n|     Bright neon colors + Harsh animations + Dark mode + AI purple/pink gradients       |\n|                                                                                        |\n|  PRE-DELIVERY CHECKLIST:                                                               |\n|     [ ] No emojis as icons (use SVG: Heroicons/Lucide)                                 |\n|     [ ] cursor-pointer on all clickable elements                     "
         },
         {
           "path": "docs/journals/260812-1844-search-data-quality-planning.md",
           "bytes": 3307,
-          "preview": "# Planning Stopped Us from Making Search Worse\n\n**Date**: 2026-08-12 18:44\n**Severity**: High\n**Component**: Search, datasets, agent guidance, UI taxonomy\n**Status**: Resolved\n\n## What Happened\n\nWe completed a nine-phase overhaul plan, not an implementation. Data expansion was gated behind a human-judged relevance corpus because the existing 36 unit tests, 12 domain smokes, and 22 stack smokes mostly prove that output is non-empty\u2014not relevant. Adding rows before measuring P@1, MRR@3, nDCG@3, abstention, and typo recovery would amplify noise and erase our baseline.\n\n## The Brutal Truth\n\nThe repository looked healthier than it was. Passing tests concealed a router where 37 of 122 non-product keywords return zero hits in their own domain, while normalization can turn `navigation` into `navigationigation`. Shipping more data into that system would have been busywork dressed up as progress. It is frustrating that basic relevance remained unmeasured while catalog counts made the product look mature.\n\n## Technical Details\n\nBM25 stays because the offline, stdlib-only CLI and public command contract are deliberate constraints. We rejected embeddings, a vector database, and a graph database without evidence that lexical retrieval is the bottleneck. The planned repair is normalization, field and phrase boosts, and score calibration; hybrid retrieval is reconsidered only if measured paraphrase recall remains the dominant failure.\n\nAgent query guidance is first-class because bad instructions corrupt retrieval before ranking starts. \u201cAlways use design-system\u201d is wrong for fixes, reviews, and stack questions, and the advertised AI example currently selects a Marketplace/Directory landing pattern. The plan therefore requires intent separation, category/result validation, and low-confidence abstention.\n\nUI research also rejected trend dumping. Consolidate Bento, Aurora/gradient, and Swiss families; preserve mobile Neumorphism/Claymorphism variants; add Fluent 2, Shopify Polaris, and Clean Science only with official evidence. Holographic aliases to HUD, High Imagery remains a treatment, and Spectrum 2 plus Canvas/Workspace stay gated.\n\n## What We Tried\n\n- Compared runtime behavior, 35 CSVs, agent guidance, and official UI-system sources.\n- Red-teamed all nine phases, then propagated three blockers and seven important corrections.\n- Rejected immediate dataset expansion and architecture replacement because neither had relevance evidence.\n\n## Root Cause Analysis\n\nWe optimized structural validity before relevance and let cross-file contracts drift: 192 products exist, but only 161 reasoning rows do, with unsafe substring fallback masking gaps.\n\n## Lessons Learned\n\nMeasure before expanding. Treat prompts as production interfaces. A generated catalog is not correct merely because it parses.\n\n## Next Steps\n\nPhase 1 owner must obtain human judgments and freeze executable thresholds before ranking changes. Phase 2 owns BM25/router repair; Phases 3\u20135 own schema, agent contract, and taxonomy. Red-team corrections require exact reasoning for all 192 products, explicit Phase 7/8 runtime ownership, a closed `Decision_Rules` grammar, and one aggregate CI gate.\n\nThe plan artifacts are local and untracked. No implementation occurred, and no source or CSV file was changed.\n"
+          "preview": "# Planning Stopped Us from Making Search Worse\n\n**Date**: 2026-08-12 18:44\n**Severity**: High\n**Component**: Search, datasets, agent guidance, UI taxonomy\n**Status**: Resolved\n\n## What Happened\n\nWe completed a nine-phase overhaul plan, not an implementation. Data expansion was gated behind a human-judged relevance corpus because the existing 36 unit tests, 12 domain smokes, and 22 stack smokes mostly prove that output is non-empty—not relevant. Adding rows before measuring P@1, MRR@3, nDCG@3, abstention, and typo recovery would amplify noise and erase our baseline.\n\n## The Brutal Truth\n\nThe repository looked healthier than it was. Passing tests concealed a router where 37 of 122 non-product keywords return zero hits in their own domain, while normalization can turn `navigation` into `navigationigation`. Shipping more data into that system would have been busywork dressed up as progress. It is frustrating that basic relevance remained unmeasured while catalog counts made the product look mature.\n\n## Technical Details\n\nBM25 stays because the offline, stdlib-only CLI and public command contract are deliberate constraints. We rejected embeddings, a vector database, and a graph database without evidence that lexical retrieval is the bottleneck. The planned repair is normalization, field and phrase boosts, and score calibration; hybrid retrieval is reconsidered only if measured paraphrase recall remains the dominant failure.\n\nAgent query guidance is first-class because bad instructions corrupt retrieval before ranking starts. “Always use design-system” is wrong for fixes, reviews, and stack questions, and the advertised AI example currently selects a Marketplace/Directory landing pattern. The plan therefore requires intent separation, category/result validation, and low-confidence abstention.\n\nUI research also rejected trend dumping. Consolidate Bento, Aurora/gradient, and Swiss families; preserve mobile Neumorphism/Claymorphism variants; add Fluent 2, Shopify Polaris, and Clean Science only with official evidence. Holographic aliases to HUD, High Imagery remains a treatment, and Spectrum 2 plus Canvas/Workspace stay gated.\n\n## What We Tried\n\n- Compared runtime behavior, 35 CSVs, agent guidance, and official UI-system sources.\n- Red-teamed all nine phases, then propagated three blockers and seven important corrections.\n- Rejected immediate dataset expansion and architecture replacement because neither had relevance evidence.\n\n## Root Cause Analysis\n\nWe optimized structural validity before relevance and let cross-file contracts drift: 192 products exist, but only 161 reasoning rows do, with unsafe substring fallback masking gaps.\n\n## Lessons Learned\n\nMeasure before expanding. Treat prompts as production interfaces. A generated catalog is not correct merely because it parses.\n\n## Next Steps\n\nPhase 1 owner must obtain human judgments and freeze executable thresholds before ranking changes. Phase 2 owns BM25/router repair; Phases 3–5 own schema, agent contract, and taxonomy. Red-team corrections require exact reasoning for all 192 products, explicit Phase 7/8 runtime ownership, a closed `Decision_Rules` grammar, and one aggregate CI gate.\n\nThe plan artifacts are local and untracked. No implementation occurred, and no source or CSV file was changed.\n"
         },
         {
           "path": "docs/journals/260813-0816-phase-6-accessibility-refresh.md",
           "bytes": 2913,
-          "preview": "---\ndate: 2026-08-13\nsession: phase-6-search-data-accessibility-refresh\nseverity: high\ncomponent: search-data-accessibility\nstatus: resolved\n---\n\n# Phase 6 Passed Only After the Review Found What Gates Missed\n\n## Context\n\nPhase 6 refreshed search-facing accessibility contracts across colors, charts, UX guidance, landing patterns, typography, icons, motion, native interfaces, and React guidance. Initial gates passed. Adversarial review still found semantic gaps that those gates did not encode.\n\n## What Happened\n\n- Preserved chart backward compatibility: legacy `Accessibility Grade` remains with `deprecated: use Accessibility Risk`; controlled risk is now required.\n- Added role-aware palette validation and generator token export. Natural-language accessibility queries gained explicit coverage and correct routing.\n- Repaired decorative, meaningful, and interactive icon semantics; typography family/import/weight agreement; React ref/effect safety; reduced-motion, offscreen, landing-media, and single-pointer alternatives.\n- Added form error-summary guidance, strict row-bound provenance, error boundaries, and accurate guide/catalog counts.\n- Final evidence: `npm run verify:data` passed 112/112 tests; relevance stayed P@1 0.7763, MRR@3 0.8465, nDCG@3 0.8447, abstention 0.9804, typo recovery/coherence 1.0; 7/7 Playwright tests and all CLI, gallery, mirror, and diff release gates passed.\n\n## Reflection\n\nThe brutal truth: we trusted broad green gates that proved files parsed and familiar queries worked, but did not prove the advice was semantically safe. That was our testing failure, not bad luck. It is frustrating to discover after an apparent pass that a chart grade could overclaim conformance, generated colors could lose role meaning, and \u201caccessible\u201d landing guidance could omit actual interaction fallbacks. Relief came only after the adversarial cases became executable contracts.\n\n## Decisions Made\n\n| Decision | Rationale | Impact |\n|---|---|---|\n| Preserve legacy chart shape; deprecate in place | Deletion would break downstream CSV consumers | Compatibility retained without preserving misleading semantics |\n| Enforce strict official-source provenance and validation boundaries | Permissive metadata let unsupported claims survive | Volatile claims now fail closed |\n| Expand natural-query and accessibility semantics instead of only adding rows | More rows would amplify retrieval ambiguity | Coverage improved with unchanged relevance |\n| Pause after Phase 6 | User explicitly requested a checkpoint | Phases 7\u20139 remain pending |\n\n## Next Steps\n\n- Main agent owns Phases 7\u20139 when the user resumes; preserve the Phase 6 release gates on every later change.\n- Keep `plans/` local. Do not change `.gitignore` yet; user deferred that decision until the whole plan completes.\n- Unresolved questions: none for Phase 6; final relevance threshold promotion remains Phase 9 work.\n"
+          "preview": "---\ndate: 2026-08-13\nsession: phase-6-search-data-accessibility-refresh\nseverity: high\ncomponent: search-data-accessibility\nstatus: resolved\n---\n\n# Phase 6 Passed Only After the Review Found What Gates Missed\n\n## Context\n\nPhase 6 refreshed search-facing accessibility contracts across colors, charts, UX guidance, landing patterns, typography, icons, motion, native interfaces, and React guidance. Initial gates passed. Adversarial review still found semantic gaps that those gates did not encode.\n\n## What Happened\n\n- Preserved chart backward compatibility: legacy `Accessibility Grade` remains with `deprecated: use Accessibility Risk`; controlled risk is now required.\n- Added role-aware palette validation and generator token export. Natural-language accessibility queries gained explicit coverage and correct routing.\n- Repaired decorative, meaningful, and interactive icon semantics; typography family/import/weight agreement; React ref/effect safety; reduced-motion, offscreen, landing-media, and single-pointer alternatives.\n- Added form error-summary guidance, strict row-bound provenance, error boundaries, and accurate guide/catalog counts.\n- Final evidence: `npm run verify:data` passed 112/112 tests; relevance stayed P@1 0.7763, MRR@3 0.8465, nDCG@3 0.8447, abstention 0.9804, typo recovery/coherence 1.0; 7/7 Playwright tests and all CLI, gallery, mirror, and diff release gates passed.\n\n## Reflection\n\nThe brutal truth: we trusted broad green gates that proved files parsed and familiar queries worked, but did not prove the advice was semantically safe. That was our testing failure, not bad luck. It is frustrating to discover after an apparent pass that a chart grade could overclaim conformance, generated colors could lose role meaning, and “accessible” landing guidance could omit actual interaction fallbacks. Relief came only after the adversarial cases became executable contracts.\n\n## Decisions Made\n\n| Decision | Rationale | Impact |\n|---|---|---|\n| Preserve legacy chart shape; deprecate in place | Deletion would break downstream CSV consumers | Compatibility retained without preserving misleading semantics |\n| Enforce strict official-source provenance and validation boundaries | Permissive metadata let unsupported claims survive | Volatile claims now fail closed |\n| Expand natural-query and accessibility semantics instead of only adding rows | More rows would amplify retrieval ambiguity | Coverage improved with unchanged relevance |\n| Pause after Phase 6 | User explicitly requested a checkpoint | Phases 7–9 remain pending |\n\n## Next Steps\n\n- Main agent owns Phases 7–9 when the user resumes; preserve the Phase 6 release gates on every later change.\n- Keep `plans/` local. Do not change `.gitignore` yet; user deferred that decision until the whole plan completes.\n- Unresolved questions: none for Phase 6; final relevance threshold promotion remains Phase 9 work.\n"
         },
         {
           "path": "docs/journals/260813-1622-phase-7-web-stack-freshness.md",
           "bytes": 3263,
-          "preview": "---\ndate: 2026-08-13\nsession: phase-7-web-stack-freshness\nseverity: high\ncomponent: web-stack-search-guidance\nstatus: resolved\n---\n\n# Phase 7 Nearly Shipped Fresh Labels on Stale Framework Advice\n\n## What Happened\n\nPhase 7 refreshed 589 rows across React, Next.js, Vue, Svelte, Astro, Angular, Tailwind, shadcn, Nuxt, and Nuxt UI. We now have 573 active rows and 16 explicitly deprecated legacy rows, each with applicability, status, verification date, and official-source coverage for all 179 Critical/High rows. Default search isolates current guidance; explicit supported-old-major queries return labeled legacy rows; unsupported old majors abstain.\n\n## The Brutal Truth\n\nWe began with an Astro 7.2 assumption that sounded current and was simply false. Official release evidence said 7.1.6. Worse, the first refresh still carried removed contracts: `output: 'hybrid'`, `<ViewTransitions />`, `@astrojs/tailwind`, and the old prefetch integration. Calling that \u201cfreshness\u201d would have been embarrassing. The reviewer then found the legacy parser missed ordinary forms such as `svelte@4` and `Next.js (v15)`, letting explicit legacy intent fall into current guidance. Seeing green gates before those defects surfaced was maddening; the relief came only when each failure became a regression test.\n\n## Technical Details\n\nThe corrected Astro rows use `ClientRouter`, on-demand rendering, Tailwind 4 through Vite, and built-in prefetch. Shared stack selection now recognizes plain majors, `@major`, and `(vMajor)`, preserves current-major migration queries such as `Next.js 16 migration`, and returns zero rows when an older generation has no curated corpus.\n\nFinal evidence: `npm --prefix cli run verify:data` passed 124/124 Python tests; focused web freshness passed 12/12; smoke coverage passed 12/12 domains and 22/22 stacks. Relevance held at P@1 `0.8026315789`, MRR@3 `0.8618421053`, nDCG@3 `0.8561593731`, abstention `0.9803921569`, and coherence `1.0`. Asset sync, CLI typecheck, CLI build, `git diff --check`, and final reviewer all reported PASS.\n\n## What We Tried\n\n- Rejected blanket version-string replacement because most rows needed semantic verification, not cosmetic edits.\n- Retained curated Svelte, Tailwind 3, Next.js 15, and Nuxt 3 guidance as deprecated instead of deleting migration value.\n- Rejected fabricating old-major coverage; abstention is safer than mixing generations.\n\n## Root Cause Analysis\n\nWe treated a planned version number and passing broad tests as evidence. They were not. Research had to verify the release, while adversarial review had to exercise syntax variants and removed APIs that the initial tests omitted.\n\n## Lessons Learned\n\nVersion freshness means executable API validity plus retrieval isolation. Every supported query spelling needs a test, and every removed symbol needs a denylist assertion.\n\n## Next Steps\n\n- Main agent owns Phase 8 native/desktop/3D freshness, then Phase 9 provenance, final judgment review, threshold promotion, and release gates when the user resumes.\n- Pause now: the user explicitly mandated a Phase 7 checkpoint.\n- Keep `plans/` local and defer any `.gitignore` decision until all phases finish.\n\nUnresolved questions: none for Phase 7; final relevance targets remain Phase 9 work.\n"
+          "preview": "---\ndate: 2026-08-13\nsession: phase-7-web-stack-freshness\nseverity: high\ncomponent: web-stack-search-guidance\nstatus: resolved\n---\n\n# Phase 7 Nearly Shipped Fresh Labels on Stale Framework Advice\n\n## What Happened\n\nPhase 7 refreshed 589 rows across React, Next.js, Vue, Svelte, Astro, Angular, Tailwind, shadcn, Nuxt, and Nuxt UI. We now have 573 active rows and 16 explicitly deprecated legacy rows, each with applicability, status, verification date, and official-source coverage for all 179 Critical/High rows. Default search isolates current guidance; explicit supported-old-major queries return labeled legacy rows; unsupported old majors abstain.\n\n## The Brutal Truth\n\nWe began with an Astro 7.2 assumption that sounded current and was simply false. Official release evidence said 7.1.6. Worse, the first refresh still carried removed contracts: `output: 'hybrid'`, `<ViewTransitions />`, `@astrojs/tailwind`, and the old prefetch integration. Calling that “freshness” would have been embarrassing. The reviewer then found the legacy parser missed ordinary forms such as `svelte@4` and `Next.js (v15)`, letting explicit legacy intent fall into current guidance. Seeing green gates before those defects surfaced was maddening; the relief came only when each failure became a regression test.\n\n## Technical Details\n\nThe corrected Astro rows use `ClientRouter`, on-demand rendering, Tailwind 4 through Vite, and built-in prefetch. Shared stack selection now recognizes plain majors, `@major`, and `(vMajor)`, preserves current-major migration queries such as `Next.js 16 migration`, and returns zero rows when an older generation has no curated corpus.\n\nFinal evidence: `npm --prefix cli run verify:data` passed 124/124 Python tests; focused web freshness passed 12/12; smoke coverage passed 12/12 domains and 22/22 stacks. Relevance held at P@1 `0.8026315789`, MRR@3 `0.8618421053`, nDCG@3 `0.8561593731`, abstention `0.9803921569`, and coherence `1.0`. Asset sync, CLI typecheck, CLI build, `git diff --check`, and final reviewer all reported PASS.\n\n## What We Tried\n\n- Rejected blanket version-string replacement because most rows needed semantic verification, not cosmetic edits.\n- Retained curated Svelte, Tailwind 3, Next.js 15, and Nuxt 3 guidance as deprecated instead of deleting migration value.\n- Rejected fabricating old-major coverage; abstention is safer than mixing generations.\n\n## Root Cause Analysis\n\nWe treated a planned version number and passing broad tests as evidence. They were not. Research had to verify the release, while adversarial review had to exercise syntax variants and removed APIs that the initial tests omitted.\n\n## Lessons Learned\n\nVersion freshness means executable API validity plus retrieval isolation. Every supported query spelling needs a test, and every removed symbol needs a denylist assertion.\n\n## Next Steps\n\n- Main agent owns Phase 8 native/desktop/3D freshness, then Phase 9 provenance, final judgment review, threshold promotion, and release gates when the user resumes.\n- Pause now: the user explicitly mandated a Phase 7 checkpoint.\n- Keep `plans/` local and defer any `.gitignore` decision until all phases finish.\n\nUnresolved questions: none for Phase 7; final relevance targets remain Phase 9 work.\n"
         },
         {
           "path": "docs/journals/260813-1800-search-data-overhaul-completion.md",
           "bytes": 3245,
-          "preview": "---\ndate: 2026-08-13\nsession: search-data-overhaul-completion\nseverity: high\ncomponent: search-relevance-data-catalogs-and-release-gates\nstatus: resolved-with-carryover\n---\n\n# Search and Data Overhaul Finished, but Green Was Not Enough\n\n## Context\n\nThe nine-phase overhaul audited BM25 routing, query interpretation, agent guidance, CSV quality, current UI styles, framework/native stack freshness, generated catalogs, provenance, and release gates. The local plan is complete at 9/9 phases and 148/148 items. `plans/` is ignored by Git as intended; none of those local artifacts belongs in a release.\n\n## What Happened\n\nThe final evidence is concrete: 148 Python tests passed; smoke coverage passed 12/12 domains and 22/22 stacks; Playwright passed 8/8; and the relevance suite passed its approved provisional regression gate. The canonical catalogs now contain 1,934 approved Google Fonts plus eight explicit `needs-review` exclusions, and 1,512 upstream Phosphor icons supporting 105 curated icon rows. Google Fonts provenance is pinned to repository revision `038b637da7b3fd956a4ed93ffc607c3d5e4ce172`.\n\nThe reviewer still found four release-grade defects after broad gates were green. The release workflow ran only a subset of Playwright tests. Font provenance omitted the exact source revision. Refresh and validation disagreed about allowed exclusion evidence URLs. Generated mirrors could remain stale after canonical-source edits. We fixed all four: full Playwright now gates release, the revision is required and validated, both paths share the same narrow source policy, and mirror synchronization/checks are part of the final verification.\n\n## Reflection\n\nThe brutal truth is that we almost called this complete while the release pipeline could certify less than the test suite, and while a future font refresh could not be reproduced from an exact upstream tree. That is not polish; it is a broken evidence chain. It was exhausting to watch \u201call green\u201d repeatedly collapse under adversarial review, especially after nine phases of careful work. The relief is earned now because the failures became executable contracts instead of comments developers must remember.\n\n## Decisions\n\n- Kept the relevance threshold as a provisional regression gate. We rejected silently promoting it to a final quality target because the held-out judgments still need a second human review.\n- Chose fail-closed provenance and evidence policies over permissive refreshes. Unknown revisions, unsupported exclusion URLs, interrupted publication, and stale mirrors must stop validation.\n- Kept 8 unresolved font families visible as `needs-review` exclusions instead of inventing license certainty.\n- Did not commit or push. This session prepared and verified the work only.\n\n## Next\n\n- Project owner: complete a second human relevance judgment review before promoting final thresholds; preserve the current baseline until then.\n- Maintainers: inspect weekly refresh artifacts before accepting catalog changes; never auto-merge upstream data.\n- Release owner: retain full Playwright, provenance, mirror, catalog-summary, actionlint, and diff gates on every release.\n\nUnresolved question: when will the independent relevance judgment review be scheduled?\n"
+          "preview": "---\ndate: 2026-08-13\nsession: search-data-overhaul-completion\nseverity: high\ncomponent: search-relevance-data-catalogs-and-release-gates\nstatus: resolved-with-carryover\n---\n\n# Search and Data Overhaul Finished, but Green Was Not Enough\n\n## Context\n\nThe nine-phase overhaul audited BM25 routing, query interpretation, agent guidance, CSV quality, current UI styles, framework/native stack freshness, generated catalogs, provenance, and release gates. The local plan is complete at 9/9 phases and 148/148 items. `plans/` is ignored by Git as intended; none of those local artifacts belongs in a release.\n\n## What Happened\n\nThe final evidence is concrete: 148 Python tests passed; smoke coverage passed 12/12 domains and 22/22 stacks; Playwright passed 8/8; and the relevance suite passed its approved provisional regression gate. The canonical catalogs now contain 1,934 approved Google Fonts plus eight explicit `needs-review` exclusions, and 1,512 upstream Phosphor icons supporting 105 curated icon rows. Google Fonts provenance is pinned to repository revision `038b637da7b3fd956a4ed93ffc607c3d5e4ce172`.\n\nThe reviewer still found four release-grade defects after broad gates were green. The release workflow ran only a subset of Playwright tests. Font provenance omitted the exact source revision. Refresh and validation disagreed about allowed exclusion evidence URLs. Generated mirrors could remain stale after canonical-source edits. We fixed all four: full Playwright now gates release, the revision is required and validated, both paths share the same narrow source policy, and mirror synchronization/checks are part of the final verification.\n\n## Reflection\n\nThe brutal truth is that we almost called this complete while the release pipeline could certify less than the test suite, and while a future font refresh could not be reproduced from an exact upstream tree. That is not polish; it is a broken evidence chain. It was exhausting to watch “all green” repeatedly collapse under adversarial review, especially after nine phases of careful work. The relief is earned now because the failures became executable contracts instead of comments developers must remember.\n\n## Decisions\n\n- Kept the relevance threshold as a provisional regression gate. We rejected silently promoting it to a final quality target because the held-out judgments still need a second human review.\n- Chose fail-closed provenance and evidence policies over permissive refreshes. Unknown revisions, unsupported exclusion URLs, interrupted publication, and stale mirrors must stop validation.\n- Kept 8 unresolved font families visible as `needs-review` exclusions instead of inventing license certainty.\n- Did not commit or push. This session prepared and verified the work only.\n\n## Next\n\n- Project owner: complete a second human relevance judgment review before promoting final thresholds; preserve the current baseline until then.\n- Maintainers: inspect weekly refresh artifacts before accepting catalog changes; never auto-merge upstream data.\n- Release owner: retain full Playwright, provenance, mirror, catalog-summary, actionlint, and diff gates on every release.\n\nUnresolved question: when will the independent relevance judgment review be scheduled?\n"
         },
         {
-          "path": "docs/\u4e09\u4e2a data-scripts-templates \u7684\u533a\u522b.md",
+          "path": "docs/三个 data-scripts-templates 的区别.md",
           "bytes": 1774,
-          "preview": "# \u4e09\u5904 data / scripts / templates \u7684\u533a\u522b\n\n## \u4e09\u5904\u5206\u522b\u662f\u4ec0\u4e48\n\n| \u4f4d\u7f6e | \u4f5c\u7528 | \u80fd\u5220\u5417 |\n|------|------|--------|\n| **src/ui-ux-pro-max/** | **\u552f\u4e00\u6e90\u7801**\u3002\u6240\u6709 CSV\u3001\u811a\u672c\u3001\u6a21\u677f\u90fd\u5728\u8fd9\u91cc\u6539\uff0c\u662f\u201c\u552f\u4e00\u771f\u76f8\u6765\u6e90\u201d\u3002 | \u274c \u4e0d\u80fd\u5220\uff0c\u8fd9\u662f\u4f60\u8981\u7ef4\u62a4\u7684\u90a3\u4e00\u4efd\u3002 |\n| **.claude/skills/ui-ux-pro-max/** | \u7ed9 **Claude Code** \u4f7f\u7528\u7684 Skill\u3002`SKILL.md` \u624b\u5de5\u7ef4\u62a4\uff1b`data/` \u548c `scripts/` \u662f\u4ece `src` \u540c\u6b65\u7684\u771f\u5b9e\u6587\u4ef6\u526f\u672c\u3002 | \u274c \u4e0d\u80fd\u5220\uff0c\u4e5f\u4e0d\u8981\u6539\u6210\u7b26\u53f7\u94fe\u63a5\uff1b\u7b26\u53f7\u94fe\u63a5\u4f1a\u5728 Windows \u7684 Git \u68c0\u51fa\u4e2d\u5931\u6548\u3002 |\n| **cli/assets/** | \u7ed9 **npm \u5305 ui-ux-pro-max-cli** \u6253\u5305\u7528\u3002\u7528\u6237\u6267\u884c `npm i -g ui-ux-pro-max-cli` \u518d `uipro init` \u65f6\uff0c\u5b89\u88c5\u7684\u662f\u8fd9\u91cc\u6253\u5305\u7684 data/scripts/templates \u548c\u5b50 Skill\u3002 | \u274c \u4e0d\u80fd\u5220\uff1b\u53d1\u5e03\u524d\u7528\u811a\u672c\u540c\u6b65\u3002 |\n\n## \u53ef\u4ee5\u53ea\u4fdd\u7559\u4e00\u4e2a\u5417\uff1f\n\n- **\u4e0d\u80fd**\u53ea\u4fdd\u7559\u4e00\u4e2a\u201c\u7269\u7406\u76ee\u5f55\u201d\uff1a\u4e09\u5904**\u7528\u9014\u4e0d\u540c**\uff0c\u90fd\u8981\u5b58\u5728\u3002\n- **\u53ea\u624b\u5de5\u7ef4\u62a4\u4e00\u4efd\u5185\u5bb9**\uff1a\u5728 **src/ui-ux-pro-max/** \u4fee\u6539 data\u3001scripts \u548c templates\uff0c\u518d\u7528 `cli/scripts/sync-assets.mjs` \u5c06\u5b83\u4eec\u590d\u5236\u5230 `cli/assets/`\uff0c\u5e76\u5c06 data\u3001scripts \u590d\u5236\u5230\u672c\u5730 Claude Skill \u76ee\u5f55\u3002\n- `.claude/skills/ui-ux-pro-max/SKILL.md` \u662f\u4f8b\u5916\uff1a\u5b83\u4e0d\u7531\u6a21\u677f\u751f\u6210\uff0c\u9700\u8981\u76f4\u63a5\u7ef4\u62a4\u3002\n\n\u8fd9\u6837 data\u3001scripts \u548c templates \u53ea\u5728 `src` \u7ef4\u62a4\uff0c\u955c\u50cf\u76ee\u5f55\u7531\u540c\u6b65\u811a\u672c\u66f4\u65b0\u3002\n\n## \u63a8\u8350\u5de5\u4f5c\u6d41\n\n1. \u53ea\u6539 **src/ui-ux-pro-max/data/**\u3001**scripts/**\u3001**templates/**\u3002\n2. \u4e0d\u8981\u76f4\u63a5\u4fee\u6539 `cli/assets/data/`\u3001`cli/assets/scripts/` \u6216 `.claude/skills/ui-ux-pro-max/{data,scripts}/`\u3002\n3. \u63d0\u4ea4\u6216\u53d1\u5e03 npm \u524d\u6267\u884c\uff1a\n\n   ```bash\n   cd cli\n   npm run sync:assets\n   npm run check:assets\n   ```\n\n   `check:assets` \u4e5f\u7531 \u201cCheck asset sync\u201d CI \u5de5\u4f5c\u6d41\u6267\u884c\u3002\n"
+          "preview": "# 三处 data / scripts / templates 的区别\n\n## 三处分别是什么\n\n| 位置 | 作用 | 能删吗 |\n|------|------|--------|\n| **src/ui-ux-pro-max/** | **唯一源码**。所有 CSV、脚本、模板都在这里改，是“唯一真相来源”。 | ❌ 不能删，这是你要维护的那一份。 |\n| **.claude/skills/ui-ux-pro-max/** | 给 **Claude Code** 使用的 Skill。`SKILL.md` 手工维护；`data/` 和 `scripts/` 是从 `src` 同步的真实文件副本。 | ❌ 不能删，也不要改成符号链接；符号链接会在 Windows 的 Git 检出中失效。 |\n| **cli/assets/** | 给 **npm 包 ui-ux-pro-max-cli** 打包用。用户执行 `npm i -g ui-ux-pro-max-cli` 再 `uipro init` 时，安装的是这里打包的 data/scripts/templates 和子 Skill。 | ❌ 不能删；发布前用脚本同步。 |\n\n## 可以只保留一个吗？\n\n- **不能**只保留一个“物理目录”：三处**用途不同**，都要存在。\n- **只手工维护一份内容**：在 **src/ui-ux-pro-max/** 修改 data、scripts 和 templates，再用 `cli/scripts/sync-assets.mjs` 将它们复制到 `cli/assets/`，并将 data、scripts 复制到本地 Claude Skill 目录。\n- `.claude/skills/ui-ux-pro-max/SKILL.md` 是例外：它不由模板生成，需要直接维护。\n\n这样 data、scripts 和 templates 只在 `src` 维护，镜像目录由同步脚本更新。\n\n## 推荐工作流\n\n1. 只改 **src/ui-ux-pro-max/data/**、**scripts/**、**templates/**。\n2. 不要直接修改 `cli/assets/data/`、`cli/assets/scripts/` 或 `.claude/skills/ui-ux-pro-max/{data,scripts}/`。\n3. 提交或发布 npm 前执行：\n\n   ```bash\n   cd cli\n   npm run sync:assets\n   npm run check:assets\n   ```\n\n   `check:assets` 也由 “Check asset sync” CI 工作流执行。\n"
         }
       ],
       "config_files": [],
@@ -2439,11 +2439,11 @@
           {
             "id": "file:docs-data-scripts-templates-md",
             "kind": "file",
-            "label": "docs/\u4e09\u4e2a data-scripts-templates \u7684\u533a\u522b.md",
-            "path": "docs/\u4e09\u4e2a data-scripts-templates \u7684\u533a\u522b.md",
+            "label": "docs/三个 data-scripts-templates 的区别.md",
+            "path": "docs/三个 data-scripts-templates 的区别.md",
             "detail": "source marker candidate",
             "sources": [
-              "docs/\u4e09\u4e2a data-scripts-templates \u7684\u533a\u522b.md"
+              "docs/三个 data-scripts-templates 的区别.md"
             ],
             "source_location": null,
             "community": null
@@ -9627,8 +9627,8 @@
                 ]
               },
               {
-                "name": "\u4e09\u4e2a data-scripts-templates \u7684\u533a\u522b.md",
-                "path": "docs/\u4e09\u4e2a data-scripts-templates \u7684\u533a\u522b.md",
+                "name": "三个 data-scripts-templates 的区别.md",
+                "path": "docs/三个 data-scripts-templates 的区别.md",
                 "is_dir": false,
                 "file_count": 1,
                 "children": []
@@ -10084,7 +10084,7 @@
         "steps": [
           {
             "id": "serialize",
-            "label": "JSON serialize (inventory \u2192 SQLite)",
+            "label": "JSON serialize (inventory → SQLite)",
             "ms": 0,
             "pct": 0
           },
@@ -10103,5 +10103,856 @@
         ]
       }
     ]
+  },
+  "report": {
+    "overview": "UI/UX Pro Max is a design-intelligence toolkit packaged three ways: a dependency-free Python search engine (BM25 + regex over canonical CSV datasets) under src/ui-ux-pro-max/, an npm CLI (ui-ux-pro-max-cli, bin `uipro`) that installs the skill into ~20 AI coding assistants via per-platform templates, and a Claude Code plugin rooted at .claude/skills/ with 6 sibling sub-skills. Its flagship feature is a --design-system generator that aggregates five domain searches plus a 192-row reasoning-rules CSV into a formatted design system with an optional Master+Overrides persistence layer. A Next.js style gallery, a separate 'website design stack' bundle (stack/), six GitHub Actions workflows, and a relevance-evaluation harness round out the repo.",
+    "system_map": {
+      "summary": "The repo is a content product, not a running service: the runtime is a stdlib-only Python 3 CLI (search.py over core.py/design_system.py) reading canonical CSVs under src/ui-ux-pro-max/data/. The TypeScript CLI under cli/ is purely an installer that renders platform templates and copies bundled assets; it never executes the Python. Distribution happens through three mirrored copies of the same data (src/ -> cli/assets/ -> .claude/skills/ui-ux-pro-max/) kept in sync by cli/scripts/sync-assets.mjs and enforced by CI. Supporting surfaces: a Next.js 14 style gallery, a stack/ sub-project that wraps the skill with Playwright/MCP tooling, and six GitHub Actions workflows covering tests, asset sync, catalog refresh, release, and version bumping.",
+      "claims": [
+        {
+          "claim": "The runtime entrypoint is src/ui-ux-pro-max/scripts/search.py, an argparse CLI exposing --domain (12 keys of CSV_CONFIG), --stack (22 stacks), --design-system, --json, --persist/--page/--output-dir/--force, and three 1-10 dials --variance/--motion/--density.",
+          "sources": [
+            "src/ui-ux-pro-max/scripts/search.py#L96-177",
+            "src/ui-ux-pro-max/scripts/core.py#L18-112"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "core.py implements a hand-rolled BM25 class (k1=1.5, b=0.75) with in-process caches _csv_cache and _bm25_cache keyed by file signature (st_mtime_ns, st_size), plus synonym normalization, per-domain score floors, and deterministic domain tie-breaking.",
+          "sources": [
+            "src/ui-ux-pro-max/scripts/core.py#L282-463",
+            "src/ui-ux-pro-max/scripts/core.py#L197-233",
+            "src/ui-ux-pro-max/scripts/core.py#L619-661"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "design_system.py contains DesignSystemGenerator plus three output formatters (format_ascii_box, format_markdown, format_master_md) and the Master+Overrides persistence layer (persist_design_system, format_page_override_md).",
+          "sources": [
+            "src/ui-ux-pro-max/scripts/design_system.py#L258-604",
+            "src/ui-ux-pro-max/scripts/design_system.py#L640-915",
+            "src/ui-ux-pro-max/scripts/design_system.py#L995-1487"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "reasoning_contract.py is a closed, non-executable DSL: ui-reasoning.csv Decision_Rules cells are JSON objects whose conditions must come from ALLOWED_CONDITIONS (must_have + 38 if_* signals) and actions must carry a constraint:/style:/pattern:/mode: prefix.",
+          "sources": [
+            "src/ui-ux-pro-max/scripts/reasoning_contract.py#L7-55",
+            "src/ui-ux-pro-max/scripts/reasoning_contract.py#L67-123"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The npm CLI (cli/package.json name ui-ux-pro-max-cli v2.5.0, bin uipro -> dist/index.js) registers exactly four commander subcommands: init, versions, update, uninstall; it is ESM ('type': 'module') built by bun build with a tsc fallback in scripts/build.mjs.",
+          "sources": [
+            "cli/package.json",
+            "cli/src/index.ts#L18-92",
+            "cli/scripts/build.mjs#L15-29"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "src/ui-ux-pro-max/ is the single source of truth; cli/scripts/sync-assets.mjs mirrors data/, scripts/, templates/ into cli/assets/, mirrors data/ and scripts/ into .claude/skills/ui-ux-pro-max/, and copies 6 sub-skills (banner-design, brand, design, design-system, slides, ui-styling) into cli/assets/skills/, normalizing CRLF->LF before hashing.",
+          "sources": [
+            "cli/scripts/sync-assets.mjs#L15-50",
+            "cli/scripts/sync-assets.mjs#L177-201",
+            "CLAUDE.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The Claude plugin surface is .claude-plugin/plugin.json + marketplace.json (version 2.13.0) pointing 'skills' at ./.claude/skills/, where SKILL.md is hand-authored (not template-generated) while its data/ and scripts/ are mirrors of src/.",
+          "sources": [
+            ".claude-plugin/plugin.json",
+            ".claude-plugin/marketplace.json",
+            ".claude/skills/ui-ux-pro-max/SKILL.md",
+            "cli/scripts/sync-assets.mjs#L30-38"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The gallery is a Next.js 14 + Tailwind app (gallery/package.json name style-gallery) whose server component reads gallery/data/styles.csv — a symlink into ../../src/ui-ux-pro-max/data/styles.csv — and parses it with a hand-written CSV parser.",
+          "sources": [
+            "gallery/package.json",
+            "gallery/app/page.tsx#L6-16",
+            "gallery/lib/parseStyles.ts#L65-121",
+            "gallery/data/styles.csv"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "stack/ is a separate private package (claude-website-design-stack) that wraps the skill with a design loop (plan -> commit aesthetic -> build -> Playwright visual check -> design-review subagent) installed by scripts/setup.sh via npx ui-ux-pro-max-cli init --ai claude.",
+          "sources": [
+            "stack/package.json",
+            "stack/CLAUDE.md",
+            "stack/scripts/setup.sh#L10-31"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CI is six workflows: tests.yml (verify:data + pytest over .claude/skills + Playwright e2e + gallery build), check-asset-sync.yml (drift + skill-path contract greps), smoke-stacks.yml, refresh-catalogs.yml (weekly cron), release.yml (semantic-release to npm/GitHub), bump-versions.yml (post-release JSON version sync PR).",
+          "sources": [
+            ".github/workflows/tests.yml",
+            ".github/workflows/check-asset-sync.yml#L24-40",
+            ".github/workflows/refresh-catalogs.yml#L3-6",
+            ".github/workflows/release.yml#L78-90",
+            ".github/workflows/bump-versions.yml#L29-61"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Version numbers intentionally diverge: the skill/plugin manifests are at 2.13.0 while cli/package.json is 2.5.0; bump-versions.yml opens a PR to re-sync skill.json, marketplace.json, and plugin.json after each GitHub release.",
+          "sources": [
+            "skill.json",
+            ".claude-plugin/plugin.json",
+            "cli/package.json#L3",
+            ".github/workflows/bump-versions.yml#L25-45"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Python scripts are strictly stdlib-only (csv, json, re, difflib, math, pathlib) — no requirements.txt or pyproject exists; tests run under unittest/pytest with zero third-party runtime deps, matching the documented 'no external dependencies' prerequisite.",
+          "sources": [
+            "src/ui-ux-pro-max/scripts/core.py#L7-12",
+            "src/ui-ux-pro-max/scripts/tests/test_core.py#L1-12",
+            "README.md#L318-328"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "feature_catalog": {
+      "summary": "User-facing surface splits into (a) the Python search CLI with 12 search domains, 22 stack datasets, domain auto-detection, identity exact-match, typo suggestions, and cross-domain redirects; (b) the --design-system generator with dials and persistence; (c) the uipro installer CLI supporting 20 AI platforms plus 'all', global installs, dry-run, update, and uninstall; and (d) the style gallery web app. Data products include 88 style rows (79 searchable / 50 active), 192 product+palette+reasoning triples, 74 font pairings, 25 charts, 105 curated icons, 17 GSAP presets, and 1271 stack guidelines.",
+      "claims": [
+        {
+          "claim": "Domain search covers 12 CSV_CONFIG domains — style, color, chart, landing, product, ux, typography, icons, gsap, react, web, google-fonts — each with its own search_cols/output_cols projection in core.py.",
+          "sources": [
+            "src/ui-ux-pro-max/scripts/core.py#L18-79"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Stack search covers 22 framework CSVs under data/stacks/ (react, nextjs, vue, svelte, astro, swiftui, react-native, flutter, nuxtjs, nuxt-ui, html-tailwind, shadcn, jetpack-compose, threejs, angular, laravel, javafx, wpf, winui, avalonia, uno, uwp) sharing a common _STACK_COLS schema.",
+          "sources": [
+            "src/ui-ux-pro-max/scripts/core.py#L89-121"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Domain auto-detection (detect_domain) weights keyword matches by phrase specificity, adds +2 for hex-color literals, breaks ties via a fixed _DOMAIN_TIEBREAK_ORDER, and defaults to 'style' when nothing scores.",
+          "sources": [
+            "src/ui-ux-pro-max/scripts/core.py#L628-661"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Exact-identity routing resolves style queries directly against Style ID/Category/Aliases (_style_identity) and landing queries against Pattern ID/Name/Aliases (_exact_row_identity), bypassing BM25; deprecated styles redirect to a parent or cross-domain Replacement Domain/ID.",
+          "sources": [
+            "src/ui-ux-pro-max/scripts/core.py#L664-752",
+            "src/ui-ux-pro-max/scripts/core.py#L764-805"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Empty results return 'Closest known terms' suggestions via _suggest_terms (difflib >= 0.72 similarity, filtered through score thresholds) or _suggest_identities for landing patterns — a deliberate anti-fallback design to prevent silent fabrication.",
+          "sources": [
+            "src/ui-ux-pro-max/scripts/core.py#L483-531",
+            "src/ui-ux-pro-max/scripts/search.py#L64-82"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "--design-system mode produces a structured recommendation: pattern+sections, style, 16-token semantic color palette, typography pair, key effects, anti-patterns, pre-delivery checklist, and optional GSAP motion snippet; rendered as ASCII box, markdown, or JSON.",
+          "sources": [
+            "src/ui-ux-pro-max/scripts/design_system.py#L449-604",
+            "src/ui-ux-pro-max/scripts/design_system.py#L640-915"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Three design dials tune generation: --variance biases style selection toward minimal or bold keywords, --motion attaches a tiered GSAP snippet from motion.csv, and --density swaps the spacing-scale tokens written into MASTER.md.",
+          "sources": [
+            "src/ui-ux-pro-max/scripts/design_system.py#L67-98",
+            "src/ui-ux-pro-max/scripts/design_system.py#L472-514",
+            "src/ui-ux-pro-max/scripts/design_system.py#L1153-1171"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Persistence (--persist --output-dir --page --force) writes design-system/<project-slug>/MASTER.md plus pages/<page>.md overrides, refusing to overwrite existing files unless --force, and generates page overrides via _generate_intelligent_overrides + _detect_page_type.",
+          "sources": [
+            "src/ui-ux-pro-max/scripts/design_system.py#L995-1073",
+            "src/ui-ux-pro-max/scripts/design_system.py#L1381-1628"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "uipro init installs for 20 AI platform types (claude, cursor, windsurf, antigravity, copilot, kiro, roocode, codex, qoder, gemini, trae, opencode, continue, codebuddy, droid, kilocode, warp, augment, codewhale, universal) or 'all', with --global targeting the home directory and --dry-run printing planned writes.",
+          "sources": [
+            "cli/src/types/index.ts#L1-46",
+            "cli/src/index.ts#L25-48",
+            "cli/src/commands/init.ts#L169-190"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "uipro update compares the installed CLI version to the latest GitHub release and runs `npm install -g ui-ux-pro-max-cli@<version>` via execFileSync (shell:true only on Windows for npm.cmd), then instructs re-running init --force; uipro versions lists releases.",
+          "sources": [
+            "cli/src/commands/update.ts#L38-106",
+            "cli/src/commands/versions.ts#L10-46"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "uipro uninstall removes the orchestrator plus all bundled sub-skills, deriving the real install parent from each platform config's folderStructure (so copilot's .github/prompts/ and kiro's .kiro/steering/ are handled) and also cleaning legacy .shared/skills layouts.",
+          "sources": [
+            "cli/src/commands/uninstall.ts#L21-79",
+            "cli/src/types/index.ts#L51-72"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Each uipro init also installs 6 sibling sub-skills (banner-design, brand, design, design-system, slides, ui-styling) copied from cli/assets/skills/ next to the orchestrator's parent directory.",
+          "sources": [
+            "cli/src/utils/template.ts#L211-233",
+            "cli/scripts/sync-assets.mjs#L26-28"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The gallery offers search + status/type/complexity/era filters (default status 'active'), a detail modal, dark mode, color-palette and CSS-property extraction per style, and an interactive checklist.",
+          "sources": [
+            "gallery/lib/filterStyles.ts#L3-61",
+            "gallery/components/GalleryGrid.tsx#L21-67",
+            "gallery/lib/parseStyles.ts#L87-120"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "stack/ ships a standalone audit tool (scripts/design-audit.mjs, npm run audit/audit:file) producing multi-viewport Playwright screenshots, plus a setup.sh that installs the skill and wires Playwright/Chrome DevTools/shadcn MCP servers.",
+          "sources": [
+            "stack/package.json#L7-11",
+            "stack/scripts/setup.sh",
+            "stack/CLAUDE.md"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "data_flow": {
+      "summary": "Data flows one direction: canonical CSV/JSON datasets under src/ui-ux-pro-max/data/ are consumed in-process by the Python engine (csv.DictReader -> BM25 index -> projected row dicts -> formatted text/JSON), and physically mirrored by sync-assets.mjs into cli/assets/ and .claude/skills/. The CLI copies those bundled assets into the user's project at install time; at query time the skill instructs the agent to shell out to the installed scripts/search.py. Upstream catalog data (Google Fonts API, Phosphor npm packages, google/fonts repo metadata) enters only through the refresh-catalogs workflow as review-only candidates validated by refresh-*.py scripts.",
+      "claims": [
+        {
+          "claim": "Input boundary is CSV_CONFIG/STACK_CONFIG: each domain maps to a file under DATA_DIR (Path(__file__).parent.parent / 'data') with declared search_cols and output_cols; rows are loaded via _load_csv_snapshot which re-stats the file before and after reading to reject mid-read mutations.",
+          "sources": [
+            "src/ui-ux-pro-max/scripts/core.py#L14-19",
+            "src/ui-ux-pro-max/scripts/core.py#L358-383"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Query pipeline: raw query -> _normalize (synonym table, e.g. 'e-commerce'->'ecommerce', 'colour'->'color') -> BM25.tokenize (punctuation strip, >=2 chars, stopword removal) -> optional _rewrite_query_for_domain routing rewrites -> BM25.score over joined search_cols.",
+          "sources": [
+            "src/ui-ux-pro-max/scripts/core.py#L248-300",
+            "src/ui-ux-pro-max/scripts/core.py#L595-614"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Calibrated abstention sits between scoring and output: _SEARCH_THRESHOLDS apply per-domain min_score/min_coverage (e.g. style 4.3, product 6.0, landing requires 0.5 token coverage), and _STACK_THRESHOLD requires min_score 3.6 + 1/3 coverage; abstained queries return empty results plus suggestions.",
+          "sources": [
+            "src/ui-ux-pro-max/scripts/core.py#L203-213",
+            "src/ui-ux-pro-max/scripts/core.py#L440-463"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Design-system generation is a fan-out/fan-in: search('product') -> category -> _apply_reasoning (ui-reasoning.csv row + decision rules) -> _multi_domain_search issues 5 searches with category/constraints/mood terms folded into the query -> _select_best_match resolves style_priority names through the style lookup before trusting BM25 order.",
+          "sources": [
+            "src/ui-ux-pro-max/scripts/design_system.py#L319-406",
+            "src/ui-ux-pro-max/scripts/design_system.py#L461-500"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Color-mode coherence is enforced in the transform layer: _resolve_color_mode (query markers or dark-primary style) -> _select_palette_for_mode -> _derive_dark_palette (WCAG luminance, contrast-checked ring) -> _filter_anti_patterns_for_mode strips 'avoid dark mode' advice once dark is chosen.",
+          "sources": [
+            "src/ui-ux-pro-max/scripts/design_system.py#L101-254",
+            "src/ui-ux-pro-max/scripts/design_system.py#L490-494"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Output boundary is stdout text formatted for agent consumption: format_output truncates cell values at 300 chars except UNTRUNCATED_COLS (code samples, checklists, CSS imports, GSAP snippets); --json emits the raw result dict including diagnostics when requested.",
+          "sources": [
+            "src/ui-ux-pro-max/scripts/search.py#L41-93",
+            "src/ui-ux-pro-max/scripts/core.py#L83-87"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Persistence writes only inside --output-dir (default cwd): safe_slug collapses project/page names to [a-z0-9_-] making traversal impossible, and _write_persisted_file publishes via temp-file + fsync + os.link/os.replace so a losing concurrent writer gets FileExistsError.",
+          "sources": [
+            "src/ui-ux-pro-max/scripts/design_system.py#L961-993",
+            "src/ui-ux-pro-max/scripts/design_system.py#L1013-1073"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Asset distribution flow: src/ui-ux-pro-max/{data,scripts,templates} -> syncDir() (delete target, rewrite LF-normalized) -> cli/assets/ and .claude/skills/ui-ux-pro-max/; install-time flow is ASSETS_DIR -> loadTemplate/renderSkillFile (placeholder substitution {{TITLE}}, {{SCRIPT_PATH}}, etc.) -> writeFile SKILL.md + cp data/ scripts/ -> copySubSkills.",
+          "sources": [
+            "cli/scripts/sync-assets.mjs#L122-201",
+            "cli/src/utils/template.ts#L132-163",
+            "cli/src/utils/template.ts#L186-233"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Platform-specific install paths are data-driven: templates/platforms/*.json declare folderStructure.root/skillPath/filename/dataPath and scriptPath; resolveInstallPaths derives skillDir, skillFilePath, dataDir, and skillsParentDir (e.g. copilot uses a separate dataPath under .github/).",
+          "sources": [
+            "src/ui-ux-pro-max/templates/platforms/claude.json",
+            "cli/src/utils/template.ts#L240-279"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Catalog refresh flow is offline-review only: refresh-catalogs.yml fetches the Google Fonts Developer API (GOOGLE_FONTS_API_KEY, 25MB cap), sparse-clones google/fonts METADATA.pb files, and npm-installs pinned @phosphor-icons packages, then refresh-google-fonts.py/refresh-icon-catalog.py emit candidates+diffs uploaded as artifacts — nothing commits to main automatically.",
+          "sources": [
+            ".github/workflows/refresh-catalogs.yml#L47-218",
+            "scripts/refresh-icon-catalog.py#L208-232"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Provenance and freshness metadata travel with the data: data-provenance.json records per-entity verifiedAt/sla/confidence/source refs, catalog-summary.json pins sha256 snapshots + counts (88 styles, 1512 phosphor icons, 1271 stack guidelines), and .gitattributes forces LF on data files so hashes are platform-stable.",
+          "sources": [
+            "src/ui-ux-pro-max/data/data-provenance.json",
+            "src/ui-ux-pro-max/data/catalog-summary.json",
+            ".gitattributes"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The gallery reuses the canonical dataset through a symlink: page.tsx reads gallery/data/styles.csv -> src/ui-ux-pro-max/data/styles.csv at request/render time, then parseStylesCSV throws on any Status outside {active, supplemental, deprecated}.",
+          "sources": [
+            "gallery/app/page.tsx#L6-10",
+            "gallery/lib/parseStyles.ts#L82-96",
+            "gallery/data/styles.csv"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "behavior_traces": {
+      "summary": "Three primary flows were traced end-to-end. (1) Domain search: argparse -> search() -> identity/auto-detect -> _search_csv_detailed -> BM25 -> calibrated abstention -> format_output. (2) Design system: generate_design_system -> DesignSystemGenerator.generate -> product search -> reasoning rules -> 5-domain fan-out -> mode-aware palette -> formatter -> optional atomic persist. (3) Install: uipro init -> detectAIType -> prompt -> templateInstall -> renderSkillFile + copyDataAndScripts + copySubSkills. A fourth maintenance flow (sync/check-assets and the relevance gate) is also traced.",
+      "claims": [
+        {
+          "claim": "Domain search order: __main__ argparse -> search(query, domain, max_results) -> _valid_max_results -> if domain omitted, _load_rows_or_empty(styles.csv) + _style_identity(allow_contained=False), else detect_domain -> _search_csv_detailed -> _load_csv_snapshot -> _get_bm25 -> BM25.score -> threshold abstain -> _project_row -> format_output.",
+          "sources": [
+            "src/ui-ux-pro-max/scripts/search.py#L96-177",
+            "src/ui-ux-pro-max/scripts/core.py#L755-845",
+            "src/ui-ux-pro-max/scripts/core.py#L414-463"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Zero-result path: abstained search -> out['suggestions'] from _suggest_terms/_suggest_identities -> format_output prints 'No matches...' plus closest terms, instructing the agent to retry once and label fallbacks — matching SKILL.md's 'do not fabricate' contract.",
+          "sources": [
+            "src/ui-ux-pro-max/scripts/core.py#L836-845",
+            "src/ui-ux-pro-max/scripts/search.py#L64-82",
+            ".claude/skills/ui-ux-pro-max/SKILL.md#L167-172"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Deprecated-style redirect path: _style_identity exact match -> _style_search_destination -> Parent Style ID lookup or Replacement Domain/ID -> either the parent row is projected or a redirect object is emitted that format_output renders as 'modeled in the <domain> domain as <id>'.",
+          "sources": [
+            "src/ui-ux-pro-max/scripts/core.py#L736-752",
+            "src/ui-ux-pro-max/scripts/core.py#L792-805",
+            "src/ui-ux-pro-max/scripts/search.py#L64-72"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Design-system trace order: generate_design_system -> DesignSystemGenerator.__init__ (_load_reasoning, _load_styles, _build_style_lookup, _load_landing_patterns) -> generate -> search(query,'product',1) -> _apply_reasoning -> _find_reasoning_rule -> parse_decision_rules -> apply_decision_rules -> _multi_domain_search -> _select_best_match -> _resolve_color_mode/_select_palette_for_mode -> dict assembly.",
+          "sources": [
+            "src/ui-ux-pro-max/scripts/design_system.py#L261-355",
+            "src/ui-ux-pro-max/scripts/design_system.py#L449-604",
+            "src/ui-ux-pro-max/scripts/design_system.py#L919-957"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Persistence trace: persist_design_system -> safe_slug -> mkdir design-system/<slug>/pages -> format_master_md -> _write_persisted_file (NamedTemporaryFile + fsync + os.link) -> FileExistsError -> status 'skipped_exists' unless --force (os.replace); --page additionally runs format_page_override_md -> _generate_intelligent_overrides -> _detect_page_type.",
+          "sources": [
+            "src/ui-ux-pro-max/scripts/design_system.py#L961-1073",
+            "src/ui-ux-pro-max/scripts/design_system.py#L1381-1490"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Install trace: uipro init -> initCommand -> detectAIType(cwd) probes ~20 marker dirs -> prompts select -> (dry-run: planPlatformInstallActions/planAllPlatformInstallActions, write nothing) -> templateInstall -> generatePlatformFiles -> loadPlatformConfig(AI_TO_PLATFORM) -> resolveInstallPaths -> renderSkillFile -> writeFile -> copyDataAndScripts -> copySubSkills.",
+          "sources": [
+            "cli/src/commands/init.ts#L133-231",
+            "cli/src/utils/detect.ts#L10-91",
+            "cli/src/utils/template.ts#L286-355"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Asset-sync check trace: `npm run check:assets` -> sync-assets.mjs --check -> checkAssets -> diffDir over {data,scripts,templates} vs cli/assets, 6 sub-skills vs cli/assets/skills, and {data,scripts} vs .claude/skills/ui-ux-pro-max -> fileHash (LF-normalized sha256) -> any missing/extra/stale file exits 1.",
+          "sources": [
+            "cli/scripts/sync-assets.mjs#L87-120",
+            "cli/scripts/sync-assets.mjs#L142-175",
+            "cli/package.json#L17"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Relevance-gate trace: evaluate-relevance.py -> load_json(cases/thresholds/baseline) -> runtime_fingerprint + oracle_fingerprint (sha256 over code+data) -> validate_fixture/validate_identities -> per case: search/search_stack/DesignSystemGenerator.generate -> precision@k, MRR, nDCG, routing accuracy, negative abstention -> check_thresholds -> SystemExit with suspect-case diff on failure.",
+          "sources": [
+            "scripts/evaluate-relevance.py#L34-59",
+            "scripts/evaluate-relevance.py#L141-253"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Update trace: uipro update -> getLatestRelease (GitHub API with optional UI_PRO_MAX_GITHUB_TOKEN/GITHUB_TOKEN bearer) -> semver-gate the tag -> execFileSync npm install -g -> else fall through to initCommand(force:true) to refresh skill files in place.",
+          "sources": [
+            "cli/src/commands/update.ts#L38-98",
+            "cli/src/utils/github.ts#L49-91"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Skill-runtime trace (as installed): agent reads SKILL.md -> invokes `python <skill>/scripts/search.py` -> UTF-8 stdout wrapper -> search/design-system output -> agent synthesizes; references/quick-reference.md and pro-rules.md are read on demand, not loaded eagerly.",
+          "sources": [
+            ".claude/skills/ui-ux-pro-max/SKILL.md#L37-46",
+            ".claude/skills/ui-ux-pro-max/SKILL.md#L212-214",
+            "src/ui-ux-pro-max/scripts/search.py#L35-39"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "testing_signals": {
+      "summary": "Testing is unusually heavy for a dataset repo: 13 stdlib unittest modules under src/ui-ux-pro-max/scripts/tests/ (mirrored into .claude/skills), a fixture-driven relevance evaluator with fingerprint-pinned thresholds, 5 Playwright e2e specs for the CLI (run as a Node test harness, not browser tests), node --test unit tests for the gallery, two bash smoke suites over all domains/stacks, and four validation scripts (CSV structure, semantic data contract, agent-guide claims, catalog summary). The aggregate `npm run verify:data` gate runs all of it and is wired into tests.yml, smoke-stacks.yml, release.yml, and prepublishOnly.",
+      "claims": [
+        {
+          "claim": "Python tests live in src/ui-ux-pro-max/scripts/tests/ as 13 unittest modules (test_core, test_design_system_mode, test_data_contracts, test_style_taxonomy, test_catalog_refresh, test_relevance_evaluator, test_web_stack_freshness, etc.) deliberately stdlib-only so they add no dependencies; CI runs them via `python3 -m pytest .claude/skills -v`.",
+          "sources": [
+            "src/ui-ux-pro-max/scripts/tests/test_core.py#L1-28",
+            ".github/workflows/tests.yml#L52-53"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "test_core.py covers tokenizer synonym/stopword behavior, BM25 edge cases, and cache invalidation by file signature (re-writes a temp CSV and asserts the index rebuilds).",
+          "sources": [
+            "src/ui-ux-pro-max/scripts/tests/test_core.py#L31-80"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The relevance harness uses fixtures (relevance-cases.json, relevance-thresholds.json, relevance-baseline.json) and graded judgments to compute routingAccuracy, precision@1/3, MRR@3, nDCG@3, negativeAbstention, typoRecoveryAt3, and designSystemCoherence, gated by check_thresholds with calibration vs held_out splits.",
+          "sources": [
+            "scripts/evaluate-relevance.py#L96-138",
+            "scripts/relevance_metrics.py",
+            "src/ui-ux-pro-max/scripts/tests/fixtures/relevance-cases.json"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Hard-negative cases tagged 'hard-negative' are run against every domain and every stack to measure false-positive abstention (globalNegativeApplicability), so retrieval regressions that over-match are caught by the gate.",
+          "sources": [
+            "scripts/evaluate-relevance.py#L144-163"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "validate_data.py is a 1095-line semantic contract: it enforces exactly-192-row parity across products/colors/ui-reasoning, WCAG contrast floors per palette pair, style status/parent/redirect invariants, decision-rule validity against the closed grammar, icon import regexes, and per-stack official-doc host allowlists.",
+          "sources": [
+            "src/ui-ux-pro-max/scripts/validate_data.py#L75-145",
+            "src/ui-ux-pro-max/scripts/validate_data.py#L231-414"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "validate-csv.py checks structural CSV hygiene (blank/duplicate headers, field-count mismatches, blank rows) across every data CSV; validate-agent-guide.py recomputes the advertised counts (styles, palettes, fonts, stacks) and asserts the SKILL.md/template descriptions and CLI examples stay accurate.",
+          "sources": [
+            "scripts/validate-csv.py#L26-89",
+            "scripts/validate-agent-guide.py#L21-76"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "smoke-domains.sh dynamically enumerates CSV_CONFIG domains (expected count 12 via EXPECTED_DOMAIN_COUNT) and asserts a focused probe returns >=1 result per domain, printing diagnostics on failure; smoke-stacks.sh does the same for stacks.",
+          "sources": [
+            "scripts/smoke-domains.sh#L9-86",
+            "scripts/smoke-stacks.sh"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CLI e2e specs (cli/tests/e2e/) use @playwright/test as a plain Node harness: dry-run.spec.ts asserts planPlatformInstallActions lists writes but touches nothing, template-script-paths.spec.ts and agent-query-contract.spec.ts pin the rendered skill content contract; playwright.config.ts targets chromium with CI retries.",
+          "sources": [
+            "cli/tests/e2e/dry-run.spec.ts#L10-40",
+            "cli/playwright.config.ts",
+            "cli/tests/e2e/template-script-paths.spec.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Gallery tests run via `tsc -p tsconfig.test.json && node --test` over compiled JS (lib/parseStyles.test.js, components/metadata-badges.test.js) — an unusual compile-then-test pipeline rather than jest/vitest.",
+          "sources": [
+            "gallery/package.json#L8",
+            "gallery/lib/parseStyles.test.ts",
+            "gallery/components/metadata-badges.test.tsx"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "check-asset-sync.yml embeds two grep-based contract suites: skill-relative path enforcement (no ~/.claude/skills/, project-rooted, or CLAUDE_PLUGIN_ROOT paths outside the one allowed SKILL.md) and a bundled-skill allowlist scan over every shipped markdown file.",
+          "sources": [
+            ".github/workflows/check-asset-sync.yml#L41-156"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Coverage gaps: no tests exercise the CLI's actual write path (generatePlatformFiles is only tested via the read-only planners), uninstall.ts has no spec, and format_ascii_box/markdown output is only implicitly covered through persistence tests.",
+          "sources": [
+            "cli/tests/e2e/dry-run.spec.ts",
+            "cli/src/commands/uninstall.ts",
+            "cli/src/utils/template.ts#L286-323"
+          ],
+          "kind": "inference"
+        },
+        {
+          "claim": "release.yml runs the full gate (verify:data, bun build, Playwright, gallery build) before semantic-release publishes to npm with NPM_TOKEN and creates the GitHub release — so untested code cannot ship.",
+          "sources": [
+            ".github/workflows/release.yml#L49-90"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "risk_map": {
+      "summary": "The codebase is defensively written (closed decision-rule grammar, slug sanitization, atomic writes, calibrated abstention), but risk concentrates in (a) triple-mirrored data that must stay byte-identical, (b) dead/legacy install paths in the CLI, (c) a hand-rolled CSV parser in the gallery, (d) doc drift, and (e) CI-only network surfaces (GitHub API token, Google Fonts key, npm install of pinned packages). The symlinked gallery data file also contradicts the repo's stated no-symlink rule.",
+      "claims": [
+        {
+          "claim": "Triple-mirror consistency is the biggest blast radius: a CSV edited in src/ but not re-synced silently ships stale data through both the npm CLI and the Claude plugin; mitigation is sync-assets.mjs --check in CI, but local edits still rely on the human running `npm run sync:assets`.",
+          "sources": [
+            "cli/scripts/sync-assets.mjs#L15-50",
+            ".github/workflows/check-asset-sync.yml#L39-40",
+            "CLAUDE.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Dead code: init.ts keeps a legacy ZIP-install path (tryGitHubInstall -> installFromZip -> extractZip shelling out to `unzip`/PowerShell Expand-Archive) gated on options.legacy, but index.ts never registers a --legacy flag, so the entire network-download + shell-out path is unreachable from the CLI.",
+          "sources": [
+            "cli/src/commands/init.ts#L46-110",
+            "cli/src/commands/init.ts#L198-217",
+            "cli/src/index.ts#L25-48",
+            "cli/src/utils/extract.ts#L13-24"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "extractZip interpolates zipPath/destDir into a shell command string (`unzip -o \"${zipPath}\"`, powershell -Command) — a command-injection shape that is currently dead code but would be exploitable if the legacy flag were ever re-exposed.",
+          "sources": [
+            "cli/src/utils/extract.ts#L13-24",
+            "cli/src/commands/init.ts#L198-217"
+          ],
+          "kind": "inference"
+        },
+        {
+          "claim": "update.ts shells out to npm install -g; it mitigates with execFileSync + explicit args + a semver regex gate on the tag, and shell:true only on Windows — but a compromised or malformed GitHub release feed remains the trust boundary.",
+          "sources": [
+            "cli/src/commands/update.ts#L57-81",
+            "cli/src/utils/github.ts#L74-92"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The gallery contains a second, hand-written CSV parser (parseCSVLine/splitCSVRecords) independent of Python's csv module; divergence in quoting/CRLF handling would surface only as a runtime throw ('Unterminated quoted CSV field') or misparsed styles.",
+          "sources": [
+            "gallery/lib/parseStyles.ts#L5-63"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "gallery/data/styles.csv is a symlink to ../../src/ui-ux-pro-max/data/styles.csv even though CLAUDE.md states the repo avoids symlinks because git-on-Windows checks them out as text pointer files — the gallery would read a path string instead of CSV on such a checkout.",
+          "sources": [
+            "gallery/data/styles.csv",
+            "CLAUDE.md",
+            "gallery/app/page.tsx#L6-10"
+          ],
+          "kind": "inference"
+        },
+        {
+          "claim": "Doc drift: CONTRIBUTING.md tells contributors to edit 'data/rules.csv' (the real file is ui-reasoning.csv) and references a .factory/ directory that does not exist at repo root; README install commands list platforms like 'antigravity' that map to an 'agent.json' template name via AI_TO_PLATFORM indirection.",
+          "sources": [
+            "CONTRIBUTING.md#L80-81",
+            "src/ui-ux-pro-max/scripts/design_system.py#L38",
+            "cli/src/utils/template.ts#L37-58"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Search correctness is threshold-tuned by hand (_DOMAIN_SCORE_FLOORS like style 4.3, icons 5.8, _STACK_THRESHOLD 3.6 + coverage 1/3) and pinned by a calibration version string; a CSV content change can flip abstention behavior repo-wide, which is why the relevance fingerprint gate exists.",
+          "sources": [
+            "src/ui-ux-pro-max/scripts/core.py#L197-213",
+            "scripts/evaluate-relevance.py#L34-59"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The only network egress in shipped runtime code is cli/src/utils/github.ts (GitHub releases API, optional bearer token from --token/UI_PRO_MAX_GITHUB_TOKEN/GITHUB_TOKEN); refresh-catalogs.yml additionally uses GOOGLE_FONTS_API_KEY and `npm install` of pinned phosphor packages in a sandboxed weekly job.",
+          "sources": [
+            "cli/src/utils/github.ts#L49-111",
+            ".github/workflows/refresh-catalogs.yml#L47-157"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Persistence writes outside the repo by design (--output-dir defaults to cwd); safe_slug prevents traversal but nothing stops an agent from pointing --output-dir at an arbitrary directory — mitigated only by SKILL.md instruction text, not code.",
+          "sources": [
+            "src/ui-ux-pro-max/scripts/design_system.py#L961-1020",
+            ".claude/skills/ui-ux-pro-max/SKILL.md#L88-104"
+          ],
+          "kind": "inference"
+        },
+        {
+          "claim": "bump-versions.yml auto-opens a PR editing three JSON manifests on release publish; skill/plugin manifests (2.13.0) and cli/package.json (2.5.0) are already out of step between releases, so version drift is normal rather than an error.",
+          "sources": [
+            ".github/workflows/bump-versions.yml#L29-61",
+            "skill.json",
+            "cli/package.json#L3"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Sub-skill directories (.claude/skills/{design,brand,banner-design,ui-styling,slides,design-system}) contain their own scripts/tests not covered by this report's read set; the bundled-skill CI contract treats them as shipped surface, so bugs there ship through every install.",
+          "sources": [
+            "cli/scripts/sync-assets.mjs#L26-28",
+            ".github/workflows/check-asset-sync.yml#L124-156"
+          ],
+          "kind": "inference"
+        }
+      ]
+    },
+    "extension_points": {
+      "summary": "Extension is deliberately data-driven: new search domains register in CSV_CONFIG, new stacks in STACK_CONFIG + STACK_CURRENT_* tables, new product categories as aligned rows across products/colors/ui-reasoning.csv, new decision-rule signals in CONDITION_SIGNALS, new dial tiers in DIAL_TIERS, new AI platforms via AI_TYPES + AI_TO_PLATFORM + a templates/platforms/*.json file, and new sub-skills via the subSkills array in sync-assets.mjs. Smoke tests and validators auto-enumerate these registries, so additions are picked up without wiring — but several guards (192-row parity, expected domain/stack counts, identity uniqueness) will fail CI if invariants are missed.",
+      "claims": [
+        {
+          "claim": "New search domain = one CSV_CONFIG entry (file + search_cols + output_cols); --domain choices, smoke-domains.sh enumeration, and domain auto-detection all derive from it, though _DOMAIN_TIEBREAK_ORDER, _DOMAIN_QUERY_REWRITES, and _SEARCH_THRESHOLDS may need matching entries.",
+          "sources": [
+            "src/ui-ux-pro-max/scripts/core.py#L18-79",
+            "src/ui-ux-pro-max/scripts/core.py#L203-233",
+            "scripts/smoke-domains.sh#L34-48"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New stack = a data/stacks/<name>.csv plus a STACK_CONFIG entry; STACK_CURRENT_VERSIONS, STACK_CURRENT_APPLICABILITY, _STACK_QUERY_NAMES, and STACK_OFFICIAL_HOSTS in validate_data.py form the freshness/identity contract the validator enforces.",
+          "sources": [
+            "src/ui-ux-pro-max/scripts/core.py#L89-193",
+            "src/ui-ux-pro-max/scripts/validate_data.py#L111-134"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New product category requires exactly-aligned rows in products.csv, colors.csv, and ui-reasoning.csv — validate_data.py hard-fails unless each has exactly 192 rows with identical label sets.",
+          "sources": [
+            "src/ui-ux-pro-max/scripts/validate_data.py#L331-358"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Decision-rule grammar extension points: add an if_* key to CONDITION_SIGNALS (regex-compiled signal phrases) or a prefix to ACTION_PREFIXES/TOKEN_ACTION_PREFIXES; apply_decision_rules produces only deterministic mutations (style_ids, constraints, pattern, mode) — data can never execute.",
+          "sources": [
+            "src/ui-ux-pro-max/scripts/reasoning_contract.py#L7-55",
+            "src/ui-ux-pro-max/scripts/reasoning_contract.py#L101-123"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Style taxonomy extension: new styles get a kebab-case Style ID, a Status in {active,supplemental,deprecated}, and optional Parent Style ID or Replacement Domain/ID redirect; _check_style_contract enforces identity uniqueness, parent cycles, and vocabulary vocabularies (Performance/Accessibility/mode fields).",
+          "sources": [
+            "src/ui-ux-pro-max/scripts/validate_data.py#L231-328",
+            "src/ui-ux-pro-max/data/styles.csv"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Design dials extend via DIAL_TIERS buckets — variance injects style_keywords ahead of reasoning priorities, motion maps to an Intensity Tier in motion.csv, density swaps the spacing dict written into MASTER.md.",
+          "sources": [
+            "src/ui-ux-pro-max/scripts/design_system.py#L67-98",
+            "src/ui-ux-pro-max/scripts/design_system.py#L472-514"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New AI platform = add the type to AI_TYPES + AI_FOLDERS + AI_TO_PLATFORM + getAITypeDescription, then drop a templates/platforms/<name>.json declaring folderStructure/scriptPath/frontmatter — the installer, dry-run planner, and uninstaller all derive paths from that JSON.",
+          "sources": [
+            "cli/src/types/index.ts#L46-72",
+            "cli/src/utils/template.ts#L37-58",
+            "src/ui-ux-pro-max/templates/platforms/claude.json",
+            "cli/src/utils/detect.ts#L93-138"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Template rendering is placeholder substitution on templates/base/skill-content.md ({{TITLE}}, {{DESCRIPTION}}, {{SCRIPT_PATH}}, {{SKILL_OR_WORKFLOW}}, {{QUICK_REFERENCE}}); new platforms reuse the same base — per-platform divergence lives only in the JSON config.",
+          "sources": [
+            "cli/src/utils/template.ts#L132-163",
+            "src/ui-ux-pro-max/templates/base/skill-content.md#L1-80"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New bundled sub-skill = create .claude/skills/<name>/ and add the name to the subSkills array in sync-assets.mjs; the bundled-skill CI contract auto-derives its allowlist from the directory listing.",
+          "sources": [
+            "cli/scripts/sync-assets.mjs#L26-28",
+            ".github/workflows/check-asset-sync.yml#L124-149"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Catalog refresh scripts are CLI-arg driven (--input, --package-json, --curated-csv, --output, --verified-at, --expected-count) so a new upstream catalog can be added by scripting the same validate->normalize->manifest-write pattern used for Phosphor icons.",
+          "sources": [
+            "scripts/refresh-icon-catalog.py#L208-236",
+            ".github/workflows/refresh-catalogs.yml#L159-203"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Gallery filter dimensions are computed from data via getUniqueValues over any StyleData key, so a new CSV column can become a filter facet with a small FilterBar change.",
+          "sources": [
+            "gallery/lib/filterStyles.ts#L19-61",
+            "gallery/components/GalleryGrid.tsx#L25-52"
+          ],
+          "kind": "inference"
+        }
+      ]
+    },
+    "agent_handoff": {
+      "summary": "Read CLAUDE.md first — it documents the src/ source-of-truth rule and the sync contract. Edit data/scripts/templates only under src/ui-ux-pro-max/, then run `cd cli && npm run sync:assets && npm run check:assets`. Never edit cli/assets/ or .claude/skills/ui-ux-pro-max/{data,scripts} directly (mirrored), but DO edit .claude/skills/ui-ux-pro-max/SKILL.md by hand (it is not generated). The Python layer is stdlib-only — no pip installs. Gate everything through `npm --prefix cli run verify:data` which runs both validators, unittest discovery, the relevance evaluator, both smoke suites, and the asset-sync check.",
+      "claims": [
+        {
+          "claim": "Canonical edit boundary: modify CSVs under src/ui-ux-pro-max/data/, Python under src/ui-ux-pro-max/scripts/, templates under src/ui-ux-pro-max/templates/ — then `npm run sync:assets`; the two mirror trees (cli/assets/, .claude/skills/ui-ux-pro-max/{data,scripts}) are regenerated, never hand-edited.",
+          "sources": [
+            "CLAUDE.md",
+            "cli/scripts/sync-assets.mjs#L15-50",
+            "CONTRIBUTING.md#L46-62"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Exception to the mirror rule: .claude/skills/ui-ux-pro-max/SKILL.md is hand-authored and NOT synced — edit it directly; sync-assets.mjs only mirrors its data/ and scripts/ subdirs.",
+          "sources": [
+            "cli/scripts/sync-assets.mjs#L30-38",
+            ".claude/skills/ui-ux-pro-max/SKILL.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Verify loop for any data/script change: `npm --prefix cli run verify:data` = validate:csv + validate:semantic + validate:agent-guide + validate:catalog-summary + unittest discovery + evaluate:relevance + smoke:domains + smoke:stacks + check:assets.",
+          "sources": [
+            "cli/package.json#L18-28"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "When changing CSV row counts or advertised numbers (styles, palettes, fonts, stacks), regenerate catalog-summary.json via scripts/generate-catalog-summary.py and expect validate-agent-guide.py to recompute the SKILL.md/template description string — stale counts fail CI.",
+          "sources": [
+            "scripts/generate-catalog-summary.py#L1-30",
+            "scripts/validate-agent-guide.py#L48-76"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Git workflow: never push to main; branch feat/... or fix/..., PR via gh; commits use Conventional Commits because release.yml runs semantic-release (conventionalcommits preset) that versions and publishes the CLI automatically.",
+          "sources": [
+            "CLAUDE.md",
+            "CONTRIBUTING.md#L120-153",
+            ".releaserc.json",
+            ".github/workflows/release.yml#L78-90"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Known trap — path contract: skill docs must use skill-relative script paths ('scripts/search.py', '../<skill>/scripts/...'); ~/.claude/skills/, .claude/skills/, $HOME/, and ${CLAUDE_PLUGIN_ROOT} forms are grep-rejected by CI except in the core SKILL.md.",
+          "sources": [
+            ".github/workflows/check-asset-sync.yml#L41-95",
+            ".claude/skills/ui-ux-pro-max/SKILL.md#L37-45"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Known trap — Windows/cp1252: search.py and design_system.py rewrap stdout/stderr to UTF-8 at import because emoji/box-drawing output crashes on the Windows default encoding; preserve that block when editing.",
+          "sources": [
+            "src/ui-ux-pro-max/scripts/search.py#L35-39",
+            "src/ui-ux-pro-max/scripts/design_system.py#L30-34"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Known trap — line endings: catalog-summary.json pins sha256 hashes of LF-normalized data and .gitattributes forces eol=lf on data files; committing CRLF data or bypassing .gitattributes breaks the hash check on other platforms.",
+          "sources": [
+            ".gitattributes",
+            "scripts/generate-catalog-summary.py#L18-21"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Known trap — abstention is intentional: a 0-result search is a feature (calibrated thresholds + suggestions), so don't 'fix' empty results by lowering thresholds without updating the relevance baseline and thresholds fixture.",
+          "sources": [
+            "src/ui-ux-pro-max/scripts/core.py#L203-213",
+            "scripts/evaluate-relevance.py#L236-253",
+            "src/ui-ux-pro-max/scripts/tests/fixtures/relevance-thresholds.json"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Files to read first for search changes: core.py (engine + registries), design_system.py (aggregator + persistence), reasoning_contract.py (rule grammar), then test_core.py + test_data_contracts.py to see the locked invariants; for installer changes: template.ts, types/index.ts, detect.ts, one platform JSON.",
+          "sources": [
+            "src/ui-ux-pro-max/scripts/core.py",
+            "src/ui-ux-pro-max/scripts/design_system.py",
+            "cli/src/utils/template.ts",
+            "cli/src/types/index.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "cli/assets/ is .gitignore-adjacent generated output bundled into the npm package ('files': ['dist','assets']); the dry-run e2e specs import TS directly from src/, so CLI tests run without building dist first.",
+          "sources": [
+            "cli/package.json#L9-12",
+            "cli/tests/e2e/dry-run.spec.ts#L5-8",
+            "cli/.npmignore"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CLI dev workflow: `npm run dev` runs via bun, `npm run build` prefers `bun build --target node` and falls back to node_modules tsc; `npm run typecheck` is tsc --noEmit; Playwright e2e needs `npx playwright install --with-deps chromium`.",
+          "sources": [
+            "cli/package.json#L14-30",
+            "cli/scripts/build.mjs#L15-29",
+            "cli/playwright.config.ts"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_prompt": "You are working in ui-ux-pro-max-skill, a design-intelligence toolkit distributed as (1) a stdlib-only Python 3 search engine, (2) an npm installer CLI (ui-ux-pro-max-cli, bin `uipro`), and (3) a Claude Code plugin. There is no server; the 'product' is data + a BM25 retrieval layer + packaging.\n\nSOURCE OF TRUTH: src/ui-ux-pro-max/ (data/*.csv + data/stacks/*.csv, scripts/*.py, templates/{base,platforms}). Two mirror copies exist — cli/assets/ (bundled into the npm package) and .claude/skills/ui-ux-pro-max/{data,scripts} (what the plugin loads). NEVER edit mirrors by hand; after editing src/, run `cd cli && npm run sync:assets` then `npm run check:assets`. Exception: .claude/skills/ui-ux-pro-max/SKILL.md is hand-authored — edit it directly.\n\nPYTHON LAYER (stdlib only, no pip, no network): search.py is the CLI (argparse). core.py owns CSV_CONFIG (12 domains), STACK_CONFIG (22 stacks), a hand-rolled BM25 class, synonym normalization, per-domain abstention thresholds, exact-identity routing, and deprecated-style redirects. design_system.py aggregates 5 domain searches + ui-reasoning.csv decision rules into a design system, handles --variance/--motion/--density dials, color-mode coherence (WCAG luminance), and persists design-system/<slug>/MASTER.md + pages/*.md via slug-sanitized atomic writes. reasoning_contract.py is a CLOSED grammar — decision rules are data, never executed.\n\nCLI LAYER (TypeScript ESM, commander): index.ts registers init/versions/update/uninstall. init renders templates/platforms/<name>.json + base/skill-content.md placeholders, copies data+scripts, and installs 6 sibling sub-skills. update shells out to `npm install -g` behind a semver gate. A legacy ZIP-download path exists in init.ts/extract.ts but is unreachable (no --legacy flag).\n\nVERIFY: `npm --prefix cli run verify:data` runs the whole gate — CSV structure check, the 1095-line semantic validator (validate_data.py), agent-guide count checks, catalog-summary hash check, unittest discovery (13 modules under src/.../tests/), the fingerprinted relevance evaluator, domain/stack smoke scripts, and asset-sync check. Respect invariants: products/colors/ui-reasoning must each have exactly 192 aligned rows; advertised counts in SKILL.md/template descriptions are recomputed by validate-agent-guide.py.\n\nTRAPS: no symlinks (Windows checkouts break them — yet gallery/data/styles.csv IS a symlink); keep stdout UTF-8 rewrap blocks in the Python entrypoints; data files must stay LF (.gitattributes + hash pinning); skill docs must use skill-relative script paths — home-rooted and ${CLAUDE_PLUGIN_ROOT} paths are grep-rejected in CI except the core SKILL.md; a 0-result search is intentional abstention, not a bug.\n\nGIT: Conventional Commits, branch + PR, never push main. semantic-release auto-publishes cli/ to npm on merge; bump-versions.yml then PRs skill.json/plugin.json/marketplace.json version bumps (manifests run ahead of cli/package.json by design)."
+  },
+  "analysis": {
+    "agent": "devin",
+    "model": "swe-2",
+    "runtime_ms": null,
+    "cost_usd": null,
+    "collected_at": "2026-09-22T16:34:50.779Z"
   }
 }

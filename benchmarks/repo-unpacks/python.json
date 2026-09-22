@@ -365,12 +365,12 @@
         {
           "path": "AGENTS.md",
           "bytes": 2902,
-          "preview": "# AGENTS.md\n\nGuidance for AI coding agents (and their humans) contributing to\n**TheAlgorithms/Python**. This complements \u2014 and never overrides \u2014\n[`CONTRIBUTING.md`](CONTRIBUTING.md). Read that first.\n\nThis repository is educational: implementations should be clear and correct\nrather than maximally optimized. Every change goes through CI and the\n`algorithms-keeper` bot, both of which reject non-conforming PRs automatically.\n\n## Before opening a pull request\n\n- **Check at least one box in the PR description.** The `algorithms-keeper`\n  bot **closes any PR whose \"Describe your change\" section has no checked\n  box** (`* [x]`). Fill in the template that ships in\n  `.github/pull_request_template.md` and tick every item that applies before\n  you submit \u2014 this is the single most common reason automated PRs get closed.\n- **One algorithm file per PR.** Split unrelated changes into separate PRs to\n  keep review focused.\n- **Don't change code and its doctests in the same PR.** If you're only\n  updating tests, say so and touch nothing else.\n\n## Code conventions (enforced by CI)\n\n- **Formatting & linting:** `ruff` (`uvx ruff check .` and `uvx ruff format .`).\n  Run `uvx pre-commit run --all-files` locally to catch everything CI will.\n- **Type hints:** annotate every function parameter and return value with\n  [type hints](https://docs.python.org/3/library/typing.html).\n- **Doctests:** every function needs at least one\n  [doctest](https://docs.python.org/3/library/doctest.html) that passes under\n  `python -m doctest -v your_file.py` (and `pytest`).\n- **Naming:** filenames are all-lowercase with underscores (no spaces or\n  dashes); functions and variables follow standard Python naming.\n- **Placement:** new files go inside an existing directory.\n- **References:** new algorithms include a URL to Wikipedia or a comparable\n  explanation.\n\n## Running the suite locally\n\nThis project is managed with [`uv`](https://docs.astral.sh/uv/) \u2014 there is no\n`requirements.txt`. Dependencies live in `pyproject.toml`/`uv.lock`, and `uvx`\nruns a tool in a throwaway environment without polluting yours:\n\n```bash\nuvx pre-commit run --all-files                       # ruff, formatting, hooks\nuvx pytest your_module/your_file.py --doctest-modules\n```\n\n(`uv run pytest ...` works too if you'd rather use the project's locked\nenvironment.)\n\nSome directories are intentionally skipped in CI (`--ignore` entries in\n`.github/workflows/build.yml`), usually because a heavy dependency lacks a\nwheel for the CPython version the repo currently targets. Check that list\nbefore assuming a file is untested.\n\n## Good agent behavior\n\n- Keep diffs minimal and scoped to the stated change.\n- Preserve existing style and structure; prefer clarity over cleverness.\n- Never fabricate doctest output \u2014 run it and paste the real result.\n- If CI is red, read the log and fix the cause rather than re-running blindly.\n"
+          "preview": "# AGENTS.md\n\nGuidance for AI coding agents (and their humans) contributing to\n**TheAlgorithms/Python**. This complements — and never overrides —\n[`CONTRIBUTING.md`](CONTRIBUTING.md). Read that first.\n\nThis repository is educational: implementations should be clear and correct\nrather than maximally optimized. Every change goes through CI and the\n`algorithms-keeper` bot, both of which reject non-conforming PRs automatically.\n\n## Before opening a pull request\n\n- **Check at least one box in the PR description.** The `algorithms-keeper`\n  bot **closes any PR whose \"Describe your change\" section has no checked\n  box** (`* [x]`). Fill in the template that ships in\n  `.github/pull_request_template.md` and tick every item that applies before\n  you submit — this is the single most common reason automated PRs get closed.\n- **One algorithm file per PR.** Split unrelated changes into separate PRs to\n  keep review focused.\n- **Don't change code and its doctests in the same PR.** If you're only\n  updating tests, say so and touch nothing else.\n\n## Code conventions (enforced by CI)\n\n- **Formatting & linting:** `ruff` (`uvx ruff check .` and `uvx ruff format .`).\n  Run `uvx pre-commit run --all-files` locally to catch everything CI will.\n- **Type hints:** annotate every function parameter and return value with\n  [type hints](https://docs.python.org/3/library/typing.html).\n- **Doctests:** every function needs at least one\n  [doctest](https://docs.python.org/3/library/doctest.html) that passes under\n  `python -m doctest -v your_file.py` (and `pytest`).\n- **Naming:** filenames are all-lowercase with underscores (no spaces or\n  dashes); functions and variables follow standard Python naming.\n- **Placement:** new files go inside an existing directory.\n- **References:** new algorithms include a URL to Wikipedia or a comparable\n  explanation.\n\n## Running the suite locally\n\nThis project is managed with [`uv`](https://docs.astral.sh/uv/) — there is no\n`requirements.txt`. Dependencies live in `pyproject.toml`/`uv.lock`, and `uvx`\nruns a tool in a throwaway environment without polluting yours:\n\n```bash\nuvx pre-commit run --all-files                       # ruff, formatting, hooks\nuvx pytest your_module/your_file.py --doctest-modules\n```\n\n(`uv run pytest ...` works too if you'd rather use the project's locked\nenvironment.)\n\nSome directories are intentionally skipped in CI (`--ignore` entries in\n`.github/workflows/build.yml`), usually because a heavy dependency lacks a\nwheel for the CPython version the repo currently targets. Check that list\nbefore assuming a file is untested.\n\n## Good agent behavior\n\n- Keep diffs minimal and scoped to the stated change.\n- Preserve existing style and structure; prefer clarity over cleverness.\n- Never fabricate doctest output — run it and paste the real result.\n- If CI is red, read the log and fix the cause rather than re-running blindly.\n"
         },
         {
           "path": "CONTRIBUTING.md",
           "bytes": 12771,
-          "preview": "# Contributing Guidelines\n\n## Before Contributing\n\nWelcome to [TheAlgorithms/Python](https://github.com/TheAlgorithms/Python)! Before submitting your pull requests, please ensure that you __read the entire guidelines__. If you have any doubts about the contributing guide, please feel free to [state them clearly in an issue](https://github.com/TheAlgorithms/Python/issues/new) or ask the community on [Gitter](https://gitter.im/TheAlgorithms/community).\n\n## Contributing\n\n### Contributor\n\nWe are delighted that you are considering implementing algorithms and data structures for others! This repository is referenced and used by learners from all over the globe. By being one of our contributors, you agree and confirm that:\n\n- You did your work \u2014 no plagiarism allowed.\n  - Any plagiarized work will not be merged.\n- Your work will be distributed under the [MIT License](LICENSE.md) once your pull request is merged.\n- Your submitted work fulfills or mostly fulfills our styles and standards.\n\n__New implementations__ are welcome! For example, new solutions for a problem, different representations for a graph data structure, or algorithm designs with different complexities. However, __identical implementations__ of an existing one are not allowed. Please check whether the solution is already implemented before submitting your pull request.\n\n__Improving comments__ and __writing proper tests__ are also highly welcome.\n\n### Contribution\n\nWe appreciate any contribution \u2014 from fixing a grammar mistake in a comment to implementing complex algorithms. Please read this section if you are contributing your work.\n\nYour contribution will be tested by our [automated testing on GitHub Actions](https://github.com/TheAlgorithms/Python/actions) to save time and mental energy. After you have submitted your pull request, you should see the GitHub Actions tests start to run at the bottom of your submission page.\n\nIf those tests fail, then click on the ___details___ button to read through the GitHub Actions output to understand the failure. If you do not understand, please leave a comment on your submission page, and a community member will try to help.\n\n#### Issues\n\nIf you are interested in resolving an [open issue](https://github.com/TheAlgorithms/Python/issues), simply make a pull request with your proposed fix. __We do not assign issues in this repo__, so please do not ask for permission to work on an issue.\n\n__Do not__ create an issue to contribute an algorithm. Please submit a pull request instead.\n\nPlease help us keep our issue list small by adding `Fixes #{$ISSUE_NUMBER}` to the description of pull requests that resolve open issues.\nFor example, if your pull request fixes issue #10, then please add the following to its description:\n\n```text\nFixes #10\n```\n\nGitHub will use this tag to [auto-close the issue](https://docs.github.com/en/issues/tracking-your-work-with-issues/linking-a-pull-request-to-an-issue) if and when the PR is merged.\n\n#### What is an Algorithm?\n\nAn algorithm is one or more functions (or classes) that:\n\n- take one or more inputs,\n- perform some internal calculations or data manipulations,\n- return one or more outputs,\n- have minimal side effects (e.g., `print()`, `plot()`, `read()`, `write()`).\n\nAlgorithms should be packaged in a way that would make it easy for readers to integrate them into larger programs.\n\nAlgorithms should:\n\n- have intuitive class and function names that make their purpose clear to readers,\n- use Python naming conventions and intuitive variable names to ease comprehension,\n- be flexible to take different input values,\n- have Python type hints for their input parameters and return values,\n- raise Python exceptions (`ValueError`, etc.) on erroneous input values,\n- have docstrings with clear explanations and/or URLs to source materials,\n- contain doctests that test both valid and erroneous input values,\n- return all calculation results instead of printing or plotting them.\n\nAlgorithms in this repo should not be simple how-to examples for existing Python packages. Instead, they should perform internal calculations or manipulations to convert input values into different output values.\nThese calculations or manipulations can use data types, classes, or functions of existing Python packages, but each algorithm in this repo should add unique value.\n\n#### Pre-Commit Plugin\n\n- have intuitive class and function names that make their purpose clear to readers\n- use Python naming conventions and intuitive variable names to ease comprehension\n- be flexible to take different input values\n- have Python type hints for their input parameters and return values\n- raise Python exceptions (`ValueError`, etc.) on erroneous input values\n- have docstrings with clear explanations and/or URLs to source materials\n- contain doctests that test both valid and erroneous input values\n- return all calculation results instead of printing or plotting them\n\nAlgorithms in this repo should not be how-to examples for existing Python packages. Instead, they should perform internal calculations or manipulations to convert input values into different output values.\nThose calculations or manipulations can use data types, classes, or functions of existing Python packages, but each algorithm in this repo should add unique value.\n\n#### Pre-commit\n\nUse [pre-commit](https://pre-commit.com/#installation) to automatically format your code to match our coding style:\n\n```bash\npython3 -m pip install pre-commit  # only required the first time\npre-commit install\n```\n\nThat's it! Pre-commit will run every time you commit any changes. If any errors are found during the run, fix them and commit those changes. You can even run the plugin manually on all files:\n\n```bash\npre-commit run --all-files --show-diff-on-failure\n```\n\n#### Coding Style\n\nWe want your work to be readable by others; therefore, we encourage you to note the following:\n\n- Please write in free-threaded Python 3.14t+. For instance: `print()` is a function in Python 3, so `print \"Hello\"` will *not* work, but `print(\"Hello\")` will.\n\n- Please focus hard on the naming of functions, classes, and variables. Help your reader by using __descriptive names__ that can help you to remove redundant comments.\n  - Single-letter variable names are *old school*, so please avoid them unless their life only spans a few lines.\n  - Expand acronyms because `gcd()` is hard to understand but `greatest_common_divisor()` is not.\n  - Please follow the [Python Naming Conventions](https://pep8.org/#prescriptive-naming-conventions) so variable_names and function_names should be lower_case, CONSTANTS in UPPERCASE, ClassNames should be CamelCase, etc.\n\n- We encourage the use of Python [f-strings](https://realpython.com/python-f-strings/#f-strings-a-new-and-improved-way-to-format-strings-in-python) where they make the code easier to read.\n\n- Please consider running [__ruff format__](https://docs.astral.sh/ruff/formatter/) on your Python file(s) before submitting your pull request. This is not yet a requirement, but it does make your code more readable and automatically aligns it with much of [PEP 8](https://peps.python.org/pep-0008/). To use it,\n\n  ```bash\n  python3 -m pip install ruff  # only required the first time\n  ruff format\n  ```\n\n- All submissions will need to pass the test `ruff check` before they will be accepted, so if possible, try this test locally on your Python file(s) before submitting your pull request.\n\n  ```bash\n  python3 -m pip install ruff  # only required the first time\n  ruff check\n  ```\n\n- Original code submissions require docstrings or comments to describe your work.\n\n- More on docstrings and comments:\n\n  If you used a Wikipedia article or other source material to create your algorithm, please add the URL in a docstring or comment to help your reader.\n\n  The following are considered to be bad and may be requested to be improved:\n\n  ```python\n  x += 2  # increased by 2\n  ```\n\n  This is too trivial. Comments should not merely repeat what the code already says. Comments should explain ___why___ we are doing things. Comments on the same line as code should never cause the line to wrap (> 88 characters per line).\nComments which are"
+          "preview": "# Contributing Guidelines\n\n## Before Contributing\n\nWelcome to [TheAlgorithms/Python](https://github.com/TheAlgorithms/Python)! Before submitting your pull requests, please ensure that you __read the entire guidelines__. If you have any doubts about the contributing guide, please feel free to [state them clearly in an issue](https://github.com/TheAlgorithms/Python/issues/new) or ask the community on [Gitter](https://gitter.im/TheAlgorithms/community).\n\n## Contributing\n\n### Contributor\n\nWe are delighted that you are considering implementing algorithms and data structures for others! This repository is referenced and used by learners from all over the globe. By being one of our contributors, you agree and confirm that:\n\n- You did your work — no plagiarism allowed.\n  - Any plagiarized work will not be merged.\n- Your work will be distributed under the [MIT License](LICENSE.md) once your pull request is merged.\n- Your submitted work fulfills or mostly fulfills our styles and standards.\n\n__New implementations__ are welcome! For example, new solutions for a problem, different representations for a graph data structure, or algorithm designs with different complexities. However, __identical implementations__ of an existing one are not allowed. Please check whether the solution is already implemented before submitting your pull request.\n\n__Improving comments__ and __writing proper tests__ are also highly welcome.\n\n### Contribution\n\nWe appreciate any contribution — from fixing a grammar mistake in a comment to implementing complex algorithms. Please read this section if you are contributing your work.\n\nYour contribution will be tested by our [automated testing on GitHub Actions](https://github.com/TheAlgorithms/Python/actions) to save time and mental energy. After you have submitted your pull request, you should see the GitHub Actions tests start to run at the bottom of your submission page.\n\nIf those tests fail, then click on the ___details___ button to read through the GitHub Actions output to understand the failure. If you do not understand, please leave a comment on your submission page, and a community member will try to help.\n\n#### Issues\n\nIf you are interested in resolving an [open issue](https://github.com/TheAlgorithms/Python/issues), simply make a pull request with your proposed fix. __We do not assign issues in this repo__, so please do not ask for permission to work on an issue.\n\n__Do not__ create an issue to contribute an algorithm. Please submit a pull request instead.\n\nPlease help us keep our issue list small by adding `Fixes #{$ISSUE_NUMBER}` to the description of pull requests that resolve open issues.\nFor example, if your pull request fixes issue #10, then please add the following to its description:\n\n```text\nFixes #10\n```\n\nGitHub will use this tag to [auto-close the issue](https://docs.github.com/en/issues/tracking-your-work-with-issues/linking-a-pull-request-to-an-issue) if and when the PR is merged.\n\n#### What is an Algorithm?\n\nAn algorithm is one or more functions (or classes) that:\n\n- take one or more inputs,\n- perform some internal calculations or data manipulations,\n- return one or more outputs,\n- have minimal side effects (e.g., `print()`, `plot()`, `read()`, `write()`).\n\nAlgorithms should be packaged in a way that would make it easy for readers to integrate them into larger programs.\n\nAlgorithms should:\n\n- have intuitive class and function names that make their purpose clear to readers,\n- use Python naming conventions and intuitive variable names to ease comprehension,\n- be flexible to take different input values,\n- have Python type hints for their input parameters and return values,\n- raise Python exceptions (`ValueError`, etc.) on erroneous input values,\n- have docstrings with clear explanations and/or URLs to source materials,\n- contain doctests that test both valid and erroneous input values,\n- return all calculation results instead of printing or plotting them.\n\nAlgorithms in this repo should not be simple how-to examples for existing Python packages. Instead, they should perform internal calculations or manipulations to convert input values into different output values.\nThese calculations or manipulations can use data types, classes, or functions of existing Python packages, but each algorithm in this repo should add unique value.\n\n#### Pre-Commit Plugin\n\n- have intuitive class and function names that make their purpose clear to readers\n- use Python naming conventions and intuitive variable names to ease comprehension\n- be flexible to take different input values\n- have Python type hints for their input parameters and return values\n- raise Python exceptions (`ValueError`, etc.) on erroneous input values\n- have docstrings with clear explanations and/or URLs to source materials\n- contain doctests that test both valid and erroneous input values\n- return all calculation results instead of printing or plotting them\n\nAlgorithms in this repo should not be how-to examples for existing Python packages. Instead, they should perform internal calculations or manipulations to convert input values into different output values.\nThose calculations or manipulations can use data types, classes, or functions of existing Python packages, but each algorithm in this repo should add unique value.\n\n#### Pre-commit\n\nUse [pre-commit](https://pre-commit.com/#installation) to automatically format your code to match our coding style:\n\n```bash\npython3 -m pip install pre-commit  # only required the first time\npre-commit install\n```\n\nThat's it! Pre-commit will run every time you commit any changes. If any errors are found during the run, fix them and commit those changes. You can even run the plugin manually on all files:\n\n```bash\npre-commit run --all-files --show-diff-on-failure\n```\n\n#### Coding Style\n\nWe want your work to be readable by others; therefore, we encourage you to note the following:\n\n- Please write in free-threaded Python 3.14t+. For instance: `print()` is a function in Python 3, so `print \"Hello\"` will *not* work, but `print(\"Hello\")` will.\n\n- Please focus hard on the naming of functions, classes, and variables. Help your reader by using __descriptive names__ that can help you to remove redundant comments.\n  - Single-letter variable names are *old school*, so please avoid them unless their life only spans a few lines.\n  - Expand acronyms because `gcd()` is hard to understand but `greatest_common_divisor()` is not.\n  - Please follow the [Python Naming Conventions](https://pep8.org/#prescriptive-naming-conventions) so variable_names and function_names should be lower_case, CONSTANTS in UPPERCASE, ClassNames should be CamelCase, etc.\n\n- We encourage the use of Python [f-strings](https://realpython.com/python-f-strings/#f-strings-a-new-and-improved-way-to-format-strings-in-python) where they make the code easier to read.\n\n- Please consider running [__ruff format__](https://docs.astral.sh/ruff/formatter/) on your Python file(s) before submitting your pull request. This is not yet a requirement, but it does make your code more readable and automatically aligns it with much of [PEP 8](https://peps.python.org/pep-0008/). To use it,\n\n  ```bash\n  python3 -m pip install ruff  # only required the first time\n  ruff format\n  ```\n\n- All submissions will need to pass the test `ruff check` before they will be accepted, so if possible, try this test locally on your Python file(s) before submitting your pull request.\n\n  ```bash\n  python3 -m pip install ruff  # only required the first time\n  ruff check\n  ```\n\n- Original code submissions require docstrings or comments to describe your work.\n\n- More on docstrings and comments:\n\n  If you used a Wikipedia article or other source material to create your algorithm, please add the URL in a docstring or comment to help your reader.\n\n  The following are considered to be bad and may be requested to be improved:\n\n  ```python\n  x += 2  # increased by 2\n  ```\n\n  This is too trivial. Comments should not merely repeat what the code already says. Comments should explain ___why___ we are doing things. Comments on the same line as code should never cause the line to wrap (> 88 characters per line).\nComments which are"
         },
         {
           "path": "LICENSE.md",
@@ -380,12 +380,12 @@
         {
           "path": "README.md",
           "bytes": 2550,
-          "preview": "<div align=\"center\">\n<!-- Title: -->\n  <a href=\"https://github.com/TheAlgorithms/\">\n    <img src=\"https://raw.githubusercontent.com/TheAlgorithms/website/1cd824df116b27029f17c2d1b42d81731f28a920/public/logo.svg\" height=\"100\">\n  </a>\n  <h1><a href=\"https://github.com/TheAlgorithms/\">The Algorithms</a> - Python</h1>\n\n<!-- Labels: -->\n  <!-- First row: -->\n  <a href=\"https://gitpod.io/#https://github.com/TheAlgorithms/Python\">\n    <img src=\"https://img.shields.io/badge/Gitpod-Ready--to--Code-blue?logo=gitpod&style=flat-square\" height=\"20\" alt=\"Gitpod Ready-to-Code\">\n  </a>\n  <a href=\"https://github.com/TheAlgorithms/Python/blob/master/CONTRIBUTING.md\">\n    <img src=\"https://img.shields.io/static/v1.svg?label=Contributions&message=Welcome&color=0059b3&style=flat-square\" height=\"20\" alt=\"Contributions Welcome\">\n  </a>\n  <img src=\"https://img.shields.io/github/repo-size/TheAlgorithms/Python.svg?label=Repo%20size&style=flat-square\" height=\"20\">\n  <a href=\"https://the-algorithms.com/discord\">\n    <img src=\"https://img.shields.io/discord/808045925556682782.svg?logo=discord&colorB=7289DA&style=flat-square\" height=\"20\" alt=\"Discord chat\">\n  </a>\n\n  <!-- Second row: -->\n  <br>\n  <a href=\"https://github.com/TheAlgorithms/Python/actions\">\n    <img src=\"https://img.shields.io/github/actions/workflow/status/TheAlgorithms/Python/build.yml?branch=master&label=CI&logo=github&style=flat-square\" height=\"20\" alt=\"GitHub Workflow Status\">\n  </a>\n  <a href=\"https://github.com/pre-commit/pre-commit\">\n    <img src=\"https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white&style=flat-square\" height=\"20\" alt=\"pre-commit\">\n  </a>\n  <a href=\"https://docs.astral.sh/ruff/formatter/\">\n    <img src=\"https://img.shields.io/static/v1?label=code%20style&message=ruff&color=black&style=flat-square\" height=\"20\" alt=\"code style: black\">\n  </a>\n\n<!-- Short description: -->\n  <h3>All algorithms implemented in Python - for education \ud83d\udcda</h3>\n</div>\n\nImplementations are for learning purposes only. They may be less efficient than the implementations in the Python standard library. Use them at your discretion.\n\n## \ud83d\ude80 Getting Started\n\n\ud83d\udccb Read through our [Contribution Guidelines](CONTRIBUTING.md) before you contribute.\n\n## \ud83c\udf10 Community Channels\n\nWe are on [Discord](https://the-algorithms.com/discord)! Community channels are a great way for you to ask questions and get help. Please join us!\n\n## \ud83d\udcdc List of Algorithms\n\nSee our [directory](DIRECTORY.md) for easier navigation and a better overview of the project.\n"
+          "preview": "<div align=\"center\">\n<!-- Title: -->\n  <a href=\"https://github.com/TheAlgorithms/\">\n    <img src=\"https://raw.githubusercontent.com/TheAlgorithms/website/1cd824df116b27029f17c2d1b42d81731f28a920/public/logo.svg\" height=\"100\">\n  </a>\n  <h1><a href=\"https://github.com/TheAlgorithms/\">The Algorithms</a> - Python</h1>\n\n<!-- Labels: -->\n  <!-- First row: -->\n  <a href=\"https://gitpod.io/#https://github.com/TheAlgorithms/Python\">\n    <img src=\"https://img.shields.io/badge/Gitpod-Ready--to--Code-blue?logo=gitpod&style=flat-square\" height=\"20\" alt=\"Gitpod Ready-to-Code\">\n  </a>\n  <a href=\"https://github.com/TheAlgorithms/Python/blob/master/CONTRIBUTING.md\">\n    <img src=\"https://img.shields.io/static/v1.svg?label=Contributions&message=Welcome&color=0059b3&style=flat-square\" height=\"20\" alt=\"Contributions Welcome\">\n  </a>\n  <img src=\"https://img.shields.io/github/repo-size/TheAlgorithms/Python.svg?label=Repo%20size&style=flat-square\" height=\"20\">\n  <a href=\"https://the-algorithms.com/discord\">\n    <img src=\"https://img.shields.io/discord/808045925556682782.svg?logo=discord&colorB=7289DA&style=flat-square\" height=\"20\" alt=\"Discord chat\">\n  </a>\n\n  <!-- Second row: -->\n  <br>\n  <a href=\"https://github.com/TheAlgorithms/Python/actions\">\n    <img src=\"https://img.shields.io/github/actions/workflow/status/TheAlgorithms/Python/build.yml?branch=master&label=CI&logo=github&style=flat-square\" height=\"20\" alt=\"GitHub Workflow Status\">\n  </a>\n  <a href=\"https://github.com/pre-commit/pre-commit\">\n    <img src=\"https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white&style=flat-square\" height=\"20\" alt=\"pre-commit\">\n  </a>\n  <a href=\"https://docs.astral.sh/ruff/formatter/\">\n    <img src=\"https://img.shields.io/static/v1?label=code%20style&message=ruff&color=black&style=flat-square\" height=\"20\" alt=\"code style: black\">\n  </a>\n\n<!-- Short description: -->\n  <h3>All algorithms implemented in Python - for education 📚</h3>\n</div>\n\nImplementations are for learning purposes only. They may be less efficient than the implementations in the Python standard library. Use them at your discretion.\n\n## 🚀 Getting Started\n\n📋 Read through our [Contribution Guidelines](CONTRIBUTING.md) before you contribute.\n\n## 🌐 Community Channels\n\nWe are on [Discord](https://the-algorithms.com/discord)! Community channels are a great way for you to ask questions and get help. Please join us!\n\n## 📜 List of Algorithms\n\nSee our [directory](DIRECTORY.md) for easier navigation and a better overview of the project.\n"
         },
         {
           "path": "docs/hacktober_2026_prep.md",
           "bytes": 57469,
-          "preview": "# Hacktoberfest 2026 preparation \u2014 open PR cleanup tracker\n\nThis file tracks the cleanup of open pull requests ahead of [Hacktoberfest 2026](https://hacktoberfest.com) so the queue is ready for the October influx of contributions.\n\nEach of the `scripts/close_pull_requests_with_*.sh` jobs is run one at a time by a maintainer. After each run, the affected lines below are checked off (`[ ]` -> `[x]`), their labels replaced with \"closed by <script name>\", and the totals table at the bottom updated.\n\nSnapshot taken: **2026-09-02** -- **918** open pull requests.\n\nLatest refresh: **2026-09-06** -- reconciled the tracker with the live PR queue: **84** more tracked PRs are now resolved (**10 merged**: #13862, #13903, #14038, #14260, #14291, #14307, #14346, #14562, #14663, #15182; **74 closed**). Approximately **669** pull requests remain open.\n\nNotation: `<index>. [ ] #<pr_id> <labels>`\n\n## Open pull requests\n\n1. [x] #15158 merged\n2. [x] #15156 merged\n3. [x] #15147 closed\n4. [x] #15146 closed by maintainer\n5. [x] #15144 closed\n6. [ ] #15142 enhancement, awaiting reviews\n7. [x] #15128 closed by close_pull_requests_with_failing_tests.sh\n8. [x] #15117 merged\n9. [x] #15108 merged\n10. [x] #15107 merged\n11. [ ] #15105 no labels\n12. [x] #15103 closed\n13. [x] #15102 closed\n14. [x] #15101 closed\n15. [x] #15092 merged\n16. [x] #15091 merged\n17. [x] #15090 merged\n18. [x] #15086 closed\n19. [x] #15084 merged\n20. [x] #15076 merged\n21. [x] #15074 closed\n22. [x] #15072 merged\n23. [x] #15063 merged\n24. [x] #15057 closed by close_pull_requests_with_failing_tests.sh\n25. [x] #15056 merged\n26. [x] #15055 merged\n27. [ ] #15054 enhancement, awaiting reviews\n28. [x] #15053 closed\n29. [x] #15051 merged\n30. [x] #15050 closed\n31. [x] #15048 closed\n32. [x] #15047 closed\n33. [x] #15046 closed\n34. [x] #15045 closed\n35. [x] #15044 merged\n36. [x] #15043 closed\n37. [x] #15042 closed\n38. [x] #15041 closed\n39. [x] #15040 closed\n40. [x] #15039 closed\n41. [x] #15038 merged\n42. [x] #15036 closed\n43. [x] #15026 closed\n44. [x] #15025 closed by close_pull_requests_with_failing_tests.sh\n45. [x] #15024 closed\n46. [x] #15023 merged\n47. [x] #15021 closed by close_pull_requests_with_failing_tests.sh\n48. [x] #15019 closed\n49. [x] #15014 merged\n50. [x] #15012 merged\n51. [ ] #15011 enhancement, awaiting reviews\n52. [x] #15010 closed\n53. [x] #15009 merged\n54. [ ] #15005 enhancement, awaiting reviews\n55. [x] #15003 merged\n56. [x] #15001 closed\n57. [ ] #14997 no labels\n58. [x] #14995 merged\n59. [x] #14991 merged\n60. [x] #14990 closed\n61. [x] #14988 merged\n62. [x] #14987 closed\n63. [x] #14986 merged\n64. [x] #14979 merged\n65. [x] #14975 closed by close_pull_requests_with_failing_tests.sh\n66. [x] #14974 closed by close_pull_requests_with_failing_tests.sh\n67. [x] #14973 closed by close_pull_requests_with_require_tests.sh\n68. [x] #14972 closed by close_pull_requests_with_failing_tests.sh\n69. [x] #14967 closed\n70. [x] #14939 merged\n71. [x] #14938 closed by close_pull_requests_with_failing_tests.sh\n72. [x] #14925 merged\n73. [ ] #14923 enhancement, awaiting reviews\n74. [x] #14920 closed\n75. [x] #14914 closed\n76. [x] #14909 closed\n77. [ ] #14907 enhancement, awaiting reviews\n78. [x] #14904 merged\n79. [x] #14899 closed\n80. [x] #14895 merged\n81. [x] #14894 merged\n82. [x] #14890 merged\n83. [x] #14889 merged\n84. [x] #14883 closed\n85. [x] #14882 closed\n86. [x] #14879 merged\n87. [x] #14878 closed\n88. [ ] #14876 enhancement, awaiting reviews\n89. [x] #14875 merged\n90. [x] #14874 closed\n91. [ ] #14873 enhancement, awaiting reviews\n92. [x] #14872 merged\n93. [x] #14871 closed\n94. [x] #14868 closed\n95. [x] #14864 closed\n96. [x] #14862 closed\n97. [x] #14861 closed\n98. [x] #14858 merged\n99. [ ] #14856 awaiting reviews\n100. [ ] #14853 awaiting reviews\n101. [x] #14851 merged\n102. [x] #14850 merged\n103. [x] #14848 merged\n104. [x] #14845 merged\n105. [x] #14843 closed\n106. [x] #14838 closed\n107. [x] #14835 closed by close_pull_requests_with_failing_tests.sh\n108. [x] #14833 merged\n109. [x] #14832 closed\n110. [x] #14829 closed\n111. [x] #14827 closed\n112. [x] #14826 closed\n113. [x] #14824 closed by close_pull_requests_with_require_type_hints.sh\n114. [x] #14823 closed\n115. [x] #14821 merged\n116. [x] #14819 closed\n117. [x] #14818 closed by close_pull_requests_with_failing_tests.sh\n118. [ ] #14814 enhancement, awaiting reviews\n119. [x] #14812 closed\n120. [x] #14810 closed by close_pull_requests_with_require_type_hints.sh\n121. [x] #14807 merged\n122. [ ] #14806 enhancement, awaiting reviews\n123. [x] #14805 merged\n124. [x] #14802 closed\n125. [x] #14801 closed\n126. [x] #14800 merged\n127. [x] #14798 closed\n128. [ ] #14792 enhancement, awaiting reviews\n129. [ ] #14787 enhancement, awaiting reviews\n130. [x] #14786 merged\n131. [x] #14785 closed\n132. [ ] #14779 enhancement, awaiting reviews\n133. [ ] #14777 enhancement, awaiting reviews\n134. [x] #14775 merged\n135. [x] #14770 merged\n136. [ ] #14769 enhancement, awaiting reviews\n137. [ ] #14768 enhancement, awaiting reviews\n138. [ ] #14767 enhancement, awaiting reviews\n139. [x] #14759 closed\n140. [x] #14753 merged\n141. [x] #14751 closed\n142. [ ] #14746 enhancement, awaiting reviews\n143. [x] #14743 merged\n144. [ ] #14742 enhancement, awaiting reviews\n145. [x] #14740 closed\n146. [x] #14738 closed\n147. [x] #14736 closed\n148. [x] #14733 merged\n149. [x] #14732 closed by close_pull_requests_with_require_tests.sh\n150. [x] #14731 closed by close_pull_requests_with_failing_tests.sh\n151. [ ] #14729 enhancement, awaiting reviews\n152. [x] #14728 merged\n153. [x] #14727 closed by close_pull_requests_with_failing_tests.sh\n154. [x] #14726 closed by close_pull_requests_with_require_type_hints.sh\n155. [x] #14724 closed\n156. [x] #14723 closed by close_pull_requests_with_failing_tests.sh\n157. [x] #14721 closed\n158. [ ] #14718 enhancement, awaiting reviews\n159. [x] #14717 closed by close_pull_requests_with_failing_tests.sh\n160. [x] #14714 closed\n161. [x] #14713 closed\n162. [x] #14712 closed\n163. [x] #14708 closed\n164. [ ] #14702 enhancement, awaiting reviews\n165. [x] #14701 merged\n166. [x] #14700 closed by close_pull_requests_with_failing_tests.sh\n167. [x] #14694 closed\n168. [x] #14690 closed by close_pull_requests_with_failing_tests.sh\n169. [x] #14685 merged\n170. [x] #14680 closed by close_pull_requests_with_failing_tests.sh\n171. [x] #14677 closed by close_pull_requests_with_require_descriptive_names.sh\n172. [ ] #14673 enhancement, awaiting reviews\n173. [x] #14668 closed\n174. [x] #14665 merged\n175. [x] #14663 merged\n176. [x] #14660 closed by close_pull_requests_with_require_type_hints.sh\n177. [x] #14657 closed\n178. [x] #14655 closed\n179. [ ] #14654 enhancement, awaiting reviews\n180. [x] #14652 merged\n181. [ ] #14647 awaiting reviews\n182. [x] #14641 merged\n183. [x] #14637 merged\n184. [x] #14635 merged\n185. [x] #14634 merged\n186. [x] #14633 merged\n187. [x] #14630 merged\n188. [x] #14627 closed\n189. [x] #14626 closed\n190. [x] #14625 closed by close_pull_requests_with_failing_tests.sh\n191. [x] #14623 merged\n192. [x] #14622 closed\n193. [x] #14618 closed by close_pull_requests_with_failing_tests.sh\n194. [x] #14617 closed by close_pull_requests_with_failing_tests.sh\n195. [x] #14616 closed by close_pull_requests_with_failing_tests.sh\n196. [x] #14613 closed\n197. [x] #14611 closed\n198. [x] #14610 closed\n199. [ ] #14609 enhancement, awaiting reviews\n200. [x] #14608 closed\n201. [x] #14607 merged\n202. [x] #14602 merged\n203. [x] #14594 closed by close_pull_requests_with_failing_tests.sh\n204. [x] #14582 closed by close_pull_requests_with_require_tests.sh\n205. [ ] #14581 enhancement, awaiting reviews\n206. [x] #14579 closed\n207. [x] #14574 closed\n208. [x] #14571 closed\n209. [x] #14570 closed\n210. [x] #14568 merged\n211. [x] #14563 closed\n212. [x] #14562 merged\n213. [ ] #14560 awaiting reviews\n214. [x] #14555 merged\n215. [x] #14554 merged\n216. [ ] #14539 enhancement, awaiting reviews\n217. [ ] #14527 awaiting reviews\n218. [ ] #14526 awaiting reviews\n219. [ ] #14525 awaiting reviews\n220. [x] #14524 closed by close_pull_requests_with_failing_tests.sh\n221. [x] #14523 closed\n222. [x] #14518 closed by close_pull_requests_with_failing_tests.sh\n223. [x] #14511 closed by close_pull_requests_with_failing_tests.sh\n224. [x] #14510 closed by "
+          "preview": "# Hacktoberfest 2026 preparation — open PR cleanup tracker\n\nThis file tracks the cleanup of open pull requests ahead of [Hacktoberfest 2026](https://hacktoberfest.com) so the queue is ready for the October influx of contributions.\n\nEach of the `scripts/close_pull_requests_with_*.sh` jobs is run one at a time by a maintainer. After each run, the affected lines below are checked off (`[ ]` -> `[x]`), their labels replaced with \"closed by <script name>\", and the totals table at the bottom updated.\n\nSnapshot taken: **2026-09-02** -- **918** open pull requests.\n\nLatest refresh: **2026-09-06** -- reconciled the tracker with the live PR queue: **84** more tracked PRs are now resolved (**10 merged**: #13862, #13903, #14038, #14260, #14291, #14307, #14346, #14562, #14663, #15182; **74 closed**). Approximately **669** pull requests remain open.\n\nNotation: `<index>. [ ] #<pr_id> <labels>`\n\n## Open pull requests\n\n1. [x] #15158 merged\n2. [x] #15156 merged\n3. [x] #15147 closed\n4. [x] #15146 closed by maintainer\n5. [x] #15144 closed\n6. [ ] #15142 enhancement, awaiting reviews\n7. [x] #15128 closed by close_pull_requests_with_failing_tests.sh\n8. [x] #15117 merged\n9. [x] #15108 merged\n10. [x] #15107 merged\n11. [ ] #15105 no labels\n12. [x] #15103 closed\n13. [x] #15102 closed\n14. [x] #15101 closed\n15. [x] #15092 merged\n16. [x] #15091 merged\n17. [x] #15090 merged\n18. [x] #15086 closed\n19. [x] #15084 merged\n20. [x] #15076 merged\n21. [x] #15074 closed\n22. [x] #15072 merged\n23. [x] #15063 merged\n24. [x] #15057 closed by close_pull_requests_with_failing_tests.sh\n25. [x] #15056 merged\n26. [x] #15055 merged\n27. [ ] #15054 enhancement, awaiting reviews\n28. [x] #15053 closed\n29. [x] #15051 merged\n30. [x] #15050 closed\n31. [x] #15048 closed\n32. [x] #15047 closed\n33. [x] #15046 closed\n34. [x] #15045 closed\n35. [x] #15044 merged\n36. [x] #15043 closed\n37. [x] #15042 closed\n38. [x] #15041 closed\n39. [x] #15040 closed\n40. [x] #15039 closed\n41. [x] #15038 merged\n42. [x] #15036 closed\n43. [x] #15026 closed\n44. [x] #15025 closed by close_pull_requests_with_failing_tests.sh\n45. [x] #15024 closed\n46. [x] #15023 merged\n47. [x] #15021 closed by close_pull_requests_with_failing_tests.sh\n48. [x] #15019 closed\n49. [x] #15014 merged\n50. [x] #15012 merged\n51. [ ] #15011 enhancement, awaiting reviews\n52. [x] #15010 closed\n53. [x] #15009 merged\n54. [ ] #15005 enhancement, awaiting reviews\n55. [x] #15003 merged\n56. [x] #15001 closed\n57. [ ] #14997 no labels\n58. [x] #14995 merged\n59. [x] #14991 merged\n60. [x] #14990 closed\n61. [x] #14988 merged\n62. [x] #14987 closed\n63. [x] #14986 merged\n64. [x] #14979 merged\n65. [x] #14975 closed by close_pull_requests_with_failing_tests.sh\n66. [x] #14974 closed by close_pull_requests_with_failing_tests.sh\n67. [x] #14973 closed by close_pull_requests_with_require_tests.sh\n68. [x] #14972 closed by close_pull_requests_with_failing_tests.sh\n69. [x] #14967 closed\n70. [x] #14939 merged\n71. [x] #14938 closed by close_pull_requests_with_failing_tests.sh\n72. [x] #14925 merged\n73. [ ] #14923 enhancement, awaiting reviews\n74. [x] #14920 closed\n75. [x] #14914 closed\n76. [x] #14909 closed\n77. [ ] #14907 enhancement, awaiting reviews\n78. [x] #14904 merged\n79. [x] #14899 closed\n80. [x] #14895 merged\n81. [x] #14894 merged\n82. [x] #14890 merged\n83. [x] #14889 merged\n84. [x] #14883 closed\n85. [x] #14882 closed\n86. [x] #14879 merged\n87. [x] #14878 closed\n88. [ ] #14876 enhancement, awaiting reviews\n89. [x] #14875 merged\n90. [x] #14874 closed\n91. [ ] #14873 enhancement, awaiting reviews\n92. [x] #14872 merged\n93. [x] #14871 closed\n94. [x] #14868 closed\n95. [x] #14864 closed\n96. [x] #14862 closed\n97. [x] #14861 closed\n98. [x] #14858 merged\n99. [ ] #14856 awaiting reviews\n100. [ ] #14853 awaiting reviews\n101. [x] #14851 merged\n102. [x] #14850 merged\n103. [x] #14848 merged\n104. [x] #14845 merged\n105. [x] #14843 closed\n106. [x] #14838 closed\n107. [x] #14835 closed by close_pull_requests_with_failing_tests.sh\n108. [x] #14833 merged\n109. [x] #14832 closed\n110. [x] #14829 closed\n111. [x] #14827 closed\n112. [x] #14826 closed\n113. [x] #14824 closed by close_pull_requests_with_require_type_hints.sh\n114. [x] #14823 closed\n115. [x] #14821 merged\n116. [x] #14819 closed\n117. [x] #14818 closed by close_pull_requests_with_failing_tests.sh\n118. [ ] #14814 enhancement, awaiting reviews\n119. [x] #14812 closed\n120. [x] #14810 closed by close_pull_requests_with_require_type_hints.sh\n121. [x] #14807 merged\n122. [ ] #14806 enhancement, awaiting reviews\n123. [x] #14805 merged\n124. [x] #14802 closed\n125. [x] #14801 closed\n126. [x] #14800 merged\n127. [x] #14798 closed\n128. [ ] #14792 enhancement, awaiting reviews\n129. [ ] #14787 enhancement, awaiting reviews\n130. [x] #14786 merged\n131. [x] #14785 closed\n132. [ ] #14779 enhancement, awaiting reviews\n133. [ ] #14777 enhancement, awaiting reviews\n134. [x] #14775 merged\n135. [x] #14770 merged\n136. [ ] #14769 enhancement, awaiting reviews\n137. [ ] #14768 enhancement, awaiting reviews\n138. [ ] #14767 enhancement, awaiting reviews\n139. [x] #14759 closed\n140. [x] #14753 merged\n141. [x] #14751 closed\n142. [ ] #14746 enhancement, awaiting reviews\n143. [x] #14743 merged\n144. [ ] #14742 enhancement, awaiting reviews\n145. [x] #14740 closed\n146. [x] #14738 closed\n147. [x] #14736 closed\n148. [x] #14733 merged\n149. [x] #14732 closed by close_pull_requests_with_require_tests.sh\n150. [x] #14731 closed by close_pull_requests_with_failing_tests.sh\n151. [ ] #14729 enhancement, awaiting reviews\n152. [x] #14728 merged\n153. [x] #14727 closed by close_pull_requests_with_failing_tests.sh\n154. [x] #14726 closed by close_pull_requests_with_require_type_hints.sh\n155. [x] #14724 closed\n156. [x] #14723 closed by close_pull_requests_with_failing_tests.sh\n157. [x] #14721 closed\n158. [ ] #14718 enhancement, awaiting reviews\n159. [x] #14717 closed by close_pull_requests_with_failing_tests.sh\n160. [x] #14714 closed\n161. [x] #14713 closed\n162. [x] #14712 closed\n163. [x] #14708 closed\n164. [ ] #14702 enhancement, awaiting reviews\n165. [x] #14701 merged\n166. [x] #14700 closed by close_pull_requests_with_failing_tests.sh\n167. [x] #14694 closed\n168. [x] #14690 closed by close_pull_requests_with_failing_tests.sh\n169. [x] #14685 merged\n170. [x] #14680 closed by close_pull_requests_with_failing_tests.sh\n171. [x] #14677 closed by close_pull_requests_with_require_descriptive_names.sh\n172. [ ] #14673 enhancement, awaiting reviews\n173. [x] #14668 closed\n174. [x] #14665 merged\n175. [x] #14663 merged\n176. [x] #14660 closed by close_pull_requests_with_require_type_hints.sh\n177. [x] #14657 closed\n178. [x] #14655 closed\n179. [ ] #14654 enhancement, awaiting reviews\n180. [x] #14652 merged\n181. [ ] #14647 awaiting reviews\n182. [x] #14641 merged\n183. [x] #14637 merged\n184. [x] #14635 merged\n185. [x] #14634 merged\n186. [x] #14633 merged\n187. [x] #14630 merged\n188. [x] #14627 closed\n189. [x] #14626 closed\n190. [x] #14625 closed by close_pull_requests_with_failing_tests.sh\n191. [x] #14623 merged\n192. [x] #14622 closed\n193. [x] #14618 closed by close_pull_requests_with_failing_tests.sh\n194. [x] #14617 closed by close_pull_requests_with_failing_tests.sh\n195. [x] #14616 closed by close_pull_requests_with_failing_tests.sh\n196. [x] #14613 closed\n197. [x] #14611 closed\n198. [x] #14610 closed\n199. [ ] #14609 enhancement, awaiting reviews\n200. [x] #14608 closed\n201. [x] #14607 merged\n202. [x] #14602 merged\n203. [x] #14594 closed by close_pull_requests_with_failing_tests.sh\n204. [x] #14582 closed by close_pull_requests_with_require_tests.sh\n205. [ ] #14581 enhancement, awaiting reviews\n206. [x] #14579 closed\n207. [x] #14574 closed\n208. [x] #14571 closed\n209. [x] #14570 closed\n210. [x] #14568 merged\n211. [x] #14563 closed\n212. [x] #14562 merged\n213. [ ] #14560 awaiting reviews\n214. [x] #14555 merged\n215. [x] #14554 merged\n216. [ ] #14539 enhancement, awaiting reviews\n217. [ ] #14527 awaiting reviews\n218. [ ] #14526 awaiting reviews\n219. [ ] #14525 awaiting reviews\n220. [x] #14524 closed by close_pull_requests_with_failing_tests.sh\n221. [x] #14523 closed\n222. [x] #14518 closed by close_pull_requests_with_failing_tests.sh\n223. [x] #14511 closed by close_pull_requests_with_failing_tests.sh\n224. [x] #14510 closed by "
         }
       ],
       "config_files": [],
@@ -6044,7 +6044,7 @@
         "steps": [
           {
             "id": "serialize",
-            "label": "JSON serialize (inventory \u2192 SQLite)",
+            "label": "JSON serialize (inventory → SQLite)",
             "ms": 0,
             "pct": 0
           },
@@ -6063,5 +6063,840 @@
         ]
       }
     ]
+  },
+  "report": {
+    "overview": "TheAlgorithms/Python is a large, flat collection of ~1,500 self-contained educational algorithm implementations in Python, organized by topic into ~45 top-level directories (sorts/, graphs/, maths/, ciphers/, project_euler/, etc.). It is not a deployable application — each file is an independent, doctest-driven module aimed at learners, and the project's real 'system' is its CI machinery: pytest running doctests across the whole tree on free-threaded Python 3.14t, ruff linting, an informational ty type-check, a SHA-256 answer oracle for Project Euler solutions, and bots/workflows that regenerate DIRECTORY.md and docs. Contributions are gated by strict conventions (doctests, type hints, snake_case filenames, one algorithm per PR) enforced by GitHub Actions and the algorithms-keeper bot.",
+    "system_map": {
+      "summary": "There is no runnable service or package entrypoint — the repo is a flat namespace of independent algorithm modules, declared as a 'virtual' project (no [build-system] in pyproject.toml) so `uv sync` installs only dependencies. The de-facto runtime is CI: eight GitHub Actions workflows gate PRs (build, ruff, ty, project_euler, sphinx, directory_writer, hacktoberfest_prep, devcontainer_ci). Tooling lives in scripts/ (directory generation, filename validation, Euler answer validation, PR janitor shell scripts). Storage is limited to checked-in artifacts: DIRECTORY.md (generated index), scripts/project_euler_answers.json (hashed answers), uv.lock, and docs/hacktober_2026_prep.md (bot-maintained tracker). External integrations are GitHub's API (gh CLI, GITHUB_TOKEN), GitHub Pages for Sphinx docs, and incidental web scraping inside web_programming/ modules.",
+      "claims": [
+        {
+          "claim": "pyproject.toml declares project 'thealgorithms-python' v0.0.1 with requires-python >=3.14 and no [build-system] table, so uv treats the repo as a virtual project and installs only dependencies — it is never built as a wheel.",
+          "sources": [
+            "pyproject.toml#L1-12",
+            ".github/workflows/ty.yml#L27-34"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The interpreter target is free-threaded CPython 3.14t, pinned via .python-version (contents '3.14t'); classifiers advertise Python 3.14/3.15 and 'Free Threading :: 2 - Beta'.",
+          "sources": [
+            ".python-version",
+            "pyproject.toml#L7-12"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Dependencies (numpy, scipy, pandas, scikit-learn, keras, matplotlib, pillow, sympy, httpx2, etc.) are managed by uv with a checked-in uv.lock; there is intentionally no requirements.txt.",
+          "sources": [
+            "pyproject.toml#L13-32",
+            "AGENTS.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "opencv-python and qiskit are quarantined into optional dependency groups 'cv' and 'quantum' because they lack free-threaded 3.14t wheels, and the corresponding test trees are --ignore'd in CI.",
+          "sources": [
+            "pyproject.toml#L44-64",
+            ".github/workflows/build.yml#L42-58"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Eight workflows in .github/workflows/ form the entire build/deploy pipeline: build.yml (pytest+coverage), ruff.yml (lint gate), ty.yml (informational type check), project_euler.yml (Euler doctests + answer validation), sphinx.yml (docs→GitHub Pages), directory_writer.yml (regenerate DIRECTORY.md on push), hacktoberfest_prep.yml (daily tracker bot), devcontainer_ci.yml.",
+          "sources": [
+            ".github/workflows/build.yml",
+            ".github/workflows/ruff.yml",
+            ".github/workflows/sphinx.yml",
+            ".github/workflows/directory_writer.yml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "scripts/ is the only 'application code' layer: build_directory_md.py generates DIRECTORY.md, validate_filenames.py enforces naming, validate_solutions.py is the Euler oracle, hacktoberfest_prep_update.py and pr_file_map.py are maintainer bots, and close_pull_requests_with_*.sh are janitor scripts.",
+          "sources": [
+            "scripts/build_directory_md.py",
+            "scripts/validate_solutions.py",
+            "scripts/hacktoberfest_prep_update.py",
+            "scripts/README.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "scripts/project_euler_answers.json is the persistent store of expected Project Euler answers as SHA-256 hex digests, loaded at module import time by validate_solutions.py.",
+          "sources": [
+            "scripts/project_euler_answers.json",
+            "scripts/validate_solutions.py#L21-28"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "DIRECTORY.md is a fully generated artifact — build_directory_md.py walks the tree and prints a nested Markdown index, and directory_writer.yml regenerates and force-pushes it on every push; CONTRIBUTING.md forbids editing it by hand.",
+          "sources": [
+            "scripts/build_directory_md.py#L67-96",
+            ".github/workflows/directory_writer.yml#L17-27",
+            "CONTRIBUTING.md#L216"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Documentation deployment is Sphinx + sphinx-autoapi + myst-parser: docs/conf.py enumerates 43 algorithm dirs in autoapi_dirs and sphinx.yml builds docs/_build/html and deploys to GitHub Pages on non-PR events.",
+          "sources": [
+            "docs/conf.py#L19-78",
+            ".github/workflows/sphinx.yml#L42-58"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Local dev tooling is uv + pre-commit: .pre-commit-config.yaml wires ruff-check, ruff-format, codespell, pyproject-fmt, rumdl, auto-walrus, uv-lock, validate-pyproject, and a local validate-filenames hook.",
+          "sources": [
+            ".pre-commit-config.yaml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "A devcontainer (.devcontainer/devcontainer.json, Dockerfile, post_install) and .gitpod.yml provide reproducible contributor environments; devcontainer_ci.yml builds it on changes.",
+          "sources": [
+            ".devcontainer/devcontainer.json",
+            ".devcontainer/Dockerfile",
+            ".github/workflows/devcontainer_ci.yml",
+            ".gitpod.yml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Each algorithm directory is a self-contained namespace (typically <topic>/<file>.py plus __init__.py); modules do not import each other across directories in general, so there is no internal package graph to map.",
+          "sources": [
+            "DIRECTORY.md",
+            "sorts/bubble_sort.py",
+            "project_euler/problem_001/sol1.py"
+          ],
+          "kind": "inference"
+        }
+      ]
+    },
+    "feature_catalog": {
+      "summary": "'Features' here are per-topic algorithm collections rather than product features: ~45 directories covering classic CS domains (sorts, searches, graphs, data_structures, dynamic_programming, ciphers, strings, maths), applied domains (machine_learning, neural_network, computer_vision, digital_image_processing, physics, electronics, financial, geodesy), curiosities (fractals, cellular_automata, fuzzy_logic, genetic_algorithm, quantum), a 344-file project_euler/ tree with a strict solution() contract, and web_programming/ scrapers that hit live third-party sites. Every module is directly runnable via its __main__ block and self-testing via doctests.",
+      "claims": [
+        {
+          "claim": "sorts/ contains ~60 comparison and non-comparison sorts; sorts/bubble_sort.py alone ships bubble_sort_iterative and bubble_sort_recursive behind a shared Comparable Protocol and exercises a timing benchmark in its __main__ block.",
+          "sources": [
+            "sorts/bubble_sort.py#L4-11",
+            "sorts/bubble_sort.py#L153-176",
+            "tests/test_sorts.py#L25-47"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "project_euler/ holds per-problem packages problem_NNN/ with multiple solN.py variants, each exposing a solution() function whose default arguments answer the problem (e.g. problem_001/sol1.py solution(n: int = 1000)).",
+          "sources": [
+            "project_euler/problem_001/sol1.py#L13-33",
+            "project_euler/README.md#L28-30"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "web_programming/ is a set of live scrapers/API clients: current_stock_price.py fetches Yahoo Finance HTML and parses a data-testid span with BeautifulSoup; fetch_anime_and_play.py scrapes gogoanime2.org search/episode/download URLs using fake-useragent.",
+          "sources": [
+            "web_programming/current_stock_price.py#L23-38",
+            "web_programming/fetch_anime_and_play.py#L14-41"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Other web_programming modules cover Hacker News, IMDb top-250 CSV export, COVID stats via XPath, GitHub info, currency conversion, Slack messages, reCAPTCHA verification, Reddit, NASA data, and Google result crawling — each a standalone network client.",
+          "sources": [
+            "web_programming/get_top_hn_posts.py",
+            "web_programming/get_imdb_top_250_movies_csv.py",
+            "web_programming/covid_stats_via_xpath.py",
+            "web_programming/recaptcha_verification.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "data_structures/ (144 files) implements linked lists, stacks/queues, hash maps, binary trees, kd-trees, suffix trees, tries, disjoint sets, and hashing — several with dedicated tests/ subdirectories (e.g. hashing/tests/test_hash_map.py, kd_tree/tests/test_kdtree.py).",
+          "sources": [
+            "data_structures/hashing/tests/test_hash_map.py",
+            "data_structures/kd_tree/tests/test_kdtree.py",
+            "data_structures/suffix_tree/tests/test_suffix_tree.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "maths/ (217 files) is the largest non-Euler domain — primality tests, factorials, number theory, geometry helpers — with sibling test files like test_prime_check.py and test_factorial.py alongside implementations.",
+          "sources": [
+            "maths/test_prime_check.py",
+            "maths/test_factorial.py",
+            "maths/solovay_strassen_primality_test.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "file_transfer/send_file.py + receive_file.py demonstrate raw TCP socket file transfer on port 12312, with a testing flag so tests/test_send_file.py can exercise one accept loop.",
+          "sources": [
+            "file_transfer/send_file.py#L1-31",
+            "file_transfer/tests/test_send_file.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "machine_learning/ and neural_network/ implement algorithms from scratch (linear regression, sequential minimal optimization for SVM, LSTM prediction, input_data MNIST loader) rather than being thin wrappers, per CONTRIBUTING.md's 'add unique value' rule.",
+          "sources": [
+            "machine_learning/sequential_minimum_optimization.py",
+            "machine_learning/linear_regression.py",
+            "neural_network/input_data.py",
+            "CONTRIBUTING.md#L67-68"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "graphs/ (69 files) covers traversal, shortest paths (Floyd-Warshall, Johnson), minimum spanning trees (Kruskal, Prim), and flow networks, with a graphs/tests/ subdirectory of pytest modules.",
+          "sources": [
+            "graphs/tests/test_min_spanning_tree_kruskal.py",
+            "graphs/tests/test_graphs_floyd_warshall.py",
+            "graphs/tests/test_johnson.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "ciphers/ (56 files) implements classical and modern ciphers; hashes/enigma_machine.py is one of a few files granted a per-file ruff ignore (BLE001 blind-except) in pyproject.toml.",
+          "sources": [
+            "pyproject.toml#L156-176",
+            "hashes/enigma_machine.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "quantum/q_fourier_transform.py is the single module importing qiskit; it is skipped in the 3.14t CI run because qiskit re-enables the GIL under free threading.",
+          "sources": [
+            "pyproject.toml#L56-64",
+            ".github/workflows/build.yml#L40-55"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "digital_image_processing/ is almost entirely cv2-based and is excluded wholesale from the free-threaded test run until a cp314t opencv wheel ships.",
+          "sources": [
+            ".github/workflows/build.yml#L31-49",
+            "pyproject.toml#L44-51"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "data_flow": {
+      "summary": "Because there is no service, 'data flow' means contributor/CI data flow. Inputs are algorithm modules (pure functions with doctests) and repo metadata. pytest --doctest-modules imports every module and runs embedded examples, feeding a coverage report; Project Euler answers flow through importlib-loaded modules' solution() into a SHA-256 comparison against a checked-in JSON oracle; DIRECTORY.md flows from an os.walk of the tree into a force-pushed commit; and the hacktoberfest bot flows GitHub API data into a tracked markdown file and a rolling PR. Output boundaries are stdout/CI logs, generated markdown files, and a GitHub Pages site.",
+      "claims": [
+        {
+          "claim": "pytest is configured via [tool.pytest] ini_options with --doctest-modules, --durations=10, --showlocals and a 'mat_ops' marker; the build workflow runs it under pytest-run-parallel with --iterations=8 and --parallel-threads=auto to flush out GIL-dependent code.",
+          "sources": [
+            "pyproject.toml#L217-225",
+            ".github/workflows/build.yml#L42-43"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Coverage omits .env/* and project_euler/* and sorts the report by coverage percentage; the build job emits --cov-report=term-missing:skip-covered --cov=. .",
+          "sources": [
+            "pyproject.toml#L227-232",
+            ".github/workflows/build.yml#L59-60"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Euler validation flow: collect_solution_file_paths() picks either PR-added sol*.py files (via GITHUB_EVENT_PATH → GitHub API /files) or all of project_euler/; convert_path_to_module() exec_module's each file; test_project_euler calls solution(), SHA-256-hashes the stringified answer, and asserts equality with PROBLEM_ANSWERS[problem_number].",
+          "sources": [
+            "scripts/validate_solutions.py#L30-48",
+            "scripts/validate_solutions.py#L82-108"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "DIRECTORY.md generation flow: good_file_paths() os.walks the repo skipping dot-dirs/venv/scripts/__init__.py, yields .py/.ipynb paths, print_directory_md() sorts them and prints a numbered table of contents plus nested bullet links via print_path()/md_prefix()/md_anchor().",
+          "sources": [
+            "scripts/build_directory_md.py#L7-18",
+            "scripts/build_directory_md.py#L67-92"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "directory_writer.yml pipes build_directory_md.py stdout through `tee DIRECTORY.md`, commits as the actor, and force-pushes — so the generated file is an output boundary written back into the repo by automation.",
+          "sources": [
+            ".github/workflows/directory_writer.yml#L17-27"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "hacktoberfest_prep_update.py reads docs/hacktober_2026_prep.md, parses tracked rows with ROW_RE (`N. [ ] #PR ...`), queries the GitHub REST API through a single httpx2.AsyncClient at CONCURRENCY=5, ticks merged/closed PRs, and rewrites the '## Automated statistics' section in place.",
+          "sources": [
+            "scripts/hacktoberfest_prep_update.py#L1-28",
+            "scripts/hacktoberfest_prep_update.py#L39-59"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The hacktoberfest workflow deliberately separates dry-run (push/PR events show a git diff only) from persistence (scheduled/manual runs commit to a rolling branch chore/hacktoberfest-2026-prep-refresh and open/update one PR via gh), because master is protected.",
+          "sources": [
+            ".github/workflows/hacktoberfest_prep.yml#L51-105"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Sphinx docs flow: docs/conf.py loads project metadata from pyproject.toml via tomllib, autoapi_dirs lists 43 source trees to scan, sphinx-build -c docs . docs/_build/html produces the site, upload-pages-artifact + deploy-pages publish to GitHub Pages.",
+          "sources": [
+            "docs/conf.py#L6-24",
+            ".github/workflows/sphinx.yml#L42-58",
+            "index.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Web-scraper modules are input boundaries to the live internet: current_stock_price.py builds a Yahoo Finance URL from a symbol and returns parsed text; no caching, rate limiting, or schema validation exists — output is whatever BeautifulSoup finds.",
+          "sources": [
+            "web_programming/current_stock_price.py#L23-38",
+            "web_programming/fetch_anime_and_play.py#L36-47"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Individual files declare their own PEP-723 inline script metadata (`# /// script ... dependencies`) so they can be run standalone with uv/uvx without the full project env (e.g. current_stock_price.py, validate_solutions.py).",
+          "sources": [
+            "web_programming/current_stock_price.py#L1-7",
+            "scripts/validate_solutions.py#L3-9",
+            "web_programming/fetch_anime_and_play.py#L1-8"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "validate_filenames.py reuses good_file_paths() from build_directory_md.py and exits non-zero listing files with uppercase, spaces, hyphens, or no parent directory — filename hygiene is enforced as data flowing through the pre-commit local hook.",
+          "sources": [
+            "scripts/validate_filenames.py#L10-34",
+            ".pre-commit-config.yaml#L49-55"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "pr_file_map.py is a maintainer-facing flow: it shells out to `gh` to list open PRs, maps files touched per PR, and emits a Markdown report that isolates DIRECTORY.md conflicts into their own section.",
+          "sources": [
+            "scripts/pr_file_map.py#L1-20"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "behavior_traces": {
+      "summary": "Three flows characterize the system. (1) PR validation: a contributor push triggers ruff, then the build job syncs uv deps on 3.14t and runs pytest-run-parallel doctests across the tree with a long --ignore list, emitting coverage; ty runs non-blocking in parallel; project_euler changes additionally trigger doctest+answer validation. (2) Merge/push: directory_writer regenerates DIRECTORY.md and force-pushes; sphinx rebuilds and deploys Pages. (3) Euler answer check: pytest parametrizes over solution files, imports each with importlib, calls solution(), hashes, compares to JSON. A fourth operational flow is the daily hacktoberfest tracker refresh.",
+      "claims": [
+        {
+          "claim": "PR flow step order: actions/checkout → setup-uv (cache on uv.lock) → setup-python from .python-version (3.14t, prereleases allowed) → conditional apt install libhdf5-dev for keras on pre-release Python → `uv sync --group=test` → `uv run --with=pytest-run-parallel pytest ...` → on success regenerate DIRECTORY.md via tee.",
+          "sources": [
+            ".github/workflows/build.yml#L11-62"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The pytest invocation ignores 13 paths (cv2-dependent computer_vision files, digital_image_processing/, tensorflow/qiskit/MNIST-dependent modules, network-bound web_programming files, project_euler/, docs/conf.py, validate_solutions.py) before running doctests with coverage.",
+          "sources": [
+            ".github/workflows/build.yml#L42-60"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Ruff gate: ruff.yml runs `uvx ruff check --output-format=github .` on push/PR to master using pyproject.toml's lint.select list of ~45 rule families (target py314), with a long lint.ignore list of deferred FIX ME/DO NOT FIX rules.",
+          "sources": [
+            ".github/workflows/ruff.yml#L10-18",
+            "pyproject.toml#L66-122"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "ty type-check is advisory: workflow sets continue-on-error: true and invokes `ty check --exit-zero` pinned to regular-GIL Python 3.14, emitting ::error annotations without failing; pyproject [tool.ty] pre-ignores a dozen rule kinds as the baseline is cleaned.",
+          "sources": [
+            ".github/workflows/ty.yml#L11-17",
+            ".github/workflows/ty.yml#L35-53",
+            "pyproject.toml#L200-215"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Euler CI trace: project_euler.yml is path-filtered to project_euler/**, the workflow file, and validate_solutions.py; job 1 runs `pytest --doctest-modules --cov=project_euler/ project_euler/`, job 2 runs `pytest scripts/validate_solutions.py` with GITHUB_TOKEN.",
+          "sources": [
+            ".github/workflows/project_euler.yml#L1-41"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Inside validate_solutions: at import time PROBLEM_ANSWERS is loaded from scripts/project_euler_answers.json; collect_solution_file_paths() → all_solution_file_paths() iterates problem_* dirs skipping files starting with '_' or 'test'; parametrized test_project_euler → convert_path_to_module → spec.loader.exec_module → module.solution() → sha256(answer) == expected.",
+          "sources": [
+            "scripts/validate_solutions.py#L26-48",
+            "scripts/validate_solutions.py#L93-108"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "DIRECTORY.md trace on push: directory_writer.yml → checkout fetch-depth:0 → setup-python → `scripts/build_directory_md.py 2>&1 | tee DIRECTORY.md` → git config actor → commit -am 'updating DIRECTORY.md' || true → push --force HEAD:$GITHUB_REF || true.",
+          "sources": [
+            ".github/workflows/directory_writer.yml#L8-27"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "build_directory_md.py print order: good_file_paths() yields sorted paths → a numbered 'Table of Contents' of top-level sections with md_anchor() slugs → print_path() emits '##' headings for new top dirs and nested bullets → each file becomes a titled link with underscores→spaces and %20-escaped URLs.",
+          "sources": [
+            "scripts/build_directory_md.py#L52-92"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Hacktoberfest bot trace (scheduled): checkout → pip install httpx2 → python scripts/hacktoberfest_prep_update.py (exit code captured, not fatal) → on schedule/dispatch, diff check docs/hacktober_2026_prep.md → gh auth setup-git → switch -c rolling branch → force-push → gh pr create if none open → propagate script exit code.",
+          "sources": [
+            ".github/workflows/hacktoberfest_prep.yml#L40-109"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The prep script intentionally exits non-zero on/after 2026-10-01 (HACKTOBERFEST_START) so the workflow fails loudly as a retirement signal; transient API failures raise BestEffortError which callers degrade rather than fail.",
+          "sources": [
+            "scripts/hacktoberfest_prep_update.py#L15-16",
+            "scripts/hacktoberfest_prep_update.py#L44-69"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Module self-run convention: algorithm files end with `if __name__ == '__main__':` calling doctest.testmod() and/or printing solution() results — e.g. bubble_sort.py runs a 10k-iteration timeit benchmark comparing iterative vs recursive.",
+          "sources": [
+            "sorts/bubble_sort.py#L153-176",
+            "project_euler/problem_001/sol1.py#L32-33",
+            "web_programming/current_stock_price.py#L42-48"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Devcontainer trace: devcontainer_ci.yml only triggers on .devcontainer/** or its own workflow path, and runs devcontainers/ci@v0.3 with push:never and runCmd 'true' — a smoke test that the image builds.",
+          "sources": [
+            ".github/workflows/devcontainer_ci.yml#L3-23"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "testing_signals": {
+      "summary": "The dominant test mechanism is doctests: pytest runs with --doctest-modules across the entire repo, and CONTRIBUTING/AGENTS require every function to carry passing doctests. A minority of modules have real pytest test files — either colocated (maths/test_*.py) or in per-domain tests/ subdirectories (data_structures, graphs, knapsack, geometry, divide_and_conquer, file_transfer) plus a top-level tests/test_sorts.py battery. Project Euler has a dedicated hashed-answer oracle. Coverage is reported but project_euler is excluded; many files are excluded from the 3.14t run entirely via --ignore flags.",
+      "claims": [
+        {
+          "claim": "pytest config sets --doctest-modules, --durations=10, --showlocals globally, so every docstring example in every .py file is executed as a test in CI.",
+          "sources": [
+            "pyproject.toml#L217-222",
+            ".github/workflows/build.yml#L42-60"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "tests/test_sorts.py is a shared contract harness: it parametrizes ~20 general-purpose comparison sorts against a common battery and documents which sorts are deliberately excluded (counting/radix/pigeon integer-only, stalin/wiggle not fully sorting, etc.).",
+          "sources": [
+            "tests/test_sorts.py#L1-60"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Dedicated pytest files exist in pockets: data_structures/{hashing,kd_tree,suffix_tree}/tests/, graphs/tests/, knapsack/tests/, geometry/tests/, divide_and_conquer/tests/, file_transfer/tests/, and colocated maths/test_*.py — most of the repo relies solely on doctests.",
+          "sources": [
+            "data_structures/hashing/tests/test_hash_map.py",
+            "graphs/tests/test_min_spanning_tree_kruskal.py",
+            "knapsack/tests/test_knapsack.py",
+            "maths/test_prime_check.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "scripts/validate_solutions.py is itself a pytest module: test_project_euler is parametrized over discovered solution paths and asserts the SHA-256 of str(solution()) matches the stored digest, so Euler correctness is verified without exposing plaintext answers.",
+          "sources": [
+            "scripts/validate_solutions.py#L93-108",
+            "scripts/project_euler_answers.json"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The build runs pytest under pytest-run-parallel with --iterations=8 --parallel-threads=auto --ignore-gil-enabled on free-threaded 3.14t, actively probing thread-safety of pure-Python algorithms while tolerating GIL-re-enabling wheels.",
+          "sources": [
+            ".github/workflows/build.yml#L35-43"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Coverage is collected (--cov=. with term-missing report) but project_euler/* and .env/* are omitted from the report; there is no coverage threshold gate.",
+          "sources": [
+            "pyproject.toml#L227-232",
+            ".github/workflows/build.yml#L59-60"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Thirteen paths are excluded from the test run via --ignore flags — including the whole digital_image_processing/ tree, project_euler/ (tested in its own workflow), and network-dependent web_programming files — so 'CI green' does not mean those files ran.",
+          "sources": [
+            ".github/workflows/build.yml#L44-58",
+            "AGENTS.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Doctest conventions include exception tests (doctest: +IGNORE_EXCEPTION_DETAIL for TypeError on mixed-type input) and randomized-sample assertions (random.sample inputs compared to sorted()), which make doctests double as property-ish tests.",
+          "sources": [
+            "sorts/bubble_sort.py#L60-71"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Live-network tests exist: current_stock_price.py's doctests call stock_price('GOOG') expecting a float-parseable string and 'EEEE' expecting an error string — inherently flaky and excluded from CI.",
+          "sources": [
+            "web_programming/current_stock_price.py#L24-29",
+            ".github/workflows/build.yml#L57-58"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Static checks act as tests: ruff.yml gates on `ruff check`, pre-commit runs ruff-format/codespell/validate-filenames/uv-lock, and ty runs informationally — no unit-test framework other than pytest+doctest is used.",
+          "sources": [
+            ".github/workflows/ruff.yml#L18",
+            ".pre-commit-config.yaml#L36-65",
+            ".github/workflows/ty.yml#L53"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "project_euler.yml runs pytest --doctest-modules --cov=project_euler/ only on PRs touching Euler paths (plus daily cron), so Euler doctests are validated separately from the main suite.",
+          "sources": [
+            ".github/workflows/project_euler.yml#L2-26"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "There is no conftest.py anywhere in the repo — no shared fixtures; each test file is self-contained, consistent with the one-file-per-algorithm contribution model.",
+          "sources": [
+            "tests/test_sorts.py",
+            "data_structures/hashing/tests/test_hash_map.py"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "risk_map": {
+      "summary": "Risks are mostly process/supply-chain and flaky-network rather than exploitable bugs in a running system (there is none). Notable: workflows that force-push and write to the repo with a token, web scrapers hitting live third-party sites inside doctests, a daily bot that consumes the shared 1000-req/hour GITHUB_TOKEN budget, a hash oracle that will hard-fail if any Euler module import has side effects, known-buggy code (an undefined variable in fetch_anime_and_play.py), and large intentional gaps in test coverage (cv2/qiskit/tf files ignored on 3.14t).",
+      "claims": [
+        {
+          "claim": "fetch_anime_and_play.py references `anime_name` inside search_anime_episode_list's error message, but that variable is not defined in that scope — a latent NameError that only triggers when the episode list element is missing.",
+          "sources": [
+            "web_programming/fetch_anime_and_play.py#L102-105"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "directory_writer.yml force-pushes to the pushed ref using GITHUB_TOKEN embedded in the remote URL (x-access-token), and both commit and push end with `|| true` — failures are silently swallowed and a bad regeneration can overwrite the ref.",
+          "sources": [
+            ".github/workflows/directory_writer.yml#L20-27"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "hacktoberfest_prep.yml runs with contents:write and pull-requests:write permissions and uses `gh auth setup-git` to push a rolling branch; the workflow file itself documents that GITHUB_TOKEN is capped at 1000 requests/hour per repo shared across concurrent runs, making the daily job rate-limit-fragile.",
+          "sources": [
+            ".github/workflows/hacktoberfest_prep.yml#L21-24",
+            ".github/workflows/hacktoberfest_prep.yml#L70-105",
+            "scripts/hacktoberfest_prep_update.py#L46-53"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "validate_solutions.py exec_module's arbitrary contributed Python files during CI — necessary for the design, but it means any module-level code in a submitted sol*.py executes in a job that holds GITHUB_TOKEN.",
+          "sources": [
+            "scripts/validate_solutions.py#L30-35",
+            ".github/workflows/project_euler.yml#L39-41"
+          ],
+          "kind": "inference"
+        },
+        {
+          "claim": "Web scrapers depend on live third-party DOM structure: current_stock_price.py matches span[data-testid='qsp-price'] on Yahoo Finance and fetch_anime_and_play.py targets a hard-coded BASE_URL 'https://ww7.gogoanime2.org' — both will break silently or flake on site changes/rotating pirate domains.",
+          "sources": [
+            "web_programming/current_stock_price.py#L30-38",
+            "web_programming/fetch_anime_and_play.py#L14"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "file_transfer/send_file.py binds a listening TCP socket on port 12312 to the machine hostname and loops accept() forever unless testing=True; receive counterpart likewise — running it as a script is a permanently open unauthenticated file server.",
+          "sources": [
+            "file_transfer/send_file.py#L1-31"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CI skips are a blind spot: digital_image_processing/, quantum/q_fourier_transform.py, tensorflow-dependent dynamic_programming/k_means_clustering_tensorflow.py, neural_network/input_data.py, and cv2 computer_vision files are never exercised on the 3.14t runner.",
+          "sources": [
+            ".github/workflows/build.yml#L42-58",
+            "pyproject.toml#L44-64"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Ruff config ignores dozens of rules marked 'FIX ME'/'DO NOT FIX' (B904 raise-from, PLW2901, RET505, S311 weak-random, SLF001 private-access, blind-except per-file ignores), so real bug classes are deliberately unenforced repo-wide.",
+          "sources": [
+            "pyproject.toml#L123-176"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Ty checking is explicitly non-blocking (continue-on-error + --exit-zero) and [tool.ty] suppresses a dozen diagnostic kinds including unresolved-import/unresolved-attribute — type errors currently cannot fail CI.",
+          "sources": [
+            ".github/workflows/ty.yml#L13-17",
+            ".github/workflows/ty.yml#L44-53",
+            "pyproject.toml#L204-215"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Several modules read input() interactively in __main__ blocks (e.g. fetch_anime_and_play.py prompts three times) and CONTRIBUTING.md discourages but permits input() with .strip() — scripts hang waiting on stdin if run non-interactively.",
+          "sources": [
+            "web_programming/fetch_anime_and_play.py#L166-197",
+            "CONTRIBUTING.md#L173-185"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Euler correctness depends on scripts/project_euler_answers.json staying in sync: test_project_euler indexes PROBLEM_ANSWERS[problem_number] with no missing-key handling, so a new problem dir without an answers entry raises KeyError, not a clean failure.",
+          "sources": [
+            "scripts/validate_solutions.py#L98-108"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "blast-radius: a single bad commit to pyproject.toml (deps), .python-version, or a workflow affects every subsequent CI run for all PRs; conversely individual algorithm files are isolated and nearly impossible to damage each other.",
+          "sources": [
+            "pyproject.toml",
+            ".python-version",
+            ".github/workflows/build.yml"
+          ],
+          "kind": "inference"
+        }
+      ]
+    },
+    "extension_points": {
+      "summary": "The extension model is 'add a file': drop a snake_case .py module into an existing topic directory, give every function doctests + type hints + a reference URL, and CI/pytest auto-discovers it via --doctest-modules with zero registration. Project Euler has a stricter contract (problem_NNN dirs, solN.py files, one solution() entrypoint, an answers-JSON entry). Generated surfaces (DIRECTORY.md, Sphinx autoapi, coverage) pick up new files automatically; new top-level directories additionally require updating docs/conf.py autoapi_dirs. Optional dependency groups (cv, quantum, euler-validate, docs, test) are the seam for heavy new deps.",
+      "claims": [
+        {
+          "claim": "Auto-discovery is the plugin mechanism: pytest --doctest-modules plus os.walk-based good_file_paths() mean a new .py file in any existing directory is tested and indexed with no registry edits.",
+          "sources": [
+            "pyproject.toml#L217-222",
+            "scripts/build_directory_md.py#L7-18"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New top-level directories DO require manual registration: docs/conf.py's autoapi_dirs is a hardcoded list of 43 dirs, and CONTRIBUTING.md says avoid creating new directories anyway.",
+          "sources": [
+            "docs/conf.py#L24-68",
+            "CONTRIBUTING.md#L212"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Project Euler extension contract: create project_euler/problem_<NNN>/__init__.py + sol1.py (etc.) exposing solution() whose defaults yield the answer; module docstring must link the problem; answers are enforced by scripts/project_euler_answers.json.",
+          "sources": [
+            "project_euler/README.md#L19-50",
+            "scripts/validate_solutions.py#L98-108",
+            "project_euler/problem_001/sol1.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Per-domain tests/ subdirectories are the pattern for adding real pytest coverage beyond doctests (hashing/tests/, kd_tree/tests/, graphs/tests/, knapsack/tests/), discovered automatically by pytest.",
+          "sources": [
+            "data_structures/hashing/tests/test_hash_map.py",
+            "graphs/tests/test_min_spanning_tree_kruskal.py",
+            "knapsack/tests/test_knapsack.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New third-party dependencies extend via pyproject.toml dependencies or an optional [dependency-groups] section; the uv-lock pre-commit hook regenerates uv.lock, and heavy/GIL-bound deps should follow the cv/quantum optional-group precedent plus a build.yml --ignore entry.",
+          "sources": [
+            "pyproject.toml#L13-64",
+            ".pre-commit-config.yaml#L57-60",
+            ".github/workflows/build.yml#L42-58",
+            "CONTRIBUTING.md#L205"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "PEP-723 inline script metadata (`# /// script`) is the lightweight seam for standalone runnable files needing extra deps without touching pyproject — used by web_programming scrapers and validate_solutions.py.",
+          "sources": [
+            "web_programming/current_stock_price.py#L1-7",
+            "scripts/validate_solutions.py#L3-9"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Ruff per-file-ignores in pyproject.toml are the sanctioned escape hatch when a new file legitimately violates a rule (existing entries for BLE001, SIM115, SIM103).",
+          "sources": [
+            "pyproject.toml#L156-176"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Pre-commit local hooks are the extension point for new repo-wide checks — validate-filenames is a `repo: local` hook entry-pointing to scripts/validate_filenames.py; new validators can be added the same way.",
+          "sources": [
+            ".pre-commit-config.yaml#L49-55",
+            "scripts/validate_filenames.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Reusable Comparable Protocol + TypeVar pattern in sorts/bubble_sort.py is the house generic-typing idiom for container algorithms; new sorts should reuse it to satisfy the shared tests/test_sorts.py battery contract (return sorted list, comparable items).",
+          "sources": [
+            "sorts/bubble_sort.py#L4-11",
+            "tests/test_sorts.py#L1-17"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Maintainer automation extends via scripts/ + workflows: hacktoberfest_prep_update.py shows the pattern (httpx2 AsyncClient, GITHUB_TOKEN, TRACKER file rewrite, rolling-branch PR) reusable for new bots.",
+          "sources": [
+            "scripts/hacktoberfest_prep_update.py#L1-59",
+            ".github/workflows/hacktoberfest_prep.yml#L70-105"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "GitHub Skills under .github/skills/ (code-review, new-pull-request, review-open-issue SKILL.md files) encode agent-facing contribution procedures — the repo's own extension surface for AI agents.",
+          "sources": [
+            ".github/skills/code-review/SKILL.md",
+            ".github/skills/new-pull-request/SKILL.md",
+            ".github/skills/review-open-issue/SKILL.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The one-algorithm-per-PR rule plus 'identical implementations not allowed' in CONTRIBUTING.md defines the feature-addition boundary: variants of an existing algorithm must differ meaningfully (complexity, representation), matching the sol1..solN pattern in project_euler.",
+          "sources": [
+            "CONTRIBUTING.md#L18",
+            ".github/pull_request_template.md#L13",
+            "project_euler/problem_001/sol1.py"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_handoff": {
+      "summary": "Read AGENTS.md and CONTRIBUTING.md first — they are the contract. Edits should be one file, one algorithm, minimal diff. The enforcement surface is: ruff check/format (uvx ruff), pytest doctests per file, snake_case lowercase filenames inside existing directories, type hints on all params/returns, and a checked checkbox in the PR template or algorithms-keeper auto-closes. Never touch DIRECTORY.md (bot-generated), never fabricate doctest output, and check build.yml's --ignore list before assuming a file is tested. Run `uvx pre-commit run --all-files` to replicate CI locally.",
+      "claims": [
+        {
+          "claim": "AGENTS.md is the authoritative agent doc: mandates ruff (uvx ruff check/format), type hints on every parameter and return, ≥1 passing doctest per function, lowercase-underscore filenames, placement inside existing directories, and a reference URL for new algorithms.",
+          "sources": [
+            "AGENTS.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The single most common automated rejection: algorithms-keeper closes any PR whose 'Describe your change' section has no checked box — the template is .github/pull_request_template.md; always tick at least one box.",
+          "sources": [
+            "AGENTS.md",
+            ".github/pull_request_template.md#L1-6"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Scope rules: one algorithm file per PR; never change code and its doctests in the same PR; keep diffs minimal and preserve existing style.",
+          "sources": [
+            "AGENTS.md",
+            ".github/pull_request_template.md#L5-13"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Local verification commands: `uvx pre-commit run --all-files` for lint/format/hooks and `uvx pytest <dir>/<file>.py --doctest-modules` (or `uv run pytest`) for tests — there is no requirements.txt; deps come from pyproject.toml + uv.lock.",
+          "sources": [
+            "AGENTS.md",
+            "pyproject.toml#L13-38",
+            ".pre-commit-config.yaml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Never edit DIRECTORY.md or README.md index sections by hand — DIRECTORY.md is regenerated and force-pushed by directory_writer.yml from scripts/build_directory_md.py output.",
+          "sources": [
+            "CONTRIBUTING.md#L216",
+            ".github/workflows/directory_writer.yml#L17-27",
+            "scripts/build_directory_md.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Some directories/files are intentionally skipped in CI via --ignore in build.yml (cv2/qiskit/tf/network-bound files); check that list before assuming a file is exercised, and add new ignores there if a new heavy dep is introduced.",
+          "sources": [
+            ".github/workflows/build.yml#L42-58",
+            "AGENTS.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Doctest honesty rule: never fabricate expected output — run the doctest and paste the real result; exception-testing uses `# doctest: +IGNORE_EXCEPTION_DETAIL`.",
+          "sources": [
+            "AGENTS.md",
+            "sorts/bubble_sort.py#L68-71"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Project Euler submissions have extra rules: read project_euler/README.md, use problem_NNN dir naming with __init__.py, expose solution() with the question input as default arg, and do not doctest the final answer (the sha256 oracle does that).",
+          "sources": [
+            "project_euler/README.md#L19-50",
+            "scripts/validate_solutions.py#L98-108",
+            "CONTRIBUTING.md#L209"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Known trap: `uv sync` on free-threaded 3.14t cannot install opencv-python or qiskit (kept in optional groups); use `uv sync --group=test` like CI, and add --group=cv/--group=quantum only when needed.",
+          "sources": [
+            "pyproject.toml#L44-64",
+            ".github/workflows/build.yml#L29"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Files to read before editing any given area: the target algorithm file, AGENTS.md, CONTRIBUTING.md, and for Euler project_euler/README.md; for CI changes also pyproject.toml and the relevant workflow file.",
+          "sources": [
+            "AGENTS.md",
+            "CONTRIBUTING.md",
+            "project_euler/README.md",
+            "pyproject.toml"
+          ],
+          "kind": "inference"
+        },
+        {
+          "claim": "Type checking with ty is informational only — agents should still add annotations (PR checklist requires them) but ty failures will not block merge; run `ty check <file>` locally per CONTRIBUTING.md.",
+          "sources": [
+            ".github/workflows/ty.yml#L13-17",
+            "CONTRIBUTING.md#L187-199",
+            ".github/pull_request_template.md#L17"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Ruff ignore-list traps: many style classes are globally suppressed (S101 assert allowed, S311 weak-random, B904) — matching repo style means not 'fixing' unrelated lint noise outside your file's diff.",
+          "sources": [
+            "pyproject.toml#L123-155",
+            "AGENTS.md"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_prompt": "You are working in TheAlgorithms/Python — a flat, educational collection of ~1,500 standalone algorithm modules in ~45 topic directories (sorts/, graphs/, maths/, ciphers/, data_structures/, dynamic_programming/, project_euler/, web_programming/, etc.). There is no application, no package build, and no requirements.txt: pyproject.toml is a 'virtual' project and deps are synced with `uv` (uv.lock checked in); the interpreter is free-threaded CPython 3.14t (.python-version = '3.14t').\n\nRead AGENTS.md and CONTRIBUTING.md before touching anything. Core rules enforced by CI/bots:\n- One algorithm file per PR. Never change code and doctests in the same PR. Keep diffs minimal.\n- Every function needs type hints and at least one passing doctest; doctests ARE the test suite (pytest runs with --doctest-modules across the whole repo under pytest-run-parallel).\n- Filenames: lowercase snake_case, no spaces/dashes, inside an existing directory (scripts/validate_filenames.py enforces this via pre-commit).\n- New algorithms need a reference URL (e.g. Wikipedia) in a docstring.\n- Tick at least one checkbox in the PR template's 'Describe your change' section or the algorithms-keeper bot auto-closes the PR.\n- Never edit DIRECTORY.md or README.md listings — DIRECTORY.md is regenerated by scripts/build_directory_md.py and force-pushed by the directory_writer workflow.\n\nVerify locally with: `uvx pre-commit run --all-files` (ruff check/format, codespell, uv-lock, filename validation) and `uvx pytest path/to/file.py --doctest-modules`. `ruff check` must pass; `ty check` runs in CI but is advisory only.\n\nProject Euler contributions have a stricter contract (see project_euler/README.md): directory problem_NNN with __init__.py, files solN.py, one solution() function whose default args produce the answer, and never doctest the final answer — scripts/validate_solutions.py SHA-256-compares solution() against scripts/project_euler_answers.json in a dedicated workflow.\n\nGotchas: (1) opencv-python and qiskit live in optional dependency groups and their files are --ignore'd in CI on 3.14t — check build.yml's --ignore list before assuming a file is tested. (2) web_programming/ modules hit live sites; their doctests are excluded from CI for flakiness. (3) Many ruff rules are intentionally suppressed with FIX ME comments — don't 'clean up' unrelated lint noise. (4) Never fabricate doctest output; run it. (5) Module-level code in project_euler files is exec'd during CI validation, so keep imports side-effect free. (6) New top-level directories require adding the dir to docs/conf.py autoapi_dirs and are discouraged anyway."
+  },
+  "analysis": {
+    "agent": "devin",
+    "model": "swe-2",
+    "runtime_ms": null,
+    "cost_usd": null,
+    "collected_at": "2026-09-22T16:34:50.391Z"
   }
 }

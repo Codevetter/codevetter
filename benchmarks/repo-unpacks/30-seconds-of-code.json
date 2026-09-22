@@ -184,7 +184,7 @@
         {
           "path": "CONTRIBUTING.md",
           "bytes": 8196,
-          "preview": "# Contribution Guidelines\n\n**30 seconds of code** is supported by the community, so feel free to contribute in any way you can to help!\n\n## How you can help\n\n- Submit Issues or Pull Requests related to bugs, improvements, typos etc.\n\n## Ground rules\n\nBreaking any of these rules will result in your pull request being closed. Please follow these guidelines above all else:\n\n- **Always be polite and respectful to others** and try to follow the advice of the maintainer.\n- **Only modify files under the `content/snippets` or `content/collections` directories**, when making changes to the website content (i.e. bug fixes or improvements).\n\n## Writing guidelines\n\nAll content on the website should follow the guidelines below. These guidelines are not exhaustive, but they should be followed as closely as possible.\n\n### Language\n\n- Use words and language that our audience understands.\n- Use American spelling for all content.\n- Write short sentences (ideally 20 words or less).\n- Make sure each sentence has a single focus.\n- Edit unnecessary or repeated words.\n- Avoid idioms and phrases with indirect or ironic meanings.\n- Avoid jargon and overly technical terms.\n- Aim for a Grade 10 reading level or below.\n- Use contractions to create a natural voice, but don\u2019t overdo it with contractions that are hard to pronounce or aren\u2019t used often.\n- Conversely, not using a contraction can be used to add emphasis.\n- Directional language (e.g. \u201cabove\u201d, \u201cbelow\u201d) may only be used as part of a piece of content to indicate a relevant section of the content (e.g. \u201cthe above code example\u201d).\n- Prefer non-directional language if possible. Replace \u201cabove\u201d and \u201cbelow\u201d for section indication with \u201cprevious\u201d and \u201cfollowing\u201d.\n\n### Voice\n\n- Prefer writing in an active voice wherever possible.\n- Avoid writing in a passive voice.\n- Prefer a passive voice if you want to emphasize the action instead of the subject, clarify that an action wasn\u2019t taken by a certain person or to avoid referring to the subject (i.e. the 30 seconds of code team or yourself).\n- Use imperative voice when documenting code snippets (e.g. \u201cuse this method\u201d).\n- Don\u2019t use permissive language (e.g. \u201cyou can use this method\u201d).\n\n### Capitalization\n\n- Capitalize the first letter of a sentence, lowercase the rest.\n- Keep the original capitalization of terminology (e.g. \"JavaScript\"), acronyms (e.g. \"CRUD\"), products (e.g. \"GitHub Actions\") or trademarks (e.g. \"Netlify\") anywhere they\u2019re used on the website.\n\n### Punctuation\n\n- Avoid ampersands (&), as they focus attention in the wrong part of the sentence. Spell out the word \u201cand\u201d instead.\n- Use apostrophes to represent omitted numbers or letters, contractions or to form possessives.\n- Use quotation marks to define words or quoted text.\n- Avoid using periods in the middle of sentences, unless it\u2019s inside an inline code block or part of a term (e.g. \"Node.js\").\n- Use colons in the middle of sentences sparingly.\n- Use a colon to preface a list.\n- Use periods only to finish full sentences.\n- Use question marks sparingly. Try rewording to an affirmative if possible.\n- Do not use the oxford comma (also known as the serial comma) in sentences.\n- Don\u2019t use commas to separate bulleted or numbered list items.\n- The ellipses (...) can be used in place of a missing piece of text. Avoid using ellipses in regular text, use them only in headings.\n- Avoid exclamation marks as much as possible. If you really have to use one, limit them to one per page.\n- Avoid semicolons if possible. Try replacing them with a comma, the word \u201cand\u201d or splitting the sentence in two separate sentences.\n- Use hyphens without spaces for ranges.\n- Use hyphens in place of regular dashes inside a sentence with a space on either side.\n- Use hyphens to form compound modifiers.\n\n### Terminology\n\n- Use terminology sparingly and only when necessary.\n- Only use industry-standard or well-established terminology.\n- Explain terms if you\u2019re not sure the reader understands them.\n- Link to any relevant content on the website, if possible.\n\n### Emphasis\n\n- Use bold sparingly to highlight important information on the page.\n- Don\u2019t use bold to create a heading.\n- Use italics to quote text, usually in the form of short verbatim phrases.\n- Use quotation blocks for longer sentences when you want to draw particular attention to them. Limit yourself to one quotation block per page.\n\n### Dates\n\n- Use the American English format for dates ({month} {date}, {year}).\n- Use the 3-letter abbreviation for months, followed by a period.\n- Do not add nominal suffixes to date numbers.\n- Don\u2019t write dates numerically.\n\n### Code\n\n- Wrap inline code blocks in the appropriate visual element.\n- Wrap important values to the code such as numerals, strings or boolean values in the appropriate visual element.\n- Use multiline code blocks wherever the code spans more than one line.\n- Provide appropriate language context and highlighting to multiline code blocks.\n- Use the full name or the name that\u2019s closest to the official documentation when describing native code (e.g. \"Function.prototype.apply()\").\n- Do not use code blocks in headings.\n\n### Personal pronouns\n\n- Use \u201cI\u201d or \u201cmy\u201d for personal opinions, experiences or when you want to express your personal voice.\n- Use \u201cwe\u201d or \u201cour\u201d when referring to the 30 seconds of code team.\n- Use \u201cwe\u201d or \u201cour\u201d when the audience is supposed to be following along and you want to sound reassuring.\n- Use \u201cyou\u201d or \u201cyour\u201d when explaining something to the audience and you want to sound authoritative.\n\n### Headings\n\n- Capitalize the first word of a heading, lowercase the rest if the heading is formatted as a sentence.\n- You may capitalize the first letter of each word if the heading is not formatted as a sentence.\n- Avoid using punctuation such as periods, commas, colons or semicolons.\n- Headings may use a question mark if the content is a question-type article.\n- Keep headings short. Avoid headings that are longer than one line.\n- Limit headings to a single sentence. The only exception to this is headings that span multiple short questions.\n- Headings need to be informative and descriptive.\n- Avoid clickbait-type headings.\n- Use headings that help the user understand what they\u2019ll find in the related content.\n- Use headings to make content easier to scan.\n- Use a hyphen surrounded by a single space on either side for articles that are part of a series.\n- For tip-type articles, start the heading with the word \u201cTip\u201d followed by a colon and a space.\n- Omit articles such as \u201cthe\u201d, \u201ca\u201d and \u201can\u201d in regular headings if possible.\n- Omit articles such as \u201cthe\u201d, \u201ca\u201d and \u201can\u201d in microcopy.\n- You can use ampersands (&) in microcopy headings to make the heading shorter.\n\n### Lists\n\n- Use bulleted (unordered) lists wherever possible.\n- Use numbered (ordered) lists for listicles or sequences of steps.\n- Prefer bulleted lists over numbered lists for documenting code snippets.\n- List items should start with a capital letter in all cases.\n- Don\u2019t use commas or semicolons at the end of list items.\n- If any list item contains two or more sentences, punctuate all list items.\n- If all list items are one sentence or fragments, don\u2019t punctuate.\n- Use bulleted lists to make content easier to scan.\n\n### Actions\n\n- Actions should lead with a strong verb when possible (e.g. \u201cSearch\u201d, \u201cView all\u201d).\n- Capitalize the first word of an action, lowercase the rest.\n- Label links in a predictable way.\n- If a link leads to a page with its own heading (e.g. Snippet, Article or Collection), prefer using the original heading of the content.\n- Links in full sentences should be applied only to the relevant text, not the entire sentence.\n- Links in full sentences must be descriptive, either on their own or based on their surrounding context.\n\n### Alternative text\n\n- Provide alternative text for visual content whenever possible.\n- Use empty alternative text for decorative visual content.\n- Alternative text should help users navigate the site and provide an accessible experience.\n- Use plain language and avoid unnecessary wor"
+          "preview": "# Contribution Guidelines\n\n**30 seconds of code** is supported by the community, so feel free to contribute in any way you can to help!\n\n## How you can help\n\n- Submit Issues or Pull Requests related to bugs, improvements, typos etc.\n\n## Ground rules\n\nBreaking any of these rules will result in your pull request being closed. Please follow these guidelines above all else:\n\n- **Always be polite and respectful to others** and try to follow the advice of the maintainer.\n- **Only modify files under the `content/snippets` or `content/collections` directories**, when making changes to the website content (i.e. bug fixes or improvements).\n\n## Writing guidelines\n\nAll content on the website should follow the guidelines below. These guidelines are not exhaustive, but they should be followed as closely as possible.\n\n### Language\n\n- Use words and language that our audience understands.\n- Use American spelling for all content.\n- Write short sentences (ideally 20 words or less).\n- Make sure each sentence has a single focus.\n- Edit unnecessary or repeated words.\n- Avoid idioms and phrases with indirect or ironic meanings.\n- Avoid jargon and overly technical terms.\n- Aim for a Grade 10 reading level or below.\n- Use contractions to create a natural voice, but don’t overdo it with contractions that are hard to pronounce or aren’t used often.\n- Conversely, not using a contraction can be used to add emphasis.\n- Directional language (e.g. “above”, “below”) may only be used as part of a piece of content to indicate a relevant section of the content (e.g. “the above code example”).\n- Prefer non-directional language if possible. Replace “above” and “below” for section indication with “previous” and “following”.\n\n### Voice\n\n- Prefer writing in an active voice wherever possible.\n- Avoid writing in a passive voice.\n- Prefer a passive voice if you want to emphasize the action instead of the subject, clarify that an action wasn’t taken by a certain person or to avoid referring to the subject (i.e. the 30 seconds of code team or yourself).\n- Use imperative voice when documenting code snippets (e.g. “use this method”).\n- Don’t use permissive language (e.g. “you can use this method”).\n\n### Capitalization\n\n- Capitalize the first letter of a sentence, lowercase the rest.\n- Keep the original capitalization of terminology (e.g. \"JavaScript\"), acronyms (e.g. \"CRUD\"), products (e.g. \"GitHub Actions\") or trademarks (e.g. \"Netlify\") anywhere they’re used on the website.\n\n### Punctuation\n\n- Avoid ampersands (&), as they focus attention in the wrong part of the sentence. Spell out the word “and” instead.\n- Use apostrophes to represent omitted numbers or letters, contractions or to form possessives.\n- Use quotation marks to define words or quoted text.\n- Avoid using periods in the middle of sentences, unless it’s inside an inline code block or part of a term (e.g. \"Node.js\").\n- Use colons in the middle of sentences sparingly.\n- Use a colon to preface a list.\n- Use periods only to finish full sentences.\n- Use question marks sparingly. Try rewording to an affirmative if possible.\n- Do not use the oxford comma (also known as the serial comma) in sentences.\n- Don’t use commas to separate bulleted or numbered list items.\n- The ellipses (...) can be used in place of a missing piece of text. Avoid using ellipses in regular text, use them only in headings.\n- Avoid exclamation marks as much as possible. If you really have to use one, limit them to one per page.\n- Avoid semicolons if possible. Try replacing them with a comma, the word “and” or splitting the sentence in two separate sentences.\n- Use hyphens without spaces for ranges.\n- Use hyphens in place of regular dashes inside a sentence with a space on either side.\n- Use hyphens to form compound modifiers.\n\n### Terminology\n\n- Use terminology sparingly and only when necessary.\n- Only use industry-standard or well-established terminology.\n- Explain terms if you’re not sure the reader understands them.\n- Link to any relevant content on the website, if possible.\n\n### Emphasis\n\n- Use bold sparingly to highlight important information on the page.\n- Don’t use bold to create a heading.\n- Use italics to quote text, usually in the form of short verbatim phrases.\n- Use quotation blocks for longer sentences when you want to draw particular attention to them. Limit yourself to one quotation block per page.\n\n### Dates\n\n- Use the American English format for dates ({month} {date}, {year}).\n- Use the 3-letter abbreviation for months, followed by a period.\n- Do not add nominal suffixes to date numbers.\n- Don’t write dates numerically.\n\n### Code\n\n- Wrap inline code blocks in the appropriate visual element.\n- Wrap important values to the code such as numerals, strings or boolean values in the appropriate visual element.\n- Use multiline code blocks wherever the code spans more than one line.\n- Provide appropriate language context and highlighting to multiline code blocks.\n- Use the full name or the name that’s closest to the official documentation when describing native code (e.g. \"Function.prototype.apply()\").\n- Do not use code blocks in headings.\n\n### Personal pronouns\n\n- Use “I” or “my” for personal opinions, experiences or when you want to express your personal voice.\n- Use “we” or “our” when referring to the 30 seconds of code team.\n- Use “we” or “our” when the audience is supposed to be following along and you want to sound reassuring.\n- Use “you” or “your” when explaining something to the audience and you want to sound authoritative.\n\n### Headings\n\n- Capitalize the first word of a heading, lowercase the rest if the heading is formatted as a sentence.\n- You may capitalize the first letter of each word if the heading is not formatted as a sentence.\n- Avoid using punctuation such as periods, commas, colons or semicolons.\n- Headings may use a question mark if the content is a question-type article.\n- Keep headings short. Avoid headings that are longer than one line.\n- Limit headings to a single sentence. The only exception to this is headings that span multiple short questions.\n- Headings need to be informative and descriptive.\n- Avoid clickbait-type headings.\n- Use headings that help the user understand what they’ll find in the related content.\n- Use headings to make content easier to scan.\n- Use a hyphen surrounded by a single space on either side for articles that are part of a series.\n- For tip-type articles, start the heading with the word “Tip” followed by a colon and a space.\n- Omit articles such as “the”, “a” and “an” in regular headings if possible.\n- Omit articles such as “the”, “a” and “an” in microcopy.\n- You can use ampersands (&) in microcopy headings to make the heading shorter.\n\n### Lists\n\n- Use bulleted (unordered) lists wherever possible.\n- Use numbered (ordered) lists for listicles or sequences of steps.\n- Prefer bulleted lists over numbered lists for documenting code snippets.\n- List items should start with a capital letter in all cases.\n- Don’t use commas or semicolons at the end of list items.\n- If any list item contains two or more sentences, punctuate all list items.\n- If all list items are one sentence or fragments, don’t punctuate.\n- Use bulleted lists to make content easier to scan.\n\n### Actions\n\n- Actions should lead with a strong verb when possible (e.g. “Search”, “View all”).\n- Capitalize the first word of an action, lowercase the rest.\n- Label links in a predictable way.\n- If a link leads to a page with its own heading (e.g. Snippet, Article or Collection), prefer using the original heading of the content.\n- Links in full sentences should be applied only to the relevant text, not the entire sentence.\n- Links in full sentences must be descriptive, either on their own or based on their surrounding context.\n\n### Alternative text\n\n- Provide alternative text for visual content whenever possible.\n- Use empty alternative text for decorative visual content.\n- Alternative text should help users navigate the site and provide an accessible experience.\n- Use plain language and avoid unnecessary wor"
         },
         {
           "path": "README.md",
@@ -8480,7 +8480,7 @@
         "steps": [
           {
             "id": "serialize",
-            "label": "JSON serialize (inventory \u2192 SQLite)",
+            "label": "JSON serialize (inventory → SQLite)",
             "ms": 0,
             "pct": 0
           },
@@ -8499,5 +8499,908 @@
         ]
       }
     ]
+  },
+  "report": {
+    "overview": "30-seconds-of-code is the source for the statically-generated website www.30secondsofcode.org, an Astro 6 site that publishes a large library of short-form coding articles ('snippets') organized into YAML-defined collections. It is distinctive in that almost everything is custom-built: a bespoke content pipeline (bin/prepare) parses Markdown front-matter and YAML into a .content/content.json intermediate, hydrates an in-process ActiveRecord-style model layer, serializes page payloads to JSON files that Astro routes consume via getStaticPaths, and ships a hand-rolled TF-IDF + trigram-fuzzy search engine that runs both at build time and in the browser. Deployment is a scheduled GitHub Actions job that simply curls a Cloudflare build hook.",
+    "system_map": {
+      "summary": "The system is a two-phase static site generator: bin/prepare transforms content/ Markdown and YAML into .content/ JSON artifacts, then astro build renders pages whose getStaticPaths read those JSONs. A custom model layer (Model/RecordSet), page adapters, and serializers mediate between raw content and Astro routes. Client interactivity is a few vanilla JS scripts (omnisearch, hotkeys, toc) loaded via <script src> in Astro components — there are no framework islands. Hosting is static (Cloudflare build hook triggered from GitHub Actions), and tests run under Vitest against spec/ fixtures.",
+      "claims": [
+        {
+          "claim": "Astro is configured with srcDir 'src/astro', site https://www.30secondsofcode.org, compressHTML, and inlineStylesheets 'always'.",
+          "sources": [
+            "astro.config.mjs",
+            "src/astro/settings.js"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "bin/prepare is the build orchestrator CLI with commands: full, dev, content, watch, assets, create, create-component, help.",
+          "sources": [
+            "bin/prepare#L8-30"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "npm scripts wire preparation into lifecycle hooks: predev/prebuild run bin/prepare (dev/full), dev/start run 'astro dev --port 8000', build runs 'astro build', test runs 'vitest', console runs bin/console.",
+          "sources": [
+            "package.json#L43-57"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The project is pure ESM ('type': 'module'), requires Node >=22.14.0, and uses '#src/*' and '#spec/*' subpath imports mirrored in jsconfig paths.",
+          "sources": [
+            "package.json#L8",
+            "package.json#L35-42",
+            "package.json#L69-71",
+            "jsconfig.json"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "A custom in-process data layer exists: Model keeps static instances/indexedInstances/getterCache registries, caches getters via WeakMap redefinition, and exposes all/where/order/scope/find/search class APIs.",
+          "sources": [
+            "src/core/model.js"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "RecordSet extends Array with where (equality, array-membership, or predicate functions), order, pluck, shuffle, first/last — it is the query primitive used by every model scope.",
+          "sources": [
+            "src/core/recordSet.js"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The model registry is exactly five classes: ContentModel (abstract base), Collection, CollectionSnippet (join model), Language, Snippet.",
+          "sources": [
+            "src/models/models.js",
+            "src/models/contentModel.js"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Loader.importData reads .content/content.json and hydrates model instances through a JSON.parse reviver keyed on each record's 'model' discriminator field.",
+          "sources": [
+            "src/lib/loader.js#L43-54",
+            "src/models/models.js"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Page adapters form a registry: Page.register stores classes by name and Page.from(object) resolves the adapter as `${object.constructor.name}Page`; PageSerializer emits {params, props} where props includes structuredData (schema.org JSON-LD).",
+          "sources": [
+            "src/adapters/page.js",
+            "src/adapters/page/snippetPage.js#L4-8",
+            "src/serializers/pageSerializer.js"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "AstroContent.generate writes three JSON artifacts consumed by Astro routes: .content/pages/index.json, [lang]/[...listing].json, and [lang]/s/[snippet].json.",
+          "sources": [
+            "src/lib/astroContent.js",
+            "src/config/settings.js#L43-48"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The search stack is hand-rolled and shared between build and browser: server.js tokenizes content into 'token:count' strings, DocumentIndex builds term + trigram inverted indexes, and documentSearch scores with TF-IDF blended with n-gram similarity.",
+          "sources": [
+            "src/lib/search/server.js",
+            "src/lib/search/documentIndex.js",
+            "src/lib/search/documentSearch.js"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Deployment is a scheduled GitHub Actions workflow (cron '20 18 * * *' plus workflow_dispatch) that executes bin/deploy, a bash script that POSTs to a Cloudflare build hook URL stored in the CF_BUILD_HOOK_URL secret.",
+          "sources": [
+            ".github/workflows/deploy-production.yml",
+            "bin/deploy"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Client-side behavior is delivered by three plain scripts referenced from components via <script src>: omnisearch.js (search modal), hotkeys.js (keyboard nav), toc.js (table of contents).",
+          "sources": [
+            "src/astro/scripts/omnisearch.js",
+            "src/astro/scripts/hotkeys.js",
+            "src/astro/scripts/toc.js",
+            "src/astro/components/Omnisearch.astro#L23",
+            "src/astro/components/Header.astro#L42"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Generated artifacts live in gitignored paths: .content/, src/astro/timestamp.js, public/search-data.json, public/sitemap.xml, public/feed.xml, public/_redirects, public/components.",
+          "sources": [
+            ".gitignore",
+            "src/lib/timestampDump.js",
+            "src/config/settings.js#L49-53"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "feature_catalog": {
+      "summary": "User-facing features are all static pages and client widgets: a home page, paginated collection listing pages, snippet article pages, an about page and 404, plus an omnisearch modal, keyboard shortcuts, RSS feed, sitemap, and redirects file. Content-level features (collections, journeys, article embeds, admonitions, codepen embeds, automatic code-reference links, table of contents) are produced by the custom markdown pipeline. Author-facing features include snippet/collection scaffolding commands, a watch mode, an interactive REPL console, and an asset pipeline that resizes cover images.",
+      "claims": [
+        {
+          "claim": "Snippet pages at /{lang}/s/{snippet} are rendered by [snippet].astro with breadcrumb, snippet content, journey prev/next pagination, a 'More like this' recommendation list, a table-of-contents sidebar, and a content-components fallback.",
+          "sources": [
+            "src/astro/pages/[lang]/s/[snippet].astro",
+            "src/adapters/page/snippetPage.js#L19-31"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Paginated listing pages are served by [lang]/[...listing].astro, which reads .content/pages/[lang]/[...listing].json and renders a Hero, optional sublink Chips, a PreviewList, and Pagination.",
+          "sources": [
+            "src/astro/pages/[lang]/[...listing].astro",
+            "src/adapters/page/collectionPage.js"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The home page composes a Hero, an optional Announcement banner (latest update-log snippet within the last 30 days), featured collection Chips (top 7 plus an 'Explore collections' link), and a PreviewList of the 12 newest published snippets.",
+          "sources": [
+            "src/astro/pages/index.astro",
+            "src/adapters/page/homePage.js#L36-90",
+            "src/config/settings.js#L25-30"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The omnisearch modal lazily fetches /search-data.json on first open, builds a DocumentIndex in the browser, searches on keyup (queries of 1 char or less are ignored), supports ArrowUp/ArrowDown result navigation, and closes on Escape, backdrop click, or the close trigger.",
+          "sources": [
+            "src/astro/scripts/omnisearch.js#L17-35",
+            "src/astro/scripts/omnisearch.js#L72-76",
+            "src/astro/scripts/omnisearch.js#L152-201"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Keyboard hotkeys bind Ctrl/Cmd+k to omnisearch, Ctrl/Cmd+j to collections, and Ctrl/Cmd+h to home, with Mac detection via navigator.userAgent.",
+          "sources": [
+            "src/astro/scripts/hotkeys.js"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Collections are YAML-defined and populated three ways: explicit snippetIds lists, languageMatcher/tagMatcher filters, or the special 'snippets' main collection which ranks all snippets; 'collections' hub gets featured ordering from hub.yaml featuredListings.",
+          "sources": [
+            "src/lib/contentUtils/modelWorkers/collectionSnippet.js",
+            "src/lib/contentUtils/modelWorkers/collection.js#L45-48",
+            "content/collections/js/array.yaml",
+            "content/hub.yaml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Journeys are multi-part articles: a snippet's journeyId front-matter links it to a Collection, and Snippet.journeyPagination computes previousUrl/nextUrl/url/title/itemNumber for the Pagination component.",
+          "sources": [
+            "src/models/snippet.js#L99-132",
+            "src/lib/contentUtils/modelWorkers/snippet.js#L25"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Article embeds: '<article-embed ref=\"...\" title=\"...\"/>' markup in rendered content is replaced at read time by Snippet.enrichedContent with an asEmbedding figure produced via ContentModel.searchContentModels.",
+          "sources": [
+            "src/models/snippet.js#L67-83",
+            "src/models/contentModel.js#L21-32",
+            "src/models/contentModel.js#L151-171",
+            "src/lib/contentUtils/markdownParser/plugins/ast/transformArticleEmbeds.js"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The markdown pipeline applies remark plugins (highlightCode, embedCodepensFromLinks, transformArticleEmbeds) then HAST plugins (loadWebComponents, linkInlineCode, safeguardExternalLinks, transformAdmonitions, transformHeadings for h2-h4 with linkable ids, transfomImagePaths, wrapTables) before rehype-stringify.",
+          "sources": [
+            "src/lib/contentUtils/markdownParser/markdownParser.js#L80-95",
+            "src/lib/contentUtils/markdownParser/plugins/index.js"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "linkInlineCode auto-links inline code tokens to language reference URLs (e.g. MDN) declared in content/languages/*.yaml 'references' and 'additionalReferences' maps.",
+          "sources": [
+            "src/lib/contentUtils/markdownParser/plugins/hast/linkInlineCode.js",
+            "content/languages/javascript.yaml",
+            "src/lib/contentUtils/markdownParser/markdownParser.js#L35-46"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "SEO features: each Page emits schema.org JSON-LD (TechArticle for snippets, ItemList for collections, WebSite for home), Snippet.seoTitle prefixes the language name when absent from the title, and ContentModel.seoDescription strips HTML for meta descriptions.",
+          "sources": [
+            "src/adapters/page.js#L40-53",
+            "src/adapters/page/snippetPage.js#L33-47",
+            "src/models/snippet.js#L138-149",
+            "src/models/contentModel.js#L71-77"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Build-time outputs for the site include an RSS feed (public/feed.xml), a sitemap listing home/about/snippets/all collection pages, and a Netlify-style _redirects file generated from content/redirects.yaml.",
+          "sources": [
+            "src/lib/feed.js",
+            "src/lib/sitemap.js",
+            "src/lib/redirects.js",
+            "content/redirects.yaml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The asset pipeline (prepareAssets) uses sharp to convert content/assets/{cover,splash} images into sized .webp variants in public/assets — covers at 800x400/400x200/1200x600 and splashes at 600x600/400x400 — and copies static 'icons' and 'illustrations' directories.",
+          "sources": [
+            "src/lib/contentUtils/assetHandler.js",
+            "src/config/settings.js#L84-99"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Content web components are supported: scripts under content/components/scripts are copied and SCSS under content/components/styles is compiled to public/components; the loadWebComponents HAST plugin injects <script type=module> tags when markup references them.",
+          "sources": [
+            "src/lib/contentComponents.js",
+            "src/lib/contentUtils/markdownParser/plugins/hast/loadWebComponents.js",
+            "src/lib/contentUtils/config.js#L12-14"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Authoring commands: 'bin/prepare create [snippet|collection] [dir] [name]' scaffolds content from content/collection-template.yaml or per-directory snippet-template.md files, filling title/slug/dateModified; 'bin/prepare create-component' scaffolds components; 'bin/console' opens a REPL with all models and PreparedQueries preloaded.",
+          "sources": [
+            "src/lib/contentUtils/contentCreator.js",
+            "content/collection-template.yaml",
+            "content/snippets/js/snippet-template.md",
+            "bin/console",
+            "src/lib/preparedQueries.js"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "data_flow": {
+      "summary": "Data flows one direction: content/ sources → extraction (FileHandler globs + front-matter/YAML parsing) → per-model workers that render HTML, tokenize, rank, and build join records → .content/content.json → in-memory model graph via Loader reviver → page adapters + serializers → .content/pages/*.json plus public/ artifacts (search-data.json, feed.xml, sitemap.xml, _redirects) → Astro getStaticPaths → static HTML. The browser is a terminal consumer: it fetches search-data.json and rebuilds the same DocumentIndex used at build time. There is no runtime server state; 'state owners' are the static Model registries hydrated once per build/console process.",
+      "claims": [
+        {
+          "claim": "Input boundaries are globbed files: content/snippets/**/s/*.md (front-matter + markdown), content/collections/**/*.yaml, content/languages/*.yaml, plus singleton files grammars.yaml, rankingEngine.yaml, hub.yaml — all read through FileHandler.read which dispatches on extension to JSON/YAML/front-matter readers.",
+          "sources": [
+            "src/lib/contentUtils/config.js",
+            "src/lib/contentUtils/fileHandler.js"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "extractData is the single orchestration point: it loads languages, grammars, hub, and keyword data; selects Shiki or Prism as codeHighlighter; calls MarkdownParser.setupProcessors and sets Ranker.keywordScores; then extracts snippets, collections, and collectionSnippets in that order.",
+          "sources": [
+            "src/lib/contentUtils/extractor.js"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Snippet extraction derives id from filePath by stripping the 'content/snippets/' prefix and '.md' suffix, renders excerpt and body to HTML through a per-language MarkdownParser processor, computes recTokens and docTokens via tokenize(), computes a 0-1 ranking via Ranker.rankIndexableContent, and builds tableOfContentsHtml via TocReader when tocEnabled.",
+          "sources": [
+            "src/lib/contentUtils/modelWorkers/snippet.js",
+            "src/lib/contentUtils/ranker.js",
+            "src/lib/contentUtils/tocReader.js"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "MarkdownParser maintains one unified() processor per language short-code plus a 'default'; each processor embeds that language's reference map (merged from allLanguageReferences) for linkInlineCode, so inline-code autolinking is per-language.",
+          "sources": [
+            "src/lib/contentUtils/markdownParser/markdownParser.js#L29-99"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "exportXData functions flatten extracted objects into plain records tagged with a 'model' field ('Snippet', 'Collection', 'Language', 'CollectionSnippet'); ContentUtils.prepareContent writes the aggregate to .content/content.json via FileHandler.write.",
+          "sources": [
+            "src/lib/contentUtils/contentUtils.js#L14-26",
+            "src/lib/contentUtils/modelWorkers/snippet.js#L98-119"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CollectionSnippet join records are produced by extractCollectionSnippetData: explicit snippetIds are looked up with a console.warn on missing, matcher-based collections filter ranked snippets by languageKey/tags, the 'snippets' main collection gets position = rank index (-1 for unlisted), and allowUnlisted controls inclusion.",
+          "sources": [
+            "src/lib/contentUtils/modelWorkers/collectionSnippet.js"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "On load, every model constructor pushes itself into Model.instances[name] and registers each declared index into Model.indexedInstances[name][index] maps; all Snippet and Collection instances are indexed on 'id'.",
+          "sources": [
+            "src/core/model.js#L52-63",
+            "src/models/snippet.js#L13-16",
+            "src/models/collection.js#L10-13"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Page serialization path: AstroContent.generate calls Collection.pages / snippet.page / Page.home, each Page subclass exposes params and props getters, PageSerializer.serialize emits {params, props:{...props, structuredData: schemaData}}, and results are keyed by page.key into JSON files under .content/pages/.",
+          "sources": [
+            "src/lib/astroContent.js",
+            "src/adapters/page.js#L10-30",
+            "src/serializers/pageSerializer.js",
+            "src/adapters/page/collectionPage.js#L9-29"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Astro routes are pure consumers of generated JSON: [snippet].astro and [...listing].astro implement getStaticPaths by reading the corresponding .content JSON file and mapping entries to {params, props}; index.astro reads index.json synchronously at module scope.",
+          "sources": [
+            "src/astro/pages/[lang]/s/[snippet].astro#L15-26",
+            "src/astro/pages/[lang]/[...listing].astro#L11-26",
+            "src/astro/pages/index.astro#L13-14"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Search data path: snippet/collection docTokens strings ('token:count' space-joined) are serialized by SearchResultSerializer into public/search-data.json; the browser fetches it, deserializeTokens rebuilds Map<term,freq>, and DocumentIndex re-derives trigram sets for fuzzy matching.",
+          "sources": [
+            "src/lib/searchIndex.js",
+            "src/serializers/searchResultSerializer.js",
+            "src/astro/scripts/omnisearch.js#L19-34",
+            "src/lib/search/utils.js"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Ranker scores content against the sorted keyword table from content/rankingEngine.yaml, capping at 20 keywords or a score of 100, and returns max(0.0001, score/100) so no snippet ranks exactly 0.",
+          "sources": [
+            "src/lib/contentUtils/ranker.js",
+            "content/rankingEngine.yaml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Redirects flow: content/redirects.yaml is loaded once in a static block, Redirects.generate writes 'from to status' lines to public/_redirects, and Redirects.for(slug) does a transitive lookup used by ContentModel.allSlugs for canonical/alias handling.",
+          "sources": [
+            "src/lib/redirects.js",
+            "src/models/contentModel.js#L58-60",
+            "content/redirects.yaml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "TimestampDump.generate writes a hex timestamp to src/astro/timestamp.js, which Layout.astro injects via define:vars into an empty script solely to force HMR when content regenerates during watch mode.",
+          "sources": [
+            "src/lib/timestampDump.js",
+            "src/astro/layouts/Layout.astro#L9-34"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "behavior_traces": {
+      "summary": "The three flows worth knowing end-to-end: (1) 'npm run dev' runs the content pipeline with Prism fast-highlighting then starts astro dev; (2) 'npm run build' runs the full pipeline (assets + Shiki + all generated artifacts) then astro build; (3) at runtime, the only dynamic behavior is the omnisearch modal which fetches the prebuilt search index. A fourth flow — watch mode — respawns the whole dev pipeline per file change, and deployment is a cron-triggered Cloudflare webhook call.",
+      "claims": [
+        {
+          "claim": "Dev startup trace: npm run dev → predev 'bin/prepare dev --fast-highlight' → sets NODE_ENV=development → ContentUtils.prepareContent('prism') → extractData → FileHandler.write(.content/content.json) → Loader.loadModules + importData → AstroContent.generate → SearchIndex.generate → TimestampDump.generate → ContentComponents.prepare → 'astro dev --port 8000'.",
+          "sources": [
+            "bin/prepare#L66-90",
+            "package.json#L44-45",
+            "src/lib/contentUtils/contentUtils.js"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Full build trace: npm run build → prebuild 'bin/prepare full' → ContentUtils.prepareAssets (sharp image conversion, non-forced) → prepareContent with Shiki (fastHighlight=false) → importData → AstroContent.generate → SearchIndex.generate → Redirects.generate → Feed.generate → Sitemap.generate → TimestampDump.generate → ContentComponents.prepare → 'astro build'.",
+          "sources": [
+            "bin/prepare#L29-65",
+            "package.json#L50-51"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Watch trace: 'bin/prepare watch [--fast-highlight]' → FileWatcher.watch does fs.watch('content', {recursive:true}) → every event logs the filename and exec()s a fresh 'bin/prepare dev' child process — a full re-extraction per change with no debounce.",
+          "sources": [
+            "bin/prepare#L91-99",
+            "src/lib/contentUtils/fileWatcher.js"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Snippet page render trace (at astro build): getStaticPaths reads .content/pages/[lang]/s/[snippet].json → each serialized SnippetPage entry supplies params {lang, snippet} and props {breadcrumbs, pageDescription, snippet(context), journey(pagination), recommendations(collection+snippets, ≤4 previews)} → Layout renders Breadcrumb, SnippetContent, Pagination (if journey), PreviewList, ContentComponentsFallback, TableOfContents.",
+          "sources": [
+            "src/astro/pages/[lang]/s/[snippet].astro",
+            "src/adapters/page/snippetPage.js",
+            "src/serializers/pageSerializer.js"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Recommendation trace inside a snippet page build: SnippetPage.props reads object.recommendedSnippets → RecommendationPresenter.recommendSnippets() scores candidates pre-grouped by languageId and primaryTag (language up to 45 pts, primary tag up to 15, recToken overlap up to 40, thresholds per settings.recommendations) → top results merged with recommendedCollection and sliced to 4 previews.",
+          "sources": [
+            "src/presenters/recommendationPresenter.js",
+            "src/config/settings.js#L100-121",
+            "src/adapters/page/snippetPage.js#L24-30"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Omnisearch runtime trace: user clicks [data-open-modal] → open() → prepare() fetches /search-data.json once → documents mapped {id:url, content:deserializeTokens(searchTokens)} → new DocumentIndex → search(index) closure → keyup on #omnisearch → searchByKeyphrase trims/lowercases, returns [] for len<=1 → searchDocuments(q,100) → TF-IDF term scoring + 0.7-weighted ngram similarity → displayResults writes innerHTML list.",
+          "sources": [
+            "src/astro/scripts/omnisearch.js",
+            "src/lib/search/documentSearch.js#L109-149",
+            "src/lib/search/documentIndex.js"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Scheduled publishing trace: snippet front-matter dateModified in the future → Snippet.isScheduled true → Snippet.scope('published') excludes it; AstroContent.generateSnippetPages uses Snippet.all when NODE_ENV==='development' but Snippet.scope('published') otherwise, so scheduled articles appear locally but not in production builds.",
+          "sources": [
+            "src/lib/astroContent.js#L45-54",
+            "src/models/snippet.js#L47-55",
+            "src/models/snippet.js#L180-190"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Deploy trace: deploy-production.yml runs on cron '20 18 * * *' or manual dispatch → checkout@v1 → chmod +x ./bin/deploy → './bin/deploy production' → bash curl -X POST to $DEPLOY_URL (secret CF_BUILD_HOOK_URL) with trigger_title and trigger_branch=master → Cloudflare rebuilds and serves the static site.",
+          "sources": [
+            ".github/workflows/deploy-production.yml",
+            "bin/deploy"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Content creation trace: 'npm run create' → 'bin/prepare create snippet js my-name' → ContentCreator.create resolves content/snippets/js/snippet-template.md as the template → replaces title and dateModified (today) via regex → mkdirs content/snippets/js/s if needed → writes my-name.md; collections similarly use content/collection-template.yaml with slug/name replacement.",
+          "sources": [
+            "package.json#L53",
+            "bin/prepare#L105-112",
+            "src/lib/contentUtils/contentCreator.js"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Console trace: 'npm run console' → bin/console starts node:repl → Loader.loadModules + importData hydrates the full model graph → models/serializers/pages/module classes injected into REPL context → PreparedQueries functions bound and documentIndex prebuilt → exposes helpers like searchForTerm, snippetsWithoutFormatting, snippetCoverUsage.",
+          "sources": [
+            "bin/console",
+            "src/lib/preparedQueries.js"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "testing_signals": {
+      "summary": "Tests are Vitest specs under spec/, mirroring src/ structure: core, models, presenters, and lib/contentUtils. Coverage is real but selective — model logic, presenters, ranker, tocReader, stringUtils, search utils, metaParser, and an integration-style prepareContent test against fixture content. Factories (base + named traits) are the fixture mechanism, built through Loader.buildFactories. CI runs 'npm ci && npm test' on Node 22.14 for pushes and PRs to master. Notable gaps: no specs for serializers, page adapters, documentIndex/documentSearch/porterStemmer, assetHandler, extractor end-to-end, or any Astro/client code.",
+      "claims": [
+        {
+          "claim": "'npm test' runs bare 'vitest' (no config file found at repo root); CI invokes the same command on Node 22.14.0 for push/PR to master.",
+          "sources": [
+            "package.json#L56",
+            ".github/workflows/test.yml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Spec layout mirrors src/: spec/core (model, serializer), spec/models (collection, contentModel, snippet), spec/presenters (breadcrumb, cover, recommendation, sublink), spec/lib (contentUtils, ranker, tocReader, stringUtils, search/utils, metaParser).",
+          "sources": [
+            "spec/core/model.test.js",
+            "spec/models/snippet.test.js",
+            "spec/presenters/recommendationPresenter.test.js",
+            "spec/lib/contentUtils/ranker.test.js",
+            "spec/lib/search/utils.test.js"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The fixture mechanism is factory objects: spec/factories export {model, base, traits} and Loader.buildFactories() composes base + named traits + inline overrides, then news up the registered model class.",
+          "sources": [
+            "spec/factories/factories.js",
+            "spec/factories/snippetFactory.js",
+            "src/lib/loader.js#L56-76"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "spec/lib/contentUtils/contentUtils.test.js is an integration test: it vi.mocks the config module to point at spec/fixtures/content and FileHandler.write to capture output, then runs the real ContentUtils.prepareContent and asserts output keys and language objects.",
+          "sources": [
+            "spec/lib/contentUtils/contentUtils.test.js",
+            "spec/mocks/lib/contentUtils/config.js"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "spec/fixtures/content is a miniature of the real content tree — snippets (js/css/articles), collections (js/css/webdev), languages (js/css/html), grammars.yaml, hub.yaml, rankingEngine.yaml — letting the pipeline run end-to-end without touching real content.",
+          "sources": [
+            "spec/fixtures/content/snippets/js/s/array-map-foreach.md",
+            "spec/fixtures/content/collections/js/array.yaml",
+            "spec/fixtures/content/rankingEngine.yaml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "snippet.test.js demonstrates the shared-global-state pattern: Loader.loadModules() and Factory.create() calls run at describe scope, registering instances into the process-global Model.instances registry — meaning tests are implicitly order/isolation sensitive.",
+          "sources": [
+            "spec/models/snippet.test.js#L5-30",
+            "src/core/model.js#L4-7"
+          ],
+          "kind": "inference"
+        },
+        {
+          "claim": "Coverage gaps: no spec exists for serializers/*, adapters/*, lib/search/documentIndex.js, documentSearch.js, porterStemmer.js, extractor.js, assetHandler.js, astroContent.js, or any src/astro code — the .content/pages JSON contract and the browser search index have no automated tests.",
+          "sources": [
+            "spec/lib/search/utils.test.js",
+            "src/lib/search/documentIndex.js",
+            "src/adapters/page.js",
+            "src/serializers/pageSerializer.js"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Linting is eslint 9 flat config (js.configs.recommended + eslint-config-prettier) with a custom globals.js file; style rules enforce single quotes, semicolons, multiline comma-dangle, as-needed arrow-parens; prettier + prettier-plugin-astro via .prettierrc. No lint or format check runs in CI.",
+          "sources": [
+            "eslint.config.js",
+            "globals.js",
+            ".prettierrc",
+            ".github/workflows/test.yml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Other workflows are maintenance automation only: stale.yml marks inactive issues/PRs via actions/stale@v5 and label.yml applies path-based PR labels via actions/labeler@v4 — neither runs tests or builds.",
+          "sources": [
+            ".github/workflows/stale.yml",
+            ".github/workflows/label.yml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "There is no coverage tooling, no e2e/browser test, and no build-verification step in CI — the 'test' job is the only quality gate and it never runs 'astro build' or 'bin/prepare full'.",
+          "sources": [
+            ".github/workflows/test.yml",
+            "package.json"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "risk_map": {
+      "summary": "Top risks: production code imports test factories (spec/ is on the live path of bin/console and any Loader user); the model layer is global mutable state; the markdown pipeline passes through raw HTML (allowDangerousHtml) so content is trusted input; watch mode has no debounce; omnisearch injects index data into innerHTML; and several identifiers are derived by brittle string slicing/naming conventions. Deploy security hinges on a single secret webhook URL, and CI is thin (tests only, old action versions, no build check).",
+      "claims": [
+        {
+          "claim": "src/lib/loader.js imports '#spec/factories/factories.js' — test-only factory code is imported by a production module, coupling any Loader user (bin/prepare, bin/console) to the spec tree.",
+          "sources": [
+            "src/lib/loader.js#L18",
+            "spec/factories/factories.js"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Model state is process-global and append-only: Model.instances accumulates every constructed instance with no reset API, so double importData calls or tests that create factories leak records into all/where/scope results for the process lifetime.",
+          "sources": [
+            "src/core/model.js#L4-7",
+            "src/core/model.js#L52-63",
+            "src/lib/loader.js#L43-54"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The markdown pipeline runs remark-rehype and rehype-stringify with allowDangerousHtml:true — raw HTML embedded in snippet markdown passes through unescaped into shipped pages; safe only because all content is author-trusted.",
+          "sources": [
+            "src/lib/contentUtils/markdownParser/markdownParser.js#L86",
+            "src/lib/contentUtils/markdownParser/markdownParser.js#L95"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "omnisearch renders result rows via innerHTML template literals interpolating result.url, result.title, result.tag without escaping (createResultHTML), while only the not-found path escapes the query — a crafted search-data.json title could inject markup, though the index is build-generated.",
+          "sources": [
+            "src/astro/scripts/omnisearch.js#L94-117"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Watch mode exec()s a full 'bin/prepare dev' on every fs.watch event with no debounce or in-flight guard — rapid saves can spawn overlapping full re-extractions (Shiki highlighting is the expensive step).",
+          "sources": [
+            "bin/prepare#L91-99",
+            "src/lib/contentUtils/fileWatcher.js"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Snippet id derivation is positional: filePath.replace(snippetPrefix,'').slice(0,-3) assumes the 'content/snippets/…/*.md' shape; a stray file matched by the glob with a different extension would silently corrupt the id.",
+          "sources": [
+            "src/lib/contentUtils/modelWorkers/snippet.js#L29",
+            "src/lib/contentUtils/config.js#L6"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "A missing/typo'd front-matter 'language' degrades silently: languageData.get(languageKey) returns undefined and every downstream use is optional-chained, so recTokens/docTokens lose language terms and the snippet renders without a language rather than failing.",
+          "sources": [
+            "src/lib/contentUtils/modelWorkers/snippet.js#L28-46"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Naming-convention coupling is load-bearing: Page.from resolves `${object.constructor.name}Page`, serializeAs resolves `${name}Serializer`, and the JSON reviver resolves models[value.model] — renaming a class or key breaks page generation, and the 'serializer not found' guard in serializeAs is dead code because `new undefined()` throws TypeError first.",
+          "sources": [
+            "src/adapters/page.js#L10-13",
+            "src/models/contentModel.js#L118-127",
+            "src/lib/loader.js#L47-50"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Publishing correctness depends on wall-clock time: dateModified compared to new Date() decides scheduled vs published, so the daily 18:20 UTC deploy cron determines when scheduled articles go live — a missed/failed deploy silently delays publication.",
+          "sources": [
+            "src/models/snippet.js#L180-190",
+            ".github/workflows/deploy-production.yml",
+            "src/lib/astroContent.js#L45-49"
+          ],
+          "kind": "inference"
+        },
+        {
+          "claim": "Astro routes hard-fail without generated content: getStaticPaths does fs.readFile on .content JSONs with no fallback, so 'astro dev'/'astro build' without the prepare step (or a cleaned .content dir) crashes — the coupling is enforced only by npm pre-hooks, which bare 'astro' or 'vitest' invocations bypass.",
+          "sources": [
+            "src/astro/pages/[lang]/s/[snippet].astro#L15-26",
+            "src/astro/pages/index.astro#L13-14",
+            "package.json#L44-51"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Known-fragile code is flagged in TODO comments: Snippet.hasCollection returns true even when the only membership is the main collection, and Collection.matchesTag relies on id.endsWith(`/${tag}`).",
+          "sources": [
+            "src/models/snippet.js#L212-217",
+            "src/models/collection.js#L160-163"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CI uses dated action versions (actions/checkout@v1 in deploy-production, actions/setup-node@v1 in test) and the deploy job's only secret is CF_BUILD_HOOK_URL — a leaked or misconfigured hook URL is the entire deployment control surface.",
+          "sources": [
+            ".github/workflows/deploy-production.yml",
+            ".github/workflows/test.yml",
+            "bin/deploy"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Shiki vs Prism output differs subtly: Prism mode appends a '<script type=module …/prism-code-highlights.mjs>' tag into parsed HTML, meaning dev-mode rendered markup is not identical to production markup.",
+          "sources": [
+            "src/lib/contentUtils/markdownParser/markdownParser.js#L113-118",
+            "bin/prepare#L69-74"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "extension_points": {
+      "summary": "The repo is designed for extension mostly at the content layer: drop a markdown file into content/snippets/{lang}/s/, a YAML into content/collections or content/languages, and the glob-driven pipeline picks it up automatically. Code-level extension follows consistent registries and naming conventions: new models register via Model.prepare + models.js, new page types via Page.register + `${Model}Page`, new serializers via Serializer.prepare + `${name}Serializer`, and new markdown features via the remark/HAST plugin list in plugins/index.js. Search, ranking, and presentation are tuned through data files and settings rather than code.",
+      "claims": [
+        {
+          "claim": "New snippet: add {name}.md under content/snippets/{lang}/s/ with front-matter (title, shortTitle, language, tags, cover, excerpt, listed, dateModified, optional tocEnabled/journeyId); the content/snippets/**/s/*.md glob picks it up with zero code changes.",
+          "sources": [
+            "src/lib/contentUtils/config.js#L6",
+            "src/lib/contentUtils/modelWorkers/snippet.js#L13-26",
+            "content/snippets/js/s/resolve-promise-after-amount-of-time.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New collection: add a YAML under content/collections with slug, title, description, and either explicit snippetIds or languageMatcher/tagMatcher; optional parent/topLevel/listed/allowUnlisted control hierarchy and visibility; hub.yaml featuredListings controls homepage featuring order.",
+          "sources": [
+            "content/collections/js/array.yaml",
+            "src/lib/contentUtils/modelWorkers/collection.js#L11-24",
+            "content/hub.yaml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New language: add {name}.yaml under content/languages with short/long/name/references/additionalReferences — it is globbed automatically and its references map feeds linkInlineCode autolinking and merged additionalReferences.",
+          "sources": [
+            "src/lib/contentUtils/modelWorkers/language.js",
+            "src/lib/contentUtils/config.js#L7",
+            "content/languages/javascript.yaml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New model: extend ContentModel (or Model), add a static block calling Model.prepare(this, [indexes]) and ContentModel.addContentModel(this), define scopes as static methods taking a records param, and register it in models.js so the JSON reviver can instantiate it.",
+          "sources": [
+            "src/models/snippet.js#L13-16",
+            "src/models/contentModel.js#L16-19",
+            "src/models/models.js",
+            "src/lib/loader.js#L47-50"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New page type: create a Page subclass with a static { Page.register(this) } block, implement params and props getters, optionally additionalSchemaData — PageSerializer picks it up automatically; the class MUST be named `${Model}Page` for Page.from resolution.",
+          "sources": [
+            "src/adapters/page.js#L6-13",
+            "src/adapters/page/snippetPage.js#L4-8",
+            "src/serializers/pageSerializer.js"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New serializer: extend Serializer, declare fields via Serializer.prepare(this, [key | [key, fn], ...]), and expose it through serializers.js — ContentModel.serializeAs resolves `${name}Serializer` by name.",
+          "sources": [
+            "src/serializers/pageSerializer.js",
+            "src/serializers/serializers.js",
+            "src/models/contentModel.js#L118-127",
+            "src/core/serializer.js"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New markdown transform: add a plugin under plugins/ast (pre-remarkRehype, operates on mdast) or plugins/hast (post-remarkRehype, operates on hast), export it from plugins/index.js, and .use() it in MarkdownParser.setupProcessors — ordering constraints are documented inline (e.g. linkInlineCode must precede safeguardExternalLinks).",
+          "sources": [
+            "src/lib/contentUtils/markdownParser/markdownParser.js#L52-95",
+            "src/lib/contentUtils/markdownParser/plugins/index.js"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Highlighter swap/extension: ShikiHighlighter and PrismHighlighter are interchangeable via the 'shiki'|'prism' parameter selected by the --fast-highlight flag; Shiki languages are driven by content/grammars.yaml and the theme by codeHighlighters/themes/cosmos.json; custom Shiki transformers live in codeHighlighters/transformers.",
+          "sources": [
+            "src/lib/contentUtils/extractor.js#L25-27",
+            "src/lib/contentUtils/markdownParser/codeHighlighters/shiki.js",
+            "src/lib/contentUtils/markdownParser/codeHighlighters/prism.js",
+            "content/grammars.yaml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Search tuning is config-driven: stop words live in src/lib/search/settings.js, token filtering rules in server.js tokenFilter, fuzzy weight is a parameter to search(), and recommendation scoring constants are in settings.js recommendations block.",
+          "sources": [
+            "src/lib/search/settings.js",
+            "src/lib/search/server.js#L25-40",
+            "src/lib/search/documentSearch.js#L111",
+            "src/config/settings.js#L100-121"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Presentation is tuned in settings.js: cardsPerPage/collectionCardsPerPage, home card counts, tag display-name map, cover sizes/suffixes/srcsets, sublink labels, and collection id constants (mainCollectionId, updateLogsCollectionId, updateLogTag).",
+          "sources": [
+            "src/config/settings.js"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New generated artifact: write a class with a static generate() writing into settings.paths.out.* and call it from bin/prepare's full/dev command lists — Redirects, Feed, Sitemap, TimestampDump, SearchIndex, AstroContent all follow this pattern.",
+          "sources": [
+            "bin/prepare#L52-65",
+            "src/lib/redirects.js#L14-22",
+            "src/lib/timestampDump.js"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New client behavior: add a plain JS file under src/astro/scripts and reference it from an .astro component via <script src='../scripts/x.js'>; for reusable content widgets, drop scripts/styles under content/components and let loadWebComponents inject them into rendered HTML.",
+          "sources": [
+            "src/astro/components/Omnisearch.astro#L23",
+            "src/lib/contentComponents.js",
+            "src/lib/contentUtils/markdownParser/plugins/hast/loadWebComponents.js"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_handoff": {
+      "summary": "Conventions: ESM everywhere, #src/#spec import aliases, single quotes + semicolons + multiline trailing commas, class-static utility style, and ActiveRecord-ish model scopes. Safe edit boundary is content/ for content work (CONTRIBUTING restricts PRs to content/snippets and content/collections) and src/ for pipeline code — never edit generated paths (.content/, public/search-data.json, src/astro/timestamp.js, etc. — all gitignored). Before touching rendering, read settings.js, contentUtils/config.js, extractor.js, the modelWorkers, and the relevant model+adapter pair. Run 'npm test' (Vitest) after changes; use Loader.buildFactories in specs. Traps: global model registry, class-name coupling, scheduled-vs-published filtering differences between dev and prod, and the mandatory prepare step before any astro command.",
+      "claims": [
+        {
+          "claim": "Always run the prepare step before astro commands: 'npm run dev'/'npm run build' chain it via pre-hooks, but a bare 'astro dev', 'astro build', or editor-driven vitest run against a missing .content/ will crash — .content is gitignored so fresh clones must generate it.",
+          "sources": [
+            "package.json#L44-51",
+            ".gitignore",
+            "src/astro/pages/index.astro#L13-14"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Import style: use the '#src/…' and '#spec/…' aliases declared in package.json 'imports' (mirrored in jsconfig.json paths); the codebase is 'type': 'module' and requires Node >=22.14.0.",
+          "sources": [
+            "package.json#L35-42",
+            "package.json#L69-71",
+            "jsconfig.json"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Code style is enforced by eslint flat config: single quotes (avoidEscape ok), semicolons, always-multiline comma-dangle (functions never), as-needed arrow-parens, 1tbs braces, plus prettier with prettier-plugin-astro — match surrounding style since CI does not lint.",
+          "sources": [
+            "eslint.config.js",
+            ".prettierrc",
+            "globals.js"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Recommended read order for pipeline work: src/config/settings.js → src/lib/contentUtils/config.js → extractor.js → modelWorkers/* → src/models/* → src/adapters/page* → src/serializers/* → src/astro/pages/*.",
+          "sources": [
+            "src/config/settings.js",
+            "src/lib/contentUtils/extractor.js",
+            "src/models/models.js",
+            "src/adapters/page.js"
+          ],
+          "kind": "inference"
+        },
+        {
+          "claim": "In specs, construct records via Loader.loadModules() + Loader.buildFactories() with named traits (e.g. SnippetFactory.create('published', {id: 'x'})) — never new models directly without understanding that each construction registers globally in Model.instances.",
+          "sources": [
+            "spec/models/snippet.test.js#L5-30",
+            "src/lib/loader.js#L56-76",
+            "src/core/model.js#L55"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Do not rename model classes, page adapters, or serializers: Page.from uses object.constructor.name, the content.json reviver uses the 'model' string field, and serializeAs concatenates names — renaming requires updating all three conventions at once.",
+          "sources": [
+            "src/adapters/page.js#L10-13",
+            "src/lib/loader.js#L47-50",
+            "src/models/contentModel.js#L118-127"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Dev/prod asymmetry: NODE_ENV=development includes scheduled (future dateModified) snippets in generated pages; production excludes them — verify dateModified front-matter when a snippet 'disappears' after deploy.",
+          "sources": [
+            "src/lib/astroContent.js#L45-49",
+            "src/models/snippet.js#L180-186"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CONTRIBUTING ground rules restrict content PRs to content/snippets and content/collections; content should follow the writing guidelines (US spelling, short sentences, Grade-10 level, imperative code docs) in CONTRIBUTING.md.",
+          "sources": [
+            "CONTRIBUTING.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Use 'bin/prepare dev --fast-highlight' (Prism) for local iteration — Shiki highlighting is the slow path reserved for full builds; remember Prism mode appends a script tag to rendered HTML so markup differs slightly between modes.",
+          "sources": [
+            "bin/prepare#L69-74",
+            "src/lib/contentUtils/markdownParser/markdownParser.js#L113-118"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Generated outputs to never hand-edit: .content/**, src/astro/timestamp.js, public/search-data.json, public/sitemap.xml, public/feed.xml, public/_redirects, public/components, public/assets — all produced by bin/prepare and listed in .gitignore.",
+          "sources": [
+            ".gitignore",
+            "src/config/settings.js#L43-54"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Debugging/exploration tool: 'npm run console' opens a REPL with all models, serializers, pages, PreparedQueries functions, and a prebuilt documentIndex — the fastest way to inspect the hydrated content graph.",
+          "sources": [
+            "bin/console",
+            "src/lib/preparedQueries.js"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "When editing the markdown pipeline, respect documented plugin ordering: highlightCode, embedCodepensFromLinks, transformArticleEmbeds must run before remarkRehype (mdast phase); linkInlineCode must run before safeguardExternalLinks; transformHeadings handles only h2-h4 and adds the linkable ids TocReader later matches with a regex.",
+          "sources": [
+            "src/lib/contentUtils/markdownParser/markdownParser.js#L52-95",
+            "src/lib/contentUtils/tocReader.js#L5-7"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_prompt": "You are working on 30-seconds-of-code (github.com/Chalarangelo/30-seconds-of-code), the source of the static website www.30secondsofcode.org. It is an Astro 6 static site, but almost none of the interesting logic is in Astro: the repo is a custom content pipeline plus an in-memory model layer.\n\nARCHITECTURE. Content lives in content/: snippets are Markdown with YAML front-matter under content/snippets/{lang}/s/*.md, collections are YAML under content/collections/**, languages under content/languages/*.yaml, plus singletons grammars.yaml, rankingEngine.yaml, hub.yaml, redirects.yaml. The CLI bin/prepare (commands: full, dev, content, watch, assets, create, create-component) orchestrates the build: ContentUtils.prepareContent → extractData (src/lib/contentUtils/extractor.js) → FileHandler globs + front-matter/YAML parsing → modelWorkers (snippet/collection/collectionSnippet/language) which render HTML via a per-language unified/remark/rehype pipeline (MarkdownParser), tokenize for search, and rank via Ranker → writes .content/content.json. Loader.importData then hydrates that JSON into model instances (Snippet, Collection, CollectionSnippet, Language — see src/models/, base class src/core/model.js with global instance registry and index Maps; queries via RecordSet where/order/pluck/scope). Page adapters (src/adapters/page*, resolved as `${Model}Page`) plus serializers produce {params, props} JSON written to .content/pages/*.json. Astro routes (src/astro/pages: index.astro, [lang]/[...listing].astro, [lang]/s/[snippet].astro, about, 404) read those JSONs in getStaticPaths. bin/prepare full additionally generates public/search-data.json, feed.xml, sitemap.xml, _redirects, src/astro/timestamp.js, and compiles content/components. Search is custom TF-IDF + trigram fuzzy (src/lib/search/*), rebuilt client-side in src/astro/scripts/omnisearch.js.\n\nCOMMANDS. npm run dev (chains 'bin/prepare dev --fast-highlight' then astro dev :8000), npm run watch, npm run build (full pipeline + astro build), npm test (vitest), npm run console (REPL with models + PreparedQueries). Node >=22.14, ESM, import aliases '#src/*' and '#spec/*'.\n\nRULES/TRAPS. (1) Never run bare astro commands without the prepare step — routes read .content JSONs that are gitignored and generated. (2) Never edit generated files: .content/**, public/search-data.json, sitemap.xml, feed.xml, _redirects, components, assets, src/astro/timestamp.js. (3) Do not rename model/page/serializer classes — name-concatenation conventions resolve them. (4) Model.instances is global and append-only; in tests use Loader.buildFactories traits, and beware cross-test pollution. (5) Dev shows scheduled snippets (future dateModified); production does not. (6) Use --fast-highlight locally; Shiki is the slow production path. (7) Content PRs belong only under content/snippets or content/collections per CONTRIBUTING.md. (8) Lint style: single quotes, semicolons, multiline comma-dangle, arrow-parens as-needed. Test with 'npm test'; there is no CI build step, so verify 'bin/prepare dev' + 'astro build' manually for pipeline changes."
+  },
+  "analysis": {
+    "agent": "devin",
+    "model": "swe-2",
+    "runtime_ms": null,
+    "cost_usd": null,
+    "collected_at": "2026-09-22T16:34:49.222Z"
   }
 }

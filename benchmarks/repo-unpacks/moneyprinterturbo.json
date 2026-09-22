@@ -142,7 +142,7 @@
         {
           "path": "README.md",
           "bytes": 36657,
-          "preview": "<div align=\"center\">\n\n# MoneyPrinterTurbo \ud83d\udcb8\n\n### \u4e00\u7ad9\u5f0f AI \u77ed\u89c6\u9891\u751f\u6210\u5de5\u5177\n\n\u53ea\u9700\u63d0\u4f9b\u89c6\u9891<b>\u4e3b\u9898</b>\u6216<b>\u5173\u952e\u8bcd</b>\uff0c\u5373\u53ef\u81ea\u52a8\u751f\u6210\u89c6\u9891\u811a\u672c\u3001\u5339\u914d\u7d20\u6750\u3001\u751f\u6210\u5b57\u5e55\u548c\u80cc\u666f\u97f3\u4e50\uff0c\u5e76\u5408\u6210\u9ad8\u6e05\u77ed\u89c6\u9891\u3002\n\n[![Version](https://img.shields.io/github/v/release/harry0703/MoneyPrinterTurbo?color=blue&label=version)](https://github.com/harry0703/MoneyPrinterTurbo/releases)\n[![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)](https://github.com/harry0703/MoneyPrinterTurbo/releases/latest)\n[![Python](https://img.shields.io/badge/python-3.11%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)\n[![Downloads](https://img.shields.io/github/downloads/harry0703/MoneyPrinterTurbo/total)](https://github.com/harry0703/MoneyPrinterTurbo/releases/latest)\n\n<a href=\"https://trendshift.io/repositories/8731\" target=\"_blank\"><img src=\"https://trendshift.io/api/badge/repositories/8731\" alt=\"harry0703%2FMoneyPrinterTurbo | Trendshift\" style=\"width: 250px; height: 55px;\" width=\"250\" height=\"55\"/></a>\n<a href=\"https://www.star-history.com/harry0703/moneyprinterturbo\"><img src=\"https://api.star-history.com/badge?repo=harry0703/MoneyPrinterTurbo\" alt=\"Star History Rank\" style=\"height: 55px;\" height=\"55\"/></a>\n\n\u7b80\u4f53\u4e2d\u6587 | [English](README-en.md) | [\u65e5\u672c\u8a9e](README-ja.md) | [\u7248\u672c\u53d1\u5e03](https://github.com/harry0703/MoneyPrinterTurbo/releases) | [\u95ee\u9898\u53cd\u9988](https://github.com/harry0703/MoneyPrinterTurbo/issues)\n\n</div>\n\n## \u754c\u9762\u9884\u89c8 \ud83d\udda5\ufe0f\n\n<h4 align=\"center\">WebUI</h4>\n\n![](docs/webui.jpg)\n\n<h4 align=\"center\">API</h4>\n\n![](docs/api.jpg)\n\n---\n\n## \u7279\u522b\u611f\u8c22 \u2764\ufe0f\n\n<div align=\"center\">\n  <a href=\"https://platform.kimi.com?track_id=track-2f5441d6ffd84c509dd079d78e9db5dc&aff=moneyprinterturbo\" target=\"_blank\"><img src=\"https://gcdn.moonshot.cn/growth-cdn/sponsor/kimi-zh.png\" alt=\"Kimi \u8d5e\u52a9 MoneyPrinterTurbo\" width=\"100%\"></a>\n</div>\n\n\u611f\u8c22 [Kimi](https://platform.kimi.com?track_id=track-2f5441d6ffd84c509dd079d78e9db5dc&aff=moneyprinterturbo) \u8d5e\u52a9\u672c\u9879\u76ee\uff01[Kimi K3](https://www.kimi.com/blog/kimi-k3?aff=moneyprinterturbo) \u662f Moonshot AI \u8fc4\u4eca\u80fd\u529b\u6700\u5f3a\u7684\u6a21\u578b\uff0c\u4e5f\u662f\u5168\u7403\u9996\u4e2a\u5f00\u6e90 3T \u7ea7\u6a21\u578b\uff0c\u62e5\u6709\u539f\u751f\u89c6\u89c9\u80fd\u529b\u4e0e 100 \u4e07 Token \u4e0a\u4e0b\u6587\uff0c\u5728\u77e5\u8bc6\u5de5\u4f5c\u3001\u63a8\u7406\u548c\u957f\u5468\u671f\u4efb\u52a1\u4e2d\u5c55\u73b0\u524d\u6cbf\u6027\u80fd\u3002\u5728 MoneyPrinterTurbo \u4e2d\uff0cK3 \u80fd\u76f4\u63a5\u9a71\u52a8\u89c6\u9891\u521b\u4f5c\uff0c\u4e0d\u4ec5\u64b0\u5199\u89c6\u9891\u6587\u6848\uff0c\u8fd8\u4f1a\u63d0\u70bc\u7d20\u6750\u641c\u7d22\u5173\u952e\u8bcd\u3001\u51b3\u5b9a\u6210\u7247\u753b\u9762\uff1b\u5bf9\u5185\u5bb9\u7406\u89e3\u8d8a\u51c6\u786e\uff0c\u5339\u914d\u5230\u7684\u7d20\u6750\u5c31\u8d8a\u8d34\u9898\u3002\n\n**MoneyPrinterTurbo \u7528\u6237\u4e13\u5c5e\u4f18\u60e0\uff1a\u65b0\u7528\u6237\u901a\u8fc7\u4e13\u5c5e\u94fe\u63a5\u6ce8\u518c\uff0c\u9996\u6b21\u6210\u529f\u5145\u503c\u53ef\u83b7\u5145\u503c\u91d1\u989d 10% \u7684 API \u989d\u5ea6\uff0c\u6700\u9ad8\u8d60\u9001 \u00a51000\u3002\u6d3b\u52a8\u622a\u81f3 2026 \u5e74 9 \u6708 30 \u65e5\u3002\u524d\u5f80 Kimi \u5f00\u653e\u5e73\u53f0\uff08[\u4e2d\u6587\u7ad9](https://platform.kimi.com?track_id=track-2f5441d6ffd84c509dd079d78e9db5dc&aff=moneyprinterturbo)\uff5c[Global](https://platform.kimi.ai?track_id=track-f6b0a640d35c41deb03b247242a1058c&aff=moneyprinterturbo)\uff09\u4f53\u9a8c API\u3002**\n<br>\n\n<table align=\"center\">\n  <tr>\n    <td align=\"center\" width=\"120\">\n      <a href=\"https://www.volcengine.com/activity/ai618?utm_campaign=hw&utm_content=hw&utm_medium=devrel_tool_web&utm_source=OWO&utm_term=MoneyPrinterTurbo\"><img src=\"docs/sponsors/volcengine-logo.svg\" alt=\"\u706b\u5c71\u5f15\u64ce\" height=\"32\"></a><br>\n      <a href=\"https://www.volcengine.com/activity/ai618?utm_campaign=hw&utm_content=hw&utm_medium=devrel_tool_web&utm_source=OWO&utm_term=MoneyPrinterTurbo\"><strong>\u706b\u5c71\u5f15\u64ce</strong></a>\n    </td>\n    <td align=\"left\">\n      \u611f\u8c22\u5b57\u8282\u706b\u5c71\u5f15\u64ce\u8d5e\u52a9\u672c\u9879\u76ee\uff01\u706b\u5c71\u65b9\u821f Agent/Coding Plan \u56fd\u6a21\u5957\u9910<strong>\u9996\u8d2d 9.9</strong>\uff0c\u652f\u6301 GLM-5.3\u3001Kimi-K3\u3001DeepSeek\u3001MiniMax\u3001Doubao \u7b49\uff0c\u6ce8\u518c\u514d\u8d39\u9886 <strong>2500w Token</strong>\uff0c\u7edf\u4e00 API\uff0c\u9002\u914d\u7f16\u7801\u4e0e\u667a\u80fd\u4f53\u5f00\u53d1\u3002<a href=\"https://www.volcengine.com/activity/ai618?utm_campaign=hw&utm_content=hw&utm_medium=devrel_tool_web&utm_source=OWO&utm_term=MoneyPrinterTurbo\">\u7acb\u5373\u524d\u5f80</a>\n    </td>\n  </tr>\n  <tr>\n    <td align=\"center\" width=\"120\">\n      <a href=\"https://go.apimart.ai/gh-moneyprinterturbo\"><img src=\"docs/sponsors/apimart-logo.png\" alt=\"APIMart\" width=\"100\"></a>\n    </td>\n    <td align=\"left\">\n      \u611f\u8c22 <a href=\"https://go.apimart.ai/gh-moneyprinterturbo\">APIMart</a> \u8d5e\u52a9\u4e86\u672c\u9879\u76ee\uff01APIMart \u662f\u4e13\u6ce8 AI \u56fe\u7247/\u89c6\u9891\u751f\u6210\u7684\u4f4e\u4ef7 API \u5e73\u53f0\uff0c<strong>GPT-Image-2 \u4f4e\u81f3 &#36;0.006/\u5f20\uff0c1 \u7f8e\u5143\u53ef\u51fa\u56fe 160+ \u5f20</strong>\u3002<strong>\u56fe\u7247\u3001\u89c6\u9891\u4e00\u5957\u5f02\u6b65 API \u901a\u5403\uff0c\u6362\u6a21\u578b\u4e0d\u6539\u4ee3\u7801</strong>\uff1b\u63d0\u4ea4\u4efb\u52a1\u62ff ID\uff0c\u901a\u8fc7\u8f6e\u8be2\u6216\u56de\u8c03\u83b7\u53d6\u7ed3\u679c\uff0c\u652f\u6301\u4e07\u5f20\u7ea7\u6279\u91cf\u751f\u6210\u3002\u6309\u91cf\u4ed8\u8d39\u3001\u65e0\u6708\u8d39\uff0c\u901a\u8fc7<a href=\"https://go.apimart.ai/gh-moneyprinterturbo\">\u6b64\u6ce8\u518c\u94fe\u63a5</a>\u6ce8\u518c\u5373\u53ef\u5f00\u7528\u3002\n    </td>\n  </tr>\n  <tr>\n    <td align=\"center\" width=\"120\">\n      <a href=\"https://metaso.cn/minimax-h3/?s=MPT\"><img src=\"docs/sponsors/metaso-logo.png\" alt=\"\u79d8\u5854\u79d1\u6280\" width=\"100\"></a><br>\n      <a href=\"https://metaso.cn/minimax-h3/?s=MPT\"><strong>\u79d8\u5854\u79d1\u6280</strong></a>\n    </td>\n    <td align=\"left\">\n      <strong>MiniMax H3 \u89c6\u9891\u751f\u6210 API\uff5c\u79d8\u5854\u79d1\u6280</strong><br>\n      \u79d8\u5854\u79d1\u6280\u63d0\u4f9b\u9ad8\u6027\u4ef7\u6bd4\u7684 MiniMax H3 \u89c6\u9891\u751f\u6210\u670d\u52a1\uff1a<strong>768P \u4ec5 0.09 \u5143/\u79d2\uff0c2K \u4ec5 0.15 \u5143/\u79d2</strong>\u3002\u652f\u6301\u539f\u751f 2K\u3001\u97f3\u753b\u540c\u6b65\uff0cAPI \u517c\u5bb9 <strong>OpenAI \u534f\u8bae</strong>\uff0c\u540c\u65f6\u652f\u6301 <strong>ComfyUI</strong>\uff0c\u65e0\u9700\u81ea\u884c\u90e8\u7f72 GPU\u3002<br>\n      \ud83c\udf81 \u901a\u8fc7 <a href=\"https://metaso.cn/minimax-h3/?s=MPT\">MoneyPrinterTurbo\u4e13\u5c5e\u94fe\u63a5\u6ce8\u518c</a>\uff0c\u5373\u53ef\u9886\u53d6\u8d60\u9001\u989d\u5ea6\u53ca\u4e13\u5c5e\u4f18\u60e0\u3002\n    </td>\n  </tr>\n  <tr>\n    <td align=\"center\" width=\"120\">\n      <a href=\"https://infistar.cc/register?aff=6T4EYXP2&amp;ref_source=link\"><img src=\"docs/sponsors/infistar-logo.svg\" alt=\"Infistar.cc \u65e0\u9650\u661f\u6cb3\" height=\"56\"></a><br>\n      <a href=\"https://infistar.cc/register?aff=6T4EYXP2&amp;ref_source=link\"><strong>Infistar.cc \u65e0\u9650\u661f\u6cb3</strong></a>\n    </td>\n    <td align=\"left\">\n      \u611f\u8c22 <a href=\"https://infistar.cc/register?aff=6T4EYXP2&amp;ref_source=link\">Infistar.cc \u65e0\u9650\u661f\u6cb3</a> \u8d5e\u52a9\u672c\u9879\u76ee\uff01Infistar.cc \u63d0\u4f9b\u9ad8\u6027\u4ef7\u6bd4\u7684\u5927\u6a21\u578b API \u670d\u52a1\uff1a\u5927\u6a21\u578b\u4f4e\u81f3<strong>\u5b98\u65b9 0.1 \u6298</strong>\uff0cAI \u751f\u56fe\u4f4e\u81f3 <strong>\u00a50.06/\u5f20</strong>\u3002<br>\n      <strong>\u4e00\u4e2a API Key\uff0c\u8986\u76d6\u6587\u6848\u3001\u56fe\u7247\u4e0e\u89c6\u9891\u521b\u4f5c</strong>\uff0c\u652f\u6301 GPT\u3001Claude\u3001Gemini\u3001DeepSeek\u3001\u901a\u4e49\u5343\u95ee\u3001\u53ef\u7075\u7b49\u4e3b\u6d41\u6a21\u578b\uff0c\u65e0\u9700\u5206\u7ec4\u3002<br>\n      <strong>\u5168\u6a21\u578b\u652f\u6301\u9a8c\u771f</strong>\uff0c\u4ef7\u683c\u900f\u660e\uff0c\u6b63\u89c4\u5907\u6848\uff0c\u4eba\u6c11\u5e01\u5b9e\u65f6\u8ba1\u8d39\uff0c<strong>\u652f\u6301\u5bf9\u516c\u53d1\u7968</strong>\u3002<br>\n      \ud83c\udf81 MPT \u4e13\u5c5e\u798f\u5229\uff1a\u901a\u8fc7<a href=\"https://infistar.cc/register?aff=6T4EYXP2&amp;ref_source=link\">\u4e13\u5c5e\u94fe\u63a5\u6ce8\u518c</a>\u5373\u9001 <strong>&#36;5 \u4f53\u9a8c\u989d\u5ea6</strong>\uff0c\u5e76\u4eab\u9996\u5145\u7279\u60e0\u3002\n    </td>\n  </tr>\n  <tr>\n    <td align=\"center\" width=\"120\">\n      <a href=\"https://ofox.ai/?utm_source=github&amp;utm_medium=sponsorship&amp;utm_content=moneyprinterturbo\"><img src=\"docs/sponsors/ofox-logo.svg\" alt=\"OfoxAI\" width=\"120\"></a>\n    </td>\n    <td align=\"left\">\n      \u611f\u8c22 <a href=\"https://ofox.ai/?utm_source=github&amp;utm_medium=sponsorship&amp;utm_content=moneyprinterturbo\">OfoxAI</a> \u8d5e\u52a9\u672c\u9879\u76ee\uff01MoneyPrinterTurbo \u5df2\u96c6\u6210 Ofox \u591a\u6a21\u578b\u6587\u751f\u89c6\u9891\uff0c\u914d\u7f6e API Key \u5373\u53ef\u4f7f\u7528\u3002Seedance\u3001MiniMax H3\u3001Wan \u751f\u6210\u89c6\u9891\u7d20\u6750\uff0cGPT Image 2.5\u3001Seedream \u5236\u4f5c\u5c01\u9762\u914d\u56fe\uff0cGPT\u3001Claude\u3001Gemini\u3001DeepSeek \u6253\u78e8\u811a\u672c\u3001\u8f85\u52a9\u5f00\u53d1\u3002<strong>\u4e00\u4e2a Key\uff0c\u6587\u672c\u3001\u56fe\u50cf\u3001\u89c6\u9891\u5171\u7528\u4f59\u989d</strong>\uff1b\u63d0\u4f9b OpenAI \u517c\u5bb9\u63a5\u53e3\u53ca Anthropic\u3001Gemini \u539f\u751f\u63a5\u53e3\u3002<strong>\u6309\u91cf\u4ed8\u8d39\u3001\u4ef7\u683c\u516c\u5f00\u3001\u5b98\u65b9\u6e20\u9053\u63a5\u5165\uff0c\u7a33\u5b9a\u9ad8\u901f\u4e0d\u9650\u91cf</strong>\uff0c\u524d\u5f80 <a href=\"https://ofox.ai/?utm_source=github&amp;utm_medium=sponsorship&amp;utm_content=moneyprinterturbo\">OfoxAI \u67e5\u770b\u6a21\u578b\u4e0e\u4ef7\u683c</a>\u3002\n    </td>\n  </tr>\n  <tr>\n    <td align=\"center\" width=\"120\">\n      <a href=\"https://www.shengsuanyun.com/?from=CH_XUQ4OTSK\"><img src=\"docs/sponsors/shengsuanyun-logo.jpg\" alt=\"\u80dc\u7b97\u4e91\" height=\"56\"></a><br>\n      <a href=\"https://www.shengsuanyun.com/?from=CH_XUQ4OTSK\"><strong>\u80dc\u7b97\u4e91</strong></a>\n    </td>\n    <td align=\"left\">\n      \u611f\u8c22<a href=\"https://www.sheng"
+          "preview": "<div align=\"center\">\n\n# MoneyPrinterTurbo 💸\n\n### 一站式 AI 短视频生成工具\n\n只需提供视频<b>主题</b>或<b>关键词</b>，即可自动生成视频脚本、匹配素材、生成字幕和背景音乐，并合成高清短视频。\n\n[![Version](https://img.shields.io/github/v/release/harry0703/MoneyPrinterTurbo?color=blue&label=version)](https://github.com/harry0703/MoneyPrinterTurbo/releases)\n[![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)](https://github.com/harry0703/MoneyPrinterTurbo/releases/latest)\n[![Python](https://img.shields.io/badge/python-3.11%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)\n[![Downloads](https://img.shields.io/github/downloads/harry0703/MoneyPrinterTurbo/total)](https://github.com/harry0703/MoneyPrinterTurbo/releases/latest)\n\n<a href=\"https://trendshift.io/repositories/8731\" target=\"_blank\"><img src=\"https://trendshift.io/api/badge/repositories/8731\" alt=\"harry0703%2FMoneyPrinterTurbo | Trendshift\" style=\"width: 250px; height: 55px;\" width=\"250\" height=\"55\"/></a>\n<a href=\"https://www.star-history.com/harry0703/moneyprinterturbo\"><img src=\"https://api.star-history.com/badge?repo=harry0703/MoneyPrinterTurbo\" alt=\"Star History Rank\" style=\"height: 55px;\" height=\"55\"/></a>\n\n简体中文 | [English](README-en.md) | [日本語](README-ja.md) | [版本发布](https://github.com/harry0703/MoneyPrinterTurbo/releases) | [问题反馈](https://github.com/harry0703/MoneyPrinterTurbo/issues)\n\n</div>\n\n## 界面预览 🖥️\n\n<h4 align=\"center\">WebUI</h4>\n\n![](docs/webui.jpg)\n\n<h4 align=\"center\">API</h4>\n\n![](docs/api.jpg)\n\n---\n\n## 特别感谢 ❤️\n\n<div align=\"center\">\n  <a href=\"https://platform.kimi.com?track_id=track-2f5441d6ffd84c509dd079d78e9db5dc&aff=moneyprinterturbo\" target=\"_blank\"><img src=\"https://gcdn.moonshot.cn/growth-cdn/sponsor/kimi-zh.png\" alt=\"Kimi 赞助 MoneyPrinterTurbo\" width=\"100%\"></a>\n</div>\n\n感谢 [Kimi](https://platform.kimi.com?track_id=track-2f5441d6ffd84c509dd079d78e9db5dc&aff=moneyprinterturbo) 赞助本项目！[Kimi K3](https://www.kimi.com/blog/kimi-k3?aff=moneyprinterturbo) 是 Moonshot AI 迄今能力最强的模型，也是全球首个开源 3T 级模型，拥有原生视觉能力与 100 万 Token 上下文，在知识工作、推理和长周期任务中展现前沿性能。在 MoneyPrinterTurbo 中，K3 能直接驱动视频创作，不仅撰写视频文案，还会提炼素材搜索关键词、决定成片画面；对内容理解越准确，匹配到的素材就越贴题。\n\n**MoneyPrinterTurbo 用户专属优惠：新用户通过专属链接注册，首次成功充值可获充值金额 10% 的 API 额度，最高赠送 ¥1000。活动截至 2026 年 9 月 30 日。前往 Kimi 开放平台（[中文站](https://platform.kimi.com?track_id=track-2f5441d6ffd84c509dd079d78e9db5dc&aff=moneyprinterturbo)｜[Global](https://platform.kimi.ai?track_id=track-f6b0a640d35c41deb03b247242a1058c&aff=moneyprinterturbo)）体验 API。**\n<br>\n\n<table align=\"center\">\n  <tr>\n    <td align=\"center\" width=\"120\">\n      <a href=\"https://www.volcengine.com/activity/ai618?utm_campaign=hw&utm_content=hw&utm_medium=devrel_tool_web&utm_source=OWO&utm_term=MoneyPrinterTurbo\"><img src=\"docs/sponsors/volcengine-logo.svg\" alt=\"火山引擎\" height=\"32\"></a><br>\n      <a href=\"https://www.volcengine.com/activity/ai618?utm_campaign=hw&utm_content=hw&utm_medium=devrel_tool_web&utm_source=OWO&utm_term=MoneyPrinterTurbo\"><strong>火山引擎</strong></a>\n    </td>\n    <td align=\"left\">\n      感谢字节火山引擎赞助本项目！火山方舟 Agent/Coding Plan 国模套餐<strong>首购 9.9</strong>，支持 GLM-5.3、Kimi-K3、DeepSeek、MiniMax、Doubao 等，注册免费领 <strong>2500w Token</strong>，统一 API，适配编码与智能体开发。<a href=\"https://www.volcengine.com/activity/ai618?utm_campaign=hw&utm_content=hw&utm_medium=devrel_tool_web&utm_source=OWO&utm_term=MoneyPrinterTurbo\">立即前往</a>\n    </td>\n  </tr>\n  <tr>\n    <td align=\"center\" width=\"120\">\n      <a href=\"https://go.apimart.ai/gh-moneyprinterturbo\"><img src=\"docs/sponsors/apimart-logo.png\" alt=\"APIMart\" width=\"100\"></a>\n    </td>\n    <td align=\"left\">\n      感谢 <a href=\"https://go.apimart.ai/gh-moneyprinterturbo\">APIMart</a> 赞助了本项目！APIMart 是专注 AI 图片/视频生成的低价 API 平台，<strong>GPT-Image-2 低至 &#36;0.006/张，1 美元可出图 160+ 张</strong>。<strong>图片、视频一套异步 API 通吃，换模型不改代码</strong>；提交任务拿 ID，通过轮询或回调获取结果，支持万张级批量生成。按量付费、无月费，通过<a href=\"https://go.apimart.ai/gh-moneyprinterturbo\">此注册链接</a>注册即可开用。\n    </td>\n  </tr>\n  <tr>\n    <td align=\"center\" width=\"120\">\n      <a href=\"https://metaso.cn/minimax-h3/?s=MPT\"><img src=\"docs/sponsors/metaso-logo.png\" alt=\"秘塔科技\" width=\"100\"></a><br>\n      <a href=\"https://metaso.cn/minimax-h3/?s=MPT\"><strong>秘塔科技</strong></a>\n    </td>\n    <td align=\"left\">\n      <strong>MiniMax H3 视频生成 API｜秘塔科技</strong><br>\n      秘塔科技提供高性价比的 MiniMax H3 视频生成服务：<strong>768P 仅 0.09 元/秒，2K 仅 0.15 元/秒</strong>。支持原生 2K、音画同步，API 兼容 <strong>OpenAI 协议</strong>，同时支持 <strong>ComfyUI</strong>，无需自行部署 GPU。<br>\n      🎁 通过 <a href=\"https://metaso.cn/minimax-h3/?s=MPT\">MoneyPrinterTurbo专属链接注册</a>，即可领取赠送额度及专属优惠。\n    </td>\n  </tr>\n  <tr>\n    <td align=\"center\" width=\"120\">\n      <a href=\"https://infistar.cc/register?aff=6T4EYXP2&amp;ref_source=link\"><img src=\"docs/sponsors/infistar-logo.svg\" alt=\"Infistar.cc 无限星河\" height=\"56\"></a><br>\n      <a href=\"https://infistar.cc/register?aff=6T4EYXP2&amp;ref_source=link\"><strong>Infistar.cc 无限星河</strong></a>\n    </td>\n    <td align=\"left\">\n      感谢 <a href=\"https://infistar.cc/register?aff=6T4EYXP2&amp;ref_source=link\">Infistar.cc 无限星河</a> 赞助本项目！Infistar.cc 提供高性价比的大模型 API 服务：大模型低至<strong>官方 0.1 折</strong>，AI 生图低至 <strong>¥0.06/张</strong>。<br>\n      <strong>一个 API Key，覆盖文案、图片与视频创作</strong>，支持 GPT、Claude、Gemini、DeepSeek、通义千问、可灵等主流模型，无需分组。<br>\n      <strong>全模型支持验真</strong>，价格透明，正规备案，人民币实时计费，<strong>支持对公发票</strong>。<br>\n      🎁 MPT 专属福利：通过<a href=\"https://infistar.cc/register?aff=6T4EYXP2&amp;ref_source=link\">专属链接注册</a>即送 <strong>&#36;5 体验额度</strong>，并享首充特惠。\n    </td>\n  </tr>\n  <tr>\n    <td align=\"center\" width=\"120\">\n      <a href=\"https://ofox.ai/?utm_source=github&amp;utm_medium=sponsorship&amp;utm_content=moneyprinterturbo\"><img src=\"docs/sponsors/ofox-logo.svg\" alt=\"OfoxAI\" width=\"120\"></a>\n    </td>\n    <td align=\"left\">\n      感谢 <a href=\"https://ofox.ai/?utm_source=github&amp;utm_medium=sponsorship&amp;utm_content=moneyprinterturbo\">OfoxAI</a> 赞助本项目！MoneyPrinterTurbo 已集成 Ofox 多模型文生视频，配置 API Key 即可使用。Seedance、MiniMax H3、Wan 生成视频素材，GPT Image 2.5、Seedream 制作封面配图，GPT、Claude、Gemini、DeepSeek 打磨脚本、辅助开发。<strong>一个 Key，文本、图像、视频共用余额</strong>；提供 OpenAI 兼容接口及 Anthropic、Gemini 原生接口。<strong>按量付费、价格公开、官方渠道接入，稳定高速不限量</strong>，前往 <a href=\"https://ofox.ai/?utm_source=github&amp;utm_medium=sponsorship&amp;utm_content=moneyprinterturbo\">OfoxAI 查看模型与价格</a>。\n    </td>\n  </tr>\n  <tr>\n    <td align=\"center\" width=\"120\">\n      <a href=\"https://www.shengsuanyun.com/?from=CH_XUQ4OTSK\"><img src=\"docs/sponsors/shengsuanyun-logo.jpg\" alt=\"胜算云\" height=\"56\"></a><br>\n      <a href=\"https://www.shengsuanyun.com/?from=CH_XUQ4OTSK\"><strong>胜算云</strong></a>\n    </td>\n    <td align=\"left\">\n      感谢<a href=\"https://www.sheng"
         },
         {
           "path": "docs/skill/SKILL.md",
@@ -3504,7 +3504,7 @@
         "steps": [
           {
             "id": "serialize",
-            "label": "JSON serialize (inventory \u2192 SQLite)",
+            "label": "JSON serialize (inventory → SQLite)",
             "ms": 0,
             "pct": 0
           },
@@ -3523,5 +3523,886 @@
         ]
       }
     ]
+  },
+  "report": {
+    "overview": "MoneyPrinterTurbo v1.3.7 is a Python 3.11+ application that generates finished short videos end-to-end: an LLM writes a script and material search terms, a TTS engine produces the voiceover, subtitles are built from TTS cues or Whisper, stock or AI-generated clips are downloaded per keyword, and MoviePy/FFmpeg renders final MP4s that can optionally be cross-posted to TikTok/Instagram/YouTube. It ships three frontends — a FastAPI service (port 8080), a Streamlit WebUI (port 8501), and a batch-capable argparse CLI — that all converge on one shared pipeline in app/services/task.py. Its distinctive traits are a very large provider matrix (~20 LLM providers via a registry, ~11 TTS engines, ~10 material sources including several paid text-to-video APIs with explicit charge-confirmation flags) and heavy hardening around config locking, path confinement, and task-state consistency for what is fundamentally a single-user local tool.",
+    "system_map": {
+      "summary": "The system is a single-process Python app with three entrypoints that share one orchestration layer. main.py starts uvicorn serving the FastAPI app built in app/asgi.py; webui.sh/webui.bat/Dockerfile start `streamlit run webui/Main.py`; cli.py runs the pipeline synchronously and prints JSON. All routes under /api/v1 are registered in app/router.py and guarded by an optional x-api-key check. Task state lives in an in-memory dict or Redis depending on config, task scheduling in a bounded thread-backed queue, and artifacts on disk under storage/tasks/<task_id>. Deployment is a single Docker image exposing either the WebUI (8501) or API (8080).",
+      "claims": [
+        {
+          "claim": "main.py is the API entrypoint: it calls uvicorn.run(app='app.asgi:app', host=config.listen_host, port=config.listen_port) with defaults 0.0.0.0:8080 from config.toml.",
+          "sources": [
+            "main.py",
+            "app/config/config.py#L572-574"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "app/asgi.py get_application() builds the FastAPI instance, includes root_api_router, registers HttpException and RequestValidationError handlers, mounts StaticFiles at /tasks (storage/tasks) and / (resource/public), and installs middleware that requires verify_token for /tasks/* and rejects untrusted browser Origins.",
+          "sources": [
+            "app/asgi.py#L235-288",
+            "app/utils/utils.py#L110-143"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "app/router.py aggregates three routers: ping (/ping health check) plus the v1 video and llm controllers; app/controllers/v1/base.py new_router() stamps prefix '/api/v1' and attaches the verify_token dependency to every route.",
+          "sources": [
+            "app/router.py",
+            "app/controllers/v1/base.py",
+            "app/controllers/ping.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "webui/Main.py is an ~8,262-line Streamlit application that inserts the repo root into sys.path, loads i18n JSON locales, and submits generation through app/services/webui_task.py; webui.sh picks an interpreter (.venv → uv → PATH streamlit) and scans ports 8501-8599 for a free one.",
+          "sources": [
+            "webui/Main.py#L23-98",
+            "webui.sh",
+            "app/services/webui_task.py#L128-195"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "cli.py is a third entrypoint exposing every pipeline parameter as argparse flags, a --stop-at stage selector over ('script','terms','audio','subtitle','materials','video'), and a --batch-file mode accepting a JSON array or JSONL manifest capped at 100 tasks / 1 MiB.",
+          "sources": [
+            "cli.py#L33-51",
+            "cli.py#L243-298"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "app/services/task.py is the single shared pipeline: start() wraps _run_pipeline(), which all three frontends call, and converts unexpected exceptions into failed task states via _mark_task_failed.",
+          "sources": [
+            "app/services/task.py#L1376-1740"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "app/config/config.py loads config.toml (auto-copied from config.example.toml on first run, with a UTF-8 BOM retry path), exposes section dicts wrapped in _SynchronizedConfig, and serializes saves through a reentrant lock plus mkstemp+os.replace atomic writes with an EBUSY fallback for bind-mounted files.",
+          "sources": [
+            "app/config/config.py#L29-84",
+            "app/config/config.py#L423-546"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Task state is pluggable: app/services/state.py picks MemoryState (dict + RLock) or RedisState (per-task Redis hashes, SCAN-paginated listing, Lua-scripted patch_task) based on config.app.enable_redis.",
+          "sources": [
+            "app/services/state.py#L44-244"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Task scheduling is pluggable: InMemoryTaskManager uses a bounded queue.Queue while RedisTaskManager pushes JSON jobs onto a Redis list 'task_queue' and maps function names through FUNC_MAP on dequeue; both enforce max_concurrent_tasks (default 5) and max_queued_tasks (default 100) with TaskQueueFullError → HTTP 429.",
+          "sources": [
+            "app/controllers/manager/base_manager.py#L41-139",
+            "app/controllers/manager/memory_manager.py",
+            "app/controllers/manager/redis_manager.py",
+            "app/controllers/v1/video.py#L43-69"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Docker packaging is a single python:3.11-slim-bullseye image that apt-installs git+ffmpeg (with Chinese-mirror fallback logic), pip-installs requirements.txt, and by default runs the Streamlit WebUI; docker-compose.yml runs two containers (webui on 127.0.0.1:8501, api on 127.0.0.1:8080) sharing the repo as a volume.",
+          "sources": [
+            "Dockerfile",
+            "docker-compose.yml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Filesystem layout is rooted at the repo: utils.storage_dir()/task_dir() create storage/{tasks,cache_videos,local_videos,bgm} on demand, while resource/{fonts,songs,public} hold shipped assets; task artifacts are per-task subdirectories.",
+          "sources": [
+            "app/utils/utils.py#L89-143"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Dependencies are declared in pyproject.toml (moviepy 2.2.1, streamlit 1.59.1, fastapi 0.136.3, edge-tts 7.2.7, faster-whisper, redis, litellm, google-genai, etc.) pinned by uv.lock; requirements.txt duplicates the list 'for legacy pip install support' and the project is configured package=false (not installable).",
+          "sources": [
+            "pyproject.toml#L15-37",
+            "requirements.txt",
+            "pyproject.toml#L77-79"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "docs/skill/SKILL.md + docs/skill/mpt_agent.py ship an agent-facing 'Skill': mpt_agent.py downloads/installs the project under ~/MoneyPrinterTurbo, prompts for missing credentials via exit code 10, and invokes cli.py — making the repo itself an installable tool for external AI agents.",
+          "sources": [
+            "docs/skill/SKILL.md",
+            "docs/skill/mpt_agent.py"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "feature_catalog": {
+      "summary": "Features span a REST API for video/subtitle/audio generation and task management, a full Streamlit WebUI, and a CLI with batch mode. The provider surface is the headline: ~20 LLM providers, ~11 TTS engines, ~10 video material sources (three stock-footage search APIs, six paid text-to-video generators, an OpenAI-compatible image endpoint, and local files), two subtitle engines, three BGM modes plus two AI music services, and Upload-Post cross-posting. Supporting features include BGM/material upload endpoints, range-streaming and download endpoints, a 24h material search cache, Whisper transcription, i18n, task history, and an update checker.",
+      "claims": [
+        {
+          "claim": "POST /api/v1/videos creates a full video task; POST /api/v1/subtitle and POST /api/v1/audio run the same pipeline truncated at intermediate stages via create_task(stop_at=...).",
+          "sources": [
+            "app/controllers/v1/video.py#L181-238"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Task management endpoints: GET /api/v1/tasks (paginated), GET /api/v1/tasks/{id} (rewrites stored file paths into /tasks/* URIs using the configured endpoint), DELETE /api/v1/tasks/{id} which refuses busy tasks (409) and rmtree's the task directory.",
+          "sources": [
+            "app/controllers/v1/video.py#L240-322",
+            "app/services/task.py#L106-123"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "LLM utility endpoints: POST /api/v1/scripts (script generation), POST /api/v1/terms (material search terms), and POST /api/v1/social-metadata (titles/descriptions/hashtags per platform).",
+          "sources": [
+            "app/controllers/v1/llm.py",
+            "app/services/llm.py#L736-832",
+            "app/services/llm.py#L1152-1214"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Media asset endpoints: GET/POST /api/v1/musics lists/uploads BGM (≤30 MB, UUID storage name, FFmpeg-validated) and GET/POST /api/v1/video_materials lists/uploads local clips/images into storage/local_videos with sanitized filenames.",
+          "sources": [
+            "app/controllers/v1/video.py#L325-455",
+            "app/services/bgm.py#L270-338",
+            "app/services/material_upload.py#L15-30"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "GET /api/v1/stream/{file_path} returns HTTP 206 range-streamed video with single-range parsing and 416 handling; GET /api/v1/download/{file_path} returns FileResponse — both confined to the tasks directory by file_security.resolve_path_within_directory.",
+          "sources": [
+            "app/controllers/v1/video.py#L132-178",
+            "app/controllers/v1/video.py#L457-508",
+            "app/utils/file_security.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The CLI supports per-stage execution (--stop-at), --batch-file JSON/JSONL manifests, and mandatory --confirm-{wavespeed,seedance,ofox,metaso-minimax,muapi}-charge flags before paid generation sources run.",
+          "sources": [
+            "cli.py#L360-404",
+            "cli.py#L287-298"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "LLM_PROVIDER_REGISTRY in app/models/llm_provider.py declares ~20+ providers (moonshot, openai, anthropic, gemini, deepseek, qwen, azure, volcengine, grok, minimax, mimo, cloudflare, modelscope, aihubmix, aimlapi, evolink, openrouter, api_route, ollama, claude_code, oneapi, litellm, groq, pollinations) with per-provider default models, base URLs, regional endpoints, and deprecated-value migration.",
+          "sources": [
+            "app/models/llm_provider.py#L195-494",
+            "config.example.toml#L233-417"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "TTS dispatch in voice.py covers Azure v1 (edge-tts), Azure Speech v2, SiliconFlow, Gemini, MiMo, MiniMax, ElevenLabs, Chatterbox, Kokoro, Fish Audio, VoxCPM (with reference-audio cloning inputs), and a 'no-voice' silent-audio mode; provider identity is encoded in voice-name prefixes (gemini:, mimo:, elevenlabs:, chatterbox:, kokoro:, voxcpm:).",
+          "sources": [
+            "app/services/voice.py#L371-460",
+            "app/services/voice.py#L597-728",
+            "cli.py#L477-488"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Video material sources include stock search (pexels, pixabay, coverr with a 24h result cache), paid text-to-video generation (wavespeed, volcengine_seedance, ofox, muapi, metaso_minimax, loomloom), openai_image (OpenAI-compatible /images/generations rendered into zoom clips), and local files.",
+          "sources": [
+            "app/services/material.py#L1686-1805",
+            "config.example.toml#L65-208",
+            "app/services/loomloom.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Subtitle generation supports 'edge' (from the TTS SubMaker timeline, sentence or word_by_word mode, pop_spring animation) and 'whisper' (faster-whisper transcription with model auto-download plus an LLM-free correct() alignment pass).",
+          "sources": [
+            "app/services/task.py#L580-645",
+            "app/services/subtitle.py#L7-69",
+            "app/models/schema.py#L56-59"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Video rendering features: random/sequential concat, seven transition modes, clip speed 0.5-2.0, aspect ratios 9:16/16:9/1:1, cover/contain fit, video_count batch output, subtitle positioning (top/center/bottom/two_thirds_bottom/custom), and an FFmpeg encoder fallback chain (libx264, h264_nvenc/amf/qsv/mf/videotoolbox) that probes encoder availability at runtime.",
+          "sources": [
+            "app/services/video.py#L271-540",
+            "app/services/task.py#L883-1029",
+            "cli.py#L176-231",
+            "config.example.toml#L436-440"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Background music modes: 'random'/'custom' from resource/songs and storage/bgm, plus AI-generated music via Sonilo (.m4a) or ElevenLabs (.mp3) registered in _VIDEO_MUSIC_PROVIDERS with per-provider prompt limits and graceful degradation to a warning when generation fails after the video is otherwise complete.",
+          "sources": [
+            "app/services/task.py#L75-90",
+            "app/services/task.py#L970-1021",
+            "app/services/video.py#L656-682"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Cross-posting via upload-post.com publishes finished videos to tiktok/instagram/youtube with configurable privacy and made-for-kids flags; _CROSS_POST_SOCIAL_PLATFORMS maps upload-post platform ids to LLM social-metadata platform names so titles/descriptions are generated per platform.",
+          "sources": [
+            "app/services/upload_post.py#L14-80",
+            "app/services/task.py#L66-71",
+            "config.example.toml#L471-494"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The WebUI offers i18n via 14 locale JSON files, a task history/manager panel with restore, per-task live log streaming via a 0.5s-refresh Streamlit fragment fed by a thread-filtered loguru sink, voice preview, an onboarding tour, and an async GitHub release update checker.",
+          "sources": [
+            "webui/i18n/en.json",
+            "app/services/webui_task.py#L23-80",
+            "webui/Main.py#L1932-2043",
+            "app/services/version_checker.py#L1-50"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Optional integrations: TwelveLabs Marengo term reranking (extra dependency `uv sync --extra twelvelabs`, skipped when match_materials_to_script is on) and LoomLoom Market SkillBots for multi-candidate script generation and paid video clips with quote/confirm lifecycle.",
+          "sources": [
+            "app/services/twelvelabs.py",
+            "app/services/task.py#L344-352",
+            "app/services/loomloom.py#L1-33",
+            "pyproject.toml#L39-45"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "data_flow": {
+      "summary": "A request becomes a pydantic VideoParams, gets a UUID task_id, a state record, and a storage/tasks/<task_id> workspace. The pipeline transforms subject→script→terms→audio→subtitle→materials→final MP4, writing intermediate files (script.json, audio.mp3, subtitle.srt, combined-N.mp4, final-N.mp4) into the task dir and progress/state into MemoryState or RedisState. Outputs leave via the /tasks static mount, /stream, /download, or cross-posting to upload-post.com. Configuration flows the other direction: config.toml → section dicts, with WebUI runtime writes funneled through a non-blocking pending-update queue and atomic file saves.",
+      "claims": [
+        {
+          "claim": "Ingress: TaskVideoRequest (a VideoParams subclass) is validated by pydantic, dumped into a task record {task_id, request_id, params}, persisted via sm.state.update_task, then tm.start is scheduled through task_manager.add_task — with rollback of the state record if scheduling throws.",
+          "sources": [
+            "app/controllers/v1/video.py#L202-238",
+            "app/models/schema.py#L91-161"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Script/terms stage: generate_script uses params.video_script verbatim or calls llm.generate_script; generate_terms calls llm.generate_terms (5 terms, or 8 in match-script-order mode) and optionally reranks through twelvelabs.rerank_terms_by_subject; results are persisted to <task_dir>/script.json via task_artifacts.write_script_data's atomic temp-file+os.replace write.",
+          "sources": [
+            "app/services/task.py#L292-361",
+            "app/services/task_artifacts.py#L21-61"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Audio stage: resolve_custom_audio_file confines submitted paths to the task directory unless allow_server_file_input=True (CLI only); otherwise voice.tts writes audio.mp3 and returns an edge-tts SubMaker timeline; audio_duration is measured from the written file, not cue end times.",
+          "sources": [
+            "app/services/task.py#L364-577",
+            "app/services/voice.py#L995-1040"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Subtitle stage: 'edge' provider serializes SubMaker cues to subtitle.srt (never auto-falling back to Whisper, to avoid surprise multi-GB model downloads); 'whisper' transcribes the audio file with faster-whisper and runs subtitle.correct() against the script.",
+          "sources": [
+            "app/services/task.py#L580-645",
+            "app/services/subtitle.py#L23-80"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Materials stage: stock sources go through _search_videos_with_cache (24h per-term cache in material_cache, double-checked locking) then download_videos; paid generation sources take _download_videos_*_on_demand paths that generate clips one at a time and stop once audio_duration*video_count is covered; 'local' preprocesses user files; 'loomloom' executes a confirmed SkillBot run and persists run_id immediately since billing has already started.",
+          "sources": [
+            "app/services/material.py#L1593-1805",
+            "app/services/task.py#L648-728",
+            "app/services/material_cache.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Render stage: generate_final_videos loops video_count times calling video.combine_videos (→ combined-N.mp4), optionally calls the AI music provider's generate_bgm, then video.generate_video (muxing narration, subtitles, BGM → final-N.mp4); progress is written to state at ~5/10/20/30/40/50→100 milestones.",
+          "sources": [
+            "app/services/task.py#L883-1029",
+            "app/services/task.py#L1388-1630",
+            "app/services/video.py#L744-1209"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Egress: task state stores absolute file paths; GET /tasks/{id} converts them to /tasks/* URLs via _task_file_to_uri (which re-validates each path inside the task dir), and the StaticFiles mount plus /stream//download endpoints serve bytes from storage/tasks.",
+          "sources": [
+            "app/controllers/v1/video.py#L107-129",
+            "app/controllers/v1/video.py#L258-287",
+            "app/asgi.py#L284-288"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Config read path: load_config() → _cfg TOML dict → section dicts (app, azure, whisper, proxy, ui, and per-TTS sections); reads anywhere use config.<section>.get(...); app.redis_host is overridable via MPT_APP_REDIS_HOST/REDIS_HOST env vars.",
+          "sources": [
+            "app/config/config.py#L460-586"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Config write path (WebUI): controls call update_config_nonblocking/delete_config_nonblocking which enqueue into _pending_config_updates keyed by id(section); a background 'mpt-config-flush' thread applies them when runtime_config_lock is free; save_config writes config.toml atomically.",
+          "sources": [
+            "app/config/config.py#L91-271"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "In Redis mode the task queue is a Redis list of JSON payloads; enqueue serializes VideoParams via model_dump and stores the function name, and dequeue re-validates against FUNC_MAP and current VideoParams — dropping stale entries while marking their tasks failed so they never appear stuck in 'processing'.",
+          "sources": [
+            "app/controllers/manager/redis_manager.py#L14-130"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Cross-post flow: on success the task is marked COMPLETE with cross_post_state='pending' and cross_post_owner='hostname:pid:uuid'; _schedule_cross_post submits to a bounded ThreadPoolExecutor(max_workers=2) gated by a BoundedSemaphore, and terminal state is written via patch_task so a deleted task is never resurrected.",
+          "sources": [
+            "app/services/task.py#L43-65",
+            "app/services/task.py#L1321-1375",
+            "app/services/task.py#L1644-1700"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Failure propagation: every stage funnels into _mark_task_failed(state=-1, failed_stage, error) which preserves remote IDs (volcengine_seedance_task_id, ofox_task_id, metaso_minimax_task_id, muapi_task_id, loomloom_run_id) so paid remote jobs remain recoverable from provider dashboards.",
+          "sources": [
+            "app/services/task.py#L243-289",
+            "app/services/task.py#L718-806"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "behavior_traces": {
+      "summary": "Three flows were traced end-to-end. API startup goes main.py → asgi app construction → lifespan recovery. The primary action (video generation) is identical across frontends: a state record is created before scheduling, _run_pipeline walks preflight→script→terms→audio→subtitle→materials→video, and cross-posting is scheduled only after the task is COMPLETE. Persistence flows through two channels — task state (memory dict or Redis hashes) and task artifacts (atomic JSON writes into storage/tasks/<id>) — plus config.toml for settings.",
+      "claims": [
+        {
+          "claim": "API startup trace: `python main.py` → uvicorn.run('app.asgi:app') → module-level get_application() builds routes/middleware/static mounts → parse_cors_allowed_origins(CORS_ALLOWED_ORIGINS) → lifespan logs startup, warns when app.api_key is empty, and calls task_service.recover_interrupted_cross_posts() to fail orphaned pending/processing cross-posts whose owner process no longer exists.",
+          "sources": [
+            "main.py",
+            "app/asgi.py#L21-47",
+            "app/asgi.py#L255-288",
+            "app/services/task.py#L1101-1147"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "First-run config trace: importing app.config.config → load_config() → if config.toml is a directory it is deleted, if missing it is copied from config.example.toml → _load_toml_config parses with a utf-8-sig BOM fallback → section dicts are wrapped in _SynchronizedConfig → ffmpeg_path (if set) is exported as IMAGEIO_FFMPEG_EXE for imageio/moviepy.",
+          "sources": [
+            "app/config/config.py#L423-473",
+            "app/config/config.py#L549-590"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "API video-generation trace: POST /api/v1/videos → verify_token dependency → create_task → utils.get_uuid() → sm.state.update_task(task_id) → task_manager.add_task(tm.start, ...) → TaskManager.execute_task spawns a thread running run_task → tm.start → _run_pipeline → on completion update_task(COMPLETE, progress=100, videos=...) → optional _schedule_cross_post.",
+          "sources": [
+            "app/controllers/v1/video.py#L181-238",
+            "app/controllers/manager/base_manager.py#L54-96",
+            "app/services/task.py#L1703-1740"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Pipeline order inside _run_pipeline: (0) preflight — provider is_enabled() checks for seedance/ofox/metaso_minimax/muapi/openai_image, music-provider key+prompt-length+access validation, then utils.check_ffmpeg_ready() unless stop_at is script/terms; (1) generate_script → (2) generate_terms (skipped for local source) → save_script_data → (3) generate_audio → (4) generate_subtitle → (5) get_video_materials → (6) generate_final_videos → (7) mark COMPLETE + schedule cross-post.",
+          "sources": [
+            "app/services/task.py#L1390-1700",
+            "app/utils/utils.py#L189-235"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "stop-at truncation trace: each stage boundary checks stop_at and returns early with COMPLETE state — 'script' returns {script}, 'terms' returns {script,terms}, 'audio' returns {audio_file,audio_duration}, 'subtitle' returns {subtitle_path}, 'materials' returns {materials}; the API exposes this as the /subtitle and /audio endpoints and the CLI as --stop-at.",
+          "sources": [
+            "app/services/task.py#L1512-1611",
+            "app/controllers/v1/video.py#L188-199",
+            "cli.py#L360-364"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "WebUI generation trace: Main.py button handler → _prepare_generation_task() → webui_task.submit_generation() writes state record before scheduling → InMemoryTaskManager(max_concurrent_tasks=1) → _run_generation attaches a thread-filtered loguru sink, acquires config.runtime_config_lock(), calls tm.start → a @st.fragment(run_every=0.5s) polls webui_task.get_task_logs() to stream logs to the page.",
+          "sources": [
+            "app/services/webui_task.py#L19-29",
+            "app/services/webui_task.py#L53-195",
+            "webui/Main.py#L1932-2043",
+            "webui/Main.py#L8181"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CLI trace: `python cli.py ...` → _force_utf8_console() → run_cli() → parse_args() (custom argparse types validate colors, speeds, UUID task ids, subtitle enums) → params built by merging CLI flags over [ui] config defaults → tm.start(allow_server_file_input=True) → prints one JSON result object to stdout; batch mode merges each manifest object over CLI defaults and runs tasks sequentially.",
+          "sources": [
+            "cli.py#L243-298",
+            "cli.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Failure trace: any unhandled exception inside _run_pipeline is caught in start(), logged, and converted by _mark_task_failed into state=-1 with failed_stage and error — visible via GET /tasks/{id}; the CLI maps a failed result to exit code 1, argument/manifest errors to exit code 2.",
+          "sources": [
+            "app/services/task.py#L1720-1740",
+            "app/services/task.py#L243-289",
+            "cli.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Task-deletion trace: DELETE /api/v1/tasks/{id} → sm.state.get_task → tm.is_task_busy refuses deletion while state==PROCESSING or cross_post_state in {pending,processing} (409) → shutil.rmtree(storage/tasks/<id>) → sm.state.delete_task.",
+          "sources": [
+            "app/controllers/v1/video.py#L290-322",
+            "app/services/task.py#L106-123"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Cross-post recovery trace: each cross-post future is registered in _cross_post_futures keyed by task_id with owner 'hostname:pid:uuid' persisted in task state; on startup or deletion checks, _is_cross_post_owner_alive inspects the owner PID (Win32 OpenProcess on Windows, os.kill(pid,0) elsewhere, conservative-alive for foreign hosts) and stranded states are marked failed.",
+          "sources": [
+            "app/services/task.py#L126-240",
+            "app/services/task.py#L1075-1147"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "testing_signals": {
+      "summary": "Testing is unusually thorough for this genre: ~70 test files under test/ mixing pytest functions and unittest.TestCase, executed by pytest in CI on Python 3.11 and 3.13 with a real Redis service, plus a Windows smoke job. Branch coverage over app/, cli.py, main.py, webui/, and docs/skill/ is gated at ≥70%. Ruff lint runs in CI (3.11 only) and compileall checks every source tree. Live provider calls are opt-in via MPT_RUN_INTEGRATION_TESTS, so CI coverage is unit/integration-level with mocks rather than true end-to-end renders.",
+      "claims": [
+        {
+          "claim": "Test layout: test/test_main.py plus ~70 files under test/services/ named test_<domain>.py (task, task_manager, cli, controllers, voice, video, material, providers, webui_* helpers); test/README.md documents the pytest commands and conventions.",
+          "sources": [
+            "test/README.md",
+            "test/services/test_task.py",
+            "test/test_main.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CI (.github/workflows/ci.yml) runs on ubuntu-latest across Python 3.11 and 3.13 with a redis:7-alpine service (MPT_TEST_REDIS_HOST/PORT/DB env), installs via `uv sync --frozen`, compiles all sources, ruff-checks on 3.11, and runs `coverage run -m pytest -q test`.",
+          "sources": [
+            ".github/workflows/ci.yml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Coverage gate: [tool.coverage] uses branch=true over source=['app','cli','webui','main','docs/skill'] with fail_under=70 — the comment notes measured branch coverage exceeds 70.4% on both Python versions.",
+          "sources": [
+            "pyproject.toml#L58-72"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "A windows-latest smoke job runs a curated subset (test_config, test_state, test_task, test_task_manager, test_upload_post, test_controller_video, test_webui_task, test_webui_headless_task_actions) — implying the full suite is not guaranteed Windows-clean.",
+          "sources": [
+            ".github/workflows/ci.yml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "test/services/test_cli.py (~106 test functions) and test/services/test_task.py (~62) are the largest suites, covering CLI arg validation, manifest handling, and pipeline stage behavior — consistent with cli.py and task.py being the most defect-sensitive surfaces.",
+          "sources": [
+            "test/services/test_cli.py",
+            "test/services/test_task.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Security behavior is directly tested: test_api_authentication.py, test_asgi_cors.py, and test_asgi_static_files.py exercise the x-api-key check, Origin rejection middleware, and /tasks static-mount protection.",
+          "sources": [
+            "test/services/test_api_authentication.py",
+            "test/services/test_asgi_cors.py",
+            "test/services/test_asgi_static_files.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "test_main.py verifies the uvicorn entrypoint wiring by mocking uvicorn.run and asserting host/port/reload/log_level — entrypoint correctness without binding a socket.",
+          "sources": [
+            "test/test_main.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Live provider tests are skipped by default and gated behind MPT_RUN_INTEGRATION_TESTS=1 with real credentials, per test/README.md — so provider adapters (LLM/TTS/material APIs) are largely exercised through mocks.",
+          "sources": [
+            "test/README.md#L40-42"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Redis-specific behavior (atomic patch_task Lua semantics, stale-queue-entry dropping, state recovery) is covered by test_state.py, test_task_manager.py, and friends that run against the CI Redis service.",
+          "sources": [
+            "test/services/test_state.py",
+            "test/services/test_task_manager.py",
+            "app/controllers/manager/redis_manager.py#L50-130"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "WebUI internals are tested headlessly: ~20 test_webui_*.py files cover settings transfer, task history, log streaming, provider dropdowns, and i18n — but nothing renders an actual browser or end-to-end ffmpeg video in CI.",
+          "sources": [
+            "test/services/test_webui_task.py",
+            "test/services/test_webui_startup.py",
+            "test/services/test_webui_i18n.py"
+          ],
+          "kind": "inference"
+        },
+        {
+          "claim": "Lint scope: ruff checks app, cli.py, main.py, webui, test, docs/skill with a per-file ignore for E402 in webui/Main.py (the sys.path insertion must precede app imports).",
+          "sources": [
+            "pyproject.toml#L54-56",
+            ".github/workflows/ci.yml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Release pipeline is separate: .github/workflows/docker-ghcr.yml builds multi-arch Docker images to ghcr.io/harry0703/moneyprinterturbo on pushes to main, v* tags, and dispatch — tests do not gate image publication beyond sharing the same push.",
+          "sources": [
+            ".github/workflows/docker-ghcr.yml"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "risk_map": {
+      "summary": "The largest risk is the default-open posture: empty api_key means no authentication while listen_host defaults to 0.0.0.0, exposing task creation, file uploads, and artifact downloads to the LAN. Redis state uses ast.literal_eval on stored values inside a documented trust boundary. Several code paths shell out (ffmpeg probing of uploaded media, the claude_code provider spawning the local claude CLI). Paid text-to-video providers create billable remote tasks — guarded by CLI confirm flags but only a config/api-key check on the API path. The 8k-line webui/Main.py and duplicated requirements.txt are maintainability hotspots.",
+      "claims": [
+        {
+          "claim": "Authentication is opt-in: when app.api_key is empty verify_token returns immediately and every /api/v1 route plus /tasks downloads are open; combined with listen_host='0.0.0.0' default, an unconfigured instance is LAN-exposed (the code only logs a warning at startup).",
+          "sources": [
+            "app/controllers/base.py#L47-98",
+            "config.example.toml#L10-26",
+            "app/asgi.py#L26-37"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "RedisState._convert_to_original_type applies ast.literal_eval to values read from Redis; the class docstring explicitly documents Redis as a trust boundary — a Redis DB writable by other tenants could inject crafted task records.",
+          "sources": [
+            "app/services/state.py#L98-107",
+            "app/services/state.py#L208-228"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Uploaded media is probed by FFmpeg/ffprobe subprocesses (MATERIAL_VALIDATION_TIMEOUT_SECONDS=120) and PIL for images — attacker-controlled files reach the media toolchain; mitigations are extension whitelist, size caps (200MB video/20MB image), UUID storage names, and filename character sanitization.",
+          "sources": [
+            "app/services/material_upload.py#L15-80",
+            "app/controllers/v1/video.py#L419-455"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The claude_code LLM provider shells out to the locally installed `claude` CLI; build_claude_code_env scrubs conflicting ANTHROPIC_*/CLAUDE_CODE_USE_* env vars and Docker deployment requires injecting CLAUDE_CODE_OAUTH_TOKEN — a subscription credential — into the container environment.",
+          "sources": [
+            "app/services/llm.py#L84-161",
+            "docker-compose.claude.yml",
+            "config.example.toml#L379-393"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Paid material sources (wavespeed, volcengine_seedance, ofox, muapi, metaso_minimax, loomloom) create billable remote tasks; the CLI requires --confirm-*-charge flags and WebUI requires confirmation, but the HTTP API path only checks is_enabled() — an unauthenticated caller could spend money if api_key is unset.",
+          "sources": [
+            "cli.py#L365-404",
+            "app/services/task.py#L1390-1447",
+            "app/services/material.py#L1724-1782"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "config.toml persists all provider API keys in plaintext at repo root and is rewritten atomically by save_config on WebUI interactions; config.example.toml warns not to commit it, and logs deliberately avoid printing keys (material._redact_secret, llm._sanitize_error_message).",
+          "sources": [
+            "app/config/config.py#L476-546",
+            "config.example.toml#L1-3",
+            "app/services/material.py#L193-226"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "webui/Main.py is a single 8,262-line module mixing i18n, settings persistence, task history, upload handling, and generation orchestration — a high blast-radius file where any edit risks regressions across many features.",
+          "sources": [
+            "webui/Main.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Duplicate dependency manifests: requirements.txt mirrors pyproject.toml 'for legacy pip' while Docker builds use requirements.txt and CI uses uv.lock — version drift between the two lists would produce different runtime vs tested environments.",
+          "sources": [
+            "requirements.txt",
+            "pyproject.toml#L15-37",
+            "Dockerfile#L83-92"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Dockerfile runs `chmod 777 /MoneyPrinterTurbo` and mounts the whole repo into containers; combined with Streamlit's --server.enableCORS=True in the launch command, container posture is more permissive than the API's own Origin checks.",
+          "sources": [
+            "Dockerfile#L8",
+            "Dockerfile#L102",
+            "docker-compose.yml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "VideoParams field defaults (subtitle_position, custom_position, subtitle display/animation) read config.ui at class-definition/import time — a stale or invalid config.toml value is frozen into the pydantic model before validation can run; cli.py documents this and keeps its own fallback constants.",
+          "sources": [
+            "app/models/schema.py#L140-149",
+            "cli.py#L24-32"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Cross-post process-liveness detection uses os.kill(pid, 0) on POSIX and a Win32 OpenProcess/GetExitCodeProcess path — best-effort heuristics where a PID reuse could keep a dead task marked busy; foreign-host owners are conservatively treated as alive.",
+          "sources": [
+            "app/services/task.py#L148-240"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "save_config has an EBUSY fallback that writes config.toml in place when atomic replace fails (Docker bind-mounted single file) — a crash mid-write there could leave a truncated config.",
+          "sources": [
+            "app/config/config.py#L476-546"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "extension_points": {
+      "summary": "The codebase is deliberately registry/dispatch oriented. New LLM providers plug into LLM_PROVIDER_REGISTRY plus (only for non-OpenAI-compatible protocols) an adapter branch in llm._generate_response. New video material sources extend the download_videos dispatch plus the CLI's _CLI_VIDEO_SOURCES and mpt_agent's SUPPORTED_SOURCES. New AI-music providers slot into _VIDEO_MUSIC_PROVIDERS. New TTS engines add is_*_voice detectors and a _single_tts branch. State and queue backends are subclassable, routes extend via new_router, and UI strings via i18n JSON files.",
+      "claims": [
+        {
+          "claim": "LLM providers: append an LLMProviderSpec to LLM_PROVIDER_REGISTRY (provider_id, defaults, endpoints, extra_fields); OpenAI-compatible providers need no adapter code — only gemini, qwen, azure, claude_code, litellm have dedicated branches in _generate_response.",
+          "sources": [
+            "app/models/llm_provider.py#L29-195",
+            "app/services/llm.py#L257-331"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Video material sources: add a branch in material.download_videos plus the source id in cli.py's _CLI_VIDEO_SOURCES, docs/skill/mpt_agent.py's SUPPORTED_SOURCES (kept aligned by comment), and config.example.toml keys; WebUI-specific sources like loomloom bypass download_videos entirely via get_video_materials in task.py.",
+          "sources": [
+            "app/services/material.py#L1686-1805",
+            "cli.py#L37-51",
+            "docs/skill/mpt_agent.py",
+            "app/services/task.py#L648-728"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "AI music providers: register in task.py's _VIDEO_MUSIC_PROVIDERS dict — a service module implementing is_enabled() and generate_bgm() plus error_type/suffix/warning_code/display_name metadata; orchestration, zero-volume short-circuit, and failure degradation are shared.",
+          "sources": [
+            "app/services/task.py#L72-103"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "TTS engines: add an is_<name>_voice() detector on the voice-name prefix and a dispatch branch in _single_tts; voice lists surface via get_<name>_voices() helpers consumed by the WebUI.",
+          "sources": [
+            "app/services/voice.py#L379-460",
+            "app/services/voice.py#L597-728"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Subtitle engines: config.app.subtitle_provider selects among 'edge', 'whisper', or empty inside task.generate_subtitle — adding a provider means a new branch there plus a service module like subtitle.py.",
+          "sources": [
+            "app/services/task.py#L580-645",
+            "config.example.toml#L426-429"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "State backends: subclass BaseState (update_task/get_task/get_all_tasks/patch_task/delete_task) and switch the singleton at the bottom of state.py; queue backends subclass TaskManager's create_queue/enqueue/dequeue/is_queue_empty/queue_size.",
+          "sources": [
+            "app/services/state.py#L24-41",
+            "app/services/state.py#L231-244",
+            "app/controllers/manager/base_manager.py#L41-139"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "API surface: create a router with controllers/v1/base.new_router(dependencies=[Depends(base.verify_token)]) and include it in app/router.py — the pattern automatically yields /api/v1 prefix, V1 tag, and auth.",
+          "sources": [
+            "app/controllers/v1/base.py",
+            "app/router.py",
+            "app/controllers/v1/llm.py#L16-18"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Cross-post platforms: extend upload_post_platforms config values plus the _CROSS_POST_SOCIAL_PLATFORMS map in task.py that translates platform ids into LLM social-metadata platform names.",
+          "sources": [
+            "app/services/task.py#L66-71",
+            "app/services/upload_post.py#L30-35",
+            "config.example.toml#L477-478"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "UI languages: drop a new locale JSON into webui/i18n/ — utils.load_locales scans the directory at startup; locale keys like llm_provider_label.<id> are referenced by the provider registry.",
+          "sources": [
+            "webui/i18n/en.json",
+            "app/utils/utils.py#L535-547",
+            "app/models/llm_provider.py#L58-79"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Config schema: add keys under config.example.toml sections and read them via config.<section>.get(); entirely new sections require adding a dict to save_config's serialization list or they will be dropped on save.",
+          "sources": [
+            "app/config/config.py#L492-504",
+            "config.example.toml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Pipeline parameters: new VideoParams fields automatically flow into API request models (TaskVideoRequest subclasses VideoParams) and CLI batch manifests (unknown fields rejected, known fields merged), but CLI single-task flags must be added manually to parse_args.",
+          "sources": [
+            "app/models/schema.py#L255-256",
+            "cli.py#L287-298"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "FFmpeg encoder options are config-driven: app.video_codec accepts libx264/h264_nvenc/h264_amf/h264_qsv/h264_mf/h264_videotoolbox with runtime probing and automatic fallback — new encoders plug into _get_effective_video_codec's probe path.",
+          "sources": [
+            "app/services/video.py#L282-365",
+            "config.example.toml#L436-440"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_handoff": {
+      "summary": "Start at app/services/task.py (_run_pipeline is the shared spine), app/models/schema.py (VideoParams), and app/config/config.py (global config + locking). All three frontends must stay behaviorally identical — comments throughout document past drift bugs where a value list or check existed in only one entrypoint. Tests run via uv + pytest with a 70% branch-coverage floor; ruff lints the same file set as coverage. Preserve the security invariants: path confinement, optional auth, no secrets in logs, and never resurrecting deleted task records.",
+      "claims": [
+        {
+          "claim": "Read first: app/services/task.py (pipeline + failure semantics), app/models/schema.py (VideoParams and request models), app/config/config.py (config load/save/locks), cli.py's top constant block, and the relevant section of webui/Main.py before editing any pipeline-adjacent code.",
+          "sources": [
+            "app/services/task.py",
+            "app/models/schema.py",
+            "app/config/config.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Test commands: `uv sync --frozen` then `uv run python -X utf8 -m pytest -q test`; coverage parity with CI is `coverage run -m pytest -q test` + `coverage report` (fail_under=70, branch mode); lint with `ruff check app cli.py main.py webui test docs/skill`.",
+          "sources": [
+            "test/README.md#L14-38",
+            "pyproject.toml#L58-72",
+            ".github/workflows/ci.yml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Keep value lists synchronized across cli.py constants (_CLI_VIDEO_SOURCES, _SUBTITLE_POSITION_VALUES, _CLI_MUSIC_BGM_TYPES), app/models/schema.py enums, app/services/video.py render branches, webui/Main.py dropdowns, and docs/skill/mpt_agent.py SUPPORTED_SOURCES — inline comments explicitly cite past bugs caused by drift.",
+          "sources": [
+            "cli.py#L33-51",
+            "cli.py#L176-202",
+            "docs/skill/mpt_agent.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Any new file-serving or file-accepting endpoint must go through file_security.resolve_path_within_directory and _sanitize_upload_filename-style normalization — never join user paths directly; the /tasks StaticFiles mount is guarded by middleware, not router dependencies.",
+          "sources": [
+            "app/utils/file_security.py",
+            "app/controllers/v1/video.py#L72-97",
+            "app/asgi.py#L258-275"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Task state writes must use sm.state.update_task (create/overwrite) vs patch_task (merge-only, safe against deleted tasks) correctly — redis_manager and cross-post code rely on patch_task's Lua atomicity to avoid resurrecting deleted tasks.",
+          "sources": [
+            "app/services/state.py#L81-90",
+            "app/services/state.py#L185-202",
+            "app/controllers/manager/redis_manager.py#L89-128"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "WebUI config writes must use update_config_nonblocking/delete_config_nonblocking/try_save_config — direct config.toml or config.<section> writes bypass the pending-update queue and can deadlock a page against runtime_config_lock held by a running task.",
+          "sources": [
+            "app/config/config.py#L91-308",
+            "webui/Main.py#L309-341"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Never log credentials: material.py's _redact_secret/_redact_request_error, llm.py's _sanitize_error_message, and the asgi lifespan's 'log only that auth is enabled' pattern are deliberate conventions to extend, not bypass.",
+          "sources": [
+            "app/services/material.py#L193-226",
+            "app/services/llm.py#L187-201",
+            "app/asgi.py#L26-37"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Custom audio file paths are intentionally asymmetric: HTTP/WebUI callers are confined to the task directory; only the CLI passes allow_server_file_input=True — do not widen this for API callers.",
+          "sources": [
+            "app/services/task.py#L364-420",
+            "cli.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "VideoParams defaults that read config.ui are frozen at import time; changing [ui] handling must account for the fact that cli.py deliberately duplicates these defaults to keep CLI behavior stable under invalid saved values.",
+          "sources": [
+            "app/models/schema.py#L140-149",
+            "cli.py#L24-32"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Edge subtitle failures must NOT auto-fallback to Whisper (would trigger a multi-GB model download); Whisper loads only on explicit subtitle_provider='whisper' — preserve this when touching subtitle logic.",
+          "sources": [
+            "app/services/task.py#L600-635",
+            "config.example.toml#L426-429"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Code comments are predominantly Chinese (with some English); docstrings and comments carry unusually detailed rationale for past fixes — match this style and keep the explanations when editing.",
+          "sources": [
+            "app/services/task.py",
+            "app/config/config.py",
+            "app/controllers/v1/video.py"
+          ],
+          "kind": "inference"
+        },
+        {
+          "claim": "Dependencies: pyproject.toml is the source of truth pinned by uv.lock, but requirements.txt must be manually kept in sync for Dockerfile/legacy pip builds — check both when bumping.",
+          "sources": [
+            "pyproject.toml#L1-3",
+            "requirements.txt#L1",
+            "Dockerfile#L83-92"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Edge cases documented in code that are easy to regress: config.toml may be a directory (load_config rmtree's it), TOML may have repeated UTF-8 BOMs, queue limits may arrive as TOML strings/floats (handled by _coerce_task_limit), and dequeue must never throw inside the task_done→check_queue chain.",
+          "sources": [
+            "app/config/config.py#L423-473",
+            "app/controllers/manager/base_manager.py#L12-38",
+            "app/controllers/manager/redis_manager.py#L50-104"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_prompt": "MoneyPrinterTurbo (v1.3.7, Python ≥3.11, uv-managed) generates short videos end-to-end: LLM script → search terms → TTS voiceover → subtitles → stock/AI-generated footage → MoviePy/FFmpeg render → optional social cross-posting.\n\nTHREE ENTRYPOINTS, ONE PIPELINE. All converge on app/services/task.py: `start()` → `_run_pipeline()` with stages script → terms → audio → subtitle → materials → video. Never add pipeline logic to a single frontend.\n- API: `python main.py` → uvicorn `app.asgi:app` on port 8080. Routes live in app/controllers/v1/ under /api/v1, registered in app/router.py, all guarded by base.verify_token (x-api-key header; empty config app.api_key = no auth). Task artifacts are served from a StaticFiles mount at /tasks protected by middleware in asgi.py.\n- WebUI: `streamlit run webui/Main.py` (webui.sh handles interpreter/port). It's an 8k-line file; generation goes through app/services/webui_task.py submit_generation → InMemoryTaskManager(concurrency=1) → tm.start under config.runtime_config_lock().\n- CLI: `python cli.py` — argparse flags mirroring VideoParams, --stop-at for stage truncation, --batch-file for JSON/JSONL manifests, mandatory --confirm-*-charge flags for paid video sources.\n\nKEY FILES: app/models/schema.py (VideoParams — the request model for API and batch), app/models/llm_provider.py (LLM_PROVIDER_REGISTRY — add providers here; adapters for non-OpenAI-compatible protocols branch in llm._generate_response), app/services/voice.py (TTS dispatch by voice-name prefix), app/services/material.py (download_videos dispatch by video_source), app/services/video.py (combine_videos/generate_video rendering), app/services/state.py (MemoryState|RedisState selected by app.enable_redis), app/config/config.py (config.toml load + atomic save + nonblocking WebUI updates), app/utils/file_security.py (path confinement).\n\nSTORAGE: storage/tasks/<task_id>/ holds audio.mp3, subtitle.srt, script.json, combined-N.mp4, final-N.mp4; storage/{cache_videos,local_videos,bgm} for assets; resource/{fonts,songs,public} shipped assets. Config in config.toml (auto-copied from config.example.toml).\n\nCONVENTIONS: comments mostly Chinese with detailed fix rationale — preserve them. Keep option lists synced across cli.py constants, schema.py enums, video.py branches, webui/Main.py, and mpt_agent.py SUPPORTED_SOURCES. Use sm.state.patch_task (not update_task) when merging into possibly-deleted tasks. Never log secrets. Never widen path confinement for HTTP callers.\n\nTESTING: `uv sync --frozen`; `uv run python -X utf8 -m pytest -q test`; branch coverage must stay ≥70% (source: app, cli, webui, main, docs/skill); `ruff check app cli.py main.py webui test docs/skill`. CI runs py3.11+3.13 with a real Redis service plus a Windows smoke subset.\n\nGOTCHAS: VideoParams defaults reading config.ui freeze at import time; Edge subtitle failure must not auto-fallback to Whisper; paid material sources bill per clip; requirements.txt must mirror pyproject.toml manually; Docker chmods the workdir 777; config.toml holds plaintext keys — never print it."
+  },
+  "analysis": {
+    "agent": "devin",
+    "model": "swe-2",
+    "runtime_ms": null,
+    "cost_usd": null,
+    "collected_at": "2026-09-22T16:34:50.096Z"
   }
 }
