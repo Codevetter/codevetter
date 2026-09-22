@@ -16116,5 +16116,900 @@
         ]
       }
     ]
+  },
+  "report": {
+    "overview": "Excalidraw is a Yarn-workspace monorepo that publishes a React whiteboard component (@excalidraw/excalidraw 0.18.0) and ships the excalidraw.com app in excalidraw-app/. The editor is an infinite canvas of hand-drawn elements (roughjs) with local-first autosave, optional real-time collaboration, and end-to-end AES-GCM encryption of scenes before they leave the browser. The hosted app adds Firebase persistence, a Socket.IO portal, shareable encrypted links, a PWA, and AI diagram helpers; the library itself is meant to be embedded by other products.",
+    "system_map": {
+      "summary": "The runtime splits into a publishable editor (packages/excalidraw) and a Vite app (excalidraw-app) that mounts it. Geometry and the element model live in @excalidraw/element, @excalidraw/math, and @excalidraw/common; export helpers live in @excalidraw/utils. The app talks to three external systems configured only by Vite env vars: a Socket.IO collab server, Firebase (Firestore scenes plus Storage blobs), and an HTTP share backend. Production is a static Vite build deployed to Vercel or an nginx image; package publishes go through scripts/release.js on the release branch.",
+      "claims": [
+        {
+          "claim": "Root package excalidraw-monorepo is a private Yarn 1.22.22 workspace (node >=18) covering excalidraw-app, packages/*, and examples/*. Scripts delegate: yarn start runs the Vite app, yarn build:packages builds common, fractional-indexing, laser-pointer, math, element, then excalidraw, and yarn test:all chains typecheck, eslint, prettier, and vitest.",
+          "sources": [
+            "package.json#L1-96"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The hosted app boots from excalidraw-app/index.tsx: it imports sentry, sets window.__EXCALIDRAW_SHA__ from VITE_APP_GIT_SHA, calls registerSW() from vite-plugin-pwa, and createRoot-renders <ExcalidrawApp /> in StrictMode.",
+          "sources": [
+            "excalidraw-app/index.tsx#L1-17",
+            "excalidraw-app/package.json#L43-52"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The npm component entry is packages/excalidraw/index.tsx. ExcalidrawBase normalizes UIOptions and imageOptions, blocks iOS pinch-zoom unless interaction.enabled.browserZoom is set, and renders EditorJotaiProvider > InitializeApp > App. Excalidraw is React.memo(ExcalidrawBase, areEqual). Package exports point at dist/prod/index.js with peer react 17, 18, or 19.",
+          "sources": [
+            "packages/excalidraw/index.tsx#L67-266",
+            "packages/excalidraw/index.tsx#L401-402",
+            "packages/excalidraw/package.json#L1-78"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Supporting packages are @excalidraw/common (constants, emitter, editorInterface, feature flags), @excalidraw/element (Scene, Store, element types, fractional index), @excalidraw/math, @excalidraw/utils (exportToCanvas/Svg wrappers), @excalidraw/fractional-indexing, and @excalidraw/laser-pointer. Vitest and the app Vite config alias every @excalidraw/* import at the TypeScript source, not dist.",
+          "sources": [
+            "packages/common/src/index.ts#L1-17",
+            "vitest.config.mts#L6-73",
+            "excalidraw-app/vite.config.mts#L24-92",
+            "tsconfig.json#L21-38"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "App-only env surface is declared in excalidraw-app/vite-env.d.ts: VITE_APP_WS_SERVER_URL, VITE_APP_FIREBASE_CONFIG, VITE_APP_BACKEND_V2_GET_URL, VITE_APP_BACKEND_V2_POST_URL, VITE_APP_AI_BACKEND, VITE_APP_PLUS_APP, VITE_APP_PLUS_LP, VITE_APP_PORTAL_URL, VITE_APP_ENABLE_PWA, VITE_APP_DISABLE_SENTRY, VITE_APP_GIT_SHA. Vite loads env from the repo root (envDir: '../') and serves on VITE_APP_PORT or 3000, writing the production bundle to excalidraw-app/build.",
+          "sources": [
+            "excalidraw-app/vite-env.d.ts#L4-45",
+            "excalidraw-app/vite.config.mts#L11-23",
+            "excalidraw-app/vite.config.mts#L94-118"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Vercel config sets outputDirectory to excalidraw-app/build, installCommand yarn install, CORS Access-Control-Allow-Origin https://excalidraw.com, and redirects /webex/* to for-webex.excalidraw.com plus vscode.excalidraw.com to the VS Code marketplace item.",
+          "sources": [
+            "vercel.json#L1-68"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Docker image is a multi-stage build: node:24 runs yarn --frozen-lockfile then yarn build:app:docker (VITE_APP_DISABLE_SENTRY=true), and nginx:stable-alpine-slim serves excalidraw-app/build. docker-compose publishes host 3000 to container 80 and bind-mounts the repo. Publish workflow on branch release pushes excalidraw/excalidraw:latest for linux/amd64, arm64, and arm/v7.",
+          "sources": [
+            "Dockerfile#L1-20",
+            "docker-compose.yml#L1-24",
+            "excalidraw-app/package.json#L45",
+            " .github/workflows/publish-docker.yml#L1-30"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "GitHub Actions: test.yml runs yarn test:app on push to master (Node 20); lint.yml on pull_request runs yarn test:other, yarn test:code, and yarn test:typecheck; test-coverage-pr.yml runs yarn test:coverage and posts a coverage comment. release-branch workflows run yarn release --tag=next and upload Sentry sourcemaps.",
+          "sources": [
+            ".github/workflows/test.yml#L1-19",
+            ".github/workflows/lint.yml#L1-22",
+            ".github/workflows/test-coverage-pr.yml#L1-25",
+            ".github/workflows/autorelease-excalidraw.yml#L1-27",
+            ".github/workflows/sentry-production.yml#L1-37"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Firebase is initialized lazily in excalidraw-app/data/firebase.ts from JSON.parse(import.meta.env.VITE_APP_FIREBASE_CONFIG). Scenes are Firestore documents at scenes/{roomId}; image bytes go to Storage via uploadBytes. There is no collaboration server implementation in this repo — the client only opens socket.io-client against VITE_APP_WS_SERVER_URL.",
+          "sources": [
+            "excalidraw-app/data/firebase.ts#L44-79",
+            "excalidraw-app/data/firebase.ts#L145-171",
+            "excalidraw-app/collab/Collab.tsx#L518-539"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Editor state is a React class component (packages/excalidraw/components/App.tsx) owning Scene, Renderer, Store, History, ActionManager, Library, and binary files. Two Jotai stores exist (editor-jotai inside the package, app-jotai in the host). ESLint forbids importing jotai directly.",
+          "sources": [
+            "packages/excalidraw/components/App.tsx#L638-949",
+            ".eslintrc.json#L29-34",
+            "excalidraw-app/App.tsx#L83-89"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Font subsetting runs off the main thread through WorkerPool in packages/excalidraw/workers.ts, which refuses to construct a worker whose URL equals import.meta.url (WorkerInTheMainChunkError). WASM assets for harfbuzz and woff2 live under scripts/wasm.",
+          "sources": [
+            "packages/excalidraw/workers.ts#L23-59",
+            "packages/excalidraw/subset/subset-main.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "scripts/release.js publishes packages common, fractional-indexing, math, element, and excalidraw (utils is explicitly skipped). Tags are test (default), next, or latest; latest requires --version and updates the changelog via child_process execSync.",
+          "sources": [
+            "scripts/release.js#L1-49"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "feature_catalog": {
+      "summary": "The editor is a tool-driven canvas plus a large ActionName command set (clipboard, z-order, align, frames, text binding, zoom, theme, export). The host app layers collaboration rooms, encrypted share links, local autosave, PWA install, Excalidraw+ chrome, and two AI surfaces (text-to-diagram and diagram-to-code). Embedders get the same canvas through props, the imperative API, and the Next.js and browser-script examples.",
+      "claims": [
+        {
+          "claim": "Pointer dispatch in handleCanvasPointerDown branches on activeTool.type: text, arrow/line, freedraw, custom, frame/magicframe, laser, autoshape, bucketfill, eraser, and a generic creator for rectangle-like tools. Element types include rectangle, diamond, ellipse, stickynote (baseHeight), embeddable, plus linear, image, text, and frame types in packages/element/src/types.ts.",
+          "sources": [
+            "packages/excalidraw/components/App.tsx#L8927-9019",
+            "packages/element/src/types.ts#L40-118"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "ActionName enumerates the command surface: copy/cut/paste, copyAsPng/copyAsSvg, z-index, align and distribute, flip, group, undo/redo, font and stroke properties, grid/zen/view/stats modes, hyperlink, cropEditor, frame membership, lock, linear editor, searchMenu, and commandPalette. Each action module calls register() so the side-effect import in App.tsx fills the actions array before ActionManager.registerAll.",
+          "sources": [
+            "packages/excalidraw/actions/types.ts#L45-144",
+            "packages/excalidraw/actions/register.ts#L1-15",
+            "packages/excalidraw/actions/actionDeleteSelected.tsx#L208",
+            "packages/excalidraw/components/App.tsx#L301-348"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "History is delta-based. Store emits durable increments for CaptureUpdateAction.IMMEDIATELY, never records NEVER (remote updates and init), and defers EVENTUALLY. History.record consumes those deltas; undo/redo are actions created with createUndoAction/createRedoAction and registered beside the static action list. History deltas deliberately drop version and versionNonce so a local undo still looks like a new collab edit.",
+          "sources": [
+            "packages/element/src/store.ts#L38-69",
+            "packages/excalidraw/history.ts#L15-96",
+            "packages/excalidraw/components/App.tsx#L941-943",
+            "packages/excalidraw/components/App.tsx#L3848-3850"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Export to disk uses serializeAsJSON, which writes type excalidraw, VERSIONS.excalidraw (2), source, elements, and appState. type local keeps files (minus those only referenced by deleted elements); type database sets files undefined so blobs are stored elsewhere. saveAsJSON uses the File System Access wrappers in data/filesystem.ts (browser-fs-access). PNG/SVG/clipboard exports are re-exported from @excalidraw/utils/export.",
+          "sources": [
+            "packages/excalidraw/data/json.ts#L52-90",
+            "packages/common/src/constants.ts#L397-402",
+            "packages/excalidraw/data/filesystem.ts#L1-39",
+            "packages/utils/src/export.ts#L1-18",
+            "dev-docs/docs/codebase/json-schema.mdx#L1-20"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Shape libraries persist through LibraryPersistenceAdapter (load/save). The app implements LibraryIndexedDBAdapter (idb-keyval store excalidraw-library) and LibraryLocalStorageMigrationAdapter for the legacy localStorage key. Remote library installs are restricted to hostnames excalidraw.com and raw.githubusercontent.com/excalidraw/excalidraw-libraries.",
+          "sources": [
+            "packages/excalidraw/data/library.ts#L54-95",
+            "excalidraw-app/data/LocalData.ts#L229-277"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "i18n defaults to en from packages/excalidraw/locales/en.json. A locale is listed only if Crowdin coverage meets COMPLETION_THRESHOLD 85 (percentages.json). RTL is flagged for ar-SA, fa-IR, and he-IL. Crowdin syncs en.json to locales/%locale%.json. Vite manualChunks splits non-English locale JSON so the PWA precache can cache them separately.",
+          "sources": [
+            "packages/excalidraw/i18n.ts#L1-40",
+            "crowdin.yml#L1-2",
+            "excalidraw-app/vite.config.mts#L106-118"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Live collaboration is app-only. ShareDialog calls collabAPI.startCollaboration(null) to create a room or stopCollaboration to leave. Links match /^#room=([a-zA-Z0-9_-]+),([a-zA-Z0-9_-]+)$/ and the key must be 22 characters or the UI alerts invalidEncryptionKey. The socket emits join-room and broadcasts SCENE_INIT, SCENE_UPDATE, MOUSE_LOCATION, IDLE_STATUS, and USER_VISIBLE_SCENE_BOUNDS.",
+          "sources": [
+            "excalidraw-app/share/ShareDialog.tsx#L186-204",
+            "excalidraw-app/data/index.ts#L131-164",
+            "excalidraw-app/app_constants.ts#L16-30",
+            "excalidraw-app/collab/Portal.tsx#L37-61"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Readonly share links are a different hash: #json=<id>,<key>. exportToBackend generates an AES key, compresses serializeAsJSON(..., 'database'), POSTs the bytes to VITE_APP_BACKEND_V2_POST_URL, then writes the key only into location.hash. Image payloads are encrypted and uploaded under /files/shareLinks/${id} with a 4 MiB cap (FILE_UPLOAD_MAX_BYTES).",
+          "sources": [
+            "excalidraw-app/data/index.ts#L248-306",
+            "excalidraw-app/app_constants.ts#L11-35",
+            "excalidraw-app/App.tsx#L228-281"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Text-to-diagram lives in packages/excalidraw/components/TTDDialog. useTextGeneration accepts prompts of 3–10000 characters, streams via an AbortController, and parses mermaid with @excalidraw/mermaid-to-excalidraw. The host wires TTDIndexedDBAdapter (IDB key excalidraw-ttd-chats). Paste detection isMaybeMermaidDefinition recognizes flowchart, sequenceDiagram, C4Context, mindmap, and other mermaid headers.",
+          "sources": [
+            "packages/excalidraw/components/TTDDialog/hooks/useTextGeneration.ts#L23-99",
+            "packages/excalidraw/mermaid.ts#L1-32",
+            "excalidraw-app/app_constants.ts#L49",
+            "excalidraw-app/components/AI.tsx#L1-18"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Diagram-to-code is a host plugin. DiagramToCodePlugin calls app.setPlugins({ diagramToCode }). AIComponents exports the selected frame to JPEG, collects text with getTextFromElements, and POSTs {texts, image, theme} to ${VITE_APP_AI_BACKEND}/v1/ai/diagram-to-code/generate-streaming, parsing the SSE body and treating HTTP 429 as a rate limit.",
+          "sources": [
+            "packages/excalidraw/components/DiagramToCodePlugin/DiagramToCodePlugin.tsx#L1-19",
+            "excalidraw-app/components/AI.tsx#L19-80"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Charts (bar, line, radar) are a paste path under packages/excalidraw/charts. Command palette UI is packages/excalidraw/components/CommandPalette/CommandPalette.tsx (fuzzy match over actions); defaultCommandPaletteItems.ts is an empty module. Analytics trackEvent only emits categories command_palette, export, and ai, and only when VITE_APP_ENABLE_TRACKING is the string true and window.sa_event exists.",
+          "sources": [
+            "packages/element/src/types.ts#L18",
+            "packages/excalidraw/components/CommandPalette/CommandPalette.tsx#L1-39",
+            "packages/excalidraw/components/CommandPalette/defaultCommandPaletteItems.ts#L1",
+            "packages/excalidraw/analytics.ts#L6-40"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The hosted shell adds AppMainMenu, AppWelcomeScreen, AppSidebar, ShareDialog plus QR (uqr), language picker, Excalidraw+ promo and iframe export (VITE_APP_PLUS_APP / VITE_APP_PLUS_EXPORT_PUBLIC_KEY), and a beforeinstallprompt capture for PWA install. Collaboration is disabled when isRunningInIframe() is true. Examples with-nextjs dynamically imports the editor with ssr:false and sets window.EXCALIDRAW_ASSET_PATH.",
+          "sources": [
+            "excalidraw-app/App.tsx#L102-150",
+            "excalidraw-app/App.tsx#L173-188",
+            "excalidraw-app/App.tsx#L375-379",
+            "examples/with-nextjs/src/app/page.tsx#L6-25",
+            "excalidraw-app/package.json#L28-40"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Embeddables and hyperlinks are host-gated. Excalidraw props include validateEmbeddable, renderEmbeddable, onLinkOpen, and generateLinkForSelection. SVG export leaves embeddables out unless renderEmbeddables is set. Links are passed through sanitizeUrl from @braintree/sanitize-url in packages/common/src/url.ts.",
+          "sources": [
+            "packages/excalidraw/index.tsx#L111-112",
+            "packages/excalidraw/index.tsx#L253-254",
+            "packages/excalidraw/scene/export.ts#L477-493",
+            "packages/common/src/url.ts#L1-10"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "data_flow": {
+      "summary": "A scene is an ordered list of elements plus AppState, with image bytes kept in a separate BinaryFiles map. Local edits pass through the Store, which both feeds undo history and the public onChange/onIncrement callbacks. The app then fans changes into localStorage, IndexedDB, and — when a room is open — an encrypted socket broadcast plus a Firebase transaction. Anything loaded back in goes through restoreElements/restoreAppState and, for multiplayer, reconcileElements on version plus versionNonce.",
+      "claims": [
+        {
+          "claim": "Elements carry collab metadata on the base type: monotonically increasing version, random versionNonce for tie-breaks, fractional index (string brand) for z-order, updated timestamp, and isDeleted. index is kept aligned with array order by syncMovedIndices and syncInvalidIndices.",
+          "sources": [
+            "packages/element/src/types.ts#L40-87",
+            "packages/element/src/Scene.ts#L15-19"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Local autosave is owned by LocalData.save, debounced by SAVE_TO_LOCAL_STORAGE_TIMEOUT (300ms). It writes non-deleted elements to localStorage key excalidraw and cleared app state to excalidraw-state, then puts image binaries in IndexedDB database files-db / store files-store via idb-keyval. QuotaExceededError flips localStorageQuotaExceededAtom. Saves are skipped when document.hidden or the collaboration locker is held.",
+          "sources": [
+            "excalidraw-app/data/LocalData.ts#L49-165",
+            "excalidraw-app/data/LocalData.ts#L204-226",
+            "excalidraw-app/app_constants.ts#L1-7",
+            "excalidraw-app/app_constants.ts#L39-53"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The app onChange callback is the fan-out. If collabAPI.isCollaborating() it calls collabAPI.syncElements(elements). Otherwise, when LocalData.isSavePaused() is false, it calls LocalData.save and afterwards rewrites image elements whose status should become saved via newElementWith.",
+          "sources": [
+            "excalidraw-app/App.tsx#L715-739"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Cross-tab sync stores timestamps under version-dataState and version-files. updateBrowserStateVersion writes Date.now() into both localStorage and an in-memory LOCAL_STATE_VERSIONS map. On focus or visibility the app calls isBrowserStorageStateNewer and, for files, LocalData.fileStorage.getFiles for image ids not already in memory.",
+          "sources": [
+            "excalidraw-app/data/tabSync.ts#L1-39",
+            "excalidraw-app/App.tsx#L624-670"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Socket payloads are JSON, UTF-8 encoded, then AES-GCM encrypted with the room key. Portal._broadcastSocketData emits WS_EVENTS.SERVER (server-broadcast) or SERVER_VOLATILE. broadcastScene sends only elements whose version is newer than broadcastedElementVersions unless syncAll is set, and SCENE_INIT requires syncAll. File upload is throttled at FILE_UPLOAD_TIMEOUT (300ms) and flips image status to saved so peers know to pull bytes.",
+          "sources": [
+            "excalidraw-app/collab/Portal.tsx#L85-183",
+            "excalidraw-app/app_constants.ts#L16-21",
+            "packages/excalidraw/data/encryption.ts#L50-78"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Firebase scene documents store {sceneVersion, ciphertext: Bytes, iv: Bytes}. saveToFirebase runs a Firestore transaction on scenes/{roomId}: if the doc exists it decrypts the previous elements, reconcileElements against the local syncable set, and writes the merged ciphertext. A WeakMap FirebaseSceneVersionCache skips writes when the socket already persisted that getSceneVersion.",
+          "sources": [
+            "excalidraw-app/data/firebase.ts#L87-116",
+            "excalidraw-app/data/firebase.ts#L174-266"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "reconcileElements keeps the local element when it is being edited (editingTextElement, resizingElement, newElement), when local.version is greater, or when versions match and local.versionNonce is less than or equal to the remote nonce. Fractional indices are revalidated in dev and test (validateFractionalIndices throws); in production the check is throttled to once a minute and does not throw.",
+          "sources": [
+            "packages/excalidraw/data/reconcile.ts#L23-77"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Syncable elements exclude invisibly small elements. Deleted elements stay syncable only until DELETED_ELEMENT_TIMEOUT (24h) so peers can observe the deletion, then they drop out of getSyncableElements.",
+          "sources": [
+            "excalidraw-app/data/index.ts#L46-63",
+            "excalidraw-app/app_constants.ts#L9"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Startup scene load order in initializeScene: importFromLocalStorage, then optionally #json= via importFromBackend (decompress + decrypt, falling back to legacy_decodeFromBackend), then #url= via fetch + loadFromBlob, then #room= via collabAPI.startCollaboration. External scenes prompt with openConfirmModal unless the canvas is empty or the link is a collab room. Non-room imports then history.replaceState back to the origin.",
+          "sources": [
+            "excalidraw-app/App.tsx#L217-373",
+            "excalidraw-app/data/index.ts#L166-241"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Share-link import tries the new compressed format first (decompressData with decryptionKey). On failure legacy_decodeFromBackend slices a 12-byte IV off the front, and if that throws it retries with a zero IV for the oldest files.",
+          "sources": [
+            "excalidraw-app/data/index.ts#L166-236",
+            "packages/excalidraw/data/encryption.ts#L5"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Keys are 128-bit AES-GCM (ENCRYPTION_KEY_BITS). generateEncryptionKey uses crypto.subtle.generateKey and exports the JWK k field. getCryptoKey imports alg A128GCM. IVs are 12 random bytes from crypto.getRandomValues. Room ids are 10 random bytes hex-encoded (ROOM_ID_BYTES).",
+          "sources": [
+            "packages/excalidraw/data/encryption.ts#L5-94",
+            "packages/common/src/constants.ts#L397",
+            "excalidraw-app/data/index.ts#L68-72",
+            "excalidraw-app/app_constants.ts#L37"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Collab image bytes and share-link image bytes use different Storage prefixes: FIREBASE_STORAGE_PREFIXES.collabFiles is /files/rooms and shareLinkFiles is /files/shareLinks. Cache-Control on upload is public, max-age=31536000.",
+          "sources": [
+            "excalidraw-app/app_constants.ts#L13-35",
+            "excalidraw-app/data/firebase.ts#L145-171",
+            "excalidraw-app/data/index.ts#L288-291"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "behavior_traces": {
+      "summary": "Three flows dominate the app: boot (service worker, Sentry, scene restore), a local drawing gesture (pointer down through action finalize into the store), and collaboration (room key, socket join, encrypted broadcast, Firebase reconcile). Local persistence is a side effect of onChange and is explicitly paused for the whole time a room is open.",
+      "claims": [
+        {
+          "claim": "App boot sequence: excalidraw-app/index.tsx imports sentry.ts (Sentry.init, DSN only when hostname contains excalidraw.com, staging.excalidraw.com, or vercel.app and VITE_APP_DISABLE_SENTRY is not true), registerSW(), then renders ExcalidrawApp. A window beforeinstallprompt listener is installed at module scope in App.tsx so the install event is not missed.",
+          "sources": [
+            "excalidraw-app/index.tsx#L1-17",
+            "excalidraw-app/sentry.ts#L5-25",
+            "excalidraw-app/App.tsx#L173-188"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Editor constructor order: getDefaultAppState, refreshEditorInterface, nanoid id, new Library, new ActionManager(syncActionResult), new Scene, offscreen canvas plus rough.canvas, new Renderer, new Store, new History, new Fonts, registerAll(actions) plus undo/redo, then createExcalidrawAPI. componentDidMount rebuilds the API, in dev/test installs window.h.{state,setState,app,history,store,fonts}, subscribes store durable increments to history.record, calls scene.onUpdate(triggerRender), and unless ?web-share-target is set calls updateDOMRect(this.initializeScene).",
+          "sources": [
+            "packages/excalidraw/components/App.tsx#L865-949",
+            "packages/excalidraw/components/App.tsx#L3807-3902"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Host scene init effect waits until excalidrawAPI exists (and collabAPI exists unless iframes disable collab), calls initializeScene, then applies the result. It also listens for hashchange, unload (LocalData.flushSave), and blur/visibility/focus. beforeunload flushes local save and preventUnload when file storage still has unsaved images, unless VITE_APP_DISABLE_PREVENT_UNLOAD is true.",
+          "sources": [
+            "excalidraw-app/App.tsx#L561-712"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Drawing a generic shape: canvas onPointerDown -> handleCanvasPointerDown. For tools other than text, arrow, line, freedraw, custom, frame, laser, autoshape, bucketfill, eraser, hand, or image, it calls createGenericElementOnPointerDown(activeTool.type). It then fires props.onPointerDown and onPointerDownEmitter, and if the editor is not in a non-capturing view mode registers window pointermove, pointerup, keydown, and keyup. Later pointer-up paths call actionManager.executeAction(actionFinalize).",
+          "sources": [
+            "packages/excalidraw/components/App.tsx#L8927-9019",
+            "packages/excalidraw/components/App.tsx#L4381"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Action execution: ActionManager.handleKeyDown filters actions with keyTest, respecting UIOptions.canvasActions and keyPriority, and refuses the key if more than one action matches. registerAction stores by ActionName. The updater passed at construction is syncActionResult, which is wrapped in withBatchedUpdates. Navigation actions are blocked while viewport.isLockedTransitionPending.",
+          "sources": [
+            "packages/excalidraw/actions/manager.tsx#L52-119",
+            "packages/excalidraw/components/App.tsx#L917-922",
+            "packages/excalidraw/components/App.tsx#L3153"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Starting a new room from the share dialog calls startCollaboration(null). That generates roomId and roomKey, pushState's #room=id,key, sets collaborating, and LocalData.pauseSave('collaboration'). It dynamically imports socket.io-client, opens Portal with transports websocket and polling, and for a brand-new room strips nothing but rewrites saved images to status pending and calls saveCollabRoomToFirebase. Joining an existing room calls excalidrawAPI.resetScene() first so local elements are not merged in.",
+          "sources": [
+            "excalidraw-app/collab/Collab.tsx#L481-568",
+            "excalidraw-app/data/index.ts#L148-164",
+            "excalidraw-app/share/ShareDialog.tsx#L186-204"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Socket lifecycle inside Portal.open: on init-room the client emits join-room; on new-user it broadcastScene(SCENE_INIT, elements, syncAll=true); on room-user-change it calls collab.setCollaborators. Incoming client-broadcast is decrypted in Collab.decryptPayload and switched on SCENE_INIT (reconcile, handleRemoteSceneUpdate, resolve the scene promise), SCENE_UPDATE (reconcile), or MOUSE_LOCATION (updateCollaborator). A 5s INITIAL_SCENE_UPDATE_TIMEOUT falls back to initializeRoom({fetchScene:true}) which reads Firebase.",
+          "sources": [
+            "excalidraw-app/collab/Portal.tsx#L37-61",
+            "excalidraw-app/collab/Collab.tsx#L458-619",
+            "excalidraw-app/app_constants.ts#L2"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Stopping collaboration cancels queueBroadcastAllElements, queueSaveToFirebase, and loadImageFiles, then saveCollabRoomToFirebase of the current syncable elements. Unless keepRemoteState is false, a window.confirm asks before destroying the socket, resetBrowserStateVersions, and pushing history back to the origin. destroySocketClient closes the portal, clears collaborators, and LocalData.resumeSave('collaboration').",
+          "sources": [
+            "excalidraw-app/collab/Collab.tsx#L365-427"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Full-scene resync is periodic: SYNC_FULL_SCENE_INTERVAL_MS is 20000, separate from per-element version filtering in broadcastScene. Cursor broadcasts are volatile and throttled conceptually by CURSOR_SYNC_TIMEOUT 33ms. Deleted-element retention for the wire protocol is 24h.",
+          "sources": [
+            "excalidraw-app/app_constants.ts#L5-8",
+            "excalidraw-app/collab/Portal.tsx#L142-183"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Unmount tears down the editor aggressively: it replaces get* API methods so they throw if called after isDestroyed, emits editor:unmount, destroys renderer, viewport, library, laser and eraser trails, clears both store emitters, and resets ShapeCache and SnapCache. The comment in the constructor says the API must be recreated in componentDidMount because StrictMode unmount would otherwise invalidate it.",
+          "sources": [
+            "packages/excalidraw/components/App.tsx#L3905-3960",
+            "packages/excalidraw/components/App.tsx#L945-949"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Web Share Target: if the query contains web-share-target, componentDidMount calls restoreFileFromShare instead of initializeScene. #url=<encoded> on the host fetches that URL, loadFromBlob's the response, and on failure sets appState.errorMessage to alerts.invalidSceneUrl.",
+          "sources": [
+            "packages/excalidraw/components/App.tsx#L3877-3886",
+            "excalidraw-app/App.tsx#L304-326"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "testing_signals": {
+      "summary": "Tests are Vitest 3 on jsdom, with Testing Library, vitest-canvas-mock, and fake-indexeddb. Coverage thresholds are enforced (lines 60, branches 70, functions 63, statements 60). The editor and element packages are heavily tested, including snapshots; the collaboration suite is a single file that mocks Firebase and socket.io and its own comment says multi-client cases are missing. CI runs unit tests on master pushes, and lint, types, prettier, and coverage on pull requests.",
+      "claims": [
+        {
+          "claim": "vitest.config.mts sets environment jsdom, globals, setupFiles ./setupTests.ts, sequence.hooks parallel, hideSkippedTests, and coverage reporters text, json-summary, json, html, lcovonly with ignoreEmptyLines false. Thresholds: lines 60, branches 70, functions 63, statements 60. Root scripts: yarn test and yarn test:app invoke vitest; yarn test:update passes --update; yarn test:coverage and yarn test:ui exist.",
+          "sources": [
+            "vitest.config.mts#L75-98",
+            "package.json#L68-77"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "setupTests.ts loads vitest-canvas-mock, @testing-library/jest-dom, the editor polyfill, fake-indexeddb/auto, a localStorage polyfill, and stubs setPointerCapture, matchMedia, and FontFace. It replaces @excalidraw/common throttleRAF with mockThrottleRAF. DOM dumps on Testing Library failures are suppressed unless VITE_DEBUG_DOM is true or 1.",
+          "sources": [
+            "setupTests.ts#L1-80"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Editor interaction tests live in packages/excalidraw/tests (App, history, export, clipboard, drag create, selection, laser, lasso, library, mermaid, search, wheel, regression, plus data/restore.test.ts and data/reconcile.test.ts). Element geometry tests live in packages/element/tests (binding, elbow arrows, frames, fractional index, text wrapping, z-index). Math tests are in packages/math/tests. Common tests cover colors, binary heap, keys, queue, and url.",
+          "sources": [
+            "packages/excalidraw/tests/history.test.tsx",
+            "packages/excalidraw/tests/data/reconcile.test.ts",
+            "packages/element/tests/fractionalIndex.test.ts",
+            "packages/element/tests/elbowArrow.test.tsx",
+            "packages/math/tests/curve.test.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "App-level tests are only excalidraw-app/tests/collab.test.tsx, LanguageList.test.tsx, and MobileMenu.test.tsx (with a snapshot). collab.test renders the whole ExcalidrawApp and listens to h.store.onStoreIncrementEmitter. It mocks socket.io-client as a no-op emitter and stubs firebase load/save. The file comment says the suite should be extended to two simultaneous clients and that this is not done.",
+          "sources": [
+            "excalidraw-app/tests/collab.test.tsx#L1-80"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CI does not run the full yarn test:all. Push-to-master runs only yarn test:app. Pull requests run prettier (test:other), eslint --max-warnings=0 (test:code), and tsc (test:typecheck) in lint.yml, and separately yarn test:coverage with davelosert/vitest-coverage-report-action. Node is pinned to 20.x in those workflows while package.json engines say >=18 and the Docker build uses node 24.",
+          "sources": [
+            ".github/workflows/test.yml#L1-19",
+            ".github/workflows/lint.yml#L1-22",
+            ".github/workflows/test-coverage-pr.yml#L1-25",
+            "package.json#L46-72",
+            "Dockerfile#L1"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Many editor tests snapshot rendered output under packages/excalidraw/tests/__snapshots__ (App, history, export, selection, drag, mermaid, context menu) and packages/excalidraw/components/__snapshots__/App.test.tsx.snap. yarn test:update is the documented way to refresh them (CLAUDE.md).",
+          "sources": [
+            "CLAUDE.md#L13-24",
+            "packages/excalidraw/tests/__snapshots__/history.test.tsx.snap",
+            "packages/excalidraw/components/__snapshots__/App.test.tsx.snap"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Dev and test builds expose the live editor on window.h (state, setState, app, history, store, fonts). Tests reach it as const { h } = window after render. That hook is not installed in production because componentDidMount guards it with isTestEnv() || isDevEnv().",
+          "sources": [
+            "packages/excalidraw/components/App.tsx#L3814-3846",
+            "excalidraw-app/tests/collab.test.tsx#L17"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "There are no automated tests for firebase-project rules, the Docker/nginx image, the real Socket.IO server, VITE_APP_AI_BACKEND, Sentry release upload, or the self-unregistering public/service-worker.js. Firebase and socket modules are mocked out of the only collab test.",
+          "sources": [
+            "excalidraw-app/tests/collab.test.tsx#L30-64",
+            "firebase-project/firestore.rules",
+            "public/service-worker.js"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "tsconfig.json typechecks packages and excalidraw-app only (strict, noEmit, jsx react-jsx). examples and the top-level tests folder are excluded, so example apps are not part of yarn test:typecheck.",
+          "sources": [
+            "tsconfig.json#L1-39"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Fractional-index invariants are part of the test contract: reconcile.ts calls validateFractionalIndices with shouldThrow when isTestEnv() or isDevEnv(), including bound-text checks and a reconciliationContext of local versus remote elements. A bad index in a test fails the test instead of being repaired quietly.",
+          "sources": [
+            "packages/excalidraw/data/reconcile.ts#L46-68"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "risk_map": {
+      "summary": "The serious boundary is collaboration storage: Firestore and Storage rules allow public get and write, and confidentiality is entirely the AES-GCM room key that also sits in the URL hash. The editor class in App.tsx is a single very large state owner, so small input bugs have a wide blast radius. Several legacy paths (zero-IV decrypt, CRA service worker, index-node canvas script) are still in tree. Collaboration, Firebase, and the AI backends are the least tested production paths.",
+      "claims": [
+        {
+          "claim": "firebase-project/firestore.rules allows get and write on every document if true, and explicitly disables list so collections cannot be enumerated. storage.rules allows get and write with no auth on /{files}/rooms/{room}/{file} and /{files}/shareLinks/{shareLink}/{file}. A comment in the Firestore file says list must never be enabled or anyone could delete others' drawings. Anyone who knows or guesses a room id can overwrite the ciphertext; they cannot read it without the key.",
+          "sources": [
+            "firebase-project/firestore.rules#L1-9",
+            "firebase-project/storage.rules#L1-10"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The room key and the share-link key are placed in the URL hash on purpose so they are not sent to the server (getCollaborationLink and exportToBackend comments). Sentry's beforeSend strips hash from event.request.url for the same reason. The key still leaks via screenshots, browser history, and Referrer-Policy origin (not no-referrer) if a navigation includes a hash the browser keeps locally.",
+          "sources": [
+            "excalidraw-app/data/index.ts#L159-164",
+            "excalidraw-app/data/index.ts#L276-286",
+            "excalidraw-app/sentry.ts#L39-42",
+            "vercel.json#L16-21"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Encryption is AES-GCM with a 128-bit key (A128GCM), 12-byte random IV, and Web Crypto. The legacy share decoder still accepts a 12-byte zero IV if the length-prefixed IV fails, which is a weaker historical format that remains reachable through importFromBackend.",
+          "sources": [
+            "packages/excalidraw/data/encryption.ts#L12-94",
+            "packages/common/src/constants.ts#L397",
+            "excalidraw-app/data/index.ts#L166-188"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "initializeScene will fetch an arbitrary decoded URL when location.hash matches /^#url=(.*)$/, then parse the body with loadFromBlob. That is an open client-side fetch of attacker-controlled content, followed by scene restore if the user confirms or the canvas is empty.",
+          "sources": [
+            "excalidraw-app/App.tsx#L304-326"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "isExcalidrawPlusSignedUser is document.cookie.includes('excplus-auth'). It detects cookie presence, not a verified session. ExcalidrawPlusIframeExport posts to VITE_APP_PLUS_APP and attaches VITE_APP_PLUS_EXPORT_PUBLIC_KEY.",
+          "sources": [
+            "excalidraw-app/app_constants.ts#L55-61",
+            "excalidraw-app/ExcalidrawPlusIframeExport.tsx#L16"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Sentry DSN https://7bfc596a5bf945eda6b660d3015a5460@sentry.io/5179260 is hardcoded. It is disabled when VITE_APP_DISABLE_SENTRY=true (the Docker build sets that) or when the hostname is not in SentryEnvHostnameMap. beforeSend fabricates an exception from callsites() for console errors, and captureConsoleIntegration records level error.",
+          "sources": [
+            "excalidraw-app/sentry.ts#L5-42",
+            "excalidraw-app/package.json#L45",
+            "Dockerfile#L14"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "vercel.json sets Feature-Policy to * on all routes, which is a permissive feature policy, alongside nosniff and Referrer-Policy origin. Font woff2 routes under Virgil, Cascadia, and Assistant-Regular allow Access-Control-Allow-Origin *.",
+          "sources": [
+            "vercel.json#L4-48"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "packages/excalidraw/index-node.ts is a Node script that require()s fs and the canvas package, registers Virgil and Cascadia, calls exportToCanvas on three hardcoded elements, and writes test.png. It is not the browser entry (package.json main is dist/prod/index.js) and it shells into the filesystem.",
+          "sources": [
+            "packages/excalidraw/index-node.ts#L1-80",
+            "packages/excalidraw/package.json#L5-7"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "public/service-worker.js is a leftover Create-React-App worker whose activate handler unregisters itself and reloads every client. The comment says Vite now uses sw.js from vite-plugin-pwa and this file should be removed once old clients are gone. It still ships in public/.",
+          "sources": [
+            "public/service-worker.js#L1-20"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "QR rendering uses dangerouslySetInnerHTML={{ __html: svgData }} in excalidraw-app/share/QRCode.tsx. The SVG is produced locally by the uqr dependency, but the sink is still raw HTML injection if that string is ever attacker-controlled.",
+          "sources": [
+            "excalidraw-app/share/QRCode.tsx#L53"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Release and doc scripts shell out: scripts/release.js and scripts/build-version.js use child_process, scripts/buildDocs.js runs git diff, scripts/updateChangelog.js execs git. These are maintainer entrypoints, not the browser app, but they take CLI arguments such as --tag and --version.",
+          "sources": [
+            "scripts/release.js#L1-36",
+            "scripts/buildDocs.js"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The editor App class is the main blast-radius file: constructor, pointer handling, keyboard, export, and unmount all live there, with methods past line 11000 (actionFinalize calls around 10134–11687). Store.scheduleCapture is commented as suspicious because it is called from many sites. A mistaken CaptureUpdateAction.IMMEDIATELY on a remote update would pollute undo; NEVER on a local edit would drop it.",
+          "sources": [
+            "packages/excalidraw/components/App.tsx#L638-949",
+            "packages/excalidraw/components/App.tsx#L10134",
+            "packages/element/src/store.ts#L106-112"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Library installs only allow excalidraw.com and the excalidraw-libraries GitHub raw host, but collab image and scene writes are not similarly origin-locked. Firebase config JSON parse failure only console.warns and continues with {}. A missing or malformed VITE_APP_FIREBASE_CONFIG therefore fails later, at first collab save, rather than at startup.",
+          "sources": [
+            "packages/excalidraw/data/library.ts#L54-58",
+            "excalidraw-app/data/firebase.ts#L44-54"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "window.h in dev and test exposes setState and the store. Combined with StrictMode double-mount, calling the imperative API after unmount throws a specific destroyed-API error. Hosts that cache the first onExcalidrawAPI value across StrictMode will hit that.",
+          "sources": [
+            "packages/excalidraw/components/App.tsx#L3814-3922"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "extension_points": {
+      "summary": "New editor commands are actions registered through register() and ActionManager, or at runtime via the imperative registerAction. Hosts extend rendering and behavior through Excalidraw props (UI slots, embeddables, tools, initial data) rather than forks. Persistence of libraries is an adapter interface. AI diagram-to-code is a setPlugins hook. Locale files and the library URL allowlist are data extension points.",
+      "claims": [
+        {
+          "claim": "register(action) in packages/excalidraw/actions/register.ts appends to a module-level actions array and returns the action. Action files such as actionDeleteSelected.tsx call it at export time. App.tsx imports those modules for their side effects, then actionManager.registerAll(actions) plus undo/redo. The public API also exposes api.registerAction so hosts can add actions after mount.",
+          "sources": [
+            "packages/excalidraw/actions/register.ts#L1-15",
+            "packages/excalidraw/actions/actionDeleteSelected.tsx#L34-35",
+            "packages/excalidraw/components/App.tsx#L841-843",
+            "packages/excalidraw/components/App.tsx#L941-943"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Action objects carry name (ActionName union), perform, keyTest, keyPriority, PanelComponent, trackEvent, and an optional navigation flag. Adding a command requires extending the ActionName union in actions/types.ts or TypeScript will reject the register call. Key collisions are not merged: handleKeyDown warns and cancels when more than one keyTest matches.",
+          "sources": [
+            "packages/excalidraw/actions/types.ts#L17-44",
+            "packages/excalidraw/actions/types.ts#L45-144",
+            "packages/excalidraw/actions/manager.tsx#L92-119"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Host integration props on Excalidraw include onChange, onIncrement, onPointerDown/Up, onPaste, onDuplicate, onLibraryChange, onLinkOpen, onScrollChange, onUserFollow, renderTopLeftUI, renderTopRightUI, renderCustomStats, renderEmbeddable, validateEmbeddable, renderScrollbars, initialData, UIOptions, activeTool, interaction, and aiEnabled. aiEnabled defaults to on unless passed false.",
+          "sources": [
+            "packages/excalidraw/index.tsx#L67-120",
+            "packages/excalidraw/index.tsx#L207-260"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "interaction and ui config objects are compared semantically inside areEqual so hosts can inline them. Supported interaction.enabled keys include links, embeds, interactiveContent, navigation, browserZoom, and tools.laser / tools.custom. When interaction is false or a partial object, isInteractionEnabled returns false and the editor forces viewModeEnabled.",
+          "sources": [
+            "packages/excalidraw/index.tsx#L306-347",
+            "packages/excalidraw/components/App.tsx#L960-964",
+            "packages/excalidraw/components/App.tsx#L896-902"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Custom tools use activeTool.type === 'custom' (plus customType in the memo comparator). The pointer-down branch only applies the cursor; the host is expected to subscribe through onPointerDown. props.activeTool cannot force the image tool — the constructor console.warns and ignores it.",
+          "sources": [
+            "packages/excalidraw/index.tsx#L294-300",
+            "packages/excalidraw/components/App.tsx#L880-889",
+            "packages/excalidraw/components/App.tsx#L8944-8946"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "LibraryPersistenceAdapter requires load({source}) and save(libraryData). The editor also has LibraryMigrationAdapter for one-shot legacy reads. useHandleLibrary and parseLibraryTokensFromUrl are public exports for hosts that supply library tokens on the URL.",
+          "sources": [
+            "packages/excalidraw/data/library.ts#L76-100",
+            "packages/excalidraw/index.tsx#L460-462"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "DiagramToCodePlugin is the AI extension slot: it calls app.setPlugins({ diagramToCode: { generate } }) in a layout effect. The package does not implement the network call; excalidraw-app/components/AI.tsx supplies generate. TTD chat storage is a separate adapter (TTDIndexedDBAdapter) rather than this plugin map.",
+          "sources": [
+            "packages/excalidraw/components/DiagramToCodePlugin/DiagramToCodePlugin.tsx#L7-18",
+            "excalidraw-app/components/AI.tsx#L19-28"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Imperative ExcalidrawImperativeAPI methods created in createExcalidrawAPI include updateScene, applyDeltas, mutateElement, updateLibrary, addFiles, resetScene, setViewport, setElementRenderOverrides, setActiveTool, toggleSidebar, updateFrameRendering, onChange, onIncrement, onPointerDown, onPointerUp, onScrollChange, onUserFollow, onStateChange, and onEvent. history on the API currently only exposes clear.",
+          "sources": [
+            "packages/excalidraw/components/App.tsx#L819-862"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CaptureUpdateAction is the extension contract for programmatic scene writes. IMMEDIATELY pushes undo, NEVER is required for remote or init updates, EVENTUALLY batches multi-step async edits. It is re-exported from the package entry so hosts can pass it to updateScene.",
+          "sources": [
+            "packages/element/src/store.ts#L38-69",
+            "packages/excalidraw/index.tsx#L460"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Feature flags are a localStorage map under excalidraw-feature-flags, read by getFeatureFlag and written by setFeatureFlag. The only flag today is COMPLEX_BINDINGS, default false. Pointer-up consults it to decide whether to reset delayed bind mode. Sentry also calls getFeatureFlag and enables featureFlagsIntegration.",
+          "sources": [
+            "packages/common/src/utils.ts#L1184-1226",
+            "packages/excalidraw/components/App.tsx#L9031-9033",
+            "excalidraw-app/sentry.ts#L1"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New locales are a data plug-in: add packages/excalidraw/locales/<code>.json (Crowdin writes these from en.json) and an entry in the languages array in i18n.ts, including rtl when needed. Vite already chunks every locale file except en.json and percentages.json.",
+          "sources": [
+            "packages/excalidraw/i18n.ts#L19-40",
+            "crowdin.yml#L1-2",
+            "excalidraw-app/vite.config.mts#L106-118"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "WorkerPool.create(workerUrl) is the hook for short-lived module workers (font subsetting). Callers must pass a URL that is not the main bundle. Idle workers are terminated after ttl milliseconds, default 1000, and the pool does not cap concurrency — the comment says the caller must.",
+          "sources": [
+            "packages/excalidraw/workers.ts#L19-59"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "UI composition components are exported for hosts: Sidebar, Button, Footer, MainMenu, WelcomeScreen, LiveCollaborationTrigger, Stats, plus useExcalidrawAPI and ExcalidrawAPIProvider so the API can be read outside the editor tree. Tunnels for slot rendering live in packages/excalidraw/context/tunnels.ts.",
+          "sources": [
+            "packages/excalidraw/index.tsx#L52-65",
+            "packages/excalidraw/index.tsx#L464-477",
+            "packages/excalidraw/context/tunnels.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Examples are the supported embed templates: examples/with-nextjs (App Router page plus a Pages Router route, client-only dynamic import) and examples/with-script-in-browser (Vite, ExampleApp, CustomFooter). yarn start:example builds packages then starts the script example. dev-docs is a separate Docusaurus site and is not a yarn workspace of the root package.json.",
+          "sources": [
+            "examples/with-nextjs/src/app/page.tsx#L6-25",
+            "package.json#L4-8",
+            "package.json#L67"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_handoff": {
+      "summary": "Work in packages/* for editor behavior and excalidraw-app/ for collab, Firebase, share links, and PWA. Read AGENTS.md before touching DOM or types. Run yarn test:typecheck and the relevant vitest file; refresh snapshots with yarn test:update only when the assertion change is intentional. Do not import jotai directly, do not bump element version by hand, and do not assume the collab socket server or Firebase rules are covered by tests.",
+      "claims": [
+        {
+          "claim": "AGENTS.md requires new DOM access to go through app.ownerDocument and app.ownerWindow (or the mounted node's ownerDocument and defaultView), not global document/window. Type overrides must use Merge<Base, Overrides> from @excalidraw/common/utility-types rather than Omit intersections. The App class already exposes ownerDocument and ownerWindow getters that follow that rule.",
+          "sources": [
+            "AGENTS.md#L1-4",
+            "packages/excalidraw/components/App.tsx#L652-663"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "ESLint rule no-restricted-imports errors on importing 'jotai'. Use packages/excalidraw/editor-jotai.ts inside the editor and excalidraw-app/app-jotai.ts in the app. import/order is warn and wants a newline between groups, with @excalidraw/** treated as external.",
+          "sources": [
+            ".eslintrc.json#L3-35"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Safe first reads for an editor change: packages/excalidraw/components/App.tsx (constructor and the specific handler), packages/excalidraw/actions/types.ts plus the action file, packages/element/src/types.ts, and packages/element/src/store.ts. For an app change: excalidraw-app/App.tsx initializeScene and onChange, excalidraw-app/collab/Collab.tsx, excalidraw-app/data/firebase.ts, and excalidraw-app/app_constants.ts.",
+          "sources": [
+            "packages/excalidraw/components/App.tsx#L865-949",
+            "excalidraw-app/App.tsx#L217-373",
+            "excalidraw-app/collab/Collab.tsx#L481-568",
+            "excalidraw-app/app_constants.ts#L1-63"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Before committing, CLAUDE.md says yarn test:update (vitest with snapshot update, watch off) and yarn test:typecheck (tsc). yarn fix runs prettier then eslint --fix. yarn test:all is the full local gate but CI splits it: PRs do not run test:app unless the coverage workflow does. Prefer a targeted vitest path while iterating.",
+          "sources": [
+            "CLAUDE.md#L13-24",
+            "package.json#L68-80",
+            ".github/workflows/lint.yml#L17-22"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Do not hand-edit version or versionNonce. mutateElement / newElementWith / bumpVersion own them. History intentionally excludes those fields when applying undo so the result still collabs. Remote scene writes must pass CaptureUpdateAction.NEVER or they enter the local undo stack.",
+          "sources": [
+            "packages/element/src/types.ts#L57-65",
+            "packages/excalidraw/history.ts#L27-34",
+            "packages/element/src/store.ts#L38-56",
+            "packages/excalidraw/index.tsx#L454-460"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "LocalData.save is paused for the entire collaboration session (pauseSave('collaboration') in startCollaboration, resumeSave in destroySocketClient). A change that writes localStorage during collab will fight that locker. isSavePaused is also true while document.hidden, and flushSave is what unload and blur call.",
+          "sources": [
+            "excalidraw-app/collab/Collab.tsx#L515-516",
+            "excalidraw-app/collab/Collab.tsx#L413-427",
+            "excalidraw-app/data/LocalData.ts#L136-164",
+            "excalidraw-app/App.tsx#L656-692"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Fractional index bugs throw in dev and test (validateFractionalIndices shouldThrow). If a change reorders elements, it must go through syncMovedIndices or syncInvalidIndices. Collab reconcile also checks bound text. Do not sort the elements array ad hoc.",
+          "sources": [
+            "packages/excalidraw/data/reconcile.ts#L46-68",
+            "packages/element/src/types.ts#L65-68",
+            "packages/element/src/Scene.ts#L15-19"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "StrictMode is on in excalidraw-app/index.tsx. The editor comments that the imperative API is invalidated on unmount and must be recreated in componentDidMount. After unmount, get* methods throw if isDestroyed is not checked. Tests and dev code should use window.h.app rather than a stale API reference.",
+          "sources": [
+            "excalidraw-app/index.tsx#L13-16",
+            "packages/excalidraw/components/App.tsx#L945-949",
+            "packages/excalidraw/components/App.tsx#L3905-3922"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Collab and Firebase are easy to break without a failing test. excalidraw-app/tests/collab.test.tsx mocks both firebase.ts and socket.io-client. There is no in-repo server. Manual checks need VITE_APP_WS_SERVER_URL, VITE_APP_FIREBASE_CONFIG, and the backend V2 URLs from vite-env.d.ts. Docker builds set VITE_APP_DISABLE_SENTRY=true so container smoke tests will not report errors.",
+          "sources": [
+            "excalidraw-app/tests/collab.test.tsx#L30-64",
+            "excalidraw-app/vite-env.d.ts#L8-18",
+            "Dockerfile#L12-14"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Package builds are esbuild via yarn build:esm (scripts/buildPackage.js) and must be run before the browser-script example. The app and tests alias source, so you usually do not need a package build to iterate inside the monorepo. Publishing is scripts/release.js; do not bump package.json versions by hand unless you are cutting a release.",
+          "sources": [
+            "packages/excalidraw/package.json#L72-75",
+            "package.json#L51-67",
+            "scripts/release.js#L8-28"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Known traps: image cannot be set via props.activeTool; #room= keys must be length 22; database JSON strips files so images must be saved separately; clearAppStateForLocalStorage drops transient UI such as the canvas search sidebar; opening the search tab is not persisted. Feature flag COMPLEX_BINDINGS defaults off and lives only in localStorage.",
+          "sources": [
+            "packages/excalidraw/components/App.tsx#L880-883",
+            "excalidraw-app/data/index.ts#L138-145",
+            "packages/excalidraw/data/json.ts#L63-71",
+            "excalidraw-app/data/LocalData.ts#L81-88",
+            "packages/common/src/utils.ts#L1184-1191"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Type imports must use import type (verbatim style, separate type imports) or eslint errors. The repo is TypeScript strict. When overriding a field, follow AGENTS.md and use Merge. Tests that render the editor should go through packages/excalidraw/tests/test-utils and helpers/api.ts (the collab test imports API, act, render, and waitFor from there).",
+          "sources": [
+            ".eslintrc.json#L21-27",
+            "tsconfig.json#L11",
+            "AGENTS.md#L4",
+            "excalidraw-app/tests/collab.test.tsx#L7-8"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_prompt": "You are working in the Excalidraw monorepo (yarn 1.22 workspaces, Node >=18, TypeScript strict). Two products share one repo. packages/excalidraw is the React component published as @excalidraw/excalidraw. excalidraw-app is the Vite app behind excalidraw.com. Supporting packages: @excalidraw/common (constants, events, URLs, feature flags), @excalidraw/element (element types, Scene, Store, fractional index, geometry helpers), @excalidraw/math, @excalidraw/utils (exportToCanvas, exportToSvg, exportToBlob), @excalidraw/fractional-indexing, and @excalidraw/laser-pointer. Tests and the app alias those packages to TypeScript source (vitest.config.mts, excalidraw-app/vite.config.mts, tsconfig.json paths). Do not import from package dist while developing inside the repo.\n\nThe editor runtime is the class App in packages/excalidraw/components/App.tsx. It owns Scene, Renderer, Store, History, ActionManager, Library, and the binary file map. Construct order and componentDidMount matter: actions are registered in the constructor; window.h (state, app, history, store) exists only in dev and test; the imperative API is recreated on mount and throws after unmount because StrictMode is on. Scene writes go through updateScene or mutateElement and must pass CaptureUpdateAction: IMMEDIATELY for undoable local edits, NEVER for remote updates and initialization, EVENTUALLY for multi-step async edits. Never assign version or versionNonce yourself. Fractional index (element.index) is the z-order; reorder only through syncMovedIndices / syncInvalidIndices. validateFractionalIndices throws in dev and test.\n\nCommands are actions. Each file calls register() from packages/excalidraw/actions/register.ts. ActionName in actions/types.ts is a closed union — extend it when you add a command. ActionManager.handleKeyDown cancels the key if two keyTests match. Hosts can also call api.registerAction. Keyboard and pointer code must use app.ownerDocument and app.ownerWindow, not global document or window (see AGENTS.md). Type overrides use Merge from @excalidraw/common/utility-types. ESLint forbids importing jotai; use editor-jotai.ts or app-jotai.ts.\n\nThe host app is not the library. Collaboration, Firebase, share links, PWA, Sentry, and Excalidraw+ live under excalidraw-app/. Boot is excalidraw-app/index.tsx (Sentry, registerSW, StrictMode). initializeScene in excalidraw-app/App.tsx restores localStorage, then #json=id,key (encrypted share link), #url= (arbitrary fetch), or #room=id,key. onChange fans out to collabAPI.syncElements or LocalData.save. LocalData writes elements to localStorage key excalidraw and app state to excalidraw-state, and image bytes to IndexedDB files-db. Saves are debounced 300ms and paused while document.hidden or while collaboration holds the locker. startCollaboration calls LocalData.pauseSave('collaboration'); leaving the room resumes it.\n\nCollab encryption is AES-GCM, 128-bit, random 12-byte IV (packages/excalidraw/data/encryption.ts). The room key is the URL hash, never a query param. Portal encrypts JSON and emits server-broadcast / server-volatile-broadcast on socket.io-client (VITE_APP_WS_SERVER_URL). Firebase stores ciphertext on scenes/{roomId} and blobs under /files/rooms and /files/shareLinks. Firestore rules allow public get and write and forbid list — security is the key, not IAM. There is no socket server in this repo. The only collab test mocks firebase and socket.io; do not treat it as coverage of the real protocol.\n\nEnv vars that matter: VITE_APP_WS_SERVER_URL, VITE_APP_FIREBASE_CONFIG (JSON), VITE_APP_BACKEND_V2_GET_URL, VITE_APP_BACKEND_V2_POST_URL, VITE_APP_AI_BACKEND, VITE_APP_PLUS_APP, VITE_APP_DISABLE_SENTRY, VITE_APP_ENABLE_TRACKING, VITE_APP_GIT_SHA. Vite reads env from the repo root. Docker build sets VITE_APP_DISABLE_SENTRY=true.\n\nChecks to run: yarn test:typecheck, then a targeted vitest file. yarn test:update refreshes snapshots — only if you meant to change output. yarn fix for prettier and eslint. CI on PRs runs eslint, prettier, tsc, and coverage; master pushes run yarn test:app. Node on CI is 20 even though engines say >=18.\n\nTraps: props.activeTool cannot force the image tool; collab keys must be 22 characters; serializeAsJSON(..., 'database') omits files; do not persist the canvas-search sidebar; COMPLEX_BINDINGS defaults off in localStorage key excalidraw-feature-flags; library URLs are allowlisted to excalidraw.com and the excalidraw-libraries GitHub raw path; public/service-worker.js is a legacy self-unregistering CRA worker, the real PWA worker comes from vite-plugin-pwa.\n"
+  },
+  "analysis": {
+    "agent": "grok",
+    "model": "cli:grok",
+    "runtime_ms": 369373,
+    "cost_usd": null,
+    "collected_at": "2026-09-22T12:18:11.949Z"
   }
 }

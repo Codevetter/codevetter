@@ -13444,5 +13444,812 @@
         ]
       }
     ]
+  },
+  "report": {
+    "overview": "Create React App is a monorepo that scaffolds opinionated React applications and ships the build, lint, test, and dev-server toolchain those apps use. The CLI (`create-react-app`) copies a template, installs dependencies, and the generated app is then driven by `react-scripts` (webpack, Babel, Jest, ESLint). This brief is grounded in the repo at commit 6254386531d263688ccfa542d0e628fbc0de0b28.",
+    "system_map": {
+      "summary": "The published surface is a Lerna/Yarn workspaces monorepo under packages/. Users invoke the create-react-app binary, which delegates project creation to react-scripts/scripts/init.js and then leaves the app running on react-scripts start/build/test. Runtime boundaries are Node for the CLI and scripts, webpack-dev-server for development, Jest for tests, and static file output for production. Docs live in docusaurus/website and deploy via Netlify. CI is GitHub Actions (build-and-test, lint, e2e).",
+      "claims": [
+        {
+          "claim": "Root package.json names the monorepo create-react-app, marks it private, requires Node >=14, and uses Yarn workspaces for packages/*. Scripts include create-react-app (node tasks/cra.js), build (node tasks/build.js), test (tasks/e2e-simple.sh), e2e (tasks/e2e-simple.sh + tasks/e2e-behavior.sh), e2e:docker (tasks/e2e-docker.sh), eslint, format, and prettier.",
+          "sources": [
+            "package.json#L1-90"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "lerna.json pins Lerna 3.22.1 with version 5.1.0, npmClient yarn, and useWorkspaces true, so package publishes are version-locked together rather than independently versioned at publish time.",
+          "sources": [
+            "lerna.json#L1-20"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The user-facing CLI entry is packages/create-react-app/index.js. It checks Node >=14 via semver, validates the project directory with createApp, then spawns react-scripts/scripts/init.js through executeNodeScript, passing root, appName, verbose, originalDirectory, and template.",
+          "sources": [
+            "packages/create-react-app/index.js#L1-80",
+            "packages/create-react-app/package.json#L1-40"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "create-react-app's bin is create-react-app -> index.js and its only runtime dependency is react-scripts. CLI flags include --scripts-version, --template, --use-pnp, --verbose, and --info (which delegates to envinfo).",
+          "sources": [
+            "packages/create-react-app/createReactApp.js#L1-160",
+            "packages/create-react-app/package.json#L1-50"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "react-scripts is the toolchain package (bin react-scripts -> bin/react-scripts.js). Its dependencies include webpack 5, webpack-dev-server 4, babel-loader, @babel/core, Jest 27, eslint 8, css-minimizer-webpack-plugin, postcss-loader, sass-loader, workbox-webpack-plugin, and html-webpack-plugin.",
+          "sources": [
+            "packages/react-scripts/package.json#L1-120",
+            "packages/react-scripts/bin/react-scripts.js#L1-80"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "react-scripts bin switches on process.argv[2]: start, build, and test require the matching scripts/* module; eject runs scripts/eject. Unknown commands print a hint that CRA commands are start, build, test, and eject.",
+          "sources": [
+            "packages/react-scripts/bin/react-scripts.js#L20-180"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Webpack configs are three modules under packages/react-scripts/config: webpack.config.js (shared factory), webpackDevServer.config.js, and an env loader (env.js) plus paths.js and modules.js. babel-preset-react-app and eslint-config-react-app are sibling packages consumed by those configs.",
+          "sources": [
+            "packages/react-scripts/config/webpack.config.js#L1-80",
+            "packages/react-scripts/config/paths.js#L1-80",
+            "packages/babel-preset-react-app/package.json#L1-40",
+            "packages/eslint-config-react-app/package.json#L1-40"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Docs site package cra-docs (docusaurus/website) is a Docusaurus 2 app. Scripts are start (docusaurus start), build, deploy, and swizzle. netlify.toml publishes docusaurus/website/build with NODE_VERSION 16.8.0 and a docs redirect from / to /docs/getting-started.",
+          "sources": [
+            "docusaurus/website/package.json#L1-40",
+            "netlify.toml#L1-40"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CI workflow build-and-test.yml runs on push to main and on pull_request. Jobs include a build job and an e2e-docker job that calls the reusable workflow e2e-base.yml. lint.yml runs separately.",
+          "sources": [
+            ".github/workflows/build-and-test.yml#L1-80",
+            ".github/workflows/e2e-base.yml#L1-80",
+            ".github/workflows/lint.yml#L1-40"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The default app template is packages/cra-template (template.json + template/public and template/src). TypeScript variant is packages/cra-template-typescript. Templates declare package.json dependencies (react, react-dom, react-scripts, web-vitals, testing-library) and scripts start/build/test/eject.",
+          "sources": [
+            "packages/cra-template/template.json#L1-40",
+            "packages/cra-template-typescript/template.json#L1-50",
+            "packages/cra-template/template/src/App.js#L1-40"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "react-dev-utils is the shared Node library for the CLI and scripts: WebpackDevServerUtils, createCompiler, FileSizeReporter, InterpolateHtmlPlugin, ModuleScopePlugin, eslintFormatter, and browsersHelper. react-error-overlay is a separate iframe overlay package built with its own webpack config.",
+          "sources": [
+            "packages/react-dev-utils/package.json#L1-50",
+            "packages/react-error-overlay/package.json#L1-40"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "There is no application database. Persistence is the generated project directory on disk (files copied from the template, package.json written by init, yarn.lock or package-lock from the installer) plus webpack's in-memory dev middleware and the build/ output folder.",
+          "sources": [
+            "packages/react-scripts/scripts/init.js#L1-60",
+            "packages/react-scripts/config/paths.js#L40-120"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "External integrations at runtime are the npm registry (template and dependency install), browserslist/caniuse via react-dev-utils/browsersHelper, optional Sentry-unrelated envinfo for --info, and Google Fonts only inside the docs site CSS — not the generated app. Workbox is bundled for optional PWA service workers when src/service-worker.js exists.",
+          "sources": [
+            "packages/create-react-app/createReactApp.js#L200-400",
+            "packages/react-dev-utils/browsersHelper.js#L1-40",
+            "packages/react-scripts/config/webpack.config.js#L500-700"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "feature_catalog": {
+      "summary": "User-facing features split into the scaffolder CLI, the four react-scripts commands, the default JS and TS templates, and the documentation site. The generated app is a single-page React demo (logo, edit-src hint, learn-react link) with Jest/Testing Library already wired and a production build that fingerprints assets. Optional capabilities include CSS/Sass/CSS Modules, SVG ReactComponent imports, TypeScript, Jest watch mode, HTTPS dev server, proxy, PUBLIC_URL, and eject.",
+      "claims": [
+        {
+          "claim": "CLI create-react-app <project-directory> accepts --verbose, --info, --scripts-version <version>, --template <name>, and --use-pnp. --info prints environment diagnostics via envinfo and exits. Template names are normalized: cra-template prefix is added unless the name contains a scope or file: prefix.",
+          "sources": [
+            "packages/create-react-app/createReactApp.js#L140-280",
+            "README.md#L1-80"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "init.js is the post-install initializer. It copies the template (excluding template.json), merges template.json into package.json (dependencies, scripts, eslintConfig, browserslist), renames gitignore to .gitignore, tries git init and an initial commit, and prints the success message with cd/npm start instructions.",
+          "sources": [
+            "packages/react-scripts/scripts/init.js#L40-250"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "react-scripts start loads env, chooses a port (default 3000 via choosePort), creates a webpack compiler from configFactory('development'), starts WebpackDevServer, opens the browser unless --no-open or BROWSER=none, and installs SIGINT/SIGTERM handlers that close the server.",
+          "sources": [
+            "packages/react-scripts/scripts/start.js#L1-180",
+            "packages/react-scripts/config/webpackDevServer.config.js#L1-80"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "react-scripts build empties paths.appBuild, runs the production webpack compiler, prints gzip file sizes via FileSizeReporter, copies public/ (minus index.html) into build/, and warns when the build is not deployed to the root because PUBLIC_URL or homepage is set.",
+          "sources": [
+            "packages/react-scripts/scripts/build.js#L40-220"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "react-scripts test is a thin wrapper around Jest. It sets BABEL_ENV and NODE_ENV to test, injects a watch mode (unless CI or --watchAll/--watchAll=false), and forwards argv to jest.run. Config comes from packages/react-scripts/scripts/utils/createJestConfig.js.",
+          "sources": [
+            "packages/react-scripts/scripts/test.js#L1-120",
+            "packages/react-scripts/scripts/utils/createJestConfig.js#L1-80"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "react-scripts eject copies webpack, Babel, and ESLint config into the app, removes the react-scripts dependency, and is irreversible. The eject script checks the git status is clean unless --force or --no-git is passed, then rewrites package.json scripts from react-scripts <cmd> to node scripts/<cmd>.js.",
+          "sources": [
+            "packages/react-scripts/scripts/eject.js#L1-120"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The default JS template App renders a header with img logo (logo.svg), a paragraph telling the user to edit src/App.js, and an anchor to https://reactjs.org. App.css, index.js (ReactDOM.createRoot or ReactDOM.render depending on template version), and public/index.html with %PUBLIC_URL% placeholders ship alongside it.",
+          "sources": [
+            "packages/cra-template/template/src/App.js#L1-40",
+            "packages/cra-template/template/src/index.js#L1-30",
+            "packages/cra-template/template/public/index.html#L1-40"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "cra-template-typescript ships App.tsx, react-app-env.d.ts, and tsconfig.json. Its template.json adds typescript, @types/node, @types/react, @types/react-dom, and @types/jest. The typecheck fixture App.tsx exists to assert tsc behavior in integration tests.",
+          "sources": [
+            "packages/cra-template-typescript/template.json#L1-40",
+            "packages/cra-template-typescript/template/src/App.tsx#L1-40",
+            "test/fixtures/typescript-typecheck/src/App.tsx#L1-30"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Dev server features in webpackDevServer.config.js include hot reloading, historyApiFallback, gzip, public/ static directory, optional proxy from package.json proxy, HTTPS when HTTPS=true, and allowedHosts driven by HOST / DANGEROUSLY_DISABLE_HOST_CHECK. SockJS and webpack-dev-server client overlay integrate with react-error-overlay.",
+          "sources": [
+            "packages/react-scripts/config/webpackDevServer.config.js#L40-200",
+            "packages/react-dev-utils/webpackHotDevClient.js#L1-40"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Asset pipeline: file-loader/asset modules for images and fonts; babel-plugin-named-asset-import turns SVG imports named ReactComponent into SVGR components; CSS and CSS Modules via css-loader; Sass via sass-loader when the user installs sass. PostCSS applies autoprefixer using browserslist.",
+          "sources": [
+            "packages/babel-plugin-named-asset-import/index.js#L1-60",
+            "packages/react-scripts/config/webpack.config.js#L200-450",
+            "packages/babel-preset-react-app/create.js#L1-80"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "eslint-config-react-app enables eslint:recommended, plugin:react/recommended, react-hooks, jsx-a11y, and (when the typescript parser is present) @typescript-eslint. jest and testing-library plugins are turned on only when those packages resolve from the app. confusing-browser-globals supplies restricted globals (event, name, length, etc.).",
+          "sources": [
+            "packages/eslint-config-react-app/index.js#L1-120",
+            "packages/confusing-browser-globals/index.js#L1-40"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "PWA support is conditional: webpack.config.js adds Workbox InjectManifest or GenerateSW only when src/service-worker.js (or serviceWorker.ts) exists. The modern templates do not include a service worker by default; older template copies may still reference serviceWorkerRegistration.",
+          "sources": [
+            "packages/react-scripts/config/webpack.config.js#L600-750"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "data_flow": {
+      "summary": "Two data planes exist. Scaffolding: argv and template package contents flow through createApp into a new directory, then init.js materializes package.json, source files, and git state. App runtime: source files, env files, and public/ flow through webpack (Babel, CSS, asset plugins) into either an in-memory dev server or a build/ directory. Jest is a third consumer of the same Babel pipeline via babel-jest and a derived config. Environment variables are the main cross-cutting input: only NODE_ENV, PUBLIC_URL, and REACT_APP_* are inlined into the client bundle.",
+      "claims": [
+        {
+          "claim": "CLI argv is parsed in createReactApp.js with a manual loop (not commander). project directory is resolved with path.resolve. If the directory exists and is not empty (except .git, .hg, LICENSE, README, and a few known files), createApp refuses to continue unless the name is . for the current directory.",
+          "sources": [
+            "packages/create-react-app/createReactApp.js#L40-200"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Template resolution: getTemplateInstallPackage turns --template typescript into cra-template-typescript, keeps scoped names, and supports file: paths and version suffixes (typescript@next). The template package and react-scripts are installed into the new app before init.js runs.",
+          "sources": [
+            "packages/create-react-app/createReactApp.js#L700-900"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "init.js reads template/template.json via fs, copies the template directory with fs-extra, deletes the template's package.json and README if present so the generated package.json wins, then Object.assign-merges dependencies, scripts, eslintConfig, browserslist, babel, and jest keys.",
+          "sources": [
+            "packages/react-scripts/scripts/init.js#L50-220"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "paths.js resolves appPath from process.cwd(), then appSrc (src/), appPublic (public/), appHtml (public/index.html), appIndexJs (src/index.* via moduleFileExtensions), appBuild (build/), dotenv (.env), and testsSetup (src/setupTests). moduleFileExtensions lists web.mjs, mjs, web.js, js, web.ts, ts, web.tsx, tsx, json, web.jsx, jsx.",
+          "sources": [
+            "packages/react-scripts/config/paths.js#L1-140"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "env.js loads dotenv files in priority order: .env.${NODE_ENV}.local, .env.local (skipped when NODE_ENV is test), .env.${NODE_ENV}, .env. It then builds the raw public env object containing NODE_ENV, PUBLIC_URL, WDS_SOCKET_*, FAST_REFRESH, and every key matching /^REACT_APP_/i. Those are stringified for webpack DefinePlugin as process.env.KEY.",
+          "sources": [
+            "packages/react-scripts/config/env.js#L1-130",
+            "packages/react-scripts/config/webpack.config.js#L400-520"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "webpack.config.js is a function (webpackEnv) => config. In production, mode is production, devtool is source-map unless GENERATE_SOURCEMAP=false, and output filenames include contenthash. In development, filenames are unhashed and devtool is cheap-module-source-map. output.publicPath comes from paths.publicUrlOrPath.",
+          "sources": [
+            "packages/react-scripts/config/webpack.config.js#L60-180",
+            "packages/react-scripts/config/paths.js#L100-160"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "HTML path: HtmlWebpackPlugin reads public/index.html. InterpolateHtmlPlugin substitutes %PUBLIC_URL% and other env placeholders. MiniCssExtractPlugin extracts CSS only in production; style-loader injects CSS in development. TerserPlugin and CssMinimizerPlugin minify in production.",
+          "sources": [
+            "packages/react-scripts/config/webpack.config.js#L450-650",
+            "packages/react-dev-utils/InterpolateHtmlPlugin.js#L1-40"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "ModuleScopePlugin restricts imports that resolve outside src/ (and node_modules exceptions) so a user cannot accidentally import files from outside the project source tree via relative paths. babel-loader includes paths.appSrc only.",
+          "sources": [
+            "packages/react-dev-utils/ModuleScopePlugin.js#L1-80",
+            "packages/react-scripts/config/webpack.config.js#L180-280"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Jest config from createJestConfig sets roots to <rootDir>/src, testMatch to the standard CRA patterns, transform for js/jsx/ts/tsx via babel-jest and for css/files via custom transformers in react-scripts/config/jest, moduleNameMapper for CSS and asset stubs, and setupFilesAfterEnv pointing at src/setupTests if it exists.",
+          "sources": [
+            "packages/react-scripts/scripts/utils/createJestConfig.js#L40-160",
+            "packages/react-scripts/config/jest/cssTransform.js#L1-30",
+            "packages/react-scripts/config/jest/fileTransform.js#L1-40"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The TypeScript data path is fork-ts-checker-webpack-plugin (async typecheck) when tsconfig.json or jsconfig.json exists, plus babel-preset-react-app's TypeScript preset when the file extension is ts/tsx. ESLint uses @typescript-eslint/parser only if the user has installed it (resolved via require.resolve with a fallback).",
+          "sources": [
+            "packages/react-scripts/config/webpack.config.js#L300-450",
+            "packages/babel-preset-react-app/create.js#L40-120",
+            "packages/eslint-config-react-app/index.js#L80-160"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Error overlay data flow: webpack compile errors and runtime errors are formatted by react-dev-utils/formatWebpackMessages and react-error-overlay. webpackHotDevClient listens on the dev-server websocket and calls into the overlay iframe. Source maps are consumed by @babel/code-frame and a StackFrame parser.",
+          "sources": [
+            "packages/react-dev-utils/webpackHotDevClient.js#L40-160",
+            "packages/react-error-overlay/package.json#L1-40",
+            "packages/react-dev-utils/formatWebpackMessages.js#L1-40"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Production output boundary is paths.appBuild (build/). public/ files are copied with fs.copySync excluding index.html. The build script writes no server; deployment is a static host. Docs describe this and netlify.toml is only for the documentation site, not for generated apps.",
+          "sources": [
+            "packages/react-scripts/scripts/build.js#L150-230",
+            "netlify.toml#L1-30",
+            "docusaurus/docs/deployment.md#L1-40"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "behavior_traces": {
+      "summary": "Three end-to-end traces matter: creating an app, starting the dev server, and producing a production build. A fourth shorter trace is the Jest test command and a fifth is eject. Each names the functions in call order as they appear in the source.",
+      "claims": [
+        {
+          "claim": "Startup trace (npx create-react-app my-app --template typescript): index.js checks node version -> calls run() in createReactApp.js -> parses argv into program flags -> createApp(name, verbose, scriptsVersion, template, usePnp) -> validates app name with validate-npm-package-name -> makes the directory -> writes a temporary package.json -> installs react, react-dom, react-scripts, and the template package via spawn of npm/yarn -> executeNodeScript(react-scripts/scripts/init.js) with JSON argv.",
+          "sources": [
+            "packages/create-react-app/index.js#L40-90",
+            "packages/create-react-app/createReactApp.js#L160-450"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "init.js trace: verify node and react-scripts version compatibility -> copy template files from template/template into the app root -> merge template.json -> rename gitignore -> delete template package leftovers -> run git init, git add, git commit if git is available and the directory is not already a repo -> print Next steps (cd, npm start, npm test, npm run build, npm run eject). On failure it attempts to remove the created directory unless the user used . as the name.",
+          "sources": [
+            "packages/react-scripts/scripts/init.js#L30-280",
+            "packages/create-react-app/createReactApp.js#L450-650"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Dev server trace (npm start -> react-scripts start): start.js sets BABEL_ENV=development and NODE_ENV=development -> require('../config/env') -> checkRequiredFiles([appHtml, appIndexJs]) exits 1 if missing -> checkBrowsers(appPath) reads browserslist -> choosePort(HOST, DEFAULT_PORT 3000) -> configFactory('development') -> createCompiler({config, appName, urls, useYarn, useTypeScript, webpack}) -> prepareProxy(package.json proxy, appPublic, HOST) -> createDevServerConfig -> new WebpackDevServer -> devServer.startCallback -> openBrowser(urls.localUrlForBrowser) -> listen for stdin end and signals to gracefully shutdown.",
+          "sources": [
+            "packages/react-scripts/scripts/start.js#L30-200",
+            "packages/react-dev-utils/WebpackDevServerUtils.js#L1-80",
+            "packages/react-dev-utils/checkRequiredFiles.js#L1-30"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Compiler hook trace inside createCompiler: compiler.hooks.invalid, beforeCompile, and done. On done, formatWebpackMessages splits errors and warnings; TSC errors are appended when useTypeScript; if errors exist, printBuildError-style instructions are shown and the dev server keeps running. Successful compiles clear the console (unless COMPILER_TERMINAL is set or CI) and print the local and network URLs.",
+          "sources": [
+            "packages/react-dev-utils/WebpackDevServerUtils.js#L80-250",
+            "packages/react-dev-utils/formatWebpackMessages.js#L1-80",
+            "packages/react-dev-utils/printHostingInstructions.js#L1-40"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Production build trace: build.js sets NODE_ENV=production -> checkRequiredFiles -> checkBrowsers -> measure file sizes of existing build/ -> fs.emptyDirSync(paths.appBuild) -> copyPublicFolder() -> build(previousFileSizes) which returns a Promise around webpack(configFactory('production')).run -> formatWebpackMessages -> if errors, reject and print the first error only -> resolve with stats, warnings, previous sizes -> printFileSizesAfterBuild -> printHostingInstructions(appPackage, publicUrl, publicPath, buildFolder, useYarn).",
+          "sources": [
+            "packages/react-scripts/scripts/build.js#L40-250"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Test trace: test.js sets BABEL_ENV=test and NODE_ENV=test -> env.js loads .env.test and .env but not .env.local -> argv is rewritten so that --watch is added when stdin is a TTY and CI is unset, or --watchAll when --coverage is passed without an explicit watch flag -> require('jest').run(argv). createJestConfig resolves transformers relative to react-scripts so ejected apps can retarget them.",
+          "sources": [
+            "packages/react-scripts/scripts/test.js#L20-140",
+            "packages/react-scripts/scripts/utils/createJestConfig.js#L1-50"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Eject trace: eject.js confirms prompt (unless CI) -> verifies git clean via git status --porcelain -> copies config/ and scripts/ from react-scripts into the app -> rewrites package.json dependencies by inlining react-scripts' own deps minus the blacklist -> replaces script entries -> removes react-scripts -> writes config files with a generated header comment. This is the documented escape hatch before 'alternatives to ejecting'.",
+          "sources": [
+            "packages/react-scripts/scripts/eject.js#L40-200",
+            "docusaurus/docs/alternatives-to-ejecting.md#L1-30"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Template render trace for the default app: public/index.html is the HTML shell -> src/index.js imports React, ReactDOM, ./index.css, App, and reportWebVitals -> creates a root on document.getElementById('root') and renders <App /> -> App.js returns the header/logo/link tree -> App.test.js uses React Testing Library render and screen.getByText(/learn react/i).",
+          "sources": [
+            "packages/cra-template/template/src/index.js#L1-30",
+            "packages/cra-template/template/src/App.js#L1-30",
+            "packages/cra-template/template/src/App.test.js#L1-20"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Browserslist gate: before start or build, checkBrowsers prompts (or fails in CI) when the browserslist config in package.json targets browsers that would pull in extra polyfills or when the default CRA browserslist is missing. Default template browserslist is production >0.2%, not dead, not op_mini all and development last 1 chrome/firefox/safari version.",
+          "sources": [
+            "packages/react-dev-utils/browsersHelper.js#L1-80",
+            "packages/cra-template/template.json#L20-50"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Fast Refresh path: when FAST_REFRESH is not false, webpack entry includes the React Refresh client and babel-preset-react-app enables react-refresh/babel in development. webpackHotDevClient.js is still the CRA client that reports compile status; React Refresh handles component state-preserving updates separately from full reloads.",
+          "sources": [
+            "packages/react-scripts/config/webpack.config.js#L100-200",
+            "packages/babel-preset-react-app/create.js#L80-160",
+            "packages/react-dev-utils/webpackHotDevClient.js#L1-40"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "--scripts-version path: if the user passes a version, tarball URL, or file: path, createReactApp installs that instead of the bundled react-scripts dependency. A custom fork must still expose scripts/init.js because executeNodeScript hard-codes that relative path inside the installed package.",
+          "sources": [
+            "packages/create-react-app/createReactApp.js#L300-500",
+            "packages/create-react-app/index.js#L50-80"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "testing_signals": {
+      "summary": "Tests are split across package-level Jest unit tests and a fixture integration suite under test/ that builds real apps with the local react-scripts. The root test script runs tasks/e2e-simple.sh; full behavior coverage is tasks/e2e-behavior.sh and tasks/e2e-docker.sh. GitHub Actions runs these on pull requests. Unit tests use Jest; a few packages still mention Flow. There is no Cypress/Playwright app suite — e2e here means CLI integration against webpack builds. Coverage of the dev server, eject, and the docs site is thin compared with the fixture build matrix.",
+      "claims": [
+        {
+          "claim": "Root package.json test script is node tasks/e2e-simple.sh. The e2e script is node tasks/e2e-simple.sh && node tasks/e2e-behavior.sh. e2e:docker is node tasks/e2e-docker.sh. There is no root jest.config; each package runs Jest via its own npm test or via the integration runner.",
+          "sources": [
+            "package.json#L40-80",
+            "tasks/e2e-simple.sh#L1-40"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "react-dev-utils tests live in packages/react-dev-utils/__tests__ and cover WebpackDevServerUtils, formatWebpackMessages, ModuleScopePlugin, and browsersHelper-style helpers. The package test script is jest.",
+          "sources": [
+            "packages/react-dev-utils/package.json#L1-30"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "babel-plugin-named-asset-import and confusing-browser-globals each expose an npm test script (Jest or node test runner as declared). babel-preset-react-app fixtures under its package test directory compile sample files with the preset and snapshot or assert output.",
+          "sources": [
+            "packages/babel-plugin-named-asset-import/package.json#L1-25",
+            "packages/confusing-browser-globals/package.json#L1-25",
+            "packages/babel-preset-react-app/package.json#L1-30"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "react-error-overlay has its own Jest + jsdom setup and a webpack build (build, build:prod). Tests render the overlay iframe and stack-frame parser. A Flow annotation path remains (npm run flow) even though most of the repo is plain JS.",
+          "sources": [
+            "packages/react-error-overlay/package.json#L1-40"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Template unit test App.test.js only asserts that the learn-react link renders. It does not cover index.js boot, web-vitals, or CSS. The kitchen-sink behavior of webpack loaders is instead covered by test/fixtures compiled during e2e.",
+          "sources": [
+            "packages/cra-template/template/src/App.test.js#L1-20",
+            "test/fixtures/typescript-advanced/src/App.tsx#L1-40"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "GitHub Actions build-and-test.yml checks out the repo, sets up Node, enables corepack/yarn, installs, and builds the local tarballs via tasks/build.js style steps before e2e. e2e-base.yml is a reusable workflow_call so the docker e2e job can share steps. lint.yml runs the eslint script.",
+          "sources": [
+            ".github/workflows/build-and-test.yml#L1-120",
+            ".github/workflows/e2e-base.yml#L1-80",
+            ".github/workflows/lint.yml#L1-50"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "eslint is a first-class check: root script eslint runs on packages and tasks. .eslintrc.json extends the local eslint-config-react-app (or a root config that points at it) and prettier is enforced via .prettierrc. The format script writes; CI lint does not auto-fix.",
+          "sources": [
+            ".eslintrc.json#L1-40",
+            ".prettierrc#L1-20",
+            "package.json#L40-70"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "What is lightly tested: eject.js has historical integration coverage but is not part of e2e-simple's critical path; the Docusaurus site has no automated visual or link test in the workflows read; WebpackDevServer HTTPS, proxy, and host-check branches are mostly untested outside manual QA; react-app-polyfill has no behavioral browser matrix in CI.",
+          "sources": [
+            "tasks/e2e-simple.sh#L1-80",
+            ".github/workflows/build-and-test.yml#L1-100",
+            "packages/react-scripts/scripts/eject.js#L1-40"
+          ],
+          "kind": "inference"
+        }
+      ]
+    },
+    "risk_map": {
+      "summary": "The highest-risk surfaces are process spawning during install (npm/yarn), the dev server's host check and proxy, env inlining, and eject rewriting package.json. Secrets are not stored in-repo; the dangerous pattern is REACT_APP_* being baked into the client bundle. Several code paths shell out to git. The project is in maintenance mode (v5.1.0) so dependency CVEs in webpack 5 / Jest 27 will linger unless backporting continues. Dead weight includes IE polyfill entrypoints and Flow leftovers.",
+      "claims": [
+        {
+          "claim": "createReactApp.js spawns the package manager (npm, yarn, or pnpm when use-pnp) with user-influenced package specifiers (--scripts-version and --template). Specifiers are passed as arguments (not a shell string) in the spawn path, but a malicious --scripts-version file: URL or git URL can still execute that package's install scripts. This is inherent to any scaffolder.",
+          "sources": [
+            "packages/create-react-app/createReactApp.js#L400-700"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "executeNodeScript writes a temporary JS file and runs it with the Node binary to invoke init.js, passing serialized arguments. The temp file is removed afterwards. If cwd or the template path were attacker-controlled beyond the CLI user, this is an arbitrary Node execution primitive — acceptable for a local CLI, unsafe if wrapped as a service.",
+          "sources": [
+            "packages/create-react-app/createReactApp.js#L550-750"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Dev server host check: allowedHosts is set to all when DANGEROUSLY_DISABLE_HOST_CHECK=true, which re-opens DNS-rebinding exposure against the webpack-dev-server. Proxy middleware (http-proxy-middleware) forwards to package.json proxy and can be abused if a malicious site is allowed to hit the dev server. sockHost/sockPath/sockPort (WDS_SOCKET_*) are also env-controlled.",
+          "sources": [
+            "packages/react-scripts/config/webpackDevServer.config.js#L40-180",
+            "packages/react-scripts/config/env.js#L80-130"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "env.js documents and implements that any REACT_APP_* variable is embedded into the JS bundle via DefinePlugin. Putting secrets in REACT_APP_ keys ships them to every browser. .env.local is loaded for development and production but intentionally skipped for test.",
+          "sources": [
+            "packages/react-scripts/config/env.js#L1-130",
+            "docusaurus/docs/adding-custom-environment-variables.md#L1-40"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "init.js and eject.js invoke git (init, add, commit, status) through cross-spawn or execSync. A hostile git hook in an existing repo (eject) or a strange GIT_* environment can run code. eject refuses a dirty tree unless forced, which is a safety check not a security boundary.",
+          "sources": [
+            "packages/react-scripts/scripts/init.js#L180-280",
+            "packages/react-scripts/scripts/eject.js#L40-120"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "HTTPS dev server: when HTTPS=true, start.js / webpackDevServer.config.js enables https. Certificate handling uses webpack-dev-server defaults (self-signed) unless SSL_CRT_FILE and SSL_KEY_FILE are set. Those paths are read from disk; a wrong path fails the start rather than falling back silently in the config that reads them.",
+          "sources": [
+            "packages/react-scripts/config/webpackDevServer.config.js#L80-160",
+            "packages/react-scripts/scripts/start.js#L80-160"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "ModuleScopePlugin and the image inline size limit are integrity features, not auth. There is no authentication layer anywhere: CRA generates static SPAs. Anyone who treats the dev server as an authenticated backend proxy inherits the proxy's lack of CSRF protection.",
+          "sources": [
+            "packages/react-dev-utils/ModuleScopePlugin.js#L1-50",
+            "docusaurus/docs/proxying-api-requests-in-development.md#L1-40"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Dependency blast radius is react-scripts/package.json: webpack, webpack-dev-server, Jest, babel, eslint, postcss, and workbox are pinned to the v5 line (webpack 5, Jest 27, ESLint 8). A vulnerability in webpack-dev-server affects every app that has not ejected. Ejected apps freeze a copy and stop receiving fixes.",
+          "sources": [
+            "packages/react-scripts/package.json#L30-120",
+            "packages/react-scripts/scripts/eject.js#L100-180"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "IE compatibility code (react-app-polyfill/js/ie11.js and ie9) and confusing-browser-globals are legacy surfaces. They still ship because older generated apps import them. Changing the globals list is a breaking ESLint change for every consumer of eslint-config-react-app.",
+          "sources": [
+            "packages/react-app-polyfill/package.json#L1-30",
+            "packages/confusing-browser-globals/index.js#L1-40",
+            "packages/eslint-config-react-app/index.js#L1-40"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "eslint-config-react-app uses try/catch require.resolve to optionally enable TypeScript, Jest, and Testing Library rules. If those plugins are installed but at an incompatible major, ESLint crashes the build/start because CRACO-less CRA fails compilation on ESLint errors (ESLINT_NO_DEV_ERRORS can soften dev). That coupling is a frequent break when users upgrade plugins independently.",
+          "sources": [
+            "packages/eslint-config-react-app/index.js#L60-180",
+            "packages/react-scripts/config/webpack.config.js#L500-650"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The docs site and the published README can drift from the code. available-scripts.md and adding-custom-environment-variables.md are the contract users trust. netlify.toml only publishes the website; a docs-only claim about runtime behavior must be checked against packages/react-scripts before editing code.",
+          "sources": [
+            "docusaurus/docs/available-scripts.md#L1-40",
+            "README.md#L1-60",
+            "netlify.toml#L1-25"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CI docker e2e is the only place the full behavior matrix runs. A change to webpack.config.js or env.js can pass unit tests and e2e-simple yet break typescript fixtures or PUBLIC_URL handling. Those fixtures are the regression net.",
+          "sources": [
+            ".github/workflows/build-and-test.yml#L60-140",
+            "test/fixtures/typescript-typecheck/src/App.tsx#L1-20",
+            "packages/react-scripts/config/env.js#L1-40"
+          ],
+          "kind": "inference"
+        },
+        {
+          "claim": "No in-repo secret material was observed in the manifests or workflows read: no private keys, no production service credentials. Workflows use GitHub-hosted runners and standard checkout/setup-node. The risk is downstream (user apps embedding REACT_APP secrets), not this repo's own deploy tokens being hard-coded.",
+          "sources": [
+            ".github/workflows/build-and-test.yml#L1-80",
+            ".github/workflows/lint.yml#L1-40",
+            "package.json#L1-40"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "extension_points": {
+      "summary": "CRA's extension model is deliberate and narrow: custom templates, a replaceable react-scripts package (--scripts-version), env vars, package.json fields (proxy, homepage, browserslist, jest, babel), and finally eject. There is no in-process plugin registry. The practical plug-in points inside the repo are the webpack config factory, the Jest config factory, babel-preset-react-app's create() options, and ESLint's optional plugin detection. Community tools (CRACO, react-app-rewired) patch these from outside because the project refuses a first-party override API.",
+      "claims": [
+        {
+          "claim": "Templates are the supported product extension. A template package must be named cra-template-* (or scoped) and contain template.json plus a template/ directory. template.json keys merged by init.js are package.json fields: dependencies, scripts, eslintConfig, babel, jest, browserslist. Any extra files under template/ are copied verbatim.",
+          "sources": [
+            "packages/react-scripts/scripts/init.js#L60-180",
+            "packages/cra-template/template.json#L1-40",
+            "docusaurus/docs/custom-templates.md#L1-40"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "--scripts-version replaces the entire toolchain package. A fork must provide bin/react-scripts.js and scripts/init.js, start.js, build.js, test.js. The CLI does not feature-detect; it only installs and executes init.js.",
+          "sources": [
+            "packages/create-react-app/createReactApp.js#L280-450",
+            "packages/react-scripts/bin/react-scripts.js#L1-80"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "webpack.config.js exports a factory function of webpackEnv. Internal extension is editing that factory (or ejecting a copy). There is no plugins array exposed to package.json. Advanced-configuration docs point users at environment variables rather than a config file.",
+          "sources": [
+            "packages/react-scripts/config/webpack.config.js#L40-100",
+            "docusaurus/docs/advanced-configuration.md#L1-40"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Environment extension surface (read by env.js and start.js): PORT, HOST, HTTPS, SSL_CRT_FILE, SSL_KEY_FILE, BROWSER, BROWSER_ARGS, PUBLIC_URL, BUILD_PATH, GENERATE_SOURCEMAP, INLINE_RUNTIME_CHUNK, IMAGE_INLINE_SIZE_LIMIT, FAST_REFRESH, CHOKIDAR_USEPOLLING, TSC_COMPILE_ON_ERROR, ESLINT_NO_DEV_ERRORS, DISABLE_ESLINT_PLUGIN, DISABLE_NEW_JSX_TRANSFORM, WDS_SOCKET_HOST, WDS_SOCKET_PATH, WDS_SOCKET_PORT, DANGEROUSLY_DISABLE_HOST_CHECK, CI, and REACT_APP_*.",
+          "sources": [
+            "packages/react-scripts/config/env.js#L70-140",
+            "packages/react-scripts/scripts/start.js#L40-160",
+            "docusaurus/docs/advanced-configuration.md#L1-50"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "package.json fields honored without eject: proxy (string or object consumed by prepareProxy), homepage (feeds publicPath via paths.js), browserslist, and optional jest/babel overrides that get merged but are only partially respected — createJestConfig ignores most user keys unless they were written by eject. Users commonly discover this limitation.",
+          "sources": [
+            "packages/react-scripts/config/paths.js#L90-150",
+            "packages/react-dev-utils/WebpackDevServerUtils.js#L200-320",
+            "packages/react-scripts/scripts/utils/createJestConfig.js#L40-120"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "babel-preset-react-app's create(options) is the Babel extension point inside the monorepo. webpack and Jest both call it with absoluteRuntime, flow flags, and helpers. babel-plugin-named-asset-import is injected here so SVG ReactComponent imports work. Custom presets in the app are not loaded unless the user ejects or replaces the preset.",
+          "sources": [
+            "packages/babel-preset-react-app/create.js#L1-100",
+            "packages/babel-preset-react-app/index.js#L1-30",
+            "packages/babel-plugin-named-asset-import/index.js#L1-50"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "ESLint extension is eslintConfig in package.json of the generated app, which extends react-app and optionally react-app/jest. Adding rules works; changing the parser for TS is automatic only when typescript and the parser package are installed. The config file exports a function so it can conditionally require plugins.",
+          "sources": [
+            "packages/eslint-config-react-app/index.js#L1-80",
+            "packages/cra-template/template.json#L10-40"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Jest transformers are extension points for non-JS assets: cssTransform returns an empty module, fileTransform stringifies filenames (and special-cases SVG for ReactComponent). New asset types require a new transform plus a moduleNameMapper entry in createJestConfig.",
+          "sources": [
+            "packages/react-scripts/config/jest/cssTransform.js#L1-25",
+            "packages/react-scripts/config/jest/fileTransform.js#L1-60",
+            "packages/react-scripts/scripts/utils/createJestConfig.js#L80-150"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "react-error-overlay is replaceable only by eject or by aliasing the module. It exposes a small runtime API (listen, report, dismiss, startReportingRuntimeErrors) used by webpackHotDevClient. Editing overlay UX means changing that package and rebuilding it (npm run build).",
+          "sources": [
+            "packages/react-error-overlay/package.json#L1-35",
+            "packages/react-dev-utils/webpackHotDevClient.js#L1-50"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Docusaurus docs extension is file-based: drop an md file in docusaurus/docs and add it to sidebars.json. swizzle script exists for theming. This does not affect the CLI.",
+          "sources": [
+            "docusaurus/website/sidebars.json#L1-60",
+            "docusaurus/website/package.json#L1-30"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Supported alternatives to a plugin API, as documented, are: composing libraries inside src/, using a custom template, forking react-scripts, or ejecting. The docs page alternatives-to-ejecting.md is the product decision record: CRA will not grow an overrides config.",
+          "sources": [
+            "docusaurus/docs/alternatives-to-ejecting.md#L1-40",
+            "CONTRIBUTING.md#L1-40"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_handoff": {
+      "summary": "Edit the package that owns the behavior, not the docs site, unless the task is documentation. The CLI is packages/create-react-app; compiler behavior is packages/react-scripts/config and scripts; shared helpers are packages/react-dev-utils. Keep Node >=14 assumptions. Do not add a webpack-override API. Verify with the package's Jest tests first, then tasks/e2e-simple.sh for scaffold or config changes. Avoid npm install at the repo root unless the user asked — Yarn workspaces and tasks/build.js are the intended install/pack path. Generated template files are copied verbatim, so a template bug ships to every new app.",
+      "claims": [
+        {
+          "claim": "Read order for any behavior change: packages/react-scripts/bin/react-scripts.js, the relevant scripts/*.js, config/paths.js, config/env.js, config/webpack.config.js, then the matching helper in packages/react-dev-utils. For scaffold bugs read createReactApp.js then scripts/init.js.",
+          "sources": [
+            "packages/react-scripts/bin/react-scripts.js#L1-40",
+            "packages/react-scripts/scripts/init.js#L1-40",
+            "packages/create-react-app/createReactApp.js#L1-40"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CONTRIBUTING.md is the contributor contract: issues and PRs, how to run tests, and the expectation that changes stay focused. README.md states the user-facing quick start (npx create-react-app my-app) and points documentation at create-react-app.dev. Prefer updating both the code and the matching docusaurus/docs page when behavior changes.",
+          "sources": [
+            "CONTRIBUTING.md#L1-50",
+            "README.md#L1-50"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Safe, low-blast edits: a single fixture under test/fixtures, a doc page, template copy in packages/cra-template/template (remember the TS twin), or a unit test in __tests__. High-blast edits: webpack.config.js, env.js, createJestConfig.js, eslint-config-react-app/index.js, init.js merge logic, and package.json dependency bumps in react-scripts.",
+          "sources": [
+            "packages/react-scripts/config/webpack.config.js#L1-40",
+            "packages/eslint-config-react-app/index.js#L1-30",
+            "packages/cra-template/template.json#L1-20"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Template edits must be applied to both packages/cra-template and packages/cra-template-typescript when the change is not JS-only. template.json dependency versions should stay aligned (react-scripts version field, testing-library, web-vitals). Forgetting the TS template is a known footgun.",
+          "sources": [
+            "packages/cra-template/template.json#L1-40",
+            "packages/cra-template-typescript/template.json#L1-45"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Tests to run: for react-dev-utils, npm test inside that package. For CLI parsing, npm test inside packages/create-react-app. For scaffold or webpack behavior, yarn test (tasks/e2e-simple.sh) from the root after tasks/build.js has packed local tarballs. Full matrix is yarn e2e. ESLint via yarn eslint. Prettier via the format script; do not reformat unrelated files.",
+          "sources": [
+            "package.json#L40-80",
+            "packages/create-react-app/package.json#L1-25",
+            "packages/react-dev-utils/package.json#L1-25"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Node version gate is duplicated: create-react-app/index.js semver check and root package.json engines.node >=14. CI Node version must satisfy both. Do not use newer Node-only APIs (e.g. native fetch assumptions, import assertions) without updating the engines field and the runtime check.",
+          "sources": [
+            "packages/create-react-app/index.js#L20-50",
+            "package.json#L1-30"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Do not hand-edit Yarn/npm lockfiles except as the result of an install the user requested. Do not bump webpack, Jest, or Babel majors casually: the e2e fixtures and babel-preset-react-app are tightly coupled to Jest 27 and Babel 7 APIs. Lerna version in lerna.json must stay consistent with published package versions.",
+          "sources": [
+            "lerna.json#L1-15",
+            "packages/react-scripts/package.json#L30-90",
+            "packages/babel-preset-react-app/package.json#L1-30"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Trap: PUBLIC_URL vs homepage vs paths.publicUrlOrPath. Changing one without reading paths.js and InterpolateHtmlPlugin and the build.js hosting instructions will break asset URLs for apps hosted on a subpath. Trap: .env.local is ignored when NODE_ENV=test, so a test that depends on a local secret-looking var will pass locally in start and fail in Jest.",
+          "sources": [
+            "packages/react-scripts/config/paths.js#L90-150",
+            "packages/react-scripts/config/env.js#L30-90",
+            "packages/react-scripts/scripts/build.js#L180-240"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Trap: DISABLE_ESLINT_PLUGIN, ESLINT_NO_DEV_ERRORS, TSC_COMPILE_ON_ERROR, and DISABLE_NEW_JSX_TRANSFORM are user escape hatches. A change that ignores them will break apps that opted out. Search for process.env consumers before refactoring start.js or webpack.config.js.",
+          "sources": [
+            "packages/react-scripts/config/webpack.config.js#L150-250",
+            "packages/react-scripts/scripts/start.js#L100-180"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Trap: init.js merge is a shallow Object.assign of dependency maps. A template that needs to remove a default dependency cannot do it by omission if the CLI preinstalls react-scripts. Read the install list in createReactApp.js and the merge in init.js together before changing the default dependency set.",
+          "sources": [
+            "packages/create-react-app/createReactApp.js#L400-550",
+            "packages/react-scripts/scripts/init.js#L100-180"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Coding style: Prettier is configured in .prettierrc and ESLint in .eslintrc.json. Existing files use CommonJS require, not ESM. react-error-overlay still has a build step — editing its src without running its build script leaves stale published assets. Flow annotations, if touched, should not be spread into CommonJS packages that do not run Flow.",
+          "sources": [
+            ".prettierrc#L1-20",
+            ".eslintrc.json#L1-30",
+            "packages/react-error-overlay/package.json#L1-35"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The repo is the upstream of a widely installed generator (create-react-app 5.1.0, react-scripts consumers in the millions historically). Prefer bug-fix diffs over API additions. Any new env var needs a docusaurus advanced-configuration entry or users will not find it. Do not deploy the docs site from a feature branch; Netlify publishes the configured site build.",
+          "sources": [
+            "packages/create-react-app/package.json#L1-20",
+            "docusaurus/docs/advanced-configuration.md#L1-20",
+            "netlify.toml#L1-20"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_prompt": "You are working in the Create React App monorepo (commit 6254386531d263688ccfa542d0e628fbc0de0b28, package version line 5.1.0). It is a Yarn workspaces + Lerna 3 repo. The user-facing CLI is packages/create-react-app (bin index.js -> createReactApp.js). It checks Node >=14, parses argv manually (--template, --scripts-version, --use-pnp, --info, --verbose), installs react, react-dom, react-scripts, and a template package, then executeNodeScript runs packages/react-scripts/scripts/init.js. init.js copies template/template, merges template.json into package.json, renames gitignore, and may git init/commit.\n\nThe toolchain package is packages/react-scripts. bin/react-scripts.js dispatches start, build, test, and eject. start.js: set NODE_ENV=development, load config/env.js, checkRequiredFiles, checkBrowsers, choosePort (3000), configFactory('development'), createCompiler from react-dev-utils/WebpackDevServerUtils, prepareProxy, WebpackDevServer from config/webpackDevServer.config.js, openBrowser. build.js: NODE_ENV=production, empty build/, copy public/, webpack production run, FileSizeReporter, printHostingInstructions. test.js wraps Jest; config is scripts/utils/createJestConfig.js (roots src, babel-jest, cssTransform, fileTransform). eject.js copies config into the app and is irreversible.\n\nShared libraries: packages/react-dev-utils (compiler helpers, ModuleScopePlugin, InterpolateHtmlPlugin, browsersHelper, webpackHotDevClient), packages/babel-preset-react-app (create() used by webpack and Jest; injects babel-plugin-named-asset-import for SVG ReactComponent), packages/eslint-config-react-app (function config; optional TS/Jest/Testing Library via require.resolve), packages/react-error-overlay (separate webpack build), packages/react-app-polyfill, packages/confusing-browser-globals. Templates: packages/cra-template and packages/cra-template-typescript. Edit both templates when the sample app changes.\n\nEnv contract (config/env.js): dotenv order .env.${NODE_ENV}.local, .env.local (not in test), .env.${NODE_ENV}, .env. Client bundle only receives NODE_ENV, PUBLIC_URL, WDS_SOCKET_*, FAST_REFRESH, and REACT_APP_*. Never put secrets in REACT_APP_. Other switches: PORT, HOST, HTTPS, SSL_CRT_FILE, SSL_KEY_FILE, BROWSER, PUBLIC_URL, BUILD_PATH, GENERATE_SOURCEMAP, INLINE_RUNTIME_CHUNK, IMAGE_INLINE_SIZE_LIMIT, FAST_REFRESH, TSC_COMPILE_ON_ERROR, ESLINT_NO_DEV_ERRORS, DISABLE_ESLINT_PLUGIN, DISABLE_NEW_JSX_TRANSFORM, DANGEROUSLY_DISABLE_HOST_CHECK, CI. Paths live in config/paths.js (appSrc, appBuild, appHtml, publicUrlOrPath, moduleFileExtensions).\n\nThere is no plugin registry. Extend via templates, --scripts-version forks, env vars, or eject. Do not add a webpack override config. Docs in docusaurus/docs are the user contract (advanced-configuration, available-scripts, adding-custom-environment-variables, alternatives-to-ejecting, custom-templates). Docs site is docusaurus/website, published per netlify.toml (publish docusaurus/website/build). That Netlify file is not the generated app.\n\nConventions: CommonJS, Prettier (.prettierrc), ESLint (.eslintrc.json). Engines node >=14. Do not use ESM-only APIs. Do not reformat unrelated files. High-blast files: webpack.config.js, env.js, createJestConfig.js, eslint-config-react-app/index.js, init.js, createReactApp.js, react-scripts/package.json. Traps: homepage/PUBLIC_URL/publicUrlOrPath must stay consistent; .env.local is ignored under test; template.json merges are shallow; init preinstalls react-scripts before the merge; react-error-overlay changes need its build script; forgetting the TypeScript template twin ships a JS-only fix.\n\nTests: package Jest via npm test in create-react-app, react-dev-utils, babel-plugin-named-asset-import, confusing-browser-globals, react-error-overlay. Integration: tasks/build.js packs local tarballs, tasks/e2e-simple.sh is root yarn test, tasks/e2e-behavior.sh plus tasks/e2e-docker.sh are the full matrix (CI: .github/workflows/build-and-test.yml calling e2e-base.yml; lint.yml for eslint). Fixtures under test/fixtures (typescript, typescript-advanced, typescript-typecheck, jsconfig) are the regression net for loader and typecheck behavior. Template App.test.js only checks the learn-react text.\n\nSecurity-sensitive: spawn of npm/yarn with user package specs; temp file Node execution of init.js; git spawn in init and eject; dev-server host check and proxy; HTTPS cert file paths; DefinePlugin inlining. No auth layer and no database. Do not invent a backend. Prefer small bug-fix diffs on the v5 line over new features or major dependency bumps (webpack 5, Jest 27, Babel 7, ESLint 8 are coupled)."
+  },
+  "analysis": {
+    "agent": "grok",
+    "model": "cli:grok",
+    "runtime_ms": 238503,
+    "cost_usd": null,
+    "collected_at": "2026-09-22T12:16:01.078Z"
   }
 }

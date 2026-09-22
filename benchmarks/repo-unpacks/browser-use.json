@@ -6901,5 +6901,817 @@
         ]
       }
     ]
+  },
+  "report": {
+    "overview": "browser-use 0.13.10 is an async Python library (and a thin CLI) that lets an LLM complete web tasks by driving Chromium over the Chrome DevTools Protocol. The library loop is Agent.run: snapshot the DOM and a screenshot, ask a chat model for the next actions, execute those actions through an event bus and watchdog services, and repeat until a done action or a step/failure cap. It is aimed at developers embedding a browser agent and at coding agents that drive a real browser through the CLI; the distinctive pieces are the indexed DOM the model clicks, a large built-in action registry, and first-class hooks into Browser Use Cloud browsers, the BU LLM gateway, skills, and a remote @sandbox runner.",
+    "system_map": {
+      "summary": "The installable package is browser_use, built with hatchling and exposed as the console scripts browser-use, browseruse, bu, and browser (browser_use.cli:main), plus python -m browser_use. The runtime splits into an Agent orchestrator, a BrowserSession that owns a bubus event bus and a cdp-use CDP client, a Tools/Registry action layer, and a DomService that serializes the page for the model. Persistence is local (temp agent directories, cookie storage state, config under ~/.config/browseruse) plus optional cloud event sync. External systems are the Browser Use cloud browser API, the LLM gateway, the sandbox stream API, PostHog telemetry, and optional provider SDKs (OpenAI, Anthropic, Google, Groq, Ollama, AWS, MCP). CI is GitHub Actions: per-file pytest of tests/ci, ruff/pre-commit/pyright, PyPI publish on GitHub release, and a multi-arch Docker image.",
+      "claims": [
+        {
+          "claim": "pyproject.toml names the package browser-use version 0.13.10, requires Python >=3.11,<4.0, and registers console scripts browser-use, browseruse, bu, and browser to browser_use.cli:main, with the deprecated browser-use-tui alias.",
+          "sources": [
+            "pyproject.toml#L1-L109"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The public import surface is lazy: browser_use/__init__.py __getattr__ loads Agent, Tools, Controller, DomService, Chat* model classes, and sandbox on first access, and maps the name Browser to BrowserSession.",
+          "sources": [
+            "browser_use/__init__.py#L76-L137"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "python -m browser_use calls browser_use.cli.main and exits with its return code.",
+          "sources": [
+            "browser_use/__main__.py#L1-L10",
+            "browser_use/cli.py#L423-L458"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Agent in browser_use/agent/service.py is the task orchestrator. BrowserSession in browser_use/browser/session.py owns the CDP connection, tab targets, and a bubus event bus; start() is handled by on_BrowserStartEvent, which attaches watchdogs before launching or connecting.",
+          "sources": [
+            "browser_use/agent/service.py#L134-L301",
+            "browser_use/browser/session.py#L786-L888"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "BrowserSession.attach_all_watchdogs constructs Downloads, StorageState (conditional), LocalBrowser, Security, AboutBlank, Popups, Permissions, DefaultAction, Screenshot, DOM, Recording, optional HAR, and optional Captcha watchdogs. CrashWatchdog registration in that method is commented out.",
+          "sources": [
+            "browser_use/browser/session.py#L1688-L1837"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Local Chrome is started by LocalBrowserWatchdog.on_BrowserLaunchEvent → _launch_browser, which returns a psutil.Process and a CDP URL. Cloud browsers are created when BrowserProfile.use_cloud or cloud_browser_params is set, via CloudBrowserClient.create_browser POST {api}/api/v2/browsers using BROWSER_USE_API_KEY or CloudAuthConfig.",
+          "sources": [
+            "browser_use/browser/watchdogs/local_browser_watchdog.py#L49-L93",
+            "browser_use/browser/session.py#L800-L816",
+            "browser_use/browser/cloud/cloud.py#L19-L65"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Configuration is env-driven. OldConfig and FlatEnvConfig in browser_use/config.py read BROWSER_USE_LOGGING_LEVEL, ANONYMIZED_TELEMETRY, BROWSER_USE_CLOUD_SYNC, BROWSER_USE_CLOUD_API_URL (default https://api.browser-use.com), LLM keys, and proxy vars. Config, profiles, and extensions live under BROWSER_USE_CONFIG_DIR, defaulting to ~/.config/browseruse.",
+          "sources": [
+            "browser_use/config.py#L47-L130",
+            "browser_use/config.py#L191-L244",
+            ".env.example#L1-L71"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "If Agent is constructed with llm=None and DEFAULT_LLM is empty, it instantiates ChatBrowserUse(). get_llm_by_name in browser_use/llm/models.py is the string factory for openai_, azure_, google_, anthropic_, mistral_, cerebras_, and bu_ names and refuses OCI (use ChatOCIRaw directly).",
+          "sources": [
+            "browser_use/agent/service.py#L225-L239",
+            "browser_use/llm/models.py#L89-L226"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "ChatBrowserUse posts to BROWSER_USE_LLM_URL or https://llm.api.browser-use.com, default model bu-2-0, and requires BROWSER_USE_API_KEY. The @sandbox decorator posts cloudpickled user code to https://sandbox.api.browser-use.com/sandbox-stream.",
+          "sources": [
+            "browser_use/llm/browser_use/chat.py#L31-L107",
+            "browser_use/sandbox/sandbox.py#L215-L366"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CI test workflow .github/workflows/test.yaml discovers every tests/ci/**/test_*.py and runs them as a matrix on ubuntu with uv, IN_DOCKER=true, and ANONYMIZED_TELEMETRY=false. lint.yml runs ruff PLE, pre-commit, and pyright. publish.yml uploads to PyPI on GitHub release. docker.yml builds and publishes the image. The root Dockerfile is python:3.12-slim with IN_DOCKER=True.",
+          "sources": [
+            ".github/workflows/test.yaml#L15-L120",
+            ".github/workflows/lint.yml#L22-L54",
+            ".github/workflows/publish.yml#L16-L79",
+            ".github/workflows/docker.yml#L1-L40",
+            "Dockerfile#L20-L62",
+            "bin/test.sh#L1-L9"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "DomService.get_dom_tree / get_serialized_dom_tree is the DOM boundary the agent consumes. FileSystem and ScreenshotService are rooted at a per-run temp directory tempfile.gettempdir()/browser_use_agent_{id}_{timestamp} unless file_system_path is passed.",
+          "sources": [
+            "browser_use/dom/service.py#L45-L56",
+            "browser_use/agent/service.py#L444-L453",
+            "browser_use/filesystem/file_system.py#L503-L516"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "feature_catalog": {
+      "summary": "User-facing capability sits on three paths described in the README: a hosted cloud product (outside this process), a CLI that executes Python against a browser daemon, and the Python Agent library. The library's default tool registry covers navigation, element interaction, extraction, tabs, files, and task completion. Optional features include cloud browsers, the remote sandbox, MCP server mode, Gmail OTP actions, cloud skills, structured output, vision, planning, a judge pass, GIF/HAR/video recording, and domain or captcha policy.",
+      "claims": [
+        {
+          "claim": "README.md defines three products: fully hosted cloud, the CLI (Path 2, aimed at coding agents), and the Python library (Path 3: Agent + ChatBrowserUse or ChatOpenAI, optional Browser(use_cloud=True)).",
+          "sources": [
+            "README.md#L62-L150"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Tools.__init__ registers default actions search (DuckDuckGo/Google/Bing), navigate, go_back, wait (capped at 30s), click/input and related element actions, upload_file, dropdown_options, select_dropdown, write_file, replace_file, read_file, evaluate, and done. Tools.exclude_action and the exclude_actions constructor argument remove actions from the registry.",
+          "sources": [
+            "browser_use/tools/service.py#L441-L608",
+            "browser_use/tools/service.py#L1679-L1836",
+            "browser_use/tools/service.py#L2008-L2118"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "search and navigate dispatch NavigateToUrlEvent and are marked terminates_sequence=True so multi_act drops queued actions after them. navigate retries once when the post-navigation DOM looks empty.",
+          "sources": [
+            "browser_use/tools/service.py#L458-L554",
+            "browser_use/agent/service.py#L2728-L2738"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The CLI dispatcher handles --mcp, --cli-mcp, install, init/--template, and skill locally. Legacy subcommands in _LEGACY_HINTS (open, state, screenshot, eval, cookies, python, run, connect, cloud, daemon, record, mcp, --headed, --cdp-url, and others) print a 3.0 migration message and return exit code 2. Anything else is delegated to browser_harness.run.main, which executes Python from argv or stdin in a persistent browser session.",
+          "sources": [
+            "browser_use/cli.py#L185-L400"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "browser-use skill install copies the packaged browser-use skill into assistant skill directories for agents, claude, codex, copilot, cursor, gemini, openclaw, and opencode via TARGET_DIR_BUILDERS in browser_use/skills/install.py.",
+          "sources": [
+            "browser_use/skills/install.py#L10-L50",
+            "browser_use/cli.py#L370-L373"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "MCP server mode (uvx browser-use --mcp) exposes tools browser_navigate, browser_click, browser_type, browser_get_state, browser_extract_content, browser_get_html, browser_screenshot, browser_scroll, browser_go_back, browser_list_tabs, browser_switch_tab, browser_close_tab, retry_with_browser_use_agent, browser_list_sessions, browser_close_session, and browser_close_all. Logging is forced to stderr so it does not corrupt JSON-RPC.",
+          "sources": [
+            "browser_use/mcp/server.py#L1-L24",
+            "browser_use/mcp/server.py#L220-L451"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Browser(use_cloud=True) provisions a remote browser. BrowserProfile also exposes cloud_profile-style CreateBrowserRequest params, cdp_url for an existing browser, proxy, allowed_domains, prohibited_domains, block_ip_addresses, captcha_solver (default True), and demo_mode.",
+          "sources": [
+            "browser_use/browser/profile.py#L608-L656",
+            "browser_use/browser/cloud/cloud.py#L27-L93"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "@sandbox() requires the wrapped coroutine to take a browser parameter, serializes the function source and closure with cloudpickle, and streams SSE events from the sandbox. Callbacks include on_browser_created, on_log, on_result, and on_error. cloud_profile_id, cloud_proxy_country_code, and cloud_timeout are forwarded in the payload.",
+          "sources": [
+            "browser_use/sandbox/sandbox.py#L215-L366"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Agent accepts skill_ids (or skills) and registers them as actions through SkillService, which uses AsyncBrowserUse from browser-use-sdk and lists enabled finished skills. Wildcard '*' loads at most the first 100 skills.",
+          "sources": [
+            "browser_use/agent/service.py#L146-L149",
+            "browser_use/agent/service.py#L2572-L2573",
+            "browser_use/skills/service.py#L19-L138"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "register_gmail_actions adds get_recent_emails (keyword plus max_results 1-50) for OTP and magic-link retrieval via GmailService. Registry._replace_sensitive_data also expands TOTP secrets with pyotp.TOTP when a placeholder refers to a bu_2fa_code secret.",
+          "sources": [
+            "browser_use/integrations/gmail/actions.py#L22-L60",
+            "browser_use/tools/registry/service.py#L467-L492"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Structured task output is output_model_schema on Agent, which switches the done action to StructuredOutputAction. SystemPrompt selects among system_prompt.md, flash variants, Anthropic variants, and browser-use-specific markdown templates based on provider, flash_mode, and use_thinking. ChatBrowserUse forces flash_mode=True and therefore enable_planning=False.",
+          "sources": [
+            "browser_use/agent/service.py#L167-L243",
+            "browser_use/agent/prompts.py#L28-L80",
+            "browser_use/tools/service.py#L2008-L2053"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Other user-visible Agent knobs implemented in __init__ include use_vision, generate_gif, sensitive_data, initial_actions, fallback_llm, use_judge, directly_open_url, message_compaction, loop_detection_enabled, and demo_mode. pause, resume, and stop mutate AgentState and are wired to SignalHandler during run.",
+          "sources": [
+            "browser_use/agent/service.py#L151-L212",
+            "browser_use/agent/service.py#L2516-L2534",
+            "browser_use/agent/service.py#L3917-L3933"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "data_flow": {
+      "summary": "A task string enters Agent.__init__, which picks an LLM, builds a system prompt, a MessageManager, a FileSystem, and a BrowserSession. Each step pulls a BrowserStateSummary (DOM text, selector map, screenshot) from the browser, redacts secrets, and sends the message list to the LLM. The model returns an AgentOutput whose action list is validated by Pydantic and executed one by one; ActionResult objects are written back into history and into the next prompt. Side effects leave the process through CDP commands, local files under the agent temp dir, optional conversation and GIF dumps, PostHog, and authenticated POSTs to the Browser Use events API.",
+      "claims": [
+        {
+          "claim": "Agent.run emits CreateAgentSessionEvent once and CreateAgentTaskEvent at start, then BrowserSession.start, _register_skills_as_actions, and _execute_initial_actions before the step loop. On the way out it records token usage, dispatches UpdateAgentTaskEvent, optionally writes a GIF, and calls close().",
+          "sources": [
+            "browser_use/agent/service.py#L2548-L2726"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "step() order is: optional captcha wait, _prepare_context, _get_next_action, _execute_actions, _post_process, and _finalize in a finally block. _prepare_context always requests get_browser_state_summary(include_screenshot=True), refreshes page-scoped actions, and calls MessageManager.create_state_messages.",
+          "sources": [
+            "browser_use/agent/service.py#L1035-L1160"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "_get_next_action wraps _get_model_output_with_retry in asyncio.wait_for using settings.llm_timeout (auto-chosen from the model name when the caller passes None: 30s groq, 75s default, 90s for o3/claude/deepseek/gemini-3-pro). The parsed AgentOutput is stored on state.last_model_output.",
+          "sources": [
+            "browser_use/agent/service.py#L260-L277",
+            "browser_use/agent/service.py#L1175-L1217"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "multi_act walks the action list. Tools.act applies a per-action timeout (argument, or BROWSER_USE_ACTION_TIMEOUT_S, default 180s) and calls Registry.execute_action. The registry builds the action's Pydantic param model, substitutes <secret> placeholders, and injects browser_session, page_url, cdp_client, file_system, page_extraction_llm, available_file_paths, and extraction_schema by parameter name.",
+          "sources": [
+            "browser_use/agent/service.py#L2728-L2758",
+            "browser_use/tools/service.py#L2176-L2232",
+            "browser_use/tools/registry/service.py#L57-L73",
+            "browser_use/tools/registry/service.py#L331-L395"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Browser actions do not call CDP directly from the tool in the navigation case: they dispatch bubus events (NavigateToUrlEvent, GoBackEvent, Click, Type, and others). BrowserSession.on_NavigateToUrlEvent performs the CDP navigation; DefaultActionWatchdog handles the element-level events after attach_all_watchdogs.",
+          "sources": [
+            "browser_use/tools/service.py#L484-L594",
+            "browser_use/browser/session.py#L905-L914",
+            "browser_use/browser/session.py#L1789-L1802"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "DOM state is produced by DomService.get_dom_tree and get_serialized_dom_tree (accessibility tree plus DOM snapshot, visibility and iframe filtering) and cached on the session as a selector map keyed by integer index. Tools resolve click and dropdown targets with browser_session.get_element_by_index.",
+          "sources": [
+            "browser_use/dom/service.py#L703-L1111",
+            "browser_use/tools/service.py#L1683-L1696",
+            "browser_use/browser/session.py#L1595-L1600"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "MessageManager._filter_sensitive_data redacts secret values out of prompts via redact_sensitive_string. At execution time, domain-keyed sensitive_data dicts are applied only when match_url_with_domain_pattern matches the current URL; a flat {key: value} dict is applied on every domain.",
+          "sources": [
+            "browser_use/agent/message_manager/service.py#L564-L591",
+            "browser_use/tools/registry/service.py#L427-L462"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "File tools write under FileSystem.data_dir, which is base_dir/browseruse_agent_data. The default base_dir is the per-agent temp directory. _resolve_filename strips directories with basename to block traversal. External reads happen only when read_file is called with a name that is an exact member of available_file_paths, and then the path is opened as given.",
+          "sources": [
+            "browser_use/filesystem/file_system.py#L117-L117",
+            "browser_use/filesystem/file_system.py#L506-L625",
+            "browser_use/filesystem/file_system.py#L671-L690",
+            "browser_use/tools/service.py#L1754-L1802",
+            "browser_use/agent/service.py#L444-L452"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Downloads discovered by the agent are merged into available_file_paths inside _check_and_update_downloads, which runs after the browser-state fetch and again after actions. upload_file refuses paths that are not in that list and not a fresh download.",
+          "sources": [
+            "browser_use/agent/service.py#L657-L675",
+            "browser_use/agent/service.py#L1105-L1106",
+            "browser_use/agent/service.py#L1219-L1224",
+            "browser_use/tools/service.py#L864-L909"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "When BROWSER_USE_CLOUD_SYNC is on and DeviceAuthClient is authenticated, CloudSync.handle_event POSTs each event as JSON to {BROWSER_USE_CLOUD_API_URL}/api/v1/events with a 10s timeout and swallows HTTP failures. Unauthenticated runs skip the send unless allow_session_events_for_auth is set.",
+          "sources": [
+            "browser_use/sync/service.py#L19-L105",
+            "browser_use/config.py#L62-L69"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "ChatBrowserUse.ainvoke serializes messages, optional output_format JSON schema, request_type (browser_agent or judge), anonymized_telemetry, and session_id, then retries HTTP 429/500/502/503/504 with exponential backoff. Observability spans are optional Laminar decorators from browser_use/observability.py and no-op if lmnr is absent.",
+          "sources": [
+            "browser_use/llm/browser_use/chat.py#L128-L179",
+            "browser_use/observability.py#L1-L39"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "save_history writes AgentHistory JSON through history.save_to_file with sensitive_data filtering. If save_conversation_path is set, each step's messages are appended via save_conversation. generate_gif calls create_history_gif and emits CreateAgentOutputFileEvent when the file exists. Cookie persistence is StorageStateWatchdog._save_storage_state, enabled only when storage_state or user_data_dir is set, defaulting to save on shutdown (auto_save_interval 60s, save_on_change False).",
+          "sources": [
+            "browser_use/agent/service.py#L3911-L3915",
+            "browser_use/agent/service.py#L1726-L1735",
+            "browser_use/agent/service.py#L2704-L2717",
+            "browser_use/browser/session.py#L1730-L1750",
+            "browser_use/browser/watchdogs/storage_state_watchdog.py#L49-L158"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "behavior_traces": {
+      "summary": "Three flows dominate. Startup brings up logging, the agent object, the browser process or cloud session, and the watchdog set before any model call. The primary step is a fixed phase sequence from DOM snapshot through LLM output to event-bus actions. Persistence is split across the in-memory AgentHistoryList, the on-disk file system and screenshots, optional conversation and GIF files, cookie storage state, and cloud event sync.",
+      "claims": [
+        {
+          "claim": "Process startup for the library: importing browser_use runs setup_logging unless BROWSER_USE_SETUP_LOGGING=false, reading CONFIG log file paths, and monkeypatches asyncio BaseSubprocessTransport.__del__ to ignore 'Event loop is closed'.",
+          "sources": [
+            "browser_use/__init__.py#L1-L43"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Agent construction order after argument validation: resolve llm (DEFAULT_LLM via get_llm_by_name, else ChatBrowserUse), force flash_mode for provider browser-use, build BrowserSession if none was passed, assign task_id and session_id via uuid7str, create AgentState and AgentHistoryList, create the temp agent directory, then _set_file_system and _set_screenshot_service.",
+          "sources": [
+            "browser_use/agent/service.py#L225-L301",
+            "browser_use/agent/service.py#L435-L453",
+            "browser_use/agent/service.py#L699-L744"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Browser startup order inside on_BrowserStartEvent: attach_all_watchdogs; if no cdp_url and use_cloud, CloudBrowserClient.create_browser and store cdpUrl with is_local False; else if local, dispatch BrowserLaunchEvent and read BrowserLaunchResult.cdp_url from LocalBrowserWatchdog; then connect() under _connection_lock with a 15s timeout; then dispatch BrowserConnectedEvent so storage restore finishes before start returns.",
+          "sources": [
+            "browser_use/browser/session.py#L786-L888",
+            "browser_use/browser/watchdogs/local_browser_watchdog.py#L49-L63"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "SecurityWatchdog.on_NavigateToUrlEvent runs before navigation and raises ValueError when _is_url_allowed is false. on_NavigationCompleteEvent sends blocked redirects to about:blank. on_TabCreatedEvent tries to close a disallowed new tab. block_ip_addresses uses ipaddress plus socket.inet_aton so non-standard IPv4 spellings cannot bypass the check. Empty allow and deny lists allow all URLs.",
+          "sources": [
+            "browser_use/browser/watchdogs/security_watchdog.py#L35-L92",
+            "browser_use/browser/watchdogs/security_watchdog.py#L138-L220"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Primary step trace: step → wait_if_captcha_solving → _prepare_context → get_browser_state_summary → _check_and_update_downloads → _update_action_models_for_page → registry.get_prompt_description → MessageManager.prepare_step_state / maybe_compact_messages / create_state_messages → budget, replan, exploration, and loop nudges → _get_next_action → multi_act → _post_process → _finalize.",
+          "sources": [
+            "browser_use/agent/service.py#L1035-L1231"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Inside multi_act, each action is executed through Tools.act. Actions registered with terminates_sequence=True (navigate, search, go_back) abort the rest of the queue, and a URL or target change after any action also aborts the remainder so later clicks are not applied to a stale DOM.",
+          "sources": [
+            "browser_use/agent/service.py#L2728-L2758",
+            "browser_use/tools/service.py#L458-L461",
+            "browser_use/tools/service.py#L502-L506"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Initial URL handling: when directly_open_url is true, _execute_initial_actions runs the converted initial action list through multi_act before the LLM loop and stores that as history step 0 with a synthetic AgentOutput. The call is wrapped in wait_for(step_timeout) so a dead CDP socket cannot hang startup forever.",
+          "sources": [
+            "browser_use/agent/service.py#L197-L199",
+            "browser_use/agent/service.py#L2575-L2592",
+            "browser_use/agent/service.py#L3284-L3330"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Done path: the done action returns ActionResult(is_done=True). _post_process logs the final result. _execute_step sees history.is_done(), optionally _judge_and_log, invokes register_done_callback, and run() breaks. On consecutive_failures past max_failures (plus one if final_response_after_failure) the loop stops without a successful done.",
+          "sources": [
+            "browser_use/tools/service.py#L2012-L2045",
+            "browser_use/agent/service.py#L1244-L1252",
+            "browser_use/agent/service.py#L2484-L2497",
+            "browser_use/agent/service.py#L2609-L2633"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CLI startup trace: main → _dispatch. No args and a TTY prints _QUICKSTART and returns 0. Piped stdin is reassigned to a StringIO and passed to _run_browser_harness, which calls browser_harness.run.main. --mcp imports and runs the MCP stdio server. A NameError raised from executed <string> code is rewritten into an unknown-helper message and exit 2.",
+          "sources": [
+            "browser_use/cli.py#L185-L202",
+            "browser_use/cli.py#L357-L458"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Cookie persistence trace: BrowserConnectedEvent triggers StorageStateWatchdog.on_BrowserConnectedEvent → _load_storage_state. On BrowserStopEvent / SaveStorageStateEvent it calls _save_storage_state. The watchdog is not attached at all unless storage_state or user_data_dir is configured.",
+          "sources": [
+            "browser_use/browser/session.py#L1730-L1750",
+            "browser_use/browser/watchdogs/storage_state_watchdog.py#L49-L158"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Cloud sync auth is a device-code OAuth flow in DeviceAuthClient: POST /api/v1/oauth/device/authorize with scope 'read write', then poll /api/v1/oauth/device/token with grant_type urn:ietf:params:oauth:grant-type:device_code, storing access_token on CloudAuthConfig.",
+          "sources": [
+            "browser_use/sync/auth.py#L87-L136",
+            "browser_use/sync/auth.py#L157-L315"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Rerun trace: load_and_rerun can substitute detected variables via _substitute_variables_in_history, then rerun_history walks stored actions, using detect_variables_in_history (element id, name, type, placeholder, aria-label, then value patterns) to name inputs. save_history dumps the filtered history to AgentHistory.json by default.",
+          "sources": [
+            "browser_use/agent/service.py#L3905-L3915",
+            "browser_use/agent/variable_detector.py#L9-L149"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "testing_signals": {
+      "summary": "The project uses pytest 9 with pytest-asyncio in auto mode, a 300s default timeout, and xdist. The CI-gated suite is tests/ci, discovered as one GitHub Actions job per test file with a 4 minute job timeout. Tests are expected to use a real browser plus pytest-httpserver; the LLM is the only allowed mock, via conftest.create_mock_llm. Large areas outside tests/ci (examples, most LLM live tests, the beta agent, and the browser_harness CLI daemon) are not part of that matrix. A separate eval workflow can POST the PR commit to an external eval platform for owner, member, or collaborator PRs.",
+      "claims": [
+        {
+          "claim": "pytest is configured in pyproject.toml: timeout 300, asyncio_mode auto, testpaths tests, addopts -svx --strict-markers --tb=short --dist=loadscope, markers slow, integration, unit, and asyncio. bin/test.sh runs uv run pytest --numprocesses auto tests/ci.",
+          "sources": [
+            "pyproject.toml#L191-L211",
+            "bin/test.sh#L1-L9"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "tests/ci is grouped into browser/, infrastructure/, interactions/, models/, security/, plus many top-level test_*.py files covering agent planning, tools, DOM, filesystem, MCP, sandbox structured output, variable substitution, and cloud events.",
+          "sources": [
+            "tests/ci/conftest.py#L1-L40"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "tests/ci/conftest.py autouse fixture forces SKIP_LLM_API_KEY_VERIFICATION, ANONYMIZED_TELEMETRY=false, and placeholder cloud URLs so tests do not talk to production. create_mock_llm builds a BaseChatModel that returns scripted AgentOutput actions. The module docstring says tests must not connect to production services.",
+          "sources": [
+            "tests/ci/conftest.py#L1-L80"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CLAUDE.md requires real objects in tests, forbids mocking except the LLM, and forbids real remote URLs such as google.com; HTML fixtures should be served with pytest-httpserver. It also says files that pass move into tests/ci and that @pytest.mark.asyncio is unnecessary because asyncio_mode is auto.",
+          "sources": [
+            "CLAUDE.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The GitHub Actions test workflow checks out the repo, caches Playwright Chromium, lists tests/ci test_*.py into a JSON matrix, and runs each file on ubuntu-latest with timeout-minutes 4. It injects OPENAI, ANTHROPIC, GOOGLE, GROQ, AZURE, BROWSER_USE, and OPENROUTER API keys from secrets when present.",
+          "sources": [
+            ".github/workflows/test.yaml#L27-L120"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Security-focused tests live in tests/ci/security and include domain filtering, download filename sanitization, IP blocking, MCP allowed domains, security flags, sensitive data, and upload path containment.",
+          "sources": [
+            "tests/ci/conftest.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "pyright include is browser_use, examples, and tests, but excludes tests/scripts, tests/old, browser_use/dom/playground, browser_use/llm/oci_raw, browser_use/llm/tests/test_chat_models.py, browser_use/llm/tests/test_single_step.py, and browser_use/beta/service.py. Those paths are not held to the type checker.",
+          "sources": [
+            "pyproject.toml#L145-L174"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Lint CI is three jobs: ruff check --select PLE, pre-commit run --all-files on Python 3.11, and pyright after uv sync --dev --all-extras. Dev dependencies pin pytest==9.0.2, pytest-asyncio==1.3.0, pytest-httpserver==1.1.3, pyright==1.1.408, and ruff==0.14.14.",
+          "sources": [
+            ".github/workflows/lint.yml#L22-L54",
+            "pyproject.toml#L227-L247"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "eval-on-pr.yml, for PRs whose author association is OWNER, MEMBER, or COLLABORATOR, POSTs the head SHA to secrets.EVAL_PLATFORM_URL/api/triggerInteractionTasksV6 with a default test case of InteractionTasks_v8. This is an external eval, not the local pytest suite.",
+          "sources": [
+            ".github/workflows/eval-on-pr.yml#L1-L40"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "browser_use/llm/tests contains live-model tests (test_chat_models.py, test_single_step.py, provider cache and schema tests) that are not under tests/ci and are partly excluded from pyright, so they do not run in the per-file CI matrix.",
+          "sources": [
+            "pyproject.toml#L162-L167"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "There is no tests/ci coverage of the browser_harness daemon itself; CLI tests that exist (tests/ci/test_browser_use_cli.py is in the tree) can only cover this repo's dispatcher. The harness package is an external dependency (browser-harness==0.1.13).",
+          "sources": [
+            "pyproject.toml#L49-L50",
+            "browser_use/cli.py#L185-L202"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "risk_map": {
+      "summary": "The highest-risk surfaces are arbitrary page JavaScript, the remote sandbox that cloudpickles and ships user code, secret substitution, file upload and external file reads, and domain policy that is off unless configured. Several controls exist and are tested (domain filter, IP blocking, upload whitelist, sensitive-data redaction), but the JavaScript evaluate path only fixes quotes, the flat sensitive_data format is global, and CrashWatchdog is disabled. Docs in AGENTS.md disagree with Agent.__init__ defaults, which is a trap for agents editing call sites.",
+      "claims": [
+        {
+          "claim": "evaluate sends the model-supplied string to CDP Runtime.evaluate with awaitPromise and returnByValue after _validate_and_fix_javascript, which only rewrites escaped quotes, regex escapes, and a few selector quote styles. There is no script allowlist or CSP wrapper.",
+          "sources": [
+            "browser_use/tools/service.py#L1833-L2006"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "@sandbox base64-encodes cloudpickle.dumps of the closure and sends the reconstructed source plus pickled params to sandbox.api.browser-use.com with the API key in X-API-Key. That is remote code execution of whatever the decorated function closes over.",
+          "sources": [
+            "browser_use/sandbox/sandbox.py#L305-L370"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Legacy sensitive_data entries that are plain strings (not nested under a domain pattern) are merged into applicable_secrets for every URL. Domain-scoped entries are filtered with match_url_with_domain_pattern. Missing placeholders are logged, not raised.",
+          "sources": [
+            "browser_use/tools/registry/service.py#L449-L514"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "read_file treats a string that is exactly in available_file_paths as an external file and opens that path with anyio.open_file, python-docx, or pypdf. The check is equality, not a resolved-path containment check. upload_file has the same membership test.",
+          "sources": [
+            "browser_use/tools/service.py#L864-L909",
+            "browser_use/tools/service.py#L1795-L1802",
+            "browser_use/filesystem/file_system.py#L671-L704"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "FileSystem.__init__ deletes and recreates base_dir/browseruse_agent_data with shutil.rmtree when that subdirectory already exists. Passing a file_system_path that already contains a browseruse_agent_data directory wipes it.",
+          "sources": [
+            "browser_use/filesystem/file_system.py#L506-L516"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "SecurityWatchdog allows every URL when both allowed_domains and prohibited_domains are unset. disable_security on BrowserProfile appends CHROME_DISABLE_SECURITY_ARGS to the Chrome launch flags. block_ip_addresses defaults to False.",
+          "sources": [
+            "browser_use/browser/watchdogs/security_watchdog.py#L209-L220",
+            "browser_use/browser/profile.py#L625-L639"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "ProductTelemetry is on by default (ANONYMIZED_TELEMETRY defaults true) and sends events to https://eu.i.posthog.com with a project API key hardcoded in telemetry/service.py. The device id is persisted at ~/.config/browseruse/device_id or derived from MAC and hostname. Opt out with ANONYMIZED_TELEMETRY=false.",
+          "sources": [
+            "browser_use/telemetry/service.py#L21-L94",
+            ".env.example#L18-L20",
+            "browser_use/config.py#L57-L60"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Crash recovery is not wired: the CrashWatchdog import and event subscriptions inside attach_all_watchdogs are comments. Browser disconnects are handled instead by Agent._handle_step_error waiting on browser_session._reconnect_event.",
+          "sources": [
+            "browser_use/browser/session.py#L1698-L1716",
+            "browser_use/agent/service.py#L1268-L1284"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "AGENTS.md documents Agent defaults that do not match the constructor: code uses max_steps=500 on run(), max_actions_per_step=5, max_failures=5, step_timeout=180, and use_vision=True. The checked-in agent guide still says max_steps 100, max_actions_per_step 3, max_failures 3, step_timeout 120, and use_vision 'auto'.",
+          "sources": [
+            "browser_use/agent/service.py#L169-L199",
+            "browser_use/agent/service.py#L2503-L2508",
+            "AGENTS.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "browser_use/controller/__init__.py only re-exports Controller, which is an alias of Tools. browser_use/beta/service.py duplicates a large slice of Agent (it imports the same history, judge, and message-manager types) and is excluded from pyright as a dynamic beta wrapper.",
+          "sources": [
+            "browser_use/controller/__init__.py#L1-L3",
+            "browser_use/beta/service.py#L1-L80",
+            "pyproject.toml#L165-L167"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "MCP mode inserts the package parent onto sys.path, disables logging below CRITICAL, and can run a full Agent (retry_with_browser_use_agent) inside the MCP client process. A compromised or overly broad MCP client therefore gets the same browser and filesystem powers as the library.",
+          "sources": [
+            "browser_use/mcp/server.py#L29-L99",
+            "browser_use/mcp/server.py#L391-L400"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Cloud browser and LLM calls send the API key in headers (X-Browser-Use-API-Key and the chat client's own auth). create_browser logs the live URL at info level. stop_browser PATCHes /api/v2/browsers/{id} with action stop.",
+          "sources": [
+            "browser_use/browser/cloud/cloud.py#L38-L93",
+            "browser_use/browser/cloud/cloud.py#L106-L152"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "extension_points": {
+      "summary": "New behavior is meant to be added as registered actions, not by editing the step loop. Tools.action and Registry.action are the plugin table; special parameter names are the injection API. Browser behavior is extended by watchdogs that subscribe to bubus events. LLM providers plug in through BaseChatModel and get_llm_by_name. Cloud skills, Gmail, and MCP are additional registries on top of the same action or tool list. System prompts are selected markdown files, overridable with override_system_message or extend_system_message.",
+      "claims": [
+        {
+          "claim": "Registry.action(description, param_model, domains/allowed_domains, terminates_sequence) is the registration decorator. It normalizes the function to keyword-only, builds a Pydantic param model from the signature when param_model is omitted, and rejects **kwargs. Tools.action is a pass-through to that decorator.",
+          "sources": [
+            "browser_use/tools/registry/service.py#L75-L166",
+            "browser_use/tools/registry/service.py#L291-L327",
+            "browser_use/tools/service.py#L2102-L2107"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Injected parameter names recognized by Registry._get_special_param_types are context, browser_session, page_url, cdp_client, page_extraction_llm, available_file_paths, has_sensitive_data, file_system, and extraction_schema. sensitive_data is added to the context only when the action name is input. The docs warn that the name must be browser_session, not browser.",
+          "sources": [
+            "browser_use/tools/registry/service.py#L57-L73",
+            "browser_use/tools/registry/service.py#L367-L379"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Registry.exclude_action and Tools.exclude_action remove a name from the action map and block re-registration. Tools.__getattr__ also exposes registered actions as direct methods for tests.",
+          "sources": [
+            "browser_use/tools/registry/service.py#L42-L55",
+            "browser_use/tools/service.py#L2109-L2118",
+            "browser_use/tools/service.py#L2268-L2274"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Per-action domain limits are the domains (alias allowed_domains) argument on Registry.action, separate from BrowserProfile.allowed_domains enforced by SecurityWatchdog. Both can be set.",
+          "sources": [
+            "browser_use/tools/registry/service.py#L291-L320",
+            "browser_use/browser/profile.py#L628-L635"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New browser services are watchdogs: a BaseWatchdog subclass with LISTENS_TO and EMITS class vars, constructed and attach_to_session() inside BrowserSession.attach_all_watchdogs. SecurityWatchdog is the template (LISTENS_TO NavigateToUrlEvent, NavigationCompleteEvent, TabCreatedEvent; EMITS BrowserErrorEvent).",
+          "sources": [
+            "browser_use/browser/watchdogs/security_watchdog.py#L22-L33",
+            "browser_use/browser/session.py#L1688-L1766"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "LLM extensions implement BaseChatModel and are either imported lazily from browser_use/__init__.py _LAZY_IMPORTS or constructed by get_llm_by_name. Adding a provider requires both a chat module and a branch in that factory if string names should work.",
+          "sources": [
+            "browser_use/__init__.py#L76-L115",
+            "browser_use/llm/models.py#L89-L226",
+            "browser_use/llm/base.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "System prompt extension points are override_system_message (replaces the template) and extend_system_message (appended). Otherwise SystemPrompt._load_prompt_template picks a file under browser_use/agent/system_prompts based on is_browser_use_model, flash_mode, is_anthropic, and Anthropic 4.5 caching.",
+          "sources": [
+            "browser_use/agent/prompts.py#L28-L80",
+            "browser_use/agent/service.py#L174-L175"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Cloud skills plug in through Agent(skill_ids=...) and SkillService, which turns each API skill into a registry action in _register_skills_as_actions. Gmail plugs in through register_gmail_actions(tools). MCP tools are a separate list built in the MCP server, not the Registry.",
+          "sources": [
+            "browser_use/skills/service.py#L19-L50",
+            "browser_use/agent/service.py#L836-L836",
+            "browser_use/integrations/gmail/actions.py#L29-L51",
+            "browser_use/mcp/server.py#L220-L280"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Coordinate clicking is a mode switch: Tools.set_coordinate_clicking re-registers the click action. File types are a dict on FileSystem._file_types (md, txt, json, jsonl, csv, pdf, docx, html, xml, png, gif, jpg, jpeg, webp); a new extension means a new BaseFile subclass in that map.",
+          "sources": [
+            "browser_use/tools/service.py#L2120-L2173",
+            "browser_use/filesystem/file_system.py#L518-L544"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Run hooks are on_step_start and on_step_end passed to Agent.run, plus register_new_step_callback, register_done_callback, register_should_stop_callback, and register_external_agent_status_raise_error_callback on the constructor. output_model_schema swaps the done schema via Tools.use_structured_output_action.",
+          "sources": [
+            "browser_use/agent/service.py#L154-L167",
+            "browser_use/agent/service.py#L2503-L2508",
+            "browser_use/tools/service.py#L2092-L2107"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CLI skill targets are the TARGET_DIR_BUILDERS dict. Adding an assistant is a new entry there, not a new command parser. Legacy CLI verbs are the _LEGACY_HINTS dict; new verbs must not collide with those keys or they will be treated as removed 2.x commands.",
+          "sources": [
+            "browser_use/skills/install.py#L25-L37",
+            "browser_use/cli.py#L206-L238"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_handoff": {
+      "summary": "Edit inside browser_use, keep examples and docs aligned only when behavior changes, and do not add sample scripts. The code style is tabs, single quotes, line length 130, Python 3.11+ unions, and Pydantic v2 models for action schemas. Before changing the agent loop, read Agent.step, BrowserSession.on_BrowserStartEvent, Tools.act, and Registry.execute_action. Run the focused tests/ci file plus pyright; the full matrix is ./bin/test.sh. Known traps are stale defaults in AGENTS.md, the external browser_harness CLI, the commented-out CrashWatchdog, and secret handling that is only domain-scoped when the caller uses the nested dict form.",
+      "claims": [
+        {
+          "claim": "CLAUDE.md is the engineering contract: async Python, tabs not spaces, str | None rather than Optional, service.py for logic and views.py for Pydantic models, uuid7str for new ids, and runtime assertions at function boundaries. Logging helpers should be named _log_*.",
+          "sources": [
+            "CLAUDE.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Safe first reads for any agent-loop change are browser_use/agent/service.py (Agent.__init__, step, run, multi_act), browser_use/browser/session.py (on_BrowserStartEvent, attach_all_watchdogs), browser_use/tools/service.py, and browser_use/tools/registry/service.py. BrowserProfile fields live in browser_use/browser/profile.py.",
+          "sources": [
+            "browser_use/agent/service.py#L134-L214",
+            "browser_use/browser/session.py#L1688-L1837",
+            "browser_use/tools/registry/service.py#L33-L73"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Do not add new example files to show off a feature. AGENTS.md and CLAUDE.md both say to test inline in a terminal instead. Examples that already exist under examples/ should be updated when the API they demonstrate changes.",
+          "sources": [
+            "AGENTS.md",
+            "CLAUDE.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Use uv, not pip. Local setup is uv venv --python 3.11, then uv sync. The CI-equivalent test command is ./bin/test.sh or uv run pytest -vxs tests/ci. A single file is uv run pytest -vxs tests/ci/<file>.py. Typecheck with uv run pyright. Format with uv run ruff format and uv run ruff check --fix. Pre-commit is uv run pre-commit run --all-files.",
+          "sources": [
+            "CLAUDE.md",
+            "bin/test.sh#L1-L9",
+            "pyproject.toml#L120-L143"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Action signature trap: parameters injected by the registry must use the exact names in _get_special_param_types, and the function must not declare **kwargs. Custom tools that want the browser must annotate browser_session: BrowserSession. Using browser: Browser silently fails to inject.",
+          "sources": [
+            "browser_use/tools/registry/service.py#L57-L100",
+            "AGENTS.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Indentation and formatter trap: ruff format uses indent-style tab and quote-style single, line length 130. A space-indented edit will fail pre-commit. E501 is ignored, so long lines are allowed.",
+          "sources": [
+            "pyproject.toml#L120-L143"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Default-value trap: trust Agent.__init__ and Agent.run, not the parameter tables copied into AGENTS.md. In this tree run(max_steps=500), max_actions_per_step=5, max_failures=5, step_timeout=180, use_vision=True, and a browser-use provider forces flash_mode.",
+          "sources": [
+            "browser_use/agent/service.py#L169-L243",
+            "browser_use/agent/service.py#L2503-L2508",
+            "AGENTS.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CLI trap: browser_use/cli.py is a compatibility shim. New browser commands belong in the browser_harness package, which this repo calls but does not vendor. Adding a subcommand whose name is in _LEGACY_HINTS will be swallowed as a migration error.",
+          "sources": [
+            "browser_use/cli.py#L185-L269",
+            "pyproject.toml#L49-L50"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Test trap: do not mock the browser, do not request https://example.com or other public hosts, and do not put new CI tests outside tests/ci or they will not be in the workflow matrix. LLM behavior is scripted with create_mock_llm in tests/ci/conftest.py.",
+          "sources": [
+            "tests/ci/conftest.py#L75-L80",
+            "CLAUDE.md",
+            ".github/workflows/test.yaml#L51-L80"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Secret and telemetry trap: do not log raw sensitive_data values; prompts are redacted but execution substitutes the real strings. Do not commit changes that flip ANONYMIZED_TELEMETRY or that print BROWSER_USE_API_KEY. The PostHog key in telemetry/service.py is a public project key, not a user secret, but device_id is persisted on disk.",
+          "sources": [
+            "browser_use/telemetry/service.py#L21-L47",
+            "browser_use/agent/message_manager/service.py#L576-L591"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "pyright will not catch mistakes in browser_use/beta/service.py, browser_use/llm/oci_raw, or the excluded llm tests. A green typecheck does not cover those files. Beta agent work needs tests/ci/test_beta_agent.py even though the implementation is excluded.",
+          "sources": [
+            "pyproject.toml#L160-L167"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Event-bus trap: BrowserSession handlers and watchdogs both listen on the same bus. Navigation security is enforced by raising from SecurityWatchdog.on_NavigateToUrlEvent, which depends on handler order. Adding a new navigation path that talks to CDP directly will bypass that check.",
+          "sources": [
+            "browser_use/browser/watchdogs/security_watchdog.py#L35-L48",
+            "browser_use/browser/session.py#L905-L910"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_prompt": "You are working in the browser-use repository (package browser-use 0.13.10, Python >=3.11, MIT). It is an async library that drives Chromium over CDP so an LLM can complete web tasks. README.md describes three surfaces: a hosted Cloud API (not this process), the CLI (browser-use, bu, browser, or python -m browser_use), and the Python library (Agent + Browser + a chat model). Browser is an alias of BrowserSession.\n\nRead these first: pyproject.toml (scripts, extras, ruff/pyright/pytest), browser_use/__init__.py (lazy exports), browser_use/agent/service.py (Agent.__init__, step, run, multi_act), browser_use/browser/session.py (on_BrowserStartEvent, attach_all_watchdogs, connect), browser_use/tools/service.py, browser_use/tools/registry/service.py, browser_use/browser/profile.py, browser_use/config.py, plus CLAUDE.md. Engineering rules from CLAUDE.md: tabs not spaces, modern unions, Pydantic v2 models, service.py for logic and views.py for schemas, uuid7str for new ids, no new example files, never mock anything except the LLM, never call real remote URLs from tests (use pytest-httpserver). Run uv, not pip.\n\nThe agent loop is Agent.run → signal handler → CreateAgentSessionEvent and CreateAgentTaskEvent → browser_session.start → _register_skills_as_actions → _execute_initial_actions → while n_steps <= max_steps: _execute_step → step. step calls _prepare_context (get_browser_state_summary with a screenshot, MessageManager state messages, compaction, loop and budget nudges), _get_next_action (LLM under llm_timeout), _execute_actions, _post_process, and _finalize. multi_act runs each action via Tools.act → Registry.execute_action. Navigation and clicks are bubus events handled by watchdogs, not direct Playwright calls. Local Chrome is LocalBrowserWatchdog._launch_browser. Cloud browsers are CloudBrowserClient.create_browser POST https://api.browser-use.com/api/v2/browsers when BrowserProfile.use_cloud is true, authenticated with BROWSER_USE_API_KEY or CloudAuthConfig.\n\nIf llm is omitted and DEFAULT_LLM is empty, Agent constructs ChatBrowserUse(), which requires BROWSER_USE_API_KEY and posts to https://llm.api.browser-use.com (default model bu-2-0). provider == 'browser-use' forces flash_mode=True and disables planning. System prompts are chosen in browser_use/agent/prompts.py from markdown files under browser_use/agent/system_prompts.\n\nAction conventions that break a patch if ignored: no **kwargs on actions; injected names must match Registry._get_special_param_types (browser_session, file_system, page_extraction_llm, available_file_paths; sensitive_data is injected only for the input action). Register tools with @tools.action or Registry.action(description, param_model, domains, terminates_sequence). Domain policy for navigation lives in SecurityWatchdog, which allows every URL unless allowed_domains, prohibited_domains, or block_ip_addresses is set. Secrets in prompts are redacted by MessageManager._filter_sensitive_data. At execution, <secret>key</secret> is replaced in Registry._replace_sensitive_data; nested dicts are domain-scoped, flat dicts apply on every domain, and bu_2fa_code values are expanded with pyotp. File tools write only under FileSystem.data_dir (base_dir/browseruse_agent_data) after basename sanitization. The default base_dir is a temp directory browser_use_agent_{id}_{timestamp}. upload_file requires the path to be a member of available_file_paths. evaluate runs page JavaScript via Runtime.evaluate after a quote-fixing pass only — do not add a second unsandboxed eval path. @sandbox cloudpickles the user function and posts it to https://sandbox.api.browser-use.com/sandbox-stream.\n\nTests: pytest 9, asyncio_mode auto, tests/ci is the CI set. .github/workflows/test.yaml runs one job per test file with a 4 minute timeout, ANONYMIZED_TELEMETRY=false, and IN_DOCKER=true. Use create_mock_llm from tests/ci/conftest.py. Lint is ruff (tabs, single quotes, line length 130) plus pre-commit plus pyright in basic mode. pyright excludes browser_use/beta/service.py. Commands: ./bin/test.sh, uv run pytest -vxs tests/ci/<file>.py, uv run pyright, uv run ruff format, uv run ruff check --fix.\n\nTraps: AGENTS.md defaults disagree with the code (run max_steps=500, max_actions_per_step=5, max_failures=5, step_timeout=180, use_vision=True). CrashWatchdog is commented out inside attach_all_watchdogs. CLI 3.0 removed subcommands listed in _LEGACY_HINTS; those names exit 2. Other CLI input is delegated to the external browser-harness package. Telemetry posts to PostHog unless ANONYMIZED_TELEMETRY is false, and a device id is stored under ~/.config/browseruse. FileSystem.__init__ deletes an existing browseruse_agent_data directory. Do not edit .env or secrets. Do not create random examples. Prefer editing existing files."
+  },
+  "analysis": {
+    "agent": "grok",
+    "model": "cli:grok",
+    "runtime_ms": 339798,
+    "cost_usd": null,
+    "collected_at": "2026-09-22T12:17:42.372Z"
   }
 }

@@ -19612,5 +19612,944 @@
         ]
       }
     ]
+  },
+  "report": {
+    "overview": "Dify 1.17.1 is an open-source platform for building LLM applications: visual workflows, RAG knowledge bases, tool-using agents, model-provider management, and published chat, completion, and workflow apps. The monorepo pairs a Flask API (api/) with a Next.js console (web/), a TypeScript CLI (cli/), a FastAPI agent run server (dify-agent/), and a Go sandbox runtime (dify-agent-runtime/), deployed together by Docker Compose. What distinguishes it is the split between a Graphon-backed workflow engine, a plugin daemon for tools and models, and a separate agent sandbox that can run shell jobs, plus both a cookie-authenticated studio API and a token-authenticated service API.",
+    "system_map": {
+      "summary": "The product is a pnpm workspace plus a uv Python workspace. The API process is created by create_app() in api/app_factory.py, which loads configs.dify_config, initializes a fixed extension list, and wraps Flask in a python-socketio WSGI app. Production processes are selected by MODE in api/docker/entrypoint.sh: api, worker, beat, job, or migration. Persistence is SQL (Postgres or MySQL), Redis (broker, cache, workflow command channels), object storage selected by STORAGE_TYPE, and a vector store selected by VECTOR_STORE. Adjacent processes are the Next.js web app, the plugin daemon, dify-sandbox for code nodes, the dify-agent FastAPI server, and shellctl.",
+      "claims": [
+        {
+          "claim": "Root AGENTS.md defines the monorepo owners: backend API (api/), frontend (web/), Docker assets (docker/), standalone agent backend (dify-agent/), CLI (cli/), and Cucumber/Playwright suite (e2e/). Backend commands must go through uv run --project api.",
+          "sources": [
+            "AGENTS.md#L1-L8"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Published version is 1.17.1 on both the API (dify-api, Python ~=3.12) and the web and CLI packages. The API depends on Flask, Celery, gunicorn, gevent, flask-restx, psycopg2, Redis, and the path-editable dify-agent package. graphon==0.7.0 is an override dependency.",
+          "sources": [
+            "api/pyproject.toml#L1-L50",
+            "api/pyproject.toml#L107-L108",
+            "web/package.json#L1-L4",
+            "cli/package.json#L1-L4"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "python -m app monkey-patches gevent, gRPC, and psycopg before other imports, then create_app() returns a socketio.WSGIApp bound to 0.0.0.0:5001 with WebSocketHandler. Gunicorn and Celery are documented as applying their own patching.",
+          "sources": [
+            "api/app.py#L3-L20",
+            "api/app.py#L69-L81"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "create_app() builds a DifyApp from dify_config.model_dump(), registers a before_request license gate for ENTERPRISE edition, an after_request OpenTelemetry X-Trace-Id/X-Span-Id injector, then initialize_extensions() in a fixed order ending with blueprints, commands, FastOpenAPI, OTEL, session factory, application services, and OAuth bearer.",
+          "sources": [
+            "api/app_factory.py#L100-L172",
+            "api/app_factory.py#L175-L246"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "ext_blueprints.init_app registers seven Flask blueprints: service API, optional OpenAPI (OPENAPI_ENABLED), published web API, console, files, inner API, MCP, and triggers, each with its own CORS allow-header set.",
+          "sources": [
+            "api/extensions/ext_blueprints.py#L28-L121",
+            "api/controllers/console/__init__.py#L12-L19",
+            "api/controllers/service_api/__init__.py#L6-L8",
+            "api/controllers/web/__init__.py#L6-L8"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "docker/docker-compose.yaml is generated and must not be hand-edited. Default stack services include init_permissions, api and worker and worker_beat (image langgenius/dify-api:1.17.1), api_websocket (profile collaboration), web, db_postgres, db_mysql, redis, dify-sandbox, agent sandbox, plugin daemon, agent_backend, squid SSRF proxies, nginx, certbot, and many optional vector databases. API healthcheck is curl http://localhost:5001/health.",
+          "sources": [
+            "docker/docker-compose.yaml#L1-L6",
+            "docker/docker-compose.yaml#L206-L269",
+            "docker/docker-compose.yaml#L304-L349",
+            "README.md#L74-L83"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "api/docker/entrypoint.sh runs flask upgrade-db when MIGRATION_ENABLED=true. MODE=worker starts celery -A celery_entrypoint.celery with gevent and a default queue list that differs for CLOUD vs self-hosted. MODE=beat runs celery beat. MODE=job runs a one-shot Flask command.",
+          "sources": [
+            "api/docker/entrypoint.sh#L11-L72",
+            "api/celery_entrypoint.py#L1-L13"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Celery is configured in extensions/ext_celery.py with optional Redis Sentinel and SSL, a workflow warm-shutdown handler, and a beat_schedule that includes conversation cleanup, unused-dataset cleanup, human-input form timeout, plugin upgrade checks, workflow log retention, poll_workflow_schedules, and community telemetry heartbeat.",
+          "sources": [
+            "api/extensions/ext_celery.py#L57-L86",
+            "api/extensions/ext_celery.py#L189-L319"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Object storage is chosen by dify_config.STORAGE_TYPE in Storage.get_storage_factory. StorageType includes local (OpenDAL fs rooted at STORAGE_LOCAL_PATH), opendal, s3, azure-blob, aliyun-oss, google-storage, and several other cloud backends.",
+          "sources": [
+            "api/extensions/ext_storage.py#L15-L39",
+            "api/extensions/storage/storage_type.py#L4-L18"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Vector backends are a uv workspace of api/providers/vdb/* packages. Vector.resolve_vector_type prefers dataset.index_struct_dict['type'] and otherwise dify_config.VECTOR_STORE, with an optional tenant whitelist that forces tidb_on_qdrant. VectorType enumerates weaviate, qdrant, pgvector, milvus, elasticsearch, opensearch, chroma, and many others.",
+          "sources": [
+            "api/pyproject.toml#L58-L94",
+            "api/core/rag/datasource/vdb/vector_factory.py#L132-L148",
+            "api/core/rag/datasource/vdb/vector_type.py#L4-L37"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The web app is Next.js 16 (output standalone, basePath from env) developed via root script pnpm dev, which runs vinext and @langgenius/dev-proxy together. Node engine is ^24.20.0 and the package manager is pnpm@12.4.2. The pnpm workspace includes web, e2e, sdks/nodejs-client, packages/*, and cli.",
+          "sources": [
+            "package.json#L5-L8",
+            "package.json#L64-L67",
+            "pnpm-workspace.yaml#L35-L40",
+            "web/package.json#L12-L20",
+            "web/next.config.ts#L10-L43"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "dify-agent exposes a FastAPI app named Dify Agent Run Server from create_app(), with bearer-protected routers for runs, execution bindings, home snapshots, and binding files, plus E2B usage and an agent-stub router. shellctl (Go) is a separate HTTP server started as shellctl serve and listens with no read/write timeout so long-polls stay open.",
+          "sources": [
+            "dify-agent/src/dify_agent/server/app.py#L143-L168",
+            "dify-agent/pyproject.toml#L16-L36",
+            "dify-agent-runtime/cmd/shellctl/main.go#L19-L73",
+            "dify-agent-runtime/README.md#L1-L30"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Root Makefile dev-setup copies docker middleware env, starts docker-compose.middleware.yaml, copies web/.env.example to web/.env.local, pnpm installs, copies api/.env.example, uv sync --dev, and flask db upgrade. Quality targets are make lint, make type-check (pyrefly plus mypy), and make test.",
+          "sources": [
+            "Makefile#L15-L47",
+            "Makefile#L78-L120",
+            "api/AGENTS.md#L7-L14"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Advanced deployment options documented in-repo are Grafana-on-Postgres dashboards and community Helm, Kubernetes YAML, Terraform, and CDK links. Custom runtime configuration is docker/.env overriding docker/envs/*.env.example, then docker compose up -d.",
+          "sources": [
+            "docs/ADVANCED_SETUP.md#L1-L20",
+            "AGENTS.md#L8-L9",
+            "README.md#L133-L135"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "feature_catalog": {
+      "summary": "User-facing product surface splits into a studio console, published web apps, a bearer service API, an OpenAPI surface, MCP, and inbound triggers. Studio features cover apps (chat, completion, agent chat, advanced chat/chatflow, workflow), knowledge datasets and RAG pipelines, plugins and marketplace, skills, snippets, tools, billing, and account setup. The CLI (difyctl) mirrors a subset of account, workspace, app DSL, and run operations. Agents are a separate product path with their own roster, sandbox, and shell runtime.",
+      "claims": [
+        {
+          "claim": "Console blueprint url_prefix is /console/api. Imported resource modules cover apps (workflow, workflow_run, completion, agent, annotation, model config, site, MCP server), auth (login, OAuth, email register, forgot password), datasets and RAG pipeline, explore, billing, workspace members, model providers, tool providers, trigger providers, plugins, skills, snippets, and RBAC.",
+          "sources": [
+            "api/controllers/console/__init__.py#L12-L19",
+            "api/controllers/console/__init__.py#L41-L119"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "README lists the product pillars as visual workflow, multi-provider models, prompt IDE, RAG ingestion and retrieval, autonomous agents with marketplace/MCP/custom tools, LLMOps logs and annotations, and backend-as-a-service APIs. Observability integrations named there are Opik, Langfuse, and Arize Phoenix; trace provider packages also include Aliyun, LangSmith, MLflow, Tencent, and Weave.",
+          "sources": [
+            "README.md#L63-L113",
+            "api/pyproject.toml#L95-L102"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Service API lives at /v1 and is the external app API (completion, chat, workflow, files, annotations, datasets, hit testing, end users). validate_app_token loads the App by API token, rejects disabled or abnormal apps and archived tenants, and optionally get_or_create_end_user from a user argument.",
+          "sources": [
+            "api/controllers/service_api/__init__.py#L6-L8",
+            "api/controllers/service_api/wraps.py#L106-L158",
+            "api/controllers/service_api/app/workflow.py#L83-L94"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Published end-user HTTP API is blueprint web at /api. The Next.js share routes that render those apps are /chat/[token], /chatbot/[token], /completion/[token], /workflow/[token], /agent/[token], plus webapp-signin and password reset. proxy.ts treats /agent, /chat, /chatbot, /completion, /webapp-signin, and /workflow as embeddable and sets frame-ancestors 'none' otherwise unless NEXT_PUBLIC_ALLOW_EMBED is true.",
+          "sources": [
+            "api/controllers/web/__init__.py#L6-L8",
+            "web/proxy.ts#L13-L62"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "OpenAPI is mounted at /openapi/v1 only when OPENAPI_ENABLED is set, with credentialed CORS limited by OPENAPI_CORS_ALLOW_ORIGINS. MCP is /mcp. Inbound workflow triggers are /triggers. Inner control-plane calls are /inner/api.",
+          "sources": [
+            "api/extensions/ext_blueprints.py#L48-L121",
+            "api/controllers/openapi/__init__.py#L12-L25",
+            "api/controllers/mcp/__init__.py#L6-L8",
+            "api/controllers/trigger/__init__.py#L4-L4",
+            "api/controllers/inner_api/__init__.py#L6-L8"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "First-run install is GET/POST /console/api/setup (FastOpenAPI console_router). get_setup_status_api is intentionally unauthenticated and returns step not_started or finished via application_services().setup.get_status(). The handler is marked only_edition_self_hosted. The web install screen is web/app/install.",
+          "sources": [
+            "api/controllers/console/setup.py#L42-L59",
+            "README.md#L83-L83"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Studio navigation in web/app/(commonLayout) includes apps, datasets (create, connect, pipeline), agents/[agentId], explore/installed, marketplace, plugins, skills, snippets, tools, templates, and integrations. Account, OAuth authorize, sign-in, signup, forgot-password, and education verify/apply are separate route groups.",
+          "sources": [
+            "web/app/(commonLayout)/apps/page.tsx",
+            "web/app/(commonLayout)/datasets/page.tsx",
+            "web/app/(commonLayout)/agents/page.tsx",
+            "web/app/(commonLayout)/marketplace/page.tsx",
+            "web/app/signin/page.tsx",
+            "web/app/install/page.tsx"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Workflow canvas nodes implemented under api/core/workflow/nodes include legacy agent, agent_v2, datasource, human_input, knowledge_index, knowledge_retrieval, trigger_plugin, trigger_schedule, and trigger_webhook, composed with graphon built-in nodes (LLM, code, HTTP, and others) via register_nodes().",
+          "sources": [
+            "api/core/workflow/node_factory.py#L120-L137",
+            "api/core/workflow/nodes/__init__.py#L1-L1"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Knowledge indexing supports three index structures selected by IndexProcessorFactory: paragraph, QA, and parent-child. Dataset document processing is asynchronous on the Celery dataset queue.",
+          "sources": [
+            "api/core/rag/index_processor/index_processor_factory.py#L16-L29",
+            "api/tasks/document_indexing_task.py#L32-L46"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Plugin management goes through PluginInstaller, which calls the plugin daemon HTTP API (plugin/{tenant_id}/management/list, fetch/readme, installation ids). Compose wires PLUGIN_DAEMON and AGENT_BACKEND_BASE_URL (default http://agent_backend:5050) into the API container.",
+          "sources": [
+            "api/core/plugin/impl/plugin.py#L28-L80",
+            "docker/docker-compose.yaml#L235-L241"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "difyctl commands, from the cli/src/commands tree, include auth login/logout/whoami and device list/revoke, config get/set/unset/view/path, workspace and member CRUD, app describe/get/export/import/run/resume, env list, skills install, use host/account/workspace, and version. bin/run.ts dispatches process.argv through framework run() and the generated command tree.",
+          "sources": [
+            "cli/bin/run.ts#L1-L9",
+            "cli/src/framework/run.ts#L23-L24",
+            "cli/AGENTS.md#L1-L12",
+            "cli/package.json#L71-L79"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "shellctl job API is POST /v1/jobs/run (mode pty or stdio), plus wait, log tail, status, list, input, terminate, and delete, and POST /v1/snapshot/save and /restore. pty accepts /input; stdio does not. Home snapshots are tar+zstd with gitignore excludes and trailers X-Snapshot-Status, X-Snapshot-Sha256, and X-Snapshot-Bytes.",
+          "sources": [
+            "dify-agent-runtime/internal/server/api.go#L16-L36",
+            "dify-agent-runtime/README.md#L17-L30",
+            "dify-agent-runtime/README.md#L90-L120"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Human-in-the-loop is both a workflow node (core/workflow/nodes/human_input) and a public form route group at web/app/(humanInputLayout)/form/[token]. Celery beat schedules a human_input_form_timeout task.",
+          "sources": [
+            "api/core/workflow/nodes/human_input/boundary.py",
+            "api/extensions/ext_celery.py#L254-L260",
+            "web/app/(humanInputLayout)/form/[token]"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Console login supports password login (gated by email_password_login_enabled) and email-code login with an optional Cloudflare Turnstile token. Logout revokes the server session and clears access, refresh, and CSRF cookies.",
+          "sources": [
+            "api/controllers/console/auth/login.py#L82-L169",
+            "api/services/account_login_service.py#L229-L237"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "data_flow": {
+      "summary": "Browser and CLI clients enter through cookie sessions or bearer tokens. Console mutations stay in Flask controllers, then services and core/. Workflow runs either execute in-process (blocking) or are serialized to AppExecutionParams and pushed onto Celery, with events published back for SSE. Documents move from upload storage through extract/split/embed into a vector collection keyed by the dataset. Outbound model, tool, and HTTP-node calls are supposed to pass the SSRF proxy; code nodes detour to the sandbox; plugins and agents detour to their own daemons.",
+      "claims": [
+        {
+          "claim": "Password login path is LoginApi.post -> application_services().accounts.authentication.login_with_password(PasswordLoginCommand) -> AccountLoginService.login_with_password, which lowercases email, checks login rate limit and invitation token, completes a password login, refuses accounts with no active workspace, then issues a token pair.",
+          "sources": [
+            "api/controllers/console/auth/login.py#L130-L152",
+            "api/services/account_login_service.py#L175-L212"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Session cookies are set by set_access_token_to_cookie and set_refresh_token_to_cookie (HttpOnly, Secure when is_secure(), SameSite Lax) and set_csrf_token_to_cookie (not HttpOnly). check_csrf_token requires the header token to equal the cookie token and verifies it with PassportService. Dev proxy rewrites access_token, csrf_token, refresh_token, webapp_access_token, and passport-* cookies and copies csrf_token into X-CSRF-Token.",
+          "sources": [
+            "api/libs/token.py#L111-L147",
+            "api/libs/token.py#L197-L219",
+            "web/dev-proxy.config.ts#L10-L23"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "AppGenerateService.generate applies cloud workflow quota (QuotaService.reserve) and an app-level RateLimit, then _dispatch_generate matches AppMode: COMPLETION, AGENT_CHAT, AGENT, CHAT, ADVANCED_CHAT, or WORKFLOW. Streaming advanced-chat and workflow builds AppExecutionParams and calls workflow_based_app_execution_task.delay on first SSE subscriber.",
+          "sources": [
+            "api/services/app_generate_service.py#L99-L167",
+            "api/services/app_generate_service.py#L188-L266"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The worker task workflow_based_app_execution_task validates the JSON payload and calls _AppRunner.run, which reloads Workflow and App, opens a Flask app context with set_login_user, and calls AdvancedChatAppGenerator.generate or WorkflowAppGenerator.generate. Streaming responses are published by _publish_streaming_response.",
+          "sources": [
+            "api/tasks/app_generate/workflow_execute_task.py#L472-L481",
+            "api/tasks/app_generate/workflow_execute_task.py#L154-L226"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "WorkflowAppRunner builds a variable pool and Graph, then a CombinedCommandChannel of RedisChannel, StopFlagCommandChannel, and CelerySignalCommandChannel. WorkflowEntry owns a GraphEngine limited by WORKFLOW_MAX_EXECUTION_STEPS, WORKFLOW_MAX_EXECUTION_TIME, and WORKFLOW_CALL_MAX_DEPTH. A WorkflowPersistenceLayer records node and run state.",
+          "sources": [
+            "api/core/app/apps/workflow/app_runner.py#L164-L212",
+            "api/core/workflow/workflow_entry.py#L138-L180",
+            "api/core/workflow/workflow_entry.py#L187-L199"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Document indexing on queue dataset marks documents PARSING, then IndexingRunner.run loads the process rule, picks IndexProcessorFactory(doc_form), extracts text, commits before the slow transform, and continues into split and vector indexing. Cloud edition additionally enforces sandbox batch-upload and vector-space limits inside _document_indexing.",
+          "sources": [
+            "api/tasks/document_indexing_task.py#L49-L80",
+            "api/tasks/document_indexing_task.py#L94-L124",
+            "api/core/indexing_runner.py#L81-L113"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Vector.create stores doc_id, dataset_id, document_id, doc_hash, doc_type, is_summary, and original_chunk_id so summary hits can be mapped back to parent chunks. Embeddings are lazy so billing is not called during Vector construction.",
+          "sources": [
+            "api/core/rag/datasource/vdb/vector_factory.py#L102-L129"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Generic outbound HTTP is core.helper.ssrf_proxy, which builds a pooled httpx client using SSRF_PROXY_ALL_URL or per-scheme SSRF_PROXY_HTTP_URL and SSRF_PROXY_HTTPS_URL, with retries on 429/500/502/503/504. Remote file downloads are required to use core.file.remote_fetcher instead, so signed file URLs resolve via DB and storage first.",
+          "sources": [
+            "api/core/helper/ssrf_proxy.py#L1-L11",
+            "api/core/helper/ssrf_proxy.py#L27-L101"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Code nodes call CodeExecutor.execute_code, which POSTs language, code, preload, and enable_network true to CODE_EXECUTION_ENDPOINT/v1/sandbox/run with header X-Api-Key. Supported languages are Python3, JavaScript (nodejs), and Jinja2 (executed as Python).",
+          "sources": [
+            "api/core/helper/code_executor/code_executor.py#L50-L90"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Plugin daemon traffic is a separate HTTP client inside PluginInstaller (BasePluginClient), not the public service API. Agent-backend calls into Dify use the inner API with X-Inner-Api-Key compared to INNER_API_KEY_FOR_PLUGIN via plugin_inner_api_only and agent_inner_api_only.",
+          "sources": [
+            "api/core/plugin/impl/plugin.py#L28-L70",
+            "api/controllers/inner_api/wraps.py#L80-L100"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The dify-agent server keeps a lifespan-owned RedisRunStore and RunScheduler and two shared httpx.AsyncClient instances: one for the plugin daemon and one for the Dify inner API (create_dify_api_inner_http_client). Control-plane routes require the server API bearer token.",
+          "sources": [
+            "dify-agent/src/dify_agent/server/app.py#L143-L189"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New web console calls are oRPC clients. web/service/console/index.ts builds a ConsoleClient from @dify/contracts/console and a DynamicLink that uses consoleBrowserLink in the browser and global $consoleServerLink on the server. Contracts are generated from API swagger/fastopenapi specs by packages/contracts gen-api-contract.",
+          "sources": [
+            "web/service/console/index.ts#L1-L29",
+            "packages/contracts/package.json#L5-L33",
+            "web/AGENTS.md#L14-L14"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Uploaded user files in Compose are the host volume docker/volumes/app/storage mounted at /app/api/storage. init_permissions chowns that directory to 1001:1001 once. API code reads and writes through extensions.ext_storage.storage, not by opening arbitrary paths.",
+          "sources": [
+            "docker/docker-compose.yaml#L207-L224",
+            "docker/docker-compose.yaml#L261-L263",
+            "api/AGENTS.md#L22-L22"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "behavior_traces": {
+      "summary": "Three flows dominate runtime behavior. Process startup is extension initialization plus a MODE switch in the container entrypoint. The primary user action, running a workflow or chatflow, hops from a controller through AppGenerateService into either an in-process generator or a Celery task that reconstructs WorkflowEntry and streams Graphon events. Persistence of knowledge is a two-phase Celery job: status commit, then extract, transform, and vector write. Login and first-time setup are the other ordered paths an agent will touch.",
+      "claims": [
+        {
+          "claim": "API startup when executed as __main__: gevent.monkey.patch_all, grpc_gevent.init_gevent, psycogreen.patch_psycopg, then create_app() -> create_flask_app_with_configs -> initialize_extensions -> socketio.WSGIApp, then pywsgi.WSGIServer.serve_forever on port 5001. If argv is a flask db command, create_migrations_app() is used instead and Celery is not attached.",
+          "sources": [
+            "api/app.py#L11-L73",
+            "api/app.py#L75-L81",
+            "api/app_factory.py#L161-L172"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Container startup: entrypoint.sh optionally flask upgrade-db, then branches on MODE. worker builds CELERY_QUEUES (CLOUD adds workflow_professional, workflow_team, workflow_sandbox; self-hosted uses a single workflow queue) and execs celery worker -Q those queues. beat execs celery -A app.celery beat. api mode falls through to gunicorn (referenced from the same entrypoint).",
+          "sources": [
+            "api/docker/entrypoint.sh#L11-L72"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Enterprise requests hit before_request in create_flask_app_with_configs: init_request_context, then _match_license_gated_surface. Surfaces are /console/api/, /api/, /v1, /mcp, and /triggers. Console exemptions include /console/api/setup, /login, /init, /system-features, /account/profile, and /workspaces/current so the sign-in page cannot reload-loop. Invalid license raises UnauthorizedAndForceLogout, Forbidden('license_required'), or ServiceUnavailable for triggers.",
+          "sources": [
+            "api/app_factory.py#L24-L47",
+            "api/app_factory.py#L76-L130"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Self-hosted install: browser opens /install, which calls GET /console/api/setup (get_setup_status_api). POST setup is edition-gated with only_edition_self_hosted, validates password via valid_password, and submits SetupInput through application_services. After setup, README directs the operator to the dashboard initialization flow.",
+          "sources": [
+            "api/controllers/console/setup.py#L19-L59",
+            "README.md#L76-L83"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Console password login order: setup_required and email_password_login_enabled decorators, decrypt_password_field, model_validate(LoginPayload), login_with_password, then _token_response writes cookies. Failures map AccountApplicationError through _raise_request_error. Logout calls authentication.logout, flask_login.logout_user, and clear_*_token_from_cookie.",
+          "sources": [
+            "api/controllers/console/auth/login.py#L120-L169",
+            "api/services/account_login_service.py#L175-L215"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Streaming workflow run order: service or console controller -> AppGenerateService.generate -> _run_with_guardrails -> _dispatch_generate AppMode.WORKFLOW -> AppExecutionParams.new -> workflow_based_app_execution_task.delay -> _AppRunner.run -> WorkflowAppGenerator.generate -> WorkflowAppRunner constructs Graph and WorkflowEntry -> graph_engine.layer(WorkflowPersistenceLayer) -> WorkflowEntry.run -> iter_dify_graph_engine_events -> GraphEngine.run filtered by HumanInputFormEventFilter and ResponseStreamFilter.",
+          "sources": [
+            "api/services/app_generate_service.py#L245-L266",
+            "api/tasks/app_generate/workflow_execute_task.py#L154-L226",
+            "api/core/app/apps/workflow/app_runner.py#L183-L212",
+            "api/core/workflow/workflow_entry.py#L56-L79",
+            "api/core/workflow/workflow_entry.py#L187-L193"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Single-node debug does not use the full graph. WorkflowEntry.single_step_run loads the node config, rejects LOOP and ITERATION, resolve_workflow_node_class, builds DifyGraphInitContext with InvokeFrom.DEBUGGER, and preloads variables. register_nodes() imports graphon.nodes and core.workflow.nodes so node classes self-register.",
+          "sources": [
+            "api/core/workflow/workflow_entry.py#L201-L259",
+            "api/core/workflow/node_factory.py#L120-L150"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Dataset indexing order: document_indexing_task (queue dataset) -> _document_indexing -> set IndexingStatus.PARSING and commit -> IndexingRunner(enforce_vector_space_admission=True).run -> IndexProcessorFactory.init_index_processor -> _extract -> session.commit -> transform and index. Pause raises DocumentIsPausedError and is logged, not treated as a hard failure.",
+          "sources": [
+            "api/tasks/document_indexing_task.py#L32-L47",
+            "api/tasks/document_indexing_task.py#L94-L129",
+            "api/core/indexing_runner.py#L81-L113"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CLI invocation order: bin/run.ts imports commandTree from tree.generated and calls run(commandTree, argv). run() short-circuits help, otherwise resolveCommand walks the tree until a flag, instantiates the DifyCommand, and the command delegates to a sibling run.ts or handlers.ts that must not import src/framework.",
+          "sources": [
+            "cli/bin/run.ts#L4-L9",
+            "cli/src/framework/run.ts#L23-L40",
+            "cli/src/framework/registry.ts#L14-L40",
+            "cli/AGENTS.md#L7-L9"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "shellctl startup order: main requires subcommand serve, DefaultConfig, optional -listen/-state-dir/-token overrides, Service.Initialize, StartBackgroundGC, StartBackgroundPipeMonitor, then http.Server with Handler. A job run is POST /v1/jobs/run -> authMiddleware -> handleRunJob. Shutdown is SIGINT/SIGTERM via signal.NotifyContext.",
+          "sources": [
+            "dify-agent-runtime/cmd/shellctl/main.go#L19-L80",
+            "dify-agent-runtime/internal/server/api.go#L16-L30"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Agent run server startup is FastAPI lifespan in create_app: build Redis store and scheduler, attach bearer control-plane routers, and close the shared HTTP clients on shutdown. Module-level app = create_app() is the ASGI entry. uvicorn is a server extra dependency.",
+          "sources": [
+            "dify-agent/src/dify_agent/server/app.py#L48-L49",
+            "dify-agent/src/dify_agent/server/app.py#L143-L168",
+            "dify-agent/src/dify_agent/server/app.py#L205-L208",
+            "dify-agent/pyproject.toml#L21-L35"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Scheduled workflow wakes are beat task schedule.workflow_schedule_task.poll_workflow_schedules, with additional trigger_provider_refresh. Queue names for the dispatcher include schedule_poller, schedule_executor, and triggered_workflow_dispatcher in the worker's default CELERY_QUEUES.",
+          "sources": [
+            "api/extensions/ext_celery.py#L286-L293",
+            "api/docker/entrypoint.sh#L35-L41"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "testing_signals": {
+      "summary": "Backend tests are pytest, split into unit_tests (local default), integration_tests, and testcontainers suites. The Makefile unit target ignores controller tests in the xdist pass and reruns them separately. Web tests are Vitest via vite-plus, defaulting to a happy-dom unit project, plus a browser project. End-to-end coverage is Cucumber plus Playwright, not Vitest. CI path-filters api, web, cli, e2e, vdb, migrations, and dify-agent. Backend integration tests are documented as CI-only.",
+      "claims": [
+        {
+          "claim": "make test runs uv pytest on api/tests/unit_tests and provider unit tests for vdb and trace, with --timeout default 20 seconds, xdist -n auto, and a second non-xdist pass for api/tests/unit_tests/controllers. make test-all adds integration_tests/workflow, tools, and test_containers_integration_tests with --start-middleware, then a --start-vdb smoke of chroma, pgvector, and qdrant.",
+          "sources": [
+            "Makefile#L104-L150",
+            "api/AGENTS.md#L9-L14"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "api/pytest.ini sets pythonpath, coverage xml/json, and env defaults used by tests: MOCK_SWITCH=true, CODE_EXECUTION_ENDPOINT=http://127.0.0.1:8194, PLUGIN_DAEMON_URL=http://127.0.0.1:5002, MARKETPLACE_API_URL=https://marketplace.dify.ai, plus placeholder provider API keys.",
+          "sources": [
+            "api/pytest.ini#L1-L17"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Unit tests cover controllers, core (including workflow), services, tasks, models, repositories, extensions, commands, libs, migrations, and enterprise. Integration and testcontainers suites cover workflow node execution, human-input resume, dataset services, auth, webhook triggers, and Celery indexing tasks. AGENTS.md states Docker-backed integration suites are CI-owned and not expected locally.",
+          "sources": [
+            "api/AGENTS.md#L14-L14",
+            "api/tests/unit_tests/core",
+            "api/tests/test_containers_integration_tests/services",
+            "api/tests/integration_tests/workflow"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CI workflow .github/workflows/api-tests.yml plans shards with api/dev/pytest_sharding.py, optionally using a timing baseline from langgenius/dify-test-infra, and ignores api/tests/unit_tests/controllers in the shard plan. The same paths as make test are the unit inputs.",
+          "sources": [
+            ".github/workflows/api-tests.yml#L16-L50"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "main-ci.yml on pull_request and merge_group to main path-filters api, cli, e2e, web, vdb, migration, sandbox-runtime, and dify-agent, and also watches docker compose template, SSRF proxy, and controller-SQLAlchemy lint scripts for the api filter.",
+          "sources": [
+            ".github/workflows/main-ci.yml#L3-L8",
+            ".github/workflows/main-ci.yml#L37-L77"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Web unit tests run as vp test --project unit (package script test) and are sharded 4 ways in .github/workflows/web-tests.yml with blob coverage reports. A separate browser-test job exists. web/docs/test.md says the unit project uses happy-dom, coverage is not a target, and browser mode is opt-in.",
+          "sources": [
+            "web/package.json#L30-L32",
+            "web/docs/test.md#L37-L39",
+            ".github/workflows/web-tests.yml#L12-L48"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "e2e/package.json scripts run Cucumber via node ./scripts/run-cucumber.ts, with Playwright browsers chromium and webkit. Feature areas under e2e/features include apps (create, publish, workflow-run), auth (sign-in, session refresh), accessibility axe tags, and agent-v2 configure/publish/tools.",
+          "sources": [
+            "e2e/package.json#L5-L16",
+            "e2e/features/apps/workflow-run.feature",
+            "e2e/features/auth/sign-in.feature",
+            "e2e/features/agent-v2/publish.feature"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CLI tests are Vitest (vp test) with colocated *.test.ts files and a real Hono mock server at cli/test/fixtures/dify-mock, explicitly not nock or msw. e2e mode is vitest.e2e.config.ts; smoke is the [P0] name pattern. CI script is tree:check plus coverage plus build. Bun is required for tree generation.",
+          "sources": [
+            "cli/package.json#L18-L32",
+            "cli/AGENTS.md#L14-L25"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "dify-agent tests are pytest under dify-agent/tests with --import-mode=importlib and an integration marker. The Go runtime tests via make test; acceptance lives in dify-agent-runtime/tests/acceptance_test.go and HTTP route tests in internal/server/api_test.go.",
+          "sources": [
+            "dify-agent/pyproject.toml#L52-L59",
+            "dify-agent-runtime/README.md#L65-L69",
+            "dify-agent-runtime/tests/acceptance_test.go",
+            "dify-agent-runtime/internal/server/api_test.go"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Frontend policy forbids tests that only assert render-without-crashing, and routes agents to web/docs/test.md rather than redefining the policy in skills. Web AGENTS.md says use frontend-testing only when writing Vitest or Testing Library tests.",
+          "sources": [
+            "web/docs/test.md#L16-L35",
+            "web/AGENTS.md#L3-L5"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "There is a dedicated db-migration-test workflow and vdb-tests.yml plus vdb-tests-full.yml, plus cli-tests, cli-e2e, web-e2e, accessibility-e2e, dify-agent-tests, and sandbox-runtime-tests workflows. Style is enforced by .github/workflows/style.yml and pyrefly diff jobs.",
+          "sources": [
+            ".github/workflows/db-migration-test.yml",
+            ".github/workflows/vdb-tests.yml",
+            ".github/workflows/web-e2e.yml",
+            ".github/workflows/dify-agent-tests.yml",
+            ".github/workflows/style.yml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Controller response contracts are linted by make api-contract-lint (api/dev/lint_response_contracts.py) and import boundaries by lint-imports. Extra guards in scripts/ include check_no_new_controller_sqlalchemy.py and check_no_new_getattr.py, wired into the api path filter.",
+          "sources": [
+            "Makefile#L87-L90",
+            "scripts/check_no_new_controller_sqlalchemy.py",
+            "scripts/check_no_new_getattr.py",
+            ".github/workflows/main-ci.yml#L63-L68"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "risk_map": {
+      "summary": "The highest-risk surfaces are the inner API shared secret, SSRF and code-execution egress, the agent sandbox boundary, and enterprise license gating. Several defaults in the generated Compose file are development credentials. Workflow execution is a large cross-package coupling to Graphon plus Celery, so a change in event filtering or pause state has a wide blast radius. Some legacy indexing entrypoints are already marked for removal. Next.js production builds ignore TypeScript errors.",
+      "claims": [
+        {
+          "claim": "docker-compose.yaml hardcodes fallback secrets on the API service: INNER_API_KEY_FOR_PLUGIN defaults to a fixed string and AGENT_BACKEND_API_TOKEN defaults to dify-agent-run-token-for-dev-only. The same plugin key appears as a pytest env default. Shipping Compose without overriding PLUGIN_DIFY_INNER_API_KEY and DIFY_AGENT_API_TOKEN reuses those values.",
+          "sources": [
+            "docker/docker-compose.yaml#L239-L241",
+            "api/pytest.ini#L12-L15"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "inner_api_only compares header X-Inner-Api-Key to dify_config.INNER_API_KEY and aborts 404 when INNER_API is disabled. plugin_inner_api_only returns 404 (not 401) on a bad key so the route is hidden. agent_inner_api_only is documented as sharing that same plugin bridge credential for agent tool and knowledge calls.",
+          "sources": [
+            "api/controllers/inner_api/wraps.py#L21-L35",
+            "api/controllers/inner_api/wraps.py#L80-L100"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "enterprise_inner_api_user_auth does not reject a failed HMAC. It injects EndUser only when Authorization splits into user_id:token and the SHA1 signature matches; otherwise it calls the view unchanged.",
+          "sources": [
+            "api/controllers/inner_api/wraps.py#L42-L75"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CSRF cookie is intentionally not HttpOnly (set_csrf_token_to_cookie httponly=False) while access and refresh cookies are HttpOnly. check_csrf_token compares header and cookie and verifies the passport. A XSS bug would be able to read the CSRF cookie.",
+          "sources": [
+            "api/libs/token.py#L111-L147",
+            "api/libs/token.py#L197-L219"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "SSRF protection depends on SSRF_PROXY_* being configured. _build_ssrf_client falls back to a direct httpx.Client with no proxy mounts when neither SSRF_PROXY_ALL_URL nor both scheme URLs are set. Compose puts api and worker on ssrf_proxy_network and ships squid.",
+          "sources": [
+            "api/core/helper/ssrf_proxy.py#L86-L101",
+            "docker/docker-compose.yaml#L69-L72",
+            "docker/docker-compose.yaml#L700-L700"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CodeExecutor.execute_code always sends enable_network true to the sandbox. The sandbox is an external image langgenius/dify-sandbox:0.2.15, authenticated only by CODE_EXECUTION_API_KEY. Compromise of that key or of the sandbox network path is remote code execution with network.",
+          "sources": [
+            "api/core/helper/code_executor/code_executor.py#L81-L90",
+            "docker/docker-compose.yaml#L511-L511"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "shellctl filesystem isolation is Landlock and requires Linux >= 5.13; unsupported kernels only warn on stderr. Read-write is $HOME and the job cwd (also TMPDIR). Snapshot save/restore has no size limit; callers must bound streams. Restore uses os.Root and refuses path traversal, absolute names, and symlink escapes.",
+          "sources": [
+            "dify-agent-runtime/README.md#L71-L88",
+            "dify-agent-runtime/README.md#L92-L120"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Workflow streaming depends on a subscriber callback plus a  fallback timer unless PUBSUB_REDIS_CHANNEL_TYPE is streams. A missed subscribe or a Redis pub/sub failure stalls or drops the run. Pause and resume reload WorkflowResumptionContext from the workflow pause row; a decode failure is logged and the resume returns without raising.",
+          "sources": [
+            "api/services/app_generate_service.py#L56-L97",
+            "api/tasks/app_generate/workflow_execute_task.py#L484-L498"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Graphon is pinned differently across packages: api override graphon==0.7.0 and dify-agent server extra graphon==0.5.2. WorkflowEntry comments say Graphon 0.5.0 emits raw variable chunks and Dify reimposes response ordering in iter_dify_graph_engine_events. Engine upgrades can silently change stream order and pause snapshots.",
+          "sources": [
+            "api/pyproject.toml#L107-L108",
+            "dify-agent/pyproject.toml#L24-L24",
+            "api/core/workflow/workflow_entry.py#L56-L70"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "document_indexing_task is explicitly marked TO BE DEPRECATED in favor of normal_document_indexing_task or priority_document_indexing_task, but it is still a shared_task on queue dataset and still calls _document_indexing. Callers can remain on the legacy entry.",
+          "sources": [
+            "api/tasks/document_indexing_task.py#L32-L46"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "web/next.config.ts sets typescript.ignoreBuildErrors true and productionBrowserSourceMaps false, output standalone. Type errors in the web app do not fail next build. A permanent redirect remains from /explore/apps to / and from /education-apply to /education/apply, with a dated TODO to remove the education alias.",
+          "sources": [
+            "web/next.config.ts#L20-L39",
+            "web/proxy.ts#L67-L76"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Service API authorization is only as strong as the app API token plus enable_api and tenant status checks in validate_app_token. It then logs in either an end user or the workspace owner account via login_manager so downstream current_account_with_tenant works. A stolen app token can act as that tenant's app, and owner impersonation is used when no end user is requested.",
+          "sources": [
+            "api/controllers/service_api/wraps.py#L111-L167"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "License gating is skipped entirely for non-ENTERPRISE editions and, even in enterprise, for /files, /inner/api, and /health by design so workflows and license recovery keep working. Expanding those ungated prefixes would bypass the license check.",
+          "sources": [
+            "api/app_factory.py#L76-L84",
+            "api/app_factory.py#L120-L130"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Security reports must not go to public GitHub issues. SECURITY.md requires GitHub Security Advisories; README also lists security@dify.ai. The license is Apache 2.0 plus additional conditions in LICENSE.",
+          "sources": [
+            "SECURITY.md#L3-L19",
+            "README.md#L171-L177"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "extension_points": {
+      "summary": "New behavior is expected to plug in at a few explicit registries rather than new top-level services. Workflow nodes self-register by import. RAG index types, vector stores, file storage, tools, and moderation or external-data tools each have a factory or scanner. HTTP surfaces grow by importing a controller module onto an existing blueprint. The CLI grows by adding a DifyCommand folder and regenerating the command tree. Model and tool providers from the marketplace arrive through the plugin daemon, not by editing a static provider list.",
+      "claims": [
+        {
+          "claim": "Workflow node registration is register_nodes() in api/core/workflow/node_factory.py. It imports every module under graphon.nodes and core.workflow.nodes so classes register on graphon Node. get_node_type_classes_mapping and resolve_workflow_node_class are the lookup API. Dify-only nodes live under api/core/workflow/nodes (agent_v2, human_input, knowledge retrieval, triggers).",
+          "sources": [
+            "api/core/workflow/node_factory.py#L112-L150"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "IndexProcessorFactory.init_index_processor is a closed switch on IndexStructureType: PARAGRAPH_INDEX, QA_INDEX, PARENT_CHILD_INDEX. A new chunking strategy requires a new BaseIndexProcessor and a branch here.",
+          "sources": [
+            "api/core/rag/index_processor/index_processor_factory.py#L10-L29"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Vector backends plug in through VectorType plus the uv workspace members api/providers/vdb/*. Trace backends are api/providers/trace/* (Aliyun, Arize Phoenix, Langfuse, LangSmith, MLflow, Opik, Tencent, Weave) declared in tool.uv.sources.",
+          "sources": [
+            "api/core/rag/datasource/vdb/vector_type.py#L4-L37",
+            "api/pyproject.toml#L58-L102"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "File storage plugs in through StorageType and Storage.get_storage_factory. Adding a backend means a new enum value and a match arm that returns a BaseStorage subclass.",
+          "sources": [
+            "api/extensions/storage/storage_type.py#L4-L18",
+            "api/extensions/ext_storage.py#L22-L39"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "ToolManager keeps an in-process cache of hardcoded builtin providers loaded by load_hardcoded_providers_cache, and get_builtin_provider falls through to get_plugin_provider when the name is not hardcoded. Builtin tool assets also live under api/core/tools/builtin_tool.",
+          "sources": [
+            "api/core/tools/tool_manager.py#L95-L138"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Code-based extensions for moderation and external data tools use Extensible.scan_extensions, which walks subpackages of the extension module, and ExtensionModule enum values MODERATION and EXTERNAL_DATA_TOOL. API-based external data tools are a separate factory under core/external_data_tool.",
+          "sources": [
+            "api/core/extension/extensible.py#L16-L60"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Marketplace and tenant-installed plugins are not imported as Python packages in the API. PluginInstaller talks to the plugin daemon management API (list, fetch by identifier, install tasks, readme). New model or tool providers ship as plugins against that daemon.",
+          "sources": [
+            "api/core/plugin/impl/plugin.py#L28-L80"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Console routes are added by importing the module from api/controllers/console/__init__.py (side-effect route decorators on console_ns) or by FastOpenAPI console_router as setup.py does. Service, web, files, mcp, trigger, openapi, and inner_api are separate blueprints registered only in ext_blueprints.init_app.",
+          "sources": [
+            "api/controllers/console/__init__.py#L41-L70",
+            "api/controllers/console/setup.py#L42-L47",
+            "api/extensions/ext_blueprints.py#L28-L46"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CLI commands are a generated tree (cli/src/commands/tree.generated.ts re-exported by tree.ts). resolveCommand in cli/src/framework/registry.ts walks argv. New commands are folders whose index.ts extends DifyCommand; pnpm tree:gen must be rerun. ARD.md and cli/src/commands/AGENTS.md own the rules.",
+          "sources": [
+            "cli/src/commands/tree.ts#L1-L1",
+            "cli/src/framework/registry.ts#L14-L40",
+            "cli/AGENTS.md#L3-L21",
+            "cli/package.json#L27-L32"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "JSON schema versions for workflow and app DSL are loaded by SchemaRegistry.default_registry from core/schemas/builtin/schemas. It is a process-wide singleton.",
+          "sources": [
+            "api/core/schemas/registry.py#L11-L40"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Periodic jobs are added to the beat_schedule dict inside ext_celery, not by ad-hoc schedulers. Examples already registered: clean_unused_datasets_task, human_input_form_timeout, check_upgradable_plugin_task, poll_workflow_schedules, clean_workflow_runs_task.",
+          "sources": [
+            "api/extensions/ext_celery.py#L189-L319"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Flask CLI commands live in api/commands (account reset-password and create-tenant, system upgrade-db, plus plugin, rbac, retention, storage, vector, data migration). Container MODE=job is the supported way to run one of those commands and exit.",
+          "sources": [
+            "api/commands/system.py#L137-L137",
+            "api/commands/account.py#L19-L95",
+            "api/docker/entrypoint.sh#L74-L80"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Frontend shared UI primitives are the @langgenius/dify-ui package. Web is instructed to consume those primitives and generated console clients rather than new wrappers or handwritten REST helpers. Icon additions go through packages/iconify-collections, not hand-written React icon components.",
+          "sources": [
+            "web/AGENTS.md#L14-L22",
+            "packages/dify-ui/package.json"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_handoff": {
+      "summary": "Read the nearest AGENTS.md before editing, then the API schema guide if controllers change. Stay inside the requested package. Backend checks are make lint, make type-check, and make test with TARGET_TESTS for a narrow path. Web checks are vp test in web/ and the i18n and contract generation rules. Do not hand-edit generated Compose, generated OpenAPI clients, or the CLI command tree. Do not start long-running stacks unless the user asked. Integration tests need middleware and are CI-owned.",
+      "claims": [
+        {
+          "claim": "Scoped instructions: api/AGENTS.md (layering, tenant_id, SSRF, Celery idempotency), web/AGENTS.md (contracts, i18n, Dify UI, Next.js agent rules), cli/AGENTS.md plus ARD.md, and e2e/AGENTS.md for Cucumber. Root AGENTS.md says explicit user instructions beat workflow defaults.",
+          "sources": [
+            "AGENTS.md#L3-L8",
+            "api/AGENTS.md#L16-L26",
+            "web/AGENTS.md#L1-L22",
+            "cli/AGENTS.md#L1-L25"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Backend layering rule: transport parsing in controllers, orchestration in services, domain policy in core/ or its owner, libs/ stays business-agnostic. Configuration is configs.dify_config. Storage is extensions.ext_storage.storage. Outbound HTTP is core.helper.ssrf_proxy. Pydantic v2 models at the boundary. Do not open transactions around external I/O.",
+          "sources": [
+            "api/AGENTS.md#L16-L26"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Before changing controller schemas, generated clients, or SystemFeatureModel, read api/controllers/API_SCHEMA_GUIDE.md. /system-features is a minimal unauthenticated bootstrap allowlist. The enterprise exempt prefix list in app_factory.py is part of that bootstrap contract.",
+          "sources": [
+            "api/AGENTS.md#L19-L19",
+            "api/app_factory.py#L24-L47"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Safe backend test command is make test TARGET_TESTS=./api/tests/<path> or uv run --project api --dev pytest <path>. Full unit suite is make test. Do not expect api/tests/integration_tests or test_containers_integration_tests to pass without middleware; they are CI-owned.",
+          "sources": [
+            "api/AGENTS.md#L7-L14",
+            "Makefile#L104-L120"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Web edits that add strings must update web/i18n/locales/en-US and every other locale. New backend calls use consoleQuery or consoleClient from @/service/console. Do not edit generated files under packages/contracts/generated by hand; regenerate with the package gen-api-contract script, which shells out to api/dev/generate_swagger_specs.py and generate_fastopenapi_specs.py.",
+          "sources": [
+            "web/AGENTS.md#L13-L14",
+            "packages/contracts/package.json#L32-L36"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Web test policy is web/docs/test.md. Run pnpm --dir web test (vp test --project unit). Browser project is pnpm --dir web test:browser. E2E is pnpm --dir e2e e2e and is Cucumber, not Vitest. There is a separate e2e-cucumber-playwright skill for that tree.",
+          "sources": [
+            "web/docs/test.md#L1-L5",
+            "web/package.json#L30-L32",
+            "e2e/package.json#L5-L8"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CLI changes require reading cli/ARD.md and cli/src/commands/AGENTS.md. Behavior stays in sibling modules that do not import src/framework. After adding a command, pnpm tree:gen and pnpm tree:check. Tests use the Hono mock server; do not introduce nock or msw.",
+          "sources": [
+            "cli/AGENTS.md#L3-L25"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Do not edit docker/docker-compose.yaml directly. Change docker-compose-template.yaml or docker/.env.example and regenerate with docker/generate_docker_compose. Keep docker/.env.example limited to variables required for a default boot; provider-specific settings belong in docker/envs/*.env.example.",
+          "sources": [
+            "docker/docker-compose.yaml#L1-L6",
+            "AGENTS.md#L8-L9"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Do not edit api/.env, docker/.env, or web/.env.local, and do not commit real secrets. pytest.ini and Compose contain obvious development placeholders; overriding INNER_API_KEY_FOR_PLUGIN and DIFY_AGENT_API_TOKEN is an operator concern, not something to 'fix' by rotating them in git.",
+          "sources": [
+            "docker/docker-compose.yaml#L239-L241",
+            "api/pytest.ini#L12-L15",
+            "SECURITY.md#L3-L9"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Flask migrations in containers use flask upgrade-db (api/commands/system.py), while Makefile dev-setup uses uv run flask db upgrade. Agents should match the entrypoint the environment actually uses. create-tenant and reset-password are Flask commands in api/commands/account.py, runnable as MODE=job.",
+          "sources": [
+            "api/commands/system.py#L137-L137",
+            "api/commands/account.py#L19-L95",
+            "Makefile#L46-L46",
+            "api/docker/entrypoint.sh#L11-L18"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Workflow changes must keep Graphon event filtering in iter_dify_graph_engine_events and persistence in WorkflowPersistenceLayer. Node additions belong in core/workflow/nodes and must be importable by register_nodes. Do not construct GraphEngine from controllers.",
+          "sources": [
+            "api/core/workflow/workflow_entry.py#L56-L79",
+            "api/core/workflow/node_factory.py#L120-L137",
+            "api/core/app/apps/workflow/app_runner.py#L183-L212"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Celery tasks that can retry must be idempotent and log resource ids. Use the existing queue owner; do not push unrelated work through workflow services. Streaming execution queue is the shared task workflow_based_app_execution_task. Dataset indexing queue name is dataset.",
+          "sources": [
+            "api/AGENTS.md#L24-L26",
+            "api/tasks/app_generate/workflow_execute_task.py#L472-L476",
+            "api/tasks/document_indexing_task.py#L32-L33"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Next.js in this repo is not the version assumed by older training data. web/AGENTS.md tells agents to read node_modules/next/dist/docs before using Next APIs, and warns that the nextjs-agent-rules block is rewritten by next dev. Typecheck is web package script type-check (tsc); next build itself ignores TS errors.",
+          "sources": [
+            "web/AGENTS.md#L24-L31",
+            "web/package.json#L32-L32",
+            "web/next.config.ts#L20-L24"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_prompt": "You are working in the langgenius/dify monorepo (product version 1.17.1). Dify is an open-source platform for LLM apps: visual workflows, RAG knowledge bases, agents, model providers, and published chat, completion, and workflow apps. The tree is a pnpm workspace (root package.json, pnpm-workspace.yaml: web, e2e, cli, packages/*, sdks/nodejs-client) plus a uv project in api/ that also vendors dify-agent and vector/trace providers.\n\nRuntime map. api/ is Flask 3. `python -m app` (api/app.py) gevent-patches the process, then create_app() in api/app_factory.py loads configs.dify_config, runs initialize_extensions, and returns a python-socketio WSGI app on 0.0.0.0:5001. Containers use api/docker/entrypoint.sh and MODE=api|worker|beat|job|migration. Migrations in containers are `flask upgrade-db`. Workers run celery -A celery_entrypoint.celery with a long default queue list (dataset, workflow, mail, plugin, schedule_*, workflow_based_app_execution, and others). Beat schedule lives in api/extensions/ext_celery.py.\n\nHTTP surfaces, registered in api/extensions/ext_blueprints.py: /console/api (studio), /v1 (service API, app API tokens via validate_app_token), /api (published web apps), /files, /inner/api (shared key; 404 when disabled), /mcp, /triggers, and /openapi/v1 only if OPENAPI_ENABLED. Enterprise license checks sit in before_request and exempt a short bootstrap prefix list (setup, login, system-features, account profile). Do not widen /system-features; read api/controllers/API_SCHEMA_GUIDE.md first.\n\nPersistence. SQLAlchemy against Postgres or MySQL. Redis for Celery, rate limits, and workflow stop/command channels. Files go through extensions.ext_storage.storage (STORAGE_TYPE: local OpenDAL, s3, azure-blob, and others). Vectors go through api/core/rag/datasource/vdb/vector_factory.py: Vector.resolve_vector_type uses dataset.index_struct_dict type or VECTOR_STORE. Index structures are paragraph, qa, and parent-child via IndexProcessorFactory.\n\nPrimary execution path. AppGenerateService.generate applies quota and RateLimit, then dispatches on AppMode. Streaming WORKFLOW and ADVANCED_CHAT enqueue workflow_based_app_execution_task. The worker _AppRunner calls WorkflowAppGenerator or AdvancedChatAppGenerator. WorkflowAppRunner builds a Graphon graph and a WorkflowEntry with a Redis plus stop-flag command channel and a WorkflowPersistenceLayer. WorkflowEntry.run filters GraphEngine events (human-input filter and response stream filter). Nodes self-register in register_nodes() by importing graphon.nodes and core.workflow.nodes. Dify-specific nodes include agent_v2, human_input, knowledge_retrieval, and triggers. Graphon is pinned 0.7.0 in api/ and 0.5.2 in dify-agent; do not fork event semantics outside WorkflowEntry.\n\nKnowledge path. Celery queue dataset -> document_indexing_task -> _document_indexing sets PARSING -> IndexingRunner.run extracts, commits, transforms, and embeds. The legacy task docstring says prefer normal_document_indexing_task or priority_document_indexing_task.\n\nOther processes. Code nodes POST to CODE_EXECUTION_ENDPOINT/v1/sandbox/run with enable_network true (dify-sandbox). Generic HTTP must use core.helper.ssrf_proxy. Plugins use the external plugin daemon via PluginInstaller. dify-agent is a FastAPI app (dify_agent.server.app:create_app) with Redis-backed runs and a bearer control plane; Compose points the API at http://agent_backend:5050. shellctl (dify-agent-runtime, Go) exposes POST /v1/jobs/run and home snapshots; Landlock needs Linux >= 5.13.\n\nWeb. Next.js 16 App Router, React 19, `pnpm dev` at the repo root (vinext plus dev-proxy on 127.0.0.1:5001). New console IO uses @/service/console consoleClient / consoleQuery generated from @dify/contracts. Do not hand-write REST clients or edit packages/contracts/generated. Strings go in web/i18n/locales/en-US and every other locale. UI primitives come from @langgenius/dify-ui. next.config.ts sets ignoreBuildErrors, so tsc (pnpm --dir web type-check) is the real type gate. Embeddable routes are listed in web/proxy.ts.\n\nCLI. @langgenius/difyctl. bin/run.ts calls framework run() on the generated command tree. Leaves extend DifyCommand; behavior stays out of src/framework. After adding a command run pnpm tree:gen. Tests use the Hono mock under cli/test/fixtures/dify-mock.\n\nHow to work. Read the nearest AGENTS.md. Keep controllers thin, services orchestration, core/ domain policy. Thread tenant_id through every tenant-owned read and write. No external I/O inside an open transaction. Celery retries must be idempotent. Do not edit docker/docker-compose.yaml; it is generated. Do not commit .env files. Compose fallback INNER_API_KEY_FOR_PLUGIN and DIFY_AGENT_API_TOKEN are dev defaults, not production secrets. Tests: make test or make test TARGET_TESTS=./api/tests/<path>; integration tests are CI-only. Web: pnpm --dir web test. E2E is Cucumber/Playwright in e2e/, not Vitest. Security reports go to GitHub Security Advisories (SECURITY.md), not public issues."
+  },
+  "analysis": {
+    "agent": "grok",
+    "model": "cli:grok",
+    "runtime_ms": 418712,
+    "cost_usd": null,
+    "collected_at": "2026-09-22T12:19:01.288Z"
   }
 }

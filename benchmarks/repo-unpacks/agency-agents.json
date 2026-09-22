@@ -8769,5 +8769,913 @@
         ]
       }
     ]
+  },
+  "report": {
+    "overview": "The Agency is a MIT-licensed catalog of 279 Markdown agent personalities plus the bash/Python toolchain that converts and installs them into 16 coding-agent hosts. It is aimed at people who want specialized, opinionated prompts (engineering, marketing, security, GIS, and the rest) inside Claude Code, Cursor, Codex, Gemini, Copilot, Hermes, and similar tools, rather than a running application. What is distinctive is the dual catalog: divisions.json and tools.json are enforced as single sources of truth, converters are deterministic, and Hermes gets one lazy-router plugin instead of hundreds of always-loaded skills.",
+    "system_map": {
+      "summary": "The repo is a content catalog plus a local installer, not a service. Agent source lives in 18 division directories declared by divisions.json. scripts/convert.sh renders tool-specific files under integrations/ (gitignored except READMEs); scripts/install.sh copies or symlinks them into host config directories. Shared parsing and the installer TUI live in scripts/lib.sh. There is no package manifest, database, or HTTP server. A separate desktop app (agency-agents-app) is documented as a consumer of the same catalogs. CI is six GitHub Actions workflows on ubuntu-latest, with the installer also matrixed onto macos-latest.",
+      "claims": [
+        {
+          "claim": "279 agent files start with YAML frontmatter and sit in 18 division directories whose canonical set is the divisions object in divisions.json (academic through testing), each with label, Lucide icon, and hex color.",
+          "sources": [
+            "divisions.json#L1-L22",
+            "engineering/engineering-frontend-developer.md#L1-L7"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "strategy/, integrations/, examples/, and scripts/ are explicitly non-divisions. strategy/ holds NEXUS playbooks and runbooks with no agent frontmatter; integrations/ is convert.sh output. NON_DIVISION_DIRS in check-divisions.sh is examples, scripts, integrations, strategy.",
+          "sources": [
+            "divisions.json#L2",
+            "scripts/check-divisions.sh#L24-L32",
+            "CONTRIBUTING.md#L34-L49"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "tools.json is the install contract for 16 hosts. Each entry carries id, kebab, format, installKind (per-agent, roster, or plugin), detect dirs, version bin/args, scope, and dest templates. claude-code and copilot use format identity; hermes is installKind plugin; aider and windsurf are roster.",
+          "sources": [
+            "tools.json#L1-L20"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "scripts/convert.sh is the renderer. It sources lib.sh, hardcodes AGENT_DIRS to the 18 divisions, accepts --tool/--out/--parallel/--jobs, and writes only under integrations/ (or --out). It states it never touches user config dirs.",
+          "sources": [
+            "scripts/convert.sh#L1-L76",
+            "scripts/convert.sh#L717-L757"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "scripts/install.sh is the installer. ALL_TOOLS lists the same 16 kebab names. Divisions are parsed at runtime by divisions_from_json from divisions.json (awk/grep/sed, no jq) into ALL_DIVISIONS; AGENT_DIRS then appends strategy, which is_agent_file filters out.",
+          "sources": [
+            "scripts/install.sh#L133-L155",
+            "scripts/install.sh#L1-L57"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "scripts/lib.sh is the shared bash 3.2 library: get_field, get_body, slugify, agent_slug, is_agent_file, fence_open_p/fence_closes_p, and the installer TUI (tui_begin, read_key, draw_frame). It is sourced, not executed, and has no external dependencies.",
+          "sources": [
+            "scripts/lib.sh#L1-L64",
+            "scripts/lib.sh#L140-L199"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Hermes output is not a per-agent renderer. run_conversions special-cases tool hermes and calls python3 scripts/build-hermes-plugin.py --repo-root --out, which reads divisions.json and emits the agency-agents-router plugin.",
+          "sources": [
+            "scripts/convert.sh#L667-L675",
+            "scripts/build-hermes-plugin.py#L21-L28",
+            "integrations/hermes/README.md#L1-L10"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Generated agent payloads are gitignored. .gitignore keeps integrations/*/README.md tracked and ignores per-tool trees such as integrations/opencode/agents/, integrations/cursor/rules/, integrations/hermes/agency-agents-router/, and integrations/aider/CONVENTIONS.md.",
+          "sources": [
+            ".gitignore#L66-L87"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CI entrypoints are the six workflows under .github/workflows: test-install.yml (ubuntu-latest and macos-latest), lint-agents.yml, check-divisions.yml, check-tools.yml, check-runbooks.yml, and check-hermes-config-rewrite.yml. All except lint-agents run on every pull_request and on push to main, with no path filter.",
+          "sources": [
+            ".github/workflows/test-install.yml#L1-L30",
+            ".github/workflows/lint-agents.yml#L1-L30",
+            ".github/workflows/check-tools.yml#L1-L34",
+            ".github/workflows/check-hermes-config-rewrite.yml#L1-L24"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The recommended user path in README is the separate native app at agencyagents.app / msitarzewski/agency-agents-app, which browses the roster and installs into Claude Code, Cursor, Codex, Gemini, and others. The in-repo path is ./scripts/install.sh and ./scripts/convert.sh.",
+          "sources": [
+            "README.md#L11-L52",
+            "README.md#L69-L102"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "There is no application runtime in this repo: no package.json, no server, no database. Persistence of installed agents is the host tool's config directory on disk, and the only machine-readable catalogs shipped here are divisions.json, tools.json, and strategy/runbooks.json.",
+          "sources": [
+            "SECURITY.md#L13-L23",
+            "strategy/runbooks.json#L1-L2",
+            "tools.json#L1-L2"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "feature_catalog": {
+      "summary": "User-facing surface is the agent roster, the installer CLI, the converter, NEXUS orchestration docs, and a handful of optional integrations (MCP memory, Chinese Copilot name localization). Agents are activated by pasting or installing their markdown into a host tool, not by an in-repo UI. The installer can target one tool, a division, a slug list, or an agents file, and can dry-run. Hermes exposes four router tools instead of one skill per agent.",
+      "claims": [
+        {
+          "claim": "install.sh usage supports --tool (comma-separated), --division, --agent, --agents-file, --link, --path, --interactive/--no-interactive, --no-convert, --dry-run, --list [tools|teams|agents], --parallel, and --jobs. Bare invocation installs all teams into detected tools and opens the wizard on a TTY.",
+          "sources": [
+            "scripts/install.sh#L3-L56",
+            "scripts/install.sh#L1316-L1354"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Interactive install is a three-screen TUI: screen_tools, screen_teams, screen_review. Keys are space/a/n/search/enter. Teams default to all; tools default to whatever is_detected returns. Review toggles copy vs symlink via USE_LINK.",
+          "sources": [
+            "scripts/install.sh#L496-L499",
+            "scripts/install.sh#L588-L654",
+            "scripts/install.sh#L720-L751"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Claude Code install copies source markdown into ${CLAUDE_CONFIG_DIR:-$HOME/.claude}/agents (or $CLAUDE_CONFIG_DIR/agents). Copilot copies the same files into both ~/.github/agents and ~/.copilot/agents. Neither tool is produced by convert.sh.",
+          "sources": [
+            "scripts/install.sh#L758-L788",
+            "tools.json#L4-L7",
+            "integrations/README.md#L69-L78"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Project-scoped installs write into the current working directory: OpenCode to .opencode/agents, Cursor to .cursor/rules, Aider to CONVENTIONS.md, Windsurf to .windsurfrules. User-scoped examples include Gemini ~/.gemini/agents, Codex ~/.codex/agents, OpenClaw ~/.openclaw/agency-agents, Osaurus ~/.osaurus/skills.",
+          "sources": [
+            "scripts/install.sh#L14-L29",
+            "scripts/install.sh#L843-L866",
+            "scripts/install.sh#L904-L916",
+            "tools.json#L8-L16"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "convert.sh --tool accepts antigravity, gemini-cli, opencode, cursor, aider, windsurf, openclaw, qwen, zcode, kimi, codex, osaurus, hermes, vibe, or all. Per-agent converters include convert_opencode, convert_cursor, convert_codex, convert_kimi, convert_vibe, convert_openclaw, convert_qwen, convert_zcode.",
+          "sources": [
+            "scripts/convert.sh#L12-L27",
+            "scripts/convert.sh#L266-L313",
+            "scripts/convert.sh#L500-L565",
+            "scripts/convert.sh#L735-L736"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Aider output is an index, not full prompts: accumulate_aider writes name, description, division, and a repo-relative source path because inlining every body would be about 3.8 million characters. Windsurf's accumulate_windsurf does inline every body into one .windsurfrules file.",
+          "sources": [
+            "scripts/convert.sh#L567-L649"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "OpenClaw conversion splits each body into SOUL.md (headers matching identity, learning/memory, communication, style, critical rules) versus AGENTS.md (everything else) plus IDENTITY.md from emoji and vibe. install_openclaw registers new workspaces with openclaw agents add when the binary exists.",
+          "sources": [
+            "scripts/convert.sh#L315-L425",
+            "scripts/install.sh#L868-L901"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The Hermes plugin exposes exactly four tools: agency_agents_search (query, optional division and limit), agency_agents_inspect (agent or slug, include_body), agency_agents_load (agent or slug, task), and agency_agents_delegate (agent or slug, required task). The committed README records a generated count of 279.",
+          "sources": [
+            "integrations/hermes/README.md#L10-L31",
+            "scripts/build-hermes-plugin.py#L94-L107",
+            "scripts/build-hermes-plugin.py#L236-L308"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "NEXUS is the multi-agent orchestration layer in strategy/. QUICKSTART.md defines NEXUS-Full (all agents, 12-24 weeks), NEXUS-Sprint (15-25 agents, 2-6 weeks), and NEXUS-Micro (5-10 agents, 1-5 days), activated by prompting Agents Orchestrator.",
+          "sources": [
+            "strategy/QUICKSTART.md#L1-L68",
+            "specialized/agents-orchestrator.md#L1-L31"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "strategy/runbooks.json is the machine-readable roster the desktop app uses for one-click team deploy. Shipped scenarios include startup-mvp, enterprise-feature, and the docs scenario-incident-response.md and scenario-marketing-campaign.md. Each runbook has slug, title, mode, doc, and grouped agents with activation.",
+          "sources": [
+            "strategy/runbooks.json#L1-L48",
+            "scripts/check-runbooks.sh#L1-L14"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "MCP memory is an optional, non-installing integration. integrations/mcp-memory/setup.sh only prints instructions and looks for ~/.config/claude/mcp.json, ~/.cursor/mcp.json, or .mcp.json. It expects an external server exposing remember, recall, rollback, and search.",
+          "sources": [
+            "integrations/mcp-memory/setup.sh#L1-L67",
+            "integrations/mcp-memory/README.md#L1-L28"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Chinese localization is a post-install PowerShell step, scripts/i18n/localize-agents-zh.ps1, driven by scripts/i18n/agent-names-zh.json. It rewrites name and description in installed Copilot files under %USERPROFILE%\\.github\\agents and %USERPROFILE%\\.copilot\\agents.",
+          "sources": [
+            "scripts/i18n/README.md#L1-L38"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Selection files are supported. scripts/agents-to-install.example lists frontend-developer, backend-architect, security-architect, and the display name Penetration Tester. --agents-file strips comments and blank lines, slugifies each line, and exits 1 on an unknown agent.",
+          "sources": [
+            "scripts/agents-to-install.example#L1-L10",
+            "scripts/install.sh#L214-L227"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "OpenCode has a product-level capacity warning. tool_cap returns 119 only for opencode, citing upstream anomalyco/opencode#27988. The wizard and dry-run both warn when the selected agent count exceeds that cap.",
+          "sources": [
+            "scripts/install.sh#L367-L376",
+            "scripts/install.sh#L629-L633",
+            "README.md#L104"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "data_flow": {
+      "summary": "Source of truth is the division markdown files. lib.sh parses frontmatter and body. convert.sh transforms each agent into a host format under integrations/, except Claude Code and Copilot, which install the source file unchanged. install.sh filters by slug, then copies or symlinks into a host directory resolved from --path, an env override, or a hardcoded default. Hermes is the outlier: bodies are packed into data/agents.json and only the matched specialist is returned or delegated at runtime. Runbook deploys use a different identifier, the filename stem, than the installer slug.",
+      "claims": [
+        {
+          "claim": "get_field reads the first YAML frontmatter scalar, strips one matching quote pair, and folds indented continuation lines into a single space-separated value so multi-line descriptions are not truncated. get_body returns everything after the second --- fence.",
+          "sources": [
+            "scripts/lib.sh#L19-L46"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "agent_slug is get_field name piped through slugify, which lowercases and replaces non-alphanumeric runs with single hyphens. That slug is the install filter key and the filename stem for most converters (frontend-developer), while Antigravity and Osaurus prefix it with agency-.",
+          "sources": [
+            "scripts/lib.sh#L48-L64",
+            "scripts/convert.sh#L118-L128",
+            "scripts/convert.sh#L171-L178"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The convert loop walks AGENT_DIRS, skips files whose first line is not --- and files with an empty name, then dispatches convert_<tool> or accumulate_<tool>. clean_tool_output first deletes prior output except README.md so renamed agents do not leave orphans.",
+          "sources": [
+            "scripts/convert.sh#L654-L713"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "OpenCode files are markdown with name, description, mode subagent, and a resolved #RRGGBB color. Cursor files are .mdc with description, empty globs, and alwaysApply false. Gemini CLI files keep name/description frontmatter plus the raw body. Codex writes a TOML file under integrations/codex/agents/<slug>.toml.",
+          "sources": [
+            "scripts/convert.sh#L171-L213",
+            "scripts/convert.sh#L266-L313"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "yaml_quote wraps values in single quotes and doubles apostrophes. toml_escape_string shells out to perl -0pe to escape backslashes, quotes, newlines, and other control characters before they are embedded in TOML.",
+          "sources": [
+            "scripts/convert.sh#L94-L114"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Install destination order is --path, then a tool-specific env var, then the default. CLAUDE_CONFIG_DIR is treated as the config root and agents are placed in its agents/ subdirectory unless the value already ends in /agents. path_collision_group blocks --path when two tools would write the same filenames (raw-source-md, slug-md, or agency-skill).",
+          "sources": [
+            "scripts/install.sh#L285-L330",
+            "scripts/install.sh#L1385-L1400"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "build_selection unions slugs from --division (every agent_slug in those dirs), --agent, and --agents-file. slug_allowed strips a leading agency- prefix. With no filter, SELECTION_ACTIVE stays false and every frontmatter file is installed. Hermes later warns that selection flags are ignored.",
+          "sources": [
+            "scripts/install.sh#L192-L237",
+            "scripts/install.sh#L1286-L1288"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "ensure_converted auto-runs convert.sh --tool when integrations/<tool> has no file other than README.md. Claude Code and Copilot return immediately. AUTO_CONVERT defaults true and --no-convert disables it.",
+          "sources": [
+            "scripts/install.sh#L346-L365"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Hermes data flow packs every agent into data/agents.json (slug, name, description, division, color, emoji, vibe, source_path, body). At runtime _load_agents reads that JSON once. Search tokenizes the query and scores name, description, division, vibe, and body[:8000]. Load and delegate call _specialist_prompt, which prepends a 'obey higher-priority system instructions' wrapper and the user task.",
+          "sources": [
+            "scripts/build-hermes-plugin.py#L37-L91",
+            "scripts/build-hermes-plugin.py#L131-L221",
+            "scripts/build-hermes-plugin.py#L311-L360"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Delegate context is truncated to _MAX_LIFECYCLE_CONTEXT_CHARS (32000) with an explicit truncation marker. The wait budget is _DELEGATION_WAIT_SECONDS 330 and cancellation wait 30. On failure the handler returns the composed prompt instead of the subagent result.",
+          "sources": [
+            "scripts/build-hermes-plugin.py#L119-L129",
+            "scripts/build-hermes-plugin.py#L362-L450"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Runbook slugs are filename stems, not name-slugs. check-runbooks.sh builds the real set with git ls-files '*.md', drops integrations/examples/strategy/scripts/.github, and requires every roster agents[] entry to match a basename without .md. startup-mvp's core team therefore lists engineering-frontend-developer, while install --agent frontend-developer is the name slug of that same file.",
+          "sources": [
+            "strategy/runbooks.json#L1-L25",
+            "scripts/check-runbooks.sh#L45-L71",
+            "engineering/engineering-frontend-developer.md#L1-L3"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "scripts/convert-outputs.sha256 is the drift manifest for generated output. test-convert-outputs.sh records one hash per agent across every tool, one hash per tool's non-agent files, and contract hashes for divisions.json, tools.json, and runbooks.json. Hashes are normalized to forward slashes and LF.",
+          "sources": [
+            "scripts/test-convert-outputs.sh#L1-L46",
+            "scripts/test-convert-outputs.sh#L79-L100"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "About 33 of 279 filename stems do not contain the slugify(name) value, so the two identifier spaces are not a simple prefix convention.",
+          "sources": [
+            "scripts/lib.sh#L48-L59",
+            "scripts/check-runbooks.sh#L16-L18",
+            "engineering/engineering-frontend-developer.md#L2"
+          ],
+          "kind": "inference"
+        }
+      ]
+    },
+    "behavior_traces": {
+      "summary": "Three flows dominate: installing into a host, regenerating integration files, and turning the roster into a Hermes plugin that can search and delegate. A fourth, docs-only flow is NEXUS activation by pasting a prompt. The traces below name the functions in call order as they appear in the scripts.",
+      "claims": [
+        {
+          "claim": "Install startup: main parses flags, do_list exits early for --list, build_selection computes _ALLOWED_SLUGS, check_integrations requires integrations/ to exist, then either interactive_wizard or the detect loop fills SELECTED_TOOLS. Dry-run prints the plan via selected_agent_count and exits before any write.",
+          "sources": [
+            "scripts/install.sh#L1316-L1358",
+            "scripts/install.sh#L1404-L1462"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Non-interactive detection calls is_detected per ALL_TOOLS entry, which dispatches detect_claude_code (directory ~/.claude or CLAUDE_CONFIG_DIR), detect_copilot (code binary or ~/.github or ~/.copilot), detect_hermes (hermes binary or HERMES_HOME), and the other detect_* helpers. Zero detections exits 0 with a tip, not an error.",
+          "sources": [
+            "scripts/install.sh#L428-L468",
+            "scripts/install.sh#L1420-L1440"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Wizard order is tui_begin, then screen_tools -> screen_teams -> screen_review. Each screen calls selector, which loops read_key and draw_frame. On install, the wizard commits SELECTED_TOOLS and, if not every team is selected, FILTER_DIVISIONS, then build_selection. No TTY makes interactive_wizard return 1 and main falls through to auto-detect.",
+          "sources": [
+            "scripts/install.sh#L720-L751",
+            "scripts/lib.sh#L147-L157",
+            "scripts/install.sh#L1404-L1414"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "A real install calls install_tool, which calls ensure_converted then the matching install_<tool>. Sequential mode prints progress_bar around each tool. --parallel re-execs install.sh with AGENCY_INSTALL_WORKER=1 via xargs -P, passing worker_flags (--link, --no-convert, --path, --division, --agent, --agents-file).",
+          "sources": [
+            "scripts/install.sh#L254-L263",
+            "scripts/install.sh#L1291-L1310",
+            "scripts/install.sh#L1465-L1510"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Claude Code file loop: for each AGENT_DIRS entry, find *.md, is_agent_file, agent_slug, slug_allowed, install_file (cp, or ln -sf if --link) into the resolved dest. Copilot repeats that write into two directories and counts once.",
+          "sources": [
+            "scripts/install.sh#L280-L282",
+            "scripts/install.sh#L758-L788"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Convert startup: main validates --tool against valid_tools, then run_conversions. For a normal tool it clean_tool_output, find-sorts markdown, skips non-frontmatter, and calls the converter. --parallel on tool=all runs every tool except aider and windsurf through xargs, because those two share temp accumulators, then runs them serially.",
+          "sources": [
+            "scripts/convert.sh#L667-L713",
+            "scripts/convert.sh#L718-L778"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "OpenClaw convert of one file: get_field name/description, slugify, get_body, then a line loop that uses fence_open_p/fence_closes_p so fenced ## lines are not section breaks, classifies headers into soul vs agents, and writes SOUL.md, AGENTS.md, and IDENTITY.md.",
+          "sources": [
+            "scripts/convert.sh#L315-L425",
+            "scripts/lib.sh#L70-L91"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Hermes install order: ensure_converted may call convert.sh --tool hermes; install_hermes checks plugin.yaml, __init__.py, and data/agents.json exist; if HERMES_PLUGIN_DIR's basename is not agency-agents-router it appends that segment; rm -rf only that directory; cp -R or ln -s; ensure_hermes_plugin_enabled; then a python one-liner prints len(agents.json).",
+          "sources": [
+            "scripts/install.sh#L1249-L1288",
+            "scripts/install.sh#L346-L363"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "ensure_hermes_plugin_enabled copies config.yaml to config.yaml.bak.agency-agents-plugin.$$, then an inline Python script finds the plugins: block, repairs lines where '- ' was glued into a scalar, and inserts '- agency-agents-router' at the existing list-item indent. It exits 0 if the plugin is already present and exits 1 without writing when it cannot find an insertion point.",
+          "sources": [
+            "scripts/install.sh#L1080-L1247",
+            ".github/workflows/check-hermes-config-rewrite.yml#L1-L8"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Hermes delegate order inside the generated plugin: _identifier, _agent_lookup, require task, _specialist_prompt as fallback, import SubagentLaunchRequest, lifecycle.launch, lifecycle.wait(330), on timeout lifecycle.cancel then wait(30), lifecycle.result, and on any exception return either pending or the fallback prompt.",
+          "sources": [
+            "scripts/build-hermes-plugin.py#L362-L450"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Lint of one agent: lint_file rejects CRLF, requires an opening ---, requires name/description/color, checks color against names awk-extracted from resolve_opencode_color, warns if Identity, Core Mission, or Critical Rules are absent, warns under 50 words, and warns if no ## header classifies as soul or as agents.",
+          "sources": [
+            "scripts/lint-agents.sh#L39-L196",
+            "scripts/convert.sh#L221-L250"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "NEXUS-Sprint startup, as documented rather than executed, is a pasted prompt: activate Agents Orchestrator, skip Phase 0, staff PM/design/engineering/QA/support roles, begin at Phase 1, and require Reality Checker approval before launch. The matching runbook startup-mvp lists agents-orchestrator plus engineering-frontend-developer and testing-reality-checker as always-on.",
+          "sources": [
+            "strategy/QUICKSTART.md#L46-L67",
+            "strategy/runbooks.json#L4-L25",
+            "specialized/agents-orchestrator.md#L19-L31"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "testing_signals": {
+      "summary": "Tests are shell scripts and one unittest module, not a pytest or npm suite. They are designed for bash 3.2 and no jq. CI runs installer behavior on Linux and macOS, catalog consistency on every PR, and agent lint only when agent or linter paths change. The generated-output eval needs PyYAML and Python 3.11 tomllib and treats manifest drift as advisory on pull requests. Large gaps are the converter installers other than the two identity tools, and the agent prompt bodies themselves, which no test executes.",
+      "claims": [
+        {
+          "claim": "test-install.sh is a custom bash harness (pass/fail/xfail_eq, not a framework). It sets HOME to a mktemp sandbox, refuses to touch the real home, and only installs claude-code and copilot so it does not depend on fresh convert.sh output. It checks --help, --list teams against divisions.json, --dry-run writes zero files, default ~/.claude/agents count equals the frontmatter roster, and --path overrides the default.",
+          "sources": [
+            "scripts/test-install.sh#L1-L18",
+            "scripts/test-install.sh#L64-L79",
+            "scripts/test-install.sh#L148-L180",
+            ".github/workflows/test-install.yml#L12-L30"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "test-install.yml also runs bash -n on every scripts/*.sh before the harness, on ubuntu-latest and macos-latest, fail-fast false, for every pull_request and every push to main.",
+          "sources": [
+            ".github/workflows/test-install.yml#L1-L30"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "test-agent-selection.sh asserts --agent definitely-not-an-agent and a bad --agents-file exit non-zero with 'Unknown agent' / 'in agents-file', and that --agent 'Developer Tooling Engineer' dry-runs as Agents: 1. check-tools.yml runs it on every PR and main push.",
+          "sources": [
+            "scripts/test-agent-selection.sh#L1-L44",
+            ".github/workflows/check-tools.yml#L33-L34"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "test-convert-frontmatter.sh runs convert.sh for gemini-cli, opencode, and qwen into a temp dir and asserts selected frontmatter fields are single-quoted YAML scalars, including description on developer-tooling-engineer and tools on programmatic-display-buyer.",
+          "sources": [
+            "scripts/test-convert-frontmatter.sh#L1-L39",
+            ".github/workflows/check-tools.yml#L25-L26"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "test-convert-outputs.sh is the generated-product eval: round-trip of description, strict YAML/TOML parse, one output per roster agent per tool, and sha256 drift against scripts/convert-outputs.sha256. It requires python3 with yaml and tomllib. CI passes --drift=advisory on pull_request and strict mode on push to main.",
+          "sources": [
+            "scripts/test-convert-outputs.sh#L1-L69",
+            "scripts/test-convert-outputs.sh#L79-L100",
+            ".github/workflows/check-tools.yml#L28-L31"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "check-hermes-plugin.py loads build-hermes-plugin.py, builds into a temp dir, calls register on a RecordingContext, asserts the four tool names and JSON-schema shape, and runs a live search for 'backend architecture' then inspect by the returned slug.",
+          "sources": [
+            "scripts/check-hermes-plugin.py#L32-L77",
+            ".github/workflows/check-tools.yml#L22-L23"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "test-hermes-plugin.py is unittest. It imports the committed integrations/hermes/agency-agents-router/__init__.py if present and drives FakeLifecycle through State.SUCCEEDED, FAILED, CANCELLED, timeouts, and launch errors. That generated __init__.py is gitignored, so a clean checkout does not contain the module the test imports until convert.sh --tool hermes has been run.",
+          "sources": [
+            "scripts/test-hermes-plugin.py#L1-L70",
+            ".gitignore#L84"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "check-hermes-config-rewrite.sh is a regression for the plugins.enabled indent bug. The workflow runs it on every PR and main push and documents the two symptoms: wrong indent collapsing enabled into a scalar, and non-idempotent duplicate inserts.",
+          "sources": [
+            "scripts/check-hermes-config-rewrite.sh#L1-L17",
+            ".github/workflows/check-hermes-config-rewrite.yml#L1-L24"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "check-divisions.sh and check-runbooks.sh are CI gates, not unit tests. Divisions must match disk, both AGENT_DIRS arrays, lint-agents.yml path filters, and each division must contain at least one frontmatter file. Runbooks must be valid JSON, have unique slugs, existing doc paths, and roster stems that git ls-files can resolve.",
+          "sources": [
+            "scripts/check-divisions.sh#L1-L16",
+            "scripts/check-divisions.sh#L83-L129",
+            ".github/workflows/check-divisions.yml#L1-L20",
+            ".github/workflows/check-runbooks.yml#L1-L20",
+            "scripts/check-runbooks.sh#L31-L82"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "lint-agents.yml runs only on pull_request, path-filtered to division trees plus scripts/lint-agents.sh, convert.sh, and lib.sh. The lint job lints git-diff changed agent files and then check-agent-originality.sh on those files. A second job lints the entire roster only when the linter, converter, or lib.sh changed.",
+          "sources": [
+            ".github/workflows/lint-agents.yml#L3-L73",
+            ".github/workflows/lint-agents.yml#L75-L106"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "check-agent-originality.sh embeds Python that builds 8-word shingles after stripping a fixed ENTITY proper-noun list, then Jaccard-compares candidates to the roster. ORIGINALITY_FAIL defaults to 40 and ORIGINALITY_WARN to 20. Exit 1 at or above the fail threshold. The header says the existing library's worst pair is about 1.5 percent.",
+          "sources": [
+            "scripts/check-agent-originality.sh#L1-L28",
+            "scripts/check-agent-originality.sh#L50-L82",
+            "scripts/check-agent-originality.sh#L160-L173"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "What is not covered: no test executes an agent prompt; test-install.sh never calls install_opencode, install_cursor, install_hermes, or install_openclaw; lint does not run on push to main; and there is no coverage tool, fixture app, or browser suite. Agent markdown under testing/ is a division of QA personas, not this repo's test suite.",
+          "sources": [
+            "scripts/test-install.sh#L14-L16",
+            "testing/",
+            ".github/workflows/lint-agents.yml#L3-L4"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "risk_map": {
+      "summary": "The highest-impact code is install.sh, because it writes outside the repo, rewrites Hermes config, can delete a plugin directory, and can symlink the catalog into a host. Agent markdown is prompt supply chain: a merged file is copied verbatim into users' coding agents. The two slug systems and the hardcoded AGENT_DIRS copies are the main ways a catalog change silently drops or mis-addresses agents. Tests pin the identity installers well and the other hosts mostly by conversion invariants.",
+      "claims": [
+        {
+          "claim": "install.sh writes to $HOME and $PWD by design: ~/.claude/agents, ~/.github/agents, ~/.copilot/agents, ~/.hermes, ~/.openclaw, and project .cursor/rules and .opencode/agents. --path replaces the destination with any caller-supplied directory. --link uses ln -sf, so a later edit in the clone changes the installed agent.",
+          "sources": [
+            "scripts/install.sh#L277-L282",
+            "scripts/install.sh#L300-L329",
+            "scripts/install.sh#L758-L760",
+            "SECURITY.md#L21-L29"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "install_hermes rm -rf's the destination after forcing the basename to agency-agents-router, which is meant to avoid deleting a shared plugins directory. ensure_hermes_plugin_enabled still rewrites the user's config.yaml and only warns if that Python step fails. A backup is config.yaml.bak.agency-agents-plugin.<pid>.",
+          "sources": [
+            "scripts/install.sh#L1252-L1276",
+            "scripts/install.sh#L1080-L1088",
+            "scripts/install.sh#L1235-L1246"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "install_openclaw shells out to openclaw agents list --json and openclaw agents add --workspace --non-interactive when the binary is on PATH. Failure of add is swallowed with || true.",
+          "sources": [
+            "scripts/install.sh#L875-L890"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "clean_tool_output runs find ... -exec rm -rf on integrations/<tool> children except README.md. The only guard is a ^[a-z0-9-]+$ match on the tool name so a future caller cannot pass ../. convert.sh --out can redirect that tree anywhere.",
+          "sources": [
+            "scripts/convert.sh#L654-L665",
+            "scripts/convert.sh#L726-L727"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Parallel install interpolates worker_flags unquoted: sh -c '... $AGENCY_INSTALL_EXTRA ...'. A --path value containing spaces or shell metacharacters is split. test-install.sh exists specifically because a path with a space was previously split into two destinations.",
+          "sources": [
+            "scripts/install.sh#L1491-L1497",
+            "scripts/install.sh#L254-L263",
+            "scripts/test-install.sh#L4-L8"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "SECURITY.md scopes the threat model to markdown prompts plus shell scripts: no secrets in agent files, no executable code inside markdown, review scripts before merge, and report agent files that attempt prompt injection via a private GitHub advisory rather than a public issue. Nothing in CI scans agent bodies for injection or exfiltration text.",
+          "sources": [
+            "SECURITY.md#L1-L30",
+            "scripts/lint-agents.sh#L1-L9"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Hermes search and delegate put attacker-controlled query/task strings next to the full specialist body. _specialist_prompt tells the model to obey higher-priority instructions, but the body itself is unfiltered catalog text, and include_body returns it raw. Delegation imports agent.subagent_lifecycle from the Hermes process.",
+          "sources": [
+            "scripts/build-hermes-plugin.py#L209-L221",
+            "scripts/build-hermes-plugin.py#L339-L380"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Filename-stem IDs and name-slugs diverge. check-runbooks.sh and the desktop app use the .md basename. install.sh --agent and converters use slugify(name). engineering-frontend-developer.md is named Frontend Developer, so its installer slug is frontend-developer. Passing a runbook slug to --agent fails agent_slug_exists unless that string happens to match a name slug.",
+          "sources": [
+            "strategy/runbooks.json#L1-L2",
+            "strategy/runbooks.json#L19",
+            "scripts/install.sh#L179-L211",
+            "engineering/engineering-frontend-developer.md#L2",
+            "scripts/lib.sh#L54-L59"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Division lists are copied. install.sh reads divisions.json, but convert.sh and lint-agents.sh hardcode AGENT_DIRS. The comment in install.sh says a hardcoded copy previously dropped healthcare (#655/#668). check-divisions.sh is the only thing that keeps the copies aligned, and it does not parse install.sh because that file no longer has a literal division array.",
+          "sources": [
+            "scripts/install.sh#L135-L138",
+            "scripts/convert.sh#L73-L76",
+            "scripts/lint-agents.sh#L17-L37",
+            "scripts/check-divisions.sh#L4-L10"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "lint-agents.yml does not run on push to main and does not run at all unless a division path or the linter scripts change. A PR that only edits install.sh will not lint agents. Whole-roster lint uses github.base_ref, which the workflow only defines for pull_request.",
+          "sources": [
+            ".github/workflows/lint-agents.yml#L3-L30",
+            ".github/workflows/lint-agents.yml#L75-L106"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "OpenCode silently drops agents above about 119. The installer only warns (capacity_warn, wizard footer, dry-run). It still writes every selected file. Installing the full 279-agent roster into OpenCode is a known partial failure.",
+          "sources": [
+            "scripts/install.sh#L367-L376",
+            "scripts/install.sh#L859-L864",
+            "README.md#L104"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "i18n localize-agents-zh.ps1 rewrites installed name and description fields in the user's Copilot directories. That mutates files install.sh just copied and can desync them from the name slug the converters computed. The script is PowerShell and is not invoked by the bash CI workflows.",
+          "sources": [
+            "scripts/i18n/README.md#L12-L38"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "AGENCY_TUI_FORCE is a test hook that marks the TUI active and skips the TTY check, alt-screen, and stty takeover. Combined with read_key's raw mode, a forced wizard on a real terminal session is a footgun if a caller exports the variable.",
+          "sources": [
+            "scripts/lib.sh#L147-L157"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "integrations/mcp-memory/setup.sh probes the user's MCP config paths and prints a sample mcpServers block, but it does not install a server. The README's remember/recall/rollback contract is documentation only; nothing in scripts/ wires those tools.",
+          "sources": [
+            "integrations/mcp-memory/setup.sh#L14-L67",
+            "integrations/mcp-memory/README.md#L14-L28"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "extension_points": {
+      "summary": "New behavior is meant to plug in at three registries: a division, a tool, or a runbook. Agents themselves are just new markdown files that survive lint. Host-specific rendering is a convert_<tool> function plus an install_<tool> function, keyed by tools.json. Hermes tools are registered in one Python register() function inside the generator, not discovered from disk. Color names are a closed case list inside resolve_opencode_color.",
+      "claims": [
+        {
+          "claim": "To add a division, CONTRIBUTING and check-divisions.sh require: create the directory with at least one frontmatter agent, add label/icon/color to divisions.json, and add the name to AGENT_DIRS in both scripts/convert.sh and scripts/lint-agents.sh. The lint workflow path filters must mention <div>/ or check-divisions.sh fails. Do not add strategy or integrations.",
+          "sources": [
+            "CONTRIBUTING.md#L34-L49",
+            "scripts/check-divisions.sh#L12-L16",
+            "scripts/check-divisions.sh#L91-L97",
+            "divisions.json#L2"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "To add a tool, tools.json's _note says: add the entry (id, label, kebab, format, installKind, dest), add convert_<tool> or reuse a format in convert.sh, add install_<tool> in install.sh, then run scripts/check-tools.sh. installKind must be per-agent, roster, or plugin. The same format name must mean byte-identical output.",
+          "sources": [
+            "tools.json#L2",
+            "scripts/check-tools.sh#L1-L16",
+            "scripts/check-tools.sh#L62-L77"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "install_tool is the dispatch table. A new host does nothing until its kebab appears in ALL_TOOLS, is_detected, tool_label, the main --tool validator, and this case statement. convert.sh has a parallel case inside run_conversions plus the valid_tools array.",
+          "sources": [
+            "scripts/install.sh#L1291-L1310",
+            "scripts/install.sh#L448-L467",
+            "scripts/convert.sh#L693-L707",
+            "scripts/convert.sh#L735"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Claude Code and Copilot are the identity format: no converter, install copies the source file. check-tools.sh treats converter tools as a subset of tools.json for that reason. A new identity tool still needs an install_<tool> and an ALL_TOOLS entry, not a convert function.",
+          "sources": [
+            "tools.json#L4-L7",
+            "scripts/check-tools.sh#L56-L60",
+            "scripts/install.sh#L349-L352"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Named colors are a closed map in resolve_opencode_color. lint-agents.sh awk-extracts the case arms and rejects any other non-hex color. CONTRIBUTING says a new name must be added to that map in the same PR or OpenCode silently renders grey (#6B7280).",
+          "sources": [
+            "scripts/convert.sh#L216-L264",
+            "scripts/lint-agents.sh#L42-L53",
+            "scripts/lint-agents.sh#L118-L129",
+            "CONTRIBUTING.md#L157-L162"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "A new agent is a markdown file in a division, first line ---, with name, description, and color. The template in CONTRIBUTING.md is the section contract convert_openclaw and classify_header_target both key off. Optional frontmatter services is documented as a list of name, url, and tier.",
+          "sources": [
+            "CONTRIBUTING.md#L87-L163",
+            "scripts/lint-agents.sh#L39-L40",
+            "scripts/lint-agents.sh#L58-L71"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Nested agent files are already supported. find walks game-development subdirectories (unity, unreal-engine, godot, roblox-studio, blender). Division membership is the top-level directory, not the filename prefix.",
+          "sources": [
+            "scripts/install.sh#L167-L174",
+            "scripts/convert.sh#L679-L710",
+            "game-development/"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Runbook extension is an object in strategy/runbooks.json plus a prose file under strategy/runbooks/. Required fields are slug, title, mode, doc, and roster. agents[] must be filename stems. check-runbooks.sh fails the build on a dangling slug, missing doc, or duplicate runbook slug.",
+          "sources": [
+            "strategy/runbooks.json#L1-L16",
+            "scripts/check-runbooks.sh#L54-L71"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Hermes tool extension is inside init_py() in build-hermes-plugin.py. register(ctx) calls ctx.register_tool four times with a schema and handler. plugin_yaml lists the same names under provides_tools. Adding a tool means editing both the generated source strings and check-hermes-plugin.py's expected_tools set.",
+          "sources": [
+            "scripts/build-hermes-plugin.py#L94-L107",
+            "scripts/build-hermes-plugin.py#L452-L479",
+            "scripts/check-hermes-plugin.py#L46-L52"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "OpenClaw section routing is a keyword classifier, duplicated in convert_openclaw and lint-agents.sh classify_header_target. Headers matching identity, learning+memory, communication, style, critical rule, or rules you must follow go to SOUL.md; every other ## header goes to AGENTS.md. A new section title with none of those words will not land in SOUL.md.",
+          "sources": [
+            "scripts/convert.sh#L328-L385",
+            "scripts/lint-agents.sh#L58-L71"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Originality's ENTITY regex is the extension point for market re-skins. Adding a country or platform name there stops a find-replace localization from looking novel. The check is otherwise generic shingle overlap and does not know about divisions.",
+          "sources": [
+            "scripts/check-agent-originality.sh#L57-L64",
+            "scripts/check-agent-originality.sh#L6-L11"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "examples/ is a documentation extension, not a registry the scripts scan. examples/README.md invites new multi-agent writeups. The installer never reads examples/.",
+          "sources": [
+            "examples/README.md#L1-L47",
+            "scripts/check-divisions.sh#L32"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_handoff": {
+      "summary": "Read the two catalogs and the three scripts before editing anything. Keep bash 3.2 and no jq. Do not hand-edit generated integration trees. Treat filename stems and frontmatter slugs as different IDs. Run the small shell checks that match the surface you touched; the full convert-output hash only needs --update when a generator changes, and pull-request CI will not fail an agent PR for drift. The dangerous directory is the user's home, not the repo.",
+      "claims": [
+        {
+          "claim": "Files to read first: README.md (install paths), CONTRIBUTING.md (agent template and division rules), divisions.json, tools.json, scripts/lib.sh, the flag block and main of scripts/install.sh, and the converter dispatch in scripts/convert.sh. For orchestration work, also strategy/QUICKSTART.md and strategy/runbooks.json.",
+          "sources": [
+            "README.md#L46-L102",
+            "CONTRIBUTING.md#L87-L162",
+            "scripts/lib.sh#L1-L14",
+            "strategy/QUICKSTART.md#L1-L18"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Safe content edits are a single division markdown file that keeps LF endings, required frontmatter, and the persona-versus-operations section split. .gitattributes forces LF on md, yml, yaml, and sh. lint-agents.sh errors on any CR.",
+          "sources": [
+            ".gitattributes#L1-L5",
+            "scripts/lint-agents.sh#L82-L88",
+            "CONTRIBUTING.md#L164-L185"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Do not commit generated files. .gitignore excludes the per-tool payloads. Regenerate with ./scripts/convert.sh or ./scripts/convert.sh --tool <name>. The only tracked integration files are the READMEs.",
+          "sources": [
+            ".gitignore#L66-L87",
+            "scripts/convert.sh#L29-L30",
+            "integrations/README.md#L59-L65"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Bash constraint: comments in lib.sh, check-divisions.sh, check-tools.sh, and test-install.sh all require bash 3.2 and BSD userland. Do not use mapfile, associative arrays, ${var,,}, or jq. Integer timeouts in read_key exist because bash 3.2 has no fractional read -t.",
+          "sources": [
+            "scripts/lib.sh#L5-L6",
+            "scripts/lib.sh#L171-L174",
+            "scripts/check-tools.sh#L14-L15",
+            "scripts/test-install.sh#L10-L13"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Minimum checks after a script change: bash -n scripts/*.sh, ./scripts/check-divisions.sh, ./scripts/check-tools.sh, ./scripts/check-runbooks.sh, ./scripts/test-install.sh, bash scripts/test-agent-selection.sh, bash scripts/test-convert-frontmatter.sh, python3 scripts/check-hermes-plugin.py, ./scripts/check-hermes-config-rewrite.sh. test-install.sh is the one that must pass on both Linux and macOS bash.",
+          "sources": [
+            ".github/workflows/test-install.yml#L23-L30",
+            ".github/workflows/check-tools.yml#L17-L34",
+            ".github/workflows/check-divisions.yml#L17-L20",
+            ".github/workflows/check-runbooks.yml#L17-L20"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "After an agent-only edit, run ./scripts/lint-agents.sh on that file and ./scripts/check-agent-originality.sh on that file. You do not need to refresh scripts/convert-outputs.sha256 for CI on a pull request: test-convert-outputs.sh is invoked with --drift=advisory there, and maintainers regenerate at landing. A generator or template change should ship with --update so the tool hash moves in the same commit.",
+          "sources": [
+            "scripts/test-convert-outputs.sh#L32-L45",
+            ".github/workflows/check-tools.yml#L28-L31",
+            ".github/workflows/lint-agents.yml#L59-L73"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "test-convert-outputs.sh exits 2 unless python3 can import yaml and tomllib, so it needs PyYAML and Python 3.11+. The other Python checks use only the standard library.",
+          "sources": [
+            "scripts/test-convert-outputs.sh#L67-L69",
+            "scripts/check-hermes-plugin.py#L1-L8"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Known trap: healthcare was dropped when a hardcoded division list drifted (#655/#668). If you add a division, update divisions.json and both AGENT_DIRS arrays and the lint workflow. install.sh will pick the JSON up by itself; convert.sh will not.",
+          "sources": [
+            "scripts/install.sh#L135-L138",
+            "CONTRIBUTING.md#L40-L45",
+            "scripts/check-divisions.sh#L87-L89"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Known trap: color names outside resolve_opencode_color fail lint, and unknown names that somehow skip lint become #6B7280 in OpenCode. Hex #RRGGBB always works. The linter's known-name list is parsed from the function body, so formatting that case statement differently can make KNOWN_COLORS empty and skip the name check with a WARN.",
+          "sources": [
+            "scripts/convert.sh#L216-L220",
+            "scripts/convert.sh#L262-L263",
+            "scripts/lint-agents.sh#L42-L53"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Known trap: fenced code. GDScript and other fences contain ## lines. Both the linter and convert_openclaw must keep using fence_open_p and fence_closes_p. A naive '^## ' scan mis-splits SOUL.md versus AGENTS.md (issue #849, referenced in both files).",
+          "sources": [
+            "scripts/lib.sh#L67-L91",
+            "scripts/lint-agents.sh#L155-L174",
+            "scripts/convert.sh#L337-L358"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Known trap: get_field only understands a flat 'key: value' scalar plus indented continuations. Nested YAML such as services will not come back as structured data. Hermes parse_agent similarly skips indented frontmatter lines and only keeps the first single-line value.",
+          "sources": [
+            "scripts/lib.sh#L19-L40",
+            "scripts/build-hermes-plugin.py#L47-L54",
+            "CONTRIBUTING.md#L98-L102"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Do not point experiments at a real home. test-install.sh sandboxes HOME. install_hermes deletes and replaces the plugin dir and rewrites config.yaml. install_openclaw calls the openclaw CLI. SECURITY.md says never commit credentials and never put executable payloads in agent markdown.",
+          "sources": [
+            "scripts/test-install.sh#L11-L16",
+            "scripts/install.sh#L1264-L1276",
+            "SECURITY.md#L26-L30"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "PR template expects, for an agent change, the agent name, category, the CONTRIBUTING template, frontmatter name/description/color, concrete examples, and a claim the agent was tried in a real scenario. That last item is not enforced by CI.",
+          "sources": [
+            ".github/PULL_REQUEST_TEMPLATE.md#L1-L16"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_prompt": "You are working in agency-agents (The Agency), an MIT-licensed catalog of specialized AI agent personalities and the scripts that install them into coding tools. It is not a web app and it has no server, database, or package manifest. The product is Markdown. There are 279 agent files whose first line is `---`, in 18 division directories named by divisions.json: academic, design, engineering, finance, game-development, gis, healthcare, marketing, paid-media, product, project-management, research, sales, security, spatial-computing, specialized, support, and testing. Required frontmatter is name, description, and color. Optional fields include emoji, vibe, and services. Persona sections (Identity, Communication, Critical Rules) are kept separate from operational sections (Core Mission, Deliverables, Workflow, Success Metrics). strategy/ is NEXUS doctrine, not a division. integrations/ is generated output. examples/ are narrative walkthroughs, not executed code.\n\nTwo JSON catalogs are authoritative. divisions.json maps each division to a label, a Lucide icon, and a hex color. tools.json lists 16 install targets: claude-code, codex, gemini-cli, copilot, qwen, cursor, opencode, osaurus, aider, antigravity, kimi, openclaw, windsurf, hermes, vibe, and zcode. Each entry has id, kebab, format, installKind (per-agent, roster, or plugin), detect dirs, a version command, and dest templates. scripts/check-divisions.sh fails if the JSON, on-disk directories, AGENT_DIRS in convert.sh and lint-agents.sh, and the path filters in .github/workflows/lint-agents.yml disagree. scripts/check-tools.sh fails if tools.json, ALL_TOOLS in install.sh, and valid_tools in convert.sh disagree. install.sh does not hardcode divisions: divisions_from_json parses divisions.json with awk, grep, and sed, and no jq. convert.sh and lint-agents.sh still hardcode AGENT_DIRS. A hardcoded list once dropped healthcare (#655/#668).\n\nThe user commands are ./scripts/convert.sh and ./scripts/install.sh. Both source scripts/lib.sh, which must stay bash 3.2 compatible because macOS ships 3.2. lib.sh provides get_field, get_body, slugify, agent_slug, is_agent_file, and fence_open_p / fence_closes_p. convert.sh writes under integrations/<tool>/ and never touches the home directory. Claude Code and Copilot use format identity, so install.sh copies the source Markdown. Other converters: convert_opencode (mode subagent plus resolve_opencode_color), convert_cursor (.mdc), convert_codex and convert_vibe (TOML; vibe also writes prompts), convert_kimi (agent.yaml plus system.md), convert_openclaw (SOUL.md, AGENTS.md, IDENTITY.md), convert_antigravity and convert_osaurus (agency-<slug>/SKILL.md), accumulate_aider (an index, not full bodies), accumulate_windsurf (one file with every body), and hermes via python3 scripts/build-hermes-plugin.py. clean_tool_output deletes a tool directory's children except README.md and refuses a non-slug name.\n\ninstall.sh copies, or with --link symlinks, into host config dirs. User-scoped defaults live under $HOME. Project-scoped tools (opencode, cursor, aider, windsurf) write into $PWD. Overrides are --path and the env vars CLAUDE_CONFIG_DIR, COPILOT_AGENT_DIR, CURSOR_RULES_DIR, GEMINI_AGENTS_DIR, OPENCODE_AGENTS_DIR, OPENCLAW_DIR, QWEN_AGENTS_DIR, ZCODE_AGENTS_DIR, CODEX_AGENTS_DIR, OSAURUS_SKILLS_DIR, HERMES_HOME, HERMES_PLUGIN_DIR, and VIBE_HOME. Flags include --tool, --division, --agent, --agents-file, --dry-run, --list, --no-convert, --no-interactive, --parallel, and --jobs. On a TTY with tool=all, interactive_wizard runs screen_tools, screen_teams, then screen_review. tool_cap returns 119 only for opencode (upstream silently drops the rest). install_hermes ignores selection filters and installs the full router.\n\nTwo identifier systems coexist. agent_slug slugifies the frontmatter name, so Frontend Developer becomes frontend-developer, and that is what --agent and most output filenames use. strategy/runbooks.json and check-runbooks.sh use the filename stem, such as engineering-frontend-developer. Dozens of stems do not contain the name slug. Do not treat them as interchangeable. The separate desktop app (agency-agents-app) reads divisions.json, tools.json, and runbooks.json. NEXUS prompts live in strategy/QUICKSTART.md (NEXUS-Full, NEXUS-Sprint, NEXUS-Micro) and are led by specialized/agents-orchestrator.md.\n\nHermes is a plugin, not one file per agent. build-hermes-plugin.py collects agents from divisions.json, rejects duplicate slugs, and emits plugin.yaml plus __init__.py. The plugin registers agency_agents_search, agency_agents_inspect, agency_agents_load, and agency_agents_delegate. Search scores name, description, division, vibe, and the first 8000 characters of the body. Delegate calls Hermes subagent lifecycle with a 330 second wait, truncates context at 32000 characters, and falls back to a composed prompt. install_hermes copies the plugin only to a directory named agency-agents-router, then ensure_hermes_plugin_enabled rewrites plugins.enabled in config.yaml and keeps a backup. install_openclaw may run `openclaw agents list` and `openclaw agents add`.\n\nEdit rules: do not hand-edit gitignored files under integrations/; run convert.sh. Keep LF line endings. A color must be #RRGGBB or a name in resolve_opencode_color; lint reads that case list, and unknown names become grey #6B7280. Skip fenced code when classifying ## headers (issue #849). Adding a division means a directory with at least one frontmatter agent, a divisions.json entry, both AGENT_DIRS arrays, and a lint-agents.yml path filter. Adding a tool means a tools.json entry, a converter or a shared format, install_<tool>, and an ALL_TOOLS entry. Never register strategy or integrations as divisions. get_field only parses flat scalars; nested services YAML is not structured data.\n\nBefore a behavior change run bash -n scripts/*.sh, ./scripts/check-divisions.sh, ./scripts/check-tools.sh, ./scripts/check-runbooks.sh, ./scripts/test-install.sh, bash scripts/test-agent-selection.sh, bash scripts/test-convert-frontmatter.sh, python3 scripts/check-hermes-plugin.py, and ./scripts/check-hermes-config-rewrite.sh. test-convert-outputs.sh needs PyYAML and Python 3.11 tomllib. Its sha256 drift is advisory on pull requests and strict on main; pass --update only when a generator changes. Agent PRs should run lint-agents.sh and check-agent-originality.sh (fail at 40 percent 8-word Jaccard after entity neutralization). lint-agents.yml is pull_request only and path-filtered. test-install.sh sandboxes HOME and only installs claude-code and copilot. install.sh writes outside the repo: never aim --path at a real config while experimenting. SECURITY.md forbids secrets and executable payloads inside agent Markdown, and asks that prompt-injection in an agent file be reported privately."
+  },
+  "analysis": {
+    "agent": "grok",
+    "model": "cli:grok",
+    "runtime_ms": 343520,
+    "cost_usd": null,
+    "collected_at": "2026-09-22T12:17:46.094Z"
   }
 }

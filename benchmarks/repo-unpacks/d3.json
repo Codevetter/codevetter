@@ -5003,5 +5003,815 @@
         ]
       }
     ]
+  },
+  "report": {
+    "overview": "d3 7.9.0 is the umbrella package and documentation site for D3 (Data-Driven Documents), Mike Bostock's low-level JavaScript library for bespoke, web-standards visualizations. This repo does not implement the algorithms: src/index.js star-re-exports thirty sibling packages (d3-array through d3-zoom), Rollup builds UMD and ESM bundles, and VitePress renders the d3js.org docs. Consumers import the barrel or a CDN bundle; the site is deployed to GitHub Pages on push to main.",
+    "system_map": {
+      "summary": "The runtime library boundary is a one-file barrel plus npm dependencies. Rollup turns bundle.js into dist/d3.js, dist/d3.mjs, and dist/d3.min.js. The docs app is VitePress under docs/, with the sidebar declared in docs/.vitepress/config.ts. There is no database or server. GitHub Actions tests on Node 20 with yarn, and the deploy workflow publishes the VitePress build to GitHub Pages after copying historical CDN assets from the sibling repo d3/d3.github.com.",
+      "claims": [
+        {
+          "claim": "package.json names the package d3 at version 7.9.0, sets \"type\": \"module\", points main, module, and exports.default at ./src/index.js, and points exports.umd, jsdelivr, and unpkg at dist/d3.min.js. The npm files whitelist is dist/d3.js, dist/d3.min.js, and src/**/*.js, so the built dist/d3.mjs is not published.",
+          "sources": [
+            "package.json#L1-36"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "src/index.js is the only library source file. It star-re-exports exactly thirty packages: d3-array, d3-axis, d3-brush, d3-chord, d3-color, d3-contour, d3-delaunay, d3-dispatch, d3-drag, d3-dsv, d3-ease, d3-fetch, d3-force, d3-format, d3-geo, d3-hierarchy, d3-interpolate, d3-path, d3-polygon, d3-quadtree, d3-random, d3-scale, d3-scale-chromatic, d3-selection, d3-shape, d3-time, d3-time-format, d3-timer, d3-transition, and d3-zoom.",
+          "sources": [
+            "src/index.js#L1-30",
+            "package.json#L37-68"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "bundle.js is the Rollup input. It re-exports version from ./package.json and star-re-exports ./src/index.js.",
+          "sources": [
+            "bundle.js#L1-2",
+            "rollup.config.js#L14-16"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "rollup.config.js reads Copyright lines from LICENSE into a banner, suppresses CIRCULAR_DEPENDENCY warnings, and emits three builds: dist/d3.js as UMD named d3 with extend true, dist/d3.mjs as ESM, and dist/d3.min.js as UMD minified by terser with InternMap and InternSet reserved from mangling. Plugins are @rollup/plugin-node-resolve and @rollup/plugin-json.",
+          "sources": [
+            "rollup.config.js#L1-65",
+            "LICENSE#L1-4"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "npm scripts: test runs mocha on test/**/*-test.js then eslint src test; prepublishOnly deletes dist and runs rollup -c; postpublish runs git push && git push --tags; docs:dev, docs:build, and docs:preview drive VitePress. docs:build prefixes the VitePress build with ./prebuild.sh. Docs scripts pass node --experimental-network-imports. engines.node is >=12.",
+          "sources": [
+            "package.json#L81-91"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The documentation site is VitePress. docs/.vitepress/config.ts sets title \"D3 by Observable\", description, appearance force-auto, cleanUrls, sitemap hostname https://d3js.org, a local search provider, and a themeConfig.sidebar that is the nav source of truth. Vite aliases the specifier d3 to ./dist/d3.mjs, swaps VPFooter.vue for CustomFooter.vue, and defines __APP_VERSION__ from npm_package_version. Custom elements whose tags start with observable- are allowed.",
+          "sources": [
+            "docs/.vitepress/config.ts#L6-40",
+            "docs/.vitepress/config.ts#L42-279"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The VitePress theme extends vitepress/theme-without-fonts, replaces Layout with CustomLayout.vue, assigns globalThis.d3 for console use, and exposes $dark from useData().isDark. CustomLayout injects ExamplesGrid, ObservablePromo, and VersionAndStars into home and navbar slots.",
+          "sources": [
+            "docs/.vitepress/theme/index.ts#L1-14",
+            "docs/.vitepress/theme/CustomLayout.vue#L1-27"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Dev dependencies that bound the docs and build runtime are @observablehq/plot, @observablehq/runtime, rollup and its node-resolve, json, and terser plugins, eslint, mocha, topojson-client, and vitepress. There is no application server and no database; published state is the npm tarball plus the static site at docs/.vitepress/dist.",
+          "sources": [
+            "package.json#L69-80",
+            ".github/workflows/deploy.yml#L30-36"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": ".github/workflows/test.yml runs on push and pull_request to main, on ubuntu-latest, with actions/setup-node node-version 20 and cache yarn. Steps are yarn --frozen-lockfile, eslint src test --format=compact using the problem matcher .github/eslint.json, yarn test, yarn prepublishOnly, and yarn docs:build.",
+          "sources": [
+            ".github/workflows/test.yml#L1-25",
+            ".github/eslint.json#L1-17"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": ".github/workflows/deploy.yml runs on workflow_dispatch and push to main. It checks out this repo, checks out d3/d3.github.com into build/d3.github.com, installs with yarn --frozen-lockfile on Node 20, runs yarn prepublishOnly and yarn docs:build, and deploys docs/.vitepress/dist via actions/upload-pages-artifact and actions/deploy-pages with pages:write and id-token:write on the github-pages environment.",
+          "sources": [
+            ".github/workflows/deploy.yml#L1-36"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "prebuild.sh (no set -e) copies hundreds of historical files from ./build/d3.github.com into docs/public, then overwrites the current major-line bundles: dist/d3.js and dist/d3.min.js become docs/public/d3.v7.js and d3.v7.min.js, and each dependency's node_modules/<pkg>/dist bundle is copied to a versioned name such as d3-scale.v4.js, d3-contour.v4.js, d3-delaunay.v6.js, and d3-time-format.v4.js. .gitignore ignores dist/, node_modules, docs/.vitepress/cache, docs/.vitepress/dist, and those generated public bundles.",
+          "sources": [
+            "prebuild.sh#L1-4",
+            "prebuild.sh#L628-690",
+            ".gitignore#L1-7"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CHANGES.md states that D3 7.0 ships as pure ES modules and requires Node.js 12 or higher. API.md is only a pointer: the API reference now lives on the documentation website. README.md points readers at https://d3js.org, the Observable gallery, GitHub releases, and the community page.",
+          "sources": [
+            "CHANGES.md#L1-7",
+            "API.md#L1-3",
+            "README.md#L1-22"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "feature_catalog": {
+      "summary": "User-facing surface area is the bundled D3 API, documented module by module, plus the docs site itself. The sidebar groups thirty modules into Visualization, Animation, Interaction, and Data. Getting started covers Observable, ESM and UMD CDN, npm, React, and Svelte. The homepage adds a shuffled Observable gallery, version and star counts, and an Observable promo. Legacy CDN files for retired modules are still copied into the site but are not part of the v7 barrel.",
+      "claims": [
+        {
+          "claim": "The Visualization sidebar covers d3-axis, d3-chord (Chords, Ribbons), d3-color, d3-interpolate (value, color, transform, zoom), d3-contour (polygons, density), d3-delaunay (Delaunay, Voronoi), d3-force (simulation, center, collide, link, many-body, position), d3-geo (paths, azimuthal/conic/cylindrical projections, streams, spherical shapes and math), d3-hierarchy (hierarchy, stratify, tree, cluster, partition, pack, treemap), d3-path, d3-polygon, d3-quadtree, d3-scale (linear through threshold), d3-scale-chromatic (categorical, cyclical, diverging, sequential), d3-selection, and d3-shape (arc, area, curve, line, link, pie, stack, symbol, radial area/line/link).",
+          "sources": [
+            "docs/.vitepress/config.ts#L56-214"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Animation pages are d3-ease, d3-timer, and d3-transition (selecting, modifying, timing, control flow). Interaction pages are d3-brush, d3-dispatch, d3-drag, and d3-zoom.",
+          "sources": [
+            "docs/.vitepress/config.ts#L215-241"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Data pages are d3-array (add, bin, bisect, blur, group, intern, sets, sort, summarize, ticks, transform), d3-dsv, d3-fetch, d3-format, d3-random, d3-time, and d3-time-format.",
+          "sources": [
+            "docs/.vitepress/config.ts#L242-270",
+            "docs/d3-array.md#L1-13"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "d3-selection documents selecting, modifying attributes/styles/properties/HTML/text, the data join enter/update/exit, events, control flow, local variables, and XML namespaces. docs/what-is-d3.md calls the data join D3's most novel concept and says the library is a suite of 30 discrete modules rather than a chart type system.",
+          "sources": [
+            "docs/d3-selection.md#L1-15",
+            "docs/what-is-d3.md#L44-59",
+            "docs/what-is-d3.md#L100-104"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "d3-fetch documents promise helpers over the Fetch standard: blob, buffer, csv, dsv, html, image, json, svg, text, tsv, and xml. init is forwarded as RequestInit; csv/dsv/tsv accept an optional row converter; json resolves to undefined on HTTP 204 or 205; html and svg parse fetched text with DOMParser. The page notes this module replaced d3-request.",
+          "sources": [
+            "docs/d3-fetch.md#L1-120"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Getting started documents five install paths: Observable notebooks (D3 is in the standard library), ESM from https://cdn.jsdelivr.net/npm/d3@7/+esm, UMD from https://cdn.jsdelivr.net/npm/d3@7 which sets a global d3, a local d3.js script, and npm/yarn/pnpm add d3 with import * as d3 from \"d3\" or named imports or deep imports from a submodule such as d3-array. TypeScript types are delegated to DefinitelyTyped.",
+          "sources": [
+            "docs/getting-started.md#L11-73",
+            "docs/getting-started.md#L71-125",
+            "docs/getting-started.md#L250-274"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Getting started also shows React and Svelte integration: DOM-free modules (scale, array, shape) can be used declaratively, while selections and axes that mutate the DOM are attached via useEffect refs in React or Svelte bind:this plus reactive statements.",
+          "sources": [
+            "docs/getting-started.md#L276-349",
+            "docs/getting-started.md#L351-422"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The home page (docs/index.md, layout home) offers Get started, What is D3?, and an external Examples link, plus feature cards for selections and transitions, scales and axes, shapes, interactions, layouts, geographic maps, array/CSV/time/color utilities, Observable Plot, and Observable.",
+          "sources": [
+            "docs/index.md#L1-68"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "ExamplesGrid.vue renders up to 60 Observable gallery thumbnails. It shuffles with d3.shuffler(d3.randomLcg(d3.utcDay())), sizes a hex grid from a ResizeObserver, and shifts the grid on pointermove. Thumbnails load from https://static.observableusercontent.com/thumbnail/${thumbnail}.jpg and link to https://observablehq.com/${path}.",
+          "sources": [
+            "docs/.vitepress/theme/ExamplesGrid.vue#L1-57",
+            "docs/.vitepress/theme/gallery.data.js#L1-18"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "VersionAndStars.vue shows __APP_VERSION__ linking to GitHub releases and a GitHub star count formatted with d3-format formatPrefix(\".1s\", 1000), fed by stargazers.data.ts. The star count is hidden below 560px in favor of a GitHub icon link.",
+          "sources": [
+            "docs/.vitepress/theme/VersionAndStars.vue#L1-20",
+            "docs/.vitepress/theme/VersionAndStars.vue#L69-75"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "docs/api.md is the API index: a long link catalog of every documented symbol, starting with d3-array's Adder, bin, bisect, blur, group/rollup/index, InternMap/InternSet, set operations, sort, and summary statistics. docs/community.md points support to GitHub Discussions, issues for bugs, Observable, and the Observable code of conduct.",
+          "sources": [
+            "docs/api.md#L6-36",
+            "docs/community.md#L1-36"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Interactive doc components beyond the homepage include ExampleBlankChart (a live scaleUtc/scaleLinear/axis chart), WorldMap and UsMap (geoPath plus topojson), PlotRender (Observable Plot inside markdown), ColorRamp/ColorSpan/ColorSwatches, and force, quadtree, chord, curve, ease, and arc examples under docs/components/.",
+          "sources": [
+            "docs/components/ExampleBlankChart.vue#L5-42",
+            "docs/components/WorldMap.vue#L10-67",
+            "docs/components/UsMap.vue#L12-51",
+            "docs/components/PlotRender.js#L132-138"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "prebuild.sh still publishes historical bundles that are not in the v7 dependency list, including colorbrewer, d3-collection, d3-geo-projection, d3-hexbin, d3-hsv, highlight, queue, topojson, us-10m, and world-110m/world-50m. Those are CDN compatibility assets, not exports of src/index.js.",
+          "sources": [
+            "prebuild.sh#L3-5",
+            "prebuild.sh#L50-57",
+            "prebuild.sh#L182-218",
+            "prebuild.sh#L609-626",
+            "src/index.js#L1-30"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "data_flow": {
+      "summary": "Library data never touches this repo at runtime. An application import resolves to src/index.js, which re-exports the installed d3-* packages. The UMD/CDN path is different: Rollup freezes those same exports into dist, and prebuild.sh copies them into docs/public. The docs site reads markdown, a local volcano JSON, the GitHub API, the Observable gallery module, and jsDelivr atlases, then VitePress writes a static tree.",
+      "claims": [
+        {
+          "claim": "For npm consumers, Node/bundler resolution hits exports.default ./src/index.js. Each export * from \"d3-<module>\" is resolved from node_modules at install time, so the published package ships the barrel and not a frozen copy of the algorithms. The UMD path is separate: jsDelivr/unpkg serve dist/d3.min.js.",
+          "sources": [
+            "package.json#L29-36",
+            "src/index.js#L1-30"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Rollup's data path is bundle.js, which pulls the version string out of package.json via @rollup/plugin-json and the live exports through node-resolve, then writes the banner from LICENSE copyright lines onto dist/d3.js, dist/d3.mjs, and dist/d3.min.js.",
+          "sources": [
+            "bundle.js#L1-2",
+            "rollup.config.js#L1-27",
+            "rollup.config.js#L34-64"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "During docs build, Vite aliases every import of \"d3\" to path.resolve(\"./dist/d3.mjs\"), so Vue examples and markdown scripts execute the bundled ESM rather than src/index.js. __APP_VERSION__ is inlined from process.env.npm_package_version for VersionAndStars.",
+          "sources": [
+            "docs/.vitepress/config.ts#L24-33",
+            "docs/.vitepress/theme/VersionAndStars.vue#L1-10"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "prebuild.sh is the asset ingress for the static site. Historical files move from build/d3.github.com to docs/public. Current bundles move from dist/ and node_modules/<pkg>/dist/ to versioned names under docs/public. VitePress then emits the site to docs/.vitepress/dist, which deploy.yml uploads as the Pages artifact.",
+          "sources": [
+            "prebuild.sh#L628-690",
+            ".github/workflows/deploy.yml#L18-36",
+            "package.json#L86"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "gallery.data.js runs at VitePress data-loader time. It constructs an @observablehq/runtime Runtime, dynamically imports https://api.observablehq.com/@d3/gallery.js?v=4, defines md as String.raw, redefines previews to push chunks into an array, awaits every named output of the previews variable, and returns that array to ExamplesGrid.",
+          "sources": [
+            "docs/.vitepress/theme/gallery.data.js#L1-18",
+            "docs/.vitepress/theme/ExamplesGrid.vue#L3-16"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "stargazers.data.ts load() GETs https://api.github.com/repos/d3/d3 with Accept application/vnd.github.v3+json and, when GITHUB_TOKEN is set, Authorization token <token>. It returns stargazers_count. On failure it rethrows only if process.env.CI is set; otherwise it returns NaN.",
+          "sources": [
+            "docs/.vitepress/theme/stargazers.data.ts#L1-28"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "docs/data/volcano.data.js is a VitePress loader. It watches ../public/data/volcano.json and returns JSON.parse(fs.readFileSync(file)). That is the only in-repo filesystem read of a dataset.",
+          "sources": [
+            "docs/data/volcano.data.js#L1-8"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "WorldMap.vue, on mount, fetches https://cdn.jsdelivr.net/npm/world-atlas@2.0.2/land-${resolution}.json (default resolution 110m), converts world.objects.land with topojson.feature, and writes SVG path d attributes through d3.geoPath. Pointer drag mutates projection.rotate. UsMap.vue similarly fetches us-atlas@3.0.1/counties-10m.json and builds nation, statemesh, and countymesh.",
+          "sources": [
+            "docs/components/WorldMap.vue#L10-67",
+            "docs/components/UsMap.vue#L12-34"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "PlotRender chooses a document implementation by environment. On the server (document undefined) it renders Plot[method] against a fake Document/Element tree and converts it with toHyperScript into Vue vnodes. In the browser it renders with the real DOM and, on mount, replaces the vnode with the live plot node. method defaults to \"plot\"; options are shallow-merged and className is forced to \"plot\".",
+          "sources": [
+            "docs/components/PlotRender.js#L1-23",
+            "docs/components/PlotRender.js#L132-219"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "what-is-d3.md reads the live sidebar via useData(), walks themeConfig.sidebar into path strings, stratifies them with d3.stratify().path, lays them out with d3.tree, and passes the result to Plot.tree through PlotRender. The diagram is therefore derived from config.ts, not hand-authored coordinates.",
+          "sources": [
+            "docs/what-is-d3.md#L1-31",
+            "docs/what-is-d3.md#L63-72"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "docs-test.js is a read-only crawl: it recursively lists docs/**/*.md, skips dot-directories such as .vitepress, strips HTML comments, extracts links and anchors, and never writes. ExampleBlankChart writes only into its own mounted DOM node: d3.create(\"svg\"), axisBottom, axisLeft, then this.$el.append(svg.node()).",
+          "sources": [
+            "test/docs-test.js#L4-73",
+            "docs/components/ExampleBlankChart.vue#L5-42"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "ExamplesGrid seeds its shuffle with d3.randomLcg(d3.utcDay()), so the sample of gallery rows changes on UTC day boundaries but is deterministic within a day. ResizeObserver then slices that shuffled list to yn * xn cells.",
+          "sources": [
+            "docs/.vitepress/theme/ExamplesGrid.vue#L11-36"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "behavior_traces": {
+      "summary": "Three flows matter: importing the library, building and deploying the site, and rendering a doc example. Import resolution stops at the barrel. The build flow is prepublishOnly, then prebuild.sh, then VitePress. Example charts call scale, axis, and selection helpers in a fixed order inside Vue mounted hooks, and the two Mocha tests walk package.json and the docs tree respectively.",
+      "claims": [
+        {
+          "claim": "Consumer import trace: the bundler resolves \"d3\" to package.json exports.default ./src/index.js. Evaluating that module evaluates each export * from \"d3-<pkg>\" in source order from d3-array through d3-zoom. Named imports such as {select, selectAll} or {mean, median} from \"d3-array\" are the documented alternatives; they still originate in the dependency, not in this repo.",
+          "sources": [
+            "package.json#L33-36",
+            "src/index.js#L1-30",
+            "docs/getting-started.md#L255-272"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Bundle trace: npm's prepublishOnly runs rm -rf dist && rollup -c. Rollup loads rollup.config.js, which readFileSyncs ./LICENSE, filters /^Copyright\\s+/, and builds the banner with meta.homepage and meta.version. Input bundle.js exports version from package.json and re-exports src/index.js. nodeResolve plus json plugins run. onwarn drops CIRCULAR_DEPENDENCY. The default export array then writes UMD, ESM, and minified UMD, the last with terser and reserved InternMap and InternSet.",
+          "sources": [
+            "package.json#L84",
+            "rollup.config.js#L6-65",
+            "bundle.js#L1-2"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Deploy trace: on push to main, deploy.yml checks out d3, checks out d3/d3.github.com at build/d3.github.com, setup-node 20, yarn --frozen-lockfile, yarn prepublishOnly (produces dist), yarn docs:build. docs:build runs prebuild.sh (copies into docs/public, including dist/d3.js as d3.v7.js) and then vitepress build docs. configure-pages, upload-pages-artifact of docs/.vitepress/dist, and deploy-pages follow.",
+          "sources": [
+            ".github/workflows/deploy.yml#L3-36",
+            "package.json#L86",
+            "prebuild.sh#L628-630"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Blank-chart trace in ExampleBlankChart.mounted: construct width 640, height 400, and margins; d3.scaleUtc().domain([2023-01-01, 2024-01-01]).range([marginLeft, width-marginRight]); d3.scaleLinear().domain([0,100]).range([height-marginBottom, marginTop]); d3.create(\"svg\") then attr width and height; append a translated g and .call(d3.axisBottom(x)); append a translated g and .call(d3.axisLeft(y)); append svg.node() to this.$el. The same call order is copied in the getting-started ESM, UMD, and local HTML samples.",
+          "sources": [
+            "docs/components/ExampleBlankChart.vue#L5-42",
+            "docs/getting-started.md#L83-118"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "World map trace: mounted checks land, memoizes landPromises[resolution] as d3.json(jsDelivr world-atlas URL).then(topojson.feature), then deferRender(this.$el, () => render). render awaits feature, builds d3.geoPath(projection), selects the svg, binds pointerenter and pointermove when rotate is set, and on animation frame calls projection.rotate and updates outline, graticule, and feature path d attributes. unmounted calls the disconnect function returned by deferRender.",
+          "sources": [
+            "docs/components/WorldMap.vue#L15-66",
+            "docs/components/deferRender.js#L1-34"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "deferRender order: if the node's rect is already in the viewport, call render immediately; otherwise observe with IntersectionObserver rootMargin 100px and also schedule requestIdleCallback when it exists. Either path disconnects the observer and cancels the idle callback before or as render runs. PlotRender's defer branch repeats this pattern and then el.append(Plot[method](options)).",
+          "sources": [
+            "docs/components/deferRender.js#L1-34",
+            "docs/components/PlotRender.js#L149-185"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Export-parity test trace: test/d3-test.js readFileSyncs ../package.json, JSON.parses it, and for each key of dependencies dynamically import()s that package. For every property other than version it asserts propertyName in the namespace imported from ../src/index.js.",
+          "sources": [
+            "test/d3-test.js#L1-19"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Docs link test trace: readMarkdownFiles walks docs from \"/\", skips names starting with \".\", and yields *.md paths. readMarkdownSource strips <!-- ... --> comments. getAnchors always includes \"\", then slugifies /^#+ / headers and collects explicit {#id} anchors. getLinks parses markdown links, skips protocol URLs, and resolves the rest with new URL against https://example.com/. The assertion fails if the target does not end in .md or the hash is absent from that file's anchors.",
+          "sources": [
+            "test/docs-test.js#L4-73"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Homepage gallery trace: VitePress calls gallery.data.js load() during build, which pulls the Observable gallery module and returns preview rows. ExamplesGrid imports {data} from that loader, shuffles with a UTC-day LCG, onMounted observes document.body, recomputes xn/yn, and renders anchors. VersionAndStars separately reads stargazers.data.ts and __APP_VERSION__.",
+          "sources": [
+            "docs/.vitepress/theme/gallery.data.js#L3-18",
+            "docs/.vitepress/theme/ExamplesGrid.vue#L1-45",
+            "docs/.vitepress/theme/VersionAndStars.vue#L1-18"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Sidebar-diagram trace on what-is-d3: useData() yields themeConfig.sidebar; a nested visit() pushes {path, link} for every item; computeTreeWidth runs d3.stratify().path then d3.tree().nodeSize([1,1]) and returns the x extent. PlotRender receives Plot.tree(paths, {path, textStroke, href channel, treeSort: null}) with height equal to that width times 12.",
+          "sources": [
+            "docs/what-is-d3.md#L10-31",
+            "docs/what-is-d3.md#L63-72"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "UsMap trace: mounted memoizes one d3.json of counties-10m.json, then topojson.feature for nation and topojson.mesh for states and counties. The county mesh predicate keeps shared borders only when truncated state ids match: (a.id / 1000 | 0) === (b.id / 1000 | 0). updated() calls render again. Paths are selected by [name='countymesh'], [name='statemesh'], and [name='nation'].",
+          "sources": [
+            "docs/components/UsMap.vue#L12-51"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "testing_signals": {
+      "summary": "Tests are Mocha plus ESLint, two files, no jsdom component suite and no image snapshots. test/d3-test.js checks that the barrel re-exports every dependency symbol except version. test/docs-test.js checks internal markdown links and anchors. CI on Node 20 runs eslint, the mocha suite, the Rollup build, and the docs build. Algorithm correctness is assumed to be tested in the individual d3-* repositories, which are not present here.",
+      "claims": [
+        {
+          "claim": "The test script is mocha 'test/**/*-test.js' && eslint src test. Mocha is a devDependency at ^10.3.0. There is no .mocharc; both tests use the default BDD global it(). The only test files are test/d3-test.js and test/docs-test.js.",
+          "sources": [
+            "package.json#L74-83",
+            "test/d3-test.js#L1-19",
+            "test/docs-test.js#L1-29"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "d3-test.js covers export parity only. It iterates package.json dependencies, dynamic-imports each package, and asserts every own enumerable export except the property named version is present on the umbrella namespace. It does not call the functions, does not check types, and does not compare behavior with the bundle in dist/.",
+          "sources": [
+            "test/d3-test.js#L10-18"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "docs-test.js covers internal documentation links. It fails when a relative link's pathname does not end in .md, or when the fragment is not in the anchors derived from ATX headers or {#id} markers. Absolute links with a scheme are skipped. HTML comments are removed before scanning, and directories whose names start with a dot (including docs/.vitepress) are not walked.",
+          "sources": [
+            "test/docs-test.js#L4-73"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Header anchors are computed by stripping characters other than word characters, digits, and whitespace, trimming, collapsing spaces to hyphens, and lower-casing. Explicit anchors match / {#([\\w\\d-]+)}/. A link to a page with an empty hash is allowed because getAnchors seeds the list with \"\".",
+          "sources": [
+            "test/docs-test.js#L31-47"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CI runs eslint twice. The workflow first runs yarn run eslint src test --format=compact after registering .github/eslint.json as an Actions problem matcher, then yarn test runs mocha and eslint again. It then runs yarn prepublishOnly and yarn docs:build, so a docs-build failure blocks the test workflow even though those steps are not unit tests.",
+          "sources": [
+            ".github/workflows/test.yml#L19-25",
+            "package.json#L83",
+            ".github/eslint.json#L2-16"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Lint config is split. The root .eslintrc.json extends eslint:recommended with sourceType module and ecmaVersion 8. test/.eslintrc.json uses ecmaVersion 11 and env es6, browser, and mocha so that it, window, and browser globals are defined in tests.",
+          "sources": [
+            ".eslintrc.json#L1-7",
+            "test/.eslintrc.json#L1-13"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Nothing in test/ mounts Vue components, loads Rollup output, checks terser reserved names, hits the GitHub or Observable network loaders, or exercises geo, force, shape, or scale behavior. Those behaviors are documented against source files that live in other repositories, for example d3-fetch symbols link to https://github.com/d3/d3-fetch/blob/main/src/.",
+          "sources": [
+            "test/d3-test.js#L10-18",
+            "test/docs-test.js#L4-6",
+            "docs/d3-fetch.md#L23-31"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "docs:build is part of CI, so VitePress compilation, the gallery.data.js network import, and stargazers.data.ts (which throws when CI is set and the GitHub request fails) are exercised on every push and pull request to main, but only as a build, not as assertions.",
+          "sources": [
+            ".github/workflows/test.yml#L5-25",
+            "docs/.vitepress/theme/stargazers.data.ts#L4-12",
+            "docs/.vitepress/theme/gallery.data.js#L4-6"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "There is no coverage tool, no fixture directory, and no visual-regression harness in package.json. CHANGES.md explicitly defers minor and patch notes to GitHub releases and only records major breaking changes, so tests here are not a changelog oracle.",
+          "sources": [
+            "package.json#L81-88",
+            "CHANGES.md#L1-5"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "risk_map": {
+      "summary": "The hottest risks are supply-chain and publish footguns, not application auth. Docs build executes a remote Observable module, the site loads a third-party script, and map examples fetch atlases from jsDelivr at view time. prebuild.sh does not fail fast, the test workflow never checks out d3.github.com, and postpublish force-pushes tags if someone publishes. The barrel, sidebar, API index, and prebuild copy list can drift, and this repo has no tests for the actual visualization code.",
+      "claims": [
+        {
+          "claim": "gallery.data.js executes remote code at docs build time: import(\"https://api.observablehq.com/@d3/gallery.js?v=4\") and then runtime.module on its default export. package.json docs scripts enable this with node --experimental-network-imports. A compromised gallery notebook becomes code running inside CI and the deploy job.",
+          "sources": [
+            "docs/.vitepress/theme/gallery.data.js#L1-8",
+            "package.json#L85-86"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "config.ts injects https://static.observablehq.com/assets/components/observable-made-by.js into every page via head script async defer, and Vue is told to treat observable-* tags as custom elements. That is a third-party script on the documentation origin.",
+          "sources": [
+            "docs/.vitepress/config.ts#L14-18",
+            "docs/.vitepress/config.ts#L35-39"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "stargazers.data.ts reads process.env.GITHUB_TOKEN and sends it as Authorization: token <value> to api.github.com. The token is not committed. Failure is fatal only when process.env.CI is set, so a rate-limit or auth error fails CI and deploy builds and is swallowed locally as NaN.",
+          "sources": [
+            "docs/.vitepress/theme/stargazers.data.ts#L4-27"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "postpublish is git push && git push --tags. It runs after a successful npm publish. There is no GitHub Action that publishes to npm; the script is local. Running npm publish from a checkout with a dirty or unintended tag will push the branch and all tags to the remote named by the local git config.",
+          "sources": [
+            "package.json#L84-85"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "prebuild.sh never calls set -e. The first hundreds of commands cp historical files from ./build/d3.github.com, which only deploy.yml checks out. test.yml still runs yarn docs:build. Because the script's exit status is the last command, and the last commands copy from node_modules after a normal install, missing historical CDN files do not by themselves fail CI.",
+          "sources": [
+            "prebuild.sh#L1-4",
+            "prebuild.sh#L628-690",
+            ".github/workflows/test.yml#L19-25",
+            ".github/workflows/deploy.yml#L18-22"
+          ],
+          "kind": "inference"
+        },
+        {
+          "claim": "Docs cannot import d3 until dist/d3.mjs exists, because the Vite alias replaces \"d3\" with ./dist/d3.mjs. docs:dev does not run Rollup. A clean checkout that runs yarn docs:dev without a prior yarn prepublishOnly fails module resolution for every example that imports d3.",
+          "sources": [
+            "docs/.vitepress/config.ts#L24-29",
+            "package.json#L84-86",
+            "docs/components/ExampleBlankChart.vue#L3"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "dist/d3.mjs is produced and aliased by the docs site but omitted from package.json files, while exports.default points at src/index.js and exports.umd points at the minified UMD file. Shipping a docs-only ESM bundle that is not the package consumers import is a packaging trap when debugging \"works on d3js.org, differs in npm\".",
+          "sources": [
+            "package.json#L24-36",
+            "rollup.config.js#L36-43"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "WorldMap and UsMap fetch topojson from cdn.jsdelivr.net at browser runtime (world-atlas@2.0.2 and us-atlas@3.0.1) and parse it with topojson-client. Visitors of those doc pages depend on jsDelivr availability and on those package versions staying compatible. deferRender only delays the work; it does not vendor the data.",
+          "sources": [
+            "docs/components/WorldMap.vue#L55-58",
+            "docs/components/UsMap.vue#L27-34",
+            "docs/components/deferRender.js#L1-4"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The documented d3.html, d3.svg, and d3.xml helpers fetch a URL and parse it with DOMParser, and d3.image forwards a crossOrigin init. Implementations are not in this repo, but the public API is specified here and is re-exported by the barrel, so any app that passes untrusted URLs into those helpers inherits that behavior.",
+          "sources": [
+            "docs/d3-fetch.md#L62-96",
+            "docs/d3-fetch.md#L114-120",
+            "src/index.js#L12"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "PlotRender calls Plot[method] where method is a component prop defaulting to \"plot\". A markdown page can therefore select any export of @observablehq/plot. The fake DOM used for SSR ignores addEventListener, so interactive plots are not faithful until the client replace hook runs.",
+          "sources": [
+            "docs/components/PlotRender.js#L63-70",
+            "docs/components/PlotRender.js#L132-218"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "terser reserves only InternMap and InternSet. CHANGES.md says ordinal scales key domains with InternMap and that those names must survive minification. Dropping the reserved list, or minifying a future build that needs additional constructor names, would break the UMD build that jsDelivr and unpkg serve. Nothing in test/ constructs the minified bundle and reads those names back.",
+          "sources": [
+            "rollup.config.js#L50-62",
+            "CHANGES.md#L11",
+            "package.json#L31-35"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Adding or renaming a module is a multi-file contract with partial enforcement. test/d3-test.js fails if a dependency export is missing from src/index.js, and docs-test.js fails if a new page is not linked with a real anchor, but nothing checks that prebuild.sh, .gitignore, docs/api.md, and themeConfig.sidebar were all updated together. .gitignore already duplicates several generated paths (for example d3-array.v3.js is listed twice).",
+          "sources": [
+            "test/d3-test.js#L10-18",
+            "test/docs-test.js#L19-28",
+            ".gitignore#L20-24",
+            "docs/.vitepress/config.ts#L46-54"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Rollup file IO is local and expected: readFileSync(\"./LICENSE\") and an import assertion of ./package.json. volcano.data.js readFileSyncs the watched JSON path VitePress passes in. Neither path is user-controlled. There is no shell-out, no child_process, and no auth middleware anywhere in src/ or docs/.",
+          "sources": [
+            "rollup.config.js#L1-8",
+            "docs/data/volcano.data.js#L1-7",
+            "src/index.js#L1-30"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "extension_points": {
+      "summary": "New behavior is not plugged in through a runtime plugin host. The extension surfaces are the barrel export list, package.json dependencies (which the parity test treats as the registry), the Rollup output array, the VitePress sidebar, docs/api.md, the prebuild copy table, and Vue components dropped into docs/components and imported from markdown. PlotRender's method prop and the theme enhanceApp hook are the two small dispatch points.",
+      "claims": [
+        {
+          "claim": "src/index.js is the module registry. A new public symbol becomes part of the default build only by adding export * from \"<package>\" there. Order in that file is the order of the thirty current modules and matches package.json dependencies.",
+          "sources": [
+            "src/index.js#L1-30",
+            "package.json#L37-68"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "test/d3-test.js treats package.json dependencies as the oracle: every new dependency is imported and its exports (except version) must appear on the umbrella. Removing an export from a dependency upgrade fails this test; adding a dependency without re-exporting it also fails.",
+          "sources": [
+            "test/d3-test.js#L10-18",
+            "package.json#L37-68"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "rollup.config.js default export is an array of three configs sharing one input and plugin list. A new bundle format is added by spreading config and overriding output, the same way the ESM and minified UMD entries are added. The terser reserved array is the mangling allowlist.",
+          "sources": [
+            "rollup.config.js#L34-64"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "themeConfig.sidebar in docs/.vitepress/config.ts is the navigation registry, grouped into Introduction, Visualization, Animation, Interaction, and Data. Nested items use text, link, collapsed, and items. what-is-d3.md walks that same structure to draw the module tree, so a sidebar edit changes both the nav and that diagram.",
+          "sources": [
+            "docs/.vitepress/config.ts#L46-270",
+            "docs/what-is-d3.md#L10-22"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "docs/api.md is the hand-written symbol index. New documented functions are added as markdown links of the form [name](./d3-<module>/<page>.md#anchor). The docs link test will fail if the target file or anchor does not exist. Explicit anchors are written as {#name} in the markdown and picked up by getAnchors.",
+          "sources": [
+            "docs/api.md#L10-22",
+            "test/docs-test.js#L31-47"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Doc examples are Vue single-file components in docs/components/, imported from markdown via <script setup>. ExampleBlankChart, WorldMap, UsMap, LogoDiagram, PlotRender, and the quadtree helpers are the current set. A new example is a new .vue or .js file plus a markdown import; there is no component manifest.",
+          "sources": [
+            "docs/getting-started.md#L1-5",
+            "docs/what-is-d3.md#L1-8",
+            "docs/components/ExampleBlankChart.vue#L1-5"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "PlotRender is a tiny factory: props are options, mark, defer, and method (default \"plot\"). render() calls Plot[method](options). Markdown can pass :method and :options to select a different Plot entry point without editing the component.",
+          "sources": [
+            "docs/components/PlotRender.js#L132-148"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Theme enhanceApp is the app-wide hook. It currently sets globalThis.d3 and a $dark getter. CustomLayout.vue is where new homepage or navbar slots are attached (home-features-before, home-features-after, nav-bar-content-after). The footer is replaced through the Vite alias from VPFooter.vue to CustomFooter.vue.",
+          "sources": [
+            "docs/.vitepress/theme/index.ts#L7-13",
+            "docs/.vitepress/theme/CustomLayout.vue#L12-26",
+            "docs/.vitepress/config.ts#L26-29"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "prebuild.sh is the CDN filename registry. Current packages are copied in a fixed pattern from node_modules/<name>/dist/<name>.js to docs/public/<name>.v<major>.js. Adding a module requires a new pair of cp lines plus matching .gitignore entries. Historical names (d3-collection, d3-hexbin, d3-hsv, queue, topojson, colorbrewer) are a frozen list, not generated.",
+          "sources": [
+            "prebuild.sh#L631-690",
+            ".gitignore#L8-20"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Vite custom-element predicate tag.startsWith(\"observable-\") is how the external observable-made-by widget is allowed in templates. config.ts head is the registry for global scripts, icons, and the apple-touch icon.",
+          "sources": [
+            "docs/.vitepress/config.ts#L14-18",
+            "docs/.vitepress/config.ts#L35-40",
+            "docs/.vitepress/theme/CustomLayout.vue#L20-24"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Markdown pages opt into VitePress features per front matter. docs/index.md sets layout: home, hero, features, and head canonical https://d3js.org. docs/api.md sets next: false and outline: 2. Those front-matter keys are the per-page extension points without editing config.ts.",
+          "sources": [
+            "docs/index.md#L1-16",
+            "docs/api.md#L1-4"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_handoff": {
+      "summary": "Edit the barrel, the docs, and the release wiring. Do not vendor algorithm source into this repo. Read package.json, src/index.js, rollup.config.js, docs/.vitepress/config.ts, and the two tests before changing exports or pages. Use yarn. Build dist before any docs command. Never run the postpublish script unless a human explicitly asked to publish and push tags. The link test is strict about .md suffixes and header slugs.",
+      "claims": [
+        {
+          "claim": "Read first: package.json (exports, files, scripts, dependency list), src/index.js, bundle.js, rollup.config.js, docs/.vitepress/config.ts, docs/.vitepress/theme/index.ts, test/d3-test.js, test/docs-test.js, prebuild.sh from line 628, and .github/workflows/test.yml plus deploy.yml. API.md and the root README are not the API.",
+          "sources": [
+            "package.json#L23-91",
+            "src/index.js#L1-30",
+            "API.md#L1-3",
+            "README.md#L16-21"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Safe edits are docs markdown, docs/components Vue examples, sidebar and api index entries, the barrel export list, and Rollup banner or output tweaks. Unsafe or out of scope: copying d3-selection or d3-geo implementations into src/, committing dist/ or docs/public versioned bundles, editing yarn.lock by hand, and running npm publish or the postpublish git push.",
+          "sources": [
+            "src/index.js#L1-2",
+            "package.json#L84-85",
+            ".gitignore#L5-7"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Install and test with yarn, not a second lockfile: CI uses yarn --frozen-lockfile and setup-node cache: yarn. The local test command is yarn test, which needs the d3-* packages installed because d3-test.js dynamic-imports every dependency. Node on CI is 20 even though engines says >=12.",
+          "sources": [
+            ".github/workflows/test.yml#L14-23",
+            "package.json#L83-91",
+            "test/d3-test.js#L10-13"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Before yarn docs:dev or yarn docs:build, run yarn prepublishOnly so dist/d3.mjs exists for the Vite alias. A full asset mirror also needs a checkout of d3/d3.github.com at build/d3.github.com, which deploy.yml does and test.yml does not. prebuild.sh will not stop on the first missing historical file.",
+          "sources": [
+            "docs/.vitepress/config.ts#L26-28",
+            "package.json#L84-86",
+            ".github/workflows/deploy.yml#L18-29",
+            "prebuild.sh#L1-2"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "When adding a module, update all of: package.json dependencies, src/index.js, prebuild.sh node_modules cp lines, .gitignore, a docs page, docs/api.md links, and themeConfig.sidebar. Then run yarn test. The parity test only covers the first two; the link test covers the docs links; the copy list and sidebar are unchecked.",
+          "sources": [
+            "test/d3-test.js#L10-18",
+            "docs/.vitepress/config.ts#L56-68",
+            "prebuild.sh#L631-634"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Anchor trap: docs-test.js requires internal links to use a .md suffix in the source even though the site uses cleanUrls. Header slugs lower-case, turn runs of spaces into single hyphens, and delete other punctuation. If a heading's slug is wrong or unstable, add an explicit {#anchor} rather than fighting the regex. Protocol links are ignored, so external URLs are not validated.",
+          "sources": [
+            "test/docs-test.js#L21-58",
+            "docs/.vitepress/config.ts#L10"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "ESLint trap: root ecmaVersion is 8, test ecmaVersion is 11 with mocha and browser env. New syntax in src/ or rollup.config.js can fail the root config even if Node 20 accepts it. The test workflow's compact formatter must keep matching .github/eslint.json or annotations break; the regex expects \"path: line N, col N, Error - message (rule)\".",
+          "sources": [
+            ".eslintrc.json#L1-7",
+            "test/.eslintrc.json#L1-13",
+            ".github/eslint.json#L5-14"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Version trap: the user-visible version is package.json version, inlined as __APP_VERSION__ and written into the Rollup banner. The CDN filename written by prebuild is the major line d3.v7.js, not the full 7.9.0. Bumping the minor version does not rename that file. CHANGES.md is only for major releases; patch notes belong in GitHub releases.",
+          "sources": [
+            "package.json#L1-3",
+            "docs/.vitepress/config.ts#L31-33",
+            "prebuild.sh#L628-629",
+            "CHANGES.md#L1-5",
+            "rollup.config.js#L16-22"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Do not treat globalThis.d3 in the theme as a library API. enhanceApp sets it for console testing on the docs site only. Library consumers get the package exports or the UMD global created by the bundle's name: \"d3\".",
+          "sources": [
+            "docs/.vitepress/theme/index.ts#L10-12",
+            "rollup.config.js#L16-20"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Map and plot examples depend on devDependencies topojson-client and @observablehq/plot and on network at runtime or build time. Editing WorldMap, UsMap, or PlotRender without those packages installed, or without dist/d3.mjs, will not typecheck or render. There is no browser test to catch a broken example; verify by running the docs build.",
+          "sources": [
+            "docs/components/WorldMap.vue#L3-5",
+            "docs/components/PlotRender.js#L1-2",
+            "package.json#L70-79"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Publishing to npm is not automated in .github/workflows. The only publish-adjacent automation is postpublish's git push and git push --tags, plus prepublishOnly's destructive rm -rf dist. Treat both as release steps that require an explicit human request.",
+          "sources": [
+            "package.json#L84-85",
+            ".github/workflows/deploy.yml#L1-6"
+          ],
+          "kind": "inference"
+        }
+      ]
+    },
+    "agent_prompt": "You are working in the d3/d3 repository (npm package d3 at version 7.9.0). This repository is the umbrella distribution and the d3js.org documentation site. It is not where visualization algorithms are implemented. The only library source file is src/index.js, which star-re-exports thirty sibling packages listed as dependencies in package.json: d3-array, d3-axis, d3-brush, d3-chord, d3-color, d3-contour, d3-delaunay, d3-dispatch, d3-drag, d3-dsv, d3-ease, d3-fetch, d3-force, d3-format, d3-geo, d3-hierarchy, d3-interpolate, d3-path, d3-polygon, d3-quadtree, d3-random, d3-scale, d3-scale-chromatic, d3-selection, d3-shape, d3-time, d3-time-format, d3-timer, d3-transition, and d3-zoom. Fixes to scales, selections, geo, force, and the rest belong in those separate repositories. Here you edit the barrel, the Rollup bundle, the VitePress docs, and the release wiring.\n\nPackage entry: package.json sets type module. main, module, and exports.default point at ./src/index.js. exports.umd, jsdelivr, and unpkg point at dist/d3.min.js. The published files list is dist/d3.js, dist/d3.min.js, and src/**/*.js. dist/d3.mjs is built for the docs site and is not published to npm. Consumers who import from \"d3\" therefore execute the barrel plus whatever versions of the d3-* packages were installed, not the frozen UMD build.\n\nBuild: bundle.js re-exports version from package.json and everything from src/index.js. rollup.config.js reads LICENSE, keeps lines matching /^Copyright\\s+/, and uses them in a banner with homepage and version. It ignores CIRCULAR_DEPENDENCY warnings. From input bundle.js it writes dist/d3.js (UMD, global name d3, extend true), dist/d3.mjs (ESM), and dist/d3.min.js (UMD plus terser). Terser reserves InternMap and InternSet because ordinal scales depend on those constructor names surviving minification. The npm script prepublishOnly deletes dist and runs rollup -c. postpublish runs git push and git push --tags. Never run postpublish or npm publish unless the human explicitly asked to publish and push tags.\n\nDocs: VitePress config is docs/.vitepress/config.ts. The title is D3 by Observable, cleanUrls is true, search is local, and the sitemap hostname is https://d3js.org. themeConfig.sidebar is the navigation source of truth and is also walked by docs/what-is-d3.md to draw the module tree. Vite aliases the specifier d3 to ./dist/d3.mjs and replaces VPFooter.vue with docs/.vitepress/theme/CustomFooter.vue. __APP_VERSION__ is JSON.stringified from npm_package_version and shown by VersionAndStars.vue. The theme extends vitepress/theme-without-fonts, uses CustomLayout.vue, and sets globalThis.d3 for console testing on the site only. docs:build runs ./prebuild.sh and then VitePress. prebuild.sh copies historical CDN files from ./build/d3.github.com (the d3/d3.github.com repository) into docs/public, then overwrites current major-line bundles from ./dist and from node_modules/*/dist, naming the umbrella bundle docs/public/d3.v7.js. It has no set -e. The deploy workflow checks out that sibling repo; the test workflow does not. .gitignore lists dist/, node_modules, the VitePress cache and dist, and every generated public bundle. Do not commit those files.\n\nDocs dev and build pass Node --experimental-network-imports because docs/.vitepress/theme/gallery.data.js dynamically imports https://api.observablehq.com/@d3/gallery.js?v=4 and evaluates it with @observablehq/runtime. stargazers.data.ts fetches https://api.github.com/repos/d3/d3 and will attach GITHUB_TOKEN when that env var is set. If the request throws and CI is set, the build fails; locally it becomes NaN. config.ts also injects https://static.observablehq.com/assets/components/observable-made-by.js. WorldMap.vue and UsMap.vue fetch world-atlas and us-atlas from jsDelivr in the browser and draw them with d3.geoPath and topojson-client.\n\nTests: yarn test runs mocha on test/**/*-test.js and then eslint src test. There is no Mocha config file. test/d3-test.js imports every package.json dependency and asserts that each export except version exists on the umbrella. test/docs-test.js crawls docs markdown, skips dot-directories and HTML comments, and fails if an internal link does not end in .md or its hash is missing. Anchors come from ATX headers (lower-cased, punctuation stripped, spaces turned into hyphens) and from explicit {#id} markers. Absolute http(s) links are not checked. There are no Vue component tests, no Rollup output tests, and no algorithm tests. CI (.github/workflows/test.yml) on push and pull_request to main uses Node 20, yarn --frozen-lockfile, eslint with the compact problem matcher in .github/eslint.json, yarn test, yarn prepublishOnly, and yarn docs:build. Deploy (.github/workflows/deploy.yml) publishes docs/.vitepress/dist to GitHub Pages.\n\nConventions and traps: use yarn because yarn.lock is what CI freezes. engines says Node >=12; CI uses 20. Root .eslintrc.json is eslint:recommended with ecmaVersion 8. test/.eslintrc.json uses ecmaVersion 11 and env mocha plus browser. Before docs:dev, run prepublishOnly so the d3 alias resolves. When adding a module, update package.json, src/index.js, prebuild.sh, .gitignore, the module's markdown, docs/api.md, and the sidebar, then run yarn test. The parity test only enforces the barrel. Header slugs are brittle; prefer an explicit {#anchor}. CHANGES.md records major releases only. API.md is a one-line pointer to the website. Prefer editing docs and the barrel. Do not vendor algorithm source into this repo, do not add secrets, and do not run the postpublish git push."
+  },
+  "analysis": {
+    "agent": "grok",
+    "model": "cli:grok",
+    "runtime_ms": 358792,
+    "cost_usd": null,
+    "collected_at": "2026-09-22T12:18:01.367Z"
   }
 }
