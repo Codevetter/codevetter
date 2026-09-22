@@ -1,0 +1,10 @@
+{
+  "system_map": "System map",
+  "feature_catalog": "Feature catalog",
+  "data_flow": "Data flow",
+  "behavior_traces": "Behavior traces",
+  "testing_signals": "Testing signals",
+  "risk_map": "Risk map",
+  "extension_points": "Extension points",
+  "agent_handoff": "Contributor handoff"
+}
