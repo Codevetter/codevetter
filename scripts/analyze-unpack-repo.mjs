@@ -18,8 +18,12 @@ const CORPUS = join(ROOT, 'benchmarks/repo-unpacks');
 const [slug, ...rest] = process.argv.slice(2);
 const cloneFlag = rest.indexOf('--clone');
 const cloneDir = cloneFlag >= 0 ? rest[cloneFlag + 1] : null;
+const agentFlag = rest.indexOf('--agent');
+const agent = agentFlag >= 0 ? rest[agentFlag + 1] : 'claude';
 if (!slug || !cloneDir) {
-  console.error('usage: node scripts/analyze-unpack-repo.mjs <slug> --clone <path>');
+  console.error(
+    'usage: node scripts/analyze-unpack-repo.mjs <slug> --clone <path> [--agent claude|codex]'
+  );
   process.exit(1);
 }
 
@@ -128,22 +132,57 @@ if (!existsSync(join(cloneDir, '.git'))) {
 }
 
 console.log(
-  `analyzing ${record.repo} at ${headSha.slice(0, 7)} via claude -p (this takes minutes)…`
+  `analyzing ${record.repo} at ${headSha.slice(0, 7)} via ${agent} (this takes minutes)…`
 );
 const started = Date.now();
-const raw = execFileSync(
-  'claude',
-  ['-p', '--output-format', 'json', '--allowedTools', 'Read Glob Grep LS WebSearch WebFetch'],
-  {
-    encoding: 'utf8',
-    cwd: cloneDir,
-    input: prompt,
-    maxBuffer: 64 * 1024 * 1024,
-    timeout: 20 * 60 * 1000,
+
+let text;
+let cost = null;
+if (agent === 'codex') {
+  // codex exec: JSONL events on stdout; the last agent message is the result.
+  // stdin is closed (`input: ''`) so parallel runs don't contend for it.
+  let raw;
+  try {
+    raw = execFileSync('codex', ['exec', '--json', '--sandbox', 'read-only', prompt], {
+      encoding: 'utf8',
+      cwd: cloneDir,
+      input: '',
+      maxBuffer: 128 * 1024 * 1024,
+      timeout: 30 * 60 * 1000,
+    });
+  } catch (e) {
+    raw = e.stdout;
+    if (!raw) throw e;
   }
-);
-const envelope = JSON.parse(raw);
-const text = envelope.result ?? '';
+  const messages = raw
+    .split('\n')
+    .filter(Boolean)
+    .map((l) => {
+      try {
+        return JSON.parse(l);
+      } catch {
+        return null;
+      }
+    })
+    .filter(Boolean);
+  const last = [...messages].reverse().find((m) => m.item?.text || m.message || m.result);
+  text = last?.item?.text ?? last?.message ?? last?.result ?? '';
+} else {
+  const raw = execFileSync(
+    'claude',
+    ['-p', '--output-format', 'json', '--allowedTools', 'Read Glob Grep LS WebSearch WebFetch'],
+    {
+      encoding: 'utf8',
+      cwd: cloneDir,
+      input: prompt,
+      maxBuffer: 64 * 1024 * 1024,
+      timeout: 20 * 60 * 1000,
+    }
+  );
+  const envelope = JSON.parse(raw);
+  text = envelope.result ?? '';
+  cost = envelope.total_cost_usd ?? null;
+}
 const jsonStart = text.indexOf('{');
 const jsonEnd = text.lastIndexOf('}');
 if (jsonStart < 0 || jsonEnd <= jsonStart) {
@@ -154,13 +193,13 @@ const report = JSON.parse(text.slice(jsonStart, jsonEnd + 1));
 
 record.report = report;
 record.analysis = {
-  agent: 'claude',
-  model: 'cli:claude',
+  agent,
+  model: `cli:${agent}`,
   runtime_ms: Date.now() - started,
-  cost_usd: envelope.total_cost_usd ?? null,
+  cost_usd: cost,
   collected_at: new Date().toISOString(),
 };
 writeFileSync(corpusPath, `${JSON.stringify(record, null, 2)}\n`, 'utf8');
 console.log(
-  `${record.repo}: report written — $${(envelope.total_cost_usd ?? 0).toFixed(2)}, ${Math.round((Date.now() - started) / 1000)}s`
+  `${record.repo}: report written — ${cost == null ? 'subscription' : `$${cost.toFixed(2)}`}, ${Math.round((Date.now() - started) / 1000)}s`
 );
