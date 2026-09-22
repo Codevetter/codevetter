@@ -11,6 +11,7 @@ final class CodeVetterAppDelegate: NSObject, NSApplicationDelegate {
     usageSnapshotStore: usageSnapshotStore
   )
   private let updater = NativeUpdaterController()
+  private let appHealth = CodeVetterAppHealth()
   private var windowController: NSWindowController?
 
   private var usageSnapshotStore: UsageSnapshotStore {
@@ -42,8 +43,21 @@ final class CodeVetterAppDelegate: NSObject, NSApplicationDelegate {
   }
 
   func applicationDidFinishLaunching(_ notification: Notification) {
+    Task { await appHealth.applicationLaunched() }
     applyRequestedInitialState()
     showMainWindowIfNeeded()
+  }
+
+  func applicationDidBecomeActive(_ notification: Notification) {
+    Task { await appHealth.setActive(true) }
+  }
+
+  func applicationDidResignActive(_ notification: Notification) {
+    Task { await appHealth.setActive(false) }
+  }
+
+  func applicationWillTerminate(_ notification: Notification) {
+    Task { await appHealth.close() }
   }
 
   private func applyRequestedInitialState() {
