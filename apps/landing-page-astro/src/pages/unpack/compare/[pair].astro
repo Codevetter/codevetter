@@ -1,0 +1,128 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import reports from '@/data/unpack-reports.json';
+import pairs from '@/data/unpack-pairs.json';
+
+export function getStaticPaths() {
+  const bySlug = new Map((reports as any[]).map((r) => [r.slug, r]));
+  return (pairs as any[])
+    .map((p) => ({ a: bySlug.get(p.a), b: bySlug.get(p.b), angle: p.angle }))
+    .filter((p) => p.a && p.b)
+    .map(({ a, b, angle }) => ({
+      params: { pair: `${a.slug}-vs-${b.slug}` },
+      props: { a, b, angle },
+    }));
+}
+
+const { a, b, angle } = Astro.props;
+const rows = [
+  ['Files scanned', a.stats.filesScanned, b.stats.filesScanned],
+  ['Size', a.stats.size, b.stats.size],
+  ['Primary source root', a.sourceRoots?.[0]?.path ? `${a.sourceRoots[0].path}/` : '—', b.sourceRoots?.[0]?.path ? `${b.sourceRoots[0].path}/` : '—'],
+  [
+    'Top language',
+    a.languages?.[0] ? `${a.languages[0].language} (${a.languages[0].files} files)` : '—',
+    b.languages?.[0] ? `${b.languages[0].language} (${b.languages[0].files} files)` : '—',
+  ],
+  [
+    'Package',
+    a.manifest ? `${a.manifest.name} v${a.manifest.version ?? '—'}` : '—',
+    b.manifest ? `${b.manifest.name} v${b.manifest.version ?? '—'}` : '—',
+  ],
+  [
+    'Structural health',
+    a.health ? `${a.health.averageScore}/10 avg, ${a.health.hotspotCount} hotspots` : '—',
+    b.health ? `${b.health.averageScore}/10 avg, ${b.health.hotspotCount} hotspots` : '—',
+  ],
+  [
+    'Test signal',
+    a.qaReadiness?.status ?? '—',
+    b.qaReadiness?.status ?? '—',
+  ],
+];
+---
+
+<Layout
+  title={`${a.name} vs ${b.name} — codebase comparison`}
+  description={`Structural codebase comparison of ${a.repo} and ${b.repo}: architectures, entrypoints, and evidence — scanned at pinned commits by CodeVetter Repo Unpack.`}
+>
+  <main class="report">
+    <a class="back" href="/unpack">← All unpacks</a>
+    <header>
+      <div class="eyebrow">CodeVetter · Repo Unpack comparison</div>
+      <h1>{a.name} <span class="dim">vs</span> {b.name}</h1>
+      <p class="meta">
+        {a.name} scanned at <code>{a.commit.sha.slice(0, 7)}</code> ({a.commit.date}) · {b.name} at{' '}
+        <code>{b.commit.sha.slice(0, 7)}</code> ({b.commit.date}) · codevetter {a.codevetterVersion}
+      </p>
+      <p class="lead">{angle}</p>
+    </header>
+
+    <section>
+      <table>
+        <thead><tr><th></th><th><a href={`/unpack/${a.slug}`}>{a.repo}</a></th><th><a href={`/unpack/${b.slug}`}>{b.repo}</a></th></tr></thead>
+        <tbody>
+          {rows.map(([label, av, bv]) => (
+            <tr><td class="dim">{label}</td><td>{av}</td><td>{bv}</td></tr>
+          ))}
+        </tbody>
+      </table>
+    </section>
+
+    {(a.sections?.overview || b.sections?.overview) && (
+      <section>
+        <h2>Architectures</h2>
+        <div class="cols">
+          <div>
+            <h3>{a.name}</h3>
+            <p>{a.sections?.overview?.summary ?? a.readmePreview ?? '—'}</p>
+          </div>
+          <div>
+            <h3>{b.name}</h3>
+            <p>{b.sections?.overview?.summary ?? b.readmePreview ?? '—'}</p>
+          </div>
+        </div>
+      </section>
+    )}
+
+    {(a.sections?.system_map || b.sections?.system_map) && (
+      <section>
+        <h2>System maps</h2>
+        <div class="cols">
+          <div>
+            <h3>{a.name}</h3>
+            <p>{a.sections?.system_map?.summary ?? '—'}</p>
+          </div>
+          <div>
+            <h3>{b.name}</h3>
+            <p>{b.sections?.system_map?.summary ?? '—'}</p>
+          </div>
+        </div>
+      </section>
+    )}
+
+    <section>
+      <h2>Repository structure</h2>
+      <div class="cols">
+        <div>
+          <h3>{a.name}</h3>
+          <ul>{a.topDirs.map((d) => <li><code>{d.path}/</code> <span class="dim">— {d.file_count} files</span></li>)}</ul>
+        </div>
+        <div>
+          <h3>{b.name}</h3>
+          <ul>{b.topDirs.map((d) => <li><code>{d.path}/</code> <span class="dim">— {d.file_count} files</span></li>)}</ul>
+        </div>
+      </div>
+    </section>
+
+    <aside>
+      Independent structural comparison of two Repo Unpack scans — every underlying page cites its
+      sources at the pinned commit. Not benchmarked for performance; differences in file counts and
+      health scores reflect codebases, not project quality.
+    </aside>
+  </main>
+</Layout>
+
+<style>
+  .report{width:min(920px,calc(100% - 40px));margin:0 auto;padding:140px 0 90px}.back{color:#8c8e94;text-decoration:none;font-size:.85rem}header{padding:54px 0 34px;border-bottom:1px solid #24262b}.eyebrow{color:#85888f;text-transform:uppercase;letter-spacing:.16em;font-size:.7rem}h1{color:#f0efeb;font-size:clamp(2rem,5vw,3.2rem);line-height:1.05;letter-spacing:-.04em;margin:16px 0;font-family:ui-monospace,monospace}.meta{color:#85888f;font-size:.9rem;line-height:1.6}.lead{color:#92969e;line-height:1.7;margin-top:18px;font-size:1.05rem}section{margin-top:44px}h2{color:#e9e8e4;font-size:1.1rem;margin-bottom:16px}h3{color:#c9cbd1;font-size:.95rem;font-family:ui-monospace,monospace;margin-bottom:8px}table{width:100%;border-collapse:collapse;font-size:.9rem}th{color:#85888f;text-align:left;font-weight:400;text-transform:uppercase;letter-spacing:.1em;font-size:.68rem;padding:8px 12px;border-bottom:1px solid #24262b}th a{color:#d9b567;text-decoration:none}td{color:#c9cbd1;padding:8px 12px;border-bottom:1px solid #1c1f24}code{color:#8b8e95;font-size:.85em}p{color:#92969e;line-height:1.65}li{color:#c9cbd1;line-height:1.8;list-style:none;padding-left:0}ul{padding-left:0}.dim{color:#73767d}.cols{display:grid;grid-template-columns:1fr 1fr;gap:32px}@media(max-width:720px){.cols{grid-template-columns:1fr}}aside{margin-top:44px;padding:20px;border-left:2px solid #d4a039;background:#101114;color:#92959c;line-height:1.65;font-size:.9rem}
+</style>

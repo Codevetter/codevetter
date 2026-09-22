@@ -1,0 +1,11 @@
+[
+  { "a": "react", "b": "vue", "angle": "Two different answers to the same question — React keeps a scheduler and fiber tree in-tree; Vue splits reactivity, runtime, and compiler into separate packages." },
+  { "a": "vue", "b": "svelte", "angle": "Runtime-vs-compiler tradeoffs: Vue ships a reactive runtime, Svelte compiles components to direct DOM operations." },
+  { "a": "vite", "b": "webpack", "angle": "Vite's on-demand ESM dev server vs webpack's bundle-first graph — two generations of frontend build architecture." },
+  { "a": "deno", "b": "node", "angle": "Node's C++ core plus npm ecosystem vs Deno's Rust/V8 single binary with permissions and web-standard APIs." },
+  { "a": "bun", "b": "node", "angle": "Bun's Zig/JavaScriptCore all-in-one toolchain vs Node's V8/libuv runtime plus separate package tooling." },
+  { "a": "deno", "b": "bun", "angle": "Two post-Node runtimes — Deno leans on V8 and Rust crates, Bun on JavaScriptCore and Zig." },
+  { "a": "flask", "b": "fastapi", "angle": "Flask's WSGI microframework plus extension ecosystem vs FastAPI's ASGI + type-annotation-driven API surface." },
+  { "a": "curl", "b": "httpie", "angle": "curl's C protocol engine vs HTTPie's Python human-first CLI — same problem, opposite philosophies." },
+  { "a": "axios", "b": "requests", "angle": "The default HTTP clients of JS and Python — promise-chain interceptors vs session-based synchronous calls." }
+]

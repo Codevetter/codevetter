@@ -2,7 +2,13 @@
 import Footer from '@/components/Footer.astro';
 import Nav from '@/components/Nav.astro';
 import reports from '@/data/unpack-reports.json';
+import pairs from '@/data/unpack-pairs.json';
 import Layout from '@/layouts/Layout.astro';
+
+const bySlug = new Map(reports.map((r) => [r.slug, r]));
+const comparisons = pairs
+  .map((p) => ({ a: bySlug.get(p.a), b: bySlug.get(p.b), angle: p.angle }))
+  .filter((p) => p.a && p.b);
 ---
 
 <Layout
@@ -16,9 +22,10 @@ import Layout from '@/layouts/Layout.astro';
       <div class="eyebrow">CodeVetter · Repo Unpack evidence</div>
       <h1>Public codebase unpacks</h1>
       <p>
-        Each page is a deterministic structural scan of a well-known open-source repository at a
-        pinned commit — what CodeVetter's Repo Unpack produces before any model analysis. Scan
-        date, engine version, and the upstream commit are printed on every page.
+        Each page unpacks a well-known open-source repository at a pinned commit — deterministic
+        structure and health signals plus, for analyzed repos, claim-cited deep dives where every
+        statement links to the file it was read from. Scan date, engine version, and the upstream
+        commit are printed on every page.
       </p>
     </header>
     <ul>
@@ -31,10 +38,21 @@ import Layout from '@/layouts/Layout.astro';
         </li>
       ))}
     </ul>
+    <h2 class="cmp">Comparisons</h2>
+    <ul>
+      {comparisons.map(({ a, b, angle }) => (
+        <li>
+          <a href={`/unpack/compare/${a.slug}-vs-${b.slug}`}>
+            <strong>{a.name} vs {b.name}</strong>
+            <span>{angle}</span>
+          </a>
+        </li>
+      ))}
+    </ul>
   </main>
   <Footer />
 </Layout>
 
 <style>
-  .index{width:min(920px,calc(100% - 40px));margin:0 auto;padding:140px 0 90px}.eyebrow{color:#85888f;text-transform:uppercase;letter-spacing:.16em;font-size:.7rem}h1{color:#f0efeb;font-size:clamp(2.4rem,6vw,4.5rem);letter-spacing:-.055em;margin:16px 0}header p{color:#85888f;line-height:1.7;max-width:640px}header{padding:54px 0 34px;border-bottom:1px solid #24262b}ul{list-style:none;padding:0;margin-top:24px}li a{display:flex;justify-content:space-between;align-items:baseline;gap:16px;padding:16px 0;border-bottom:1px solid #1c1f24;text-decoration:none}li strong{color:#eeede9;font-family:ui-monospace,monospace;font-weight:500}li span{color:#73767d;font-size:.85rem;white-space:nowrap}
+  .index{width:min(920px,calc(100% - 40px));margin:0 auto;padding:140px 0 90px}.eyebrow{color:#85888f;text-transform:uppercase;letter-spacing:.16em;font-size:.7rem}h1{color:#f0efeb;font-size:clamp(2.4rem,6vw,4.5rem);letter-spacing:-.055em;margin:16px 0}header p{color:#85888f;line-height:1.7;max-width:640px}header{padding:54px 0 34px;border-bottom:1px solid #24262b}ul{list-style:none;padding:0;margin-top:24px}li a{display:flex;justify-content:space-between;align-items:baseline;gap:16px;padding:16px 0;border-bottom:1px solid #1c1f24;text-decoration:none}li strong{color:#eeede9;font-family:ui-monospace,monospace;font-weight:500}li span{color:#73767d;font-size:.85rem;white-space:nowrap;max-width:60%;text-align:right}h2.cmp{color:#e9e8e4;font-size:1.1rem;margin-top:48px}
 </style>

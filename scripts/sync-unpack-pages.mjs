@@ -189,7 +189,7 @@ for (const file of readdirSync(CORPUS)
                 ? { summary: record.report[k], claims: [] }
                 : {
                     summary: record.report[k].summary,
-                    claims: (record.report[k].claims ?? []).slice(0, 12).map((c) => ({
+                    claims: (record.report[k].claims ?? []).map((c) => ({
                       ...c,
                       // Agents occasionally append "(symbol)" after a path — strip it
                       // so the source links resolve.
@@ -216,17 +216,61 @@ if (!known.has('unpack')) {
       'Repository evidence index — deterministic scans of well-known open-source projects',
   });
 }
+const SECTION_KEYS = [
+  'system_map',
+  'feature_catalog',
+  'data_flow',
+  'behavior_traces',
+  'testing_signals',
+  'risk_map',
+  'extension_points',
+  'agent_handoff',
+];
+const sectionTitle = (k) => k.replace(/_/g, ' ');
+
 for (const report of reports) {
   const id = `unpack-${report.slug}`;
-  if (known.has(id)) continue;
+  if (!known.has(id)) {
+    catalog.surfaces.push({
+      id,
+      url: `https://codevetter.com/unpack/${report.slug}`,
+      md: `https://codevetter.com/unpack/${report.slug}.md`,
+      kind: 'static',
+      description: `Repo Unpack evidence scan of ${report.repo} at ${report.commit.sha.slice(0, 7)}`,
+    });
+  }
+  if (!report.sections) continue;
+  for (const key of SECTION_KEYS) {
+    if (!report.sections[key]) continue;
+    const sid = `unpack-${report.slug}-${key.replace(/_/g, '-')}`;
+    if (known.has(sid)) continue;
+    catalog.surfaces.push({
+      id: sid,
+      url: `https://codevetter.com/unpack/${report.slug}/${key.replace(/_/g, '-')}`,
+      md: `https://codevetter.com/unpack/${report.slug}/${key.replace(/_/g, '-')}.md`,
+      kind: 'static',
+      description: `${sectionTitle(key)} — claim-cited deep dive into ${report.repo} at ${report.commit.sha.slice(0, 7)}`,
+    });
+  }
+}
+const pairs = JSON.parse(
+  readFileSync(join(ROOT, 'apps/landing-page-astro/src/data/unpack-pairs.json'), 'utf8')
+);
+for (const pair of pairs) {
+  const a = reports.find((r) => r.slug === pair.a);
+  const b = reports.find((r) => r.slug === pair.b);
+  if (!a || !b) continue;
+  const pid = `unpack-${a.slug}-vs-${b.slug}`;
+  if (known.has(pid)) continue;
   catalog.surfaces.push({
-    id,
-    url: `https://codevetter.com/unpack/${report.slug}`,
-    md: `https://codevetter.com/unpack/${report.slug}.md`,
+    id: pid,
+    url: `https://codevetter.com/unpack/compare/${a.slug}-vs-${b.slug}`,
+    md: `https://codevetter.com/unpack/compare/${a.slug}-vs-${b.slug}.md`,
     kind: 'static',
-    description: `Repo Unpack evidence scan of ${report.repo} at ${report.commit.sha.slice(0, 7)}`,
+    description: `Structural codebase comparison of ${a.repo} vs ${b.repo} at pinned commits`,
   });
 }
+
 writeFileSync(API_AI, `${JSON.stringify(catalog, null, 2)}\n`, 'utf8');
 console.log(
   `unpack-reports.json: ${reports.length} repos; api-ai surfaces: ${catalog.surfaces.length}`
