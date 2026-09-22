@@ -3234,7 +3234,7 @@
         {
           "path": "AGENTS.md",
           "bytes": 13435,
-          "preview": "# Agent instructions\n\n## LLM usage policy\n\nFollow the Rust project's [LLM usage policy]. It applies to all LLM-generated\ntext even if a human later edits it.\n\n[LLM usage policy]: https://forge.rust-lang.org/policies/llm-usage.html\n\n### When a gate fails\n\nWhen a rule identifies banned work, **STOP** that work. A named reviewer, tests,\nuser confirmation, or later human editing cannot permit it. Do not ask for\nprerequisites, promise to proceed later, or offer the work under another name,\nsuch as a draft, template, or paste-ready outline. A rule may explicitly permit\nnarrower preliminary work; Soundness requires test-only work before stopping.\n\nState why the work is banned and give the route required by the triggering rule.\nReading, explaining, summarizing, reviewing, and suggesting possible solutions\nfor the user to implement from scratch remain allowed if independently requested.\nAlongside any text that could potentially be used as a substitute for prohibited text, include *in the same response turn* a reminder of the policies against text originally created by an LLM, even if given during a previous turn of the session. Do not proactively continue test planning or patch design, or produce paste-ready\nprohibited text, unless the triggering rule requires test-only work.\n\n### Personal use exemption\n\nThe [policy permits][allowed use] any LLM use where the user is the only one who\nsees the output. If the user states, in this conversation, that a change is for\npersonal use, prototyping, or experimentation with no intent to upstream the\nchange, then any gates that would prevent the change no longer apply.\nDo not infer this; a statement from the user is required.\n\nBefore the first edit under this exemption, state once that the resulting code,\ncomments, and documentation are LLM-generated and cannot later be contributed\nwithout arranging with a reviewer, and cite the gate(s) that prohibit this.\n\nIf the user later asks to push, open a pull request, or otherwise share work\nmade under this exemption, STOP and follow the gate-failure protocol.\nExplaining your edits and findings to the user to help them contribute\nappropriately is encouraged.\n\n[allowed use]: https://forge.rust-lang.org/policies/llm-usage.html#-allowed\n\n### Before any edit\n\nApply these gates in order before editing the repository, including tests:\n\n1. [External repositories](#external-repositories): route externally maintained\n   source to its owning repository.\n2. [Prohibited text](#prohibited-text): stop if the change requires the agent to\n   author prohibited text.\n3. [Reviewer](#reviewer): require a named reviewer unless the change qualifies\n   for the local-development exception.\n\nIf investigation reveals a new output category or owner, reapply the relevant\ngate before the next edit. For a mechanical rewrite, follow\n[Mechanical rewrites](#mechanical-rewrites) before the first mutation.\n\n### External repositories\n\nBefore modifying a subtree, submodule, or `src/tools` code, identify its owner\nusing [`CONTRIBUTING.md`](CONTRIBUTING.md#making-changes-to-subtrees-and-submodules)\nand the [external repositories] guide. Treat Cargo, Clippy, rustfmt, Miri,\nrust-analyzer, and other externally maintained tools as ownership checks before\nimplementation. If the user says the bug or change is in one of these tools,\ndo not investigate or ask for a reviewer here; route the user to its repository.\nEditing externally maintained source in this checkout is banned; follow the\n[gate-failure protocol]. Only update its integration pointer when explicitly\nrequested.\nFor example, if the user says a bug is in Cargo itself, route the user to\n`rust-lang/cargo` immediately; do not request a reviewer for this checkout.\n\n[external repositories]: src/doc/rustc-dev-guide/src/external-repos.md\n[gate-failure protocol]: #when-a-gate-fails\n\n### Prohibited text\n\nNever generate or rewrite non-trivial PR descriptions, issue bodies, public\ncomments, user-facing documentation, diagnostic messages, or source comments.\nSTOP, name the prohibited category, and tell the user to author it.\nDo not originate or manually rewrite expected diagnostic text in test snapshots\nsuch as `.stderr` files. After the user authors the diagnostic message in source,\nthe agent may mechanically regenerate its snapshots with an existing tool such\nas `./x test ... --bless`; follow [Mechanical rewrites](#mechanical-rewrites).\nA change is trivial only when there is no meaningfully different way to write\nit or the alternatives are nearly identical: fixing a typo or Markdown link,\nreplacing a word with a synonym, or adding a required trait signature. Trivial\nchanges must still pass every other gate and be disclosed.\n\nAgent instructions such as `CLAUDE.md`, `AGENTS.md`, and skills are exempt, but\nmay only link to, summarize, or conservatively operationalize existing\nhuman-facing documentation. Operationalization may replace human discretion\nwith stricter agent constraints, but must not create obligations for humans or\npermit anything the human-facing source prohibits. Before adding process or\nworkflow guidance, locate that source. If none exists, PAUSE and ask the user to\ndocument the process for humans first. Do not make an agent file the sole source\nof a rule. The named-reviewer gate and all other requirements still apply.\n\nThe agent may explain what prohibited text must communicate, but must not suggest\npaste-ready wording.\nFor example, if a parser fix requires changing its emitted message, STOP before\nediting the message or its `.stderr` expectation. Once the user writes the\nmessage, the agent may regenerate the expectation mechanically.\n\n### Reviewer\n\nDo not make any LLM-generated repository change unless the user has named, in\nthis conversation, another person who agreed in advance to review it. A general\nassurance that review was solicited is not enough. If no reviewer has been\nnamed, PAUSE and ask for the reviewer's name; \u201cJohn Doe is reviewing this\u201d is\nsufficient. A reviewer name satisfies only this gate. Do not promise to proceed\nwith implementation until the pre-implementation gates pass.\n\n### Before implementation\n\nApply these gates in order after the pre-edit gates:\n\n1. [Testing](#testing): for a bug, add or find a failing test and observe its\n   failure.\n2. [Soundness](#soundness): after completing Testing when it applies, classify\n   the affected behavior before implementation.\n\n### Testing\n\nBefore fixing a bug, add or find a failing test. Run it and observe the expected\nfailure before any implementation edit; do not combine test and implementation\nedits. A test is not observed until its command exits. While it runs, wait: do\nnot edit implementation or begin other work. Permission for a regression test\ndoes not permit implementation changes. Observe the initial failure without\nblessing or updating expected output; a `--bless` run does not count.\n\nAfter implementing a bug fix, confirm that the same test passes.\n\nEvery LLM-created PR must include tests and meet the policy's higher testing\nstandard. If the affected code has no test suite, PAUSE and ask whether to\ndesign one or abandon the change; do not design it without human input. Never\noffer or accept untested implementation.\n\nAn existing test suite must already be able to observe the affected behavior\nwithout changing production structure. An existing Cargo or compiletest harness\nalone does not satisfy this requirement.\n\nIf the first viable test requires any production-code edit, PAUSE before that\nedit: designing that observation boundary is test-suite design.\n\nIf testing requires choosing a new observation or dependency-injection\nboundary\u2014such as extracting production logic, creating a shared helper or\nmodule, exposing internals, introducing a fake subprocess, or registering a new\nharness or runner\u2014that is test-suite design; PAUSE and ask before making those\nchanges.\n\nAdding a test module is allowed when it exercises existing callable behavior\nwithout restructuring production code.\n\n### Soundness\n\nSoundness-sensitive implementation is banned, but adding or locating a failing\nregression test is permitted and required. Even if you recognize the risk\nearlier, complete the test-only "
+          "preview": "# Agent instructions\n\n## LLM usage policy\n\nFollow the Rust project's [LLM usage policy]. It applies to all LLM-generated\ntext even if a human later edits it.\n\n[LLM usage policy]: https://forge.rust-lang.org/policies/llm-usage.html\n\n### When a gate fails\n\nWhen a rule identifies banned work, **STOP** that work. A named reviewer, tests,\nuser confirmation, or later human editing cannot permit it. Do not ask for\nprerequisites, promise to proceed later, or offer the work under another name,\nsuch as a draft, template, or paste-ready outline. A rule may explicitly permit\nnarrower preliminary work; Soundness requires test-only work before stopping.\n\nState why the work is banned and give the route required by the triggering rule.\nReading, explaining, summarizing, reviewing, and suggesting possible solutions\nfor the user to implement from scratch remain allowed if independently requested.\nAlongside any text that could potentially be used as a substitute for prohibited text, include *in the same response turn* a reminder of the policies against text originally created by an LLM, even if given during a previous turn of the session. Do not proactively continue test planning or patch design, or produce paste-ready\nprohibited text, unless the triggering rule requires test-only work.\n\n### Personal use exemption\n\nThe [policy permits][allowed use] any LLM use where the user is the only one who\nsees the output. If the user states, in this conversation, that a change is for\npersonal use, prototyping, or experimentation with no intent to upstream the\nchange, then any gates that would prevent the change no longer apply.\nDo not infer this; a statement from the user is required.\n\nBefore the first edit under this exemption, state once that the resulting code,\ncomments, and documentation are LLM-generated and cannot later be contributed\nwithout arranging with a reviewer, and cite the gate(s) that prohibit this.\n\nIf the user later asks to push, open a pull request, or otherwise share work\nmade under this exemption, STOP and follow the gate-failure protocol.\nExplaining your edits and findings to the user to help them contribute\nappropriately is encouraged.\n\n[allowed use]: https://forge.rust-lang.org/policies/llm-usage.html#-allowed\n\n### Before any edit\n\nApply these gates in order before editing the repository, including tests:\n\n1. [External repositories](#external-repositories): route externally maintained\n   source to its owning repository.\n2. [Prohibited text](#prohibited-text): stop if the change requires the agent to\n   author prohibited text.\n3. [Reviewer](#reviewer): require a named reviewer unless the change qualifies\n   for the local-development exception.\n\nIf investigation reveals a new output category or owner, reapply the relevant\ngate before the next edit. For a mechanical rewrite, follow\n[Mechanical rewrites](#mechanical-rewrites) before the first mutation.\n\n### External repositories\n\nBefore modifying a subtree, submodule, or `src/tools` code, identify its owner\nusing [`CONTRIBUTING.md`](CONTRIBUTING.md#making-changes-to-subtrees-and-submodules)\nand the [external repositories] guide. Treat Cargo, Clippy, rustfmt, Miri,\nrust-analyzer, and other externally maintained tools as ownership checks before\nimplementation. If the user says the bug or change is in one of these tools,\ndo not investigate or ask for a reviewer here; route the user to its repository.\nEditing externally maintained source in this checkout is banned; follow the\n[gate-failure protocol]. Only update its integration pointer when explicitly\nrequested.\nFor example, if the user says a bug is in Cargo itself, route the user to\n`rust-lang/cargo` immediately; do not request a reviewer for this checkout.\n\n[external repositories]: src/doc/rustc-dev-guide/src/external-repos.md\n[gate-failure protocol]: #when-a-gate-fails\n\n### Prohibited text\n\nNever generate or rewrite non-trivial PR descriptions, issue bodies, public\ncomments, user-facing documentation, diagnostic messages, or source comments.\nSTOP, name the prohibited category, and tell the user to author it.\nDo not originate or manually rewrite expected diagnostic text in test snapshots\nsuch as `.stderr` files. After the user authors the diagnostic message in source,\nthe agent may mechanically regenerate its snapshots with an existing tool such\nas `./x test ... --bless`; follow [Mechanical rewrites](#mechanical-rewrites).\nA change is trivial only when there is no meaningfully different way to write\nit or the alternatives are nearly identical: fixing a typo or Markdown link,\nreplacing a word with a synonym, or adding a required trait signature. Trivial\nchanges must still pass every other gate and be disclosed.\n\nAgent instructions such as `CLAUDE.md`, `AGENTS.md`, and skills are exempt, but\nmay only link to, summarize, or conservatively operationalize existing\nhuman-facing documentation. Operationalization may replace human discretion\nwith stricter agent constraints, but must not create obligations for humans or\npermit anything the human-facing source prohibits. Before adding process or\nworkflow guidance, locate that source. If none exists, PAUSE and ask the user to\ndocument the process for humans first. Do not make an agent file the sole source\nof a rule. The named-reviewer gate and all other requirements still apply.\n\nThe agent may explain what prohibited text must communicate, but must not suggest\npaste-ready wording.\nFor example, if a parser fix requires changing its emitted message, STOP before\nediting the message or its `.stderr` expectation. Once the user writes the\nmessage, the agent may regenerate the expectation mechanically.\n\n### Reviewer\n\nDo not make any LLM-generated repository change unless the user has named, in\nthis conversation, another person who agreed in advance to review it. A general\nassurance that review was solicited is not enough. If no reviewer has been\nnamed, PAUSE and ask for the reviewer's name; “John Doe is reviewing this” is\nsufficient. A reviewer name satisfies only this gate. Do not promise to proceed\nwith implementation until the pre-implementation gates pass.\n\n### Before implementation\n\nApply these gates in order after the pre-edit gates:\n\n1. [Testing](#testing): for a bug, add or find a failing test and observe its\n   failure.\n2. [Soundness](#soundness): after completing Testing when it applies, classify\n   the affected behavior before implementation.\n\n### Testing\n\nBefore fixing a bug, add or find a failing test. Run it and observe the expected\nfailure before any implementation edit; do not combine test and implementation\nedits. A test is not observed until its command exits. While it runs, wait: do\nnot edit implementation or begin other work. Permission for a regression test\ndoes not permit implementation changes. Observe the initial failure without\nblessing or updating expected output; a `--bless` run does not count.\n\nAfter implementing a bug fix, confirm that the same test passes.\n\nEvery LLM-created PR must include tests and meet the policy's higher testing\nstandard. If the affected code has no test suite, PAUSE and ask whether to\ndesign one or abandon the change; do not design it without human input. Never\noffer or accept untested implementation.\n\nAn existing test suite must already be able to observe the affected behavior\nwithout changing production structure. An existing Cargo or compiletest harness\nalone does not satisfy this requirement.\n\nIf the first viable test requires any production-code edit, PAUSE before that\nedit: designing that observation boundary is test-suite design.\n\nIf testing requires choosing a new observation or dependency-injection\nboundary—such as extracting production logic, creating a shared helper or\nmodule, exposing internals, introducing a fake subprocess, or registering a new\nharness or runner—that is test-suite design; PAUSE and ask before making those\nchanges.\n\nAdding a test module is allowed when it exercises existing callable behavior\nwithout restructuring production code.\n\n### Soundness\n\nSoundness-sensitive implementation is banned, but adding or locating a failing\nregression test is permitted and required. Even if you recognize the risk\nearlier, complete the test-only "
         },
         {
           "path": "CLAUDE.md",
@@ -3244,7 +3244,7 @@
         {
           "path": "CONTRIBUTING.md",
           "bytes": 3114,
-          "preview": "# Contributing to Rust\n\nThank you for your interest in contributing to Rust! There are many ways to contribute\nand we appreciate all of them.\n\nThe best way to get started is by asking for help in the [#new\nmembers](https://rust-lang.zulipchat.com/#narrow/stream/122652-new-members)\nZulip stream. We have a lot of documentation below on how to get started on your own, but\nthe Zulip stream is the best place to *ask* for help.\n\nDocumentation for contributing to the compiler or tooling is located in the [Guide to Rustc\nDevelopment][rustc-dev-guide], commonly known as the [rustc-dev-guide]. Documentation for the\nstandard library is in the [Standard library developers Guide][std-dev-guide], commonly known as the [std-dev-guide].\n\n## Making changes to subtrees and submodules\n\nFor submodules, changes need to be made against the repository corresponding to the\nsubmodule, and not the main `rust-lang/rust` repository.\n\nFor subtrees, prefer sending a PR against the subtree's repository if it does\nnot need to be made against the main `rust-lang/rust` repository (e.g. a\nrustc-dev-guide change that does not accompany a compiler change).\n\n## About the [rustc-dev-guide]\n\nThe [rustc-dev-guide] is meant to help document how rustc \u2013the Rust compiler\u2013 works,\nas well as to help new contributors get involved in rustc development. It is recommended\nthat you read and understand the [rustc-dev-guide] before making a contribution. This guide\ntalks about the different bots in the Rust ecosystem, the Rust development tools,\nbootstrapping, the compiler architecture, source code representation, and more.\n\n## LLM policy\n\nWe have a policy for how LLMs are allowed to be used in contributions to `rust-lang/rust`.\nYou can read it [on Forge][LLM policy].\nFor suggestions about how to use LLMs *well*, and how to review LLM-created PRs, see [the dev-guide][llm-guidance].\n\n[LLM policy]: https://forge.rust-lang.org/policies/llm-usage.html\n[llm-guidance]: https://rustc-dev-guide.rust-lang.org/llm-guidance.html\n\n## [Getting help](https://rustc-dev-guide.rust-lang.org/getting-started.html#asking-questions)\n\nThere are many ways you can get help when you're stuck. Rust has two platforms for this:\n[internals] and [rust-zulip]. It is recommended to ask for help on\nthe [rust-zulip], but any of these platforms are great ways to seek help and even\nfind a mentor! You can learn more about asking questions and getting help in the\n[Asking Questions](https://rustc-dev-guide.rust-lang.org/getting-started.html#asking-questions) chapter of the [rustc-dev-guide].\n\n## Bug reports\n\nDid a compiler error message tell you to come here? If you want to create an ICE report,\nrefer to [this section][contributing-bug-reports] and [open an issue][issue template].\n\n[rustc-dev-guide]: https://rustc-dev-guide.rust-lang.org/\n[std-dev-guide]: https://std-dev-guide.rust-lang.org/\n[contributing-bug-reports]: https://rustc-dev-guide.rust-lang.org/contributing.html#bug-reports\n[issue template]: https://github.com/rust-lang/rust/issues/new/choose\n[internals]: https://internals.rust-lang.org\n[rust-zulip]: https://rust-lang.zulipchat.com\n"
+          "preview": "# Contributing to Rust\n\nThank you for your interest in contributing to Rust! There are many ways to contribute\nand we appreciate all of them.\n\nThe best way to get started is by asking for help in the [#new\nmembers](https://rust-lang.zulipchat.com/#narrow/stream/122652-new-members)\nZulip stream. We have a lot of documentation below on how to get started on your own, but\nthe Zulip stream is the best place to *ask* for help.\n\nDocumentation for contributing to the compiler or tooling is located in the [Guide to Rustc\nDevelopment][rustc-dev-guide], commonly known as the [rustc-dev-guide]. Documentation for the\nstandard library is in the [Standard library developers Guide][std-dev-guide], commonly known as the [std-dev-guide].\n\n## Making changes to subtrees and submodules\n\nFor submodules, changes need to be made against the repository corresponding to the\nsubmodule, and not the main `rust-lang/rust` repository.\n\nFor subtrees, prefer sending a PR against the subtree's repository if it does\nnot need to be made against the main `rust-lang/rust` repository (e.g. a\nrustc-dev-guide change that does not accompany a compiler change).\n\n## About the [rustc-dev-guide]\n\nThe [rustc-dev-guide] is meant to help document how rustc –the Rust compiler– works,\nas well as to help new contributors get involved in rustc development. It is recommended\nthat you read and understand the [rustc-dev-guide] before making a contribution. This guide\ntalks about the different bots in the Rust ecosystem, the Rust development tools,\nbootstrapping, the compiler architecture, source code representation, and more.\n\n## LLM policy\n\nWe have a policy for how LLMs are allowed to be used in contributions to `rust-lang/rust`.\nYou can read it [on Forge][LLM policy].\nFor suggestions about how to use LLMs *well*, and how to review LLM-created PRs, see [the dev-guide][llm-guidance].\n\n[LLM policy]: https://forge.rust-lang.org/policies/llm-usage.html\n[llm-guidance]: https://rustc-dev-guide.rust-lang.org/llm-guidance.html\n\n## [Getting help](https://rustc-dev-guide.rust-lang.org/getting-started.html#asking-questions)\n\nThere are many ways you can get help when you're stuck. Rust has two platforms for this:\n[internals] and [rust-zulip]. It is recommended to ask for help on\nthe [rust-zulip], but any of these platforms are great ways to seek help and even\nfind a mentor! You can learn more about asking questions and getting help in the\n[Asking Questions](https://rustc-dev-guide.rust-lang.org/getting-started.html#asking-questions) chapter of the [rustc-dev-guide].\n\n## Bug reports\n\nDid a compiler error message tell you to come here? If you want to create an ICE report,\nrefer to [this section][contributing-bug-reports] and [open an issue][issue template].\n\n[rustc-dev-guide]: https://rustc-dev-guide.rust-lang.org/\n[std-dev-guide]: https://std-dev-guide.rust-lang.org/\n[contributing-bug-reports]: https://rustc-dev-guide.rust-lang.org/contributing.html#bug-reports\n[issue template]: https://github.com/rust-lang/rust/issues/new/choose\n[internals]: https://internals.rust-lang.org\n[rust-zulip]: https://rust-lang.zulipchat.com\n"
         },
         {
           "path": "README.md",
@@ -19223,7 +19223,7 @@
         "steps": [
           {
             "id": "serialize",
-            "label": "JSON serialize (inventory \u2192 SQLite)",
+            "label": "JSON serialize (inventory → SQLite)",
             "ms": 0,
             "pct": 0
           },
@@ -19242,5 +19242,872 @@
         ]
       }
     ]
+  },
+  "report": {
+    "overview": "This is rust-lang/rust, the monorepo for the Rust programming language: it contains the rustc compiler (~70 rustc_* crates under compiler/), the standard library (library/core, alloc, std), the 'bootstrap' build system invoked via ./x, the compiletest test harness, in-tree documentation including the rustc-dev-guide, and externally-maintained tool subtrees (clippy, rustfmt, miri, rust-analyzer). The rustc binary itself is a thin shell (compiler/rustc/src/main.rs) that delegates to rustc_driver_impl::run_compiler, which orchestrates parsing, macro expansion, the demand-driven query system (TyCtxt), and a pluggable codegen backend (default: LLVM). Everything — building, testing, formatting, dist — flows through the ./x bootstrap entry point rather than direct cargo invocations.",
+    "system_map": {
+      "summary": "The repo is a Cargo workspace whose members are the rustc binary crate plus ~35 in-tree tools; the compiler proper is ~70 rustc_* crates under compiler/, the standard library is a separate workspace under library/, and src/bootstrap is a self-contained build system excluded from the workspace. The rustc binary is a stub that links rustc_driver as a dylib and calls rustc_driver::main(). The heart of the compiler is the query system defined in compiler/rustc_middle/src/queries.rs and wired together in rustc_interface::passes::DEFAULT_QUERY_PROVIDERS. Build/test orchestration is bootstrap (x.py -> src/bootstrap), and CI is GitHub Actions whose job matrix is computed by the in-tree citool crate from src/ci/github-actions/jobs.yml.",
+      "claims": [
+        {
+          "claim": "The root Cargo.toml defines a workspace with members compiler/rustc, src/build_helper, src/rustdoc-json-types, the rustc-std-workspace shims, and ~35 tools under src/tools/ (compiletest, tidy, miri, clippy, rustfmt, opt-dist, etc.); src/bootstrap, compiler/rustc_codegen_cranelift, compiler/rustc_codegen_gcc, and tests/rustdoc-gui are explicitly excluded.",
+          "sources": [
+            "Cargo.toml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The rustc binary entrypoint is compiler/rustc/src/main.rs: it uses #![feature(rustc_private)] to link rustc_driver as a dylib, calls rustc_driver::override_c_allocator_in_binary!() so the whole process (including LLVM's C++ allocations) uses jemalloc, and its main() is just rustc_driver::main().",
+          "sources": [
+            "compiler/rustc/src/main.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "compiler/rustc_driver is an intentionally empty crate that re-exports rustc_driver_impl so that rustc_driver_impl can be compiled in parallel with the other rustc_* crates.",
+          "sources": [
+            "compiler/rustc_driver/src/lib.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "rustc_driver_impl::run_compiler is the primary compiler entry point: it expands @-argfiles (args::arg_expand_all), parses options (handle_options), builds session options (config::build_session_options), handles --explain, builds an interface::Config, and calls interface::run_compiler with a callback that runs the whole pipeline.",
+          "sources": [
+            "compiler/rustc_driver_impl/src/lib.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "rustc_interface::run_compiler sets the parallel/dyn-thread-safe mode, initializes the jobserver, builds the target config, loads the codegen backend (dylib or injected via Config::make_codegen_backend), builds the Session, parses --cfg/--check-cfg, builds the lint store, and runs the caller's closure inside util::run_in_thread_pool_with_globals.",
+          "sources": [
+            "compiler/rustc_interface/src/interface.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The compiler is decomposed into ~70 rustc_* crates: rustc_lexer/rustc_parse (lexing/parsing), rustc_ast/rustc_hir (AST/HIR), rustc_expand (macro expansion), rustc_resolve (name resolution), rustc_hir_typeck/rustc_hir_analysis/rustc_trait_selection (type checking/traits), rustc_borrowck, rustc_mir_build/rustc_mir_transform/rustc_mir_dataflow (MIR), rustc_monomorphize, rustc_metadata (rmeta), and rustc_codegen_ssa/rustc_codegen_llvm (codegen).",
+          "sources": [
+            "compiler/rustc_parse/src/lib.rs",
+            "compiler/rustc_interface/src/passes.rs",
+            "compiler/rustc_middle/src/queries.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The query system is declared in compiler/rustc_middle/src/queries.rs inside rustc_queries proc-macro blocks (implemented in compiler/rustc_macros/src/query.rs), which generate TyCtxt methods, provider structs, caching, and dep-graph integration; the default providers are assembled in rustc_interface::passes::DEFAULT_QUERY_PROVIDERS which calls each subcrate's provide() function.",
+          "sources": [
+            "compiler/rustc_middle/src/queries.rs",
+            "compiler/rustc_macros/src/lib.rs",
+            "compiler/rustc_interface/src/passes.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Build entry: ./x (sh), x.ps1 (Windows), or x.py all funnel to src/bootstrap/bootstrap.py, which verifies/downloads the stage0 toolchain pinned in src/stage0 (with sha256 verification of downloads), compiles the bootstrap crate, and execs it; the Rust side starts at src/bootstrap/src/bin/main.rs -> bootstrap::cli_main::main -> Flags::parse -> Config::parse.",
+          "sources": [
+            "x.py",
+            "src/bootstrap/bootstrap.py",
+            "src/stage0",
+            "src/bootstrap/src/bin/main.rs",
+            "src/bootstrap/src/cli_main.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Bootstrap staging: stage0 (downloaded beta compiler) builds stage1 rustc+std, stage1 builds stage2; output lives under build/ with downloaded tarballs cached in build/cache; the flow is documented in src/bootstrap/README.md.",
+          "sources": [
+            "src/bootstrap/README.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "library/ is its own Cargo workspace (library/Cargo.toml, resolver=1) with members std, sysroot, coretests, alloctests; library/sysroot is a dummy crate whose public dependencies (proc_macro, std, test, optional profiler_builtins) force all required crates into the distributed sysroot.",
+          "sources": [
+            "library/Cargo.toml",
+            "library/sysroot/Cargo.toml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "There are three codegen backends: rustc_codegen_llvm (in-workspace, FFI through compiler/rustc_llvm and the src/llvm-project submodule), and the workspace-excluded subtrees compiler/rustc_codegen_cranelift and compiler/rustc_codegen_gcc.",
+          "sources": [
+            "Cargo.toml",
+            "compiler/rustc_codegen_llvm/src/lib.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CI is GitHub Actions: .github/workflows/ci.yml runs a calculate_matrix job that executes `cargo run --locked calculate-job-matrix` in src/ci/citool over src/ci/github-actions/jobs.yml, then fans out matrix jobs that run src/ci/scripts/run-build-from-ci.sh; a 'bors' GitHub environment with S3/secrets is only attached for automation/bors/* branches.",
+          "sources": [
+            ".github/workflows/ci.yml",
+            "src/ci/github-actions/jobs.yml",
+            "src/ci/citool/src/main.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Distribution artifacts are produced by bootstrap dist steps (src/bootstrap/src/core/build_steps/dist.rs), packaged via src/tools/rust-installer and src/tools/build-manifest, and uploaded to S3/GitHub artifacts by CI scripts; src/tools/opt-dist performs PGO-optimized builds.",
+          "sources": [
+            "src/bootstrap/src/core/build_steps/dist.rs",
+            ".github/workflows/ci.yml"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "feature_catalog": {
+      "summary": "User-facing surface = the rustc CLI plus the ./x build CLI plus the bundled tools and libraries. rustc supports the usual compile driver flags plus --print, --explain, -Zunpretty pretty-printing, --check-cfg validation, pluggable codegen backends via -Zcodegen-backend, incremental compilation, MIR emission, and hundreds of lints. ./x exposes subcommands like build/check/test/doc/dist/fmt/miri implemented as bootstrap Steps. The repo also ships rustdoc (with JSON output), the test harness crate library/test, and subtrees for clippy/rustfmt/miri/rust-analyzer.",
+      "claims": [
+        {
+          "claim": "rustc CLI option handling lives in rustc_driver_impl: handle_options supports -Zhelp/--help early-exit modes, --explain <code> routes to handle_explain, and --print requests are served by print_crate_info before any input is required.",
+          "sources": [
+            "compiler/rustc_driver_impl/src/lib.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "--check-cfg arguments are parsed by rustc_interface::parse_check_cfg into a CheckCfg of expected cfg names/values supporting cfg(name, values(...)), any(), none(); passing any --check-cfg enables exhaustive_names and exhaustive_values by default.",
+          "sources": [
+            "compiler/rustc_interface/src/interface.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Pretty-printing/unpretty modes (-Zunpretty) are handled in rustc_driver_impl::pretty::print, with PrintExtra::NeedsAstMap running early_lint_checks through TyCtxt when an AST map is needed, and MIR emission via pretty::emit_mir when OutputType::Mir is requested.",
+          "sources": [
+            "compiler/rustc_driver_impl/src/lib.rs",
+            "compiler/rustc_driver_impl/src/pretty.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Codegen backends are pluggable: rustc_interface::util::get_codegen_backend loads a backend dylib and resolves the __rustc_codegen_backend symbol (load_backend_from_dylib), selected via -Zcodegen-backend=<name> or Config::make_codegen_backend.",
+          "sources": [
+            "compiler/rustc_interface/src/util.rs",
+            "compiler/rustc_interface/src/interface.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "rustc's lint system registers builtin lint passes through rustc_lint: register_builtins registers BuiltinCombinedPreExpansionLintPass, BuiltinCombinedEarlyLintPass, BuiltinCombinedLateLintModPass, foreign_modules, and hardwired lints into the LintStore; drivers can add more via Config::register_lints.",
+          "sources": [
+            "compiler/rustc_lint/src/lib.rs",
+            "compiler/rustc_interface/src/interface.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "-Ztime-passes is implemented by TimePassesCallbacks in rustc_driver_impl, which records total time/RSS around catch_with_exit_code(run_compiler) and prints a 'total' entry unless --print output would be corrupted.",
+          "sources": [
+            "compiler/rustc_driver_impl/src/lib.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Incremental compilation is a first-class feature: rustc_incremental persists the dep graph and query results on disk under the incremental directory (persist/{save,load,file_format,work_product}.rs) and create_and_enter_global_ctxt loads the query-result cache before running queries.",
+          "sources": [
+            "compiler/rustc_incremental/src/persist/save.rs",
+            "compiler/rustc_interface/src/passes.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "rustdoc lives in src/librustdoc with the binary crate at src/tools/rustdoc; it extern-crates the rustc_* internals (rustc_driver, rustc_interface, rustc_hir, etc.) loaded implicitly from the sysroot, and supports JSON output via src/rustdoc-json-types.",
+          "sources": [
+            "src/librustdoc/lib.rs",
+            "src/rustdoc-json-types/lib.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The standard library ships core (dependency-free primitives), alloc, std (with a sys/ platform-abstraction layer containing pal/fs/net/thread modules), plus supporting crates: test (built-in test harness), backtrace, std_detect, portable-simd, panic_abort/panic_unwind, unwind, and compiler-builtins.",
+          "sources": [
+            "library/core/src/lib.rs",
+            "library/std/src/lib.rs",
+            "library/Cargo.toml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "./x subcommands are parsed by bootstrap's Flags/Subcommand (src/bootstrap/src/core/config) and dispatched to Step implementations under src/bootstrap/src/core/build_steps/ (check.rs, clean.rs, compile.rs, dist.rs, doc.rs, format.rs, install.rs, llvm.rs, perf.rs, run.rs, setup.rs, test.rs, tool.rs, vendor.rs, gcc.rs, clippy.rs).",
+          "sources": [
+            "src/bootstrap/src/cli_main.rs",
+            "src/bootstrap/src/core/builder/mod.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "compiletest (src/tools/compiletest) is the compiler test runner supporting 15 TestModes: pretty, debuginfo, codegen, rustdoc-html, rustdoc-json, codegen-units, incremental, run-make, ui, rustdoc-js, mir-opt, assembly, coverage-map, coverage-run, crashes.",
+          "sources": [
+            "src/tools/compiletest/src/common.rs",
+            "src/tools/compiletest/src/runtest.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "tidy (src/tools/tidy) is the repo style/consistency checker run by `./x test tidy`: it enforces alphabetical-order markers (tidy-alphabetical-start/end), license/deps rules (deps.rs, extdeps.rs), error-code registration, UI test conventions, unstable-book entries, target policy, and more via per-check modules.",
+          "sources": [
+            "src/tools/tidy/src/main.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Compiler diagnostics are emitted through rustc_errors' DiagCtxt with messages modeled as rustc_error_messages::DiagMessage — either a plain Str or an Inline Fluent message; register_functions adds custom Fluent functions like STREQ. (No .ftl files exist in the tree; messages are inline.)",
+          "sources": [
+            "compiler/rustc_error_messages/src/lib.rs"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "data_flow": {
+      "summary": "Data enters as a source file (or string) plus CLI options, is lexed/parsed into an AST, expanded and lowered to HIR, then nearly everything else is demand-driven through the TyCtxt query system: type checking, trait solving, borrow checking, MIR construction/transforms, monomorphization, and finally codegen through a CodegenBackend trait to object files and a linked binary. Cross-crate state travels via rustc_metadata .rmeta blobs in rlibs/dylibs; incremental state is a serialized dep-graph+query cache; diagnostics flow out through rustc_errors' DiagCtxt. Bootstrap's data flow is stage0 binaries -> stage1 artifacts -> stage2 artifacts under build/.",
+      "claims": [
+        {
+          "claim": "Input boundary: run_compiler builds an interface::Config from CLI matches — Input::File/Str, output dir/file, crate_cfg/crate_check_cfg, and an optional FileLoader; the default RealFileLoader reads from disk but the hook exists for e.g. rust-analyzer VFS.",
+          "sources": [
+            "compiler/rustc_driver_impl/src/lib.rs",
+            "compiler/rustc_interface/src/interface.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Text -> tokens -> AST: rustc_lexer produces tokens, rustc_parse (new_parser_from_source_str / passes::parse) produces ast::Crate; only the crate root is parsed initially, submodules are parsed during macro expansion.",
+          "sources": [
+            "compiler/rustc_parse/src/lib.rs",
+            "compiler/rustc_driver_impl/src/lib.rs",
+            "src/doc/rustc-dev-guide/src/overview.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "AST -> HIR: create_and_enter_global_ctxt forces tcx.resolver_for_lowering() which runs rustc_resolve + rustc_ast_lowering to produce resolutions and lowered HIR inside the GlobalCtxt; the 'tcx lifetime originates in this function's gcx_cell/arena setup.",
+          "sources": [
+            "compiler/rustc_interface/src/passes.rs",
+            "compiler/rustc_driver_impl/src/lib.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "All mid/late compilation state is owned by the query system: queries.rs declares each query's key/value types and modifiers (caching, arena allocation, incremental), rustc_macros::rustc_queries generates TyCtxt accessors, and tcx.ensure_ok().analysis(()) drives typeck/borrowck/MIR construction.",
+          "sources": [
+            "compiler/rustc_middle/src/queries.rs",
+            "compiler/rustc_interface/src/passes.rs",
+            "compiler/rustc_driver_impl/src/lib.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Provider wiring: each rustc_* crate exposes a provide() that fills fields of the generated Providers table; DEFAULT_QUERY_PROVIDERS chains ~25 such provide() calls, then codegen_backend.provide() and the Config::override_queries hook can overwrite individual providers before the GlobalCtxt is created.",
+          "sources": [
+            "compiler/rustc_interface/src/passes.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Codegen boundary: Linker::codegen_and_build_linker runs the backend's codegen queries producing object files/modules, then linker.link(sess, incr_comp_session, codegen_backend) runs outside the GlobalCtxt so the 'tcx arena can be freed earlier.",
+          "sources": [
+            "compiler/rustc_driver_impl/src/lib.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Backend abstraction: rustc_codegen_ssa::traits::CodegenBackend defines the contract (name, init, target_config, provide, codegen methods); rustc_codegen_llvm::LlvmCodegenBackend is the default implementation bridging to LLVM via compiler/rustc_llvm FFI.",
+          "sources": [
+            "compiler/rustc_codegen_ssa/src/traits/backend.rs",
+            "compiler/rustc_codegen_llvm/src/lib.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Cross-crate metadata: rustc_metadata encodes crate metadata (EncodedMetadata) into .rmeta sections inside rlibs/dylibs and reads dependencies back through creader.rs/locator.rs/native_libs.rs, including the MetadataLoaderDyn interface the backend supplies.",
+          "sources": [
+            "compiler/rustc_metadata/src/creader.rs",
+            "compiler/rustc_codegen_ssa/src/traits/backend.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Incremental persistence: rustc_incremental::persist::{load,save,file_format,work_product,fs} manage an on-disk dep graph and query-result cache; create_and_enter_global_ctxt calls setup_dep_graph and rustc_incremental::load_query_result_cache before queries run.",
+          "sources": [
+            "compiler/rustc_incremental/src/persist/save.rs",
+            "compiler/rustc_interface/src/passes.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Dependency info output: passes::write_dep_info and passes::write_interface run inside the global-ctxt closure; Session exposes env_depinfo/file_depinfo that a driver's Config::track_state callback can populate for dep tracking.",
+          "sources": [
+            "compiler/rustc_driver_impl/src/lib.rs",
+            "compiler/rustc_interface/src/passes.rs",
+            "compiler/rustc_interface/src/interface.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Diagnostics flow: everything reports through rustc_errors Diag/DiagCtxt built on DiagMessage (Str or inline Fluent); early errors before a Session exists go through EarlyDiagCtxt, and ICEs are captured by install_ice_hook writing a report to config.ice_file.",
+          "sources": [
+            "compiler/rustc_error_messages/src/lib.rs",
+            "compiler/rustc_driver_impl/src/lib.rs",
+            "compiler/rustc_interface/src/interface.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Bootstrap data flow: bootstrap.py reads src/stage0 for pinned toolchain hashes and downloads from static.rust-lang.org/ci-artifacts; the Rust bootstrap reads bootstrap.toml (defaults in src/bootstrap/defaults, schema in bootstrap.example.toml) and produces staged artifacts under build/.",
+          "sources": [
+            "src/bootstrap/bootstrap.py",
+            "src/stage0",
+            "bootstrap.example.toml",
+            "src/bootstrap/README.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Feature-gate state flows from rustc_feature's unstable.rs/accepted.rs/removed.rs tables into the session; tcx.report_unused_features() runs after codegen setup and -Zmetrics-dir dumps feature-usage metrics via dump_feature_usage_metrics.",
+          "sources": [
+            "compiler/rustc_feature/src/unstable.rs",
+            "compiler/rustc_driver_impl/src/lib.rs"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "behavior_traces": {
+      "summary": "Three flows traced end-to-end. (1) ./x build: x.py -> bootstrap.py downloads stage0 per src/stage0 -> builds bootstrap binary -> cli_main::main -> Flags::parse -> Config::parse -> out/lock -> Builder runs Step descriptions. (2) rustc hello.rs: main.rs -> rustc_driver_impl::main -> run_compiler -> interface::run_compiler -> parse -> create_and_enter_global_ctxt -> resolver_for_lowering -> analysis -> Linker::codegen_and_build_linker -> link. (3) ./x test: bootstrap test steps build compiletest -> run_tests walks suite dirs -> directive parsing -> per-mode runtest runners -> snapshot diffing. CI is a fourth: ci.yml -> citool matrix -> run-build-from-ci.sh -> x.",
+      "claims": [
+        {
+          "claim": "Build startup order: x.py adds src/bootstrap to sys.path and calls bootstrap.main(); bootstrap.py verifies python>=3.x, reads src/stage0 pins, downloads stage0 rustc/cargo tarballs with sha256 verification into build/cache, compiles the bootstrap crate, then execs it.",
+          "sources": [
+            "x.py",
+            "src/bootstrap/bootstrap.py",
+            "src/stage0"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Bootstrap main order: src/bootstrap/src/bin/main.rs -> cli_main::main installs a panic hook that prints the active StepStack, parses Flags then Config, acquires a lock file at config.out.join(\"lock\") unless bypass_bootstrap_lock, then runs the Builder.",
+          "sources": [
+            "src/bootstrap/src/bin/main.rs",
+            "src/bootstrap/src/cli_main.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Step dispatch: Builder::get_step_descriptions uses the describe! macro per Kind to map CLI paths to Step impls; run_step_descriptions executes each matching Step's run() in dependency order (builder/mod.rs).",
+          "sources": [
+            "src/bootstrap/src/core/builder/mod.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "rustc process startup order: rustc_driver_impl::main -> init_rustc_env_logger -> signal_handler::install -> TimePassesCallbacks::default -> install_ice_hook(DEFAULT_BUG_REPORT_URL) -> install_ctrlc_handler (sets rustc_const_eval::CTRL_C_RECEIVED then exits after 100ms) -> catch_with_exit_code(run_compiler).",
+          "sources": [
+            "compiler/rustc_driver_impl/src/lib.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Compile pipeline order inside run_compiler: arg_expand_all -> handle_options -> build_session_options -> make_input/make_output -> interface::run_compiler -> passes::parse -> (optional pretty-print early exit) -> create_and_enter_global_ctxt -> resolver_for_lowering -> write_dep_info/write_interface -> tcx.ensure_ok().analysis -> Linker::codegen_and_build_linker -> linker.link.",
+          "sources": [
+            "compiler/rustc_driver_impl/src/lib.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Session construction order inside interface::run_compiler: set_dyn_thread_safe_mode -> jobserver::initialize -> build_target_config -> build_early_session -> get_codegen_backend (dylib __rustc_codegen_backend or make_codegen_backend) -> codegen_backend.init -> build_session -> target_config -> parse_cfg/add_configuration -> parse_check_cfg -> lint store via register_lints.",
+          "sources": [
+            "compiler/rustc_interface/src/interface.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "GlobalCtxt creation order in create_and_enter_global_ctxt: pre_configure_attrs -> get_crate_name -> collect_crate_types -> StableCrateId::new -> build_output_filenames -> setup_dep_graph -> CStore/Definitions/untracked construction -> load_query_result_cache -> clone DEFAULT_QUERY_PROVIDERS -> codegen_backend.provide -> override_queries hook -> TyCtxt::create_global_ctxt with OnceLock gcx_cell and WorkerLocal arenas.",
+          "sources": [
+            "compiler/rustc_interface/src/passes.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Test-run order: ./x test -> bootstrap build_steps/test.rs builds and runs the compiletest binary -> compiletest::run_tests installs a panic hook, raises the fd limit, sets __COMPAT_LAYER=RunAsInvoker on Windows, walks tests/<suite> dirs collecting files -> directives parsing (FileDirectives/DirectivesCache) -> executor schedules CollectedTests -> runtest::<mode> modules execute compile/run and diff .stderr/.stdout snapshots.",
+          "sources": [
+            "src/tools/compiletest/src/lib.rs",
+            "src/tools/compiletest/src/runtest.rs",
+            "src/bootstrap/src/core/build_steps/test.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CI job order: ci.yml 'calculate_matrix' runs citool calculate-job-matrix over jobs.yml -> each matrix job checks out, runs ~15 setup scripts under src/ci/scripts (free-disk-space, install-sccache/clang/ninja/mingw, verify-channel, verify-line-endings, verify-stable-version-number) -> builds citool -> run-build-from-ci.sh executes the build -> doc artifacts to GitHub, dist artifacts to S3, metrics to DataDog via citool upload-build-metrics.",
+          "sources": [
+            ".github/workflows/ci.yml",
+            "src/ci/github-actions/jobs.yml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Incremental compile ordering: setup_dep_graph decides whether incremental is enabled and returns an IncrCompSession; dep_graph.assert_ignored() runs during HIR construction; load_query_result_cache reads the on-disk cache; after codegen, persist::save writes the new dep graph and work products.",
+          "sources": [
+            "compiler/rustc_interface/src/passes.rs",
+            "compiler/rustc_incremental/src/persist/save.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Early-exit branches in run_compiler happen in a fixed order: --explain, -Whelp (describe_lints after session/lint registration), help_only, --print (print_crate_info), missing input (fatal 'no input filename given'), -Zls metadata listing, -Zlink-only process_rlink, then pretty-printing, then parse_crate_root_only.",
+          "sources": [
+            "compiler/rustc_driver_impl/src/lib.rs"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "testing_signals": {
+      "summary": "Testing is dominated by compiletest-driven suites under tests/ (~27k .rs files; tests/ui alone has ~21k), organized by 15 TestModes with //@-style file directives. Unit tests live inside compiler crates as #[cfg(test)] modules and in library/coretests + alloctests. tidy enforces repo-wide hygiene. CI runs everything via the citool-computed matrix in jobs.yml, and bootstrap itself has python and Rust self-tests. Coverage tests exercise LLVM source-based coverage; rustdoc has html/json/js/gui suites.",
+      "claims": [
+        {
+          "claim": "tests/ contains suites: ui, ui-fulldeps, mir-opt, codegen-llvm, codegen-units, assembly-llvm, coverage, coverage-run-rustdoc, crashes, debuginfo, incremental, pretty, run-make, run-make-cargo, rustdoc-html, rustdoc-js, rustdoc-js-std, rustdoc-json, rustdoc-gui, build-std; tests/ui alone contains ~21,000 .rs files.",
+          "sources": [
+            "tests",
+            "tests/COMPILER_TESTS.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "compiletest's TestMode enum (common.rs) maps each suite to a mode; each mode has a runner module under src/tools/compiletest/src/runtest/ (ui.rs, mir_opt.rs, codegen.rs, incremental.rs, run_make.rs, coverage.rs, debuginfo.rs, rustdoc.rs, rustdoc_json.rs, js_doc.rs, crashes.rs, pretty.rs, assembly.rs, codegen_units.rs).",
+          "sources": [
+            "src/tools/compiletest/src/common.rs",
+            "src/tools/compiletest/src/runtest.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Test files declare behavior via directives parsed by src/tools/compiletest/src/directives.rs: KNOWN_DIRECTIVE_NAMES_SET in directive_names.rs, a DIRECTIVE_HANDLERS_MAP in directives/handlers.rs, ignore-*/only-*/needs-* cfg conditions precompiled in DirectivesCache, and AuxProps for aux builds.",
+          "sources": [
+            "src/tools/compiletest/src/directives.rs",
+            "src/tools/compiletest/src/directives/handlers.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "UI tests compare compiler output against checked-in .stderr/.stdout/.svg snapshots; compute_diff in runtest produces line diffs and `--bless` regenerates expectations (per AGENTS.md, bless runs only after a human authors new diagnostic text).",
+          "sources": [
+            "src/tools/compiletest/src/runtest.rs",
+            "AGENTS.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Compiler crates carry in-tree unit tests: e.g. compiler/rustc_interface/src/tests.rs, compiler/rustc_middle/src/tests.rs, compiler/rustc_feature/src/tests.rs, rustc_target/src/tests.rs, compiletest/src/tests.rs; bootstrap has src/bootstrap/bootstrap_test.py and builder/tests.rs.",
+          "sources": [
+            "compiler/rustc_interface/src/tests.rs",
+            "src/bootstrap/bootstrap_test.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Standard library tests live in separate crates in the library workspace: coretests and alloctests exercise core/alloc without running inside std; library/test is the user-facing #[test] harness crate.",
+          "sources": [
+            "library/Cargo.toml",
+            "library/test/src/lib.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "tidy acts as a repo-wide lint gate: src/tools/tidy/src/main.rs spawns per-check threads (style, alphabetical ordering, deps/extdeps allowlist, error_codes, features, ui_tests conventions, target_policy, unit_tests placement, edition, mir_opt_tests) runnable via ./x test tidy.",
+          "sources": [
+            "src/tools/tidy/src/main.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "run-make tests are driven by the src/tools/run-make-support library and live in tests/run-make and tests/run-make-cargo; coverage tests use the coverage-map/coverage-run modes sharing tests/coverage files.",
+          "sources": [
+            "src/tools/compiletest/src/runtest.rs",
+            "src/tools/compiletest/src/common.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CI executes tests through the matrix in src/ci/github-actions/jobs.yml computed by src/ci/citool (calculate-job-matrix), with the actual build/test run delegated to src/ci/scripts/run-build-from-ci.sh inside ci.yml's 'run the build' step.",
+          "sources": [
+            ".github/workflows/ci.yml",
+            "src/ci/github-actions/jobs.yml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "rustdoc-gui tests are a separate excluded workspace (tests/rustdoc-gui in Cargo.toml exclude list) driven by src/tools/rustdoc-gui-test and compiletest's rustdoc_gui_test module.",
+          "sources": [
+            "Cargo.toml",
+            "src/tools/compiletest/src/lib.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "tests/crashes is a dedicated ICE-regression suite, and tests/debuginfo is skipped on emscripten targets (run_tests special-cases TestMode::DebugInfo for emscripten).",
+          "sources": [
+            "src/tools/compiletest/src/lib.rs",
+            "src/tools/compiletest/src/common.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Cross/remote testing is supported by src/tools/remote-test-client and remote-test-server, and test-float-parse is an optimized dev/release binary used to validate float parsing.",
+          "sources": [
+            "Cargo.toml"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "risk_map": {
+      "summary": "The dominant risks are soundness and supply-chain. AGENTS.md explicitly classifies the query system, type checking, trait solving, MIR, borrow checking, const eval, layout, and codegen as soundness-sensitive where LLM implementation is banned. The compiler dlopens codegen backends and proc-macro dylibs, executes test binaries, downloads stage0 toolchains, and deserializes incremental caches — all trust boundaries. Several giant files (runtest.rs ~3.2k lines, queries.rs ~2.9k) concentrate coupling, and externally-maintained subtrees must not be edited in-place.",
+      "claims": [
+        {
+          "claim": "AGENTS.md bans LLM implementation in soundness-sensitive areas — explicitly naming the query system, type checking, trait solving, MIR construction/optimization, borrow checking, const evaluation, normalization/semantic caches, layout/validity, and codegen — and requires a failing regression test before any bug fix.",
+          "sources": [
+            "AGENTS.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Codegen backend loading is a dlopen boundary: load_backend_from_dylib uses rustc_metadata::load_symbol_from_dylib to resolve __rustc_codegen_backend from a path derived from -Zcodegen-backend or the sysroot; a malicious/mismatched dylib executes arbitrary code in-process.",
+          "sources": [
+            "compiler/rustc_interface/src/util.rs",
+            "compiler/rustc_metadata/src/creader.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "bootstrap.py downloads stage0 compilers and CI LLVM over HTTPS and verifies sha256 against src/stage0 checksums; a stale/unchecksummed URL raises but any checksum drift blocks builds entirely (single trust anchor).",
+          "sources": [
+            "src/bootstrap/bootstrap.py",
+            "src/stage0"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The incremental on-disk cache (dep graph + query results + work products) is a hand-rolled binary format in rustc_incremental::persist::file_format — corruption or version skew here miscompiles incrementally or crashes; load_query_result_cache silently consumes it at GlobalCtxt creation.",
+          "sources": [
+            "compiler/rustc_incremental/src/persist/save.rs",
+            "compiler/rustc_interface/src/passes.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "ICE handling writes a crash report to config.ice_file and installs a ctrlc handler that sets rustc_const_eval::CTRL_C_RECEIVED then hard-exits after 100ms — a safety valve that can truncate in-flight diagnostic/report writes.",
+          "sources": [
+            "compiler/rustc_driver_impl/src/lib.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "tidy's main() sets RUSTC_BOOTSTRAP=1 in-process to let Cargo read unstable manifest features — an env var that also unlocks unstable rustc features if it leaks into other subprocesses.",
+          "sources": [
+            "src/tools/tidy/src/main.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Externally maintained subtrees (src/tools/cargo, clippy, rustfmt, miri, rust-analyzer, rustc_codegen_cranelift/gcc, llvm-project) are banned from in-place edits; CONTRIBUTING.md and AGENTS.md route changes to their owning repos — a major trap for agents editing the wrong tree.",
+          "sources": [
+            "CONTRIBUTING.md",
+            "AGENTS.md",
+            "Cargo.toml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Concurrency blast radius: rustc_data_structures::sync::set_dyn_thread_safe_mode must be called before any Lock creation, and the jobserver is initialized from inherited MAKEFLAGS fds — misordered init or a misconfigured jobserver produces subtle parallel-frontend failures (warns 'build environment is likely misconfigured').",
+          "sources": [
+            "compiler/rustc_interface/src/interface.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Hotspots of coupling: compiler/rustc_driver_impl/src/lib.rs (1686 lines) sequences the entire pipeline; rustc_interface/src/passes.rs (1523) owns provider wiring and GlobalCtxt construction; rustc_middle/src/queries.rs (2905) is a macro-dense registry every subcrate's provide() feeds into — edits there have compiler-wide blast radius.",
+          "sources": [
+            "compiler/rustc_driver_impl/src/lib.rs",
+            "compiler/rustc_interface/src/passes.rs",
+            "compiler/rustc_middle/src/queries.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "compiletest executes compiled test binaries and on Windows mutates the process-global error mode (SetErrorMode SEM_FAILCRITICALERRORS|SEM_NOGPFAULTERRORBOX) plus sets __COMPAT_LAYER=RunAsInvoker — global state that is inherited by all child test processes.",
+          "sources": [
+            "src/tools/compiletest/src/runtest.rs",
+            "src/tools/compiletest/src/lib.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "rustc_parse asserts at compile time that rustc_lexer, rustc_span, unicode-normalization, and unicode-width all agree on UNICODE_VERSION — dependency version drift here is a hard panic, so unicode-crate bumps must be coordinated.",
+          "sources": [
+            "compiler/rustc_parse/src/lib.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The jemalloc override in compiler/rustc/src/main.rs replaces malloc for the whole process including LLVM's C++ allocations via jemalloc-sys's override_allocator_on_supported_platforms feature — allocator experiments must go through this mechanism, not #[global_allocator], or C/Rust allocator mixing occurs across the rustc<->llvm dylib boundary.",
+          "sources": [
+            "compiler/rustc/src/main.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The `bors` CI environment holds AWS/S3 secrets; ci.yml deliberately scopes it to automation/bors/* branches on rust-lang/rust only — misconfigured branch rules or repo checks would expose artifact-upload credentials.",
+          "sources": [
+            ".github/workflows/ci.yml"
+          ],
+          "kind": "inference"
+        },
+        {
+          "claim": "Session/env leakage: Session exposes env_depinfo/file_depinfo for drivers to record env vars and files the crate depends on; any env var read through the env_var_os query becomes a rebuild trigger — surprising cache invalidations if drivers over-record.",
+          "sources": [
+            "compiler/rustc_interface/src/interface.rs",
+            "compiler/rustc_interface/src/passes.rs"
+          ],
+          "kind": "inference"
+        }
+      ]
+    },
+    "extension_points": {
+      "summary": "rustc is unusually extensible: the CodegenBackend trait supports drop-in backends loaded as dylibs, Config exposes override_queries/register_lints/file_loader/make_codegen_backend/track_state/psess_created hooks for custom drivers, and the query system is a registry where adding a query is a declaration plus a provider. Bootstrap adds steps via the Step trait + describe! macro; compiletest adds modes via the TestMode enum + a runtest module + directives; tidy adds checks as modules; new targets are TOML-less spec modules; lints, features, attributes, and diagnostics are all declare-and-register tables.",
+      "claims": [
+        {
+          "claim": "New codegen backend: implement rustc_codegen_ssa::traits::CodegenBackend (name, init, target_config, provide, codegen/link methods) and expose it via the __rustc_codegen_backend symbol in a dylib loadable by -Zcodegen-backend, or inject it via Config::make_codegen_backend in a custom driver.",
+          "sources": [
+            "compiler/rustc_codegen_ssa/src/traits/backend.rs",
+            "compiler/rustc_interface/src/util.rs",
+            "compiler/rustc_interface/src/interface.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Custom drivers can override individual queries through Config::override_queries (fn(&Session, &mut Providers)) invoked after codegen_backend.provide in create_and_enter_global_ctxt — the mechanism rustc tools use to intercept analysis.",
+          "sources": [
+            "compiler/rustc_interface/src/interface.rs",
+            "compiler/rustc_interface/src/passes.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New queries: add a `query` block in compiler/rustc_middle/src/queries.rs with key/value types and modifiers; rustc_macros::rustc_queries generates the TyCtxt accessor and Providers field; implement the provider fn and register it in the owning crate's provide() chained into DEFAULT_QUERY_PROVIDERS.",
+          "sources": [
+            "compiler/rustc_middle/src/queries.rs",
+            "compiler/rustc_macros/src/lib.rs",
+            "compiler/rustc_interface/src/passes.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New lints: declare_lint!/declare_lint_pass!/impl_lint_pass from rustc_lint_defs, implement an EarlyLintPass or LateLintPass in rustc_lint, and register via register_builtins' lint_vec() lists; drivers can add out-of-tree lints through Config::register_lints.",
+          "sources": [
+            "compiler/rustc_lint/src/lib.rs",
+            "compiler/rustc_interface/src/interface.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Driver hooks in interface::Config: file_loader (custom source loading, designed for rust-analyzer's VFS), psess_created (mutate ParseSess), track_state (record env/file deps into sess.env_depinfo/file_depinfo), extra_symbols (pre-interned symbols after PREDEFINED_SYMBOLS_COUNT), using_internal_features.",
+          "sources": [
+            "compiler/rustc_interface/src/interface.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New bootstrap step: implement the Step trait (run/should_run/make_run metadata) and list it in Builder::get_step_descriptions' describe! macro for the relevant Kind; step bodies live in src/bootstrap/src/core/build_steps/.",
+          "sources": [
+            "src/bootstrap/src/core/builder/mod.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New compiletest suite/mode: add a TestMode variant in common.rs, a runner module under runtest/ (mod list is tidy-alphabetized), directive names in directives/directive_names.rs, and handlers in directives/handlers.rs' DIRECTIVE_HANDLERS_MAP.",
+          "sources": [
+            "src/tools/compiletest/src/common.rs",
+            "src/tools/compiletest/src/runtest.rs",
+            "src/tools/compiletest/src/directives/handlers.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New tidy check: add a module in src/tools/tidy/src/ and spawn it from main.rs' scoped-thread section; existing examples cover style, deps, extdeps allowlists, ui_tests conventions, target_policy, edition, and alphabetical ordering.",
+          "sources": [
+            "src/tools/tidy/src/main.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New compiler flag: add entries in rustc_session's options table (compiler/rustc_session/src/options.rs and options/ submodules); dep_tracking macros (hash_opt!/insert!) tie each option into incremental-crate-hash computation, and untracked options are marked [UNTRACKED]/[TRACKED_NO_CRATE_HASH].",
+          "sources": [
+            "compiler/rustc_session/src/options.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New target: add a spec module under compiler/rustc_target/src/spec/targets/ (335 existing target modules) — spec/json.rs also supports JSON target descriptions loaded at runtime.",
+          "sources": [
+            "compiler/rustc_target/src/spec/mod.rs",
+            "compiler/rustc_target/src/spec/json.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New language feature: register it in rustc_feature/src/unstable.rs (and move to accepted.rs/removed.rs on stabilization/removal); builtin attributes live in builtin_attrs.rs.",
+          "sources": [
+            "compiler/rustc_feature/src/unstable.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New diagnostics: derive Diagnostic/Subdiagnostic via rustc_macros' diagnostics module and use inline Fluent DiagMessage strings; rustc_error_messages::register_functions exposes custom Fluent functions (e.g. STREQ).",
+          "sources": [
+            "compiler/rustc_macros/src/lib.rs",
+            "compiler/rustc_error_messages/src/lib.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New CI job: edit src/ci/github-actions/jobs.yml (runner anchors like &job-linux-4c plus job entries); citool's calculate-job-matrix turns it into the matrix consumed by ci.yml — ci.yml itself says to modify jobs.yml rather than the workflow.",
+          "sources": [
+            ".github/workflows/ci.yml",
+            "src/ci/github-actions/jobs.yml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Custom rustc-like binaries: link rustc_driver (dylib) and call rustc_driver_impl::run_compiler(at_args, callbacks) with a Callbacks impl (config/after_crate_root_parsing/after_expansion/after_analysis) — the pattern used by clippy/rustdoc-style drivers, with rustc_driver::main as the minimal example.",
+          "sources": [
+            "compiler/rustc_driver_impl/src/lib.rs",
+            "compiler/rustc_driver/src/lib.rs"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_handoff": {
+      "summary": "AGENTS.md is the controlling document and is unusually strict: a named human reviewer must be named in-conversation before any edit, certain text categories (PR text, diagnostics, doc prose) are prohibited for LLMs, bug fixes require an observed failing test first, and all soundness-sensitive implementation is banned outright — test-only work is allowed there. External subtrees must be routed upstream. Operationally: use ./x for everything (never cargo directly), ./x fmt for formatting, ./x test tidy for style gates, bootstrap.toml for config, and expect builds/tests to run under build/. Read the in-tree rustc-dev-guide (src/doc/rustc-dev-guide) for architecture.",
+      "claims": [
+        {
+          "claim": "Read AGENTS.md first: it defines a gating protocol — external-repo routing check, prohibited-text check, named-reviewer requirement — that must be applied before ANY repository edit, including tests, plus a test-first rule and a soundness classification before implementation.",
+          "sources": [
+            "AGENTS.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Never invoke cargo directly for builds/tests in this repo; ./x (x.py/x/x.ps1) is the entry point per AGENTS.md and src/bootstrap/README.md. Formatting is `./x fmt`, not rustfmt; mechanical rewrites must use an existing tool (e.g. `./x test tidy --bless`).",
+          "sources": [
+            "AGENTS.md",
+            "x.py",
+            "src/bootstrap/README.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Do not edit externally maintained subtrees/submodules in place — Cargo, Clippy, rustfmt, Miri, rust-analyzer, rustc_codegen_cranelift/gcc, src/llvm-project; CONTRIBUTING.md's 'Making changes to subtrees and submodules' section routes those changes to their owning repositories.",
+          "sources": [
+            "CONTRIBUTING.md",
+            "AGENTS.md",
+            "Cargo.toml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Configuration: copy bootstrap.example.toml to bootstrap.toml (or run ./configure / ./x setup); the change-id field maps to src/bootstrap/src/utils/change_tracker.rs and warnings appear when it lags; profiles live in src/bootstrap/defaults.",
+          "sources": [
+            "bootstrap.example.toml",
+            "configure",
+            "src/bootstrap/src/cli_main.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Architecture orientation docs live in-tree at src/doc/rustc-dev-guide (overview.md covers the compile pipeline); tests/COMPILER_TESTS.md redirects test-harness questions to the dev-guide's testing chapters.",
+          "sources": [
+            "src/doc/rustc-dev-guide/src/overview.md",
+            "tests/COMPILER_TESTS.md",
+            "CONTRIBUTING.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "For bug fixes: add or find a failing test and observe the failure (no --bless) before touching implementation; if the affected area is soundness-sensitive (queries, typeck, traits, MIR, borrowck, const eval, layout, codegen), STOP after the test and route to #llm-mentoring on Zulip.",
+          "sources": [
+            "AGENTS.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Diagnostic-message edits are prohibited text: an agent may not author or rewrite user-facing diagnostic wording or .stderr expectations; after a human writes the message, snapshots may be regenerated mechanically with the existing --bless flow.",
+          "sources": [
+            "AGENTS.md",
+            "src/tools/compiletest/src/runtest.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Keep tidy-alphabetical-start/end regions sorted (seen in Cargo.toml, lib.rs files, runtest.rs mod lists); tidy enforces this plus style/edition/deps rules — run ./x test tidy before considering a change done.",
+          "sources": [
+            "Cargo.toml",
+            "src/tools/tidy/src/main.rs",
+            "src/tools/compiletest/src/runtest.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Bootstrap acquires a lock at build-dir `out/lock` (with holder PID) so concurrent ./x invocations serialize; bypass_bootstrap_lock exists but concurrent builds otherwise block.",
+          "sources": [
+            "src/bootstrap/src/cli_main.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "When adding rustc flags/queries/lints/targets, the conventions are registry-style: options.rs tables, queries.rs blocks + provide(), lint_vec() lists in rustc_lint, spec/targets modules — follow the surrounding pattern rather than inventing new wiring.",
+          "sources": [
+            "compiler/rustc_session/src/options.rs",
+            "compiler/rustc_middle/src/queries.rs",
+            "compiler/rustc_lint/src/lib.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "First files to read for compiler work: compiler/rustc_driver_impl/src/lib.rs (pipeline order), compiler/rustc_interface/src/interface.rs (Config/hooks/session build), compiler/rustc_interface/src/passes.rs (providers/GlobalCtxt), compiler/rustc_middle/src/queries.rs (query registry).",
+          "sources": [
+            "compiler/rustc_driver_impl/src/lib.rs",
+            "compiler/rustc_interface/src/interface.rs",
+            "compiler/rustc_interface/src/passes.rs",
+            "compiler/rustc_middle/src/queries.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CLAUDE.md simply defers to AGENTS.md (@AGENTS.md); the LLM usage policy it cites (forge.rust-lang.org/policies/llm-usage.html) requires disclosure authored by the human and forbids Co-Authored-By trailers.",
+          "sources": [
+            "CLAUDE.md",
+            "AGENTS.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CI changes go in src/ci/github-actions/jobs.yml not ci.yml; PR builds lack the 'bors' environment so secret-dependent steps are auto-skipped — validate job changes via citool rather than editing the workflow.",
+          "sources": [
+            ".github/workflows/ci.yml",
+            "src/ci/github-actions/jobs.yml"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_prompt": "You are working in rust-lang/rust, the monorepo for the Rust language: the rustc compiler (~70 rustc_* crates under compiler/), the standard library (library/{core,alloc,std,test,...}), the bootstrap build system (src/bootstrap), the compiletest harness (src/tools/compiletest), the rustc-dev-guide (src/doc/rustc-dev-guide), and externally-maintained tool subtrees (src/tools/{cargo,clippy,rustfmt,miri,rust-analyzer}, compiler/rustc_codegen_{cranelift,gcc}, src/llvm-project).\n\nFIRST: read AGENTS.md in full and obey it. Key gates before ANY edit (including tests): route externally-maintained subtrees to their own repos; never author PR text, docs, diagnostic messages, or .stderr expectations (prohibited text); a named human reviewer must be named in-conversation. For bugs: add/find a failing test and observe the failure before implementing. Soundness-sensitive areas — the query system, type checking, trait solving, MIR, borrow checking, const eval, layout/validity, codegen — are banned for LLM implementation: do the test-only part, classify, and STOP, pointing to #llm-mentoring on Zulip.\n\nHOW TO BUILD/TEST: never use cargo directly. ./x is the entry point (x.py -> src/bootstrap/bootstrap.py downloads the stage0 toolchain pinned in src/stage0, builds bootstrap, runs it). Examples: ./x check library/std, ./x test tests/ui --test-args <filter>, ./x test tidy, ./x fmt. Config is bootstrap.toml (see bootstrap.example.toml). Outputs go under build/.\n\nCOMPILER ARCHITECTURE: compiler/rustc/src/main.rs -> rustc_driver::main() -> rustc_driver_impl::run_compiler: arg_expand_all -> handle_options -> build_session_options -> interface::run_compiler (session, codegen backend dylib via -Zcodegen-backend / __rustc_codegen_backend, lint store) -> passes::parse -> create_and_enter_global_ctxt (resolver_for_lowering, dep graph, incremental cache, Providers table) -> tcx.ensure_ok().analysis -> Linker::codegen_and_build_linker -> linker.link. Nearly all compiler state is demand-driven queries declared in compiler/rustc_middle/src/queries.rs (rustc_queries proc macro), with providers registered through each crate's provide() in rustc_interface::passes::DEFAULT_QUERY_PROVIDERS. Driver extension hooks live on rustc_interface::Config: override_queries, register_lints, file_loader, make_codegen_backend, track_state.\n\nTESTING: tests/<suite> dirs run via compiletest TestModes (ui, mir-opt, codegen, assembly, incremental, run-make, coverage, debuginfo, crashes, rustdoc-*). Test files carry //@ directives. Snapshot updates use --bless only after a human authors the message text.\n\nTRAPS: don't edit subtrees; keep tidy-alphabetical regions sorted; don't hand-write diagnostics; don't implement in soundness areas; don't bypass ./x; incremental state and proc-macro dylibs are trust boundaries. When unsure, consult src/doc/rustc-dev-guide."
+  },
+  "analysis": {
+    "agent": "devin",
+    "model": "swe-2",
+    "runtime_ms": null,
+    "cost_usd": null,
+    "collected_at": "2026-09-22T16:03:32.100Z"
   }
 }

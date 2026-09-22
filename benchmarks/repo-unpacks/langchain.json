@@ -477,17 +477,17 @@
         {
           "path": "AGENTS.md",
           "bytes": 19723,
-          "preview": "# Global development guidelines for the LangChain monorepo\n\nThis document provides context to understand the LangChain Python project and assist with development.\n\n<corridor>\n\n## Corridor security analysis\n\nWhen Corridor's `analyzePlan` tool is available, create a plan and use the tool to analyze it before generating or modifying code. Apply the resulting security guidance before writing code.\n\n</corridor>\n\n## Project architecture and context\n\n### Monorepo structure\n\nThis is a Python monorepo with multiple independently versioned packages that use `uv`.\n\n```txt\nlangchain/\n\u251c\u2500\u2500 libs/\n\u2502   \u251c\u2500\u2500 core/             # `langchain-core` primitives and base abstractions\n\u2502   \u251c\u2500\u2500 langchain/        # `langchain-classic` (legacy, no new features)\n\u2502   \u251c\u2500\u2500 langchain_v1/     # Actively maintained `langchain` package\n\u2502   \u251c\u2500\u2500 partners/         # Third-party integrations\n\u2502   \u2502   \u251c\u2500\u2500 openai/       # OpenAI models and embeddings\n\u2502   \u2502   \u251c\u2500\u2500 anthropic/    # Anthropic (Claude) integration\n\u2502   \u2502   \u251c\u2500\u2500 ollama/       # Local model support\n\u2502   \u2502   \u2514\u2500\u2500 ... (other integrations maintained by the LangChain team)\n\u2502   \u251c\u2500\u2500 text-splitters/   # Document chunking utilities\n\u2502   \u251c\u2500\u2500 standard-tests/   # Shared test suite for integrations\n\u2502   \u251c\u2500\u2500 model-profiles/   # Model configuration profiles\n\u251c\u2500\u2500 .github/              # CI/CD workflows and templates\n\u251c\u2500\u2500 .vscode/              # VSCode IDE standard settings and recommended extensions\n\u2514\u2500\u2500 README.md             # Information about LangChain\n```\n\n- **Core layer** (`langchain-core`): Base abstractions, interfaces, and protocols. Users should not need to know about this layer directly.\n- **Implementation layer** (`langchain`): Concrete implementations and high-level public utilities\n- **Integration layer** (`partners/`): Third-party service integrations. Note that this monorepo is not exhaustive of all LangChain integrations; some are maintained in separate repos, such as `langchain-ai/langchain-google` and `langchain-ai/langchain-aws`. Usually these repos are cloned at the same level as this monorepo, so if needed, you can refer to their code directly by navigating to `../langchain-google/` from this monorepo.\n- **Testing layer** (`standard-tests/`): Standardized integration tests for partner integrations\n\n### Development tools & commands\n\n- `uv` \u2013 Fast Python package installer and resolver (replaces pip/poetry)\n- `make` \u2013 Task runner for common development commands. Feel free to look at the `Makefile` for available commands and usage patterns.\n- `ruff` \u2013 Fast Python linter and formatter\n- `mypy` \u2013 Static type checking\n- `pytest` \u2013 Testing framework\n\nThis monorepo uses `uv` for dependency management. Local development uses editable installs: `[tool.uv.sources]`\n\nEach package in `libs/` has its own `pyproject.toml` and `uv.lock`.\n\nBefore running your tests, set up all packages by running:\n\n```bash\n# For all groups\nuv sync --all-groups\n\n# or, to install a specific group only:\nuv sync --group test\n```\n\n```bash\n# Run unit tests (no network)\nmake test\n\n# Run specific test file\nuv run --group test pytest tests/unit_tests/test_specific.py\n```\n\n```bash\n# Lint code\nmake lint\n\n# Format code\nmake format\n\n# Type checking\nuv run --group lint mypy .\n```\n\n#### Environment and dependency management\n\nUse `uv` for all environment and dependency operations in this monorepo. Do not invoke `pip`, `poetry`, or `conda` directly.\n\n- Let `uv` manage the interpreter and virtual environments \u2014 `uv sync` and `uv run` operate without manual `source .venv/bin/activate`. Do not create ad-hoc virtual environments outside the package directory.\n- Each package targets its own supported Python range via its `pyproject.toml`; do not pin a global Python version. If you need an interpreter explicitly, defer to the package's `requires-python` rather than assuming system Python.\n- Install dependencies explicitly through `uv sync` (optionally `--group <name>` / `--all-groups`); never let them install implicitly.\n- Don't mix environments within a session, and don't add new dependencies unless strictly required \u2014 when you do, justify them (recent releases/commits, adoption).\n\n#### Key config files\n\n- pyproject.toml: Main workspace configuration with dependency groups\n- uv.lock: Locked dependencies for reproducible builds\n- Makefile: Development tasks\n\n#### PR and commit titles\n\nFollow Conventional Commits. See `.github/workflows/pr_lint.yml` for allowed types and scopes. All titles must include a scope with no exceptions \u2014 even for the main `langchain` package.\n\n- Start the text after `type(scope):` with a lowercase letter, unless the first word is a proper noun (e.g. `Azure`, `GitHub`, `OpenAI`) or a named entity (class, function, method, parameter, or variable name).\n- Wrap named entities in backticks so they render as code. Proper nouns are left unadorned.\n- Keep titles short and descriptive \u2014 save detail for the body.\n\nExamples:\n\n```txt\nfeat(langchain): add new chat completion feature\nfix(core): resolve type hinting issue in vector store\nchore(anthropic): update infrastructure dependencies\nfeat(langchain): `ls_agent_type` tag on `create_agent` calls\nfix(openai): infer Azure chat profiles from model name\n```\n\n#### Branch naming\n\nBranches should be prefixed `<github-username>/<scope>/<short-description>`:\n\n- `<github-username>` \u2014 the author's GitHub login (e.g. `mdrxy`).\n- `<scope>` \u2014 the same scope used in the Conventional Commit title (`core`, `langchain`, partner name, `infra`, `docs`, etc.).\n- `<short-description>` \u2014 kebab-case, brief, no trailing slash.\n\nExamples:\n\n```txt\nmdrxy/anthropic/normalize-tool-call-ids\nmdrxy/core/vector-store-type-hints\nmdrxy/infra/agents-md-branch\n```\n\n#### PR descriptions\n\nThe description *is* the summary \u2014 do not add a `# Summary` header.\n\n- When the PR closes an issue, lead with the closing keyword on its own line at the very top, followed by a horizontal rule and then the body:\n\n  ```txt\n  Closes #123\n\n  ---\n\n  <rest of description>\n  ```\n\n  Only `Closes`, `Fixes`, and `Resolves` auto-close the referenced issue on merge. `Related:` or similar labels are informational and do not close anything.\n\n- Explain the *why*: who benefits, what problem they had, and how this solves it. Prefer a simple user story over a long summary.\n- Write for readers who may be unfamiliar with this area of the codebase. Avoid insider shorthand and prefer language that is friendly to public viewers \u2014 this aids interpretability.\n- Do **not** cite line numbers; they go stale as soon as the file changes.\n- Rarely include full file paths or filenames. Reference the affected symbol, class, or subsystem by name instead.\n- Wrap class, function, method, parameter, and variable names in backticks.\n- For net new features or behavior-changing bugfixes, PR descriptions should include a `## Release note` section that states the user-visible change in release-note-ready language.\n- Skip dedicated \"Test plan\" or \"Testing\" sections in most cases. Mention tests only when coverage is non-obvious, risky, or otherwise notable.\n- Call out areas of the change that require careful review.\n- Add a brief disclaimer noting AI-agent involvement in the contribution.\n\n## Core development principles\n\n### Maintain stable public interfaces\n\nCRITICAL: Always attempt to preserve function signatures, argument positions, and names for exported/public methods. Do not make breaking changes.\nYou should warn the developer for any function signature changes, regardless of whether they look breaking or not.\n\n**Before making ANY changes to public APIs:**\n\n- Check if the function/class is exported in `__init__.py`\n- Look for existing usage patterns in tests and examples\n- Use keyword-only arguments for new parameters: `*, new_param: str = \"default\"`\n- Mark experimental features clearly with docstring warnings (using MkDocs Material admonitions, like `!!! warning`)\n\nAsk: \"Would this change break someone's code if they used it last week?\"\n\n### Code quality standards\n\nAll Python code MUST include type hints and return types.\n\n```python title=\"Example\"\ndef filter_unk"
+          "preview": "# Global development guidelines for the LangChain monorepo\n\nThis document provides context to understand the LangChain Python project and assist with development.\n\n<corridor>\n\n## Corridor security analysis\n\nWhen Corridor's `analyzePlan` tool is available, create a plan and use the tool to analyze it before generating or modifying code. Apply the resulting security guidance before writing code.\n\n</corridor>\n\n## Project architecture and context\n\n### Monorepo structure\n\nThis is a Python monorepo with multiple independently versioned packages that use `uv`.\n\n```txt\nlangchain/\n├── libs/\n│   ├── core/             # `langchain-core` primitives and base abstractions\n│   ├── langchain/        # `langchain-classic` (legacy, no new features)\n│   ├── langchain_v1/     # Actively maintained `langchain` package\n│   ├── partners/         # Third-party integrations\n│   │   ├── openai/       # OpenAI models and embeddings\n│   │   ├── anthropic/    # Anthropic (Claude) integration\n│   │   ├── ollama/       # Local model support\n│   │   └── ... (other integrations maintained by the LangChain team)\n│   ├── text-splitters/   # Document chunking utilities\n│   ├── standard-tests/   # Shared test suite for integrations\n│   ├── model-profiles/   # Model configuration profiles\n├── .github/              # CI/CD workflows and templates\n├── .vscode/              # VSCode IDE standard settings and recommended extensions\n└── README.md             # Information about LangChain\n```\n\n- **Core layer** (`langchain-core`): Base abstractions, interfaces, and protocols. Users should not need to know about this layer directly.\n- **Implementation layer** (`langchain`): Concrete implementations and high-level public utilities\n- **Integration layer** (`partners/`): Third-party service integrations. Note that this monorepo is not exhaustive of all LangChain integrations; some are maintained in separate repos, such as `langchain-ai/langchain-google` and `langchain-ai/langchain-aws`. Usually these repos are cloned at the same level as this monorepo, so if needed, you can refer to their code directly by navigating to `../langchain-google/` from this monorepo.\n- **Testing layer** (`standard-tests/`): Standardized integration tests for partner integrations\n\n### Development tools & commands\n\n- `uv` – Fast Python package installer and resolver (replaces pip/poetry)\n- `make` – Task runner for common development commands. Feel free to look at the `Makefile` for available commands and usage patterns.\n- `ruff` – Fast Python linter and formatter\n- `mypy` – Static type checking\n- `pytest` – Testing framework\n\nThis monorepo uses `uv` for dependency management. Local development uses editable installs: `[tool.uv.sources]`\n\nEach package in `libs/` has its own `pyproject.toml` and `uv.lock`.\n\nBefore running your tests, set up all packages by running:\n\n```bash\n# For all groups\nuv sync --all-groups\n\n# or, to install a specific group only:\nuv sync --group test\n```\n\n```bash\n# Run unit tests (no network)\nmake test\n\n# Run specific test file\nuv run --group test pytest tests/unit_tests/test_specific.py\n```\n\n```bash\n# Lint code\nmake lint\n\n# Format code\nmake format\n\n# Type checking\nuv run --group lint mypy .\n```\n\n#### Environment and dependency management\n\nUse `uv` for all environment and dependency operations in this monorepo. Do not invoke `pip`, `poetry`, or `conda` directly.\n\n- Let `uv` manage the interpreter and virtual environments — `uv sync` and `uv run` operate without manual `source .venv/bin/activate`. Do not create ad-hoc virtual environments outside the package directory.\n- Each package targets its own supported Python range via its `pyproject.toml`; do not pin a global Python version. If you need an interpreter explicitly, defer to the package's `requires-python` rather than assuming system Python.\n- Install dependencies explicitly through `uv sync` (optionally `--group <name>` / `--all-groups`); never let them install implicitly.\n- Don't mix environments within a session, and don't add new dependencies unless strictly required — when you do, justify them (recent releases/commits, adoption).\n\n#### Key config files\n\n- pyproject.toml: Main workspace configuration with dependency groups\n- uv.lock: Locked dependencies for reproducible builds\n- Makefile: Development tasks\n\n#### PR and commit titles\n\nFollow Conventional Commits. See `.github/workflows/pr_lint.yml` for allowed types and scopes. All titles must include a scope with no exceptions — even for the main `langchain` package.\n\n- Start the text after `type(scope):` with a lowercase letter, unless the first word is a proper noun (e.g. `Azure`, `GitHub`, `OpenAI`) or a named entity (class, function, method, parameter, or variable name).\n- Wrap named entities in backticks so they render as code. Proper nouns are left unadorned.\n- Keep titles short and descriptive — save detail for the body.\n\nExamples:\n\n```txt\nfeat(langchain): add new chat completion feature\nfix(core): resolve type hinting issue in vector store\nchore(anthropic): update infrastructure dependencies\nfeat(langchain): `ls_agent_type` tag on `create_agent` calls\nfix(openai): infer Azure chat profiles from model name\n```\n\n#### Branch naming\n\nBranches should be prefixed `<github-username>/<scope>/<short-description>`:\n\n- `<github-username>` — the author's GitHub login (e.g. `mdrxy`).\n- `<scope>` — the same scope used in the Conventional Commit title (`core`, `langchain`, partner name, `infra`, `docs`, etc.).\n- `<short-description>` — kebab-case, brief, no trailing slash.\n\nExamples:\n\n```txt\nmdrxy/anthropic/normalize-tool-call-ids\nmdrxy/core/vector-store-type-hints\nmdrxy/infra/agents-md-branch\n```\n\n#### PR descriptions\n\nThe description *is* the summary — do not add a `# Summary` header.\n\n- When the PR closes an issue, lead with the closing keyword on its own line at the very top, followed by a horizontal rule and then the body:\n\n  ```txt\n  Closes #123\n\n  ---\n\n  <rest of description>\n  ```\n\n  Only `Closes`, `Fixes`, and `Resolves` auto-close the referenced issue on merge. `Related:` or similar labels are informational and do not close anything.\n\n- Explain the *why*: who benefits, what problem they had, and how this solves it. Prefer a simple user story over a long summary.\n- Write for readers who may be unfamiliar with this area of the codebase. Avoid insider shorthand and prefer language that is friendly to public viewers — this aids interpretability.\n- Do **not** cite line numbers; they go stale as soon as the file changes.\n- Rarely include full file paths or filenames. Reference the affected symbol, class, or subsystem by name instead.\n- Wrap class, function, method, parameter, and variable names in backticks.\n- For net new features or behavior-changing bugfixes, PR descriptions should include a `## Release note` section that states the user-visible change in release-note-ready language.\n- Skip dedicated \"Test plan\" or \"Testing\" sections in most cases. Mention tests only when coverage is non-obvious, risky, or otherwise notable.\n- Call out areas of the change that require careful review.\n- Add a brief disclaimer noting AI-agent involvement in the contribution.\n\n## Core development principles\n\n### Maintain stable public interfaces\n\nCRITICAL: Always attempt to preserve function signatures, argument positions, and names for exported/public methods. Do not make breaking changes.\nYou should warn the developer for any function signature changes, regardless of whether they look breaking or not.\n\n**Before making ANY changes to public APIs:**\n\n- Check if the function/class is exported in `__init__.py`\n- Look for existing usage patterns in tests and examples\n- Use keyword-only arguments for new parameters: `*, new_param: str = \"default\"`\n- Mark experimental features clearly with docstring warnings (using MkDocs Material admonitions, like `!!! warning`)\n\nAsk: \"Would this change break someone's code if they used it last week?\"\n\n### Code quality standards\n\nAll Python code MUST include type hints and return types.\n\n```python title=\"Example\"\ndef filter_unk"
         },
         {
           "path": "CLAUDE.md",
           "bytes": 19200,
-          "preview": "# Global development guidelines for the LangChain monorepo\n\nThis document provides context to understand the LangChain Python project and assist with development.\n\n<corridor>\n\n## Corridor security analysis\n\nWhen Corridor's `analyzePlan` tool is available, create a plan and use the tool to analyze it before generating or modifying code. Apply the resulting security guidance before writing code.\n\n</corridor>\n\n## Project architecture and context\n\n### Monorepo structure\n\nThis is a Python monorepo with multiple independently versioned packages that use `uv`.\n\n```txt\nlangchain/\n\u251c\u2500\u2500 libs/\n\u2502   \u251c\u2500\u2500 core/             # `langchain-core` primitives and base abstractions\n\u2502   \u251c\u2500\u2500 langchain/        # `langchain-classic` (legacy, no new features)\n\u2502   \u251c\u2500\u2500 langchain_v1/     # Actively maintained `langchain` package\n\u2502   \u251c\u2500\u2500 partners/         # Third-party integrations\n\u2502   \u2502   \u251c\u2500\u2500 openai/       # OpenAI models and embeddings\n\u2502   \u2502   \u251c\u2500\u2500 anthropic/    # Anthropic (Claude) integration\n\u2502   \u2502   \u251c\u2500\u2500 ollama/       # Local model support\n\u2502   \u2502   \u2514\u2500\u2500 ... (other integrations maintained by the LangChain team)\n\u2502   \u251c\u2500\u2500 text-splitters/   # Document chunking utilities\n\u2502   \u251c\u2500\u2500 standard-tests/   # Shared test suite for integrations\n\u2502   \u251c\u2500\u2500 model-profiles/   # Model configuration profiles\n\u251c\u2500\u2500 .github/              # CI/CD workflows and templates\n\u251c\u2500\u2500 .vscode/              # VSCode IDE standard settings and recommended extensions\n\u2514\u2500\u2500 README.md             # Information about LangChain\n```\n\n- **Core layer** (`langchain-core`): Base abstractions, interfaces, and protocols. Users should not need to know about this layer directly.\n- **Implementation layer** (`langchain`): Concrete implementations and high-level public utilities\n- **Integration layer** (`partners/`): Third-party service integrations. Note that this monorepo is not exhaustive of all LangChain integrations; some are maintained in separate repos, such as `langchain-ai/langchain-google` and `langchain-ai/langchain-aws`. Usually these repos are cloned at the same level as this monorepo, so if needed, you can refer to their code directly by navigating to `../langchain-google/` from this monorepo.\n- **Testing layer** (`standard-tests/`): Standardized integration tests for partner integrations\n\n### Development tools & commands\n\n- `uv` \u2013 Fast Python package installer and resolver (replaces pip/poetry)\n- `make` \u2013 Task runner for common development commands. Feel free to look at the `Makefile` for available commands and usage patterns.\n- `ruff` \u2013 Fast Python linter and formatter\n- `mypy` \u2013 Static type checking\n- `pytest` \u2013 Testing framework\n\nThis monorepo uses `uv` for dependency management. Local development uses editable installs: `[tool.uv.sources]`\n\nEach package in `libs/` has its own `pyproject.toml` and `uv.lock`.\n\nBefore running your tests, set up all packages by running:\n\n```bash\n# For all groups\nuv sync --all-groups\n\n# or, to install a specific group only:\nuv sync --group test\n```\n\n```bash\n# Run unit tests (no network)\nmake test\n\n# Run specific test file\nuv run --group test pytest tests/unit_tests/test_specific.py\n```\n\n```bash\n# Lint code\nmake lint\n\n# Format code\nmake format\n\n# Type checking\nuv run --group lint mypy .\n```\n\n#### Environment and dependency management\n\nUse `uv` for all environment and dependency operations in this monorepo. Do not invoke `pip`, `poetry`, or `conda` directly.\n\n- Let `uv` manage the interpreter and virtual environments \u2014 `uv sync` and `uv run` operate without manual `source .venv/bin/activate`. Do not create ad-hoc virtual environments outside the package directory.\n- Each package targets its own supported Python range via its `pyproject.toml`; do not pin a global Python version. If you need an interpreter explicitly, defer to the package's `requires-python` rather than assuming system Python.\n- Install dependencies explicitly through `uv sync` (optionally `--group <name>` / `--all-groups`); never let them install implicitly.\n- Don't mix environments within a session, and don't add new dependencies unless strictly required \u2014 when you do, justify them (recent releases/commits, adoption).\n\n#### Key config files\n\n- pyproject.toml: Main workspace configuration with dependency groups\n- uv.lock: Locked dependencies for reproducible builds\n- Makefile: Development tasks\n\n#### PR and commit titles\n\nFollow Conventional Commits. See `.github/workflows/pr_lint.yml` for allowed types and scopes. All titles must include a scope with no exceptions \u2014 even for the main `langchain` package.\n\n- Start the text after `type(scope):` with a lowercase letter, unless the first word is a proper noun (e.g. `Azure`, `GitHub`, `OpenAI`) or a named entity (class, function, method, parameter, or variable name).\n- Wrap named entities in backticks so they render as code. Proper nouns are left unadorned.\n- Keep titles short and descriptive \u2014 save detail for the body.\n\nExamples:\n\n```txt\nfeat(langchain): add new chat completion feature\nfix(core): resolve type hinting issue in vector store\nchore(anthropic): update infrastructure dependencies\nfeat(langchain): `ls_agent_type` tag on `create_agent` calls\nfix(openai): infer Azure chat profiles from model name\n```\n\n#### Branch naming\n\nBranches should be prefixed `<github-username>/<scope>/<short-description>`:\n\n- `<github-username>` \u2014 the author's GitHub login (e.g. `mdrxy`).\n- `<scope>` \u2014 the same scope used in the Conventional Commit title (`core`, `langchain`, partner name, `infra`, `docs`, etc.).\n- `<short-description>` \u2014 kebab-case, brief, no trailing slash.\n\nExamples:\n\n```txt\nmdrxy/anthropic/normalize-tool-call-ids\nmdrxy/core/vector-store-type-hints\nmdrxy/infra/agents-md-branch\n```\n\n#### PR descriptions\n\nThe description *is* the summary \u2014 do not add a `# Summary` header.\n\n- When the PR closes an issue, lead with the closing keyword on its own line at the very top, followed by a horizontal rule and then the body:\n\n  ```txt\n  Closes #123\n\n  ---\n\n  <rest of description>\n  ```\n\n  Only `Closes`, `Fixes`, and `Resolves` auto-close the referenced issue on merge. `Related:` or similar labels are informational and do not close anything.\n\n- Explain the *why*: who benefits, what problem they had, and how this solves it. Prefer a simple user story over a long summary.\n- Write for readers who may be unfamiliar with this area of the codebase. Avoid insider shorthand and prefer language that is friendly to public viewers \u2014 this aids interpretability.\n- Do **not** cite line numbers; they go stale as soon as the file changes.\n- Rarely include full file paths or filenames. Reference the affected symbol, class, or subsystem by name instead.\n- Wrap class, function, method, parameter, and variable names in backticks.\n- For net new features or behavior-changing bugfixes, PR descriptions should include a `## Release note` section that states the user-visible change in release-note-ready language.\n- Skip dedicated \"Test plan\" or \"Testing\" sections in most cases. Mention tests only when coverage is non-obvious, risky, or otherwise notable.\n- Call out areas of the change that require careful review.\n- Add a brief disclaimer noting AI-agent involvement in the contribution.\n\n## Core development principles\n\n### Maintain stable public interfaces\n\nCRITICAL: Always attempt to preserve function signatures, argument positions, and names for exported/public methods. Do not make breaking changes.\nYou should warn the developer for any function signature changes, regardless of whether they look breaking or not.\n\n**Before making ANY changes to public APIs:**\n\n- Check if the function/class is exported in `__init__.py`\n- Look for existing usage patterns in tests and examples\n- Use keyword-only arguments for new parameters: `*, new_param: str = \"default\"`\n- Mark experimental features clearly with docstring warnings (using MkDocs Material admonitions, like `!!! warning`)\n\nAsk: \"Would this change break someone's code if they used it last week?\"\n\n### Code quality standards\n\nAll Python code MUST include type hints and return types.\n\n```python title=\"Example\"\ndef filter_unk"
+          "preview": "# Global development guidelines for the LangChain monorepo\n\nThis document provides context to understand the LangChain Python project and assist with development.\n\n<corridor>\n\n## Corridor security analysis\n\nWhen Corridor's `analyzePlan` tool is available, create a plan and use the tool to analyze it before generating or modifying code. Apply the resulting security guidance before writing code.\n\n</corridor>\n\n## Project architecture and context\n\n### Monorepo structure\n\nThis is a Python monorepo with multiple independently versioned packages that use `uv`.\n\n```txt\nlangchain/\n├── libs/\n│   ├── core/             # `langchain-core` primitives and base abstractions\n│   ├── langchain/        # `langchain-classic` (legacy, no new features)\n│   ├── langchain_v1/     # Actively maintained `langchain` package\n│   ├── partners/         # Third-party integrations\n│   │   ├── openai/       # OpenAI models and embeddings\n│   │   ├── anthropic/    # Anthropic (Claude) integration\n│   │   ├── ollama/       # Local model support\n│   │   └── ... (other integrations maintained by the LangChain team)\n│   ├── text-splitters/   # Document chunking utilities\n│   ├── standard-tests/   # Shared test suite for integrations\n│   ├── model-profiles/   # Model configuration profiles\n├── .github/              # CI/CD workflows and templates\n├── .vscode/              # VSCode IDE standard settings and recommended extensions\n└── README.md             # Information about LangChain\n```\n\n- **Core layer** (`langchain-core`): Base abstractions, interfaces, and protocols. Users should not need to know about this layer directly.\n- **Implementation layer** (`langchain`): Concrete implementations and high-level public utilities\n- **Integration layer** (`partners/`): Third-party service integrations. Note that this monorepo is not exhaustive of all LangChain integrations; some are maintained in separate repos, such as `langchain-ai/langchain-google` and `langchain-ai/langchain-aws`. Usually these repos are cloned at the same level as this monorepo, so if needed, you can refer to their code directly by navigating to `../langchain-google/` from this monorepo.\n- **Testing layer** (`standard-tests/`): Standardized integration tests for partner integrations\n\n### Development tools & commands\n\n- `uv` – Fast Python package installer and resolver (replaces pip/poetry)\n- `make` – Task runner for common development commands. Feel free to look at the `Makefile` for available commands and usage patterns.\n- `ruff` – Fast Python linter and formatter\n- `mypy` – Static type checking\n- `pytest` – Testing framework\n\nThis monorepo uses `uv` for dependency management. Local development uses editable installs: `[tool.uv.sources]`\n\nEach package in `libs/` has its own `pyproject.toml` and `uv.lock`.\n\nBefore running your tests, set up all packages by running:\n\n```bash\n# For all groups\nuv sync --all-groups\n\n# or, to install a specific group only:\nuv sync --group test\n```\n\n```bash\n# Run unit tests (no network)\nmake test\n\n# Run specific test file\nuv run --group test pytest tests/unit_tests/test_specific.py\n```\n\n```bash\n# Lint code\nmake lint\n\n# Format code\nmake format\n\n# Type checking\nuv run --group lint mypy .\n```\n\n#### Environment and dependency management\n\nUse `uv` for all environment and dependency operations in this monorepo. Do not invoke `pip`, `poetry`, or `conda` directly.\n\n- Let `uv` manage the interpreter and virtual environments — `uv sync` and `uv run` operate without manual `source .venv/bin/activate`. Do not create ad-hoc virtual environments outside the package directory.\n- Each package targets its own supported Python range via its `pyproject.toml`; do not pin a global Python version. If you need an interpreter explicitly, defer to the package's `requires-python` rather than assuming system Python.\n- Install dependencies explicitly through `uv sync` (optionally `--group <name>` / `--all-groups`); never let them install implicitly.\n- Don't mix environments within a session, and don't add new dependencies unless strictly required — when you do, justify them (recent releases/commits, adoption).\n\n#### Key config files\n\n- pyproject.toml: Main workspace configuration with dependency groups\n- uv.lock: Locked dependencies for reproducible builds\n- Makefile: Development tasks\n\n#### PR and commit titles\n\nFollow Conventional Commits. See `.github/workflows/pr_lint.yml` for allowed types and scopes. All titles must include a scope with no exceptions — even for the main `langchain` package.\n\n- Start the text after `type(scope):` with a lowercase letter, unless the first word is a proper noun (e.g. `Azure`, `GitHub`, `OpenAI`) or a named entity (class, function, method, parameter, or variable name).\n- Wrap named entities in backticks so they render as code. Proper nouns are left unadorned.\n- Keep titles short and descriptive — save detail for the body.\n\nExamples:\n\n```txt\nfeat(langchain): add new chat completion feature\nfix(core): resolve type hinting issue in vector store\nchore(anthropic): update infrastructure dependencies\nfeat(langchain): `ls_agent_type` tag on `create_agent` calls\nfix(openai): infer Azure chat profiles from model name\n```\n\n#### Branch naming\n\nBranches should be prefixed `<github-username>/<scope>/<short-description>`:\n\n- `<github-username>` — the author's GitHub login (e.g. `mdrxy`).\n- `<scope>` — the same scope used in the Conventional Commit title (`core`, `langchain`, partner name, `infra`, `docs`, etc.).\n- `<short-description>` — kebab-case, brief, no trailing slash.\n\nExamples:\n\n```txt\nmdrxy/anthropic/normalize-tool-call-ids\nmdrxy/core/vector-store-type-hints\nmdrxy/infra/agents-md-branch\n```\n\n#### PR descriptions\n\nThe description *is* the summary — do not add a `# Summary` header.\n\n- When the PR closes an issue, lead with the closing keyword on its own line at the very top, followed by a horizontal rule and then the body:\n\n  ```txt\n  Closes #123\n\n  ---\n\n  <rest of description>\n  ```\n\n  Only `Closes`, `Fixes`, and `Resolves` auto-close the referenced issue on merge. `Related:` or similar labels are informational and do not close anything.\n\n- Explain the *why*: who benefits, what problem they had, and how this solves it. Prefer a simple user story over a long summary.\n- Write for readers who may be unfamiliar with this area of the codebase. Avoid insider shorthand and prefer language that is friendly to public viewers — this aids interpretability.\n- Do **not** cite line numbers; they go stale as soon as the file changes.\n- Rarely include full file paths or filenames. Reference the affected symbol, class, or subsystem by name instead.\n- Wrap class, function, method, parameter, and variable names in backticks.\n- For net new features or behavior-changing bugfixes, PR descriptions should include a `## Release note` section that states the user-visible change in release-note-ready language.\n- Skip dedicated \"Test plan\" or \"Testing\" sections in most cases. Mention tests only when coverage is non-obvious, risky, or otherwise notable.\n- Call out areas of the change that require careful review.\n- Add a brief disclaimer noting AI-agent involvement in the contribution.\n\n## Core development principles\n\n### Maintain stable public interfaces\n\nCRITICAL: Always attempt to preserve function signatures, argument positions, and names for exported/public methods. Do not make breaking changes.\nYou should warn the developer for any function signature changes, regardless of whether they look breaking or not.\n\n**Before making ANY changes to public APIs:**\n\n- Check if the function/class is exported in `__init__.py`\n- Look for existing usage patterns in tests and examples\n- Use keyword-only arguments for new parameters: `*, new_param: str = \"default\"`\n- Mark experimental features clearly with docstring warnings (using MkDocs Material admonitions, like `!!! warning`)\n\nAsk: \"Would this change break someone's code if they used it last week?\"\n\n### Code quality standards\n\nAll Python code MUST include type hints and return types.\n\n```python title=\"Example\"\ndef filter_unk"
         },
         {
           "path": "README.md",
           "bytes": 5933,
-          "preview": "<div align=\"center\">\n  <a href=\"https://docs.langchain.com/oss/python/langchain/overview\">\n    <picture>\n      <source media=\"(prefers-color-scheme: dark)\" srcset=\".github/images/logo-dark.svg\">\n      <source media=\"(prefers-color-scheme: light)\" srcset=\".github/images/logo-light.svg\">\n      <img alt=\"LangChain Logo\" src=\".github/images/logo-dark.svg\" width=\"50%\">\n    </picture>\n  </a>\n</div>\n\n<div align=\"center\">\n  <h3>The agent engineering platform.</h3>\n</div>\n\n<div align=\"center\">\n  <a href=\"https://opensource.org/licenses/MIT\" target=\"_blank\"><img src=\"https://img.shields.io/pypi/l/langchain\" alt=\"PyPI - License\"></a>\n  <a href=\"https://pypistats.org/packages/langchain\" target=\"_blank\"><img src=\"https://img.shields.io/pepy/dt/langchain\" alt=\"PyPI - Downloads\"></a>\n  <a href=\"https://pypi.org/project/langchain/#history\" target=\"_blank\"><img src=\"https://img.shields.io/pypi/v/langchain?label=%20\" alt=\"Version\"></a>\n  <a href=\"https://x.com/langchain_oss\" target=\"_blank\"><img src=\"https://img.shields.io/twitter/url/https/twitter.com/langchain_oss.svg?style=social&label=Follow%20%40LangChain\" alt=\"Twitter / X\"></a>\n</div>\n\n<br>\n\nLangChain is a framework for building agents and LLM-powered applications. It helps you chain together interoperable components and third-party integrations to simplify AI application development \u2014 all while future-proofing decisions as the underlying technology evolves.\n\n> [!TIP]\n> Just getting started? Check out **[Deep Agents](http://docs.langchain.com/oss/python/deepagents/)** \u2014 a higher-level package built on LangChain for agents that have built-in capabilities for common usage patterns such as planning, subagents, file system usage, and more.\n\n## Quickstart\n\n```bash\nuv add langchain\n```\n\n```python\nfrom langchain.chat_models import init_chat_model\n\nmodel = init_chat_model(\"openai:gpt-5.5\")\nresult = model.invoke(\"Hello, world!\")\n```\n\nIf you're looking for more advanced customization or agent orchestration, check out [LangGraph](https://github.com/langchain-ai/langgraph), our framework for building controllable agent workflows.\n\nFor an equivalent JS/TS library, check out [LangChain.js](https://github.com/langchain-ai/langchainjs).\n\n> [!TIP]\n> For developing, debugging, and deploying AI agents and LLM applications, see [LangSmith](https://docs.langchain.com/langsmith/home).\n\n## LangChain ecosystem\n\nWhile the LangChain framework can be used standalone, it also integrates seamlessly with any LangChain product, giving developers a full suite of tools when building LLM applications.\n\n- **[Deep Agents](http://docs.langchain.com/oss/python/deepagents/)** \u2014 Build agents that can plan, use subagents, and leverage file systems for complex tasks\n- **[LangGraph](https://docs.langchain.com/oss/python/langgraph/overview)** \u2014 Build agents that can reliably handle complex tasks with our low-level agent orchestration framework\n- **[Integrations](https://docs.langchain.com/oss/python/integrations/providers/overview)** \u2014 Chat & embedding models, tools & toolkits, and more\n- **[LangSmith](https://www.langchain.com/langsmith)** \u2014 Agent evals, observability, and debugging for LLM apps\n- **[LangSmith Deployment](https://docs.langchain.com/langsmith/deployments)** \u2014 Deploy and scale agents with a purpose-built platform for long-running, stateful workflows\n\n## Why use LangChain?\n\nLangChain helps developers build applications powered by LLMs through a standard interface for models, embeddings, vector stores, and more.\n\n- **Real-time data augmentation** \u2014 Easily connect LLMs to diverse data sources and external/internal systems, drawing from LangChain's vast library of integrations with model providers, tools, vector stores, retrievers, and more\n- **Model interoperability** \u2014 Swap models in and out as your engineering team experiments to find the best choice for your application's needs. As the industry frontier evolves, adapt quickly \u2014 LangChain's abstractions keep you moving without losing momentum\n- **Rapid prototyping** \u2014 Quickly build and iterate on LLM applications with LangChain's modular, component-based architecture. Test different approaches and workflows without rebuilding from scratch, accelerating your development cycle\n- **Production-ready features** \u2014 Deploy reliable applications with built-in support for monitoring, evaluation, and debugging through integrations like LangSmith. Scale with confidence using battle-tested patterns and best practices\n- **Vibrant community and ecosystem** \u2014 Leverage a rich ecosystem of integrations, templates, and community-contributed components. Benefit from continuous improvements and stay up-to-date with the latest AI developments through an active open-source community\n- **Flexible abstraction layers** \u2014 Work at the level of abstraction that suits your needs \u2014 from high-level chains for quick starts to low-level components for fine-grained control. LangChain grows with your application's complexity\n\n---\n\n## Resources\n\n- [Documentation](https://docs.langchain.com/oss/python/langchain/overview) \u2014 conceptual overviews and guides\n- [LangChain ecosystem overview](https://docs.langchain.com/oss/python/concepts/products) \u2014 how LangChain, LangGraph, and Deep Agents fit together\n- [API reference](https://reference.langchain.com/python) \u2014 complete reference for all public classes, functions, and types\n- [Discussions](https://forum.langchain.com/c/oss-product-help-lc-and-lg/langchain/14) \u2014 community forum for technical questions, ideas, and feedback\n- [LangChain Academy](https://academy.langchain.com/) \u2014 comprehensive, free courses on LangChain libraries and products, made by the LangChain team\n- [Contributing Guide](https://docs.langchain.com/oss/python/contributing/overview) \u2014 how to contribute and find good first issues\n- [Code of Conduct](https://github.com/langchain-ai/langchain/?tab=coc-ov-file) \u2014 community guidelines and standards\n"
+          "preview": "<div align=\"center\">\n  <a href=\"https://docs.langchain.com/oss/python/langchain/overview\">\n    <picture>\n      <source media=\"(prefers-color-scheme: dark)\" srcset=\".github/images/logo-dark.svg\">\n      <source media=\"(prefers-color-scheme: light)\" srcset=\".github/images/logo-light.svg\">\n      <img alt=\"LangChain Logo\" src=\".github/images/logo-dark.svg\" width=\"50%\">\n    </picture>\n  </a>\n</div>\n\n<div align=\"center\">\n  <h3>The agent engineering platform.</h3>\n</div>\n\n<div align=\"center\">\n  <a href=\"https://opensource.org/licenses/MIT\" target=\"_blank\"><img src=\"https://img.shields.io/pypi/l/langchain\" alt=\"PyPI - License\"></a>\n  <a href=\"https://pypistats.org/packages/langchain\" target=\"_blank\"><img src=\"https://img.shields.io/pepy/dt/langchain\" alt=\"PyPI - Downloads\"></a>\n  <a href=\"https://pypi.org/project/langchain/#history\" target=\"_blank\"><img src=\"https://img.shields.io/pypi/v/langchain?label=%20\" alt=\"Version\"></a>\n  <a href=\"https://x.com/langchain_oss\" target=\"_blank\"><img src=\"https://img.shields.io/twitter/url/https/twitter.com/langchain_oss.svg?style=social&label=Follow%20%40LangChain\" alt=\"Twitter / X\"></a>\n</div>\n\n<br>\n\nLangChain is a framework for building agents and LLM-powered applications. It helps you chain together interoperable components and third-party integrations to simplify AI application development — all while future-proofing decisions as the underlying technology evolves.\n\n> [!TIP]\n> Just getting started? Check out **[Deep Agents](http://docs.langchain.com/oss/python/deepagents/)** — a higher-level package built on LangChain for agents that have built-in capabilities for common usage patterns such as planning, subagents, file system usage, and more.\n\n## Quickstart\n\n```bash\nuv add langchain\n```\n\n```python\nfrom langchain.chat_models import init_chat_model\n\nmodel = init_chat_model(\"openai:gpt-5.5\")\nresult = model.invoke(\"Hello, world!\")\n```\n\nIf you're looking for more advanced customization or agent orchestration, check out [LangGraph](https://github.com/langchain-ai/langgraph), our framework for building controllable agent workflows.\n\nFor an equivalent JS/TS library, check out [LangChain.js](https://github.com/langchain-ai/langchainjs).\n\n> [!TIP]\n> For developing, debugging, and deploying AI agents and LLM applications, see [LangSmith](https://docs.langchain.com/langsmith/home).\n\n## LangChain ecosystem\n\nWhile the LangChain framework can be used standalone, it also integrates seamlessly with any LangChain product, giving developers a full suite of tools when building LLM applications.\n\n- **[Deep Agents](http://docs.langchain.com/oss/python/deepagents/)** — Build agents that can plan, use subagents, and leverage file systems for complex tasks\n- **[LangGraph](https://docs.langchain.com/oss/python/langgraph/overview)** — Build agents that can reliably handle complex tasks with our low-level agent orchestration framework\n- **[Integrations](https://docs.langchain.com/oss/python/integrations/providers/overview)** — Chat & embedding models, tools & toolkits, and more\n- **[LangSmith](https://www.langchain.com/langsmith)** — Agent evals, observability, and debugging for LLM apps\n- **[LangSmith Deployment](https://docs.langchain.com/langsmith/deployments)** — Deploy and scale agents with a purpose-built platform for long-running, stateful workflows\n\n## Why use LangChain?\n\nLangChain helps developers build applications powered by LLMs through a standard interface for models, embeddings, vector stores, and more.\n\n- **Real-time data augmentation** — Easily connect LLMs to diverse data sources and external/internal systems, drawing from LangChain's vast library of integrations with model providers, tools, vector stores, retrievers, and more\n- **Model interoperability** — Swap models in and out as your engineering team experiments to find the best choice for your application's needs. As the industry frontier evolves, adapt quickly — LangChain's abstractions keep you moving without losing momentum\n- **Rapid prototyping** — Quickly build and iterate on LLM applications with LangChain's modular, component-based architecture. Test different approaches and workflows without rebuilding from scratch, accelerating your development cycle\n- **Production-ready features** — Deploy reliable applications with built-in support for monitoring, evaluation, and debugging through integrations like LangSmith. Scale with confidence using battle-tested patterns and best practices\n- **Vibrant community and ecosystem** — Leverage a rich ecosystem of integrations, templates, and community-contributed components. Benefit from continuous improvements and stay up-to-date with the latest AI developments through an active open-source community\n- **Flexible abstraction layers** — Work at the level of abstraction that suits your needs — from high-level chains for quick starts to low-level components for fine-grained control. LangChain grows with your application's complexity\n\n---\n\n## Resources\n\n- [Documentation](https://docs.langchain.com/oss/python/langchain/overview) — conceptual overviews and guides\n- [LangChain ecosystem overview](https://docs.langchain.com/oss/python/concepts/products) — how LangChain, LangGraph, and Deep Agents fit together\n- [API reference](https://reference.langchain.com/python) — complete reference for all public classes, functions, and types\n- [Discussions](https://forum.langchain.com/c/oss-product-help-lc-and-lg/langchain/14) — community forum for technical questions, ideas, and feedback\n- [LangChain Academy](https://academy.langchain.com/) — comprehensive, free courses on LangChain libraries and products, made by the LangChain team\n- [Contributing Guide](https://docs.langchain.com/oss/python/contributing/overview) — how to contribute and find good first issues\n- [Code of Conduct](https://github.com/langchain-ai/langchain/?tab=coc-ov-file) — community guidelines and standards\n"
         }
       ],
       "config_files": [],
@@ -13024,7 +13024,7 @@
         "steps": [
           {
             "id": "serialize",
-            "label": "JSON serialize (inventory \u2192 SQLite)",
+            "label": "JSON serialize (inventory → SQLite)",
             "ms": 0,
             "pct": 0
           },
@@ -13043,5 +13043,827 @@
         ]
       }
     ]
+  },
+  "report": {
+    "overview": "LangChain is a Python monorepo for building LLM-powered agents and applications. The actively maintained `langchain` package (libs/langchain_v1) is a thin orchestration layer over LangGraph: `create_agent()` compiles a tool-calling agent loop into a `CompiledStateGraph`, `init_chat_model()` lazily instantiates provider chat models from a registry, and a middleware system lets users hook every stage of the agent loop. `langchain-core` owns the stable abstractions (Runnable, BaseChatModel, BaseTool, messages, callbacks), `libs/partners/` holds ~17 independently released provider integrations, and `langchain-classic` preserves the legacy chains/agents API without new features.",
+    "system_map": {
+      "summary": "A uv-managed Python monorepo of independently versioned packages under libs/. langchain-core defines provider-agnostic abstractions; langchain (langchain_v1) is the user-facing orchestration layer built on LangGraph's StateGraph; langchain-classic is a frozen legacy package; libs/partners/ contains per-provider integrations released individually. There is no server or CLI entrypoint — the 'entrypoints' are library factories (create_agent, init_chat_model, init_embeddings) plus the langchain-profiles CLI. Build is hatchling, tests are pytest, and CI is a set of reusable GitHub Actions workflows.",
+      "claims": [
+        {
+          "claim": "The repo is a monorepo of independently versioned packages: langchain-core v1.6.4 (libs/core), langchain v1.4.2 (libs/langchain_v1), langchain-classic v1.0.8 (libs/langchain), plus text-splitters, standard-tests (langchain-tests), and model-profiles.",
+          "sources": [
+            "libs/core/pyproject.toml#L6-24",
+            "libs/langchain_v1/pyproject.toml#L6-24",
+            "libs/langchain/pyproject.toml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The actively maintained `langchain` package depends only on langchain-core>=1.6.3, langgraph>=1.2.11, and pydantic>=2.7.4; all provider integrations (openai, anthropic, mcp/fastmcp, etc.) are optional extras.",
+          "sources": [
+            "libs/langchain_v1/pyproject.toml#L26-51"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "langchain-core is the abstraction layer housing runnables, language_models, messages, tools, callbacks, vectorstores, output_parsers, prompts, tracers, and a _security subpackage; its own deps are langsmith, httpx, tenacity, pydantic, jsonpatch, PyYAML.",
+          "sources": [
+            "libs/core/pyproject.toml#L26-37",
+            "openwiki/architecture.md#L87-107"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The primary public entrypoint is `create_agent`, re-exported from `langchain.agents`, which builds and compiles a LangGraph `StateGraph` into a `CompiledStateGraph`.",
+          "sources": [
+            "libs/langchain_v1/langchain/agents/__init__.py#L3-9",
+            "libs/langchain_v1/langchain/agents/factory.py#L840-860"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`init_chat_model` resolves provider strings like 'openai:gpt-5.5' through the `_BUILTIN_PROVIDERS` registry (~28 entries mapping provider key -> (module_path, class_name, creator_func)) and lazily imports the partner package.",
+          "sources": [
+            "libs/langchain_v1/langchain/chat_models/base.py#L56-97",
+            "libs/langchain_v1/langchain/chat_models/base.py#L150-191"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Provider integrations live in libs/partners/ (anthropic, chroma, deepseek, exa, fireworks, groq, huggingface, mistralai, nomic, ollama, openai, openrouter, perplexity, qdrant, xai) each with its own pyproject.toml and uv.lock, and each implementing langchain-core abstractions (e.g. ChatOpenAI in langchain_openai/chat_models/base.py).",
+          "sources": [
+            "libs/partners/openai/langchain_openai/chat_models/base.py#L2836",
+            "libs/langchain_v1/pyproject.toml#L100-105"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "langchain-classic is the legacy package: `initialize_agent` is decorated @deprecated since 0.1.0 pointing users to `create_agent`, and its chains/agents tree (AgentExecutor, chains/*) is maintained for backward compatibility only.",
+          "sources": [
+            "libs/langchain/langchain_classic/agents/initialize.py#L19-47",
+            "libs/langchain/langchain_classic/agents/agent.py#L1012",
+            "libs/langchain/pyproject.toml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "All packages build with hatchling and are developed via uv; local cross-package deps use editable `[tool.uv.sources]` path references (e.g. langchain-core -> ../core).",
+          "sources": [
+            "libs/langchain_v1/pyproject.toml#L1-3",
+            "libs/langchain_v1/pyproject.toml#L100-105",
+            "libs/Makefile"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Per-package Makefiles define the dev surface: `make test` (pytest with docker compose postgres+redis services), `make lint` (ruff check + ruff format --diff + mypy), `make format`, `make benchmark`.",
+          "sources": [
+            "libs/langchain_v1/Makefile#L10-50",
+            "libs/langchain_v1/Makefile#L95-105"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CI is organized as reusable workflows: `_test.yml` runs unit tests then re-runs them against computed minimum dependency versions via `.github/scripts/get_min_versions.py`.",
+          "sources": [
+            ".github/workflows/_test.yml#L46-73"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Releases are per-package and manually dispatched through `_release.yml` (workflow_call/workflow_dispatch), which resolves a working-directory dropdown value to a PyPI package name (langchain->langchain-classic, langchain_v1->langchain).",
+          "sources": [
+            ".github/workflows/_release.yml#L1-35",
+            "AGENTS.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The `langchain.mcp` namespace is beta-gated (importing it emits LangChainBetaWarning) and adapts MCP servers via the optional `fastmcp` extra.",
+          "sources": [
+            "libs/langchain_v1/langchain/mcp/__init__.py#L7-32",
+            "libs/langchain_v1/pyproject.toml#L51"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "openwiki/ contains generated architecture documentation (e.g. architecture.md) that mirrors the three-layer design and is refreshed by the openwiki-update workflow.",
+          "sources": [
+            "openwiki/architecture.md#L37-41"
+          ],
+          "kind": "inference"
+        }
+      ]
+    },
+    "feature_catalog": {
+      "summary": "User-facing surface: agent construction (create_agent with middleware, structured output, persistence, interrupts), model/embeddings factories (init_chat_model, init_embeddings), tool authoring (@tool, BaseTool, ToolRuntime injection), a large built-in middleware catalog (HITL, summarization, PII, retries, limits, shell tool, file search, todo lists, tool selection/emulation), MCP server tool adaptation, and message/rate-limiter re-exports. langchain-classic preserves the legacy chains/agents API. langchain-tests ships a conformance suite for partner authors; langchain-profiles ships a CLI for model capability data.",
+      "claims": [
+        {
+          "claim": "`create_agent(model, tools, system_prompt, middleware, response_format, state_schema, context_schema, checkpointer, store, interrupt_before, interrupt_after, debug, name, cache, transformers)` returns a `CompiledStateGraph` implementing the model->tools loop until no tool_calls remain.",
+          "sources": [
+            "libs/langchain_v1/langchain/agents/factory.py#L840-992"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`init_chat_model` supports string specs ('provider:model'), explicit model_provider, configurable_fields producing a deferred `_ConfigurableModel`, and a special 'langsmith' provider that routes ChatOpenAI through the LangSmith gateway (LANGSMITH_GATEWAY_API_KEY / gateway.smith.langchain.com).",
+          "sources": [
+            "libs/langchain_v1/langchain/chat_models/base.py#L24-38",
+            "libs/langchain_v1/langchain/chat_models/base.py#L657"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`init_embeddings` provides the same lazy provider-registry pattern for ~10 embeddings providers (azure_openai, bedrock, cohere, google_genai, huggingface, mistralai, ollama, openai, ...).",
+          "sources": [
+            "libs/langchain_v1/langchain/embeddings/base.py#L15-34",
+            "libs/langchain_v1/langchain/embeddings/base.py#L57-93"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Tools are authored via the `@tool` decorator (langchain_core.tools.convert) or BaseTool subclasses; langchain.tools re-exports these plus ToolRuntime, InjectedState, and InjectedStore for runtime/state injection into tool functions.",
+          "sources": [
+            "libs/langchain_v1/langchain/tools/__init__.py",
+            "libs/core/langchain_core/tools/convert.py#L18"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The built-in middleware catalog includes: SummarizationMiddleware, HumanInTheLoopMiddleware, PIIMiddleware, TodoListMiddleware, ModelRetryMiddleware, ModelFallbackMiddleware, ModelCallLimitMiddleware, ToolRetryMiddleware, ToolCallLimitMiddleware, ToolErrorMiddleware, LLMToolSelectorMiddleware, LLMToolEmulator, ContextEditingMiddleware, FilesystemFileSearchMiddleware, ProviderToolSearchMiddleware, and ShellToolMiddleware.",
+          "sources": [
+            "libs/langchain_v1/langchain/agents/middleware/__init__.py#L6-30"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Structured output is configured via `response_format` accepting a raw Pydantic/dataclass/TypedDict/JSON-schema or explicit ToolStrategy/ProviderStrategy/AutoStrategy; AutoStrategy picks provider-native output when `_supports_provider_strategy` says the model supports it.",
+          "sources": [
+            "libs/langchain_v1/langchain/agents/structured_output.py#L29-33",
+            "libs/langchain_v1/langchain/agents/factory.py#L1347-1367"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "HumanInTheLoopMiddleware pauses tool calls via langgraph `interrupt()` with ReviewConfig policies allowing approve/edit/reject/respond decisions, and annotates edited calls with an `_EDIT_NOTICE` so the model knows the call was replaced.",
+          "sources": [
+            "libs/langchain_v1/langchain/agents/middleware/human_in_the_loop.py#L31-78"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "ShellToolMiddleware exposes a persistent `shell` tool executing commands under pluggable policies: HostExecutionPolicy (direct subprocess), DockerExecutionPolicy, and CodexSandboxExecutionPolicy, with output redaction via RedactionRule.",
+          "sources": [
+            "libs/langchain_v1/langchain/agents/middleware/shell_tool.py#L59-120",
+            "libs/langchain_v1/langchain/agents/middleware/_execution.py#L92-323"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "PIIMiddleware detects emails/credit cards/IPs/MACs/URLs via `_redaction` helpers and can mutate streaming deltas in flight through `_PIIStreamTransformer` (a 128-char lookback buffer catches patterns straddling token boundaries).",
+          "sources": [
+            "libs/langchain_v1/langchain/agents/middleware/pii.py#L12-66"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`MCPAdapter` converts FastMCP targets (URL, Path, transport, MCPConfig, in-process server, client/group) into LangChain tools via `list_tools()`, and arms clients so server elicitation requests become LangGraph interrupts answered by humans.",
+          "sources": [
+            "libs/langchain_v1/langchain/mcp/adapter.py#L125-242",
+            "libs/langchain_v1/langchain/mcp/elicitation.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "langchain.messages re-exports the canonical message model (AIMessage, ToolMessage, HumanMessage, SystemMessage, content-block types, ToolCall, trim_messages) from langchain-core.",
+          "sources": [
+            "libs/langchain_v1/langchain/messages/__init__.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "BaseRateLimiter/InMemoryRateLimiter are re-exported from langchain.rate_limiters and are honored by BaseChatModel._generate_with_cache which acquires the limiter before hitting the provider API (but after cache lookup).",
+          "sources": [
+            "libs/langchain_v1/langchain/rate_limiters/__init__.py",
+            "libs/core/langchain_core/language_models/chat_models.py#L1931-1935"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "langchain-tests (standard-tests) ships reusable conformance suites — unit_tests/chat_models.py, embeddings.py, tools.py and integration_tests/{chat_models,vectorstores,retrievers,indexer,cache,sandboxes}.py — that partner packages subclass to prove compliance.",
+          "sources": [
+            "libs/standard-tests/langchain_tests/unit_tests",
+            "libs/standard-tests/langchain_tests/integration_tests"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "langchain-model-profiles ships a `langchain-profiles` CLI that generates per-model capability profile data consumed by partners' data/ dirs.",
+          "sources": [
+            "libs/model-profiles/langchain_model_profiles/cli.py",
+            "AGENTS.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "langchain-classic retains the legacy feature surface: AgentExecutor, agent types (react, conversational, structured_chat, tool_calling_agent, openai_functions_*), and the full chains/ tree (retrieval, combine_documents, graph_qa, etc.).",
+          "sources": [
+            "libs/langchain/langchain_classic/agents/agent.py#L1012",
+            "libs/langchain/langchain_classic/agents/types.py"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "data_flow": {
+      "summary": "Agents are LangGraph state machines: input is a messages list merged into a resolved state schema (middleware schemas + AgentState, base last so caller schema wins conflicts). Each loop iteration builds a ModelRequest carried through the wrap_model_call middleware stack to a bound model; the AIMessage is post-processed for structured output and packed into Command state updates. Tool calls route to ToolNode, whose ToolMessages append via the add_messages reducer. Tool calls go through a wrap_tool_call stack. Streaming is reshaped by TransformerFactory instances registered at compile time. Outside agents, init_chat_model resolves provider strings to lazily imported classes, and BaseChatModel.invoke routes through callbacks, an LLM cache, and a rate limiter before _generate/_stream.",
+      "claims": [
+        {
+          "claim": "Agent input boundary is `{\"messages\": [...]}`: `_resolve_schemas` merges each middleware's `state_schema` (in registration order) with the base schema last, producing resolved_state_schema, input_schema, output_schema for the StateGraph.",
+          "sources": [
+            "libs/langchain_v1/langchain/agents/factory.py#L1174-1192"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "ModelRequest is the data unit flowing through wrap_model_call middleware: it carries model, messages (excluding system message), system_message, tool_choice, tools, response_format, state, runtime, and model_settings, with an `override()` API (direct attribute assignment is deprecated).",
+          "sources": [
+            "libs/langchain_v1/langchain/agents/middleware/types.py#L87-200"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The model node builds a ModelRequest, runs it through the composed `wrap_model_call_handler` (or calls `_execute_model` directly), then `_build_commands` converts the ModelResponse into Command objects updating `messages` and `structured_response` state.",
+          "sources": [
+            "libs/langchain_v1/langchain/agents/factory.py#L1519-1540",
+            "libs/langchain_v1/langchain/agents/factory.py#L213-250"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`_get_bound_model` validates middleware-added client-side tools against `tool_node.tools_by_name` (skipped when wrap_tool_call middleware can handle dynamic tools), normalizes raw schemas to AutoStrategy, and picks ProviderStrategy vs ToolStrategy by model capability.",
+          "sources": [
+            "libs/langchain_v1/langchain/agents/factory.py#L1298-1369"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Structured output is marshaled inside `_handle_model_output`: ProviderStrategy parses the AIMessage via `ProviderStrategyBinding.parse`, ToolStrategy intercepts tool_calls matching `structured_output_tools` names and validates args into `structured_response` state.",
+          "sources": [
+            "libs/langchain_v1/langchain/agents/factory.py#L1194-1296",
+            "libs/langchain_v1/langchain/agents/structured_output.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Tool execution reuses LangGraph's ToolNode — langchain's tools/tool_node.py is a backwards-compat shim re-exporting ToolNode, ToolCallRequest, ToolCallWrapper, InjectedState, InjectedStore, ToolRuntime from langgraph.prebuilt.",
+          "sources": [
+            "libs/langchain_v1/langchain/tools/tool_node.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Conversation history accumulates in the `messages` channel via langgraph's `add_messages` reducer imported in middleware types; agent state also carries ephemeral routing via JumpTo ('tools'|'model'|'end').",
+          "sources": [
+            "libs/langchain_v1/langchain/agents/middleware/types.py#L27-68"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Stream output is post-processed by transformers registered at compile: ToolCallTransformer and SubagentTransformer always run first, then per-middleware `transformers` (e.g. InternalCallTransformer for SummarizationMiddleware's internal calls), then user-supplied factories, deduped.",
+          "sources": [
+            "libs/langchain_v1/langchain/agents/factory.py#L1836-1857",
+            "libs/langchain_v1/langchain/agents/_subagent_transformer.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Tracing flows through LangSmith: middleware wrap hooks are wrapped in `traceable` with `_scrub_inputs` stripping unserializable handler/runtime, per-middleware TracePolicy via `_node_trace_policy`, and the compiled graph gets metadata `ls_integration: langchain_create_agent`.",
+          "sources": [
+            "libs/langchain_v1/langchain/agents/factory.py#L146-171",
+            "libs/langchain_v1/langchain/agents/factory.py#L1829-1835"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "init_chat_model data flow: provider key lookup in `_BUILTIN_PROVIDERS` -> `_import_module` (importlib with 'pip install <pkg>' hint on failure) -> getattr class -> functools.partial creator; provider inference from model name uses the registry keys.",
+          "sources": [
+            "libs/langchain_v1/langchain/chat_models/base.py#L123-191"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "BaseChatModel.invoke pipelines through callback_manager.on_chat_model_start -> `_generate_with_cache` (llm cache lookup via `dumps(messages)` key, then rate_limiter.acquire) -> either protocol v2 streaming, implicit `_stream` chunk accumulation with on_llm_new_token, or `_generate` -> on_llm_end with LLMResult.",
+          "sources": [
+            "libs/core/langchain_core/language_models/chat_models.py#L1892-2011"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "BaseTool.run wraps execution in on_tool_start/on_tool_end callbacks and converts ToolException into tool output content per the tool's `handle_tool_error` flag (bool, str template, or callable) via `_handle_tool_error`.",
+          "sources": [
+            "libs/core/langchain_core/tools/base.py#L1009-1145",
+            "libs/core/langchain_core/tools/base.py#L1313-1345"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "MCP tool data flow: MCPAdapter builds a FastMCPClient (str targets restricted to http/https), `list_tools` calls client.list_tools(cache_mode) then `as_langchain_tool` per remote tool; elicitation requests surface as langgraph interrupts.",
+          "sources": [
+            "libs/langchain_v1/langchain/mcp/adapter.py#L221-242",
+            "libs/langchain_v1/langchain/mcp/tools.py"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "behavior_traces": {
+      "summary": "Key flows traced end-to-end: (1) model initialization via init_chat_model; (2) agent construction via create_agent — middleware classification, schema merge, node/edge wiring, compile; (3) the agent loop — before_agent/before_model hooks, model call through the wrap_model_call stack, tool dispatch, loop-back or exit through after_model/after_agent; (4) single chat-model invocation through cache/rate-limiter/streaming; (5) MCP tool adoption; (6) CI test and release flows.",
+      "claims": [
+        {
+          "claim": "Import/startup: `import langchain` sets only __version__; `from langchain.agents import create_agent` pulls factory.py which imports langgraph (StateGraph, ToolNode, Command, Send), langsmith.traceable, and init_chat_model; `import langchain.mcp` emits a LangChainBetaWarning.",
+          "sources": [
+            "libs/langchain_v1/langchain/__init__.py",
+            "libs/langchain_v1/langchain/agents/factory.py#L21-64",
+            "libs/langchain_v1/langchain/mcp/__init__.py#L28-33"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "init_chat_model('openai:gpt-5.5'): parse provider prefix -> `_get_chat_model_creator` (lru_cached) -> `_import_module('langchain_openai')` -> getattr ChatOpenAI -> functools.partial(_call, cls) -> cls(**kwargs); ollama falls back to langchain_community.chat_models for backwards compat.",
+          "sources": [
+            "libs/langchain_v1/langchain/chat_models/base.py#L150-191"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "create_agent construction order: str model -> init_chat_model; system_prompt -> SystemMessage; middleware partitioned by which hooks each subclass overrides (before_agent/before_model/after_model/after_agent/wrap_model_call/wrap_tool_call); sync and async wrap handlers composed via `_chain_model_call_handlers`/`_chain_async_model_call_handlers`.",
+          "sources": [
+            "libs/langchain_v1/langchain/agents/factory.py#L994-999",
+            "libs/langchain_v1/langchain/agents/factory.py#L1150-1172"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Graph wiring: nodes added — 'model' (RunnableCallable(model_node, amodel_node)), 'tools' (ToolNode, only if tools exist), and '<middleware_name>.<hook>' RunnableCallables; START->entry_node; conditional edges route tools->loop_entry|exit and model->tools|exit|loop_entry; middleware chains wired via `_add_middleware_edge` with can_jump_to.",
+          "sources": [
+            "libs/langchain_v1/langchain/agents/factory.py#L1543-1733"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Compile step: graph.compile(checkpointer, store, interrupt_before, interrupt_after, debug, name, cache, transformers=[ToolCallTransformer, SubagentTransformer, middleware+user transformers]) then `.with_config({recursion_limit: 9999, metadata: {ls_integration: langchain_create_agent}})`.",
+          "sources": [
+            "libs/langchain_v1/langchain/agents/factory.py#L1829-1857"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Runtime loop order on agent.invoke: START -> first before_agent middleware -> before_model chain -> 'model' -> after_model chain (reverse order) -> conditional edge: tool_calls present -> 'tools' -> back to loop_entry_node (first before_model or 'model'); no tool_calls -> exit_node -> after_agent chain -> END.",
+          "sources": [
+            "libs/langchain_v1/langchain/agents/factory.py#L1647-1733",
+            "openwiki/architecture.md#L214-243"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Inside the model node (sync path mirrored by amodel_node): ModelRequest assembled -> awrap_model_call_handler(request, _execute_model_async) -> _get_bound_model binds tools and resolves response format -> model.ainvoke(messages) -> _handle_model_output -> ModelResponse -> _build_commands (rejecting Command.goto from wrap_model_call with NotImplementedError).",
+          "sources": [
+            "libs/langchain_v1/langchain/agents/factory.py#L1498-1540",
+            "libs/langchain_v1/langchain/agents/factory.py#L244-250"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Structured-output error recovery: StructuredOutputValidationError or MultipleStructuredOutputsError goes through `_handle_structured_output_error`; if retryable, an error ToolMessage (STRUCTURED_OUTPUT_ERROR_TEMPLATE 'Please fix your mistakes.') is appended and the loop continues.",
+          "sources": [
+            "libs/langchain_v1/langchain/agents/factory.py#L117-117",
+            "libs/langchain_v1/langchain/agents/factory.py#L1232-1294"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Single chat-model call: BaseChatModel.invoke -> generate -> callback_manager.on_chat_model_start -> _generate_with_cache -> cache.lookup(prompt, llm_string) short-circuits on hit -> rate_limiter.acquire -> protocol-v2 streaming / implicit _stream (on_llm_new_token per chunk) / _generate -> run_manager.on_llm_end(LLMResult).",
+          "sources": [
+            "libs/core/langchain_core/language_models/chat_models.py#L475",
+            "libs/core/langchain_core/language_models/chat_models.py#L1892-2011"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Tool invocation inside ToolNode delegates to BaseTool.run: callback_manager.on_tool_start -> _run -> on ToolException, `_handle_tool_error` renders handled content per handle_tool_error -> on_tool_end(output).",
+          "sources": [
+            "libs/core/langchain_core/tools/base.py#L1009-1137"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "MCP adoption flow: MCPAdapter(target) -> str targets pass `_validate_url_target` -> FastMCPClient(target) -> `_arm_for_interrupts` (clones pre-built clients that lack an elicitation handler) -> `async with adapter` connects -> list_tools -> as_langchain_tool -> tools passed to create_agent.",
+          "sources": [
+            "libs/langchain_v1/langchain/mcp/adapter.py#L174-242"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CI unit-test flow: _test.yml -> uv_setup action -> `uv sync --group test --dev` -> `make test` (docker compose postgres+redis up, pytest -n auto --disable-socket --allow-unix-socket) -> get_min_versions.py -> `uv pip install $MIN_VERSIONS` -> `make tests` again -> git-clean check.",
+          "sources": [
+            ".github/workflows/_test.yml#L46-85",
+            "libs/langchain_v1/Makefile#L40-44"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Release flow per AGENTS.md: bump `_version.py` + pyproject version + `uv lock`, merge `release(<partner>): <version>` PR, then `gh workflow run` on _release.yml — build -> release-notes -> pre-release-checks -> TestPyPI -> PyPI -> GitHub release/tag via ncipollo/release-action.",
+          "sources": [
+            "AGENTS.md",
+            ".github/workflows/_release.yml#L1-35"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "testing_signals": {
+      "summary": "pytest is the framework everywhere, configured per-package with strict markers/config, asyncio auto mode, syrupy snapshots, and pytest-socket to forbid network in unit tests. langchain_v1 has ~85 unit-test files (heavy agents/middleware coverage, plus chat_models, embeddings, mcp, tools), integration tests with VCR cassettes, and a benchmark suite for create_agent. CI runs tests twice — current and minimum dependency versions — and scheduled integration tests trace to LangSmith. langchain-tests packages the conformance suite partners must pass. Gaps: unit tests need docker postgres/redis for checkpointer paths, and langchain-classic's huge legacy surface relies on older coverage.",
+      "claims": [
+        {
+          "claim": "pytest config: `--strict-markers --strict-config --durations=5 --snapshot-warn-unused -vv`, asyncio_mode=auto, custom markers (requires, scheduled, compile, benchmark), syrupy snapshots under tests/**/__snapshots__.",
+          "sources": [
+            "libs/langchain_v1/pyproject.toml#L179-192"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Unit tests live in tests/unit_tests mirroring source layout; langchain_v1's agents suite includes test_react_agent.py, test_response_format*.py, test_return_direct*.py, test_subagent_*.py, middleware/ and middleware_typing/ dirs, plus specifications/ and cassettes/ for VCR replay.",
+          "sources": [
+            "libs/langchain_v1/tests/unit_tests/agents",
+            "libs/langchain_v1/tests/cassettes"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Network isolation is enforced: `make test` runs pytest with `--disable-socket --allow-unix-socket` (pytest-socket), and unit tests must not hit the network per AGENTS.md.",
+          "sources": [
+            "libs/langchain_v1/Makefile#L40-47",
+            "libs/langchain_v1/pyproject.toml#L69"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Persistence tests are not hermetic: `make test`/`extended_tests`/`test_watch` spin up postgres and redis via `tests/unit_tests/agents/compose-postgres.yml` and `compose-redis.yml` before running, then tear them down.",
+          "sources": [
+            "libs/langchain_v1/Makefile#L10-14",
+            "libs/langchain_v1/tests/unit_tests/agents/compose-postgres.yml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Async correctness is checked with blockbuster (blocking-call detection) in the test group; freezegun and responses are used in core tests.",
+          "sources": [
+            "libs/langchain_v1/pyproject.toml#L64-79",
+            "libs/core/pyproject.toml#L62-79"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Benchmarks exist for agent creation: `make benchmark` runs tests/benchmarks/test_create_agent.py with -m benchmark; a codspeed workflow exists for perf tracking.",
+          "sources": [
+            "libs/langchain_v1/Makefile#L49-50",
+            ".github/workflows/codspeed.yml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CI runs the unit suite twice — once on current deps and once after installing computed minimum versions via `.github/scripts/get_min_versions.py` — catching lower-bound regressions.",
+          "sources": [
+            ".github/workflows/_test.yml#L55-73"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Scheduled integration tests (integration_tests.yml) trace runs to LangSmith using LANGSMITH_TRACING/API_KEY/PROJECT/TAGS env vars and authenticate to cloud providers via workload identity (google-github-actions/auth, configure-aws-credentials).",
+          "sources": [
+            ".github/workflows/integration_tests.yml#L187-293"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "langchain-tests is a published package exposing standard unit+integration test classes (chat_models, embeddings, tools, vectorstores, retrievers, indexers, caches, sandboxes) that partner packages subclass for conformance.",
+          "sources": [
+            "libs/standard-tests/langchain_tests/unit_tests/chat_models.py",
+            "libs/standard-tests/langchain_tests/integration_tests/vectorstores.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Static checks are strict: ruff with `select = [\"ALL\"]` (google docstring convention, banned relative imports) and mypy strict mode with pydantic plugin; `check_imports` script verifies every module imports cleanly in CI.",
+          "sources": [
+            "libs/langchain_v1/pyproject.toml#L110-154",
+            "libs/langchain_v1/Makefile#L73-77"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Coverage is gated by make targets `coverage` and `coverage_agents` (term-missing + xml/html reports scoped to langchain.agents); test_react_agent.py is exempted from all lint rules, suggesting it is a large legacy-style test file.",
+          "sources": [
+            "libs/langchain_v1/Makefile#L24-38",
+            "libs/langchain_v1/pyproject.toml#L156-164"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "risk_map": {
+      "summary": "The highest blast radius sits in places that execute or reach out: ShellToolMiddleware spawns real subprocesses (host/docker/codex policies), MCPAdapter intentionally blocks non-http(s) string targets because FastMCP would otherwise exec local files, and core's _security module provides SSRF validation with a test-only bypass env var. Fragile spots: regex-based model capability fallbacks that must track provider releases, a 9_999 recursion limit, deferred import errors from lazy provider loading, validation gaps when wrap_tool_call middleware exists, and the still-shipped langchain-classic legacy surface.",
+      "claims": [
+        {
+          "claim": "ShellToolMiddleware executes model-generated shell commands via subprocess.Popen (n noqa'd S603); HostExecutionPolicy runs commands directly on the host — DockerExecutionPolicy/CodexSandboxExecutionPolicy exist precisely because host execution is dangerous. Agents given this middleware have arbitrary-code-execution capability.",
+          "sources": [
+            "libs/langchain_v1/langchain/agents/middleware/_execution.py#L27-140",
+            "libs/langchain_v1/langchain/agents/middleware/shell_tool.py#L59-120"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "MCPAdapter._validate_url_target rejects any str target that is not http/https because fastmcp.Client tests strings as filesystem paths first and would launch a matching .py/.js file as a subprocess — a deliberate guard against config/model-supplied strings becoming local code execution.",
+          "sources": [
+            "libs/langchain_v1/langchain/mcp/adapter.py#L84-122"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "core._security provides SSRF protection (validate_safe_url) blocking private IPs, localhost, cloud metadata, and k8s-internal addresses — but a `LANGCHAIN_ENV=local_test` env var bypasses validation for hostnames starting with 'test' containing 'server', a foot-gun if set in production.",
+          "sources": [
+            "libs/core/langchain_core/_security/_ssrf_protection.py#L29-80",
+            "libs/core/langchain_core/_security/_policy.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "FALLBACK_MODELS_WITH_STRUCTURED_OUTPUT is a hand-maintained regex list of model names assumed to support provider-native structured output when profile data is missing — it will silently mispredict capabilities for new models until updated.",
+          "sources": [
+            "libs/langchain_v1/langchain/agents/factory.py#L174-194"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The compiled agent gets `recursion_limit: 9_999` (working around a langgraph issue), so a model stuck in a tool-call loop can iterate ~10k times before stopping — cost/runaway risk mitigated only by opt-in ModelCallLimitMiddleware/ToolCallLimitMiddleware.",
+          "sources": [
+            "libs/langchain_v1/langchain/agents/factory.py#L1829-1831",
+            "libs/langchain_v1/langchain/agents/middleware/model_call_limit.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Lazy provider loading means ImportError surfaces at first use, not import time: `_import_module` rewrites failures into 'pip install <pkg>' messages, and ollama has a langchain_community fallback that can mask which package is actually missing.",
+          "sources": [
+            "libs/langchain_v1/langchain/chat_models/base.py#L123-191"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Client-side tool validation in `_get_bound_model` is skipped entirely when any middleware defines wrap_tool_call, so a typo'd dynamic tool name fails only when the middleware's own handler misses it — validation coverage depends on middleware correctness.",
+          "sources": [
+            "libs/langchain_v1/langchain/agents/factory.py#L1317-1345"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "wrap_model_call middleware cannot return Command.goto (raises NotImplementedError pointing users at jump_to), and commands accumulate inner-first through the composed stack — ordering/return-shape mistakes produce runtime errors deep in the loop.",
+          "sources": [
+            "libs/langchain_v1/langchain/agents/factory.py#L244-250",
+            "libs/langchain_v1/langchain/agents/factory.py#L67-80"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "langchain-classic remains a large shipped legacy surface (chains/, agents/, retrievers/, utilities/ including many network-calling API wrappers); the dangerous LLMBashChain was removed — its module is now a stub raising AttributeError redirecting to langchain-experimental.",
+          "sources": [
+            "libs/langchain/langchain_classic/chains/llm_bash/__init__.py",
+            "libs/langchain/langchain_classic/agents/agent.py#L1012"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "PIIMiddleware mutates streamed content in flight via _PIIStreamTransformer — silent redaction means downstream consumers (logs, users) see altered text; a false-positive detection corrupts model output with no record unless tracing is on.",
+          "sources": [
+            "libs/langchain_v1/langchain/agents/middleware/pii.py#L39-66"
+          ],
+          "kind": "inference"
+        },
+        {
+          "claim": "Unit tests for persistence require live postgres/redis containers — a contributor running plain pytest without `make test`'s docker compose step will hit connection failures, not skips.",
+          "sources": [
+            "libs/langchain_v1/Makefile#L10-44",
+            "libs/langchain_v1/tests/unit_tests/agents/conftest_checkpointer.py"
+          ],
+          "kind": "inference"
+        },
+        {
+          "claim": "init_chat_model's 'langsmith' provider silently rewrites kwargs (openai_api_base -> gateway.smith.langchain.com, api key from LANGSMITH_GATEWAY_API_KEY/LANGSMITH_API_KEY, use_responses_api=True) — credentials and traffic routing change based on env vars.",
+          "sources": [
+            "libs/langchain_v1/langchain/chat_models/base.py#L24-38"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "extension_points": {
+      "summary": "The framework is built around extension. Agents are extended via AgentMiddleware subclasses (six hook points + state_schema + transformers), custom tools (BaseTool/@tool/dict provider tools), custom state/context schemas, structured-output strategies, checkpointers/stores/caches from LangGraph, and stream transformers. Models and embeddings plug in through partner packages implementing core abstractions plus registry entries in _BUILTIN_PROVIDERS, validated by the langchain-tests conformance suite. Shell execution is extensible via BaseExecutionPolicy.",
+      "claims": [
+        {
+          "claim": "AgentMiddleware is the primary extension point: subclasses override any of before_agent/before_model/after_model/after_agent/wrap_model_call/wrap_tool_call (sync and/or async variants); decorators @before_agent/@before_model/@after_agent/@after_model/@dynamic_prompt/@wrap_model_call/@wrap_tool_call offer a functional alternative.",
+          "sources": [
+            "libs/langchain_v1/langchain/agents/middleware/types.py#L42-66",
+            "libs/langchain_v1/langchain/agents/middleware/__init__.py#L90-100"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Middleware can declare `state_schema` (merged into agent state), `tools` (registered on the agent), `transformers` (stream post-processors), `trace_policy`, and `can_jump_to` per hook — factory.py inspects which hooks are overridden to decide which graph nodes to add.",
+          "sources": [
+            "libs/langchain_v1/langchain/agents/factory.py#L1174-1182",
+            "libs/langchain_v1/langchain/agents/factory.py#L1550-1645"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New chat-model providers are added by implementing BaseChatModel in a partner package and adding a (module_path, class_name, creator_func) entry to `_BUILTIN_PROVIDERS`; custom creator lambdas handle non-standard constructors (e.g. huggingface's from_model_id, ibm's model_id kwarg).",
+          "sources": [
+            "libs/langchain_v1/langchain/chat_models/base.py#L56-97"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New embeddings providers follow the identical registry pattern in embeddings/base.py `_BUILTIN_PROVIDERS`.",
+          "sources": [
+            "libs/langchain_v1/langchain/embeddings/base.py#L15-34"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Partner packages prove conformance by subclassing langchain-tests suites (unit_tests/chat_models.py, integration_tests/vectorstores.py, etc.) rather than writing their own contract tests.",
+          "sources": [
+            "libs/standard-tests/langchain_tests/unit_tests/chat_models.py",
+            "libs/standard-tests/langchain_tests/integration_tests"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Tools plug in as BaseTool subclasses, @tool-decorated callables, or raw dicts (provider built-in tools); tools can inject runtime/state/store via ToolRuntime/InjectedState/InjectedStore annotations.",
+          "sources": [
+            "libs/langchain_v1/langchain/tools/__init__.py",
+            "libs/langchain_v1/langchain/agents/factory.py#L879-882"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Agent state is extensible two ways: a custom `state_schema` TypedDict passed to create_agent (wins field conflicts over middleware schemas since it's merged last), or middleware-declared state_schema attributes.",
+          "sources": [
+            "libs/langchain_v1/langchain/agents/factory.py#L916-923",
+            "libs/langchain_v1/langchain/agents/factory.py#L1174-1182"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Structured output strategies are pluggable ResponseFormat implementations (ToolStrategy, ProviderStrategy, AutoStrategy); callers can also pass raw Pydantic/dataclass/TypedDict/JSON-schema which get wrapped in AutoStrategy.",
+          "sources": [
+            "libs/langchain_v1/langchain/agents/structured_output.py#L29-33",
+            "libs/langchain_v1/langchain/agents/factory.py#L1347-1353"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Persistence/streaming extension points come straight from LangGraph: create_agent accepts checkpointer (Checkpointer), store (BaseStore), cache (BaseCache), interrupt_before/after node names, and user `transformers` factories appended to the default pipeline.",
+          "sources": [
+            "libs/langchain_v1/langchain/agents/factory.py#L849-858",
+            "libs/langchain_v1/langchain/agents/factory.py#L1841-1857"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Shell execution policy is pluggable via BaseExecutionPolicy subclasses — built-ins are HostExecutionPolicy, DockerExecutionPolicy, CodexSandboxExecutionPolicy, each implementing process launch and post-spawn limits.",
+          "sources": [
+            "libs/langchain_v1/langchain/agents/middleware/_execution.py#L92-323"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Multi-agent composition is supported by naming an agent (`name=` becomes a subgraph node name) and by SubagentTransformer, which is always registered on the compiled graph to reshape nested-agent stream events.",
+          "sources": [
+            "libs/langchain_v1/langchain/agents/factory.py#L946-950",
+            "libs/langchain_v1/langchain/agents/_subagent_transformer.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Observability is extensible per-middleware via TracePolicy and process-wide via configure_trace_policy; all wrap_* hooks are traced through LangSmith `traceable` with scrubbed inputs.",
+          "sources": [
+            "libs/langchain_v1/langchain/agents/middleware/_trace_policy.py",
+            "libs/langchain_v1/langchain/agents/factory.py#L158-171"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_handoff": {
+      "summary": "Read AGENTS.md/CLAUDE.md first — they encode the real conventions (uv-only, Conventional Commits with mandatory scope, Google docstrings, mypy strict + ruff ALL, no breaking signature changes). Work in libs/langchain_v1 for new features; libs/langchain (langchain-classic) is frozen. Re-export shims point at canonical homes: edit langchain_core or langgraph.prebuilt, not the shim. Tests must be hermetic unit tests under tests/unit_tests unless they need the docker services. Watch for: the manual structured-output model regexes, validation gaps around wrap_tool_call, and checkpointer tests that need containers.",
+      "claims": [
+        {
+          "claim": "AGENTS.md and CLAUDE.md at repo root are the canonical contributor contract: uv for all env/dep ops (never pip/poetry), `uv sync --all-groups` before tests, make test/lint/format per package, Conventional Commits with mandatory scope, branch naming `<user>/<scope>/<desc>`.",
+          "sources": [
+            "AGENTS.md",
+            "CLAUDE.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New features go in libs/langchain_v1 (package `langchain`); libs/langchain ships `langchain-classic` and is explicitly 'legacy, no new features' per AGENTS.md — don't add capabilities there.",
+          "sources": [
+            "AGENTS.md",
+            "libs/langchain/pyproject.toml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Public API stability is a hard rule: preserve signatures/positions/names, add new params keyword-only, mark experimental features with `!!! warning` docstring admonitions, and check `__init__.py` exports before touching anything public.",
+          "sources": [
+            "AGENTS.md",
+            "libs/langchain_v1/langchain/agents/__init__.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Several langchain_v1 modules are backwards-compat re-export shims — e.g. langchain/tools/tool_node.py re-exports langgraph.prebuilt ToolNode/ToolCallRequest, langchain/tools/__init__.py re-exports langchain_core.tools — so edit the canonical implementation, not the shim.",
+          "sources": [
+            "libs/langchain_v1/langchain/tools/tool_node.py",
+            "libs/langchain_v1/langchain/tools/__init__.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Before writing agent-loop code, read factory.py end-to-end: node names are '<middleware_name>.<hook>', edges must go through `_add_middleware_edge`/`_get_can_jump_to`, wrap handlers compose via `_chain_model_call_handlers`, and Command.goto inside wrap_model_call is unsupported.",
+          "sources": [
+            "libs/langchain_v1/langchain/agents/factory.py#L1543-1857"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Test conventions: mirror source layout under tests/unit_tests, no network (pytest-socket enforced), use fixtures/mocks, determinism required; persistence tests need `make start_services` (postgres+redis) first.",
+          "sources": [
+            "AGENTS.md",
+            "libs/langchain_v1/Makefile#L10-47"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Lint bar is high: ruff `select = [\"ALL\"]` with google pydocstyle, single-backtick docstring code refs, banned relative imports, mypy strict with pydantic plugin and warn_unreachable; run `make lint` and `uv run --all-groups mypy .` before submitting.",
+          "sources": [
+            "libs/langchain_v1/pyproject.toml#L107-174"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Releasing a package = bump `_version.py` + pyproject version + `uv lock`, merge, then trigger _release.yml via `gh workflow run 63880841` — never tag or create GitHub releases manually.",
+          "sources": [
+            "AGENTS.md",
+            ".github/workflows/_release.yml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Known traps: FALLBACK_MODELS_WITH_STRUCTURED_OUTPUT regexes must be updated for new model families; middleware-added tools bypass validation when wrap_tool_call exists; ModelRequest attribute mutation is deprecated (use override()); system_prompt param deprecated in favor of SystemMessage.",
+          "sources": [
+            "libs/langchain_v1/langchain/agents/factory.py#L174-194",
+            "libs/langchain_v1/langchain/agents/factory.py#L1317-1345",
+            "libs/langchain_v1/langchain/agents/middleware/types.py#L169-200"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Model profile data (capabilities/context windows) is generated, not hand-edited: use `uv run langchain-profiles refresh --provider <p> --data-dir <partner>/langchain_<p>/data` from libs/model-profiles.",
+          "sources": [
+            "AGENTS.md",
+            "libs/model-profiles/langchain_model_profiles/cli.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Every public module/function needs Google-style docstrings with Args/Returns/Raises, full type hints, and American English; tests get relaxed lint rules but still require the strict pytest config (no bare markers).",
+          "sources": [
+            "AGENTS.md",
+            "libs/langchain_v1/pyproject.toml#L156-164"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_prompt": "You are working in the LangChain Python monorepo (github.com/langchain-ai/langchain). It is a uv-managed collection of independently versioned packages under `libs/`.\n\n## Layout\n- `libs/core` -> `langchain-core` (v1.6.x): stable abstractions — `Runnable`, `BaseChatModel` (`language_models/chat_models.py`), `BaseTool` (`tools/base.py`), messages, callbacks, prompts, output parsers, vectorstores, `_security` (SSRF policy). Everything else builds on these.\n- `libs/langchain_v1` -> `langchain` (v1.x): the actively maintained package. `create_agent()` in `langchain/agents/factory.py` compiles a LangGraph `StateGraph` implementing the model->tools loop with middleware hooks; `init_chat_model`/`init_embeddings` use `_BUILTIN_PROVIDERS` registries to lazily import partner packages; `langchain/agents/middleware/` holds the built-in middleware catalog (HITL, summarization, PII, retries, limits, shell tool, file search); `langchain/mcp/` adapts MCP servers (beta).\n- `libs/langchain` -> `langchain-classic` (v1.0.x): frozen legacy chains/agents — no new features.\n- `libs/partners/<name>`: provider integrations (openai, anthropic, ollama, ...), each independently released.\n- `libs/standard-tests` -> `langchain-tests`: conformance suites partners subclass. `libs/model-profiles`: `langchain-profiles` CLI generating model capability data.\n\n## Conventions (from AGENTS.md — read it fully)\n- uv only for env/deps: `uv sync --all-groups`, `uv run --group test pytest ...`. Never pip/poetry/conda. Per-package `pyproject.toml` + `uv.lock` + Makefile.\n- Commands: `make test` (needs docker for postgres/redis persistence tests), `make test_fast` (in-memory), `make lint` (ruff check+format --diff+mypy), `make format`.\n- Quality bar: ruff `select=[\"ALL\"]`, mypy strict, Google-style docstrings with Args/Returns/Raises, single backticks in docstrings, full type hints, keyword-only new params.\n- Never break public signatures. Check `__init__.py` exports first. Deprecate via `langchain_core._api` decorators.\n- PRs: Conventional Commits with mandatory scope (`feat(core):`, `fix(langchain):`, `release(openai): 0.2.6`); branches `<gh-user>/<scope>/<desc>`.\n\n## Architecture essentials\n`create_agent(model, tools, middleware=[...])`: resolves string models via `init_chat_model`, partitions middleware by overridden hooks, merges `state_schema`s (caller schema last = wins), adds `model`/`tools`/`<name>.<hook>` nodes, wires edges with `jump_to` support, and returns `graph.compile(checkpointer, store, ...).with_config(recursion_limit=9999)`. At runtime: START -> before_agent -> before_model -> model (through the composed `wrap_model_call` stack -> `_get_bound_model` -> `model.invoke` -> `_handle_model_output`) -> after_model -> conditional edge to `tools` or exit -> after_agent -> END. Structured output uses ToolStrategy/ProviderStrategy/AutoStrategy in `agents/structured_output.py`.\n\n## Traps\n- `langchain/tools/tool_node.py` and `tools/__init__.py` are re-export shims — canonical code lives in `langgraph.prebuilt` and `langchain_core.tools`.\n- `FALLBACK_MODELS_WITH_STRUCTURED_OUTPUT` regexes in factory.py must be extended for new model families.\n- ShellToolMiddleware runs real subprocesses; MCPAdapter rejects non-http(s) string targets because FastMCP would exec local files.\n- `make check_imports` runs in CI — keep new modules importable without optional deps.\n- Tests: mirror source layout under `tests/unit_tests`, no network (pytest-socket enforces), syrupy snapshots updated via `--snapshot-update` in `make test`."
+  },
+  "analysis": {
+    "agent": "devin",
+    "model": "swe-2",
+    "runtime_ms": null,
+    "cost_usd": null,
+    "collected_at": "2026-09-22T16:03:31.666Z"
   }
 }

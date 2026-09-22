@@ -3623,7 +3623,7 @@
         {
           "path": "AGENTS.md",
           "bytes": 22626,
-          "preview": "# AGENTS.md\n\nThis file provides guidance on how to work with the n8n repository.\n\n## Project Overview\n\nn8n is a workflow automation platform written in TypeScript, using a monorepo\nstructure managed by pnpm workspaces. It consists of a Node.js backend, Vue.js\nfrontend, and extensible node-based workflow engine.\n\n## General Guidelines\n\n- Always use pnpm\n- Write all technical text (code comments, PR descriptions, issue and ticket\n  descriptions, docs) in ASD-STE100 Simplified Technical English: use short\n  sentences, the active voice, and one instruction for each sentence\n- **Secrets on the command line:** if a developer opted into anonymous dev\n  metrics (`scripts/dev-metrics`), pnpm command arguments are recorded. Arguments\n  of secret-carrying words (`config`, `login`, `publish`, `token`) \u2014 whether a\n  subcommand or baked into a flag \u2014 are dropped, and the home dir is stripped from\n  paths, but other args are sent as-is \u2014 so never put secrets in a command. Pass\n  sensitive values via environment variables, which are never captured.\n- When adding comments, keep them concise and to the point - explain the \"why\"\n  in a line or two; don't be overly verbose. Comments should be scoped and\n  relevant to the surrounding code, not just to the current task\n- We use Linear as a ticket tracking system\n- We use Posthog for feature flags\n- To find registered telemetry events (names, descriptions, properties), run\n  `pnpm --filter @n8n/telemetry catalog` (`--json` for structured output). The\n  registry is being adopted incrementally, so search call sites if the catalog\n  has no match. The `n8n:telemetry` skill covers adding or changing events\n- When starting to work on a new ticket \u2013 create a new branch from fresh\n  master with the name specified in Linear ticket\n- When creating a new branch for a ticket in Linear - use the branch name\n  suggested by Linear, **unless it is a security fix** (see Security Fix\n  Hygiene below)\n- Use mermaid diagrams in MD files when you need to visualise something\n- **Developing v3 features:** land normal feature work on `master` behind an\n  opt-in flag; introduce breaking changes only on the `3.x` branch. See\n  [.github/DEVELOPING_V3.md](.github/DEVELOPING_V3.md).\n- The AI gateway feature is **\"Gateway credits\"** in user-facing text (UI copy,\n  error messages, prompts). Only internal identifiers, i18n keys, telemetry, and\n  comments keep the historical `n8nConnect` / `n8n credits` / AI Gateway names\n- **Shared utilities:** before you hand-roll a utility (`isRecord`, secret or\n  PII redaction, JSON extraction from LLM output, Zod to JSON Schema, model-id\n  parsing, \u2026), you MUST check the shared packages for an existing\n  implementation and use it: `@n8n/utils` (generic helpers, redaction),\n  `@n8n/ai-utilities` (AI- and LLM-specific helpers) and `n8n-workflow`\n  (workflow graph and traversal). A new shared helper usually belongs in one of\n  these packages too; domain logic stays in the package that owns the domain.\n\n## Agent Skills and Claude Code Plugin\n\nn8n shared skills live in `.agents/skills/`. Claude Code consumes them through\nsymlinks in `.claude/plugins/n8n/skills/`; OpenCode reads `.agents/skills/`\ndirectly. Harness-specific overrides remain real directories in the harness\npath, such as `.opencode/skills/setup-mcps/`. See\n[skills README](.agents/skills/AGENTS.md) for editing and sync guidance.\n\nn8n-specific Claude Code commands and agents live in `.claude/plugins/n8n/` and\nare namespaced under `n8n:`. Use `n8n:` prefix when invoking them (e.g.\n`/n8n:create-pr`, `/n8n:plan`, `n8n:developer` agent). See\n[plugin README](.claude/plugins/n8n/README.md) for structure and details.\n\n## Essential Commands\n\n### Fresh checkout / agent setup\n\nFor a fresh checkout (cat-bot, a new hire, any agent verifying the repo\nbuilds), prefer `pnpm agent:setup` over running install + build + tests by\nhand. It chains them in one process, caps per-process memory and turbo\nconcurrency so a 6GB box doesn't OOM, streams all output to\n`.agent-setup/<step>.log` (gitignored), and surfaces only a one-line summary\nper step plus the tail of the failing log. A machine-readable\n`.agent-setup/summary.json` is always written so a backgrounded run is\nreadable in a single shot \u2014 no polling, no scrolling logs.\n\n```bash\npnpm agent:setup                 # install \u2192 build \u2192 test (full suite)\npnpm agent:setup install         # one step at a time\npnpm agent:setup --json          # JSON summary on stdout (for scripts/agents)\n```\n\n### Building\nUse `pnpm build` to build all packages. ALWAYS redirect the output of the\nbuild command to a file:\n\n```bash\npnpm build > build.log 2>&1\n```\n\nYou can inspect the last few lines of the build log file to check for errors:\n```bash\ntail -n 20 build.log\n```\n\nIf build outputs or the turbo cache are stale (e.g. after switching branches\nor worktrees) but dependencies haven't changed, use `pnpm reset` (lightweight\nby default) for a fast recovery: it cleans build outputs and force-rebuilds\n(keeping `node_modules` and untracked files). If that doesn't fix your issue,\nuse `pnpm reset --full`, which also wipes untracked files and reinstalls\ndependencies.\n\n### Testing\n- `pnpm test` - Run all tests\n- `pnpm test:affected` - Runs tests based on what has changed since the last\n  commit\n\nRunning a particular test file requires going to the directory of that test\nand running: `pnpm test <test-file>`.\n\nWhen changing directories, use `pushd` to navigate into the directory and\n`popd` to return to the previous directory. When in doubt, use `pwd` to check\nyour current directory.\n\n### Seeding a local instance\n\nAn empty instance is a bad place to test anything that reads a user's work.\nThese commands fill one. They are dev tooling on the private root package, so\nthey never reach a user.\n\n```bash\nN8N_API_KEY=<jwt> pnpm seed:preference   # 10 workflows in one house style, plus history\nN8N_API_KEY=<jwt> pnpm seed:account      # ~500 varied workflows across 30 projects\npnpm inspect:activity                    # read-only activity_event viewer on 127.0.0.1\n```\n\nBoth seed profiles delete their own prior output, so a re-run replaces it.\nThat clear step deletes anything named `[seed]` and any empty team project,\nwhoever made them, so do not point either at a shared instance. The viewer is\nunauthenticated and serves the whole table: keep it on loopback.\n\nSee [scripts/instance-seeding/AGENTS.md](scripts/instance-seeding/AGENTS.md) for\nprofiles, tokens, determinism, and the other commands.\n\n### Code Quality\n- `pnpm lint` - Lint code\n- `pnpm typecheck` - Run type checks\n- `pnpm knip` - Report declared dependencies that no file in the package uses.\n  CI runs it on every PR as the \"Unused Dependencies\" check. To resolve a\n  finding, remove the dependency from the manifest. If the dependency is used\n  in a way knip cannot see, add an `ignoreDependencies` entry for the package\n  in `knip.ts` with a one-line reason\n\nAlways run lint and typecheck before committing code to ensure quality.\nExecute these commands from within the specific package directory you're\nworking on (e.g., `cd packages/cli && pnpm lint`). Run the full repository\ncheck only when preparing the final PR. When your changes affect type\ndefinitions, interfaces in `@n8n/api-types`, or cross-package dependencies,\nbuild the system before running lint and typecheck.\n\n## Architecture Overview\n\n**Monorepo Structure:** pnpm workspaces with Turbo build orchestration\n\n### Package Structure\n\nThe monorepo is organized into these key packages:\n\n- **`packages/@n8n/api-types`**: Shared TypeScript interfaces between frontend and backend\n- **`packages/workflow`**: Core workflow interfaces and types\n- **`packages/core`**: Workflow execution engine\n- **`packages/cli`**: Express server, REST API, and CLI commands\n- **`packages/frontend/editor-ui`**: Vue 3 frontend application\n- **`packages/frontend/@n8n/i18n`**: Internationalization for UI text\n- **`packages/nodes-base`**: Built-in nodes for integrations\n- **`packages/@n8n/nodes-langchain`**: AI/LangChain nodes\n- **`packages/@n8n/instance-ai`**: \"n8n Assistant\" in the UI, \"Instance AI\" in code \u2014 n8n Assistant backend. See its `CLAUDE.md` for architectur"
+          "preview": "# AGENTS.md\n\nThis file provides guidance on how to work with the n8n repository.\n\n## Project Overview\n\nn8n is a workflow automation platform written in TypeScript, using a monorepo\nstructure managed by pnpm workspaces. It consists of a Node.js backend, Vue.js\nfrontend, and extensible node-based workflow engine.\n\n## General Guidelines\n\n- Always use pnpm\n- Write all technical text (code comments, PR descriptions, issue and ticket\n  descriptions, docs) in ASD-STE100 Simplified Technical English: use short\n  sentences, the active voice, and one instruction for each sentence\n- **Secrets on the command line:** if a developer opted into anonymous dev\n  metrics (`scripts/dev-metrics`), pnpm command arguments are recorded. Arguments\n  of secret-carrying words (`config`, `login`, `publish`, `token`) — whether a\n  subcommand or baked into a flag — are dropped, and the home dir is stripped from\n  paths, but other args are sent as-is — so never put secrets in a command. Pass\n  sensitive values via environment variables, which are never captured.\n- When adding comments, keep them concise and to the point - explain the \"why\"\n  in a line or two; don't be overly verbose. Comments should be scoped and\n  relevant to the surrounding code, not just to the current task\n- We use Linear as a ticket tracking system\n- We use Posthog for feature flags\n- To find registered telemetry events (names, descriptions, properties), run\n  `pnpm --filter @n8n/telemetry catalog` (`--json` for structured output). The\n  registry is being adopted incrementally, so search call sites if the catalog\n  has no match. The `n8n:telemetry` skill covers adding or changing events\n- When starting to work on a new ticket – create a new branch from fresh\n  master with the name specified in Linear ticket\n- When creating a new branch for a ticket in Linear - use the branch name\n  suggested by Linear, **unless it is a security fix** (see Security Fix\n  Hygiene below)\n- Use mermaid diagrams in MD files when you need to visualise something\n- **Developing v3 features:** land normal feature work on `master` behind an\n  opt-in flag; introduce breaking changes only on the `3.x` branch. See\n  [.github/DEVELOPING_V3.md](.github/DEVELOPING_V3.md).\n- The AI gateway feature is **\"Gateway credits\"** in user-facing text (UI copy,\n  error messages, prompts). Only internal identifiers, i18n keys, telemetry, and\n  comments keep the historical `n8nConnect` / `n8n credits` / AI Gateway names\n- **Shared utilities:** before you hand-roll a utility (`isRecord`, secret or\n  PII redaction, JSON extraction from LLM output, Zod to JSON Schema, model-id\n  parsing, …), you MUST check the shared packages for an existing\n  implementation and use it: `@n8n/utils` (generic helpers, redaction),\n  `@n8n/ai-utilities` (AI- and LLM-specific helpers) and `n8n-workflow`\n  (workflow graph and traversal). A new shared helper usually belongs in one of\n  these packages too; domain logic stays in the package that owns the domain.\n\n## Agent Skills and Claude Code Plugin\n\nn8n shared skills live in `.agents/skills/`. Claude Code consumes them through\nsymlinks in `.claude/plugins/n8n/skills/`; OpenCode reads `.agents/skills/`\ndirectly. Harness-specific overrides remain real directories in the harness\npath, such as `.opencode/skills/setup-mcps/`. See\n[skills README](.agents/skills/AGENTS.md) for editing and sync guidance.\n\nn8n-specific Claude Code commands and agents live in `.claude/plugins/n8n/` and\nare namespaced under `n8n:`. Use `n8n:` prefix when invoking them (e.g.\n`/n8n:create-pr`, `/n8n:plan`, `n8n:developer` agent). See\n[plugin README](.claude/plugins/n8n/README.md) for structure and details.\n\n## Essential Commands\n\n### Fresh checkout / agent setup\n\nFor a fresh checkout (cat-bot, a new hire, any agent verifying the repo\nbuilds), prefer `pnpm agent:setup` over running install + build + tests by\nhand. It chains them in one process, caps per-process memory and turbo\nconcurrency so a 6GB box doesn't OOM, streams all output to\n`.agent-setup/<step>.log` (gitignored), and surfaces only a one-line summary\nper step plus the tail of the failing log. A machine-readable\n`.agent-setup/summary.json` is always written so a backgrounded run is\nreadable in a single shot — no polling, no scrolling logs.\n\n```bash\npnpm agent:setup                 # install → build → test (full suite)\npnpm agent:setup install         # one step at a time\npnpm agent:setup --json          # JSON summary on stdout (for scripts/agents)\n```\n\n### Building\nUse `pnpm build` to build all packages. ALWAYS redirect the output of the\nbuild command to a file:\n\n```bash\npnpm build > build.log 2>&1\n```\n\nYou can inspect the last few lines of the build log file to check for errors:\n```bash\ntail -n 20 build.log\n```\n\nIf build outputs or the turbo cache are stale (e.g. after switching branches\nor worktrees) but dependencies haven't changed, use `pnpm reset` (lightweight\nby default) for a fast recovery: it cleans build outputs and force-rebuilds\n(keeping `node_modules` and untracked files). If that doesn't fix your issue,\nuse `pnpm reset --full`, which also wipes untracked files and reinstalls\ndependencies.\n\n### Testing\n- `pnpm test` - Run all tests\n- `pnpm test:affected` - Runs tests based on what has changed since the last\n  commit\n\nRunning a particular test file requires going to the directory of that test\nand running: `pnpm test <test-file>`.\n\nWhen changing directories, use `pushd` to navigate into the directory and\n`popd` to return to the previous directory. When in doubt, use `pwd` to check\nyour current directory.\n\n### Seeding a local instance\n\nAn empty instance is a bad place to test anything that reads a user's work.\nThese commands fill one. They are dev tooling on the private root package, so\nthey never reach a user.\n\n```bash\nN8N_API_KEY=<jwt> pnpm seed:preference   # 10 workflows in one house style, plus history\nN8N_API_KEY=<jwt> pnpm seed:account      # ~500 varied workflows across 30 projects\npnpm inspect:activity                    # read-only activity_event viewer on 127.0.0.1\n```\n\nBoth seed profiles delete their own prior output, so a re-run replaces it.\nThat clear step deletes anything named `[seed]` and any empty team project,\nwhoever made them, so do not point either at a shared instance. The viewer is\nunauthenticated and serves the whole table: keep it on loopback.\n\nSee [scripts/instance-seeding/AGENTS.md](scripts/instance-seeding/AGENTS.md) for\nprofiles, tokens, determinism, and the other commands.\n\n### Code Quality\n- `pnpm lint` - Lint code\n- `pnpm typecheck` - Run type checks\n- `pnpm knip` - Report declared dependencies that no file in the package uses.\n  CI runs it on every PR as the \"Unused Dependencies\" check. To resolve a\n  finding, remove the dependency from the manifest. If the dependency is used\n  in a way knip cannot see, add an `ignoreDependencies` entry for the package\n  in `knip.ts` with a one-line reason\n\nAlways run lint and typecheck before committing code to ensure quality.\nExecute these commands from within the specific package directory you're\nworking on (e.g., `cd packages/cli && pnpm lint`). Run the full repository\ncheck only when preparing the final PR. When your changes affect type\ndefinitions, interfaces in `@n8n/api-types`, or cross-package dependencies,\nbuild the system before running lint and typecheck.\n\n## Architecture Overview\n\n**Monorepo Structure:** pnpm workspaces with Turbo build orchestration\n\n### Package Structure\n\nThe monorepo is organized into these key packages:\n\n- **`packages/@n8n/api-types`**: Shared TypeScript interfaces between frontend and backend\n- **`packages/workflow`**: Core workflow interfaces and types\n- **`packages/core`**: Workflow execution engine\n- **`packages/cli`**: Express server, REST API, and CLI commands\n- **`packages/frontend/editor-ui`**: Vue 3 frontend application\n- **`packages/frontend/@n8n/i18n`**: Internationalization for UI text\n- **`packages/nodes-base`**: Built-in nodes for integrations\n- **`packages/@n8n/nodes-langchain`**: AI/LangChain nodes\n- **`packages/@n8n/instance-ai`**: \"n8n Assistant\" in the UI, \"Instance AI\" in code — n8n Assistant backend. See its `CLAUDE.md` for architectur"
         },
         {
           "path": "CLAUDE.md",
@@ -3638,17 +3638,17 @@
         {
           "path": "LICENSE.md",
           "bytes": 4445,
-          "preview": "# License\n\nPortions of this software are licensed as follows:\n\n- Content of branches other than the main branch (i.e. \"master\") are not licensed.\n- Source code files that contain \".ee.\" in their filename or \".ee\" in their dirname are NOT licensed under\n  the Sustainable Use License.\n  To use source code files that contain \".ee.\" in their filename or \".ee\" in their dirname you must hold a\n\tvalid n8n Enterprise License specifically allowing you access to such source code files and as defined\n\tin \"LICENSE_EE.md\".\n- All third party components incorporated into the n8n Software are licensed under the original license\n  provided by the owner of the applicable component.\n- Content outside of the above mentioned files or restrictions is available under the \"Sustainable Use\n  License\" as defined below.\n\n## Sustainable Use License\n\nVersion 1.0\n\n### Acceptance\n\nBy using the software, you agree to all of the terms and conditions below.\n\n### Copyright License\n\nThe licensor grants you a non-exclusive, royalty-free, worldwide, non-sublicensable, non-transferable license\nto use, copy, distribute, make available, and prepare derivative works of the software, in each case subject\nto the limitations below.\n\n### Limitations\n\nYou may use or modify the software only for your own internal business purposes or for non-commercial or\npersonal use. You may distribute the software or provide it to others only if you do so free of charge for\nnon-commercial purposes. You may not alter, remove, or obscure any licensing, copyright, or other notices of\nthe licensor in the software. Any use of the licensor\u2019s trademarks is subject to applicable law.\n\n### Patents\n\nThe licensor grants you a license, under any patent claims the licensor can license, or becomes able to\nlicense, to make, have made, use, sell, offer for sale, import and have imported the software, in each case\nsubject to the limitations and conditions in this license. This license does not cover any patent claims that\nyou cause to be infringed by modifications or additions to the software. If you or your company make any\nwritten claim that the software infringes or contributes to infringement of any patent, your patent license\nfor the software granted under these terms ends immediately. If your company makes such a claim, your patent\nlicense ends immediately for work on behalf of your company.\n\n### Notices\n\nYou must ensure that anyone who gets a copy of any part of the software from you also gets a copy of these\nterms. If you modify the software, you must include in any modified copies of the software a prominent notice\nstating that you have modified the software.\n\n### No Other Rights\n\nThese terms do not imply any licenses other than those expressly granted in these terms.\n\n### Termination\n\nIf you use the software in violation of these terms, such use is not licensed, and your license will\nautomatically terminate. If the licensor provides you with a notice of your violation, and you cease all\nviolation of this license no later than 30 days after you receive that notice, your license will be reinstated\nretroactively. However, if you violate these terms after such reinstatement, any additional violation of these\nterms will cause your license to terminate automatically and permanently.\n\n### No Liability\n\nAs far as the law allows, the software comes as is, without any warranty or condition, and the licensor will\nnot be liable to you for any damages arising out of these terms or the use or nature of the software, under\nany kind of legal claim.\n\n### Definitions\n\nThe \u201clicensor\u201d is the entity offering these terms.\n\nThe \u201csoftware\u201d is the software the licensor makes available under these terms, including any portion of it.\n\n\u201cYou\u201d refers to the individual or entity agreeing to these terms.\n\n\u201cYour company\u201d is any legal entity, sole proprietorship, or other kind of organization that you work for, plus\nall organizations that have control over, are under the control of, or are under common control with that\norganization. Control means ownership of substantially all the assets of an entity, or the power to direct its\nmanagement and policies by vote, contract, or otherwise. Control can be direct or indirect.\n\n\u201cYour license\u201d is the license granted to you for the software under these terms.\n\n\u201cUse\u201d means anything you do with the software requiring your license.\n\n\u201cTrademark\u201d means trademarks, service marks, and similar rights.\n"
+          "preview": "# License\n\nPortions of this software are licensed as follows:\n\n- Content of branches other than the main branch (i.e. \"master\") are not licensed.\n- Source code files that contain \".ee.\" in their filename or \".ee\" in their dirname are NOT licensed under\n  the Sustainable Use License.\n  To use source code files that contain \".ee.\" in their filename or \".ee\" in their dirname you must hold a\n\tvalid n8n Enterprise License specifically allowing you access to such source code files and as defined\n\tin \"LICENSE_EE.md\".\n- All third party components incorporated into the n8n Software are licensed under the original license\n  provided by the owner of the applicable component.\n- Content outside of the above mentioned files or restrictions is available under the \"Sustainable Use\n  License\" as defined below.\n\n## Sustainable Use License\n\nVersion 1.0\n\n### Acceptance\n\nBy using the software, you agree to all of the terms and conditions below.\n\n### Copyright License\n\nThe licensor grants you a non-exclusive, royalty-free, worldwide, non-sublicensable, non-transferable license\nto use, copy, distribute, make available, and prepare derivative works of the software, in each case subject\nto the limitations below.\n\n### Limitations\n\nYou may use or modify the software only for your own internal business purposes or for non-commercial or\npersonal use. You may distribute the software or provide it to others only if you do so free of charge for\nnon-commercial purposes. You may not alter, remove, or obscure any licensing, copyright, or other notices of\nthe licensor in the software. Any use of the licensor’s trademarks is subject to applicable law.\n\n### Patents\n\nThe licensor grants you a license, under any patent claims the licensor can license, or becomes able to\nlicense, to make, have made, use, sell, offer for sale, import and have imported the software, in each case\nsubject to the limitations and conditions in this license. This license does not cover any patent claims that\nyou cause to be infringed by modifications or additions to the software. If you or your company make any\nwritten claim that the software infringes or contributes to infringement of any patent, your patent license\nfor the software granted under these terms ends immediately. If your company makes such a claim, your patent\nlicense ends immediately for work on behalf of your company.\n\n### Notices\n\nYou must ensure that anyone who gets a copy of any part of the software from you also gets a copy of these\nterms. If you modify the software, you must include in any modified copies of the software a prominent notice\nstating that you have modified the software.\n\n### No Other Rights\n\nThese terms do not imply any licenses other than those expressly granted in these terms.\n\n### Termination\n\nIf you use the software in violation of these terms, such use is not licensed, and your license will\nautomatically terminate. If the licensor provides you with a notice of your violation, and you cease all\nviolation of this license no later than 30 days after you receive that notice, your license will be reinstated\nretroactively. However, if you violate these terms after such reinstatement, any additional violation of these\nterms will cause your license to terminate automatically and permanently.\n\n### No Liability\n\nAs far as the law allows, the software comes as is, without any warranty or condition, and the licensor will\nnot be liable to you for any damages arising out of these terms or the use or nature of the software, under\nany kind of legal claim.\n\n### Definitions\n\nThe “licensor” is the entity offering these terms.\n\nThe “software” is the software the licensor makes available under these terms, including any portion of it.\n\n“You” refers to the individual or entity agreeing to these terms.\n\n“Your company” is any legal entity, sole proprietorship, or other kind of organization that you work for, plus\nall organizations that have control over, are under the control of, or are under common control with that\norganization. Control means ownership of substantially all the assets of an entity, or the power to direct its\nmanagement and policies by vote, contract, or otherwise. Control can be direct or indirect.\n\n“Your license” is the license granted to you for the software under these terms.\n\n“Use” means anything you do with the software requiring your license.\n\n“Trademark” means trademarks, service marks, and similar rights.\n"
         },
         {
           "path": "README.md",
           "bytes": 4023,
-          "preview": "![Banner image](https://user-images.githubusercontent.com/10284570/173569848-c624317f-42b1-45a6-ab09-f0ea3c247648.png)\n\n# n8n \u2013 The Platform for AI Agents and Workflow Automation\n\nFair-code platform to build and deploy AI agents and workflows. Combine a visual canvas with custom code, run it self-hosted or in the [cloud](https://app.n8n.cloud/login), and connect to 1500+ integrations. AI automation you can trust with real work, from prototype to production.\n\n![n8n.io - Screenshot](https://raw.githubusercontent.com/n8n-io/n8n/master/assets/n8n-screenshot-readme.png)\n\n## Key Capabilities\n\n- **AI-Native Automation Platform**: Build and operationalize AI workflows and multi-step agents using your own data, models, and tools\n- **Model Flexibility, No Lock-In**: Connect to OpenAI, Anthropic, Google, or open-source models and switch providers without changing your architecture\n- **From Prototype to Production**: Design multi-step AI workflows with logic, tool use, human approvals, and full observability\n- **Code When You Need It**: Combine visual building with JavaScript, Python, and npm packages for advanced AI workflows\n- **Enterprise-Ready AI**: Self-host or deploy securely with role-based access, audit trails, and support for sensitive data\n- **Leverage What Already Exists**: 1500+ integrations and 9,000+ workflow [templates](https://n8n.io/workflows) to connect AI with your existing systems\n\n## Quick Start\n\nTry n8n instantly with our install script (requires [Docker](https://www.docker.com/)):\n\n```sh\ncurl -fsSL https://get.n8n.io | sh\n```\n\nOr deploy manually with [Docker](https://docs.n8n.io/hosting/installation/docker/):\n\n```\ndocker volume create n8n_data\ndocker run -it --rm --name n8n -p 5678:5678 -v n8n_data:/home/node/.n8n docker.n8n.io/n8nio/n8n\n```\n\nAccess the editor at http://localhost:5678\n\n## Resources\n\n- \ud83d\udcda [Documentation](https://docs.n8n.io)\n- \ud83d\udd27 [1500+ Integrations](https://n8n.io/integrations)\n- \ud83d\udca1 [Example Workflows](https://n8n.io/workflows)\n- \ud83e\udd16 [AI & LangChain Guide](https://docs.n8n.io/advanced-ai/)\n- \ud83d\udc65 [Community Forum](https://community.n8n.io)\n- \ud83d\udcd6 [Community Tutorials](https://community.n8n.io/c/tutorials/28)\n\n## Support\n\nNeed help? Our community forum is the place to get support and connect with other users:\n[community.n8n.io](https://community.n8n.io)\n\n## License\n\nn8n is [fair-code](https://faircode.io) distributed under the [Sustainable Use License](https://github.com/n8n-io/n8n/blob/master/LICENSE.md) and [n8n Enterprise License](https://github.com/n8n-io/n8n/blob/master/LICENSE_EE.md).\n\n- **Source Available**: Always visible source code\n- **Self-Hostable**: Deploy anywhere\n- **Extensible**: Add your own nodes and functionality\n\n[Enterprise Licenses](mailto:license@n8n.io) available for additional features and support.\n\nAdditional information about the license model can be found in the [docs](https://docs.n8n.io/sustainable-use-license/).\n\n## Contributing\n\nFound a bug \ud83d\udc1b or have a feature idea \u2728? Check our [Contributing Guide](https://github.com/n8n-io/n8n/blob/master/CONTRIBUTING.md) for a setup guide & best practices.\n\n## Join the Team\n\nWant to shape the future of automation? Check out our [job posts](https://n8n.io/careers) and join our team!\n\n## What does n8n mean?\n\n**Short answer:** It means \"nodemation\" and is pronounced as n-eight-n.\n\n**Long answer:** \"I get that question quite often (more often than I expected) so I decided it is probably best to answer it here. While looking for a good name for the project with a free domain I realized very quickly that all the good ones I could think of were already taken. So, in the end, I chose nodemation. 'node-' in the sense that it uses a Node-View and that it uses Node.js and '-mation' for 'automation' which is what the project is supposed to help with. However, I did not like how long the name was and I could not imagine writing something that long every time in the CLI. That is when I then ended up on 'n8n'.\" - **Jan Oberhauser, Founder and CEO, n8n.io**\n"
+          "preview": "![Banner image](https://user-images.githubusercontent.com/10284570/173569848-c624317f-42b1-45a6-ab09-f0ea3c247648.png)\n\n# n8n – The Platform for AI Agents and Workflow Automation\n\nFair-code platform to build and deploy AI agents and workflows. Combine a visual canvas with custom code, run it self-hosted or in the [cloud](https://app.n8n.cloud/login), and connect to 1500+ integrations. AI automation you can trust with real work, from prototype to production.\n\n![n8n.io - Screenshot](https://raw.githubusercontent.com/n8n-io/n8n/master/assets/n8n-screenshot-readme.png)\n\n## Key Capabilities\n\n- **AI-Native Automation Platform**: Build and operationalize AI workflows and multi-step agents using your own data, models, and tools\n- **Model Flexibility, No Lock-In**: Connect to OpenAI, Anthropic, Google, or open-source models and switch providers without changing your architecture\n- **From Prototype to Production**: Design multi-step AI workflows with logic, tool use, human approvals, and full observability\n- **Code When You Need It**: Combine visual building with JavaScript, Python, and npm packages for advanced AI workflows\n- **Enterprise-Ready AI**: Self-host or deploy securely with role-based access, audit trails, and support for sensitive data\n- **Leverage What Already Exists**: 1500+ integrations and 9,000+ workflow [templates](https://n8n.io/workflows) to connect AI with your existing systems\n\n## Quick Start\n\nTry n8n instantly with our install script (requires [Docker](https://www.docker.com/)):\n\n```sh\ncurl -fsSL https://get.n8n.io | sh\n```\n\nOr deploy manually with [Docker](https://docs.n8n.io/hosting/installation/docker/):\n\n```\ndocker volume create n8n_data\ndocker run -it --rm --name n8n -p 5678:5678 -v n8n_data:/home/node/.n8n docker.n8n.io/n8nio/n8n\n```\n\nAccess the editor at http://localhost:5678\n\n## Resources\n\n- 📚 [Documentation](https://docs.n8n.io)\n- 🔧 [1500+ Integrations](https://n8n.io/integrations)\n- 💡 [Example Workflows](https://n8n.io/workflows)\n- 🤖 [AI & LangChain Guide](https://docs.n8n.io/advanced-ai/)\n- 👥 [Community Forum](https://community.n8n.io)\n- 📖 [Community Tutorials](https://community.n8n.io/c/tutorials/28)\n\n## Support\n\nNeed help? Our community forum is the place to get support and connect with other users:\n[community.n8n.io](https://community.n8n.io)\n\n## License\n\nn8n is [fair-code](https://faircode.io) distributed under the [Sustainable Use License](https://github.com/n8n-io/n8n/blob/master/LICENSE.md) and [n8n Enterprise License](https://github.com/n8n-io/n8n/blob/master/LICENSE_EE.md).\n\n- **Source Available**: Always visible source code\n- **Self-Hostable**: Deploy anywhere\n- **Extensible**: Add your own nodes and functionality\n\n[Enterprise Licenses](mailto:license@n8n.io) available for additional features and support.\n\nAdditional information about the license model can be found in the [docs](https://docs.n8n.io/sustainable-use-license/).\n\n## Contributing\n\nFound a bug 🐛 or have a feature idea ✨? Check our [Contributing Guide](https://github.com/n8n-io/n8n/blob/master/CONTRIBUTING.md) for a setup guide & best practices.\n\n## Join the Team\n\nWant to shape the future of automation? Check out our [job posts](https://n8n.io/careers) and join our team!\n\n## What does n8n mean?\n\n**Short answer:** It means \"nodemation\" and is pronounced as n-eight-n.\n\n**Long answer:** \"I get that question quite often (more often than I expected) so I decided it is probably best to answer it here. While looking for a good name for the project with a free domain I realized very quickly that all the good ones I could think of were already taken. So, in the end, I chose nodemation. 'node-' in the sense that it uses a Node-View and that it uses Node.js and '-mation' for 'automation' which is what the project is supposed to help with. However, I did not like how long the name was and I could not imagine writing something that long every time in the CLI. That is when I then ended up on 'n8n'.\" - **Jan Oberhauser, Founder and CEO, n8n.io**\n"
         },
         {
           "path": "docs/db.md",
           "bytes": 1431,
-          "preview": "# Database\n\nn8n persists its state in a relational database, accessed through TypeORM. The\nschema supports both SQLite (the default) and PostgreSQL, and is defined by the\n**migrations** in `@n8n/db` rather than the entities (entities run with\n`synchronize: false`).\n\n## Schema reference\n\nAuto-generated documentation of the schema, one set per supported database:\n\n- [SQLite](./generated/sqlite-schema/README.md)\n- [PostgreSQL](./generated/postgres-schema/README.md)\n\nEach set lists every table with its columns, types, defaults, indexes, and\nforeign keys, plus a Mermaid ER diagram of the relationships. The two differ\nwhere the column types do (e.g. `datetime` vs `timestamptz`, `text`/`simple-json`\nvs `json`/`jsonb`, `boolean` representation).\n\n### How it's generated\n\nThe generator spins up an empty database, runs the full `@n8n/db` migration set\nagainst it, and points [tbls](https://github.com/k1LoW/tbls) at the result.\nSQLite uses a throwaway file; PostgreSQL uses a throwaway testcontainer, so\n**Docker is required**.\n\n```bash\n# Regenerate both (requires Docker; tbls locally via `brew install tbls`)\npnpm db:schema:docs\n\n# Verify the committed docs match the current migrations\npnpm db:schema:check\n```\n\nThe schema reference is **auto-generated \u2014 do not edit by hand.** CI fails when\na migration changes the schema but the docs weren't regenerated; when that\nhappens, run `pnpm db:schema:docs` and commit the result.\n"
+          "preview": "# Database\n\nn8n persists its state in a relational database, accessed through TypeORM. The\nschema supports both SQLite (the default) and PostgreSQL, and is defined by the\n**migrations** in `@n8n/db` rather than the entities (entities run with\n`synchronize: false`).\n\n## Schema reference\n\nAuto-generated documentation of the schema, one set per supported database:\n\n- [SQLite](./generated/sqlite-schema/README.md)\n- [PostgreSQL](./generated/postgres-schema/README.md)\n\nEach set lists every table with its columns, types, defaults, indexes, and\nforeign keys, plus a Mermaid ER diagram of the relationships. The two differ\nwhere the column types do (e.g. `datetime` vs `timestamptz`, `text`/`simple-json`\nvs `json`/`jsonb`, `boolean` representation).\n\n### How it's generated\n\nThe generator spins up an empty database, runs the full `@n8n/db` migration set\nagainst it, and points [tbls](https://github.com/k1LoW/tbls) at the result.\nSQLite uses a throwaway file; PostgreSQL uses a throwaway testcontainer, so\n**Docker is required**.\n\n```bash\n# Regenerate both (requires Docker; tbls locally via `brew install tbls`)\npnpm db:schema:docs\n\n# Verify the committed docs match the current migrations\npnpm db:schema:check\n```\n\nThe schema reference is **auto-generated — do not edit by hand.** CI fails when\na migration changes the schema but the docs weren't regenerated; when that\nhappens, run `pnpm db:schema:docs` and commit the result.\n"
         },
         {
           "path": "docs/generated/postgres-schema/README.md",
@@ -3658,7 +3658,7 @@
         {
           "path": "docs/generated/postgres-schema/public.activity_event.md",
           "bytes": 4308,
-          "preview": "# public.activity_event\n\n## Columns\n\n| Name | Type | Default | Nullable | Children | Parents | Comment |\n| ---- | ---- | ------- | -------- | -------- | ------- | ------- |\n| action | varchar(64) |  | false |  |  | What happened, as a verb: created, saved, published, unpublished, deleted, archived, unarchived, version-updated |\n| category | varchar(32) |  | false |  |  | Kind of happening, not kind of resource \u2014 see ActivityEventCategory in @n8n/db. The unit a reader caps and collapses by: workflow, credential. Executions are absent on purpose; execution_entity already records and indexes them |\n| createdAt | timestamp(3) with time zone | CURRENT_TIMESTAMP(3) | false |  |  |  |\n| data | json |  | true |  |  | Minimal detail that makes an entry meaningful unexpanded (a save node delta, and whether the assistant or the user changed it). Size-capped on write; no user ids |\n| id | integer |  | false |  |  |  |\n| projectId | varchar(36) |  | false |  | [public.project](public.project.md) | The access boundary; every read filters on it, so an entry without a project could never be shown and is not worth writing |\n| resourceId | varchar(36) |  | true |  |  | Id of the resource, for fetching the full record. No FK: entries outlive it |\n| resourceName | text |  | true |  |  | Name at the time of the entry, denormalised so a row reads without a join and survives the resource being deleted. Truncated on write |\n| resourceType | varchar(32) |  | true |  |  | What `resourceId` points at; see ActivityResourceType in @n8n/db. NULL when an entry is about the instance rather than a resource |\n| typeVersion | integer | 1 | false |  |  | Schema version of `data` for this category/action pair |\n| userId | uuid |  | true |  | [public.user](public.user.md) | Who acted. Never NULL on insert \u2014 every event carries a user. Goes NULL when that user is deleted |\n\n## Constraints\n\n| Name | Type | Definition |\n| ---- | ---- | ---------- |\n| FK_29654477f37189453b353d3f46a | FOREIGN KEY | FOREIGN KEY (\"userId\") REFERENCES \"user\"(id) ON DELETE SET NULL |\n| FK_6bf94d5542661d2e1b9e0c41436 | FOREIGN KEY | FOREIGN KEY (\"projectId\") REFERENCES project(id) ON DELETE CASCADE |\n| PK_c2c1e9fdda754a6bf7f664d7e04 | PRIMARY KEY | PRIMARY KEY (id) |\n| activity_event_action_not_null | n | NOT NULL action |\n| activity_event_category_not_null | n | NOT NULL category |\n| activity_event_createdAt_not_null | n | NOT NULL \"createdAt\" |\n| activity_event_id_not_null | n | NOT NULL id |\n| activity_event_projectId_not_null | n | NOT NULL \"projectId\" |\n| activity_event_typeVersion_not_null | n | NOT NULL \"typeVersion\" |\n\n## Indexes\n\n| Name | Definition |\n| ---- | ---------- |\n| IDX_activity_event_project | CREATE INDEX \"IDX_activity_event_project\" ON public.activity_event USING btree (\"projectId\", id) |\n| IDX_activity_event_user | CREATE INDEX \"IDX_activity_event_user\" ON public.activity_event USING btree (\"userId\", id) |\n| PK_c2c1e9fdda754a6bf7f664d7e04 | CREATE UNIQUE INDEX \"PK_c2c1e9fdda754a6bf7f664d7e04\" ON public.activity_event USING btree (id) |\n\n## Relations\n\n```mermaid\nerDiagram\n\n\"public.activity_event\" }o--|| \"public.project\" : \"FOREIGN KEY (#quot;projectId#quot;) REFERENCES project(id) ON DELETE CASCADE\"\n\"public.activity_event\" }o--o| \"public.user\" : \"FOREIGN KEY (#quot;userId#quot;) REFERENCES #quot;user#quot;(id) ON DELETE SET NULL\"\n\n\"public.activity_event\" {\n  varchar_64_ action\n  varchar_32_ category\n  timestamp_3__with_time_zone createdAt\n  json data\n  integer id\n  varchar_36_ projectId FK\n  varchar_36_ resourceId\n  text resourceName\n  varchar_32_ resourceType\n  integer typeVersion\n  uuid userId FK\n}\n\"public.project\" {\n  timestamp_3__with_time_zone createdAt\n  uuid creatorId FK\n  json customTelemetryTags\n  varchar_512_ description\n  json icon\n  varchar_36_ id\n  varchar_255_ name\n  varchar_36_ type\n  timestamp_3__with_time_zone updatedAt\n}\n\"public.user\" {\n  timestamp_3__with_time_zone createdAt\n  boolean disabled\n  varchar_255_ email\n  varchar_32_ firstName\n  uuid id\n  date lastActiveAt\n  varchar_32_ lastName\n  boolean mfaEnabled\n  text mfaRecoveryCodes\n  text mfaSecret\n  varchar_255_ password\n  json personalizationAnswers\n  varchar_128_ roleSlug FK\n  json settings\n  timestamp_3__with_time_zone updatedAt\n}\n```\n\n---\n\n> Generated by [tbls](https://github.com/k1LoW/tbls)\n"
+          "preview": "# public.activity_event\n\n## Columns\n\n| Name | Type | Default | Nullable | Children | Parents | Comment |\n| ---- | ---- | ------- | -------- | -------- | ------- | ------- |\n| action | varchar(64) |  | false |  |  | What happened, as a verb: created, saved, published, unpublished, deleted, archived, unarchived, version-updated |\n| category | varchar(32) |  | false |  |  | Kind of happening, not kind of resource — see ActivityEventCategory in @n8n/db. The unit a reader caps and collapses by: workflow, credential. Executions are absent on purpose; execution_entity already records and indexes them |\n| createdAt | timestamp(3) with time zone | CURRENT_TIMESTAMP(3) | false |  |  |  |\n| data | json |  | true |  |  | Minimal detail that makes an entry meaningful unexpanded (a save node delta, and whether the assistant or the user changed it). Size-capped on write; no user ids |\n| id | integer |  | false |  |  |  |\n| projectId | varchar(36) |  | false |  | [public.project](public.project.md) | The access boundary; every read filters on it, so an entry without a project could never be shown and is not worth writing |\n| resourceId | varchar(36) |  | true |  |  | Id of the resource, for fetching the full record. No FK: entries outlive it |\n| resourceName | text |  | true |  |  | Name at the time of the entry, denormalised so a row reads without a join and survives the resource being deleted. Truncated on write |\n| resourceType | varchar(32) |  | true |  |  | What `resourceId` points at; see ActivityResourceType in @n8n/db. NULL when an entry is about the instance rather than a resource |\n| typeVersion | integer | 1 | false |  |  | Schema version of `data` for this category/action pair |\n| userId | uuid |  | true |  | [public.user](public.user.md) | Who acted. Never NULL on insert — every event carries a user. Goes NULL when that user is deleted |\n\n## Constraints\n\n| Name | Type | Definition |\n| ---- | ---- | ---------- |\n| FK_29654477f37189453b353d3f46a | FOREIGN KEY | FOREIGN KEY (\"userId\") REFERENCES \"user\"(id) ON DELETE SET NULL |\n| FK_6bf94d5542661d2e1b9e0c41436 | FOREIGN KEY | FOREIGN KEY (\"projectId\") REFERENCES project(id) ON DELETE CASCADE |\n| PK_c2c1e9fdda754a6bf7f664d7e04 | PRIMARY KEY | PRIMARY KEY (id) |\n| activity_event_action_not_null | n | NOT NULL action |\n| activity_event_category_not_null | n | NOT NULL category |\n| activity_event_createdAt_not_null | n | NOT NULL \"createdAt\" |\n| activity_event_id_not_null | n | NOT NULL id |\n| activity_event_projectId_not_null | n | NOT NULL \"projectId\" |\n| activity_event_typeVersion_not_null | n | NOT NULL \"typeVersion\" |\n\n## Indexes\n\n| Name | Definition |\n| ---- | ---------- |\n| IDX_activity_event_project | CREATE INDEX \"IDX_activity_event_project\" ON public.activity_event USING btree (\"projectId\", id) |\n| IDX_activity_event_user | CREATE INDEX \"IDX_activity_event_user\" ON public.activity_event USING btree (\"userId\", id) |\n| PK_c2c1e9fdda754a6bf7f664d7e04 | CREATE UNIQUE INDEX \"PK_c2c1e9fdda754a6bf7f664d7e04\" ON public.activity_event USING btree (id) |\n\n## Relations\n\n```mermaid\nerDiagram\n\n\"public.activity_event\" }o--|| \"public.project\" : \"FOREIGN KEY (#quot;projectId#quot;) REFERENCES project(id) ON DELETE CASCADE\"\n\"public.activity_event\" }o--o| \"public.user\" : \"FOREIGN KEY (#quot;userId#quot;) REFERENCES #quot;user#quot;(id) ON DELETE SET NULL\"\n\n\"public.activity_event\" {\n  varchar_64_ action\n  varchar_32_ category\n  timestamp_3__with_time_zone createdAt\n  json data\n  integer id\n  varchar_36_ projectId FK\n  varchar_36_ resourceId\n  text resourceName\n  varchar_32_ resourceType\n  integer typeVersion\n  uuid userId FK\n}\n\"public.project\" {\n  timestamp_3__with_time_zone createdAt\n  uuid creatorId FK\n  json customTelemetryTags\n  varchar_512_ description\n  json icon\n  varchar_36_ id\n  varchar_255_ name\n  varchar_36_ type\n  timestamp_3__with_time_zone updatedAt\n}\n\"public.user\" {\n  timestamp_3__with_time_zone createdAt\n  boolean disabled\n  varchar_255_ email\n  varchar_32_ firstName\n  uuid id\n  date lastActiveAt\n  varchar_32_ lastName\n  boolean mfaEnabled\n  text mfaRecoveryCodes\n  text mfaSecret\n  varchar_255_ password\n  json personalizationAnswers\n  varchar_128_ roleSlug FK\n  json settings\n  timestamp_3__with_time_zone updatedAt\n}\n```\n\n---\n\n> Generated by [tbls](https://github.com/k1LoW/tbls)\n"
         },
         {
           "path": "docs/generated/postgres-schema/public.agent_background_job.md",
@@ -3728,7 +3728,7 @@
         {
           "path": "docs/generated/postgres-schema/public.agent_history.md",
           "bytes": 4713,
-          "preview": "# public.agent_history\n\n## Columns\n\n| Name | Type | Default | Nullable | Children | Parents | Comment |\n| ---- | ---- | ------- | -------- | -------- | ------- | ------- |\n| agentId | varchar(36) |  | false |  | [public.agents](public.agents.md) |  |\n| author | varchar(255) |  | false |  |  |  |\n| createdAt | timestamp(3) with time zone | CURRENT_TIMESTAMP(3) | false |  |  |  |\n| publishedById | uuid |  | true |  | [public.user](public.user.md) |  |\n| schema | json |  | true |  |  | Frozen snapshot of the published AgentJsonConfig |\n| skills | json |  | true |  |  | Frozen map of `skillId \u2192 AgentSkill` at publish time |\n| tools | json |  | true |  |  | Frozen map of `toolId \u2192 { code, descriptor }` at publish time |\n| updatedAt | timestamp(3) with time zone | CURRENT_TIMESTAMP(3) | false |  |  |  |\n| versionId | varchar(36) |  | false | [public.agent_execution_threads](public.agent_execution_threads.md) [public.agent_task_snapshot](public.agent_task_snapshot.md) [public.agents](public.agents.md) |  |  |\n\n## Constraints\n\n| Name | Type | Definition |\n| ---- | ---- | ---------- |\n| FK_8771675f44c58fb40e0feb9ee35 | FOREIGN KEY | FOREIGN KEY (\"publishedById\") REFERENCES \"user\"(id) ON DELETE SET NULL |\n| FK_87cd5a8da20304b089ea2f83fec | FOREIGN KEY | FOREIGN KEY (\"agentId\") REFERENCES agents(id) ON DELETE CASCADE |\n| PK_65ffcfe7a8e112fb826311fb092 | PRIMARY KEY | PRIMARY KEY (\"versionId\") |\n| agent_history_agentId_not_null | n | NOT NULL \"agentId\" |\n| agent_history_author_not_null | n | NOT NULL author |\n| agent_history_createdAt_not_null | n | NOT NULL \"createdAt\" |\n| agent_history_updatedAt_not_null | n | NOT NULL \"updatedAt\" |\n| agent_history_versionId_not_null | n | NOT NULL \"versionId\" |\n\n## Indexes\n\n| Name | Definition |\n| ---- | ---------- |\n| IDX_87cd5a8da20304b089ea2f83fe | CREATE INDEX \"IDX_87cd5a8da20304b089ea2f83fe\" ON public.agent_history USING btree (\"agentId\") |\n| PK_65ffcfe7a8e112fb826311fb092 | CREATE UNIQUE INDEX \"PK_65ffcfe7a8e112fb826311fb092\" ON public.agent_history USING btree (\"versionId\") |\n\n## Relations\n\n```mermaid\nerDiagram\n\n\"public.agent_history\" }o--|| \"public.agents\" : \"FOREIGN KEY (#quot;agentId#quot;) REFERENCES agents(id) ON DELETE CASCADE\"\n\"public.agent_history\" }o--o| \"public.user\" : \"FOREIGN KEY (#quot;publishedById#quot;) REFERENCES #quot;user#quot;(id) ON DELETE SET NULL\"\n\"public.agent_execution_threads\" }o--o| \"public.agent_history\" : \"FOREIGN KEY (#quot;taskVersionId#quot;) REFERENCES agent_history(#quot;versionId#quot;) ON DELETE SET NULL\"\n\"public.agent_task_snapshot\" }o--|| \"public.agent_history\" : \"FOREIGN KEY (#quot;versionId#quot;) REFERENCES agent_history(#quot;versionId#quot;) ON DELETE CASCADE\"\n\"public.agents\" }o--o| \"public.agent_history\" : \"FOREIGN KEY (#quot;activeVersionId#quot;) REFERENCES agent_history(#quot;versionId#quot;) ON DELETE SET NULL\"\n\n\"public.agent_history\" {\n  varchar_36_ agentId FK\n  varchar_255_ author\n  timestamp_3__with_time_zone createdAt\n  uuid publishedById FK\n  json schema\n  json skills\n  json tools\n  timestamp_3__with_time_zone updatedAt\n  varchar_36_ versionId\n}\n\"public.agents\" {\n  varchar_36_ activeVersionId FK\n  boolean availableInMCP\n  timestamp_3__with_time_zone createdAt\n  varchar_36_ id\n  json integrations\n  varchar_128_ name\n  varchar_255_ projectId FK\n  integer revision\n  json schema\n  timestamp_3__with_time_zone setupCompletedAt\n  json skills\n  json tools\n  timestamp_3__with_time_zone updatedAt\n  varchar_36_ versionId\n}\n\"public.user\" {\n  timestamp_3__with_time_zone createdAt\n  boolean disabled\n  varchar_255_ email\n  varchar_32_ firstName\n  uuid id\n  date lastActiveAt\n  varchar_32_ lastName\n  boolean mfaEnabled\n  text mfaRecoveryCodes\n  text mfaSecret\n  varchar_255_ password\n  json personalizationAnswers\n  varchar_128_ roleSlug FK\n  json settings\n  timestamp_3__with_time_zone updatedAt\n}\n\"public.agent_execution_threads\" {\n  varchar_16_ accessScope\n  varchar_36_ agentId FK\n  varchar_255_ agentName\n  timestamp_3__with_time_zone createdAt\n  varchar_8_ emoji\n  varchar_128_ id\n  uuid ownerId FK\n  varchar_36_ parentAgentId\n  varchar_128_ parentThreadId\n  varchar_255_ projectId FK\n  integer sessionNumber\n  varchar_32_ taskId\n  varchar_36_ taskVersionId FK\n  varchar_255_ title\n  integer totalCompletionTokens\n  double_precision totalCost\n  integer totalDuration\n  integer totalPromptTokens\n  timestamp_3__with_time_zone updatedAt\n}\n\"public.agent_task_snapshot\" {\n  timestamp_3__with_time_zone createdAt\n  varchar_128_ cronExpression\n  boolean enabled\n  varchar_128_ name\n  text objective\n  varchar_32_ taskId\n  varchar_64_ timezone\n  timestamp_3__with_time_zone updatedAt\n  varchar_36_ versionId FK\n}\n```\n\n---\n\n> Generated by [tbls](https://github.com/k1LoW/tbls)\n"
+          "preview": "# public.agent_history\n\n## Columns\n\n| Name | Type | Default | Nullable | Children | Parents | Comment |\n| ---- | ---- | ------- | -------- | -------- | ------- | ------- |\n| agentId | varchar(36) |  | false |  | [public.agents](public.agents.md) |  |\n| author | varchar(255) |  | false |  |  |  |\n| createdAt | timestamp(3) with time zone | CURRENT_TIMESTAMP(3) | false |  |  |  |\n| publishedById | uuid |  | true |  | [public.user](public.user.md) |  |\n| schema | json |  | true |  |  | Frozen snapshot of the published AgentJsonConfig |\n| skills | json |  | true |  |  | Frozen map of `skillId → AgentSkill` at publish time |\n| tools | json |  | true |  |  | Frozen map of `toolId → { code, descriptor }` at publish time |\n| updatedAt | timestamp(3) with time zone | CURRENT_TIMESTAMP(3) | false |  |  |  |\n| versionId | varchar(36) |  | false | [public.agent_execution_threads](public.agent_execution_threads.md) [public.agent_task_snapshot](public.agent_task_snapshot.md) [public.agents](public.agents.md) |  |  |\n\n## Constraints\n\n| Name | Type | Definition |\n| ---- | ---- | ---------- |\n| FK_8771675f44c58fb40e0feb9ee35 | FOREIGN KEY | FOREIGN KEY (\"publishedById\") REFERENCES \"user\"(id) ON DELETE SET NULL |\n| FK_87cd5a8da20304b089ea2f83fec | FOREIGN KEY | FOREIGN KEY (\"agentId\") REFERENCES agents(id) ON DELETE CASCADE |\n| PK_65ffcfe7a8e112fb826311fb092 | PRIMARY KEY | PRIMARY KEY (\"versionId\") |\n| agent_history_agentId_not_null | n | NOT NULL \"agentId\" |\n| agent_history_author_not_null | n | NOT NULL author |\n| agent_history_createdAt_not_null | n | NOT NULL \"createdAt\" |\n| agent_history_updatedAt_not_null | n | NOT NULL \"updatedAt\" |\n| agent_history_versionId_not_null | n | NOT NULL \"versionId\" |\n\n## Indexes\n\n| Name | Definition |\n| ---- | ---------- |\n| IDX_87cd5a8da20304b089ea2f83fe | CREATE INDEX \"IDX_87cd5a8da20304b089ea2f83fe\" ON public.agent_history USING btree (\"agentId\") |\n| PK_65ffcfe7a8e112fb826311fb092 | CREATE UNIQUE INDEX \"PK_65ffcfe7a8e112fb826311fb092\" ON public.agent_history USING btree (\"versionId\") |\n\n## Relations\n\n```mermaid\nerDiagram\n\n\"public.agent_history\" }o--|| \"public.agents\" : \"FOREIGN KEY (#quot;agentId#quot;) REFERENCES agents(id) ON DELETE CASCADE\"\n\"public.agent_history\" }o--o| \"public.user\" : \"FOREIGN KEY (#quot;publishedById#quot;) REFERENCES #quot;user#quot;(id) ON DELETE SET NULL\"\n\"public.agent_execution_threads\" }o--o| \"public.agent_history\" : \"FOREIGN KEY (#quot;taskVersionId#quot;) REFERENCES agent_history(#quot;versionId#quot;) ON DELETE SET NULL\"\n\"public.agent_task_snapshot\" }o--|| \"public.agent_history\" : \"FOREIGN KEY (#quot;versionId#quot;) REFERENCES agent_history(#quot;versionId#quot;) ON DELETE CASCADE\"\n\"public.agents\" }o--o| \"public.agent_history\" : \"FOREIGN KEY (#quot;activeVersionId#quot;) REFERENCES agent_history(#quot;versionId#quot;) ON DELETE SET NULL\"\n\n\"public.agent_history\" {\n  varchar_36_ agentId FK\n  varchar_255_ author\n  timestamp_3__with_time_zone createdAt\n  uuid publishedById FK\n  json schema\n  json skills\n  json tools\n  timestamp_3__with_time_zone updatedAt\n  varchar_36_ versionId\n}\n\"public.agents\" {\n  varchar_36_ activeVersionId FK\n  boolean availableInMCP\n  timestamp_3__with_time_zone createdAt\n  varchar_36_ id\n  json integrations\n  varchar_128_ name\n  varchar_255_ projectId FK\n  integer revision\n  json schema\n  timestamp_3__with_time_zone setupCompletedAt\n  json skills\n  json tools\n  timestamp_3__with_time_zone updatedAt\n  varchar_36_ versionId\n}\n\"public.user\" {\n  timestamp_3__with_time_zone createdAt\n  boolean disabled\n  varchar_255_ email\n  varchar_32_ firstName\n  uuid id\n  date lastActiveAt\n  varchar_32_ lastName\n  boolean mfaEnabled\n  text mfaRecoveryCodes\n  text mfaSecret\n  varchar_255_ password\n  json personalizationAnswers\n  varchar_128_ roleSlug FK\n  json settings\n  timestamp_3__with_time_zone updatedAt\n}\n\"public.agent_execution_threads\" {\n  varchar_16_ accessScope\n  varchar_36_ agentId FK\n  varchar_255_ agentName\n  timestamp_3__with_time_zone createdAt\n  varchar_8_ emoji\n  varchar_128_ id\n  uuid ownerId FK\n  varchar_36_ parentAgentId\n  varchar_128_ parentThreadId\n  varchar_255_ projectId FK\n  integer sessionNumber\n  varchar_32_ taskId\n  varchar_36_ taskVersionId FK\n  varchar_255_ title\n  integer totalCompletionTokens\n  double_precision totalCost\n  integer totalDuration\n  integer totalPromptTokens\n  timestamp_3__with_time_zone updatedAt\n}\n\"public.agent_task_snapshot\" {\n  timestamp_3__with_time_zone createdAt\n  varchar_128_ cronExpression\n  boolean enabled\n  varchar_128_ name\n  text objective\n  varchar_32_ taskId\n  varchar_64_ timezone\n  timestamp_3__with_time_zone updatedAt\n  varchar_36_ versionId FK\n}\n```\n\n---\n\n> Generated by [tbls](https://github.com/k1LoW/tbls)\n"
         },
         {
           "path": "docs/generated/postgres-schema/public.agent_task_definition.md",
@@ -37314,7 +37314,7 @@
         "steps": [
           {
             "id": "serialize",
-            "label": "JSON serialize (inventory \u2192 SQLite)",
+            "label": "JSON serialize (inventory → SQLite)",
             "ms": 0,
             "pct": 0
           },
@@ -37333,5 +37333,818 @@
         ]
       }
     ]
+  },
+  "report": {
+    "overview": "n8n is a self-hostable workflow-automation platform: a TypeScript pnpm/Turbo monorepo whose `packages/cli` (`n8n` binary) runs an Express server plus CLI commands, `packages/core` executes workflow DAGs through `WorkflowExecute`, `packages/nodes-base` ships ~560 built-in integration nodes, and a Vue 3 editor lives in `packages/frontend/editor-ui`. It persists state via TypeORM (`@n8n/db`) to SQLite or Postgres, scales horizontally in 'queue' mode with Redis/Bull workers and multi-main pub/sub, and is heavily modularized through a backend `*.module.ts` registry and frontend manifest system.",
+    "system_map": {
+      "summary": "pnpm 12.4.2 / Turbo monorepo requiring Node >=24. The `n8n` binary (packages/cli/bin/n8n) loads config, then CommandRegistry dispatches a @Command-decorated class; `start` boots an Express Server (AbstractServer subclass), `worker` runs Bull consumers, `webhook` runs a dedicated webhook process. Execution is handled by n8n-core's WorkflowExecute; persistence is TypeORM in @n8n/db over SQLite/Postgres; the editor is a Vue 3 + Vite + Pinia SPA served from a generated static cache. Queue mode adds Redis pub/sub + Bull queues and optional multi-main leaders.",
+      "claims": [
+        {
+          "claim": "Monorepo is managed by pnpm workspaces with Turbo task orchestration; packageManager is pinned to pnpm@12.4.2 and Node >=24 is required.",
+          "sources": [
+            "package.json",
+            "pnpm-workspace.yaml",
+            "turbo.json"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Process entry is packages/cli/bin/n8n: it checks the Node version, loads dotenv, requires dist/config early (entity column types depend on GlobalConfig.database.type), then resolves CommandRegistry from the @n8n/di Container and calls execute().",
+          "sources": [
+            "packages/cli/bin/n8n#L38-63"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CommandRegistry maps argv[2] (default 'start') to a file under dist/commands, imports it so its @Command decorator registers metadata, parses flags with a per-command zod schema, then runs the class lifecycle init() -> run() -> catch() -> finally().",
+          "sources": [
+            "packages/cli/src/command-registry.ts#L29-104"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "packages/cli is the 'n8n' npm package: an Express server (Server extends AbstractServer), ~40 decorator-registered REST controllers, plus modules, scaling, webhooks, task-runner, and push subsystems, all wired through @n8n/di's Container.get().",
+          "sources": [
+            "packages/cli/src/server.ts#L34-85",
+            "packages/cli/package.json"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "n8n-core (packages/core) owns the execution engine: WorkflowExecute (3168-line file) drives node runs, alongside node-execution-contexts, partial-execution-utils, triggers-and-pollers, nodes-loader, and encryption.",
+          "sources": [
+            "packages/core/src/execution-engine/workflow-execute.ts#L118-150",
+            "packages/core/src/nodes-loader/directory-loader.ts",
+            "packages/core/src/encryption/cipher.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "n8n-workflow (packages/workflow) holds the shared type model (INode, IRunData, IConnections), the Workflow class (nodes + connectionsBySourceNode/ByDestinationNode + expression), and the Tournament-based expression evaluator.",
+          "sources": [
+            "packages/workflow/src/workflow.ts#L58-100",
+            "packages/workflow/src/expression-evaluator-proxy.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "n8n-nodes-base ships built-in integrations: ~560 *.node.ts files under nodes/ and ~409 *.credentials.ts files under credentials/, enumerated in the package.json 'n8n.nodes'/'n8n.credentials' arrays that the DirectoryLoader consumes.",
+          "sources": [
+            "packages/nodes-base/package.json#L35-36",
+            "packages/nodes-base/nodes/Set/Set.node.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "@n8n/db is the persistence layer: ~50 entities (WorkflowEntity, ExecutionEntity/ExecutionData, CredentialsEntity, WebhookEntity, User, Project, SharedWorkflow, Settings, DeploymentKey, ScheduledJob...) plus sqlite/postgres migration trees; DbConnection wraps the TypeORM DataSource and runs migrations under a Postgres advisory lock.",
+          "sources": [
+            "packages/@n8n/db/src/entities/index.ts",
+            "packages/@n8n/db/src/connection/db-connection.ts#L140-185"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The editor frontend is a Vue 3 + Vite + Pinia app (n8n-editor-ui) that mounts App.vue with a router, i18n, telemetry/sentry plugins, and a set of manifest registration functions for module-provided UI.",
+          "sources": [
+            "packages/frontend/editor-ui/src/main.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Deployment modes: 'regular' single process; 'queue' mode splits into main(s), workers, and webhook processes communicating over Redis pub/sub (Publisher/Subscriber/PubSubRegistry) with Bull job queues; multi-main is licensed and leader-elected via MultiMainSetup.",
+          "sources": [
+            "packages/cli/src/commands/worker.ts#L80-168",
+            "packages/cli/src/scaling/scaling.service.ts#L97-132",
+            "packages/cli/src/commands/start.ts#L231-247"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Backend functionality is split into 'modules': ModuleRegistry loads <name>.module.js for ~32 default modules (insights, external-secrets, community-packages, data-table, oauth-server, mcp, source-control, sso-oidc, sso-saml, ldap, chat-hub, instance-ai, ...), gated by ModulesConfig enabled/disabled lists.",
+          "sources": [
+            "packages/@n8n/backend-common/src/modules/module-registry.ts#L44-120"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Configuration is centralized in @n8n/config's GlobalConfig: config classes use @Env decorators mapping env vars (e.g. N8N_RUNNERS_MODE, N8N_RUNNERS_BROKER_PORT) onto typed fields.",
+          "sources": [
+            "packages/@n8n/config/src/configs/runners.config.ts#L16-89"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Deployment artifacts: Dockerfiles under docker/images (n8n, n8n-base, runners, node-pc, engine) and root scripts build:docker/dockerize-n8n.mjs produce the shippable image.",
+          "sources": [
+            "docker/images/n8n/Dockerfile",
+            "package.json#L17-22"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "feature_catalog": {
+      "summary": "User-facing surface = REST controllers + webhook endpoints + public API v1 + CLI subcommands + Vue editor. The workflows controller covers CRUD/activate/run/share/transfer/archive; executions controller covers list/stop/retry/delete; credential controllers include OAuth1/OAuth2 callback flows. Module-provided features (SSO, LDAP, source control, external secrets, insights, chat-hub, MCP, instance-ai) extend the surface. The editor is served as static assets with history-API fallback.",
+      "claims": [
+        {
+          "claim": "Workflows REST API: POST /workflows, GET list with query middleware, GET /:id, PATCH, DELETE, archive/unarchive, activate/deactivate, POST /:id/run (manual execution), share, transfer, collaboration write-lock, publication-status, with-node-types.",
+          "sources": [
+            "packages/cli/src/workflows/workflows.controller.ts#L71-707"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Executions API: GET /executions (range-parsed), GET /:id, POST /:id/stop, POST /stopMany, POST /:id/retry, POST /delete, PATCH /:id, plus GET /versions/:workflowId.",
+          "sources": [
+            "packages/cli/src/executions/executions.controller.ts#L22-143"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Auth/user surface: auth.controller, me.controller, users.controller, owner.controller, invitation, password-reset, change-email, api-keys, mfa.controller (conditionally imported when MFA enabled), role.controller, security-settings.",
+          "sources": [
+            "packages/cli/src/server.ts#L34-74",
+            "packages/cli/src/server.ts#L141-144"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Credential flows: credentials.controller plus oauth/oauth1-credential.controller and oauth2-credential.controller handle OAuth callback round-trips; CredentialsOverwrites exposes a preset-credentials endpoint gated by optional middleware.",
+          "sources": [
+            "packages/cli/src/server.ts#L44-46",
+            "packages/cli/src/server.ts#L294-347",
+            "packages/cli/src/credentials/credentials.controller.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Webhook surface: AbstractServer registers live webhooks, waiting webhooks, waiting forms, test webhooks, and Slack/Telegram interaction webhooks via createWebhookHandlerFor before bodyParser so binary payloads survive.",
+          "sources": [
+            "packages/cli/src/abstract-server.ts#L241-295",
+            "packages/cli/src/webhooks/webhook-request-handler.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Public REST API v1 is loaded by loadPublicApiVersions and validated by express-openapi-validator against openapi.yml; routes live under public-api/v1 handlers.",
+          "sources": [
+            "packages/cli/src/server.ts#L233-237",
+            "packages/cli/src/public-api/index.ts",
+            "packages/cli/src/public-api/v1/openapi.yml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Real-time push: Push service picks WebSocketPush or SSEPush based on N8N_PUSH_BACKEND; bidirectional mode additionally enables the CollaborationService for collaborative editing.",
+          "sources": [
+            "packages/cli/src/push/index.ts#L24-70",
+            "packages/cli/src/server.ts#L241-253"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CLI subcommands: start, worker, webhook, execute, execute-batch, export/import (workflows & credentials), db migrate/revert, ldap sync, license ops, mfa, publish/unpublish, update, user-management, audit, ttwf; module commands are also discovered via ModuleRegistry.",
+          "sources": [
+            "packages/cli/src/command-registry.ts#L106-129",
+            "packages/cli/src/commands/start.ts",
+            "packages/cli/src/commands/worker.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Community packages feature: CommunityPackagesService installs/updates/removes npm packages of community nodes using execFile'd npm commands with integrity checks against a vetted-package list.",
+          "sources": [
+            "packages/cli/src/modules/community-packages/community-packages.service.ts#L18-49",
+            "packages/cli/src/modules/community-packages/npm-utils.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Enterprise modules gate features behind the license: sso-saml, sso-oidc, ldap, source-control, external-secrets, log-streaming, provisioning, workflow-reviews, promotions are all registered in ModuleRegistry.defaultModules with LicenseState consulted at init.",
+          "sources": [
+            "packages/@n8n/backend-common/src/modules/module-registry.ts#L44-80",
+            "packages/cli/src/modules/external-secrets.ee/external-secrets.module.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "AI features: @n8n/n8n-nodes-langchain nodes (agents, vector stores, tools), @n8n/ai-workflow-builder, @n8n/instance-ai ('n8n Assistant'), chat-hub module, and an MCP server (McpServer from n8n-nodes-langchain/mcp) with worker-relay handling in queue mode.",
+          "sources": [
+            "packages/cli/src/commands/start.ts#L12",
+            "packages/cli/src/commands/start.ts#L339-351",
+            "packages/cli/src/modules/instance-ai"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Evaluation/test-run feature: evaluation.ee controllers (test-runs, evaluation-config, evaluation-collections, eval-insights) plus TestRunCleanupService in base-command.",
+          "sources": [
+            "packages/cli/src/server.ts#L66-69",
+            "packages/cli/src/commands/base-command.ts#L36"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Task runners: Code-node execution is offloaded to spawned JS/Python task-runner processes brokered over a websocket (task-broker), configured by N8N_RUNNERS_* env vars.",
+          "sources": [
+            "packages/cli/src/task-runners/task-runner-process-js.ts#L34-53",
+            "packages/@n8n/config/src/configs/runners.config.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Editor UI is generated at startup: Start.generateStaticAssets rewrites index.html/js/css placeholders (%CONFIG_TAGS%, BASE_PATH, REST_ENDPOINT) into instanceSettings.staticCacheDir, which Server serves via express.static + a historyApiHandler that injects per-request CSP nonces.",
+          "sources": [
+            "packages/cli/src/commands/start.ts#L161-205",
+            "packages/cli/src/server.ts#L442-491"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "data_flow": {
+      "summary": "Workflow JSON and credentials live in @n8n/db entities; credentials are encrypted through Cipher (AES-256-CBC/GCM with key-id prefixes). Incoming REST/webhook requests hit controllers/handlers, which delegate to services and repositories; executions run through WorkflowRunner -> WorkflowExecute, producing IRunExecutionData that lifecycle hooks persist via ExecutionPersistence into execution_entity/execution_data. In queue mode the main enqueues a Bull job consumed by a worker which runs the same engine and reports back over Redis pub/sub. The editor reads/writes the same REST API and receives live updates via Push (ws/sse).",
+      "claims": [
+        {
+          "claim": "Core persisted state: WorkflowEntity (nodes/connections/settings/pinData), CredentialsEntity (encrypted data), WebhookEntity (path->workflow/node mapping), ExecutionEntity + ExecutionData, plus Settings rows with loadOnStartup that are re-applied to the convict config at boot.",
+          "sources": [
+            "packages/@n8n/db/src/entities/index.ts",
+            "packages/cli/src/commands/start.ts#L407-413"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Request path: Express middleware (cookie-parser, browserId extraction, CSP) -> AuthStrategyRegistry (ApiKeyAuthStrategy then SessionCookieAuthStrategy) -> ControllerRegistry-activated routes -> services -> repositories -> TypeORM DataSource.",
+          "sources": [
+            "packages/cli/src/server.ts#L191-268",
+            "packages/cli/src/controller.registry.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Execution path: controller/manual trigger -> WorkflowRunner.run -> WorkflowExecute.run (PCancelable<IRun>) which iterates the execution stack, calls node execute functions via NodeExecuteFunctions contexts, and emits lifecycle hooks (workflowExecuteBefore/After, nodeExecuteBefore/After) that persist progress.",
+          "sources": [
+            "packages/cli/src/workflow-runner.ts#L108-130",
+            "packages/core/src/execution-engine/workflow-execute.ts#L142-150",
+            "packages/cli/src/execution-lifecycle/execution-lifecycle-hooks.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Credential secrecy: Cipher.encryptV2 encrypts with the active key from EncryptionKeyProxy, emitting 'keyId:ciphertext' for rotated keys or bare ciphertext for the legacy no-prefix format; decryptV2 parses the prefix, looks up the DEK, unwraps it with the instance key (AES-256-GCM), then decrypts.",
+          "sources": [
+            "packages/core/src/encryption/cipher.ts#L54-135"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Webhook data path: request -> WebhookRequestHandler.handleRequest (method check, CORS) -> webhookManager.executeWebhook -> WebhookService.findTriggerWebhooksByPath against webhook_entity -> workflow execution -> WebhookResponse (static/stream/no-response) -> headers via WebhookResponseHeaders.",
+          "sources": [
+            "packages/cli/src/webhooks/webhook-request-handler.ts#L43-120",
+            "packages/cli/src/webhooks/webhook.service.ts#L120-218"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Queue-mode data path: main's ScalingService.setupQueue creates a Bull queue (maxStalledCount: 0) named by resolveQueueName(instanceType, poolName); workers run setupWorker(concurrency) -> JobProcessor executes the same WorkflowExecute and relays status through Redis pub/sub channels (command, worker-response, mcp-relay).",
+          "sources": [
+            "packages/cli/src/scaling/scaling.service.ts#L97-132",
+            "packages/cli/src/commands/worker.ts#L208-243",
+            "packages/cli/src/commands/start.ts#L329-351"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Binary data flows through BinaryDataConfig/BinaryDataService with pluggable stores: filesystem managers under cli/binary-data plus S3/Azure object stores via @n8n/blob-storage (S3ByteStore, AzureByteStore).",
+          "sources": [
+            "packages/cli/src/commands/base-command.ts#L13",
+            "packages/cli/src/binary-data/binary-data-access.service.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Frontend bootstrap: index.html is pre-split around HTML_NONCE_PLACEHOLDER and served per-request with a fresh CSP nonce by historyApiHandler; REST endpoint + Sentry config reach the client as base64 meta tags injected during generateStaticAssets.",
+          "sources": [
+            "packages/cli/src/server.ts#L442-485",
+            "packages/cli/src/commands/start.ts#L140-205"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Node/credential type metadata: LoadNodesAndCredentials scans node_modules for n8n-nodes-base and @n8n/n8n-nodes-langchain, plus custom dirs and module-provided nodeLoaders; built types are written to staticCacheDir (/types/nodes.json, credentials.json, node-versions.json) served behind auth.",
+          "sources": [
+            "packages/cli/src/load-nodes-and-credentials.ts#L103-137",
+            "packages/cli/src/server.ts#L497-524"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Expression evaluation: workflow expressions are evaluated by @n8n/tournament (an AST interpreter, not eval) wrapped by expression-evaluator-proxy and hardened by expressionSandboxHooks in expression-sandboxing.ts.",
+          "sources": [
+            "packages/workflow/src/expression-evaluator-proxy.ts",
+            "packages/workflow/src/expression-sandboxing.ts#L568-572",
+            "packages/@n8n/tournament/src/index.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Event bus: MessageEventBus is initialized per-process (workerId payload on workers) and LogStreamingEventRelay forwards events; execution/workflow lifecycle also feeds TelemetryEventRelay, ActivityEventRelay, and workflow-failure notifications.",
+          "sources": [
+            "packages/cli/src/commands/worker.ts#L170-175",
+            "packages/cli/src/commands/base-command.ts#L37-40"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "behavior_traces": {
+      "summary": "Three flows traced end-to-end. (1) Startup: bin/n8n -> CommandRegistry.execute -> Start.init (DB connect/migrate, license, community packages, roles, modules) -> Start.run (settings, server.start, schedulers, workflow activation). (2) Webhook: express route -> WebhookRequestHandler -> LiveWebhooks/WebhookService -> workflow execution -> WebhookResponse. (3) Execution: REST run -> WorkflowRunner -> WorkflowExecute -> lifecycle hooks -> DB persistence. Shutdown and worker boot are also documented.",
+      "claims": [
+        {
+          "claim": "Startup order: bin/n8n (version check, dotenv, dist/config) -> Container.get(CommandRegistry).execute() -> imports commands/start.js -> parses flags via zod -> Container.get(Start) -> init() -> run().",
+          "sources": [
+            "packages/cli/bin/n8n#L60-63",
+            "packages/cli/src/command-registry.ts#L45-104"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "BaseCommand.init runs first inside Start.init: installOutboundProxyAgents -> ErrorReporter.init (Sentry) -> signal handlers -> LoadNodesAndCredentials.init -> optional RedisLockService -> DbConnection.init -> server.init -> DbConnection.migrate -> instanceSettings.initialize.",
+          "sources": [
+            "packages/cli/src/commands/base-command.ts#L106-200"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Start.init continues: DeprecationService.warn -> PollJobProvider.init -> instance role resolution (regular=leader else initOrchestration) -> JwtService/BinaryDataConfig init -> initLicense -> ensureMultiMainLicensed -> initCommunityPackages -> PubSubRegistry.init (rewire) -> AuthRolesService.init + RoleCacheService.refreshCache (main only) -> BinaryDataService -> WaitTracker -> CredentialsOverwrites -> dedup -> external hooks -> workflow history -> generateStaticAssets -> moduleRegistry.initModules -> AuthHandlerRegistry -> MultiMainSetup handlers -> executionContextHookRegistry -> postProcessLoaders.",
+          "sources": [
+            "packages/cli/src/commands/start.ts#L207-320"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Start.run: load SettingsRepository rows where loadOnStartup into convict config -> optional SQLite VACUUM -> server.start() -> init pruning/history-compaction/statistics services -> register mainSystemTasks + SystemTaskRunner -> DurableScheduler.start -> EnqueuedExecutionRecoveryService (regular mode) -> either workflow-publication outbox consumer or ActiveWorkflowManager.init -> releaseTypes -> print editor URL -> TTY 'o' key opens browser.",
+          "sources": [
+            "packages/cli/src/commands/start.ts#L404-512"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Server.start -> configure(): Prometheus metrics (optional) -> frontendService.getSettings + external hook -> PostHog -> loadPublicApiVersions mounts public routers -> register auth strategies -> cookieParser -> CSP middleware (deliberately after webhook routes) -> Push.setupPushHandler -> CollaborationService if websocket -> ScalingService.setupQueue in queue mode -> registerAdditionalControllers -> PubSubRegistry.init -> ControllerRegistry.activate -> eventBus.initialize -> workflow indexing -> preset-credentials route -> protectTypeFiles -> static/history handlers.",
+          "sources": [
+            "packages/cli/src/server.ts#L104-126",
+            "packages/cli/src/server.ts#L170-495"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Webhook request flow: route registered on AbstractServer before bodyParser -> createWebhookHandlerFor(LiveWebhooks|WaitingWebhooks|TestWebhooks|...) -> WebhookRequestHandler.handleRequest: reject non-HTTP-methods, CORS preflight handling, then webhookManager.executeWebhook -> response dispatched as WebhookResponse (no-response/static/stream) or legacy {data,responseCode,headers}.",
+          "sources": [
+            "packages/cli/src/abstract-server.ts#L241-295",
+            "packages/cli/src/webhooks/webhook-request-handler.ts#L43-94"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Webhook resolution persists through WebhookService: findTriggerWebhooksByPath queries webhook_entity rows, pickMatchingTemplate selects the best segment match, storeWebhook inserts rows; on activation ActiveWorkflowManager registers live paths and deactivation calls deleteWorkflowWebhooks.",
+          "sources": [
+            "packages/cli/src/webhooks/webhook.service.ts#L120-296",
+            "packages/cli/src/active-workflow-manager.ts#L101-110"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Manual/REST execution: POST /workflows/:workflowId/run (or executions retry) -> WorkflowRunner.run -> build additionalData via WorkflowExecuteAdditionalData -> pick lifecycle hooks (getLifecycleHooksForRegularMain/ScalingMain/ScalingWorker) -> new WorkflowExecute(...).run(...) returns PCancelable -> processRunExecutionData walks the execution stack -> nodeExecute functions resolve params, credentials, expressions -> hooks persist via ExecutionPersistence/saveExecutionProgress -> Push broadcasts progress to the editor.",
+          "sources": [
+            "packages/cli/src/workflows/workflows.controller.ts#L506",
+            "packages/cli/src/workflow-runner.ts#L49-70",
+            "packages/core/src/execution-engine/workflow-execute.ts",
+            "packages/cli/src/execution-lifecycle/execution-lifecycle-hooks.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Worker boot: 'worker' command forces executions.mode='queue' -> setConcurrency (env N8N_CONCURRENCY_PRODUCTION_LIMIT or --concurrency, warns <5) -> init chain (license, community packages, credentials overwrites, binary data, dedup, event bus) -> ScalingService.setupQueue -> Redis subscriber on command channel -> run() optionally starts WorkerServer (health/overwrites/metrics) then setupWorker(concurrency) consumes Bull jobs; process then idles forever.",
+          "sources": [
+            "packages/cli/src/commands/worker.ts#L77-259"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Graceful shutdown (Start.stopProcess): removeAllQueuedWorkflowActivations -> WaitTracker.stopTracking -> externalHooks 'n8n.stop' -> removeAllNonWebhookTriggerWorkflows -> MultiMainSetup.shutdown (if multi-main) -> Publisher/Subscriber.shutdown (queue mode) -> EventService 'instance-stopped' -> ActiveExecutions.shutdown -> MessageEventBus.close -> exitSuccessFully; SIGTERM/SIGINT handlers are installed in BaseCommand.init.",
+          "sources": [
+            "packages/cli/src/commands/start.ts#L101-134",
+            "packages/cli/src/commands/base-command.ts#L153-154"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "testing_signals": {
+      "summary": "Unit/integration tests are Vitest, orchestrated by a workspace glob over every package's vitest.config; packages/cli alone has ~286 integration test files plus unit/migration suites runnable against SQLite or Postgres (incl. testcontainers). nodes-base tests live per-node and via JSON workflow harnesses. Playwright covers e2e UI, API, container, performance and benchmark projects under packages/testing/playwright. CI (ci-master.yml) builds, unit-tests on Node 24/26, lints, runs CodSpeed benchmarks, and verifies single-instance npm packaging; Stryker mutation testing is wired via the 'mutate' script.",
+      "claims": [
+        {
+          "claim": "Vitest workspace at repo root collects every packages/**/vitest.config.*; ~6368 *.test.ts files exist across the repo.",
+          "sources": [
+            "vitest.workspace.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "packages/cli test scripts run vitest with DB_TYPE=sqlite by default; separate configs (vitest.config.integration.ts, vitest.config.migration.ts, *.testcontainers.ts) target integration and migration suites; test:postgres variants set DB_TYPE=postgresdb.",
+          "sources": [
+            "packages/cli/package.json#L27-47",
+            "packages/cli/test/integration"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Test layout in packages/cli/test: unit/, integration/, migration/, shared/, plus global-setup.ts and setup-testcontainers.ts helpers.",
+          "sources": [
+            "packages/cli/test/global-setup.ts",
+            "packages/cli/test/setup-testcontainers.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "nodes-base keeps per-node tests in <Node>/test/ or __tests__ dirs plus a top-level test/ folder with JSON workflow harness tests (NodeTestHarness) and nock-based HTTP mocking.",
+          "sources": [
+            "packages/nodes-base/test",
+            "packages/nodes-base/nodes/Webhook/test/description.test.ts",
+            "packages/nodes-base/AGENTS.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Playwright suite lives in packages/testing/playwright with playwright.config.ts + playwright-projects.ts; tests/e2e, tests/framework, infrastructure/benchmark and performance projects; currents.config.ts indicates Currents reporting.",
+          "sources": [
+            "packages/testing/playwright/playwright.config.ts",
+            "packages/testing/playwright/tests/e2e",
+            "packages/testing/playwright/currents.config.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CI on master (ci-master.yml): build-github job, unit-test reusable workflow on Node 24.18.1 and 26.5.1 with coverage on 24, lint reusable workflow, CodSpeed performance benchmarks post-merge, and verify-single-instance-npm packaging check.",
+          "sources": [
+            ".github/workflows/ci-master.yml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Mutation testing is available via Stryker: @stryker-mutator/core + vitest-runner in devDeps and 'pnpm mutate'/'mutate:diff' scripts.",
+          "sources": [
+            "package.json#L71-72",
+            "package.json#L101-102"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Core engine has dedicated unit tests: workflow-execute.test.ts, routing-node.test.ts, active-workflow-triggers.test.ts under packages/core/src/execution-engine/__tests__.",
+          "sources": [
+            "packages/core/src/execution-engine/__tests__/workflow-execute.test.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Encryption upgrades/rotations have dedicated Playwright suites exposed via root scripts test:encryption:upgrade and test:encryption:rotation.",
+          "sources": [
+            "package.json#L82-83"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Coverage is collected through @vitest/coverage-v8 and codecov.yml; Codecov token is threaded through ci-master build env.",
+          "sources": [
+            "packages/cli/package.json#L125",
+            "codecov.yml",
+            ".github/workflows/ci-master.yml"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "risk_map": {
+      "summary": "Security-sensitive surface: community-package npm installs shell out via execFile; credential secrecy relies on Cipher key handling and N8N_ENCRYPTION_KEY; expression evaluation and JS/Python task runners execute user code (Tournament sandbox + prototype hardening + spawned processes); webhook/form routes intentionally serve user HTML outside the CSP middleware. The 3.1k-line WorkflowExecute and the multi-stage Start.init ordering are blast-radius hotspots, as are Redis pub/sub trust and the Postgres migration advisory lock.",
+      "claims": [
+        {
+          "claim": "Community packages install third-party code at runtime: community-packages.service uses execFile/executeNpmCommand (npm pack/install) against registry.npmjs.org by default; verifyIntegrity and a vetted-package list mitigate but the attack surface (supply chain, postinstall) is inherent.",
+          "sources": [
+            "packages/cli/src/modules/community-packages/community-packages.service.ts#L18-49",
+            "packages/cli/src/modules/community-packages/npm-utils.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "LoadNodesAndCredentials mutates global module resolution: it rewrites NODE_PATH and calls node's private module._initPaths() so community packages resolve — fragile across Node upgrades and a code-loading vector for anything on NODE_PATH.",
+          "sources": [
+            "packages/cli/src/load-nodes-and-credentials.ts#L78-101"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Credential encryption depends on the instance key: Cipher.decryptV2 throws UnexpectedError('Encryption key not found') for unknown keyIds and silently treats unprefixed data as legacy CBC; wrong/missing N8N_ENCRYPTION_KEY renders all stored credentials unreadable.",
+          "sources": [
+            "packages/core/src/encryption/cipher.ts#L96-135",
+            "packages/core/src/encryption/cipher.ts#L20"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "WorkflowExecute is a 3168-line stateful class; its run() must remain non-async to preserve PCancelable cancellation (explicit comment), meaning a well-meaning refactor breaks execution cancellation.",
+          "sources": [
+            "packages/core/src/execution-engine/workflow-execute.ts#L138-150"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Webhook/form routes are registered before bodyParser AND before the CSP middleware on purpose — user-authored HTML responses must not get the instance CSP; the comment warns that reordering 'silently changes' the security posture.",
+          "sources": [
+            "packages/cli/src/server.ts#L212-227",
+            "packages/cli/src/abstract-server.ts#L241-295"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Preset-credentials endpoint (/endpointPresetCredentials) can be configured without the overwrite middleware; in that case credentials can only be set once per boot — a misconfiguration could leave a credential-injection route unauthenticated.",
+          "sources": [
+            "packages/cli/src/server.ts#L294-347"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Expression evaluation is user-controlled code: Tournament evaluator + expressionSandboxHooks exist to contain it; any escape in the proxy/hooks layer is direct RCE inside the n8n process.",
+          "sources": [
+            "packages/workflow/src/expression-evaluator-proxy.ts",
+            "packages/workflow/src/expression-sandboxing.ts#L568-572"
+          ],
+          "kind": "inference"
+        },
+        {
+          "claim": "JS task runners spawn 'node' subprocesses (JsTaskRunnerProcess.startProcess) with env-injected grant tokens; N8N_RUNNERS_INSECURE_MODE exists in config, and runners authenticate to a broker port — misconfiguration widens code-exec blast radius.",
+          "sources": [
+            "packages/cli/src/task-runners/task-runner-process-js.ts#L34-53",
+            "packages/@n8n/config/src/configs/runners.config.ts#L24-89",
+            "packages/@n8n/task-runner/src/js-task-runner/prototype-hardening.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Auth: session cookie is a JWT (AUTH_COOKIE_NAME) bound to a browserId header and MFA-gated; ApiKeyAuthStrategy is evaluated before cookie auth so a wrong explicit key fails fast; revocation uses InvalidAuthToken entity.",
+          "sources": [
+            "packages/cli/src/auth/auth.service.ts",
+            "packages/cli/src/server.ts#L191-201"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Postgres migrations run inside an advisory lock scoped by schema+prefix hash with transaction:'none' — all pending migrations commit or roll back as one unit, so a mid-migration crash can leave a partially migrated schema for every co-starting instance.",
+          "sources": [
+            "packages/@n8n/db/src/connection/db-connection.ts#L152-185"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Redis is a trust boundary in queue mode: commands flow over pub/sub channels to workers and webhooks relay through the same fabric; a compromised Redis can drive executions on all mains/workers.",
+          "sources": [
+            "packages/cli/src/commands/start.ts#L329-358",
+            "packages/cli/src/scaling/pubsub/subscriber.service.ts",
+            "packages/cli/src/commands/worker.ts#L183-192"
+          ],
+          "kind": "inference"
+        },
+        {
+          "claim": "Startup ordering is contractually fragile: entities must be registered before DataSource creation (loadModules), PubSubRegistry.init() must be re-invoked after modules/community-packages register @OnPubSubEvent handlers, and JwtService/BinaryDataConfig init require DeploymentKeyRepository — comments flag each of these ordering constraints.",
+          "sources": [
+            "packages/@n8n/backend-common/src/modules/module-registry.ts#L96-120",
+            "packages/cli/src/commands/start.ts#L260-264",
+            "packages/cli/src/commands/start.ts#L455-462"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "External secrets feature pulls secrets from AWS Secrets Manager, Azure Key Vault, GCP Secret Manager, 1Password (SDK deps present); provider credentials and sync are handled in modules/external-secrets.ee — a leak here exposes all downstream credentials.",
+          "sources": [
+            "packages/cli/package.json#L133-146",
+            "packages/cli/src/modules/external-secrets.ee/external-secrets-manager.ee.ts"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "extension_points": {
+      "summary": "n8n is built around registries. Backend: @Command files under commands/, @RestController classes activated by ControllerRegistry, *.module.ts backend modules via ModuleRegistry, NodeLoader implementations fed through LoadNodesAndCredentials (package dirs, custom dirs via CUSTOM_EXTENSION_ENV, module-provided loaders), @OnPubSubEvent handlers, and ExternalHooks. Nodes/credentials plug in via the package.json 'n8n' manifest. Frontend: manifest registration functions (modals, component slots, capabilities, upgrade redirects, module routes). Node types themselves expose loadOptions/listSearch/credentialTest/webhookMethods hooks.",
+      "claims": [
+        {
+          "claim": "New CLI commands: create a class file under packages/cli/src/commands/, decorate with @Command({name, description, flagsSchema (zod)}); CommandRegistry imports commands/<name>.js by convention and runs init/run/catch/finally.",
+          "sources": [
+            "packages/cli/src/command-registry.ts#L45-104",
+            "packages/cli/src/commands/start.ts#L60-66"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New REST endpoints: classes decorated @RestController('/path') with @Get/@Post/@Put/@Patch/@Delete methods are activated en masse by ControllerRegistry.activate(app); most are side-effect-imported at the top of server.ts.",
+          "sources": [
+            "packages/cli/src/controller.registry.ts",
+            "packages/cli/src/server.ts#L34-74",
+            "packages/cli/src/executions/executions.controller.ts#L22"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New backend module: a <name>.module.ts under packages/cli/src/modules (or packages/modules) is discovered by ModuleRegistry.loadModules; modules can register entities, node loaders, commands, pubsub handlers; membership is controlled by defaultModules + ModulesConfig enabled/disabled.",
+          "sources": [
+            "packages/@n8n/backend-common/src/modules/module-registry.ts#L44-120"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New integration node: implement INodeType (execute or declarative requestDefaults; poll/trigger/webhook/webhookMethods for triggers) under nodes/<Service>/, add the dist path to package.json 'n8n.nodes', and credentials under credentials/ with 'n8n.credentials' entries.",
+          "sources": [
+            "packages/nodes-base/package.json#L35-36",
+            "packages/nodes-base/nodes/Set/Set.node.ts",
+            "packages/nodes-base/AGENTS.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Community/custom node packages: LoadNodesAndCredentials supports DirectoryLoader, PackageDirectoryLoader, LazyPackageDirectoryLoader and CustomDirectoryLoader; CUSTOM_EXTENSION_ENV adds custom directories; module nodeLoaders are appended via moduleRegistry.nodeLoaders.",
+          "sources": [
+            "packages/cli/src/load-nodes-and-credentials.ts#L14-30",
+            "packages/cli/src/load-nodes-and-credentials.ts#L103-137"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Cross-process hooks: @OnPubSubEvent/@OnLeaderTakeover/@OnLeaderStepdown/@OnShutdown decorators register handlers that PubSubRegistry.init() wires to Redis channels — but init must be re-called after modules load (explicit rewire comments in start.ts).",
+          "sources": [
+            "packages/cli/src/commands/start.ts#L260-264",
+            "packages/cli/src/scaling/pubsub/pubsub.registry.ts",
+            "packages/cli/src/active-workflow-manager.ts#L6"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "ExternalHooks.run('n8n.stop', 'frontend.settings', 'activeWorkflows.initialized', ...) lets deployments inject custom logic via EXTERNAL_HOOKS config.",
+          "sources": [
+            "packages/cli/src/commands/start.ts#L110",
+            "packages/cli/src/server.ts#L179",
+            "packages/cli/src/external-hooks.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Frontend extension manifests: registerModuleRoutes(router), registerEagerModals, registerComponentSlots, registerShellCapabilities, registerUpgradeRedirectGuard in main.ts — frontend modules under packages/modules/<name>/frontend plug into the editor shell through these manifests.",
+          "sources": [
+            "packages/frontend/editor-ui/src/main.ts#L51-65",
+            "packages/frontend/editor-ui/src/app/moduleInitializer/moduleInitializer.ts",
+            "packages/frontend/editor-ui/src/app/modals.manifest.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Auth is a strategy chain: AuthStrategyRegistry evaluates registered strategies in order (ApiKeyAuthStrategy first, SessionCookieAuthStrategy last); modules 'can append later during their own module initialization' (e.g. token-exchange JWT).",
+          "sources": [
+            "packages/cli/src/server.ts#L191-201",
+            "packages/cli/src/services/auth-strategy.registry.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Node dynamic behavior hooks: methods.loadOptions, methods.listSearch, methods.credentialTest and resourceMapping let nodes serve dynamic UI data without a dedicated endpoint; DynamicNodeParametersController exposes them over REST.",
+          "sources": [
+            "packages/nodes-base/AGENTS.md",
+            "packages/cli/src/server.ts#L41"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Execution context hooks: ExecutionContextHookRegistry (init'ed at the end of Start.init) lets modules hook execution-context establishment; establishExecutionContext in core consumes them.",
+          "sources": [
+            "packages/cli/src/commands/start.ts#L318-319",
+            "packages/core/src/execution-engine/execution-context.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "System tasks: mainSystemTasks(globalConfig) returns task classes registered into SystemTaskMetadata and provisioned by SystemTaskRunner on the DurableScheduler — a registry for durable background jobs.",
+          "sources": [
+            "packages/cli/src/commands/start.ts#L429-437",
+            "packages/cli/src/scheduling/durable-scheduler.ts"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_handoff": {
+      "summary": "Use pnpm everywhere; build with turbo and redirect output (pnpm build > build.log 2>&1). All backend services are @n8n/di singletons resolved via Container.get; commands follow init/run/catch/finally; controllers/modules are decorator-registered. Respect hard ordering constraints (module entity registration before DataSource, PubSubRegistry re-init, no-async on WorkflowExecute.run, CSP middleware ordering). Test with per-package vitest; run lint+typecheck inside the touched package. TypeORM must stay inside @n8n/db or *.entity.ts/*.repository.ts files.",
+      "claims": [
+        {
+          "claim": "Always use pnpm (npm install is blocked by a preinstall script); build via turbo ('pnpm build'), test via 'pnpm test' per package, lint via 'pnpm lint' (oxlint + eslint guardrails in cli), typecheck via 'pnpm typecheck'.",
+          "sources": [
+            "package.json#L12-13",
+            "packages/cli/package.json#L20-23"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Dependency injection: services are @Service()-decorated classes resolved with Container.get(X); decorators (@Command, @RestController, @OnPubSubEvent, @Memoized, @Env) from @n8n/decorators drive registration — new code should follow this pattern rather than manual wiring.",
+          "sources": [
+            "packages/cli/bin/n8n#L60-63",
+            "packages/cli/src/commands/start.ts#L60-69",
+            "packages/@n8n/di/src/di.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Do not add 'async' to WorkflowExecute.run — it must return PCancelable for cancellation; this is an explicit in-code contract.",
+          "sources": [
+            "packages/core/src/execution-engine/workflow-execute.ts#L138-141"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "DB access boundary (per AGENTS.md): business logic must not import @n8n/typeorm; queries live in repositories under @n8n/db or a module's database/ folder; transactions use the TransactionRunner port, not .manager.transaction.",
+          "sources": [
+            "AGENTS.md",
+            "packages/@n8n/db/src/connection/db-connection.ts#L49-52"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Encryption boundary (per AGENTS.md): new code encrypts only via cipher.encryptV2/decryptV2; raw AES classes stay in packages/core/src/encryption; deployment keys are deactivated, never deleted.",
+          "sources": [
+            "AGENTS.md",
+            "packages/core/src/encryption/cipher.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Config changes go through @n8n/config config classes with @Env decorators — adding a setting means editing a *.config.ts (e.g. runners.config.ts), not reading process.env ad hoc; db type must be known before entities load (see bin/n8n comment).",
+          "sources": [
+            "packages/@n8n/config/src/configs/runners.config.ts",
+            "packages/cli/bin/n8n#L43-46"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "After adding module-level @OnPubSubEvent handlers or node loaders, remember the rewire step: PubSubRegistry.init() is re-invoked after initCommunityPackages and after module init in both start.ts and worker.ts.",
+          "sources": [
+            "packages/cli/src/commands/start.ts#L260-264",
+            "packages/cli/src/commands/worker.ts#L162-164"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "To run a single test file: cd into the package dir and 'pnpm test <file>'; cli integration tests need the vitest.config.integration.ts config and run on SQLite by default (DB_TYPE env switches dialect).",
+          "sources": [
+            "AGENTS.md",
+            "packages/cli/package.json#L27-40"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Frontend work: editor-ui aliases '@/' to src; new feature modules belong under packages/modules/<name>/frontend (not editor-ui/src/features) and integrate via the manifest functions in main.ts; design-system components live in @n8n/design-system.",
+          "sources": [
+            "packages/frontend/editor-ui/src/main.ts#L51-65",
+            "packages/frontend/AGENTS.md",
+            "packages/modules"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Read first for most tasks: AGENTS.md (conventions), packages/cli/src/commands/base-command.ts + start.ts (init ordering), packages/cli/src/server.ts (middleware/controller wiring), packages/@n8n/backend-common/src/modules/module-registry.ts (module system), packages/core/src/execution-engine/workflow-execute.ts (execution engine).",
+          "sources": [
+            "AGENTS.md",
+            "packages/cli/src/commands/start.ts",
+            "packages/cli/src/server.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Trap: command name 'executeBatch' is aliased to 'execute-batch' at runtime; commands whose files fail to import surface a real error while missing files fall through to module-provided commands.",
+          "sources": [
+            "packages/cli/src/command-registry.ts#L35-57"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "V3 development: normal feature work lands on master behind opt-in flags; breaking changes only on the 3.x branch (per AGENTS.md reference to .github/DEVELOPING_V3.md).",
+          "sources": [
+            "AGENTS.md"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_prompt": "You are working in the n8n monorepo (pnpm 12.4.2 + Turbo, Node >=24, TypeScript). n8n is a self-hosted workflow-automation platform: `packages/cli` publishes the `n8n` binary (bin/n8n -> CommandRegistry -> @Command classes like `start`, `worker`, `webhook`), `packages/core` (n8n-core) contains the WorkflowExecute engine, node loaders, and the Cipher encryption layer, `packages/workflow` (n8n-workflow) holds the shared type model plus the Tournament expression evaluator, `packages/nodes-base` ships ~560 built-in nodes registered via the package.json `n8n.nodes`/`n8n.credentials` manifest, `packages/@n8n/db` owns all TypeORM entities/migrations for SQLite and Postgres, and `packages/frontend/editor-ui` is the Vue 3 + Vite + Pinia editor.\n\nCore conventions:\n- Everything backend is a @n8n/di `@Service` resolved via `Container.get(X)`; decorators come from `@n8n/decorators` (@Command, @RestController + @Get/@Post..., @OnPubSubEvent, @OnLeaderTakeover/Stepdown, @OnShutdown, @Memoized). Config lives in `@n8n/config` classes with `@Env` decorators — never read process.env ad hoc.\n- Command lifecycle is `init() -> run() -> catch() -> finally()`; commands declare `flagsSchema` (zod) and capability flags (needsCommunityPackages, needsTaskRunner, needsExpressionEngine).\n- Ordering traps: `dist/config` must load before `@n8n/db` entities (bin/n8n comment); module entities register before DataSource creation (ModuleRegistry.loadModules); PubSubRegistry.init() must be re-invoked after modules/community packages register pubsub handlers; never add `async` to `WorkflowExecute.run` (must return PCancelable); the CSP middleware in server.ts must stay below webhook/form route registration.\n- Persistence boundary: business logic must NOT import `@n8n/typeorm`; queries go behind use-case-named repository methods in `@n8n/db` or a module's `database/` folder; transactions use the `TransactionRunner` port (`txRunner.run(ctx, fn)`), not `.manager.transaction`. New encryption goes through `cipher.encryptV2/decryptV2` only.\n- Queue mode: mains publish Bull jobs + Redis pub/sub commands; workers (`n8n worker`) consume with `--concurrency`; webhook processes serve webhook endpoints. Multi-main is licensed and leader-elected.\n\nWorkflows for changes:\n- Build: `pnpm build > build.log 2>&1` (turbo); per-package `pnpm lint`, `pnpm typecheck` before committing; root `pnpm knip` for unused deps.\n- Test: `pnpm test <file>` inside the package (Vitest); cli integration tests use `vitest.config.integration.ts` on SQLite by default, `DB_TYPE=postgresdb` for Postgres; e2e lives in `packages/testing/playwright` (Playwright). `pnpm agent:setup` validates a fresh checkout.\n- New REST endpoint: @RestController class + decorator methods; import it in server.ts (or inside a module). New command: file in `packages/cli/src/commands/` with @Command. New backend feature: a `<name>.module.ts` under `packages/cli/src/modules` or `packages/modules`. New node: `INodeType` under `packages/nodes-base/nodes/<Service>/` + package.json manifest entry. Frontend module: `packages/modules/<name>/frontend` + manifest registration (modals/componentSlots/capabilities/moduleInitializer).\n- Security-sensitive areas: community-packages npm installs (execFile), Cipher/deployment keys (never delete keys), expression sandbox (@n8n/tournament + expressionSandboxHooks), task-runner subprocesses (N8N_RUNNERS_*), webhook routes serving user HTML, external-secrets providers (AWS/Azure/GCP/1Password).\n\nRead first: AGENTS.md, packages/cli/src/commands/start.ts, packages/cli/src/server.ts, packages/cli/src/commands/base-command.ts, packages/@n8n/backend-common/src/modules/module-registry.ts, packages/core/src/execution-engine/workflow-execute.ts."
+  },
+  "analysis": {
+    "agent": "devin",
+    "model": "swe-2",
+    "runtime_ms": null,
+    "cost_usd": null,
+    "collected_at": "2026-09-22T16:03:31.875Z"
   }
 }

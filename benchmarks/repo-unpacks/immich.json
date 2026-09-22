@@ -949,12 +949,12 @@
         {
           "path": "CONTRIBUTING.md",
           "bytes": 5027,
-          "preview": "# Contributing to Immich\n\nWe appreciate every contribution, and we're happy about every new contributor. So please feel invited to help make Immich a better product!\n\n## Getting started\n\nTo get you started quickly we have detailed guides for the dev setup on our [website](https://docs.immich.app/developer/setup). If you prefer, you can also use [Devcontainers](https://docs.immich.app/developer/devcontainers).\nThere are also additional resources about Immich's architecture, database migrations, the use of OpenAPI, and more in our [developer documentation](https://docs.immich.app/developer/architecture).\n\n## General\n\nPlease try to keep pull requests as focused as possible. A PR should do exactly one thing and not bleed into other, unrelated areas. The smaller a PR, the fewer changes are likely needed, and the quicker it will likely be merged. For larger/more impactful PRs, please reach out to us first to discuss your plans. The best way to do this is through our [Discord](https://discord.immich.app). We have a dedicated `#contributing` channel there. Additionally, please fill out the entire template when opening a PR.\n\n## Finding work\n\nIf you are looking for something to work on, there are discussions and issues with a `good-first-issue` label on them. These are always a good starting point. If none of them sound interesting or fit your skill set, feel free to reach out on our Discord. We're happy to help you find something to work on!\n\nWe usually do not assign issues to new contributors, since it happens often that a PR is never even opened. Again, reach out on Discord if you fear putting a lot of time into fixing an issue, but ending up with a duplicate PR.\n\n### Opening new issues\n\nIf you find bugs or other problems while working on something, we appreciate that you open an issue, if there is no open issue covering the problem yet. To make it easier to debug and fix the issue, please read and fill out the whole issue template.\n\n## Use of generative AI\n\nWe ask you not to open PRs generated with an LLM. We find that code generated like this tends to need a large amount of back-and-forth, which is a very inefficient use of our time. Even a one line change can have significant impact. We cannot have any confidence in an LLM, so if it's non-trivial for us to verify it works and you don't show that you fully understand all implications of the change, reviewing the PR is not worth our time. If we want LLM-generated code, it's much faster for us to use an LLM ourselves than to go through an intermediary via a pull request.\n\nIf you use an LLM to translate a PR description or title, that is fine. Please make sure however that you stick to the PR template and that the text is written concisely.\n\nLLMs must not be used to fix GitHub issues labelled good first issue. These issues are generally not urgent, and are intended to be learning opportunities for new contributors to get familiar with the codebase. Whether you are a newcomer or not, fully automating the process of fixing this issue squanders the learning opportunity and doesn\u2019t add much value to the project. Using LLMs to fix issues labelled as \u201cgood first issue\u201d is forbidden, and those PRs will be closed automatically.\n\nMisrepresenting LLM use, contribution farming (automated low-effort PRs), or repeatedly hitting auto-close rules may be grounds for a block at maintainer discretion.\n\n## Feature freezes\n\nFrom time to time, we put a feature freeze on parts of the codebase. For us, this means we won't accept most PRs that make changes in that area. Exempted from this are simple bug fixes that require only minor changes. We will close feature PRs that target a feature-frozen area, even if that feature is highly requested and you put a lot of work into it. Please keep that in mind, and if you're ever uncertain if a PR would be accepted, reach out to us first (e.g., in the aforementioned `#contributing` channel). We hate to throw away work. Currently, we have feature freezes on:\n\n- Sharing/Asset ownership\n- (External) libraries\n\n## Non-code contributions\n\nIf you want to contribute to Immich but you don't feel comfortable programming in our tech stack, there are other ways you can help the team.\n\n### Translations\n\nAll our translations are done through [Weblate](https://hosted.weblate.org/projects/immich). These rely entirely on the community; if you speak a language that isn't fully translated yet, submitting translations there is greatly appreciated!\n\n### Datasets\n\nHelp us improve our [Immich Datasets](https://datasets.immich.app) by submitting photos and videos taken from a variety of devices, including smartphones, DSLRs, and action cameras, as well as photos with unique features, such as panoramas, burst photos, and photo spheres. These datasets will be publicly available for anyone to use, do not submit private/sensitive photos.\n\n### Community support\n\nIf you like helping others, answering Q&A discussions here on GitHub and replying to people on our Discord is also always appreciated.\n"
+          "preview": "# Contributing to Immich\n\nWe appreciate every contribution, and we're happy about every new contributor. So please feel invited to help make Immich a better product!\n\n## Getting started\n\nTo get you started quickly we have detailed guides for the dev setup on our [website](https://docs.immich.app/developer/setup). If you prefer, you can also use [Devcontainers](https://docs.immich.app/developer/devcontainers).\nThere are also additional resources about Immich's architecture, database migrations, the use of OpenAPI, and more in our [developer documentation](https://docs.immich.app/developer/architecture).\n\n## General\n\nPlease try to keep pull requests as focused as possible. A PR should do exactly one thing and not bleed into other, unrelated areas. The smaller a PR, the fewer changes are likely needed, and the quicker it will likely be merged. For larger/more impactful PRs, please reach out to us first to discuss your plans. The best way to do this is through our [Discord](https://discord.immich.app). We have a dedicated `#contributing` channel there. Additionally, please fill out the entire template when opening a PR.\n\n## Finding work\n\nIf you are looking for something to work on, there are discussions and issues with a `good-first-issue` label on them. These are always a good starting point. If none of them sound interesting or fit your skill set, feel free to reach out on our Discord. We're happy to help you find something to work on!\n\nWe usually do not assign issues to new contributors, since it happens often that a PR is never even opened. Again, reach out on Discord if you fear putting a lot of time into fixing an issue, but ending up with a duplicate PR.\n\n### Opening new issues\n\nIf you find bugs or other problems while working on something, we appreciate that you open an issue, if there is no open issue covering the problem yet. To make it easier to debug and fix the issue, please read and fill out the whole issue template.\n\n## Use of generative AI\n\nWe ask you not to open PRs generated with an LLM. We find that code generated like this tends to need a large amount of back-and-forth, which is a very inefficient use of our time. Even a one line change can have significant impact. We cannot have any confidence in an LLM, so if it's non-trivial for us to verify it works and you don't show that you fully understand all implications of the change, reviewing the PR is not worth our time. If we want LLM-generated code, it's much faster for us to use an LLM ourselves than to go through an intermediary via a pull request.\n\nIf you use an LLM to translate a PR description or title, that is fine. Please make sure however that you stick to the PR template and that the text is written concisely.\n\nLLMs must not be used to fix GitHub issues labelled good first issue. These issues are generally not urgent, and are intended to be learning opportunities for new contributors to get familiar with the codebase. Whether you are a newcomer or not, fully automating the process of fixing this issue squanders the learning opportunity and doesn’t add much value to the project. Using LLMs to fix issues labelled as “good first issue” is forbidden, and those PRs will be closed automatically.\n\nMisrepresenting LLM use, contribution farming (automated low-effort PRs), or repeatedly hitting auto-close rules may be grounds for a block at maintainer discretion.\n\n## Feature freezes\n\nFrom time to time, we put a feature freeze on parts of the codebase. For us, this means we won't accept most PRs that make changes in that area. Exempted from this are simple bug fixes that require only minor changes. We will close feature PRs that target a feature-frozen area, even if that feature is highly requested and you put a lot of work into it. Please keep that in mind, and if you're ever uncertain if a PR would be accepted, reach out to us first (e.g., in the aforementioned `#contributing` channel). We hate to throw away work. Currently, we have feature freezes on:\n\n- Sharing/Asset ownership\n- (External) libraries\n\n## Non-code contributions\n\nIf you want to contribute to Immich but you don't feel comfortable programming in our tech stack, there are other ways you can help the team.\n\n### Translations\n\nAll our translations are done through [Weblate](https://hosted.weblate.org/projects/immich). These rely entirely on the community; if you speak a language that isn't fully translated yet, submitting translations there is greatly appreciated!\n\n### Datasets\n\nHelp us improve our [Immich Datasets](https://datasets.immich.app) by submitting photos and videos taken from a variety of devices, including smartphones, DSLRs, and action cameras, as well as photos with unique features, such as panoramas, burst photos, and photo spheres. These datasets will be publicly available for anyone to use, do not submit private/sensitive photos.\n\n### Community support\n\nIf you like helping others, answering Q&A discussions here on GitHub and replying to people on our Discord is also always appreciated.\n"
         },
         {
           "path": "README.md",
           "bytes": 5543,
-          "preview": "<p align=\"center\"> \n  <br/>\n  <a href=\"https://opensource.org/license/agpl-v3\"><img src=\"https://img.shields.io/badge/License-AGPL_v3-blue.svg?color=3F51B5&style=for-the-badge&label=License&logoColor=000000&labelColor=ececec\" alt=\"License: AGPLv3\"></a>\n  <a href=\"https://discord.immich.app\">\n    <img src=\"https://img.shields.io/discord/979116623879368755.svg?label=Discord&logo=Discord&style=for-the-badge&logoColor=000000&labelColor=ececec\" alt=\"Discord\"/>\n  </a>\n  <br/>\n  <br/>\n</p>\n\n<p align=\"center\">\n<img src=\"design/immich-logo-stacked-light.svg\" width=\"300\" title=\"Login With Custom URL\">\n</p>\n<h3 align=\"center\">High performance self-hosted photo and video management solution</h3>\n<br/>\n<a href=\"https://immich.app\">\n<img src=\"design/immich-screenshots.png\" title=\"Main Screenshot\">\n</a>\n<br/>\n\n<p align=\"center\">\n  <a href=\"readme_i18n/README_ca_ES.md\">Catal\u00e0</a>\n  <a href=\"readme_i18n/README_es_ES.md\">Espa\u00f1ol</a>\n  <a href=\"readme_i18n/README_fr_FR.md\">Fran\u00e7ais</a>\n  <a href=\"readme_i18n/README_it_IT.md\">Italiano</a>\n  <a href=\"readme_i18n/README_ja_JP.md\">\u65e5\u672c\u8a9e</a>\n  <a href=\"readme_i18n/README_ko_KR.md\">\ud55c\uad6d\uc5b4</a>\n  <a href=\"readme_i18n/README_de_DE.md\">Deutsch</a>\n  <a href=\"readme_i18n/README_nl_NL.md\">Nederlands</a>\n  <a href=\"readme_i18n/README_tr_TR.md\">T\u00fcrk\u00e7e</a>\n  <a href=\"readme_i18n/README_zh_CN.md\">\u7b80\u4f53\u4e2d\u6587</a>\n  <a href=\"readme_i18n/README_zh_TW.md\">\u6b63\u9ad4\u4e2d\u6587</a>\n  <a href=\"readme_i18n/README_uk_UA.md\">\u0423\u043a\u0440\u0430\u0457\u043d\u0441\u044c\u043a\u0430</a>\n  <a href=\"readme_i18n/README_ru_RU.md\">\u0420\u0443\u0441\u0441\u043a\u0438\u0439</a>\n  <a href=\"readme_i18n/README_bg_BG.md\">\u0411\u044a\u043b\u0433\u0430\u0440\u0441\u043a\u0438</a>\n  <a href=\"readme_i18n/README_pt_BR.md\">Portugu\u00eas Brasileiro</a>\n  <a href=\"readme_i18n/README_sv_SE.md\">Svenska</a>\n  <a href=\"readme_i18n/README_ar_JO.md\">\u0627\u0644\u0639\u0631\u0628\u064a\u0629</a>\n  <a href=\"readme_i18n/README_vi_VN.md\">Ti\u1ebfng Vi\u1ec7t</a>\n  <a href=\"readme_i18n/README_th_TH.md\">\u0e20\u0e32\u0e29\u0e32\u0e44\u0e17\u0e22</a>\n  <a href=\"readme_i18n/README_ml_IN.md\">\u0d2e\u0d32\u0d2f\u0d3e\u0d33\u0d02</a>\n</p>\n\n\n> [!WARNING]\n> \u26a0\ufe0f Always follow [3-2-1](https://www.backblaze.com/blog/the-3-2-1-backup-strategy/) backup plan for your precious photos and videos!\n> \n \n\n> [!NOTE]\n> You can find the main documentation, including installation guides, at https://immich.app/.\n\n## Links\n\n- [Documentation](https://docs.immich.app/)\n- [About](https://docs.immich.app/overview/introduction)\n- [Installation](https://docs.immich.app/install/requirements)\n- [Roadmap](https://immich.app/roadmap)\n- [Demo](#demo)\n- [Features](#features)\n- [Translations](https://docs.immich.app/developer/translations)\n- [Contributing](https://docs.immich.app/overview/support-the-project)\n\n## Demo\n\nAccess the demo [here](https://demo.immich.app). For the mobile app, you can use `https://demo.immich.app` for the `Server Endpoint URL`.\n\n### Login credentials\n\n| Email           | Password |\n| --------------- | -------- |\n| demo@immich.app | demo     |\n\n## Features\n\n| Features                                     | Mobile | Web |\n| :------------------------------------------- | ------ | --- |\n| Upload and view videos and photos            | Yes    | Yes |\n| Auto backup when the app is opened           | Yes    | N/A |\n| Prevent duplication of assets                | Yes    | Yes |\n| Selective album(s) for backup                | Yes    | N/A |\n| Download photos and videos to local device   | Yes    | Yes |\n| Multi-user support                           | Yes    | Yes |\n| Album and Shared albums                      | Yes    | Yes |\n| Scrubbable/draggable scrollbar               | Yes    | Yes |\n| Support raw formats                          | Yes    | Yes |\n| Metadata view (EXIF, map)                    | Yes    | Yes |\n| Search by metadata, objects, faces, and CLIP | Yes    | Yes |\n| Administrative functions (user management)   | No     | Yes |\n| Background backup                            | Yes    | N/A |\n| Virtual scroll                               | Yes    | Yes |\n| OAuth support                                | Yes    | Yes |\n| API Keys                                     | N/A    | Yes |\n| LivePhoto/MotionPhoto backup and playback    | Yes    | Yes |\n| Support 360 degree image display             | No     | Yes |\n| User-defined storage structure               | Yes    | Yes |\n| Public Sharing                               | Yes    | Yes |\n| Archive and Favorites                        | Yes    | Yes |\n| Global Map                                   | Yes    | Yes |\n| Partner Sharing                              | Yes    | Yes |\n| Facial recognition and clustering            | Yes    | Yes |\n| Memories (x years ago)                       | Yes    | Yes |\n| Offline support                              | Yes    | No  |\n| Read-only gallery                            | Yes    | Yes |\n| Stacked Photos                               | Yes    | Yes |\n| Tags                                         | No     | Yes |\n| Folder View                                  | Yes    | Yes |\n\n## Translations\n\nRead more about translations [here](https://docs.immich.app/developer/translations).\n\n<a href=\"https://hosted.weblate.org/engage/immich/\">\n<img src=\"https://hosted.weblate.org/widget/immich/immich/multi-auto.svg\" alt=\"Translation status\" />\n</a>\n\n## Repository activity\n\n![Activities](https://repobeats.axiom.co/api/embed/9e86d9dc3ddd137161f2f6d2e758d7863b1789cb.svg \"Repobeats analytics image\")\n\n## Contributors\n\n<a href=\"https://github.com/immich-app/immich/graphs/contributors\">\n  <img src=\"https://contrib.rocks/image?repo=immich-app/immich\" width=\"100%\"/>\n</a>\n"
+          "preview": "<p align=\"center\"> \n  <br/>\n  <a href=\"https://opensource.org/license/agpl-v3\"><img src=\"https://img.shields.io/badge/License-AGPL_v3-blue.svg?color=3F51B5&style=for-the-badge&label=License&logoColor=000000&labelColor=ececec\" alt=\"License: AGPLv3\"></a>\n  <a href=\"https://discord.immich.app\">\n    <img src=\"https://img.shields.io/discord/979116623879368755.svg?label=Discord&logo=Discord&style=for-the-badge&logoColor=000000&labelColor=ececec\" alt=\"Discord\"/>\n  </a>\n  <br/>\n  <br/>\n</p>\n\n<p align=\"center\">\n<img src=\"design/immich-logo-stacked-light.svg\" width=\"300\" title=\"Login With Custom URL\">\n</p>\n<h3 align=\"center\">High performance self-hosted photo and video management solution</h3>\n<br/>\n<a href=\"https://immich.app\">\n<img src=\"design/immich-screenshots.png\" title=\"Main Screenshot\">\n</a>\n<br/>\n\n<p align=\"center\">\n  <a href=\"readme_i18n/README_ca_ES.md\">Català</a>\n  <a href=\"readme_i18n/README_es_ES.md\">Español</a>\n  <a href=\"readme_i18n/README_fr_FR.md\">Français</a>\n  <a href=\"readme_i18n/README_it_IT.md\">Italiano</a>\n  <a href=\"readme_i18n/README_ja_JP.md\">日本語</a>\n  <a href=\"readme_i18n/README_ko_KR.md\">한국어</a>\n  <a href=\"readme_i18n/README_de_DE.md\">Deutsch</a>\n  <a href=\"readme_i18n/README_nl_NL.md\">Nederlands</a>\n  <a href=\"readme_i18n/README_tr_TR.md\">Türkçe</a>\n  <a href=\"readme_i18n/README_zh_CN.md\">简体中文</a>\n  <a href=\"readme_i18n/README_zh_TW.md\">正體中文</a>\n  <a href=\"readme_i18n/README_uk_UA.md\">Українська</a>\n  <a href=\"readme_i18n/README_ru_RU.md\">Русский</a>\n  <a href=\"readme_i18n/README_bg_BG.md\">Български</a>\n  <a href=\"readme_i18n/README_pt_BR.md\">Português Brasileiro</a>\n  <a href=\"readme_i18n/README_sv_SE.md\">Svenska</a>\n  <a href=\"readme_i18n/README_ar_JO.md\">العربية</a>\n  <a href=\"readme_i18n/README_vi_VN.md\">Tiếng Việt</a>\n  <a href=\"readme_i18n/README_th_TH.md\">ภาษาไทย</a>\n  <a href=\"readme_i18n/README_ml_IN.md\">മലയാളം</a>\n</p>\n\n\n> [!WARNING]\n> ⚠️ Always follow [3-2-1](https://www.backblaze.com/blog/the-3-2-1-backup-strategy/) backup plan for your precious photos and videos!\n> \n \n\n> [!NOTE]\n> You can find the main documentation, including installation guides, at https://immich.app/.\n\n## Links\n\n- [Documentation](https://docs.immich.app/)\n- [About](https://docs.immich.app/overview/introduction)\n- [Installation](https://docs.immich.app/install/requirements)\n- [Roadmap](https://immich.app/roadmap)\n- [Demo](#demo)\n- [Features](#features)\n- [Translations](https://docs.immich.app/developer/translations)\n- [Contributing](https://docs.immich.app/overview/support-the-project)\n\n## Demo\n\nAccess the demo [here](https://demo.immich.app). For the mobile app, you can use `https://demo.immich.app` for the `Server Endpoint URL`.\n\n### Login credentials\n\n| Email           | Password |\n| --------------- | -------- |\n| demo@immich.app | demo     |\n\n## Features\n\n| Features                                     | Mobile | Web |\n| :------------------------------------------- | ------ | --- |\n| Upload and view videos and photos            | Yes    | Yes |\n| Auto backup when the app is opened           | Yes    | N/A |\n| Prevent duplication of assets                | Yes    | Yes |\n| Selective album(s) for backup                | Yes    | N/A |\n| Download photos and videos to local device   | Yes    | Yes |\n| Multi-user support                           | Yes    | Yes |\n| Album and Shared albums                      | Yes    | Yes |\n| Scrubbable/draggable scrollbar               | Yes    | Yes |\n| Support raw formats                          | Yes    | Yes |\n| Metadata view (EXIF, map)                    | Yes    | Yes |\n| Search by metadata, objects, faces, and CLIP | Yes    | Yes |\n| Administrative functions (user management)   | No     | Yes |\n| Background backup                            | Yes    | N/A |\n| Virtual scroll                               | Yes    | Yes |\n| OAuth support                                | Yes    | Yes |\n| API Keys                                     | N/A    | Yes |\n| LivePhoto/MotionPhoto backup and playback    | Yes    | Yes |\n| Support 360 degree image display             | No     | Yes |\n| User-defined storage structure               | Yes    | Yes |\n| Public Sharing                               | Yes    | Yes |\n| Archive and Favorites                        | Yes    | Yes |\n| Global Map                                   | Yes    | Yes |\n| Partner Sharing                              | Yes    | Yes |\n| Facial recognition and clustering            | Yes    | Yes |\n| Memories (x years ago)                       | Yes    | Yes |\n| Offline support                              | Yes    | No  |\n| Read-only gallery                            | Yes    | Yes |\n| Stacked Photos                               | Yes    | Yes |\n| Tags                                         | No     | Yes |\n| Folder View                                  | Yes    | Yes |\n\n## Translations\n\nRead more about translations [here](https://docs.immich.app/developer/translations).\n\n<a href=\"https://hosted.weblate.org/engage/immich/\">\n<img src=\"https://hosted.weblate.org/widget/immich/immich/multi-auto.svg\" alt=\"Translation status\" />\n</a>\n\n## Repository activity\n\n![Activities](https://repobeats.axiom.co/api/embed/9e86d9dc3ddd137161f2f6d2e758d7863b1789cb.svg \"Repobeats analytics image\")\n\n## Contributors\n\n<a href=\"https://github.com/immich-app/immich/graphs/contributors\">\n  <img src=\"https://contrib.rocks/image?repo=immich-app/immich\" width=\"100%\"/>\n</a>\n"
         },
         {
           "path": "docs/README.md",
@@ -964,7 +964,7 @@
         {
           "path": "docs/docs/administration/backup-and-restore.md",
           "bytes": 17994,
-          "preview": "# Backup and Restore\n\nimport Tabs from '@theme/Tabs';\nimport TabItem from '@theme/TabItem';\nimport { mdiAlertCircle, mdiCheckCircle } from '@mdi/js';\nimport Icon from '@mdi/react';\n\nA [3-2-1 backup strategy](https://www.backblaze.com/blog/the-3-2-1-backup-strategy/) is recommended to protect your data. You should keep copies of your uploaded photos/videos as well as the Immich database for a comprehensive backup solution. This page provides an overview on how to backup the database and the location of user-uploaded pictures and videos. A template bash script that can be run as a cron job is provided [here](/guides/template-backup-script.md)\n\n:::danger\nThe instructions on this page show you how to prepare your Immich instance to be backed up, and which files to take a backup of. You still need to take care of using an actual backup tool to make a backup yourself.\n:::\n\n## Database\n\nImmich stores [file paths](https://github.com/immich-app/immich/discussions/3299) and user metadata in the database. It does not scan the library folder, so database backups are essential.\n\n### Automatic Database Backups\n\nImmich automatically creates database backups for disaster-recovery purposes. These backups are stored in `UPLOAD_LOCATION/backups` and can be managed through the web interface.\n\nYou can adjust the backup schedule and retention settings in **Administration > Settings > Backup** (default: keep last 14 backups, create daily at 2:00 AM).\n\n:::caution\nDatabase backups do **not** contain photos or videos \u2014 only metadata. They must be used together with a copy of the files in `UPLOAD_LOCATION` as outlined below.\n:::\n\n#### Creating a Backup\n\nYou can trigger a database backup manually:\n\n1. Go to **Administration > Job Queues**\n2. Click **Create job** in the top right\n3. Select **Create Database Dump** and click **Confirm**\n\nThe backup will appear in `UPLOAD_LOCATION/backups` and counts toward your retention limit.\n\n### Restoring a Database Backup\n\nImmich provides two ways to restore a database backup: through the web interface or via the command line. The web interface is the recommended method for most users.\n\n#### Restore from Settings {#restore-from-settings}\n\nIf you have an existing Immich installation:\n\n<img\nsrc={require('./img/restore-from-settings.webp').default}\ntitle=\"Restore from settings\"\n/>\n\n1. Go to **Administration > Maintenance**\n2. Expand the **Restore database backup** section\n3. You'll see a list of available backups with their version and creation date\n4. Click **Restore** next to the backup you want to restore\n5. Confirm the restore operation\n\n:::info\nRestoring a backup will wipe the current database and replace it with the backup. A restore point is automatically created before the operation begins, allowing rollback if the restore fails.\n:::\n\n#### Restore from Onboarding {#restore-from-onboarding}\n\nIf you're setting up Immich on a fresh installation and want to restore from an existing backup:\n\n1. Download and populate `.env` and `docker-compose.yml` as per the [installation instructions](/install/docker-compose).\n2. Move the previous's instance data directories containing `backups`, `encoded-video`, `library`, `profile`, `thumbs` and `upload` into the new `UPLOAD_LOCATION`\n3. **(For external libraries)** If you used external library feature in your previous instance, make sure that the mount settings in your new `docker-compose.yml` reflect the same structure. You may need to move files accordingly.\n\n:::info Example\n\nAssuming your previous `UPLOAD_LOCATION` was `UPLOAD_LOCATION=/my-broken-instance/media` and your new one is `UPLOAD_LOCATION=/a-brand-new-instance/data`, you will need to perform the following file moves:\n\n```\n/my-broken-instance/media/backups          ->    /a-brand-new-instance/data/backups\n/my-broken-instance/media/encoded-video    ->    /a-brand-new-instance/data/encoded-video\n/my-broken-instance/media/library          ->    /a-brand-new-instance/data/library\n/my-broken-instance/media/profile          ->    /a-brand-new-instance/data/profile\n/my-broken-instance/media/thumbs           ->    /a-brand-new-instance/data/thumbs\n/my-broken-instance/media/upload           ->    /a-brand-new-instance/data/upload\n```\n\n:::\n\n4. Start the Immich services with `docker compose up -d`\n\n<img\nsrc={require('./img/restore-from-onboarding.webp').default}\ntitle=\"Restore from onboarding\"\n/>\n\n5. On the welcome screen, click **Restore from backup**\n6. Immich will enter maintenance mode and display integrity checks for your storage folders\n7. Review the folder status to ensure your library files are accessible\n8. Click **Next** to proceed to backup selection\n9. Select a backup from the list or upload a backup file (`.sql.gz`)\n10. Click **Restore** to begin the restoration process\n\n:::tip\nBefore restoring, ensure your `UPLOAD_LOCATION` folders contain the same files that existed when the backup was created. The integrity check will show you which folders are readable/writable and how many files they contain.\n:::\n\n### Uploading a Backup File {#uploading-backup}\n\nYou can upload a database backup file directly:\n\n1. In the **Restore database backup** section, click **Select from computer**\n2. Choose a `.sql.gz` file\n3. The uploaded backup will appear in the list with an `uploaded-` prefix\n4. Click **Restore** to restore from the uploaded file\n\n### Backup Version Compatibility {#backup-compatibility}\n\nWhen viewing backups, Immich displays compatibility indicators based on the current version and the information from the filename:\n\n- <Icon path={mdiCheckCircle} size={1} color=\"green\"/> Backup version matches current Immich version\n- <Icon path={mdiAlertCircle} size={1} color=\"#feb001\"/> Backup was created with a different Immich version\n- <Icon path={mdiAlertCircle} size={1} color=\"red\"/> Could not determine backup version\n\n:::warning\nRestoring a backup from a different Immich version may require database migrations. The restore process will attempt to run migrations automatically, but you should ensure you're restoring to a compatible version when possible.\n:::\n\n### Restore Process {#restore-process}\n\nDuring restoration, Immich will:\n\n1. Create a backup of the current database (restore point)\n2. Restore the selected backup\n3. Run database migrations if needed\n4. Perform a health check to verify the restore succeeded\n\nIf the restore fails (e.g., corrupted backup or missing admin user), Immich will automatically roll back to the restore point.\n\n### Restore via Command Line {#restore-cli}\n\nFor advanced users or automated recovery scenarios, you can restore a database backup using the command line.\n\n<Tabs>\n  <TabItem value=\"Linux system\" label=\"Linux system\" default>\n\n```bash title='Backup'\n# Replace <DB_USERNAME> with the database username - usually postgres unless you have changed it.\n# Replace <DB_DATABASE_NAME> with the database name - usually immich unless you have changed it.\ndocker exec -t immich_postgres pg_dump --clean --if-exists --dbname=<DB_DATABASE_NAME> --username=<DB_USERNAME> | gzip > \"/path/to/backup/dump.sql.gz\"\n```\n\n```bash title='Restore'\ndocker compose down -v  # CAUTION! Deletes all Immich data to start from scratch\n## Uncomment the next line and replace DB_DATA_LOCATION with your Postgres path to permanently reset the Postgres database\n# rm -rf DB_DATA_LOCATION # CAUTION! Deletes all Immich data to start from scratch\ndocker compose pull             # Update to latest version of Immich (if desired)\ndocker compose create           # Create Docker containers for Immich apps without running them\ndocker start immich_postgres    # Start Postgres server\nsleep 10                        # Wait for Postgres server to start up\n# Check the database user if you deviated from the default\n# Replace <DB_USERNAME> with the database username - usually postgres unless you have changed it.\n# Replace <DB_DATABASE_NAME> with the database name - usually immich unless you have changed it.\ngunzip --stdout \"/path/to/backup/dump.sql.gz\" \\\n| sed \"s/SELECT pg_catalog.set_config('search_path', '', false);/SELECT pg_catalog.set_config('search_path', 'public, pg_catalog', true);/g\" \\\n| docker exec -i immich_postgres psql --dbname=<DB_DATABASE_NAME> --us"
+          "preview": "# Backup and Restore\n\nimport Tabs from '@theme/Tabs';\nimport TabItem from '@theme/TabItem';\nimport { mdiAlertCircle, mdiCheckCircle } from '@mdi/js';\nimport Icon from '@mdi/react';\n\nA [3-2-1 backup strategy](https://www.backblaze.com/blog/the-3-2-1-backup-strategy/) is recommended to protect your data. You should keep copies of your uploaded photos/videos as well as the Immich database for a comprehensive backup solution. This page provides an overview on how to backup the database and the location of user-uploaded pictures and videos. A template bash script that can be run as a cron job is provided [here](/guides/template-backup-script.md)\n\n:::danger\nThe instructions on this page show you how to prepare your Immich instance to be backed up, and which files to take a backup of. You still need to take care of using an actual backup tool to make a backup yourself.\n:::\n\n## Database\n\nImmich stores [file paths](https://github.com/immich-app/immich/discussions/3299) and user metadata in the database. It does not scan the library folder, so database backups are essential.\n\n### Automatic Database Backups\n\nImmich automatically creates database backups for disaster-recovery purposes. These backups are stored in `UPLOAD_LOCATION/backups` and can be managed through the web interface.\n\nYou can adjust the backup schedule and retention settings in **Administration > Settings > Backup** (default: keep last 14 backups, create daily at 2:00 AM).\n\n:::caution\nDatabase backups do **not** contain photos or videos — only metadata. They must be used together with a copy of the files in `UPLOAD_LOCATION` as outlined below.\n:::\n\n#### Creating a Backup\n\nYou can trigger a database backup manually:\n\n1. Go to **Administration > Job Queues**\n2. Click **Create job** in the top right\n3. Select **Create Database Dump** and click **Confirm**\n\nThe backup will appear in `UPLOAD_LOCATION/backups` and counts toward your retention limit.\n\n### Restoring a Database Backup\n\nImmich provides two ways to restore a database backup: through the web interface or via the command line. The web interface is the recommended method for most users.\n\n#### Restore from Settings {#restore-from-settings}\n\nIf you have an existing Immich installation:\n\n<img\nsrc={require('./img/restore-from-settings.webp').default}\ntitle=\"Restore from settings\"\n/>\n\n1. Go to **Administration > Maintenance**\n2. Expand the **Restore database backup** section\n3. You'll see a list of available backups with their version and creation date\n4. Click **Restore** next to the backup you want to restore\n5. Confirm the restore operation\n\n:::info\nRestoring a backup will wipe the current database and replace it with the backup. A restore point is automatically created before the operation begins, allowing rollback if the restore fails.\n:::\n\n#### Restore from Onboarding {#restore-from-onboarding}\n\nIf you're setting up Immich on a fresh installation and want to restore from an existing backup:\n\n1. Download and populate `.env` and `docker-compose.yml` as per the [installation instructions](/install/docker-compose).\n2. Move the previous's instance data directories containing `backups`, `encoded-video`, `library`, `profile`, `thumbs` and `upload` into the new `UPLOAD_LOCATION`\n3. **(For external libraries)** If you used external library feature in your previous instance, make sure that the mount settings in your new `docker-compose.yml` reflect the same structure. You may need to move files accordingly.\n\n:::info Example\n\nAssuming your previous `UPLOAD_LOCATION` was `UPLOAD_LOCATION=/my-broken-instance/media` and your new one is `UPLOAD_LOCATION=/a-brand-new-instance/data`, you will need to perform the following file moves:\n\n```\n/my-broken-instance/media/backups          ->    /a-brand-new-instance/data/backups\n/my-broken-instance/media/encoded-video    ->    /a-brand-new-instance/data/encoded-video\n/my-broken-instance/media/library          ->    /a-brand-new-instance/data/library\n/my-broken-instance/media/profile          ->    /a-brand-new-instance/data/profile\n/my-broken-instance/media/thumbs           ->    /a-brand-new-instance/data/thumbs\n/my-broken-instance/media/upload           ->    /a-brand-new-instance/data/upload\n```\n\n:::\n\n4. Start the Immich services with `docker compose up -d`\n\n<img\nsrc={require('./img/restore-from-onboarding.webp').default}\ntitle=\"Restore from onboarding\"\n/>\n\n5. On the welcome screen, click **Restore from backup**\n6. Immich will enter maintenance mode and display integrity checks for your storage folders\n7. Review the folder status to ensure your library files are accessible\n8. Click **Next** to proceed to backup selection\n9. Select a backup from the list or upload a backup file (`.sql.gz`)\n10. Click **Restore** to begin the restoration process\n\n:::tip\nBefore restoring, ensure your `UPLOAD_LOCATION` folders contain the same files that existed when the backup was created. The integrity check will show you which folders are readable/writable and how many files they contain.\n:::\n\n### Uploading a Backup File {#uploading-backup}\n\nYou can upload a database backup file directly:\n\n1. In the **Restore database backup** section, click **Select from computer**\n2. Choose a `.sql.gz` file\n3. The uploaded backup will appear in the list with an `uploaded-` prefix\n4. Click **Restore** to restore from the uploaded file\n\n### Backup Version Compatibility {#backup-compatibility}\n\nWhen viewing backups, Immich displays compatibility indicators based on the current version and the information from the filename:\n\n- <Icon path={mdiCheckCircle} size={1} color=\"green\"/> Backup version matches current Immich version\n- <Icon path={mdiAlertCircle} size={1} color=\"#feb001\"/> Backup was created with a different Immich version\n- <Icon path={mdiAlertCircle} size={1} color=\"red\"/> Could not determine backup version\n\n:::warning\nRestoring a backup from a different Immich version may require database migrations. The restore process will attempt to run migrations automatically, but you should ensure you're restoring to a compatible version when possible.\n:::\n\n### Restore Process {#restore-process}\n\nDuring restoration, Immich will:\n\n1. Create a backup of the current database (restore point)\n2. Restore the selected backup\n3. Run database migrations if needed\n4. Perform a health check to verify the restore succeeded\n\nIf the restore fails (e.g., corrupted backup or missing admin user), Immich will automatically roll back to the restore point.\n\n### Restore via Command Line {#restore-cli}\n\nFor advanced users or automated recovery scenarios, you can restore a database backup using the command line.\n\n<Tabs>\n  <TabItem value=\"Linux system\" label=\"Linux system\" default>\n\n```bash title='Backup'\n# Replace <DB_USERNAME> with the database username - usually postgres unless you have changed it.\n# Replace <DB_DATABASE_NAME> with the database name - usually immich unless you have changed it.\ndocker exec -t immich_postgres pg_dump --clean --if-exists --dbname=<DB_DATABASE_NAME> --username=<DB_USERNAME> | gzip > \"/path/to/backup/dump.sql.gz\"\n```\n\n```bash title='Restore'\ndocker compose down -v  # CAUTION! Deletes all Immich data to start from scratch\n## Uncomment the next line and replace DB_DATA_LOCATION with your Postgres path to permanently reset the Postgres database\n# rm -rf DB_DATA_LOCATION # CAUTION! Deletes all Immich data to start from scratch\ndocker compose pull             # Update to latest version of Immich (if desired)\ndocker compose create           # Create Docker containers for Immich apps without running them\ndocker start immich_postgres    # Start Postgres server\nsleep 10                        # Wait for Postgres server to start up\n# Check the database user if you deviated from the default\n# Replace <DB_USERNAME> with the database username - usually postgres unless you have changed it.\n# Replace <DB_DATABASE_NAME> with the database name - usually immich unless you have changed it.\ngunzip --stdout \"/path/to/backup/dump.sql.gz\" \\\n| sed \"s/SELECT pg_catalog.set_config('search_path', '', false);/SELECT pg_catalog.set_config('search_path', 'public, pg_catalog', true);/g\" \\\n| docker exec -i immich_postgres psql --dbname=<DB_DATABASE_NAME> --us"
         },
         {
           "path": "docs/docs/administration/jobs-workers.md",
@@ -974,12 +974,12 @@
         {
           "path": "docs/docs/administration/maintenance-mode.md",
           "bytes": 1024,
-          "preview": "# Maintenance Mode\n\nMaintenance mode is used to perform administrative tasks such as restoring backups to Immich.\n\nYou can enter maintenance mode by either:\n\n- Selecting \"Switch to maintenance mode\" in `Maintenance` tab in administration.\n- Running the enable maintenance mode [administration command](./server-commands.md).\n\n## Logging in during maintenance\n\nMaintenance mode uses a separate login system which is handled automatically behind the scenes in most cases. Enabling maintenance mode in settings will automatically log you into maintenance mode when the server comes back up.\n\nIf you find that you've been logged out, you can:\n\n- Open the logs for the Immich server and look for _\"\ud83d\udea7 Immich is in maintenance mode, you can log in using the following URL:\"_\n- Run the enable maintenance mode [administration command](./server-commands.md) again, this will give you a new URL to login with.\n- Run the disable maintenance mode [administration command](./server-commands.md) then re-enter through system settings.\n"
+          "preview": "# Maintenance Mode\n\nMaintenance mode is used to perform administrative tasks such as restoring backups to Immich.\n\nYou can enter maintenance mode by either:\n\n- Selecting \"Switch to maintenance mode\" in `Maintenance` tab in administration.\n- Running the enable maintenance mode [administration command](./server-commands.md).\n\n## Logging in during maintenance\n\nMaintenance mode uses a separate login system which is handled automatically behind the scenes in most cases. Enabling maintenance mode in settings will automatically log you into maintenance mode when the server comes back up.\n\nIf you find that you've been logged out, you can:\n\n- Open the logs for the Immich server and look for _\"🚧 Immich is in maintenance mode, you can log in using the following URL:\"_\n- Run the enable maintenance mode [administration command](./server-commands.md) again, this will give you a new URL to login with.\n- Run the disable maintenance mode [administration command](./server-commands.md) then re-enter through system settings.\n"
         },
         {
           "path": "docs/docs/administration/oauth.md",
           "bytes": 18241,
-          "preview": "# OAuth Authentication\n\nThis page contains details about using OAuth in Immich.\n\n:::tip\nUnable to set `app.immich:///oauth-callback` as a valid redirect URI? See [Mobile Redirect URI](#mobile-redirect-uri) for an alternative solution.\n:::\n\n## Overview\n\nImmich supports 3rd party authentication via [OpenID Connect][oidc] (OIDC), an identity layer built on top of OAuth2. OIDC is supported by most identity providers, including:\n\n- [Authentik](https://integrations.goauthentik.io/media/immich/)\n- [Authelia](https://www.authelia.com/integration/openid-connect/immich/)\n- [Okta](https://www.okta.com/openid-connect/)\n- [Google](https://developers.google.com/identity/openid-connect/openid-connect)\n- [Keycloak](https://www.keycloak.org)\n\n## Prerequisites\n\nBefore enabling OAuth in Immich, a new client application needs to be configured in the 3rd-party authentication server. While the specifics of this setup vary from provider to provider, the general approach should be the same.\n\n1. Create a new (Client) Application\n   1. The **Provider** type should be `OpenID Connect` or `OAuth2`\n   2. The **Client type** should be `Confidential`\n   3. The **Application** type should be `Web`\n   4. The **Grant** type should be `Authorization Code`\n\n2. Configure Redirect URIs/Origins\n\n   The **Sign-in redirect URIs** should include:\n   - `app.immich:///oauth-callback` - for logging in with OAuth from the [Mobile App](/features/mobile-app.mdx)\n   - `http://DOMAIN:PORT/auth/login` - for logging in with OAuth from the Web Client\n   - `http://DOMAIN:PORT/user-settings` - for manually linking OAuth in the Web Client\n\n   Redirect URIs should contain all the domains you will be using to access Immich. Some examples include:\n\n   Mobile\n   - `app.immich:///oauth-callback` (You **MUST** include this for iOS and Android mobile apps to work properly)\n\n   Localhost\n   - `http://localhost:2283/auth/login`\n   - `http://localhost:2283/user-settings`\n\n   Local IP\n   - `http://192.168.0.200:2283/auth/login`\n   - `http://192.168.0.200:2283/user-settings`\n\n   Hostname\n   - `https://immich.example.com/auth/login`\n   - `https://immich.example.com/user-settings`\n\n3. Configure Backchannel logout URL\n\n   If the authentication server supports it, the **Backchannel logout URL** can be specified, and it is of the form: `http://DOMAIN:PORT/api/oauth/backchannel-logout`.\n\n## Enable OAuth\n\nOnce you have a new OAuth client application configured, Immich can be configured using the Administration Settings page, available on the web (Administration -> Settings).\n\n| Setting                                              | Type    | Default              | Description                                                                         |\n| ---------------------------------------------------- | ------- | -------------------- | ----------------------------------------------------------------------------------- |\n| Enabled                                              | boolean | false                | Enable/disable OAuth                                                                |\n| `issuer_url`                                         | URL     | (required)           | Required. Self-discovery URL for client (from previous step)                        |\n| `client_id`                                          | string  | (required)           | Required. Client ID (from previous step)                                            |\n| `client_secret`                                      | string  | (required)           | Required. Client Secret (previous step)                                             |\n| `scope`                                              | string  | openid email profile | Full list of scopes to send with the request (space delimited)                      |\n| `id_token_signed_response_alg`                       | string  | RS256                | The algorithm used to sign the id token (examples: RS256, HS256)                    |\n| `userinfo_signed_response_alg`                       | string  | none                 | The algorithm used to sign the userinfo response (examples: RS256, HS256)           |\n| `prompt`                                             | string  | (empty)              | Prompt parameter for authorization url (examples: select_account, login, consent)   |\n| `end_session_endpoint`                               | URL     | (empty)              | Http(s) alternative end session endpoint (logout URI)                               |\n| Request timeout                                      | string  | 30,000 (30 seconds)  | Number of milliseconds to wait for http requests to complete before giving up       |\n| Storage Label Claim                                  | string  | preferred_username   | Claim mapping for the user's storage label**\u00b9**                                     |\n| Role Claim                                           | string  | immich_role          | Claim mapping for the user's role. (should return \"user\" or \"admin\")**\u00b9**           |\n| Storage Quota Claim                                  | string  | immich_quota         | Claim mapping for the user's storage**\u00b9**                                           |\n| Default Storage Quota (GiB)                          | number  | 0                    | Default quota for user without storage quota claim (empty for unlimited quota)      |\n| Button Text                                          | string  | Login with OAuth     | Text for the OAuth button on the web                                                |\n| Auto Register                                        | boolean | true                 | When true, will automatically register a user the first time they sign in           |\n| [Auto Launch](#auto-launch)                          | boolean | false                | When true, will skip the login page and automatically start the OAuth login process |\n| [Mobile Redirect URI Override](#mobile-redirect-uri) | URL     | (empty)              | Http(s) alternative mobile redirect URI                                             |\n\n:::note Claim Options [1]\n\nClaim is only used on user creation and not synchronized after that.\n\n:::\n\n:::info\nThe Issuer URL should look something like the following, and return a valid json document.\n\n- `https://accounts.google.com/.well-known/openid-configuration`\n- `http://localhost:9000/application/o/immich/.well-known/openid-configuration`\n\nThe `.well-known/openid-configuration` part of the url is optional and will be automatically added during discovery.\n:::\n\n## Auto Launch\n\nWhen Auto Launch is enabled, the login page will automatically redirect the user to the OAuth authorization url, to login with OAuth. To access the login screen again, use the browser's back button, or navigate directly to `/auth/login?autoLaunch=0`.\nAuto Launch can also be enabled on a per-request basis by navigating to `/auth/login?autoLaunch=1`, this can be useful in situations where Immich is called from e.g. Nextcloud using the _External sites_ app and the _oidc_ app so as to enable users to directly interact with a logged-in instance of Immich.\n\n## Mobile Redirect URI\n\nThe redirect URI for the mobile app is `app.immich:///oauth-callback`, which is a [Custom Scheme](https://developer.apple.com/documentation/xcode/defining-a-custom-url-scheme-for-your-app). If this custom scheme is an invalid redirect URI for your OAuth Provider, you can work around this by doing the following:\n\n1. Configure an http(s) endpoint to forwards requests to `app.immich:///oauth-callback`\n2. Whitelist the new endpoint as a valid redirect URI with your provider.\n3. Specify the new endpoint as the `Mobile Redirect URI Override`, in the OAuth settings.\n\nWith these steps in place, you should be able to use OAuth from the [Mobile App](/features/mobile-app.mdx) without a custom scheme redirect URI.\n\n:::info\nImmich has a route (`/api/oauth/mobile-redirect`) that is already configured to forward requests to `app.immich:///oauth-callback`, and can be used for step 1.\n:::\n\n## Example Configuration\n\n<details>\n<summary>Authelia Example</summary>\n\n### Authelia Example\n\nHere's an example of OAuth configured for Authelia:\n\nThis assumes there"
+          "preview": "# OAuth Authentication\n\nThis page contains details about using OAuth in Immich.\n\n:::tip\nUnable to set `app.immich:///oauth-callback` as a valid redirect URI? See [Mobile Redirect URI](#mobile-redirect-uri) for an alternative solution.\n:::\n\n## Overview\n\nImmich supports 3rd party authentication via [OpenID Connect][oidc] (OIDC), an identity layer built on top of OAuth2. OIDC is supported by most identity providers, including:\n\n- [Authentik](https://integrations.goauthentik.io/media/immich/)\n- [Authelia](https://www.authelia.com/integration/openid-connect/immich/)\n- [Okta](https://www.okta.com/openid-connect/)\n- [Google](https://developers.google.com/identity/openid-connect/openid-connect)\n- [Keycloak](https://www.keycloak.org)\n\n## Prerequisites\n\nBefore enabling OAuth in Immich, a new client application needs to be configured in the 3rd-party authentication server. While the specifics of this setup vary from provider to provider, the general approach should be the same.\n\n1. Create a new (Client) Application\n   1. The **Provider** type should be `OpenID Connect` or `OAuth2`\n   2. The **Client type** should be `Confidential`\n   3. The **Application** type should be `Web`\n   4. The **Grant** type should be `Authorization Code`\n\n2. Configure Redirect URIs/Origins\n\n   The **Sign-in redirect URIs** should include:\n   - `app.immich:///oauth-callback` - for logging in with OAuth from the [Mobile App](/features/mobile-app.mdx)\n   - `http://DOMAIN:PORT/auth/login` - for logging in with OAuth from the Web Client\n   - `http://DOMAIN:PORT/user-settings` - for manually linking OAuth in the Web Client\n\n   Redirect URIs should contain all the domains you will be using to access Immich. Some examples include:\n\n   Mobile\n   - `app.immich:///oauth-callback` (You **MUST** include this for iOS and Android mobile apps to work properly)\n\n   Localhost\n   - `http://localhost:2283/auth/login`\n   - `http://localhost:2283/user-settings`\n\n   Local IP\n   - `http://192.168.0.200:2283/auth/login`\n   - `http://192.168.0.200:2283/user-settings`\n\n   Hostname\n   - `https://immich.example.com/auth/login`\n   - `https://immich.example.com/user-settings`\n\n3. Configure Backchannel logout URL\n\n   If the authentication server supports it, the **Backchannel logout URL** can be specified, and it is of the form: `http://DOMAIN:PORT/api/oauth/backchannel-logout`.\n\n## Enable OAuth\n\nOnce you have a new OAuth client application configured, Immich can be configured using the Administration Settings page, available on the web (Administration -> Settings).\n\n| Setting                                              | Type    | Default              | Description                                                                         |\n| ---------------------------------------------------- | ------- | -------------------- | ----------------------------------------------------------------------------------- |\n| Enabled                                              | boolean | false                | Enable/disable OAuth                                                                |\n| `issuer_url`                                         | URL     | (required)           | Required. Self-discovery URL for client (from previous step)                        |\n| `client_id`                                          | string  | (required)           | Required. Client ID (from previous step)                                            |\n| `client_secret`                                      | string  | (required)           | Required. Client Secret (previous step)                                             |\n| `scope`                                              | string  | openid email profile | Full list of scopes to send with the request (space delimited)                      |\n| `id_token_signed_response_alg`                       | string  | RS256                | The algorithm used to sign the id token (examples: RS256, HS256)                    |\n| `userinfo_signed_response_alg`                       | string  | none                 | The algorithm used to sign the userinfo response (examples: RS256, HS256)           |\n| `prompt`                                             | string  | (empty)              | Prompt parameter for authorization url (examples: select_account, login, consent)   |\n| `end_session_endpoint`                               | URL     | (empty)              | Http(s) alternative end session endpoint (logout URI)                               |\n| Request timeout                                      | string  | 30,000 (30 seconds)  | Number of milliseconds to wait for http requests to complete before giving up       |\n| Storage Label Claim                                  | string  | preferred_username   | Claim mapping for the user's storage label**¹**                                     |\n| Role Claim                                           | string  | immich_role          | Claim mapping for the user's role. (should return \"user\" or \"admin\")**¹**           |\n| Storage Quota Claim                                  | string  | immich_quota         | Claim mapping for the user's storage**¹**                                           |\n| Default Storage Quota (GiB)                          | number  | 0                    | Default quota for user without storage quota claim (empty for unlimited quota)      |\n| Button Text                                          | string  | Login with OAuth     | Text for the OAuth button on the web                                                |\n| Auto Register                                        | boolean | true                 | When true, will automatically register a user the first time they sign in           |\n| [Auto Launch](#auto-launch)                          | boolean | false                | When true, will skip the login page and automatically start the OAuth login process |\n| [Mobile Redirect URI Override](#mobile-redirect-uri) | URL     | (empty)              | Http(s) alternative mobile redirect URI                                             |\n\n:::note Claim Options [1]\n\nClaim is only used on user creation and not synchronized after that.\n\n:::\n\n:::info\nThe Issuer URL should look something like the following, and return a valid json document.\n\n- `https://accounts.google.com/.well-known/openid-configuration`\n- `http://localhost:9000/application/o/immich/.well-known/openid-configuration`\n\nThe `.well-known/openid-configuration` part of the url is optional and will be automatically added during discovery.\n:::\n\n## Auto Launch\n\nWhen Auto Launch is enabled, the login page will automatically redirect the user to the OAuth authorization url, to login with OAuth. To access the login screen again, use the browser's back button, or navigate directly to `/auth/login?autoLaunch=0`.\nAuto Launch can also be enabled on a per-request basis by navigating to `/auth/login?autoLaunch=1`, this can be useful in situations where Immich is called from e.g. Nextcloud using the _External sites_ app and the _oidc_ app so as to enable users to directly interact with a logged-in instance of Immich.\n\n## Mobile Redirect URI\n\nThe redirect URI for the mobile app is `app.immich:///oauth-callback`, which is a [Custom Scheme](https://developer.apple.com/documentation/xcode/defining-a-custom-url-scheme-for-your-app). If this custom scheme is an invalid redirect URI for your OAuth Provider, you can work around this by doing the following:\n\n1. Configure an http(s) endpoint to forwards requests to `app.immich:///oauth-callback`\n2. Whitelist the new endpoint as a valid redirect URI with your provider.\n3. Specify the new endpoint as the `Mobile Redirect URI Override`, in the OAuth settings.\n\nWith these steps in place, you should be able to use OAuth from the [Mobile App](/features/mobile-app.mdx) without a custom scheme redirect URI.\n\n:::info\nImmich has a route (`/api/oauth/mobile-redirect`) that is already configured to forward requests to `app.immich:///oauth-callback`, and can be used for step 1.\n:::\n\n## Example Configuration\n\n<details>\n<summary>Authelia Example</summary>\n\n### Authelia Example\n\nHere's an example of OAuth configured for Authelia:\n\nThis assumes there"
         },
         {
           "path": "docs/docs/administration/postgres-standalone.md",
@@ -994,7 +994,7 @@
         {
           "path": "docs/docs/administration/server-commands.md",
           "bytes": 4216,
-          "preview": "# Server Commands\n\nThe `immich-server` docker image comes preinstalled with an administrative CLI (`immich-admin`) that supports the following commands:\n\n| Command                    | Description                                                   |\n| -------------------------- | ------------------------------------------------------------- |\n| `help`                     | Display help                                                  |\n| `reset-admin-password`     | Reset the password for the admin user                         |\n| `disable-password-login`   | Disable password login                                        |\n| `enable-password-login`    | Enable password login                                         |\n| `disable-maintenance-mode` | Disable maintenance mode                                      |\n| `enable-maintenance-mode`  | Enable maintenance mode                                       |\n| `enable-oauth-login`       | Enable OAuth login                                            |\n| `disable-oauth-login`      | Disable OAuth login                                           |\n| `list-users`               | List Immich users                                             |\n| `grant-admin`              | Grant admin privileges to a user (by email)                   |\n| `revoke-admin`             | Revoke admin privileges from a user (by email)                |\n| `version`                  | Print Immich version                                          |\n| `change-media-location`    | Change database file paths to align with a new media location |\n| `schema-check`             | Verify database migrations and check for schema drift         |\n\n## How to run a command\n\nTo run a command, [connect](/guides/docker-help.md#attach-to-a-container) to the `immich_server` container and then execute the command via `immich-admin <command>`.\n\n## Examples\n\nReset Admin Password\n\n```\nimmich-admin reset-admin-password\nFound Admin:\n- ID=e65e6f88-2a30-4dbe-8dd9-1885f4889b53\n- OAuth ID=\n- Email=admin@example.com\n- Name=Immich Admin\n? Please choose a new password (optional) immich-is-cool\n? Invalidate existing sessions? Yes\nThe admin password has been updated.\n```\n\nDisable Password Login\n\n```\nimmich-admin disable-password-login\nPassword login has been disabled.\n```\n\nEnable Password Login\n\n```\nimmich-admin enable-password-login\nPassword login has been enabled.\n```\n\nDisable Maintenance Mode\n\n```\nimmich-admin disable-maintenance-mode\nMaintenance mode has been disabled.\n```\n\nEnable Maintenance Mode\n\n```\nimmich-admin enable-maintenance-mode\nMaintenance mode has been enabled.\n\nLog in using the following URL:\nhttps://my.immich.app/maintenance?token=<token>\n```\n\nEnable OAuth login\n\n```\nimmich-admin enable-oauth-login\nOAuth login has been enabled.\n```\n\nDisable OAuth login\n\n```\nimmich-admin disable-oauth-login\nOAuth login has been disabled.\n```\n\nList Users\n\n```\nimmich-admin list-users\n[\n  {\n    id: 'e65e6f88-2a30-4dbe-8dd9-1885f4889b53',\n    email: 'immich@example.com',\n    name: 'Immich Admin',\n    storageLabel: 'admin',\n    externalPath: null,\n    profileImagePath: 'upload/profile/e65e6f88-2a30-4dbe-8dd9-1885f4889b53/e65e6f88-2a30-4dbe-8dd9-1885f4889b53.jpg',\n    shouldChangePassword: true,\n    isAdmin: true,\n    createdAt: 2023-07-11T20:12:20.602Z,\n    deletedAt: null,\n    updatedAt: 2023-09-21T15:42:28.129Z,\n    oauthId: '',\n  }\n]\n```\n\nGrant Admin\n\n```\nimmich-admin grant-admin\n? Please enter the user email:  user@example.com\nAdmin access has been granted to user@example.com\n```\n\nRevoke Admin\n\n```\nimmich-admin revoke-admin\n? Please enter the user email:  user@example.com\nAdmin access has been revoked from user@example.com\n```\n\nPrint Immich Version\n\n```\nimmich-admin version\nv1.129.0\n```\n\nChange media location\n\n```\nimmich-admin change-media-location\n? Enter the previous value of IMMICH_MEDIA_LOCATION: /data\n? Enter the new value of IMMICH_MEDIA_LOCATION: /my-data\n...\n  Previous value: /data\n  Current value:  /my-data\n\n  Changing database paths from \"/data/*\" to \"/my-data/*\"\n\n? Do you want to proceed? [Y/n] y\n\nDatabase file paths updated successfully! \ud83c\udf89\n...\n```\n\nSchema Check\n\n```\nimmich-admin schema-check\nMigrations are up to date\n\nNo schema drift detected\n```\n"
+          "preview": "# Server Commands\n\nThe `immich-server` docker image comes preinstalled with an administrative CLI (`immich-admin`) that supports the following commands:\n\n| Command                    | Description                                                   |\n| -------------------------- | ------------------------------------------------------------- |\n| `help`                     | Display help                                                  |\n| `reset-admin-password`     | Reset the password for the admin user                         |\n| `disable-password-login`   | Disable password login                                        |\n| `enable-password-login`    | Enable password login                                         |\n| `disable-maintenance-mode` | Disable maintenance mode                                      |\n| `enable-maintenance-mode`  | Enable maintenance mode                                       |\n| `enable-oauth-login`       | Enable OAuth login                                            |\n| `disable-oauth-login`      | Disable OAuth login                                           |\n| `list-users`               | List Immich users                                             |\n| `grant-admin`              | Grant admin privileges to a user (by email)                   |\n| `revoke-admin`             | Revoke admin privileges from a user (by email)                |\n| `version`                  | Print Immich version                                          |\n| `change-media-location`    | Change database file paths to align with a new media location |\n| `schema-check`             | Verify database migrations and check for schema drift         |\n\n## How to run a command\n\nTo run a command, [connect](/guides/docker-help.md#attach-to-a-container) to the `immich_server` container and then execute the command via `immich-admin <command>`.\n\n## Examples\n\nReset Admin Password\n\n```\nimmich-admin reset-admin-password\nFound Admin:\n- ID=e65e6f88-2a30-4dbe-8dd9-1885f4889b53\n- OAuth ID=\n- Email=admin@example.com\n- Name=Immich Admin\n? Please choose a new password (optional) immich-is-cool\n? Invalidate existing sessions? Yes\nThe admin password has been updated.\n```\n\nDisable Password Login\n\n```\nimmich-admin disable-password-login\nPassword login has been disabled.\n```\n\nEnable Password Login\n\n```\nimmich-admin enable-password-login\nPassword login has been enabled.\n```\n\nDisable Maintenance Mode\n\n```\nimmich-admin disable-maintenance-mode\nMaintenance mode has been disabled.\n```\n\nEnable Maintenance Mode\n\n```\nimmich-admin enable-maintenance-mode\nMaintenance mode has been enabled.\n\nLog in using the following URL:\nhttps://my.immich.app/maintenance?token=<token>\n```\n\nEnable OAuth login\n\n```\nimmich-admin enable-oauth-login\nOAuth login has been enabled.\n```\n\nDisable OAuth login\n\n```\nimmich-admin disable-oauth-login\nOAuth login has been disabled.\n```\n\nList Users\n\n```\nimmich-admin list-users\n[\n  {\n    id: 'e65e6f88-2a30-4dbe-8dd9-1885f4889b53',\n    email: 'immich@example.com',\n    name: 'Immich Admin',\n    storageLabel: 'admin',\n    externalPath: null,\n    profileImagePath: 'upload/profile/e65e6f88-2a30-4dbe-8dd9-1885f4889b53/e65e6f88-2a30-4dbe-8dd9-1885f4889b53.jpg',\n    shouldChangePassword: true,\n    isAdmin: true,\n    createdAt: 2023-07-11T20:12:20.602Z,\n    deletedAt: null,\n    updatedAt: 2023-09-21T15:42:28.129Z,\n    oauthId: '',\n  }\n]\n```\n\nGrant Admin\n\n```\nimmich-admin grant-admin\n? Please enter the user email:  user@example.com\nAdmin access has been granted to user@example.com\n```\n\nRevoke Admin\n\n```\nimmich-admin revoke-admin\n? Please enter the user email:  user@example.com\nAdmin access has been revoked from user@example.com\n```\n\nPrint Immich Version\n\n```\nimmich-admin version\nv1.129.0\n```\n\nChange media location\n\n```\nimmich-admin change-media-location\n? Enter the previous value of IMMICH_MEDIA_LOCATION: /data\n? Enter the new value of IMMICH_MEDIA_LOCATION: /my-data\n...\n  Previous value: /data\n  Current value:  /my-data\n\n  Changing database paths from \"/data/*\" to \"/my-data/*\"\n\n? Do you want to proceed? [Y/n] y\n\nDatabase file paths updated successfully! 🎉\n...\n```\n\nSchema Check\n\n```\nimmich-admin schema-check\nMigrations are up to date\n\nNo schema drift detected\n```\n"
         },
         {
           "path": "docs/docs/administration/server-stats.md",
@@ -1019,7 +1019,7 @@
         {
           "path": "docs/docs/developer/database-migrations.md",
           "bytes": 1278,
-          "preview": "# Database Migrations\n\nAfter making any changes in the `server/src/schema`, a database migration need to run in order to register the changes in the database. Follow the steps below to create a new migration.\n\n1. Run the command\n\n```bash\nmise //server:migrations generate <migration-name>\n```\n\n2. Check if the migration file makes sense.\n3. Move the migration file to folder `./server/src/schema/migrations` in your code editor.\n4. Run the command\n\n```bash\nmise //server:migrations sync-order\n```\n\nThe last step adds the migration to the `ORDER` manifest, which records the order migrations run in. It is committed so that two branches adding a migration conflict in git instead of silently merging out of order, which would stop the server from starting for anyone who ran them in the wrong order.\n\nThe server will automatically detect `*.ts` file changes and restart. Part of the server start-up process includes running any new migrations, so it will be applied immediately.\n\n## Reverting a Migration\n\nIf you need to undo the most recently applied migration\u2014for example, when developing or testing on schema changes\u2014run:\n\n```bash\nmise //server:migrations revert\n```\n\nThis command rolls back the latest migration and brings the database schema back to its previous state.\n"
+          "preview": "# Database Migrations\n\nAfter making any changes in the `server/src/schema`, a database migration need to run in order to register the changes in the database. Follow the steps below to create a new migration.\n\n1. Run the command\n\n```bash\nmise //server:migrations generate <migration-name>\n```\n\n2. Check if the migration file makes sense.\n3. Move the migration file to folder `./server/src/schema/migrations` in your code editor.\n4. Run the command\n\n```bash\nmise //server:migrations sync-order\n```\n\nThe last step adds the migration to the `ORDER` manifest, which records the order migrations run in. It is committed so that two branches adding a migration conflict in git instead of silently merging out of order, which would stop the server from starting for anyone who ran them in the wrong order.\n\nThe server will automatically detect `*.ts` file changes and restart. Part of the server start-up process includes running any new migrations, so it will be applied immediately.\n\n## Reverting a Migration\n\nIf you need to undo the most recently applied migration—for example, when developing or testing on schema changes—run:\n\n```bash\nmise //server:migrations revert\n```\n\nThis command rolls back the latest migration and brings the database schema back to its previous state.\n"
         },
         {
           "path": "docs/docs/developer/devcontainers.md",
@@ -1039,7 +1039,7 @@
         {
           "path": "docs/docs/developer/setup.md",
           "bytes": 8846,
-          "preview": "---\nsidebar_position: 2\n---\n\n# Setup\n\n:::warning\nMake sure to read the [`CONTRIBUTING.md`](https://github.com/immich-app/immich/blob/main/CONTRIBUTING.md) before you dive into the code.\n:::\n\n:::note\nIf there's a feature you're planning to work on, just give us a heads up in [#contributing](https://discord.com/channels/979116623879368755/1071165397228855327) on [our Discord](https://discord.immich.app) so we can:\n\n1. Let you know if it's something we would accept into Immich\n2. Provide any guidance on how something like that would ideally be implemented\n3. Ensure nobody is already working on that issue/feature so we don't duplicate effort\n\nThanks for being interested in contributing \ud83d\ude0a\n:::\n\n## Environment\n\n### Services\n\nThis environment includes the services below. Additional details are available in each service's README.\n\n- Server - [`/server`](https://github.com/immich-app/immich/tree/main/server)\n- Web app - [`/web`](https://github.com/immich-app/immich/tree/main/web)\n- Machine learning - [`/machine-learning`](https://github.com/immich-app/immich/tree/main/machine-learning)\n- Redis\n- PostgreSQL development database with exposed port `5432` so you can use any database client to access it\n\nAll the services are packaged to run with a single Docker Compose command.\n\n:::tip mise\n[mise](https://mise.jdx.dev) is used throughout the project to manage tool versions and run tasks. [Install mise](https://mise.jdx.dev/installing-mise.html), then from the repo root run `mise trust` and `mise install` to get all required tools. Tasks for each service can be run from the repo root using `mise //namespace:task` (e.g. `mise //server:lint`). To list all available tasks, run `mise tasks ls --all`.\n:::\n\n### Server and web apps\n\n1. Clone the project repo.\n2. Run `cp docker/example.env docker/.env`.\n3. Edit `docker/.env` to provide values for the required variable `UPLOAD_LOCATION`.\n4. Install dependencies - `mise x -- pnpm i`\n5. From the root directory, run:\n\n```bash title=\"Start development server\"\nmise dev\n```\n\n5. Access the dev instance in your browser at http://localhost:3000, or connect via the mobile app.\n\nAll the services will be started with hot-reloading enabled for a quick feedback loop.\n\nYou can access the web from `http://your-machine-ip:3000` or `http://localhost:3000` and access the server from the mobile app at `http://your-machine-ip:3000`\n\n**Notes:**\n\n- The \"web\" development container runs with uid 1000. If that uid does not have read/write permissions on the mounted volumes, you may encounter errors\n\n#### Connect web to a remote backend\n\nIf you only want to do web development connected to an existing, remote backend, run from the repo root:\n\n```bash\nIMMICH_SERVER_URL=https://demo.immich.app/ mise //web:start\n```\n\nThis will install all dependencies (including the SDK) and start the dev server in one step. To connect to the hosted demo server specifically, use the shorthand:\n\n```bash\nmise //web:start-demo\n```\n\nIf you're using PowerShell on Windows you may need to set the env var separately like so:\n\n```powershell\n$env:IMMICH_SERVER_URL = \"https://demo.immich.app/\"\nmise //web:start\n```\n\n#### `@immich/ui`\n\nTo see local changes to `@immich/ui` in Immich, do the following:\n\n1. Install `@immich/ui` as a sibling to `immich/`, for example `/home/user/immich` and `/home/user/ui`\n2. Build the `@immich/ui` project via `pnpm run build`\n3. Uncomment the corresponding volume in web service of the `docker/docker-compose.dev.yml` file (`../../ui:/usr/src/ui`)\n4. Uncomment the corresponding alias in the `web/vite.config.ts` file (`'@immich/ui': path.resolve(\\_\\_dirname, '../../ui/packages/ui')`)\n5. Uncomment the import statement in `web/src/app.css` file `@import '../../../ui/packages/ui/dist/theme/default.css';` and comment out `@import '@immich/ui/theme/default.css';`\n6. Start up the stack via `mise dev`\n7. After making changes in `@immich/ui`, rebuild it (`pnpm run build`)\n\n### Mobile app\n\n#### Setup\n\n1. Run `mise //mobile:install` to install Flutter dependencies.\n2. Run `mise //mobile:translation` to generate the translation file.\n3. Run `mise //mobile:checkout` to update the dependencies and codegen artifacts.\n4. Change to the `mobile/` directory and run `flutter run` to start the app.\n\n:::important Workflow\nAlways run `mise //mobile:checkout` after switching branches.\n:::\n\n##### iOS Code Signing\n\nThe Immich Apple Team ID and bundle IDs are specified in `mobile/ios/Signing.xcconfig`. For local development, we provide an override mechanism.\n\nCreate `mobile/ios/Signing.local.xcconfig` and populate it with the necessary values needed to build and sign Immich yourself. This local override file is gitignored.\n\n```\nIMMICH_TEAM_ID = ABCDE12345\nIMMICH_BUNDLE_ID_PROD = com.customuniqueid.immich\nIMMICH_BUNDLE_ID_DEV = com.customuniqueid.immichdev\nIMMICH_GROUP_ID = group.com.customuniqueid.immich\n```\n\nThe environment values are used across Immich's targets and schemes to prevent redundant edits by contributors.\n\n#### Translation\n\nTo add a new translation text, enter the key-value pair in the `i18n/en.json` in the root of the immich project. Then run:\n\n```bash\nmise //mobile:translation\n```\n\nThe mobile app asks you what backend to connect to. You can utilize the demo backend (https://demo.immich.app/) if you don't need to change server code or upload photos. Alternatively, you can run the server yourself per the instructions above.\n\n#### UI components and widget previews\n\nShared design-system widgets (buttons, inputs, forms) live in the\n[`immich_ui` package](https://github.com/immich-app/immich/tree/main/mobile/packages/ui/)\nunder `mobile/packages/ui/`. Components are defined in `lib/src/components/`\nand have matching previews in `lib/src/previews/`.\n\nTo inspect a component in isolation with a light/dark toggle and hot reload,\nlaunch [Flutter's Widget Previewer](https://docs.flutter.dev/tools/widget-previewer):\n\n```bash\ncd mobile/packages/ui\nflutter widget-preview start\n```\n\nIn VS Code or Android Studio with the Flutter plugin, the previewer\nauto-starts when you open the **Flutter Widget Preview** tab in the sidebar.\n\n## IDE setup\n\n### Lint / format extensions\n\nSetting these in the IDE give a better developer experience, auto-formatting code on save, and providing instant feedback on lint issues.\n\n### Dart Code Metrics\n\nThe mobile app uses DCM (Dart Code Metrics) for linting and metrics calculation. Please refer to the [Getting Started](https://dcm.dev/docs/) page for more information on setting up DCM\n\nNote: Activating the license is not required.\n\n### VSCode\n\nInstall `Flutter`, `DCM`, `Prettier`, `ESLint` and `Svelte` extensions. These extensions are listed in the `extensions.json` file under `.vscode/` and should appear as workspace recommendations.\n\nHere are the settings we use, they should be active as workspace settings (`settings.json`):\n\n```json title=\"settings.json\"\n{\n  \"[css]\": {\n    \"editor.defaultFormatter\": \"esbenp.prettier-vscode\",\n    \"editor.formatOnSave\": true,\n    \"editor.tabSize\": 2\n  },\n  \"[dart]\": {\n    \"editor.defaultFormatter\": \"Dart-Code.dart-code\",\n    \"editor.formatOnSave\": true,\n    \"editor.selectionHighlight\": false,\n    \"editor.suggest.snippetsPreventQuickSuggestions\": false,\n    \"editor.suggestSelection\": \"first\",\n    \"editor.tabCompletion\": \"onlySnippets\",\n    \"editor.wordBasedSuggestions\": \"off\"\n  },\n  \"[javascript]\": {\n    \"editor.codeActionsOnSave\": {\n      \"source.organizeImports\": \"explicit\",\n      \"source.removeUnusedImports\": \"explicit\"\n    },\n    \"editor.defaultFormatter\": \"esbenp.prettier-vscode\",\n    \"editor.formatOnSave\": true,\n    \"editor.tabSize\": 2\n  },\n  \"[json]\": {\n    \"editor.defaultFormatter\": \"esbenp.prettier-vscode\",\n    \"editor.formatOnSave\": true,\n    \"editor.tabSize\": 2\n  },\n  \"[jsonc]\": {\n    \"editor.defaultFormatter\": \"esbenp.prettier-vscode\",\n    \"editor.formatOnSave\": true,\n    \"editor.tabSize\": 2\n  },\n  \"[svelte]\": {\n    \"editor.codeActionsOnSave\": {\n      \"source.organizeImports\": \"explicit\",\n      \"source.removeUnusedImports\": \"explicit\"\n    },\n    \"editor.defaultFormatter\": \"svelte.svelte-vscode\",\n    \"editor.formatOnSave\": true,\n    \"editor.tabSize\": 2\n  },\n  \"[typescript]\": {\n    \"editor.codeActio"
+          "preview": "---\nsidebar_position: 2\n---\n\n# Setup\n\n:::warning\nMake sure to read the [`CONTRIBUTING.md`](https://github.com/immich-app/immich/blob/main/CONTRIBUTING.md) before you dive into the code.\n:::\n\n:::note\nIf there's a feature you're planning to work on, just give us a heads up in [#contributing](https://discord.com/channels/979116623879368755/1071165397228855327) on [our Discord](https://discord.immich.app) so we can:\n\n1. Let you know if it's something we would accept into Immich\n2. Provide any guidance on how something like that would ideally be implemented\n3. Ensure nobody is already working on that issue/feature so we don't duplicate effort\n\nThanks for being interested in contributing 😊\n:::\n\n## Environment\n\n### Services\n\nThis environment includes the services below. Additional details are available in each service's README.\n\n- Server - [`/server`](https://github.com/immich-app/immich/tree/main/server)\n- Web app - [`/web`](https://github.com/immich-app/immich/tree/main/web)\n- Machine learning - [`/machine-learning`](https://github.com/immich-app/immich/tree/main/machine-learning)\n- Redis\n- PostgreSQL development database with exposed port `5432` so you can use any database client to access it\n\nAll the services are packaged to run with a single Docker Compose command.\n\n:::tip mise\n[mise](https://mise.jdx.dev) is used throughout the project to manage tool versions and run tasks. [Install mise](https://mise.jdx.dev/installing-mise.html), then from the repo root run `mise trust` and `mise install` to get all required tools. Tasks for each service can be run from the repo root using `mise //namespace:task` (e.g. `mise //server:lint`). To list all available tasks, run `mise tasks ls --all`.\n:::\n\n### Server and web apps\n\n1. Clone the project repo.\n2. Run `cp docker/example.env docker/.env`.\n3. Edit `docker/.env` to provide values for the required variable `UPLOAD_LOCATION`.\n4. Install dependencies - `mise x -- pnpm i`\n5. From the root directory, run:\n\n```bash title=\"Start development server\"\nmise dev\n```\n\n5. Access the dev instance in your browser at http://localhost:3000, or connect via the mobile app.\n\nAll the services will be started with hot-reloading enabled for a quick feedback loop.\n\nYou can access the web from `http://your-machine-ip:3000` or `http://localhost:3000` and access the server from the mobile app at `http://your-machine-ip:3000`\n\n**Notes:**\n\n- The \"web\" development container runs with uid 1000. If that uid does not have read/write permissions on the mounted volumes, you may encounter errors\n\n#### Connect web to a remote backend\n\nIf you only want to do web development connected to an existing, remote backend, run from the repo root:\n\n```bash\nIMMICH_SERVER_URL=https://demo.immich.app/ mise //web:start\n```\n\nThis will install all dependencies (including the SDK) and start the dev server in one step. To connect to the hosted demo server specifically, use the shorthand:\n\n```bash\nmise //web:start-demo\n```\n\nIf you're using PowerShell on Windows you may need to set the env var separately like so:\n\n```powershell\n$env:IMMICH_SERVER_URL = \"https://demo.immich.app/\"\nmise //web:start\n```\n\n#### `@immich/ui`\n\nTo see local changes to `@immich/ui` in Immich, do the following:\n\n1. Install `@immich/ui` as a sibling to `immich/`, for example `/home/user/immich` and `/home/user/ui`\n2. Build the `@immich/ui` project via `pnpm run build`\n3. Uncomment the corresponding volume in web service of the `docker/docker-compose.dev.yml` file (`../../ui:/usr/src/ui`)\n4. Uncomment the corresponding alias in the `web/vite.config.ts` file (`'@immich/ui': path.resolve(\\_\\_dirname, '../../ui/packages/ui')`)\n5. Uncomment the import statement in `web/src/app.css` file `@import '../../../ui/packages/ui/dist/theme/default.css';` and comment out `@import '@immich/ui/theme/default.css';`\n6. Start up the stack via `mise dev`\n7. After making changes in `@immich/ui`, rebuild it (`pnpm run build`)\n\n### Mobile app\n\n#### Setup\n\n1. Run `mise //mobile:install` to install Flutter dependencies.\n2. Run `mise //mobile:translation` to generate the translation file.\n3. Run `mise //mobile:checkout` to update the dependencies and codegen artifacts.\n4. Change to the `mobile/` directory and run `flutter run` to start the app.\n\n:::important Workflow\nAlways run `mise //mobile:checkout` after switching branches.\n:::\n\n##### iOS Code Signing\n\nThe Immich Apple Team ID and bundle IDs are specified in `mobile/ios/Signing.xcconfig`. For local development, we provide an override mechanism.\n\nCreate `mobile/ios/Signing.local.xcconfig` and populate it with the necessary values needed to build and sign Immich yourself. This local override file is gitignored.\n\n```\nIMMICH_TEAM_ID = ABCDE12345\nIMMICH_BUNDLE_ID_PROD = com.customuniqueid.immich\nIMMICH_BUNDLE_ID_DEV = com.customuniqueid.immichdev\nIMMICH_GROUP_ID = group.com.customuniqueid.immich\n```\n\nThe environment values are used across Immich's targets and schemes to prevent redundant edits by contributors.\n\n#### Translation\n\nTo add a new translation text, enter the key-value pair in the `i18n/en.json` in the root of the immich project. Then run:\n\n```bash\nmise //mobile:translation\n```\n\nThe mobile app asks you what backend to connect to. You can utilize the demo backend (https://demo.immich.app/) if you don't need to change server code or upload photos. Alternatively, you can run the server yourself per the instructions above.\n\n#### UI components and widget previews\n\nShared design-system widgets (buttons, inputs, forms) live in the\n[`immich_ui` package](https://github.com/immich-app/immich/tree/main/mobile/packages/ui/)\nunder `mobile/packages/ui/`. Components are defined in `lib/src/components/`\nand have matching previews in `lib/src/previews/`.\n\nTo inspect a component in isolation with a light/dark toggle and hot reload,\nlaunch [Flutter's Widget Previewer](https://docs.flutter.dev/tools/widget-previewer):\n\n```bash\ncd mobile/packages/ui\nflutter widget-preview start\n```\n\nIn VS Code or Android Studio with the Flutter plugin, the previewer\nauto-starts when you open the **Flutter Widget Preview** tab in the sidebar.\n\n## IDE setup\n\n### Lint / format extensions\n\nSetting these in the IDE give a better developer experience, auto-formatting code on save, and providing instant feedback on lint issues.\n\n### Dart Code Metrics\n\nThe mobile app uses DCM (Dart Code Metrics) for linting and metrics calculation. Please refer to the [Getting Started](https://dcm.dev/docs/) page for more information on setting up DCM\n\nNote: Activating the license is not required.\n\n### VSCode\n\nInstall `Flutter`, `DCM`, `Prettier`, `ESLint` and `Svelte` extensions. These extensions are listed in the `extensions.json` file under `.vscode/` and should appear as workspace recommendations.\n\nHere are the settings we use, they should be active as workspace settings (`settings.json`):\n\n```json title=\"settings.json\"\n{\n  \"[css]\": {\n    \"editor.defaultFormatter\": \"esbenp.prettier-vscode\",\n    \"editor.formatOnSave\": true,\n    \"editor.tabSize\": 2\n  },\n  \"[dart]\": {\n    \"editor.defaultFormatter\": \"Dart-Code.dart-code\",\n    \"editor.formatOnSave\": true,\n    \"editor.selectionHighlight\": false,\n    \"editor.suggest.snippetsPreventQuickSuggestions\": false,\n    \"editor.suggestSelection\": \"first\",\n    \"editor.tabCompletion\": \"onlySnippets\",\n    \"editor.wordBasedSuggestions\": \"off\"\n  },\n  \"[javascript]\": {\n    \"editor.codeActionsOnSave\": {\n      \"source.organizeImports\": \"explicit\",\n      \"source.removeUnusedImports\": \"explicit\"\n    },\n    \"editor.defaultFormatter\": \"esbenp.prettier-vscode\",\n    \"editor.formatOnSave\": true,\n    \"editor.tabSize\": 2\n  },\n  \"[json]\": {\n    \"editor.defaultFormatter\": \"esbenp.prettier-vscode\",\n    \"editor.formatOnSave\": true,\n    \"editor.tabSize\": 2\n  },\n  \"[jsonc]\": {\n    \"editor.defaultFormatter\": \"esbenp.prettier-vscode\",\n    \"editor.formatOnSave\": true,\n    \"editor.tabSize\": 2\n  },\n  \"[svelte]\": {\n    \"editor.codeActionsOnSave\": {\n      \"source.organizeImports\": \"explicit\",\n      \"source.removeUnusedImports\": \"explicit\"\n    },\n    \"editor.defaultFormatter\": \"svelte.svelte-vscode\",\n    \"editor.formatOnSave\": true,\n    \"editor.tabSize\": 2\n  },\n  \"[typescript]\": {\n    \"editor.codeActio"
         },
         {
           "path": "docs/docs/developer/testing.md",
@@ -1069,7 +1069,7 @@
         {
           "path": "docs/docs/features/duplicates-utility.md",
           "bytes": 2825,
-          "preview": "# Duplicates Utility\n\nImmich comes with a duplicates utility to help you detect assets that look visually similar. The duplicate detection feature relies on machine learning and is enabled by default. For more information about when the duplicate detection job runs, see [Jobs and Workers](/administration/jobs-workers). Once an asset has been processed and added to a duplicate group, it becomes available to review in the \"Review duplicates\" utility, which can be found [here](https://my.immich.app/utilities/duplicates).\n\n## Reviewing duplicates\n\nThe review duplicates page allows the user to individually select which assets should be kept and which ones should be trashed. When more than one asset is kept, there is an option to automatically put the kept assets into a stack.\n\n### Automatic preselection\n\nWhen using \"Deduplicate All\" or viewing suggestions, Immich automatically preselects which assets to keep based on:\n\n1. **Image size in bytes** \u2014 larger files are preferred as they typically have higher quality.\n2. **Count of EXIF data** \u2014 assets with more metadata are preferred.\n\n### Synchronizing metadata\n\nWhen resolving duplicates, metadata from trashed assets is automatically synchronized to the kept asset. This synchronization only happens when **exactly one** asset is kept and at least one asset is trashed. When more than one asset is kept, metadata is not merged \u2014 the assets keep their own metadata and are simply removed from the duplicate group. The following metadata is synchronized:\n\n| Name        | Description                                                                                                                    |\n| ----------- | ------------------------------------------------------------------------------------------------------------------------------ |\n| Album       | The kept asset will be added to _every_ album that the other assets in the group belong to.                                    |\n| Favorite    | If any of the assets in the group have been added to favorites, the kept asset will also be added to favorites.                |\n| Rating      | If one or more assets in the duplicate group have a rating, the highest rating is selected and synchronized to the kept asset. |\n| Description | Descriptions from each asset are combined together and synchronized to the kept asset.                                         |\n| Visibility  | The most restrictive visibility is applied to the kept asset.                                                                  |\n| Location    | Latitude and longitude are copied if all assets with geolocation data in the group share the same coordinates.                 |\n| Tag         | Tags from all assets in the group are merged and applied to the kept asset.                                                    |\n"
+          "preview": "# Duplicates Utility\n\nImmich comes with a duplicates utility to help you detect assets that look visually similar. The duplicate detection feature relies on machine learning and is enabled by default. For more information about when the duplicate detection job runs, see [Jobs and Workers](/administration/jobs-workers). Once an asset has been processed and added to a duplicate group, it becomes available to review in the \"Review duplicates\" utility, which can be found [here](https://my.immich.app/utilities/duplicates).\n\n## Reviewing duplicates\n\nThe review duplicates page allows the user to individually select which assets should be kept and which ones should be trashed. When more than one asset is kept, there is an option to automatically put the kept assets into a stack.\n\n### Automatic preselection\n\nWhen using \"Deduplicate All\" or viewing suggestions, Immich automatically preselects which assets to keep based on:\n\n1. **Image size in bytes** — larger files are preferred as they typically have higher quality.\n2. **Count of EXIF data** — assets with more metadata are preferred.\n\n### Synchronizing metadata\n\nWhen resolving duplicates, metadata from trashed assets is automatically synchronized to the kept asset. This synchronization only happens when **exactly one** asset is kept and at least one asset is trashed. When more than one asset is kept, metadata is not merged — the assets keep their own metadata and are simply removed from the duplicate group. The following metadata is synchronized:\n\n| Name        | Description                                                                                                                    |\n| ----------- | ------------------------------------------------------------------------------------------------------------------------------ |\n| Album       | The kept asset will be added to _every_ album that the other assets in the group belong to.                                    |\n| Favorite    | If any of the assets in the group have been added to favorites, the kept asset will also be added to favorites.                |\n| Rating      | If one or more assets in the duplicate group have a rating, the highest rating is selected and synchronized to the kept asset. |\n| Description | Descriptions from each asset are combined together and synchronized to the kept asset.                                         |\n| Visibility  | The most restrictive visibility is applied to the kept asset.                                                                  |\n| Location    | Latitude and longitude are copied if all assets with geolocation data in the group share the same coordinates.                 |\n| Tag         | Tags from all assets in the group are merged and applied to the kept asset.                                                    |\n"
         },
         {
           "path": "docs/docs/features/facial-recognition.md",
@@ -1099,7 +1099,7 @@
         {
           "path": "docs/docs/features/mobile-backup.md",
           "bytes": 3799,
-          "preview": "---\nsidebar_position: 1\n---\n\n# Mobile Backup\n\n## Overview\n\nImmich supports uploading photos and videos from your mobile device to the server automatically.\n\nWhen backup is enabled, Immich will upload new photos and videos from selected albums when you open or resume the app, as well as periodically in the background.\n\n<img\nsrc={require('./img/enable-backup-button.webp').default}\nwidth=\"400px\"\ntitle=\"Upload button\"\n/>\n\n## General Features\n\n### Backup albums selection\n\n<img\nsrc={require('./img/backup-album-selection.webp').default}\nwidth=\"400px\"\ntitle=\"Backup album selection\"\n/>\n\nYou can select which albums on your mobile device to back up to the server. You can also exclude specific albums (by double-tapping on them) from being backed up. This is useful for iOS users since assets can belong to multiple albums. For example, you may want to back up all assets except those in the \"Videos\" album.\n\n### Deduplication\n\nWhen you first select albums for backup, Immich calculates a checksum for each file's content. This checksum identifies assets already on the server\u2014whether uploaded via CLI, web interface, or another device. Files matching existing assets are skipped, preventing duplicate uploads and saving bandwidth.\n\n### Networking requirements\n\nBy default, Immich will only upload photos and videos when connected to Wi-Fi. You can change this behavior in the backup settings page.\n\n<img\nsrc={require('./img/backup-options.webp').default}\nwidth=\"400px\"\ntitle=\"Upload button\"\n/>\n\n### Backup album synchronization\n\n<img\nsrc={require('./img/backup-album-sync.webp').default}\nwidth=\"400px\"\ntitle=\"Backup album synchronization option\"\n/>\n\nWhen enabled, Immich automatically creates albums on the server that mirror the albums on your mobile device. Photos and videos are organized into these server-side albums to match your device's album structure, making it easy to find and browse your content the same way you do on your phone.\n\nThis is a one-way sync from your device to the server. You can enable this feature at any time and use the **Reorganize into album** button to backfill existing uploads into their corresponding albums.\n\n## Platform Specific Features\n\n### Android\n\n<img\nsrc={require('./img/android-backup-options.webp').default}\nwidth=\"400px\"\ntitle=\"Android backup options\"\n/>\n\n- It is a well-known problem that some Android models are very strict with battery optimization settings, which can cause a problem with the background worker. Please visit [Don't kill my app](https://dontkillmyapp.com/) for a guide on disabling this setting on your phone.\n- You can allow the background task to run only when the device is charging.\n- You can set the minimum delay from the time a photo is taken to when the background upload task will run.\n\n### iOS\n\n- You must enable **Background App Refresh** for the app to work in the background. You can enable it in the Settings app under General > Background App Refresh.\n\n<div style={{textAlign: 'center'}}>\n<img src={require('./img/background-app-refresh.webp').default} width=\"30%\" title=\"background-app-refresh\" />\n</div>\n\n- iOS automatically manages background tasks; the app cannot control when the background upload task will run. The more frequently you open the app, the more often background tasks will run.\n\n#### iCloud Backup\n\nLocal albums containing assets from iCloud and marked for backup in Immich will be pulled from iCloud and temporarily stored in the app's cache folder. Once the hashing and uploading process is completed, the temporary files will be emptied.\n\nThis process may consume additional data and storage space on your device, especially if you have a large number of iCloud photos and videos. Please ensure you have sufficient storage space and monitor your data usage if you are not connected to Wi-Fi.\n"
+          "preview": "---\nsidebar_position: 1\n---\n\n# Mobile Backup\n\n## Overview\n\nImmich supports uploading photos and videos from your mobile device to the server automatically.\n\nWhen backup is enabled, Immich will upload new photos and videos from selected albums when you open or resume the app, as well as periodically in the background.\n\n<img\nsrc={require('./img/enable-backup-button.webp').default}\nwidth=\"400px\"\ntitle=\"Upload button\"\n/>\n\n## General Features\n\n### Backup albums selection\n\n<img\nsrc={require('./img/backup-album-selection.webp').default}\nwidth=\"400px\"\ntitle=\"Backup album selection\"\n/>\n\nYou can select which albums on your mobile device to back up to the server. You can also exclude specific albums (by double-tapping on them) from being backed up. This is useful for iOS users since assets can belong to multiple albums. For example, you may want to back up all assets except those in the \"Videos\" album.\n\n### Deduplication\n\nWhen you first select albums for backup, Immich calculates a checksum for each file's content. This checksum identifies assets already on the server—whether uploaded via CLI, web interface, or another device. Files matching existing assets are skipped, preventing duplicate uploads and saving bandwidth.\n\n### Networking requirements\n\nBy default, Immich will only upload photos and videos when connected to Wi-Fi. You can change this behavior in the backup settings page.\n\n<img\nsrc={require('./img/backup-options.webp').default}\nwidth=\"400px\"\ntitle=\"Upload button\"\n/>\n\n### Backup album synchronization\n\n<img\nsrc={require('./img/backup-album-sync.webp').default}\nwidth=\"400px\"\ntitle=\"Backup album synchronization option\"\n/>\n\nWhen enabled, Immich automatically creates albums on the server that mirror the albums on your mobile device. Photos and videos are organized into these server-side albums to match your device's album structure, making it easy to find and browse your content the same way you do on your phone.\n\nThis is a one-way sync from your device to the server. You can enable this feature at any time and use the **Reorganize into album** button to backfill existing uploads into their corresponding albums.\n\n## Platform Specific Features\n\n### Android\n\n<img\nsrc={require('./img/android-backup-options.webp').default}\nwidth=\"400px\"\ntitle=\"Android backup options\"\n/>\n\n- It is a well-known problem that some Android models are very strict with battery optimization settings, which can cause a problem with the background worker. Please visit [Don't kill my app](https://dontkillmyapp.com/) for a guide on disabling this setting on your phone.\n- You can allow the background task to run only when the device is charging.\n- You can set the minimum delay from the time a photo is taken to when the background upload task will run.\n\n### iOS\n\n- You must enable **Background App Refresh** for the app to work in the background. You can enable it in the Settings app under General > Background App Refresh.\n\n<div style={{textAlign: 'center'}}>\n<img src={require('./img/background-app-refresh.webp').default} width=\"30%\" title=\"background-app-refresh\" />\n</div>\n\n- iOS automatically manages background tasks; the app cannot control when the background upload task will run. The more frequently you open the app, the more often background tasks will run.\n\n#### iCloud Backup\n\nLocal albums containing assets from iCloud and marked for backup in Immich will be pulled from iCloud and temporarily stored in the app's cache folder. Once the hashing and uploading process is completed, the temporary files will be emptied.\n\nThis process may consume additional data and storage space on your device, especially if you have a large number of iCloud photos and videos. Please ensure you have sufficient storage space and monitor your data usage if you are not connected to Wi-Fi.\n"
         },
         {
           "path": "docs/docs/features/monitoring.md",
@@ -1109,7 +1109,7 @@
         {
           "path": "docs/docs/features/partner-sharing.md",
           "bytes": 2321,
-          "preview": "# Partner Sharing\n\nImmich allows you to share your library with other users. They can then view your library and download the assets. You can manage Partner Sharing from the [User Settings](docs/features/user-settings.md) page on the web.\n\nPartner sharing includes:\n\n- Access to all non-archived and trashed photos and videos.\n- Access to all metadata, including GPS information.\n- Access to share assets via shared links, albums, etc.\n\nPartner sharing does _not_ include:\n\n- Already existing partner albums\n- If an asset is favorited\n- People and facial recognition data\n\n:::note\n\n- Partner sharing is one-way. To view your partner's assets, they must also share them with you.\n- Partner sharing may result in displaying duplicate assets on the main timeline, as duplicates are only detected on a per-user basis.\n\n:::\n\n## Sharing with a Partner\n\n<img src={require('./img/partner-sharing-1.webp').default} width=\"70%\" title='Add Partner 1' />\n\n<img src={require('./img/partner-sharing-2.webp').default} width=\"70%\" title='Add Partner 2' />\n\n<img src={require('./img/partner-sharing-4.webp').default} width=\"70%\" title='Add Partner 4' />\n\n## Viewing Partner Assets\n\nAccess partner assets via the Sharing page.\n\n<img src={require('./img/partner-sharing-3.webp').default} width=\"70%\" title='Access to the Shared Library' />\n\n## Timeline Integration\n\nPartner shared photos can be displayed in the main timeline. This feature can be enabled on a per-partner basis and can be viewed and updated on both the web and mobile app.\n\n### Web\n\nThe option can be found at [`Account Settings > Partner Sharing > Show in timeline`](https://my.immich.app/user-settings?isOpen=partner-sharing)\n\n<img src={require('./img/partner-sharing-5.webp').default} width=\"70%\" title='Partner Sharing for the web interface' />\n\n### Mobile App\n\nFrom the partner\u2019s view, toggle the button\n\n<img src={require('./img/partner-sharing-6.webp').default} width=\"30%\" title='Partner Sharing for the mobile app' />\n\n<img src={require('./img/partner-sharing-8.webp').default} width=\"30%\" title='Partner Sharing for the mobile app' />\n\n## Removing Access\n\nIn order to remove a partner, you can go to `User > Account Settings > Sharing` and click on the X button.\n\n<img src={require('./img/partner-sharing-7.webp').default} width=\"70%\" title='Remove Partner' />\n"
+          "preview": "# Partner Sharing\n\nImmich allows you to share your library with other users. They can then view your library and download the assets. You can manage Partner Sharing from the [User Settings](docs/features/user-settings.md) page on the web.\n\nPartner sharing includes:\n\n- Access to all non-archived and trashed photos and videos.\n- Access to all metadata, including GPS information.\n- Access to share assets via shared links, albums, etc.\n\nPartner sharing does _not_ include:\n\n- Already existing partner albums\n- If an asset is favorited\n- People and facial recognition data\n\n:::note\n\n- Partner sharing is one-way. To view your partner's assets, they must also share them with you.\n- Partner sharing may result in displaying duplicate assets on the main timeline, as duplicates are only detected on a per-user basis.\n\n:::\n\n## Sharing with a Partner\n\n<img src={require('./img/partner-sharing-1.webp').default} width=\"70%\" title='Add Partner 1' />\n\n<img src={require('./img/partner-sharing-2.webp').default} width=\"70%\" title='Add Partner 2' />\n\n<img src={require('./img/partner-sharing-4.webp').default} width=\"70%\" title='Add Partner 4' />\n\n## Viewing Partner Assets\n\nAccess partner assets via the Sharing page.\n\n<img src={require('./img/partner-sharing-3.webp').default} width=\"70%\" title='Access to the Shared Library' />\n\n## Timeline Integration\n\nPartner shared photos can be displayed in the main timeline. This feature can be enabled on a per-partner basis and can be viewed and updated on both the web and mobile app.\n\n### Web\n\nThe option can be found at [`Account Settings > Partner Sharing > Show in timeline`](https://my.immich.app/user-settings?isOpen=partner-sharing)\n\n<img src={require('./img/partner-sharing-5.webp').default} width=\"70%\" title='Partner Sharing for the web interface' />\n\n### Mobile App\n\nFrom the partner’s view, toggle the button\n\n<img src={require('./img/partner-sharing-6.webp').default} width=\"30%\" title='Partner Sharing for the mobile app' />\n\n<img src={require('./img/partner-sharing-8.webp').default} width=\"30%\" title='Partner Sharing for the mobile app' />\n\n## Removing Access\n\nIn order to remove a partner, you can go to `User > Account Settings > Sharing` and click on the X button.\n\n<img src={require('./img/partner-sharing-7.webp').default} width=\"70%\" title='Remove Partner' />\n"
         },
         {
           "path": "docs/docs/features/reverse-geocoding.md",
@@ -1119,7 +1119,7 @@
         {
           "path": "docs/docs/features/searching.md",
           "bytes": 133461,
-          "preview": "import Tabs from '@theme/Tabs';\nimport TabItem from '@theme/TabItem';\n\n# Searching\n\nImmich uses Postgres as its search database for both metadata and contextual CLIP search.\n\nContextual CLIP search is powered by the [VectorChord](https://github.com/tensorchord/VectorChord) extension, utilizing machine learning models like [CLIP](https://openai.com/research/clip) to provide relevant search results. This allows for freeform searches without requiring specific keywords in the image or video metadata.\n\n## Advanced Search Filters\n\nIn addition, Immich offers advanced search functionality, allowing you to find specific content using customizable search filters. These filters include location, one or more faces, specific albums, and more. You can try out the search filters on the [Demo site](https://demo.immich.app).\n\nYou can search the following types of content:\n\n| Type                                | Description                                           |\n| ----------------------------------- | ----------------------------------------------------- |\n| People                              | Faces that are recognized in your photos/videos.      |\n| Contextual                          | Content of the photos and videos.                     |\n| File name or extension              | Full or partial file's name, or file's extension      |\n| Full path or folder                 | Full or partial folder names from the original path.  |\n| Description                         | Description added to assets.                          |\n| Optical Character Recognition (OCR) | Text in images                                        |\n| Locations                           | Cities, states, and countries from reverse geocoding. |\n| Tags                                | Tags assigned or extracted from assets.               |\n| Camera                              | make, model and lens model                            |\n| Time frame                          | Start and end date of a specific time bucket          |\n| Media type                          | Image or video or both                                |\n| Display options                     | In Archive, in Favorites or Not in any album          |\n| Star rating                         | User-assigned star rating                             |\n\n<img src={require('./img/advanced-search-filters.webp').default} width=\"70%\" title='Advanced search filters' />\n\n### Full path or folder\n\nUse this mode when you know a folder name or part of the original asset path.\n\nExample: for /John/Projects/3D_Printing/2026-07-01/IMG_0001.jpg, searches like Projects, 3D, Printing, or 2026 match the asset.\n\n## Configuration\n\nNavigating to `Administration > Settings > Machine Learning Settings > Smart Search` will show the options available.\n\n### CLIP models\n\nThe default search model is fast, but there are many other options that can provide better search results. The tradeoff of using these models is that they're slower and/or use more memory (both when indexing images with background Smart Search jobs and when searching).\n\nThe first step of choosing the right model for you is to know which languages your users will search in.\n\nIf your users will only search in English, then the [CLIP][huggingface-clip] section is the first place to look. This is a curated list of the models that generally perform the best for their size class. The models here are ordered from higher to lower quality. This means that the top models will generally rank the most relevant results higher and have a higher capacity to understand descriptive, detailed, and/or niche queries. The models are also generally ordered from larger to smaller, so consider the impact on memory usage, job processing and search speed when deciding on one. The smaller models in this list are not too different in quality and many times faster.\n\n[Multilingual models][huggingface-multilingual-clip] are also available so users can search in their native language. Use these models if you expect non-English searches to be common. They can be separated into two search patterns:\n\n- `nllb` models expect the search query to be in the language specified in the user settings\n- `xlm` and `siglip2` models understand search text regardless of the current language setting\n\n`nllb` models tend to perform the best and are recommended when users primarily searches in their native, non-English language. `xlm` and `siglip2` models are more flexible and are recommended for mixed language search, where the same user might search in different languages at different times.\n\nFor more details, check the tables below to see how they compare in memory usage, speed and quality by language.\n\nOnce you've chosen a model, follow these steps:\n\n1. Copy the name of the model (e.g. `ViT-B-16-SigLIP__webli`)\n2. Go to the [Smart Search settings][smart-search-settings]\n3. Paste the model name into the Model Name section\n4. Save the settings\n5. Go to the [Job Status page][job-status-page]\n6. Click \"All\" next to \"Smart Search\" to begin re-processing your assets with the new model\n7. (Optional) Confirm that the logs for the server and machine learning service don't have relevant errors\n\nIn rare instances, changing the model might leave bits of the old model's incompatible data in the database, causing errors when processing Smart Search jobs. If you notice errors like this in the logs, you can change the model back to the previous one and save, then repeat steps 3-7.\n\nPlease note that memory and execution time values are only _estimates_: actual usage will be different depending on many factors. As such, it's mainly intended as a way to compare the relative tradeoffs of each model.\n\n<details>\n<summary>Reference</summary>\n\nMemory and execution time estimates were obtained without acceleration on a 7800x3D processor running bare metal Linux. All testing and evaluation was done at f32 precision (the default in Immich).\n\n**Execution Time (ms)**: After warming up the model with one pass, the mean execution time of 100 passes with the same input.\n\n**Memory (MiB)**: The peak RSS usage of the process after performing the above timing benchmark. Does not include image decoding, concurrent processing, the web server, etc., which are relatively constant factors.\n\n**Recall (%)**: Evaluated on Crossmodal-3600, the average of the recall@1, recall@5 and recall@10 results for zeroshot image retrieval. Chinese (Simplified), English, French, German, Italian, Japanese, Korean, Polish, Russian, Spanish and Turkish are additionally tested on XTD-10. Chinese (Simplified) and English are additionally tested on Flickr30k. The recall metrics are the average across all tested datasets.\n\n**Pareto Optimal**: Whether the model is not completely outclassed by another model. Try to use models that are optimal for the languages relevant to you. Specifically, for a given model and language, if there's another model that's better for that language in at least one respect (memory usage, execution time, recall) while being at least as good for that language in every other way, then the model is not optimal for that language.\n\n</details>\n\n---\n\n<details>\n<summary>English</summary>\n| Model                                                | Memory (MiB) | Execution Time (ms) | Recall (%) | Pareto Optimal |\n|------------------------------------------------------|--------------|---------------------|------------|----------------|\n| ViT-SO400M-16-SigLIP2-384__webli                     | 3854         | 56.57               | 85.99      | \u2705             |\n| ViT-SO400M-14-SigLIP2-378__webli                     | 3940         | 72.25               | 85.96      | \u274c             |\n| ViT-gopt-16-SigLIP2-384__webli                       | 6585         | 146.84              | 85.96      | \u274c             |\n| ViT-SO400M-16-SigLIP2-512__webli                     | 4050         | 107.67              | 85.93      | \u274c             |\n| ViT-H-14-378-quickgelu__dfn5b                        | 5049         | 108.4               | 85.78      | \u274c             |\n| ViT-L-16-SigLIP2-512__webli                          | 3358         | 92.59               | 85.75      | \u2705             |\n| ViT-SO"
+          "preview": "import Tabs from '@theme/Tabs';\nimport TabItem from '@theme/TabItem';\n\n# Searching\n\nImmich uses Postgres as its search database for both metadata and contextual CLIP search.\n\nContextual CLIP search is powered by the [VectorChord](https://github.com/tensorchord/VectorChord) extension, utilizing machine learning models like [CLIP](https://openai.com/research/clip) to provide relevant search results. This allows for freeform searches without requiring specific keywords in the image or video metadata.\n\n## Advanced Search Filters\n\nIn addition, Immich offers advanced search functionality, allowing you to find specific content using customizable search filters. These filters include location, one or more faces, specific albums, and more. You can try out the search filters on the [Demo site](https://demo.immich.app).\n\nYou can search the following types of content:\n\n| Type                                | Description                                           |\n| ----------------------------------- | ----------------------------------------------------- |\n| People                              | Faces that are recognized in your photos/videos.      |\n| Contextual                          | Content of the photos and videos.                     |\n| File name or extension              | Full or partial file's name, or file's extension      |\n| Full path or folder                 | Full or partial folder names from the original path.  |\n| Description                         | Description added to assets.                          |\n| Optical Character Recognition (OCR) | Text in images                                        |\n| Locations                           | Cities, states, and countries from reverse geocoding. |\n| Tags                                | Tags assigned or extracted from assets.               |\n| Camera                              | make, model and lens model                            |\n| Time frame                          | Start and end date of a specific time bucket          |\n| Media type                          | Image or video or both                                |\n| Display options                     | In Archive, in Favorites or Not in any album          |\n| Star rating                         | User-assigned star rating                             |\n\n<img src={require('./img/advanced-search-filters.webp').default} width=\"70%\" title='Advanced search filters' />\n\n### Full path or folder\n\nUse this mode when you know a folder name or part of the original asset path.\n\nExample: for /John/Projects/3D_Printing/2026-07-01/IMG_0001.jpg, searches like Projects, 3D, Printing, or 2026 match the asset.\n\n## Configuration\n\nNavigating to `Administration > Settings > Machine Learning Settings > Smart Search` will show the options available.\n\n### CLIP models\n\nThe default search model is fast, but there are many other options that can provide better search results. The tradeoff of using these models is that they're slower and/or use more memory (both when indexing images with background Smart Search jobs and when searching).\n\nThe first step of choosing the right model for you is to know which languages your users will search in.\n\nIf your users will only search in English, then the [CLIP][huggingface-clip] section is the first place to look. This is a curated list of the models that generally perform the best for their size class. The models here are ordered from higher to lower quality. This means that the top models will generally rank the most relevant results higher and have a higher capacity to understand descriptive, detailed, and/or niche queries. The models are also generally ordered from larger to smaller, so consider the impact on memory usage, job processing and search speed when deciding on one. The smaller models in this list are not too different in quality and many times faster.\n\n[Multilingual models][huggingface-multilingual-clip] are also available so users can search in their native language. Use these models if you expect non-English searches to be common. They can be separated into two search patterns:\n\n- `nllb` models expect the search query to be in the language specified in the user settings\n- `xlm` and `siglip2` models understand search text regardless of the current language setting\n\n`nllb` models tend to perform the best and are recommended when users primarily searches in their native, non-English language. `xlm` and `siglip2` models are more flexible and are recommended for mixed language search, where the same user might search in different languages at different times.\n\nFor more details, check the tables below to see how they compare in memory usage, speed and quality by language.\n\nOnce you've chosen a model, follow these steps:\n\n1. Copy the name of the model (e.g. `ViT-B-16-SigLIP__webli`)\n2. Go to the [Smart Search settings][smart-search-settings]\n3. Paste the model name into the Model Name section\n4. Save the settings\n5. Go to the [Job Status page][job-status-page]\n6. Click \"All\" next to \"Smart Search\" to begin re-processing your assets with the new model\n7. (Optional) Confirm that the logs for the server and machine learning service don't have relevant errors\n\nIn rare instances, changing the model might leave bits of the old model's incompatible data in the database, causing errors when processing Smart Search jobs. If you notice errors like this in the logs, you can change the model back to the previous one and save, then repeat steps 3-7.\n\nPlease note that memory and execution time values are only _estimates_: actual usage will be different depending on many factors. As such, it's mainly intended as a way to compare the relative tradeoffs of each model.\n\n<details>\n<summary>Reference</summary>\n\nMemory and execution time estimates were obtained without acceleration on a 7800x3D processor running bare metal Linux. All testing and evaluation was done at f32 precision (the default in Immich).\n\n**Execution Time (ms)**: After warming up the model with one pass, the mean execution time of 100 passes with the same input.\n\n**Memory (MiB)**: The peak RSS usage of the process after performing the above timing benchmark. Does not include image decoding, concurrent processing, the web server, etc., which are relatively constant factors.\n\n**Recall (%)**: Evaluated on Crossmodal-3600, the average of the recall@1, recall@5 and recall@10 results for zeroshot image retrieval. Chinese (Simplified), English, French, German, Italian, Japanese, Korean, Polish, Russian, Spanish and Turkish are additionally tested on XTD-10. Chinese (Simplified) and English are additionally tested on Flickr30k. The recall metrics are the average across all tested datasets.\n\n**Pareto Optimal**: Whether the model is not completely outclassed by another model. Try to use models that are optimal for the languages relevant to you. Specifically, for a given model and language, if there's another model that's better for that language in at least one respect (memory usage, execution time, recall) while being at least as good for that language in every other way, then the model is not optimal for that language.\n\n</details>\n\n---\n\n<details>\n<summary>English</summary>\n| Model                                                | Memory (MiB) | Execution Time (ms) | Recall (%) | Pareto Optimal |\n|------------------------------------------------------|--------------|---------------------|------------|----------------|\n| ViT-SO400M-16-SigLIP2-384__webli                     | 3854         | 56.57               | 85.99      | ✅             |\n| ViT-SO400M-14-SigLIP2-378__webli                     | 3940         | 72.25               | 85.96      | ❌             |\n| ViT-gopt-16-SigLIP2-384__webli                       | 6585         | 146.84              | 85.96      | ❌             |\n| ViT-SO400M-16-SigLIP2-512__webli                     | 4050         | 107.67              | 85.93      | ❌             |\n| ViT-H-14-378-quickgelu__dfn5b                        | 5049         | 108.4               | 85.78      | ❌             |\n| ViT-L-16-SigLIP2-512__webli                          | 3358         | 92.59               | 85.75      | ✅             |\n| ViT-SO"
         },
         {
           "path": "docs/docs/features/sharing.md",
@@ -1144,7 +1144,7 @@
         {
           "path": "docs/docs/features/xmp-sidecars.md",
           "bytes": 5501,
-          "preview": "# XMP Sidecars\n\nImmich supports XMP sidecar files \u2014 external `.xmp` files that store metadata for an image or video in XML format. During the metadata extraction job Immich will read & import metadata from `.xmp` files, and during the Sidecar Write job it will _write_ metadata back to `.xmp`.\n\n:::tip\nTools like Lightroom, Darktable, digiKam and other applications can also be configured to write changes to `.xmp` files, in order to avoid modifying the original file.\n:::\n\n## Metadata Fields\n\nImmich does not support _all_ metadata fields. Below is a table showing what fields Immich can _read_ and _write_. It's important to note that writes do not replace the entire file contents, but are merged together with any existing fields.\n\n:::info\nImmich automatically queues a Sidecar Write job after editing the description, rating, or updating tags.\n:::\n\n| Metadata        | Immich writes to XMP                             | Immich reads from XMP                                                                                                                                                                                                                          |\n| --------------- | ------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |\n| **Description** | `dc:description`, `tiff:ImageDescription`        | `dc:description`, `tiff:ImageDescription`                                                                                                                                                                                                      |\n| **Rating**      | `xmp:Rating`                                     | `xmp:Rating`                                                                                                                                                                                                                                   |\n| **DateTime**    | `exif:DateTimeOriginal`, `photoshop:DateCreated` | In prioritized order:<br/>`exif:SubSecDateTimeOriginal`<br/>`exif:DateTimeOriginal`<br/>`xmp:SubSecCreateDate`<br/>`xmp:CreateDate`<br/>`xmp:CreationDate`<br/>`xmp:MediaCreateDate`<br/>`xmp:SubSecMediaCreateDate`<br/>`xmp:DateTimeCreated` |\n| **Location**    | `exif:GPSLatitude`, `exif:GPSLongitude`          | `exif:GPSLatitude`, `exif:GPSLongitude`                                                                                                                                                                                                        |\n| **Tags**        | `digiKam:TagsList`                               | In prioritized order: <br/>`digiKam:TagsList`<br/>`lr:HierarchicalSubject`<br/>`IPTC:Keywords`                                                                                                                                                 |\n\n:::note\nAll other fields (e.g. `Creator`, `Source`, IPTC, Lightroom edits) remain in the `.xmp` file and are **not searchable** in Immich.\n:::\n\n## File Naming Rules\n\nA sidecar must share the base name of the media file:\n\n- \u2705 `IMG_0001.jpg.xmp` \u2190 preferred\n- \u2705 `IMG_0001.xmp` \u2190 fallback\n- \u274c `myphoto_meta.xmp` \u2190 not recognized\n\nIf both `.jpg.xmp` and `.xmp` are present, Immich uses the **`.jpg.xmp`** file.\n\n## CLI Support\n\n1. **Detect** \u2013 Immich looks for a `.xmp` file placed next to each media file during upload.\n2. **Copy** \u2013 Both the media and the sidecar file are copied into Immich\u2019s internal library folder.  \n   The sidecar is renamed to match the internal filename template, e.g.:  \n   `upload/library/<user>/YYYY/YYYY-MM-DD/IMG_0001.jpg`  \n   `upload/library/<user>/YYYY/YYYY-MM-DD/IMG_0001.jpg.xmp`\n3. **Extract** \u2013 Selected metadata (title, description, date, rating, tags) is parsed from the sidecar and saved to the database.\n4. **Write-back** \u2013 If you later update tags, rating, or description in the web UI, Immich will update **both** the database _and_ the copied `.xmp` file to stay in sync.\n\n## External Library (Mounted Folder) Support\n\n1. **Detect** \u2013 The `DISCOVER` job automatically associates `.xmp` files that sit next to existing media files in your mounted folder. No files are moved or renamed.\n2. **Extract** \u2013 Immich reads and saves the same metadata fields from the sidecar to the database.\n3. **Write-back** \u2013 If Immich has **write access** to the mount, any future metadata edits (e.g., rating or tags) are also written back to the original `.xmp` file on disk.\n\n:::danger\nIf the mount is **read-only**, Immich cannot update either the sidecar **or** the database \u2014 **metadata edits will silently fail** with no warning see issue [#10538](https://github.com/immich-app/immich/issues/10538) for more details.\n:::\n\n## Admin Jobs\n\nImmich provides two admin jobs for managing sidecars:\n\n| Job        | What it does                                                                                      |\n| ---------- | ------------------------------------------------------------------------------------------------- |\n| `DISCOVER` | Finds new `.xmp` files next to media that don\u2019t already have one linked                           |\n| `SYNC`     | Re-reads existing `.xmp` files and refreshes metadata in the database (e.g. after external edits) |\n\n![Sidecar Admin Jobs](./img/sidecar-jobs.webp)\n"
+          "preview": "# XMP Sidecars\n\nImmich supports XMP sidecar files — external `.xmp` files that store metadata for an image or video in XML format. During the metadata extraction job Immich will read & import metadata from `.xmp` files, and during the Sidecar Write job it will _write_ metadata back to `.xmp`.\n\n:::tip\nTools like Lightroom, Darktable, digiKam and other applications can also be configured to write changes to `.xmp` files, in order to avoid modifying the original file.\n:::\n\n## Metadata Fields\n\nImmich does not support _all_ metadata fields. Below is a table showing what fields Immich can _read_ and _write_. It's important to note that writes do not replace the entire file contents, but are merged together with any existing fields.\n\n:::info\nImmich automatically queues a Sidecar Write job after editing the description, rating, or updating tags.\n:::\n\n| Metadata        | Immich writes to XMP                             | Immich reads from XMP                                                                                                                                                                                                                          |\n| --------------- | ------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |\n| **Description** | `dc:description`, `tiff:ImageDescription`        | `dc:description`, `tiff:ImageDescription`                                                                                                                                                                                                      |\n| **Rating**      | `xmp:Rating`                                     | `xmp:Rating`                                                                                                                                                                                                                                   |\n| **DateTime**    | `exif:DateTimeOriginal`, `photoshop:DateCreated` | In prioritized order:<br/>`exif:SubSecDateTimeOriginal`<br/>`exif:DateTimeOriginal`<br/>`xmp:SubSecCreateDate`<br/>`xmp:CreateDate`<br/>`xmp:CreationDate`<br/>`xmp:MediaCreateDate`<br/>`xmp:SubSecMediaCreateDate`<br/>`xmp:DateTimeCreated` |\n| **Location**    | `exif:GPSLatitude`, `exif:GPSLongitude`          | `exif:GPSLatitude`, `exif:GPSLongitude`                                                                                                                                                                                                        |\n| **Tags**        | `digiKam:TagsList`                               | In prioritized order: <br/>`digiKam:TagsList`<br/>`lr:HierarchicalSubject`<br/>`IPTC:Keywords`                                                                                                                                                 |\n\n:::note\nAll other fields (e.g. `Creator`, `Source`, IPTC, Lightroom edits) remain in the `.xmp` file and are **not searchable** in Immich.\n:::\n\n## File Naming Rules\n\nA sidecar must share the base name of the media file:\n\n- ✅ `IMG_0001.jpg.xmp` ← preferred\n- ✅ `IMG_0001.xmp` ← fallback\n- ❌ `myphoto_meta.xmp` ← not recognized\n\nIf both `.jpg.xmp` and `.xmp` are present, Immich uses the **`.jpg.xmp`** file.\n\n## CLI Support\n\n1. **Detect** – Immich looks for a `.xmp` file placed next to each media file during upload.\n2. **Copy** – Both the media and the sidecar file are copied into Immich’s internal library folder.  \n   The sidecar is renamed to match the internal filename template, e.g.:  \n   `upload/library/<user>/YYYY/YYYY-MM-DD/IMG_0001.jpg`  \n   `upload/library/<user>/YYYY/YYYY-MM-DD/IMG_0001.jpg.xmp`\n3. **Extract** – Selected metadata (title, description, date, rating, tags) is parsed from the sidecar and saved to the database.\n4. **Write-back** – If you later update tags, rating, or description in the web UI, Immich will update **both** the database _and_ the copied `.xmp` file to stay in sync.\n\n## External Library (Mounted Folder) Support\n\n1. **Detect** – The `DISCOVER` job automatically associates `.xmp` files that sit next to existing media files in your mounted folder. No files are moved or renamed.\n2. **Extract** – Immich reads and saves the same metadata fields from the sidecar to the database.\n3. **Write-back** – If Immich has **write access** to the mount, any future metadata edits (e.g., rating or tags) are also written back to the original `.xmp` file on disk.\n\n:::danger\nIf the mount is **read-only**, Immich cannot update either the sidecar **or** the database — **metadata edits will silently fail** with no warning see issue [#10538](https://github.com/immich-app/immich/issues/10538) for more details.\n:::\n\n## Admin Jobs\n\nImmich provides two admin jobs for managing sidecars:\n\n| Job        | What it does                                                                                      |\n| ---------- | ------------------------------------------------------------------------------------------------- |\n| `DISCOVER` | Finds new `.xmp` files next to media that don’t already have one linked                           |\n| `SYNC`     | Re-reads existing `.xmp` files and refreshes metadata in the database (e.g. after external edits) |\n\n![Sidecar Admin Jobs](./img/sidecar-jobs.webp)\n"
         }
       ],
       "config_files": [
@@ -15991,7 +15991,7 @@
         "steps": [
           {
             "id": "serialize",
-            "label": "JSON serialize (inventory \u2192 SQLite)",
+            "label": "JSON serialize (inventory → SQLite)",
             "ms": 0,
             "pct": 0
           },
@@ -16010,5 +16010,914 @@
         ]
       }
     ]
+  },
+  "report": {
+    "overview": "Immich is a self-hosted photo and video backup/management platform (Google Photos alternative) structured as a pnpm+mise monorepo. A NestJS/TypeScript server exposes a REST API and BullMQ background workers on Postgres (pgvector/VectorChord) and Redis, a SvelteKit web app and a Flutter mobile app consume a generated OpenAPI SDK, and a separate Python/FastAPI 'machine-learning' microservice runs ONNX models for CLIP search, facial recognition, and OCR. The stock deployment is four docker-compose services: immich-server (port 2283), immich-machine-learning, valkey (Redis), and a pinned Postgres image with vector extensions.",
+    "system_map": {
+      "summary": "The system is a multi-process Node.js backend plus three satellite frontends/services. A supervisor in server/src/main.ts forks an 'api' child process and spawns 'microservices'/'maintenance' worker_threads (ImmichWorker enum), each booting a different Nest module from app.module.ts. The API worker serves REST under /api, static web assets via sirv, and socket.io websockets; the microservices worker runs BullMQ consumers over Redis. Persistence is Postgres accessed through Kysely with a hand-maintained schema (server/src/schema) and generated migrations. A Python FastAPI service (machine-learning/) performs inference, and web/ (SvelteKit) plus mobile/ (Flutter) are the user-facing clients built against a generated SDK in packages/sdk.",
+      "claims": [
+        {
+          "claim": "server/src/main.ts is the process supervisor: Workers.bootstrap() checks maintenance mode, waits on a Postgres advisory lock (DatabaseLock.MaintenanceOperation via pg_try_advisory_lock), then starts each enabled worker — the API worker via child_process.fork and other workers via worker_threads.Worker.",
+          "sources": [
+            "server/src/main.ts#L16-126",
+            "server/src/enum.ts#L642-646"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Three runtime worker types exist: ImmichWorker.Api, ImmichWorker.Maintenance, and ImmichWorker.Microservices; the set to run is configurable via IMMICH_WORKERS_INCLUDE/IMMICH_WORKERS_EXCLUDE env vars parsed in EnvSchema.",
+          "sources": [
+            "server/src/enum.ts#L642-646",
+            "server/src/dtos/env.dto.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "app.module.ts defines four Nest modules: ApiModule (controllers + AuthGuard + FileUploadInterceptor), MicroservicesModule (BullMQ + SchedulerRegistry), MaintenanceModule (minimal providers + MaintenanceAuthGuard), and ImmichAdminModule (nest-commander CLI commands).",
+          "sources": [
+            "server/src/app.module.ts#L105-163"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "configureExpress() in app.common.ts wires the HTTP stack: trust proxy settings, helmet from helmet.json, cookieParser, 10mb JSON/urlencoded limits, global 'api' prefix with excludePaths, a custom socket.io WebSocketAdapter, swagger, sirv static serving of the built web app, SSR fallback, compression, and a 24-hour requestTimeout.",
+          "sources": [
+            "server/src/app.common.ts#L41-95",
+            "server/helmet.json"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Postgres is accessed through Kysely (kysely-postgres-js driver); the schema is declared in code under server/src/schema/tables and migrations live in server/src/schema/migrations managed by @immich/sql-tools CLI scripts (migrations:generate/run/revert).",
+          "sources": [
+            "server/package.json#L30-38",
+            "server/src/schema/index.ts",
+            "server/src/utils/database.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Redis (valkey image in compose) backs BullMQ queues and the socket.io pub/sub adapter; ConfigRepository.getEnv() builds bull.config, bull.queues, and redis options from environment.",
+          "sources": [
+            "server/src/repositories/config.repository.ts",
+            "server/src/middleware/websocket.adapter.ts",
+            "docker/docker-compose.yml#L50-55"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The machine-learning service is a standalone FastAPI app (immich_ml/main.py) exposing GET /ping and POST /predict; it keeps an in-memory ModelCache of ONNX models, runs inference on a ThreadPoolExecutor, and can idle-shutdown after model_ttl seconds.",
+          "sources": [
+            "machine-learning/immich_ml/main.py#L40-262"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The web frontend is SvelteKit + Vite + Tailwind 4; in dev it proxies /api, /.well-known/immich, and /custom.css to IMMICH_SERVER_URL (default http://immich-server:2283), and in production the API server serves the static build via sirv.",
+          "sources": [
+            "web/vite.config.ts#L9-46",
+            "server/src/app.common.ts#L70-86"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The mobile app is Flutter/Dart (pubspec sdk '>=3.12.0 <4.0.0', flutter 3.47.2) using riverpod, auto_route, drift sqlite, and a generated openapi package at mobile/generated/openapi.",
+          "sources": [
+            "mobile/pubspec.yaml",
+            "mobile/lib/main.dart"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Standard deployment is docker/docker-compose.yml with services immich-server (port 2283, mounts UPLOAD_LOCATION at /data), immich-machine-learning (model-cache volume), valkey redis, and Postgres 14 image 'postgres:14-vectorchord0.4.3-pgvectors0.2.0'.",
+          "sources": [
+            "docker/docker-compose.yml#L12-74"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The workspace is orchestrated by pnpm (pnpm-workspace.yaml) and mise (mise.toml pins node 24.21.0, pnpm 11.24.0, java, jellyfin-ffmpeg, extism/binaryen toolchains); server scripts are nest build / vitest, web scripts are vite build / vitest.",
+          "sources": [
+            "mise.toml",
+            "pnpm-workspace.yaml",
+            "server/package.json#L14-40",
+            "web/package.json"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The OpenAPI spec open-api/immich-openapi-specs.json is generated by booting ApiModule in preview mode and writing the swagger document (server/src/bin/sync-open-api.ts); mise task open-api-typescript runs oazapfts to regenerate packages/sdk/src/fetch-client.ts used by web, cli, and e2e.",
+          "sources": [
+            "server/src/bin/sync-open-api.ts",
+            "mise.toml",
+            "open-api/immich-openapi-specs.json",
+            "packages/sdk/package.json"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "An admin CLI ('immich-admin') is dispatched in main() before worker bootstrap: it sets process.title 'immich_admin_cli', forces log level Warn, lazily imports ImmichAdminModule, and runs nest-commander commands such as reset-admin-password, grant-admin, password-login, oauth-login, maintenance-mode, and media-location.",
+          "sources": [
+            "server/src/main.ts#L165-196",
+            "server/src/commands/index.ts",
+            "server/src/commands/reset-admin-password.command.ts"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "feature_catalog": {
+      "summary": "Feature surface is primarily ~45 Nest controllers registered in controllers/index.ts covering assets, albums, sharing, people/faces, search, libraries, jobs, sync, auth, and admin management. Background processing is expressed as JobName jobs on QueueName queues (thumbnails, metadata, video conversion, face detection/recognition, smart search, OCR, duplicates, library scan, backups, notifications, workflows). Auth supports password login, OAuth/OIDC with backchannel logout, API keys, sessions, PIN codes, and shared-link access. A WASM plugin system (extism) plus user-defined workflows are newer extension-oriented features.",
+      "claims": [
+        {
+          "claim": "Asset upload/download/thumbnails: AssetMediaController exposes POST /assets (multipart, Permission.AssetUpload, sharedLink allowed, optional x-immich-checksum sha1 dedupe header), GET /assets/:id/original, and GET /assets/:id/thumbnail.",
+          "sources": [
+            "server/src/controllers/asset-media.controller.ts#L43-140",
+            "server/src/dtos/asset-media.dto.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Albums, partner sharing, shared links, stacks, and activities each have dedicated controllers and services (album, partner, shared-link, stack, activity) wired through controllers/index.ts.",
+          "sources": [
+            "server/src/controllers/index.ts",
+            "server/src/controllers/album.controller.ts",
+            "server/src/controllers/shared-link.controller.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Search features split into metadata search and smart (CLIP) search via SearchController + SearchRepository backed by pgvector/VectorChord embeddings produced by the ML service.",
+          "sources": [
+            "server/src/controllers/search.controller.ts",
+            "server/src/repositories/search.repository.ts",
+            "server/src/repositories/machine-learning.repository.ts#L40-44"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "People/facial recognition is a job pipeline: JobName.AssetDetectFaces and FacialRecognition run on QueueName.FaceDetection/FacialRecognition and call the ML service's facial-recognition detection+recognition pipeline.",
+          "sources": [
+            "server/src/enum.ts#L815-835",
+            "server/src/services/person.service.ts",
+            "server/src/repositories/machine-learning.repository.ts#L61-74"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Video features include transcoding (fluent-ffmpeg in media.repository.ts, transcoding.service.ts) and HLS session-based streaming coordinated through Hls* events in the EventMap and hls.service.ts.",
+          "sources": [
+            "server/src/repositories/media.repository.ts#L423-450",
+            "server/src/services/hls.service.ts",
+            "server/src/repositories/event.repository.ts#L98-104"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "External libraries support filesystem watching via chokidar and scanning jobs (LibrarySyncAssets/LibrarySyncFiles/LibraryScanQueueAll); watching is locked to a single microservice instance via a database lock.",
+          "sources": [
+            "server/src/services/library.service.ts#L41-85",
+            "server/src/enum.ts#L877-885"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Auth features: password login with bcrypt + constant-time dummy-hash compare, OAuth/OIDC with backchannel logout token validation, API keys, sessions with lock/invalidate, and PIN code setup/reset/change.",
+          "sources": [
+            "server/src/services/auth.service.ts#L60-180",
+            "server/src/controllers/oauth.controller.ts",
+            "server/src/controllers/api-key.controller.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Admin surface: user-admin.controller, system-config.controller, job.controller/queue.controller for pausing/resuming/cleaning BullMQ queues, database-backup.controller, integrity-admin.controller, and notification-admin.controller.",
+          "sources": [
+            "server/src/controllers/index.ts",
+            "server/src/services/queue.service.ts#L106-135"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Delta sync for offline-capable clients is implemented by sync.controller.ts + sync.service.ts + sync-checkpoint.repository.ts (SyncCheckpointRepository), which mobile uses to reconcile local drift DB state.",
+          "sources": [
+            "server/src/controllers/sync.controller.ts",
+            "server/src/services/sync.service.ts",
+            "server/src/repositories/sync-checkpoint.repository.ts",
+            "mobile/pubspec.yaml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Notifications and email: notification.service.ts + email.repository.ts render react-email templates from server/src/emails and send via nodemailer; jobs like NotifyUserSignup/NotifyAlbumInvite/NotifyAlbumUpdate run on the notifications queue.",
+          "sources": [
+            "server/src/services/notification.service.ts",
+            "server/src/enum.ts#L891-895",
+            "server/package.json#L64-65"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "A WASM plugin system loads plugins through @extism/extism with a generic-pool of plugin instances in PluginRepository; exposure is gated by env vars IMMICH_PLUGINS_INSTALL_FOLDER and IMMICH_ALLOW_EXTERNAL_PLUGINS, with a @immich/plugin-sdk workspace package for authors.",
+          "sources": [
+            "server/src/repositories/plugin.repository.ts#L1-45",
+            "server/src/dtos/env.dto.ts",
+            "packages/plugin-sdk/package.json",
+            "server/src/services/plugin.service.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Workflows (user automation) exist end-to-end: workflow.controller.ts, workflow.repository.ts, utils/workflow.ts (isMethodCompatible for plugin methods), QueueName.Workflow, and a web /workflows route.",
+          "sources": [
+            "server/src/services/plugin.service.ts#L30-35",
+            "server/src/utils/workflow.ts",
+            "server/src/enum.ts#L832"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Web routes cover photos, albums, favorites, archive, locked folder, map, memories, people, places, partners, search, sharing, shared-links, tags, trash, user-settings, utilities, workflows, plus admin and auth route groups.",
+          "sources": [
+            "web/src/routes/(user)/photos",
+            "web/src/routes/auth/login/+page.svelte"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Memories, timeline buckets, map clustering, trash auto-empty, duplicate detection, and OCR are first-class jobs/controllers (memory.controller, timeline.controller, map.controller, trash.controller, duplicate.controller, ocr.service).",
+          "sources": [
+            "server/src/controllers/index.ts",
+            "server/src/services/ocr.service.ts",
+            "server/src/enum.ts#L826-834"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "data_flow": {
+      "summary": "Data enters through Express controllers guarded by a global AuthGuard that produces an AuthDto (user, session, shared link, or API key context) via AuthService.authenticate. Uploads stream through a custom multer storage engine into StorageCore-managed folders under IMMICH_MEDIA_LOCATION, then asset rows are written through repositories over Kysely and BullMQ jobs drive metadata extraction (exiftool), thumbnail generation (sharp), transcoding (ffmpeg), and ML inference via the FastAPI service. All cross-service coordination goes through a typed EventRepository (emit/onEvent) and websocket pushes to clients; mobile/web pull changes via the sync endpoints and socket.io.",
+      "claims": [
+        {
+          "claim": "Every HTTP request passes the global AuthGuard: @Authenticated metadata (public/setup/admin/sharedLink/permission) is read via Reflector, then AuthService.authenticate resolves credentials from headers (Authorization bearer, x-api-key), cookies (ImmichCookie), or query params (shared-link key/slug) into request.user.",
+          "sources": [
+            "server/src/middleware/auth.guard.ts#L99-123",
+            "server/src/services/auth.service.ts",
+            "server/src/app.module.ts#L53"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Upload path: FileUploadInterceptor runs a custom multer storage (_handleFile/_removeFile) that writes assetData/sidecarData fields to a per-user upload folder computed by AssetMediaService.getUploadFolder (StorageCore.getNestedFolder(StorageFolder.Upload, userId, uuid)) with sanitized uuid filenames.",
+          "sources": [
+            "server/src/middleware/file-upload.interceptor.ts#L38-80",
+            "server/src/services/asset-media.service.ts#L91-115",
+            "server/src/cores/storage.core.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "After a successful upload, AssetMediaService.uploadAsset creates the asset row (sha1 checksum column for dedupe), upserts sidecar/exif records, queues JobName.AssetExtractMetadata on the metadataExtraction queue, and emits the AssetCreate event; a Postgres checksum-constraint violation is converted into a DUPLICATE response.",
+          "sources": [
+            "server/src/services/asset-media.service.ts#L125-227",
+            "server/src/utils/database.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Job transport is BullMQ: services call jobRepository.queue/queueAll (Redis), the microservices worker's per-queue bullmq Worker re-emits each job as a 'JobRun' event, and EventRepository dispatches to the method decorated with matching @OnJob({name, queue}).",
+          "sources": [
+            "server/src/repositories/job.repository.ts#L90-140",
+            "server/src/repositories/event.repository.ts#L62-71",
+            "server/src/services/queue.service.ts#L78-91"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Metadata extraction (MetadataService.handleMetadataExtraction) reads the asset, calls exiftool via media/metadata repositories, reverse-geocodes GPS through mapRepository when enabled, upserts exif/tags, and emits AssetMetadataExtracted which downstream services use to queue thumbnail/smart-search/face jobs.",
+          "sources": [
+            "server/src/services/metadata.service.ts#L228-260",
+            "server/src/repositories/media.repository.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "ML inference flows server→HTTP: MachineLearningRepository builds typed pipeline requests (ClipVisualRequest, FacialRecognitionRequest, OcrRequest) and POSTs multipart to the FastAPI /predict endpoint, where get_entries parses the pipeline and ModelCache loads ONNX models.",
+          "sources": [
+            "server/src/repositories/machine-learning.repository.ts#L40-100",
+            "machine-learning/immich_ml/main.py#L132-212"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Database access is repository-per-domain (asset.repository, user.repository, ~55 repositories in repositories/index.ts) over a shared KyselyModule connection; services never hold a Kysely handle directly and reach repos through BaseService.",
+          "sources": [
+            "server/src/services/base.service.ts#L68-124",
+            "server/src/repositories/index.ts",
+            "server/src/app.module.ts#L60"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "System configuration is a JSON document stored in Postgres (system_metadata/system_config), loaded through utils/config.ts getConfig/updateConfig, and broadcast via ConfigInit/ConfigValidate/ConfigUpdate events that services consume with @OnEvent (e.g., QueueService.updateConcurrency).",
+          "sources": [
+            "server/src/utils/config.ts",
+            "server/src/services/queue.service.ts#L44-76",
+            "server/src/repositories/event.repository.ts#L30-38"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Realtime output uses socket.io: WebSocketAdapter attaches a @socket.io/redis-adapter pub/sub pair so API and microservices processes can both emit; WebsocketRepository.setAuthFn authenticates socket handshakes through AuthService.authenticate.",
+          "sources": [
+            "server/src/middleware/websocket.adapter.ts",
+            "server/src/app.module.ts#L87-93"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Storage layout is owned by StorageCore: StorageFolder-based paths (upload, library, thumbs/thumbnails, encoded-video, profile, backups) under IMMICH_MEDIA_LOCATION, with file moves tracked through move.repository so DB paths stay consistent.",
+          "sources": [
+            "server/src/cores/storage.core.ts#L1-60",
+            "server/src/repositories/move.repository.ts",
+            "server/src/services/storage.service.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "API contract flows outward: Nest swagger decorators (@Endpoint, @Authenticated, DTO zod schemas) generate immich-openapi-specs.json, which oazapfts turns into packages/sdk fetch-client consumed by web (@immich/sdk), @immich/cli, e2e, and the mobile generated openapi package.",
+          "sources": [
+            "server/src/bin/sync-open-api.ts",
+            "mise.toml",
+            "web/package.json",
+            "open-api/immich-openapi-specs.json"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Mobile state sync is pull-based delta sync: sync.controller exposes stream/checkpoint endpoints backed by SyncRepository + SyncCheckpointRepository so the Flutter app's drift sqlite database can incrementally reconcile server state.",
+          "sources": [
+            "server/src/controllers/sync.controller.ts",
+            "server/src/repositories/sync.repository.ts",
+            "server/src/repositories/sync-checkpoint.repository.ts"
+          ],
+          "kind": "inference"
+        }
+      ]
+    },
+    "behavior_traces": {
+      "summary": "Key flows were walked end-to-end. Startup goes through a supervisor that gates on a Postgres advisory lock and maintenance mode, then each worker boots its Nest module which emits AppBootstrap to ordered handlers (database migrations first, then storage, then job discovery). The upload flow traverses guard → multer interceptors → controller → service → DB + queue. Background work is decoupled: jobs land in Redis and are executed by the microservices worker via a JobRun event indirection.",
+      "claims": [
+        {
+          "claim": "Startup trace: main() reads argv → Workers.bootstrap() → isMaintenanceMode() (SystemMetadataKey.MaintenanceMode, tolerates missing table via PostgresError 42P01) → waitForFreeLock() (pg_try_advisory_lock loop, 1s poll) → startWorker() per configured ImmichWorker.",
+          "sources": [
+            "server/src/main.ts#L30-64",
+            "server/src/main.ts#L66-126"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "API worker boot trace: workers/api.ts bootstrap() → configureTelemetry() → NestFactory.create(ApiModule, {routeConflictPolicy duplicate:error, routeResolutionStrategy specificity}) → AppRepository.setCloseFn → configureExpress(app, {ssr: ApiService}) which installs middleware, sirv, swagger, and listens on port 2283.",
+          "sources": [
+            "server/src/workers/api.ts#L9-24",
+            "server/src/app.common.ts#L24-95"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Nest module init trace: BaseModule.onModuleInit → telemetryRepository.setup → queueService.setServices(services) → websocketRepository.setAuthFn(authenticate) → eventRepository.setup({services}) → emit('AppBootstrap'); onModuleDestroy emits AppShutdown and tears down telemetry.",
+          "sources": [
+            "server/src/app.module.ts#L82-102"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Bootstrap ordering is priority-driven: DatabaseService.onBootstrap (priority -200) checks Postgres version range, manages the vector extension (create/update/drop, reindexVectorsIfNeeded), and runs migrations under DatabaseLock.Migrations unless DB_SKIP_MIGRATIONS; StorageService (-195) and JobService (-190) follow, SystemConfig at +100, PluginSync/PluginLoad at +190/+200.",
+          "sources": [
+            "server/src/services/database.service.ts#L56-120",
+            "server/src/enum.ts#L801-813"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Job-handler discovery trace: QueueService.onBootstrap (AppBootstrap listener) → jobRepository.setup(services) reflects over every service method, registers those with @OnJob metadata into handlers{}, and throws ImmichStartupError if any JobName value lacks a handler or two handlers claim one job; microservices then startWorkers() and the api worker starts watchWorkers() (30s liveness poll).",
+          "sources": [
+            "server/src/repositories/job.repository.ts#L40-104",
+            "server/src/services/queue.service.ts#L78-86"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Upload trace: POST /api/assets → AuthGuard.canActivate (Permission.AssetUpload, sharedLink ok) → AssetUploadInterceptor/FileUploadInterceptor multer writes file → AssetMediaController.uploadAsset → service.uploadAsset → requireAccess + requireQuota → onBeforeLink for livePhotoVideoId → assetRepository.create → upsertMetadata/upsertFile/upsertExif → jobRepository.queue(AssetExtractMetadata) → eventRepository.emit(AssetCreate) → 201 or 200-on-duplicate.",
+          "sources": [
+            "server/src/controllers/asset-media.controller.ts#L51-90",
+            "server/src/services/asset-media.service.ts#L125-227"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Metadata extraction trace: microservices bullmq Worker dequeues → eventRepository.emit('JobRun', queueName, job) → JobRepository.run dispatches → MetadataService.handleMetadataExtraction → getExifTags (exiftool) + stat → getDates/getImageDimensions → reverseGeocode if GPS → upsert → downstream AssetMetadataExtracted event queues thumbnails, smart search, and face detection.",
+          "sources": [
+            "server/src/services/metadata.service.ts#L215-260",
+            "server/src/repositories/job.repository.ts#L137-160"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Login trace: POST /auth/login → AuthService.login → getConfig(passwordLogin.enabled gate) → userRepository.getByEmail(withPassword) → cryptoRepository.compareBcrypt against user password or LOGIN_DUMMY_HASH for constant-time behavior → createLoginResponse(user, details) issues session + cookies.",
+          "sources": [
+            "server/src/services/auth.service.ts#L60-77",
+            "server/src/constants.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Nightly tasks trace: on ConfigInit the non-microservices worker takes DatabaseLock.NightlyJobs, converts config.nightlyTasks.startTime to a cron expression, and registers CronJob.NightlyJobs whose onTick calls handleNightlyJobs(); ConfigUpdate re-schedules it.",
+          "sources": [
+            "server/src/services/queue.service.ts#L34-76"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Worker crash/restart trace: any worker 'exit' triggers onExit; exitCode ExitCode.AppRestart sets restarting=true and reboots all workers once drained; a non-zero exit otherwise kills the api worker (SIGTERM) if present and exits the supervisor process with the same code.",
+          "sources": [
+            "server/src/main.ts#L128-162"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Websocket connect trace: socket.io handshake → WebSocketAdapter (redis pub/sub adapter) → authFn registered in BaseModule → AuthService.authenticate with uri '/api/socket.io' → WebsocketConnect event emitted with userId.",
+          "sources": [
+            "server/src/app.module.ts#L87-93",
+            "server/src/middleware/websocket.adapter.ts",
+            "server/src/repositories/event.repository.ts#L106-107"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "ML predict trace: POST /predict → get_entries parses multipart 'entries' JSON into InferenceEntry list splitting with/without model deps → run_inference resolves deps (detection output feeds recognition) → model_cache.get + load() (ONNX fallback if other format unsupported) → model.predict in thread pool → ORJSONResponse.",
+          "sources": [
+            "machine-learning/immich_ml/main.py#L132-248"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "testing_signals": {
+      "summary": "Testing is layered: Vitest unit tests co-located as *.spec.ts in server/src and web/src, a 'medium' tier in server/test/medium that runs against a real Postgres via testcontainers, API-level e2e specs in e2e/ (Vitest + supertest-style SDK calls against a docker-compose stack), and Playwright browser/UI/maintenance projects. CI (.github/workflows/test.yml) shards jobs per changed directory. Coverage is configured but explicitly excludes some files, and several infra-heavy areas (storage.core is covered, but websocket/adapter and plugin internals have thin coverage).",
+      "claims": [
+        {
+          "claim": "Server unit tests run with vitest config test/vitest.config.mjs: name 'server:unit', globals on, include 'src/**/*.spec.ts', swc transform, v8 coverage scoped to src/cores, src/services, src/utils, src/sql-tools.",
+          "sources": [
+            "server/test/vitest.config.mjs",
+            "server/package.json#L27-29"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "A separate medium tier (test/vitest.config.medium.mjs, 'pnpm test:medium') runs integration-style specs in server/test/medium/specs (exif, repositories, services, sync, workflow) with a globalSetup.ts, using testcontainers (devDependency) for real Postgres.",
+          "sources": [
+            "server/test/vitest.config.medium.mjs",
+            "server/test/medium/globalSetup.ts",
+            "server/package.json#L168"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Tests use a factory/stub pattern: server/test/factories/*.factory.ts (asset, auth, user, session, shared-link, person, etc.) plus server/test/fixtures/*.stub.ts and small.factory.ts/medium.factory.ts builders.",
+          "sources": [
+            "server/test/factories/asset.factory.ts",
+            "server/test/fixtures/auth.stub.ts",
+            "server/test/small.factory.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Most controllers and services have co-located .spec.ts files (e.g., asset-media.controller.spec.ts, auth.service.spec.ts, queue.service.spec.ts) — the dominant convention is one spec per source file.",
+          "sources": [
+            "server/src/controllers/asset-media.controller.spec.ts",
+            "server/src/services/auth.service.spec.ts",
+            "server/src/controllers/index.spec.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "e2e/ runs Vitest API specs (src/specs/{server,web,maintenance} covering api, cli, immich-admin) and three Playwright projects (web, ui, maintenance) driven by playwright.config.ts against a docker-compose stack (e2e/docker-compose.yml).",
+          "sources": [
+            "e2e/package.json",
+            "e2e/playwright.config.ts",
+            "e2e/docker-compose.yml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Web unit tests run via vitest inside vite.config.ts: name 'web:unit', happy-dom environment, svelteTesting plugin, setup file src/test-data/setup.ts, TZ=UTC.",
+          "sources": [
+            "web/vite.config.ts#L58-70",
+            "web/src/lib/utils.spec.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CI test.yml gates on a pre-job change filter and runs: server unit+lint (mise //server:ci-unit), server medium tests, web lint+unit, cli unit on linux+windows, e2e server-cli and e2e web matrices on ubuntu amd64+arm64 with docker compose up and artifacted docker logs/playwright reports.",
+          "sources": [
+            ".github/workflows/test.yml#L102-206",
+            ".github/workflows/test.yml#L360-578"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "check-openapi.yml enforces that the generated spec is in sync with the code and migration-order.yml verifies migration ordering — both are dedicated CI workflows.",
+          "sources": [
+            ".github/workflows/check-openapi.yml",
+            ".github/workflows/migration-order.yml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "machine-learning has pytest tests (test_main.py, conftest.py) and a locustfile.py for load testing the predict endpoint.",
+          "sources": [
+            "machine-learning/test_main.py",
+            "machine-learning/conftest.py",
+            "machine-learning/locustfile.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Mobile has a Flutter test/ tree and integration_test/ directory; mobile CI is exercised through build-mobile.yml rather than the main test workflow.",
+          "sources": [
+            "mobile/pubspec.yaml",
+            ".github/workflows/build-mobile.yml"
+          ],
+          "kind": "inference"
+        },
+        {
+          "claim": "Coverage config explicitly excludes api.service.ts and microservices.service.ts from instrumentation, and files like websocket.adapter.ts, plugin.service.ts, and several controllers have no co-located spec — thin spots in otherwise high coverage.",
+          "sources": [
+            "server/test/vitest.config.mjs#L17-26",
+            "server/src/services/plugin.service.ts",
+            "server/src/middleware/websocket.adapter.ts"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "risk_map": {
+      "summary": "Security-sensitive surface concentrates on file upload/disk IO, auth token handling, subprocess media tooling, and the WASM plugin host. The multer storage engine writes user-supplied bytes to predictable uuid paths, ffmpeg/exiftool process untrusted media, and extism plugins run third-party WASM gated by env vars. Operational risks include a 24h request timeout, trust-proxy assumptions, startup-time migrations under an advisory lock, and a supervisor that kills the whole process on worker failure. Several safety rails exist (mandatory @Authenticated, duplicate-job startup validation, constant-time login compare) but are themselves fragile coupling points.",
+      "claims": [
+        {
+          "claim": "File upload writes untrusted bytes through a custom multer _handleFile to disk paths derived from StorageCore folders; filenames are sanitized via sanitize-filename and uuid-based, but the interceptor runs before controller validation, so malformed multipart payloads hit the FS layer early.",
+          "sources": [
+            "server/src/middleware/file-upload.interceptor.ts#L48-80",
+            "server/src/services/asset-media.service.ts#L91-115"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "express 'trust proxy' is set to ['loopback', ...network.trustedProxies] from IMMICH_TRUSTED_PROXIES; clientIp used in login logging/GetLoginDetails depends on this being correct — misconfiguration enables IP spoofing in audit logs and rate-sensitive paths.",
+          "sources": [
+            "server/src/app.common.ts#L49",
+            "server/src/middleware/auth.guard.ts#L68-79",
+            "server/src/dtos/env.dto.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "server.requestTimeout is set to 24 hours (24*60*60*1000) to support huge uploads/downloads; combined with 10mb JSON body limits this leaves long-lived socket exposure on the API port.",
+          "sources": [
+            "server/src/app.common.ts#L58-92"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Password auth uses bcrypt compare against LOGIN_DUMMY_HASH when the email is unknown (constant-time anti-enumeration) — the dummy hash constant lives in constants.ts and weakening/removing it would reopen user enumeration.",
+          "sources": [
+            "server/src/services/auth.service.ts#L66-74",
+            "server/src/constants.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Shared-link access is authorized via query parameters (key/slug) declared with ApiQuery in the @Authenticated decorator, meaning bearer-equivalent secrets can appear in URLs, access logs, and referrers.",
+          "sources": [
+            "server/src/middleware/auth.guard.ts#L49-54",
+            "server/src/services/shared-link.service.ts"
+          ],
+          "kind": "inference"
+        },
+        {
+          "claim": "Media processing shells out to ffmpeg/ffprobe (fluent-ffmpeg) and exiftool-vendored on user-uploaded files; media.repository.ts builds ffmpeg calls with niceness 10 — a large blast radius if argument handling or the bundled jellyfin-ffmpeg is compromised.",
+          "sources": [
+            "server/src/repositories/media.repository.ts#L2-44",
+            "server/src/repositories/media.repository.ts#L423-450",
+            "mise.toml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The plugin host instantiates extism WASM plugins pooled via generic-pool and calls plugin methods by name; external plugin installation is env-gated (IMMICH_ALLOW_EXTERNAL_PLUGINS) and mis-set values expand supply-chain surface.",
+          "sources": [
+            "server/src/repositories/plugin.repository.ts#L1-45",
+            "server/src/repositories/plugin.repository.ts#L208-261",
+            "server/src/dtos/env.dto.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Startup is stateful and lock-coupled: the supervisor busy-polls pg_try_advisory_lock(MaintenanceOperation), DatabaseService runs migrations under DatabaseLock.Migrations, and nightly jobs require DatabaseLock.NightlyJobs — stuck locks or split-brain DBs can wedge boot or scheduling.",
+          "sources": [
+            "server/src/main.ts#L66-92",
+            "server/src/services/database.service.ts#L67",
+            "server/src/services/queue.service.ts#L51"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Any non-zero worker exit kills the API child (SIGTERM) and exits the supervisor with that code — a crash in a background job can take down the whole API unless orchestrated restart policies compensate.",
+          "sources": [
+            "server/src/main.ts#L149-162"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Every route must declare @Authenticated() or AuthGuard throws at request time ('Route X does not declare @Authenticated()'); this is a strong default-deny but means a missing decorator yields runtime 500s rather than compile errors.",
+          "sources": [
+            "server/src/middleware/auth.guard.ts#L99-103",
+            "server/src/app.module.ts#L53"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Library watching uses chokidar over admin-configured filesystem paths and writes discovered files into the managed tree; a hostile or malformed library path expands file-IO reach beyond the media root.",
+          "sources": [
+            "server/src/services/library.service.ts#L41-85",
+            "server/package.json#L72"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Dev/test convenience defaults embed credentials: DB_URL defaults to postgres://postgres:postgres@localhost:5432/immich in migration scripts and sync-open-api.ts hardcodes the same DSN — fine for local dev but a footgun if reused.",
+          "sources": [
+            "server/package.json#L30-38",
+            "server/src/bin/sync-open-api.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Postgres's 65535 bind-parameter limit is worked around via the @Chunked decorator (DATABASE_PARAMETER_CHUNK_SIZE 65_500); repository methods handling ID sets rely on authors remembering to decorate — a missed site yields runtime driver errors on large batches.",
+          "sources": [
+            "server/src/decorators.ts#L28-108"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Mobile pins a git dependency (native_video_player) to a commit ref and consumes a generated openapi package — both are supply-chain and drift-sensitive integration points.",
+          "sources": [
+            "mobile/pubspec.yaml"
+          ],
+          "kind": "inference"
+        }
+      ]
+    },
+    "extension_points": {
+      "summary": "The codebase is organized around explicit registries: controllers/index.ts, services/index.ts, repositories/index.ts, commands/index.ts, plus decorator-driven registration (@OnJob, @OnEvent, @Endpoint, @Authenticated). Adding an endpoint means a controller method + zod DTO + index registration; adding a job means enum entries + @OnJob handler (enforced at startup). A WASM plugin system via @immich/plugin-sdk and workflows provide runtime extensibility, and the OpenAPI→SDK codegen pipeline propagates API changes to all clients.",
+      "claims": [
+        {
+          "claim": "New HTTP endpoints plug in via a controller class added to the controllers array in controllers/index.ts; the ApiModule mounts every entry under the global /api prefix.",
+          "sources": [
+            "server/src/controllers/index.ts",
+            "server/src/app.module.ts#L105-110"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New background jobs require: a JobName enum member, a QueueName choice, and a method decorated @OnJob({name, queue}) on a service — jobRepository.setup validates complete coverage at boot and throws ImmichStartupError for missing or duplicate handlers.",
+          "sources": [
+            "server/src/repositories/job.repository.ts#L40-88",
+            "server/src/decorators.ts#L153-157",
+            "server/src/enum.ts#L850-909"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New domain events plug in via the typed EventMap in event.repository.ts plus @OnEvent({name, priority, server, workers}) on service methods; BootstrapEventPriority documents ordering constraints for bootstrap handlers.",
+          "sources": [
+            "server/src/repositories/event.repository.ts#L24-108",
+            "server/src/decorators.ts#L142-151",
+            "server/src/enum.ts#L801-813"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New services extend BaseService (which injects all ~55 repositories) and must be added to services/index.ts so queueService.setServices and eventRepository.setup can discover their decorated methods.",
+          "sources": [
+            "server/src/services/base.service.ts#L68-198",
+            "server/src/services/index.ts",
+            "server/src/app.module.ts#L85-95"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New repositories are classes added to repositories/index.ts and BASE_SERVICE_DEPENDENCIES so every service receives them positionally through BaseService's constructor.",
+          "sources": [
+            "server/src/repositories/index.ts",
+            "server/src/services/base.service.ts#L68-124"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "WASM plugins are a first-class extension point: authors build against @immich/plugin-sdk (host-functions.ts, sdk.ts), plugins install under IMMICH_PLUGINS_INSTALL_FOLDER, are pooled/executed by PluginRepository via extism, and their methods/templates surface through plugin.controller and workflow compatibility checks.",
+          "sources": [
+            "packages/plugin-sdk/src/sdk.ts",
+            "server/src/repositories/plugin.repository.ts#L208-261",
+            "server/src/services/plugin.service.ts",
+            "server/src/dtos/env.dto.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Admin CLI commands plug in via nest-commander Command classes registered in commands/index.ts (commandsAndQuestions) and run under ImmichAdminModule when invoked as 'immich-admin'.",
+          "sources": [
+            "server/src/commands/index.ts",
+            "server/src/main.ts#L171-180",
+            "server/src/app.module.ts#L153-163"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "API versioning/documentation is decorator-driven: @Endpoint({summary, history: new HistoryBuilder().added('vX').beta('vY')}) emits custom swagger extensions (x-immich-history/state) that feed the generated spec — deprecations flow automatically via ApiTag.Deprecated.",
+          "sources": [
+            "server/src/decorators.ts#L159-270",
+            "server/src/controllers/asset-media.controller.ts#L71-75"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Request/response validation is nestjs-zod: DTOs are zod schemas (e.g., EnvSchema, QueueNameSchema) validated globally by ZodValidationPipe and serialized by ZodSerializerInterceptor registered as APP_PIPE/APP_INTERCEPTOR.",
+          "sources": [
+            "server/src/app.module.ts#L45-53",
+            "server/src/dtos/env.dto.ts",
+            "server/src/enum.ts#L837"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "DB schema changes plug in through sql-tools: table classes in server/src/schema/tables with Column/trigger decorators (PrimaryGeneratedUuidV7Column, UpdatedAtTrigger), functions in schema/functions.ts, then 'pnpm migrations:generate' diffs into schema/migrations with an ORDER file.",
+          "sources": [
+            "server/src/decorators.ts#L10-26",
+            "server/package.json#L30-38",
+            "server/src/schema/migrations",
+            "docs/docs/developer/database-migrations.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Client surface extends via codegen: edit DTOs/controllers → run sync-open-api.ts to refresh immich-openapi-specs.json → mise task open-api-typescript regenerates packages/sdk fetch-client used by web/cli/e2e; mobile consumes a generated dart openapi package.",
+          "sources": [
+            "server/src/bin/sync-open-api.ts",
+            "mise.toml",
+            "open-api/immich-openapi-specs.json",
+            "mobile/pubspec.yaml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Web features plug in as SvelteKit routes under web/src/routes/(user)/... with shared components/stores/managers in web/src/lib, all typed against @immich/sdk.",
+          "sources": [
+            "web/src/routes/(user)/photos",
+            "web/src/lib/index.ts",
+            "web/package.json"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Bull queues self-register: ConfigRepository builds RegisterQueueOptions for every QueueName value (bull.queues) so adding a QueueName enum member automatically creates the queue without extra wiring.",
+          "sources": [
+            "server/src/repositories/config.repository.ts#L52-55",
+            "server/src/app.module.ts#L64",
+            "server/src/enum.ts#L815-835"
+          ],
+          "kind": "inference"
+        }
+      ]
+    },
+    "agent_handoff": {
+      "summary": "This is a large, convention-heavy monorepo — change one layer and the generated artifacts (OpenAPI spec, SDK, migrations, mobile client) must be regenerated and kept in sync or CI fails. Server code follows strict layering (controller → service → repository → Kysely) with decorator-driven registration that will fail loudly at startup if misconfigured. Tests are fast to run per-package but e2e/medium tiers need Docker. Read the bootstrap and decorator machinery before editing anything structural.",
+      "claims": [
+        {
+          "claim": "Read first (server): server/src/main.ts (supervisor), server/src/app.module.ts (module wiring), server/src/enum.ts (all JobName/QueueName/ImmichWorker/Permission values), server/src/decorators.ts (@OnJob/@OnEvent/@Endpoint/@Chunked), server/src/services/base.service.ts (repository injection convention).",
+          "sources": [
+            "server/src/main.ts",
+            "server/src/app.module.ts",
+            "server/src/enum.ts",
+            "server/src/decorators.ts",
+            "server/src/services/base.service.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Convention: controllers stay thin — they take @Auth() AuthDto + DTOs and delegate to a service; every handler must declare @Authenticated() (defaults to authenticated; use {public:true} or {sharedLink:true} variants) or the guard throws.",
+          "sources": [
+            "server/src/controllers/asset-media.controller.ts#L43-90",
+            "server/src/middleware/auth.guard.ts#L99-123"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Convention: authorization inside services goes through this.requireAccess({auth, permission, ids}) / checkAccess backed by access.repository.ts — don't hand-roll ownership checks.",
+          "sources": [
+            "server/src/services/base.service.ts#L284-290",
+            "server/src/utils/access.ts",
+            "server/src/services/asset-media.service.ts#L133-138"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Adding a job is a startup-validated contract: new JobName without an @OnJob handler (or a duplicate handler) aborts boot with ImmichStartupError — always add enum + decorated method + ensure the service is in services/index.ts.",
+          "sources": [
+            "server/src/repositories/job.repository.ts#L56-87",
+            "server/src/services/index.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "API changes must be followed by regeneration: sync-open-api.ts writes the spec, 'mise run open-api-typescript' rebuilds packages/sdk, and the check-openapi CI workflow fails if the committed spec drifts.",
+          "sources": [
+            "server/src/bin/sync-open-api.ts",
+            "mise.toml",
+            ".github/workflows/check-openapi.yml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Schema changes: edit table classes under server/src/schema/tables, then 'pnpm migrations:generate' (sql-tools against DB_URL); ordering is enforced by schema/migrations/ORDER and the migration-order.yml workflow — see docs/docs/developer/database-migrations.md.",
+          "sources": [
+            "server/package.json#L30-38",
+            "server/src/schema/migrations",
+            ".github/workflows/migration-order.yml",
+            "docs/docs/developer/database-migrations.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Test commands: server unit 'pnpm test' (vitest, no DB needed), 'pnpm test:medium' (needs Docker for testcontainers), e2e 'pnpm test'/'test:web' in e2e/ (needs docker compose up), web 'pnpm test'. Lint gates are strict: eslint --max-warnings 0 plus prettier checks.",
+          "sources": [
+            "server/package.json#L14-29",
+            "e2e/package.json",
+            "web/package.json"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Known trap: services get repositories positionally through BaseService — adding a repository means updating repositories/index.ts AND the BASE_SERVICE_DEPENDENCIES tuple AND the constructor AND BaseService.create in the same order, or DI silently misaligns.",
+          "sources": [
+            "server/src/services/base.service.ts#L68-262"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Known trap: file paths on disk must go through StorageCore/StorageRepository helpers (StorageFolder layout, media location from IMMICH_MEDIA_LOCATION) — never construct storage paths ad hoc, and DB-stored paths are updated via MoveRepository.",
+          "sources": [
+            "server/src/cores/storage.core.ts",
+            "server/src/repositories/move.repository.ts",
+            "server/src/services/storage.service.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Known trap: long-running requests are normal (24h requestTimeout, streaming uploads/downloads via sendFile/ImmichFileResponse) — avoid buffering whole files in memory and prefer the ImmichFileResponse pattern for binary responses.",
+          "sources": [
+            "server/src/app.common.ts#L92",
+            "server/src/utils/file.ts",
+            "server/src/services/asset-media.service.ts#L229-249"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Environment config is centralized: add new env vars to EnvSchema in dtos/env.dto.ts and surface them via ConfigRepository.getEnv(); never read process.env inside services.",
+          "sources": [
+            "server/src/dtos/env.dto.ts",
+            "server/src/repositories/config.repository.ts#L28-120"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Toolchain is pinned by mise (node 24.21.0, pnpm 11.24.0, java 21 for openapi-generator, extism/binaryen for plugins, jellyfin-ffmpeg for transcoding tests) — use 'mise run //server:ci-unit' style tasks to match CI rather than raw pnpm where possible.",
+          "sources": [
+            "mise.toml",
+            ".github/workflows/test.yml#L123-130"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_prompt": "You are working in the Immich monorepo (pnpm + mise, v3.2.0), a self-hosted photo/video backup platform. Architecture: a NestJS 12/TypeScript server in server/ exposes a REST API (Express 5, global /api prefix) and runs BullMQ background workers; a SvelteKit app in web/ and a Flutter app in mobile/ are the clients; a Python FastAPI ONNX inference service lives in machine-learning/. Standard deploy is docker-compose: immich-server:2283, immich-machine-learning, valkey (Redis), Postgres 14 with VectorChord/pgvector.\n\nServer boot model: server/src/main.ts is a supervisor that forks an 'api' child process and spawns 'microservices'/'maintenance' worker_threads (ImmichWorker enum). Each worker boots a Nest module from src/app.module.ts. Module init emits a typed 'AppBootstrap' event; handlers ordered by BootstrapEventPriority run DB migrations (under advisory lock), storage setup, then job-handler discovery.\n\nConventions you must follow:\n- Controllers (src/controllers/, registered in controllers/index.ts) are thin: @Authenticated() is REQUIRED on every route (options: public, admin, sharedLink, permission: Permission.X). Use @Endpoint({summary, history: new HistoryBuilder()...}) for docs. DTOs are zod schemas (nestjs-zod validates globally).\n- Services (src/services/, in services/index.ts) extend BaseService, which injects ~55 repositories POSITIONALLY — if you add a repository, update repositories/index.ts, BASE_SERVICE_DEPENDENCIES, the constructor, and BaseService.create in identical order. Authz inside services: this.requireAccess({auth, permission, ids}).\n- Background jobs: add JobName + pick QueueName (enum.ts) + a method with @OnJob({name, queue}). Startup fails if a JobName has no handler. Queue via this.jobRepository.queue/queueAll.\n- Events: extend EventMap in repositories/event.repository.ts, subscribe with @OnEvent({name, priority, server, workers}).\n- Files on disk: only via StorageCore/StorageRepository paths (StorageFolder.* under IMMICH_MEDIA_LOCATION); DB path updates via MoveRepository.\n- Env vars: add to EnvSchema in dtos/env.dto.ts; read via ConfigRepository.getEnv(). Never touch process.env in services.\n- Large ID lists in queries need @Chunked (65535 bind-param limit).\n\nAfter API changes regenerate contracts: run server/src/bin/sync-open-api.ts (or the repo task) to refresh open-api/immich-openapi-specs.json, then 'mise run open-api-typescript' to rebuild packages/sdk (web, cli, e2e consume it; mobile uses a generated dart openapi package). check-openapi.yml fails on drift.\n\nDB changes: edit src/schema/tables (+ functions.ts), then 'pnpm migrations:generate' in server/ (needs a Postgres at DB_URL); ORDER file and migration-order.yml enforce sequence.\n\nTesting: server unit 'pnpm test' in server/ (vitest, src/**/*.spec.ts, no DB); 'pnpm test:medium' needs Docker (testcontainers). e2e/ has vitest API specs and Playwright projects requiring docker compose up. Web: 'pnpm test' (happy-dom). Lint is strict: eslint --max-warnings 0 + prettier. Use mise tasks (mise.toml pins node 24.21.0, pnpm 11.24.0) to match CI.\n\nTraps: worker non-zero exit kills the API process; requestTimeout is 24h (stream, don't buffer); shared-link secrets travel in query params; login compare must stay constant-time (LOGIN_DUMMY_HASH); plugin loading is env-gated (IMMICH_ALLOW_EXTERNAL_PLUGINS); mobile pubspec pins git deps."
+  },
+  "analysis": {
+    "agent": "devin",
+    "model": "swe-2",
+    "runtime_ms": null,
+    "cost_usd": null,
+    "collected_at": "2026-09-22T16:03:31.620Z"
   }
 }

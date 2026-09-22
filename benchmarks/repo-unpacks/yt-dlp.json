@@ -4856,7 +4856,7 @@
         "steps": [
           {
             "id": "serialize",
-            "label": "JSON serialize (inventory \u2192 SQLite)",
+            "label": "JSON serialize (inventory → SQLite)",
             "ms": 0,
             "pct": 0
           },
@@ -4875,5 +4875,842 @@
         ]
       }
     ]
+  },
+  "report": {
+    "overview": "yt-dlp is a Python 3.10+ command-line audio/video downloader (also usable as the `yt_dlp` library) that routes URLs through a registry of ~1750 site-specific InfoExtractor classes to produce metadata 'info dicts', then dispatches downloads to protocol-specific FileDownloaders and runs ffmpeg-based post-processors. It is a youtube-dl fork distinguished by zero required dependencies, a plugin system, pluggable network request handlers (urllib/requests/curl_cffi/websockets) with browser impersonation, and a built-in self-updater that pulls verified binaries from GitHub releases.",
+    "system_map": {
+      "summary": "yt-dlp is a single-process Python CLI/package. Execution enters through `yt_dlp.main()` (console script or `python -m yt_dlp`), parses optparse options plus config files into a `ydl_opts` params dict, then constructs one `YoutubeDL` orchestrator that owns the extractor table, post-processor lists, cookiejar, cache, and the RequestDirector. The codebase is layered: `extractor/` produces info dicts, `networking/` abstracts HTTP/WebSocket transports, `downloader/` writes bytes to disk per protocol, and `postprocessor/` runs ffmpeg and other mutations. Shared mutable state lives in `globals.py` `Indirect` cells, which is also how plugins merge into the core registries. Build artifacts (zipapp, PyInstaller binaries, lazy_extractors.py) are produced by the Makefile and bundle/devscripts.",
+      "claims": [
+        {
+          "claim": "CLI entrypoint chain: the `yt-dlp` console script maps to `yt_dlp:main`; `python -m yt_dlp` runs `__main__.py` which calls `yt_dlp.main()`; `main()` sets `IN_CLI` and calls `_real_main()`.",
+          "sources": [
+            "pyproject.toml#L143-144",
+            "yt_dlp/__main__.py",
+            "yt_dlp/__init__.py#L1077-1080"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`_real_main()` orchestrates the whole run: `setproctitle`, `parse_options`, plugin loading via `plugin_dirs`/`_load_all_plugins`, `Updater` self-update, then `ydl.download(all_urls)` or `download_with_info_file`, returning `_download_retcode`.",
+          "sources": [
+            "yt_dlp/__init__.py#L964-1074"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`YoutubeDL` (4554-line god object) is the central runtime boundary: its `params` dict is the configuration, and it owns `_ies` extractor instances, `_pps` post-processor lists keyed by POSTPROCESS_WHEN, the cookiejar, `Cache`, and the request director.",
+          "sources": [
+            "yt_dlp/YoutubeDL.py#L204",
+            "yt_dlp/YoutubeDL.py#L634-660",
+            "yt_dlp/utils/_utils.py#L2863"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The extractor registry is `yt_dlp/extractor/_extractors.py` importing ~1752 IE classes; `extractor/extractors.py` prefers a generated `lazy_extractors.py` (`_CLASS_LOOKUP`) and otherwise eagerly builds the lookup, ordering YouTube extractors first for match performance and `GenericIE` last as the catch-all.",
+          "sources": [
+            "yt_dlp/extractor/_extractors.py",
+            "yt_dlp/extractor/extractors.py#L7-31",
+            "devscripts/make_lazy_extractors.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "All HTTP/WebSocket traffic goes through `RequestDirector.send()`, which preference-sorts registered `RequestHandler` subclasses in the module-level `_REQUEST_HANDLERS` dict (Urllib always; Requests, Websockets, CurlCffi imported defensively).",
+          "sources": [
+            "yt_dlp/networking/common.py#L51-140",
+            "yt_dlp/networking/__init__.py#L19-38"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Downloads are dispatched by protocol: `get_suitable_downloader`/`_get_suitable_downloader` consult `PROTOCOL_MAP` (HlsFD, DashSegmentsFD, F4mFD, RtmpFD, HttpFD, YoutubeLiveChatFD, etc.) and can delegate to external tools (aria2c, wget, curl, axel, httpie, ffmpeg) via `ExternalFD` subclasses.",
+          "sources": [
+            "yt_dlp/downloader/__init__.py#L4-58",
+            "yt_dlp/downloader/external.py#L37-38"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Post-processors register into the `postprocessors` Indirect dict (all classes ending in 'PP'); FFmpeg work is executed by `real_run_ffmpeg` building an argv and calling `Popen.run`.",
+          "sources": [
+            "yt_dlp/postprocessor/__init__.py#L55-67",
+            "yt_dlp/postprocessor/ffmpeg.py#L326-364"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Cross-module shared state is held in `Indirect` cells in `globals.py`: `extractors`, `postprocessors`, `plugin_dirs` (default `['default']`), `plugin_ies`, `plugin_pps`, `supported_js_runtimes`, `supported_remote_components`, `IN_CLI`, `LAZY_EXTRACTORS`.",
+          "sources": [
+            "yt_dlp/globals.py#L10-41"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The package has zero hard dependencies (`dependencies = []`); extras `default`, `curl-cffi`, `secretstorage`, `deno` add requests/urllib3/websockets/brotli/mutagen/pycryptodomex/certifi/yt-dlp-ejs, with exact-pinned `pin-*` groups for reproducible builds.",
+          "sources": [
+            "pyproject.toml#L46-101"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "On-disk state: `Cache` writes JSON envelopes (`yt-dlp_version` + data) under `cachedir` (default `$XDG_CACHE_HOME` or `~/.cache/yt-dlp`) keyed by section/key; the download archive is a text file of `extractor_key video_id` lines appended under `locked_file`.",
+          "sources": [
+            "yt_dlp/cache.py#L17-46",
+            "yt_dlp/YoutubeDL.py#L3855-3894"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Self-update subsystem `Updater` targets three GitHub repos (stable/nightly/master), downloads the `_update_spec` and `SHA2-256SUMS` release assets, sha256-verifies the new binary, swaps `.new`/`.old` files, and re-executes via `Popen` in `restart()`.",
+          "sources": [
+            "yt_dlp/update.py#L38-53",
+            "yt_dlp/update.py#L368-500",
+            "yt_dlp/update.py#L502-610"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Python >=3.10 is enforced twice: `requires-python` in pyproject and an `ImportError` raised at import time in `yt_dlp/__init__.py`.",
+          "sources": [
+            "pyproject.toml#L18",
+            "yt_dlp/__init__.py#L3-5"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Distribution shapes: hatchling wheel/sdist, a zipapp `yt-dlp` (shebang prepended to yt-dlp.zip) built by the Makefile, and PyInstaller bundles wired through the `pyinstaller40` hook-dirs entry point and `bundle/pyinstaller.py`.",
+          "sources": [
+            "Makefile#L106-130",
+            "pyproject.toml#L146-147",
+            "bundle/pyinstaller.py"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "feature_catalog": {
+      "summary": "The feature surface is one large optparse CLI plus the `YoutubeDL` Python API. Options are organized into ~15 groups (General, Network, Geo, Selection, Download, Filesystem, Thumbnail, Verbosity, Workarounds, Video Format, Subtitles, Authentication, Post-Processing, SponsorBlock, Extractor). Major features: per-site extraction with playlist/search support, format selection DSL, output templates, download archive dedup, browser-cookie and netrc authentication, TLS/browser impersonation, ffmpeg post-processing incl. SponsorBlock, external downloaders, plugins, JS runtimes/remote components for YouTube challenge solving, self-update, and extensive listing/simulation/JSON dump modes.",
+      "claims": [
+        {
+          "claim": "The CLI is defined in `create_parser()` using optparse OptionGroups: General, Network, Geo-restriction, Video Selection, Download, Filesystem, Thumbnail, Internet Shortcut, Verbosity/Simulation, Workarounds, Video Format, Subtitle, Authentication, Post-Processing, SponsorBlock, Extractor Options.",
+          "sources": [
+            "yt_dlp/options.py#L247",
+            "yt_dlp/options.py#L355-1999"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Config files are auto-loaded: `parseOpts` searches user/system config dirs for `yt-dlp.conf`, `config`, `config.txt` and supports `--ignore-config`; URLs come from argv, `-a/--batch-file` (including '-' for stdin).",
+          "sources": [
+            "yt_dlp/options.py#L43-80",
+            "yt_dlp/__init__.py#L83-100"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Format selection uses a DSL parsed by `build_format_selector` (e.g. 'b/bv', the test default) combined with `FormatSorter` sorting in `sort_formats`.",
+          "sources": [
+            "yt_dlp/YoutubeDL.py#L2341",
+            "yt_dlp/YoutubeDL.py#L2830-2835",
+            "test/parameters.json"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Output naming is a template engine (`outtmpl`) supporting `%(field)s` expansion, defaults per type, sanitization, and literal `%%` — implemented in `parse_outtmpl`/`prepare_outtmpl`/`evaluate_outtmpl`.",
+          "sources": [
+            "yt_dlp/YoutubeDL.py#L1200-1261",
+            "yt_dlp/YoutubeDL.py#L1267-1520"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`--download-archive` deduplicates across runs: `_make_archive_id` builds `extractor_key video_id`, `in_download_archive` checks the in-memory set (plus `_old_archive_ids`), `record_download_archive` appends under `locked_file`.",
+          "sources": [
+            "yt_dlp/YoutubeDL.py#L3855-3894"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Authentication features: `--cookies-from-browser` supports brave/chrome/chromium/edge/opera/vivaldi/whale/firefox/safari with OS keyring decryption, `--cookies` Netscape files, and per-extractor username/password or netrc via `_NETRC_MACHINE`/`_perform_login`.",
+          "sources": [
+            "yt_dlp/cookies.py#L49-50",
+            "yt_dlp/extractor/common.py#L589-667"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Browser impersonation (`--impersonate`, `--list-impersonate-targets`) maps targets like chrome/safari/firefox/edge/tor to the curl_cffi request handler, with a rendered availability table in `_real_main`.",
+          "sources": [
+            "yt_dlp/__init__.py#L997-1032",
+            "yt_dlp/networking/impersonate.py",
+            "yt_dlp/YoutubeDL.py#L4240-4280"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Post-processing features include FFmpeg merge/extract-audio/remux/embed-subs/thumbnail & subtitle conversion/fixups/chapter splitting, SponsorBlock removal, metadata parsing, MoveFilesAfterDownload, and xattr writing.",
+          "sources": [
+            "yt_dlp/postprocessor/__init__.py#L4-34",
+            "yt_dlp/options.py#L1614-1902"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`--exec [WHEN:]CMD` runs user shell commands after chosen stages via `ExecPP`, which validates template expansion safety unless the `allow-unsafe-exec-expansion` compat opt is set.",
+          "sources": [
+            "yt_dlp/postprocessor/exec.py#L12-40",
+            "yt_dlp/options.py#L1768-1783"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Self-update `-U/--update` supports channels stable/nightly/master (`UPDATE_SOURCES`) and `--update-to CHANNEL@TAG` for pinning.",
+          "sources": [
+            "yt_dlp/update.py#L38-44",
+            "yt_dlp/options.py#L378"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Listing/simulation outputs: `--list-extractors`, `--list-extractor-descriptions`, `-F/--list-formats` (render_formats_table), list-thumbnails/subtitles, `--simulate`, `--dump-json`/`--dump-single-json` via `sanitize_info`, and forced `--print`/`--print-to-file` machinery.",
+          "sources": [
+            "yt_dlp/__init__.py#L103-132",
+            "yt_dlp/YoutubeDL.py#L3217-3286",
+            "yt_dlp/YoutubeDL.py#L3982-4088"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Geo-restriction bypass fakes `X-Forwarded-For` with a random IP from a country or CIDR block (`--geo-bypass-country`, `--geo-bypass-ip-block`), initialized per-extractor and retried once on GeoRestrictedError.",
+          "sources": [
+            "yt_dlp/extractor/common.py#L673-755",
+            "yt_dlp/extractor/common.py#L790-803"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Plugin loading (`--plugin-dirs`, `--no-plugin-dirs`) imports `yt_dlp_plugins` namespace packages from config dirs, `yt-dlp-plugins` dirs, and PYTHONPATH — including inside zip/egg/whl archives.",
+          "sources": [
+            "yt_dlp/options.py#L443-458",
+            "yt_dlp/plugins.py#L81-159"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "YouTube anti-bot support uses external JS runtimes (`--js-runtimes` deno/node/bun/quickjs registered in `supported_js_runtimes`) and downloadable remote components (`--remote-components ejs:github`/`ejs:npm`, plus the bundled `yt_dlp_ejs` wheel in 'extra' builds).",
+          "sources": [
+            "yt_dlp/__init__.py#L1098-1106",
+            "yt_dlp/utils/_jsruntime.py#L89-153",
+            "Makefile#L200-236"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "data_flow": {
+      "summary": "Data flows: CLI args + config files -> `ydl_opts` params dict -> URL list -> extractor selection by `_VALID_URL` regex -> `ie.extract()` performs HTTP via the shared RequestDirector and returns an info dict -> `process_ie_result` normalizes and recursively resolves playlists/URL results -> format selection computes `requested_formats` -> `process_info` writes sidecars and calls `dl()` -> a protocol FileDownloader streams bytes to `.part`/final files -> post-processors mutate files -> archive/cache/sidecar JSON are the persistence outputs. The info dict is the single mutable data structure threaded through the whole pipeline.",
+      "claims": [
+        {
+          "claim": "Input boundary: `get_urls` merges argv URLs with batch-file/stdin lines; `parse_options` then produces the flat `ydl_opts` params dict consumed by `YoutubeDL`.",
+          "sources": [
+            "yt_dlp/__init__.py#L83-100",
+            "yt_dlp/__init__.py#L742-961"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Extractor dispatch: `YoutubeDL.extract_info` iterates `self._ies` and picks the first extractor whose `suitable(url)` — a `_match_valid_url` regex match on `_VALID_URL` — returns true; no match yields 'No suitable extractor'.",
+          "sources": [
+            "yt_dlp/YoutubeDL.py#L1699-1723",
+            "yt_dlp/extractor/common.py#L615-631"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`InfoExtractor.extract` runs `initialize()` (pre-login, `_perform_login`, geo-bypass setup, `_real_initialize`) then `_real_extract(url)`, and can retry once with a fake IP on GeoRestrictedError; errors are normalized into `ExtractorError`.",
+          "sources": [
+            "yt_dlp/extractor/common.py#L653-671",
+            "yt_dlp/extractor/common.py#L756-788"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "All extractor HTTP flows through `self._downloader.urlopen` -> `_request_director.send`, which applies basic-auth extraction, `sanitize_url`, proxy/header cleanup, then per-handler `validate`/`send` in preference order.",
+          "sources": [
+            "yt_dlp/extractor/common.py#L864-924",
+            "yt_dlp/YoutubeDL.py#L4281-4343",
+            "yt_dlp/networking/common.py#L94-140"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "After extraction, `add_default_extra_info` stamps `webpage_url`, `original_url`, `extractor`, `extractor_key` onto the info dict; `process_ie_result` then dispatches on `_type` (video/playlist/url/compat_list) and `__process_playlist`/`__process_iterable_entry` recurse into entries via `extract_info`.",
+          "sources": [
+            "yt_dlp/YoutubeDL.py#L1890-1908",
+            "yt_dlp/YoutubeDL.py#L2080",
+            "yt_dlp/YoutubeDL.py#L2199"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Format selection: `build_format_selector` parses the `-f` spec into selector functions applied in `process_video_result`, producing `requested_formats` (split A/V) or a single format on the info dict.",
+          "sources": [
+            "yt_dlp/YoutubeDL.py#L2341",
+            "yt_dlp/YoutubeDL.py#L2835"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`process_info` computes filenames via `prepare_filename`, writes description/subtitles/thumbnails sidecars, then calls `self.dl(temp_filename, info_dict)`; multi-format downloads iterate `requested_formats` into separate files later merged.",
+          "sources": [
+            "yt_dlp/YoutubeDL.py#L3334-3395",
+            "yt_dlp/YoutubeDL.py#L3519-3586"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`dl()` picks a FileDownloader via `get_suitable_downloader`, attaches progress hooks, and calls `fd.download(name, new_info)`; `FileDownloader.download` handles skip-if-present, sleep intervals, then `real_download` writes to `filename + '.part'` with resume metadata in `filename + '.ytdl'`.",
+          "sources": [
+            "yt_dlp/YoutubeDL.py#L3286-3321",
+            "yt_dlp/downloader/common.py#L217-230",
+            "yt_dlp/downloader/common.py#L430-486"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Post-processing is staged: `run_all_pps` iterates `self._pps[key]` for each `POSTPROCESS_WHEN` stage ('pre_process','after_filter','video','before_dl','post_process','after_move','after_video','playlist'), each `pp.run(infodict)` returning files to delete/move.",
+          "sources": [
+            "yt_dlp/YoutubeDL.py#L3805-3853",
+            "yt_dlp/utils/_utils.py#L2863"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Output boundaries: media files plus optional sidecars (`.info.json` via `_write_info_json`, `.description`, subtitle files, thumbnails), the download archive line append, and stdout JSON from `sanitize_info` (strips `__private` keys and non-serializable objects to repr).",
+          "sources": [
+            "yt_dlp/YoutubeDL.py#L3740-3774",
+            "yt_dlp/YoutubeDL.py#L4400-4423",
+            "yt_dlp/YoutubeDL.py#L3883-3894"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Cookies enter via `load_cookies` (browser extraction or Netscape file) into a `YoutubeDLCookieJar`, are attached to every request handler in `build_request_director`, and persisted on `YoutubeDL.__exit__`/`save_cookies`.",
+          "sources": [
+            "yt_dlp/cookies.py#L93-100",
+            "yt_dlp/YoutubeDL.py#L4345-4378",
+            "yt_dlp/YoutubeDL.py#L1053-1062"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Error flow: `_handle_extraction_exceptions` wraps extraction — `ReExtractInfo` loops, `GeoRestrictedError` reports with VPN hint, `ExtractorError` reports with optional traceback, `ignoreerrors` downgrades to report-only; the CLI exit code is `ydl._download_retcode` (e.g. 101 for DownloadCancelled).",
+          "sources": [
+            "yt_dlp/YoutubeDL.py#L1725-1755",
+            "yt_dlp/__init__.py#L1064-1093"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "behavior_traces": {
+      "summary": "Three end-to-end flows were traced in code. Startup: `__main__` -> `main` -> `_real_main` (options, plugins, updater, YoutubeDL init). Primary action: `download` -> `extract_info` -> IE regex match -> `ie.extract` -> `process_ie_result` -> `process_video_result` -> `process_info` -> `dl` -> FileDownloader -> post_process -> archive write. Persistence/self-update: `Updater.query_update` fetches `_update_spec` + `SHA2-256SUMS`, verifies sha256, atomically swaps the executable, and `restart()` re-invokes the original argv.",
+      "claims": [
+        {
+          "claim": "Startup trace: `__main__.py` -> `yt_dlp.main()` sets `IN_CLI` -> `_real_main` calls `setproctitle('yt-dlp')` -> `parse_options` (optparse + config files) -> `print_extractor_information` handles `--list-*` -> `plugin_dirs`/`_load_all_plugins` -> `YoutubeDL(ydl_opts)` -> `Updater` if `-U` -> `ydl.download` or `download_with_info_file`.",
+          "sources": [
+            "yt_dlp/__main__.py#L14-17",
+            "yt_dlp/__init__.py#L964-1074"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "YoutubeDL construction order: `__init__` stores params, initializes `_ies`/`_pps`, loads plugins if not loaded (`all_plugins_loaded`), resolves color policy and `_out_files`, applies js_runtimes/remote_components/compat_opts/http_headers, then `print_debug_header` when auto_init.",
+          "sources": [
+            "yt_dlp/YoutubeDL.py#L634-751"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Per-URL trace: `download(url_list)` wraps `extract_info` in `__download_wrapper` (per-URL error containment, dump_single_json) -> `extract_info` scans `self._ies` for `ie.suitable(url)` -> `__extract_info` applies header cookies, calls `ie.extract(url)`, adds default extra info, calls `process_ie_result`.",
+          "sources": [
+            "yt_dlp/YoutubeDL.py#L3681-3715",
+            "yt_dlp/YoutubeDL.py#L1675-1719",
+            "yt_dlp/YoutubeDL.py#L1861-1888"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Inside `ie.extract`: `initialize()` -> `_initialize_pre_login` -> optional `_perform_login(username, password)` from `_get_login_info` -> `_real_initialize` -> `_real_extract(url)`; GeoRestrictedError triggers `__maybe_fake_ip_and_retry` once.",
+          "sources": [
+            "yt_dlp/extractor/common.py#L653-671",
+            "yt_dlp/extractor/common.py#L756-803"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Video persistence trace: `process_ie_result` (video) -> `process_video_result` -> `process_info` -> `pre_process` PPs -> `prepare_filename`/`_ensure_dir_exists` -> `_write_description`/`_write_subtitles`/`_write_thumbnails` -> `dl()` -> `fd.download` -> `real_download` -> `post_process` PPs -> `record_download_archive`.",
+          "sources": [
+            "yt_dlp/YoutubeDL.py#L1908",
+            "yt_dlp/YoutubeDL.py#L2835",
+            "yt_dlp/YoutubeDL.py#L3334-3395",
+            "yt_dlp/downloader/common.py#L430-486"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Playlist trace: `process_ie_result` sees `_type` playlist -> `__process_playlist` builds `PlaylistEntries` (lazy iteration) -> `__process_iterable_entry` per entry -> recursive `extract_info` on each entry URL with `extra_info` carrying playlist metadata.",
+          "sources": [
+            "yt_dlp/YoutubeDL.py#L2080",
+            "yt_dlp/YoutubeDL.py#L2199-2201"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "HTTP request trace: extractor calls `_request_webpage`/`_download_webpage` -> `_create_request` builds a `Request` -> `YoutubeDL.urlopen` sanitizes URL, injects basic auth, cleans proxies/headers -> `RequestDirector.send` -> handlers sorted by preference -> `handler.validate`/`handler.send` -> `Response` returned to extractor for parsing.",
+          "sources": [
+            "yt_dlp/extractor/common.py#L864-924",
+            "yt_dlp/YoutubeDL.py#L4281-4302",
+            "yt_dlp/networking/common.py#L94-120"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Self-update trace: `Updater.update` -> `query_update` -> `_download_update_spec`/`_process_update_spec` resolve tag -> `_download_asset('SHA2-256SUMS')` yields checksum -> `_download_asset(binary)` -> sha256 compare -> write `.new`, rename current to `.old`, rename `.new` -> `restart()` re-execs `self.cmd` via `Popen.run`.",
+          "sources": [
+            "yt_dlp/update.py#L368-500",
+            "yt_dlp/update.py#L502-610"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Cookie-load trace: `--cookies-from-browser`/`--cookies` -> `YoutubeDL` cookiejar property -> `load_cookies` -> `_parse_browser_specification` -> `extract_cookies_from_browser` decrypts the browser store (AES via `aes.py`, keyrings via secretstorage) -> jar shared with every RequestHandler; saved back on `__exit__` via `save_cookies`.",
+          "sources": [
+            "yt_dlp/cookies.py#L93-100",
+            "yt_dlp/cookies.py#L23-32",
+            "yt_dlp/YoutubeDL.py#L1053-1062"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Plugin-load trace: each subsystem calls `register_plugin_spec(PluginSpec(module_name, suffix, ...))` which inserts a `PluginFinder` on `sys.meta_path`; `_real_main` calls `_load_all_plugins` -> `load_plugins` iterates `yt_dlp_plugins.<module>` submodules -> classes ending in the suffix are merged (plugins first) into the subsystem's Indirect dict.",
+          "sources": [
+            "yt_dlp/plugins.py#L116-159",
+            "yt_dlp/plugins.py#L194-247",
+            "yt_dlp/extractor/__init__.py#L9-14",
+            "yt_dlp/__init__.py#L977-980"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Live-wait trace: for upcoming streams `_wait_for_video` computes a wait from `release_timestamp` (or randomized range), sleeps in a countdown loop, then raises `ReExtractInfo`, which `_handle_extraction_exceptions` catches to re-run the whole extraction.",
+          "sources": [
+            "yt_dlp/YoutubeDL.py#L1725-1794"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "testing_signals": {
+      "summary": "Tests live in `test/` (pytest + unittest hybrid). Two tiers: 'core' tests (utils, networking, jsinterp, postprocessors, options) run offline under `-m 'not download'`, and 'download' tests that hit live sites, generated dynamically from each extractor's `_TESTS`/`_WEBPAGE_TESTS`. CI runs core tests across CPython 3.10-3.15 and PyPy on Linux+Windows with reruns; lint is ruff + autopep8. Coverage is explicitly unimplemented. The extractor download tests depend on live third-party sites and are therefore inherently flaky and mostly excluded from core CI.",
+      "claims": [
+        {
+          "claim": "pytest is the test runner (`pytest~=9.0`, `pytest-rerunfailures`), configured with `-ra`, `--tb=short`, `strict_markers`, and a custom `download` marker.",
+          "sources": [
+            "pyproject.toml#L112-115",
+            "pyproject.toml#L473-483"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`test_download.py` dynamically generates `TestDownload` unittest methods from `gettestcases()`/`getwebpagetestcases()`, which iterate every extractor's `_TESTS`/`_WEBPAGE_TESTS`; tests download real URLs and verify info dicts plus md5 checksums.",
+          "sources": [
+            "test/test_download.py#L61-100",
+            "test/helper.py#L88-97"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`devscripts/run_tests.py` is the canonical entrypoint: `core` => `pytest -m 'not download'`, `download` => `-m download`, and bare names map to `test/test_download.py::TestDownload::test_<IE>`; it falls back to `python -m unittest` when pytest is absent.",
+          "sources": [
+            "devscripts/run_tests.py#L39-82"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Core CI (`core.yml`) runs on ubuntu+windows across py3.11-3.15 and pypy-3.11 (py3.10 on Windows + quick-test.yml on Linux), skipping `yt_dlp/extractor/**` changes except youtube/common/extractors, and adds `--flaky` only when networking files changed.",
+          "sources": [
+            ".github/workflows/core.yml#L1-105"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`test_all_urls.py` asserts URL->extractor matching precedence by calling `ie.suitable(url)` across all extractors, guarding against `_VALID_URL` regressions like youtu.be and playlist/tab disambiguation.",
+          "sources": [
+            "test/test_all_urls.py#L17-60"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Networking tests are parametrized per request handler via a `handler` pytest fixture that looks up classes in `_REQUEST_HANDLERS` and supports `skip_handler`/`skip_handler_if` markers for missing optional deps.",
+          "sources": [
+            "test/conftest.py#L1-40"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Test parameters come from `test/parameters.json` (`test: true`, `writeinfojson`, `format: 'b/bv'`) mergeable with a git-ignored `local_parameters.json` for secrets/overrides.",
+          "sources": [
+            "test/parameters.json",
+            "test/helper.py#L21-33"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Dedicated suites exist for the YouTube PO-token provider framework (`test_pot_framework.py`, director, builtin providers) and the JS-challenge/ejs integration (`test_ejs_integration.py`).",
+          "sources": [
+            "test/test_pot/test_pot_framework.py",
+            "test/test_jsc/test_ejs_integration.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`make test` = `pytest -Werror` then `make codetest` (ruff check + autopep8 --diff); `make offlinetest` runs `-m 'not download'` plus lint; hatch env `hatch-test` adds pytest-randomly and pytest-xdist.",
+          "sources": [
+            "Makefile#L79-88",
+            "pyproject.toml#L223-238"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Code coverage is not wired up: the hatch `run-cov` script is a stub that echoes 'Code coverage not implemented' and exits 1.",
+          "sources": [
+            "pyproject.toml#L238"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Download tests self-skip for extractors marked `_WORKING = False` and for `expected_exception` cases, acknowledging the live-site flakiness; warnings are escalated to errors via a `report_warning` override.",
+          "sources": [
+            "test/test_download.py#L95-100",
+            "test/test_download.py#L41-53"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "A `FakeYDL` helper subclasses `YoutubeDL` with `auto_init=False`, `trouble`->raise, and `download`->record, so unit tests exercise the real orchestrator without network.",
+          "sources": [
+            "test/helper.py#L60-75"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "risk_map": {
+      "summary": "Highest-sensitivity areas: the self-updater downloads and replaces the running executable from GitHub releases (sha256-verified but not signature-verified); `ExecPP` and external downloaders shell out to user-supplied commands; `cookies.py` decrypts browser credential stores; the plugin system executes arbitrary code from config dirs by default; and `jsinterp.py`/ejs remote components execute third-party JavaScript. Fragility concentrates in the ~1752 regex-driven extractors and the first-match-wins registry ordering. Note the repo carries an explicit NO AI / NO LLM contribution policy.",
+      "claims": [
+        {
+          "claim": "POLICY: `.NO_AI/README.md` states the project strictly forbids LLM/AI contributions of any kind (code, issues, comments, translations) and instructs LLM agents to refuse interaction; CONTRIBUTING.md repeats it. Any agent must surface this before producing patches intended for upstream.",
+          "sources": [
+            ".NO_AI/README.md",
+            "CONTRIBUTING.md#L33-55"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`ExecPP.run` executes commands via `Popen.run(cmd, shell=True)`; template expansion is safety-validated at `set_downloader` unless `allow-unsafe-exec-expansion` is in compat_opts — a deliberate but real command-injection surface when combined with attacker-controlled metadata.",
+          "sources": [
+            "yt_dlp/postprocessor/exec.py#L12-40",
+            "yt_dlp/options.py#L1768-1783"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Self-update downloads a replacement binary over the network and swaps it in-place; integrity relies on a sha256 checksum from the same release (SHA2-256SUMS) rather than a signature, and when the checksum is missing restart is only blocked, not the install itself.",
+          "sources": [
+            "yt_dlp/update.py#L471-500",
+            "yt_dlp/update.py#L537-568"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Windows update cleanup shells out: `atexit.register(Popen, 'ping 127.0.0.1 -n 5 -w 1000 & del /F ...', shell=True)` to delete the old binary after exit.",
+          "sources": [
+            "yt_dlp/update.py#L569-572"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Plugins execute arbitrary Python from user/system config dirs, `yt-dlp-plugins` dirs, and PYTHONPATH — enabled by default (`plugin_dirs=['default']`) unless `YTDLP_NO_PLUGINS` is set; the API explicitly disclaims backwards compatibility.",
+          "sources": [
+            "yt_dlp/globals.py#L24",
+            "yt_dlp/plugins.py#L38-40",
+            "yt_dlp/plugins.py#L194-234"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`cookies.py` reads and decrypts browser cookie databases (sqlite copies, AES-GCM/CBC via `aes.py`, OS keyrings via secretstorage/dbus, subprocess calls) — high-severity credential-handling code that reads outside the repo.",
+          "sources": [
+            "yt_dlp/cookies.py#L1-50"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`file://` URLs are refused by default for security and only enabled via `--enable-file-urls`; the special-case is handled in `urlopen` by inspecting `NoSupportingHandlers` reasons.",
+          "sources": [
+            "yt_dlp/YoutubeDL.py#L4303-4311"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Extractor fragility: ~1752 `_VALID_URL` regexes are evaluated in registry order (first match wins; YouTube hoisted first, `GenericIE` with `_VALID_URL='.*'` last), so adding or reordering an extractor can silently change which IE handles a URL.",
+          "sources": [
+            "yt_dlp/extractor/extractors.py#L17-31",
+            "yt_dlp/extractor/generic.py#L53-56",
+            "yt_dlp/extractor/common.py#L615-631"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Remote JS execution: `--remote-components ejs:github`/`ejs:npm` downloads solver code fetched at runtime, and `jsinterp.py` interprets remote JavaScript for signature deciphering — remote-code supply-chain surface gated behind explicit options.",
+          "sources": [
+            "yt_dlp/__init__.py#L1105-1106",
+            "yt_dlp/options.py#L481-500",
+            "yt_dlp/jsinterp.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "ffmpeg invocation builds argv programmatically and forces `file:`-prefixed filename arguments to defend against ffmpeg protocol tricks — the comment documents the attack class (filenames containing ':' or starting with '-').",
+          "sources": [
+            "yt_dlp/postprocessor/ffmpeg.py#L355-377"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Mutable global `Indirect` registries mean plugin classes are merged ahead of built-ins (`merge_dicts(regular_classes, destination)`), so a plugin can shadow a core extractor/postprocessor and behavior depends on load order.",
+          "sources": [
+            "yt_dlp/plugins.py#L229-234",
+            "yt_dlp/globals.py#L18-28"
+          ],
+          "kind": "inference"
+        },
+        {
+          "claim": "Core CI excludes `yt_dlp/extractor/**` changes (except youtube/common/extractors), and download tests hit live third-party sites — so most extractor regressions are only caught by the flaky download tier, not the core gate.",
+          "sources": [
+            ".github/workflows/core.yml#L5-28",
+            "test/test_download.py#L95-100"
+          ],
+          "kind": "inference"
+        }
+      ]
+    },
+    "extension_points": {
+      "summary": "yt-dlp is built around registries. New site support = a new `InfoExtractor` subclass ending in `IE` registered by importing it in `_extractors.py`. Post-processors are `PP`-suffixed classes in the `postprocessors` dict. Request handlers are `RH`-suffixed classes auto-registered in `_REQUEST_HANDLERS` with optional preference functions. Third parties plug in via `yt_dlp_plugins` namespace packages (extractor/postprocessor), the documented YouTube PO-token provider framework (PTP/PCP/PCSP suffixes), JS challenge providers (JCP), external downloader FDs, and JS runtime registrations. API hooks (progress/post/close/postprocessor) support library embedding.",
+      "claims": [
+        {
+          "claim": "InfoExtractor contract: subclass `InfoExtractor`, define `_VALID_URL` (regex or list; `False` for embed-only), implement `_real_extract(url)`; optional hooks `_initialize_pre_login`, `_perform_login` (gated on `_NETRC_MACHINE`), `_real_initialize`, `_GEO_COUNTRIES`/`_GEO_IP_BLOCKS`, `_TESTS`.",
+          "sources": [
+            "yt_dlp/extractor/common.py#L532-592",
+            "yt_dlp/extractor/common.py#L817-831"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Built-in extractor registration is manual: add an import to `yt_dlp/extractor/_extractors.py`; `extractors.py` then populates the global `extractors` Indirect dict where iteration order determines match precedence.",
+          "sources": [
+            "yt_dlp/extractor/_extractors.py",
+            "yt_dlp/extractor/extractors.py#L17-36",
+            "yt_dlp/extractor/__init__.py#L17-29"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Plugin extractors/post-processors: any `yt_dlp_plugins.extractor`/`yt_dlp_plugins.postprocessor` module exposing a public class ending in `IE`/`PP` is discovered via the `PluginFinder` meta-path finder and prepended into the core registries.",
+          "sources": [
+            "yt_dlp/plugins.py#L33-34",
+            "yt_dlp/plugins.py#L175-234",
+            "yt_dlp/extractor/__init__.py#L9-14",
+            "yt_dlp/postprocessor/__init__.py#L55-60"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New request handlers: subclass `RequestHandler` (name must end in 'RH'), implement `validate`/`_send`; module-level `_REQUEST_HANDLERS` registration asserts unique `RH_KEY`, and `@register_preference` adds per-request ordering functions.",
+          "sources": [
+            "yt_dlp/networking/common.py#L37-48",
+            "yt_dlp/networking/common.py#L133-140",
+            "yt_dlp/networking/common.py#L369-376"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "YouTube PO-token provider framework: `PoTokenProvider` (suffix 'PTP') with `@register_provider`/`@register_preference`, plus cache providers 'PCP'/'PCSP' — a documented plugin-facing API in `pot/README.md`.",
+          "sources": [
+            "yt_dlp/extractor/youtube/pot/provider.py#L109",
+            "yt_dlp/extractor/youtube/pot/cache.py#L28-57",
+            "yt_dlp/extractor/youtube/pot/README.md#L24-52"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "JS challenge providers: `JsChallengeProvider` (suffix 'JCP') under `extractor/youtube/jsc`, with a builtin quickjs provider — the extension point for pluggable signature/n challenge solvers.",
+          "sources": [
+            "yt_dlp/extractor/youtube/jsc/provider.py#L95",
+            "yt_dlp/extractor/youtube/jsc/_builtin/quickjs.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "External downloaders: `ExternalFD` subclasses (`CurlFD`, `AxelFD`, `WgetFD`, `Aria2cFD`, `HttpieFD`, `FFmpegFD`) declare `SUPPORTED_PROTOCOLS`/`SUPPORTED_FEATURES` and are selectable via `--downloader`; `list_external_downloaders` enumerates them for CLI help.",
+          "sources": [
+            "yt_dlp/downloader/external.py#L37-38",
+            "yt_dlp/downloader/external.py#L195-379",
+            "yt_dlp/downloader/external.py#L586"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New download protocols plug into `PROTOCOL_MAP` in `downloader/__init__.py`; `get_suitable_downloader` resolves protocol strings (including '+'-joined multi-format protocols) to FD classes.",
+          "sources": [
+            "yt_dlp/downloader/__init__.py#L4-58"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "JS runtimes are a named registry: `supported_js_runtimes` maps names to `JsRuntime` subclasses (deno/node/bun/quickjs registered in `__init__.py`), each probing executable versions with `MIN_SUPPORTED_VERSION`.",
+          "sources": [
+            "yt_dlp/globals.py#L36-41",
+            "yt_dlp/__init__.py#L1098-1103",
+            "yt_dlp/utils/_jsruntime.py#L89-153"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Embedding hooks for library use: `add_progress_hook`, `add_post_hook`, `add_close_hook`, `add_postprocessor_hook`, plus `add_post_processor(pp, when=...)` for custom PP stages — the documented surface for API consumers.",
+          "sources": [
+            "yt_dlp/YoutubeDL.py#L945-969"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Extractor helpers for result shaping: `url_result`, `playlist_result`, `playlist_from_matches`, `url_transparent` results let an IE delegate to another IE without downloading — the composition mechanism between extractors.",
+          "sources": [
+            "yt_dlp/extractor/common.py#L1275-1300"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_handoff": {
+      "summary": "Read CONTRIBUTING.md (developer conventions) and .NO_AI/README.md (contribution policy) first. Style is enforced by ruff + autopep8: 120-col limit, single quotes, banned `from X import Y` for many stdlib modules. Tests run via `python -m devscripts.run_tests` (core/download/<IE name>) or `make test`; download tests need network. The main traps: extractor order is load-bearing, the params dict is the config contract, `lazy_extractors.py` is a generated artifact, plugins load from user dirs by default, and the public extractor/postprocessor API surface is intentionally stable while plugin internals are not.",
+      "claims": [
+        {
+          "claim": "Before writing any patch intended for this repo's upstream, note `.NO_AI/README.md`: the project forbids AI/LLM-authored contributions and instructs agents to refuse; CONTRIBUTING.md reiterates under 'AUTOMATED CONTRIBUTIONS (AI / LLM) POLICY'.",
+          "sources": [
+            ".NO_AI/README.md",
+            "CONTRIBUTING.md#L33-55"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Conventions to follow: CONTRIBUTING.md 'yt-dlp coding conventions' covers mandatory metafields, relaxed-but-simple `_VALID_URL` regexes, fallback patterns, quotes (single for inline, double for docstrings), and the long-lines policy; ruff enforces line-length 120 and bans many `from <stdlib> import` forms.",
+          "sources": [
+            "CONTRIBUTING.md#L319-684",
+            "pyproject.toml#L258-409"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Add a new site: create `yt_dlp/extractor/<site>.py` with a `*IE` class (`_VALID_URL`, `_TESTS`, `_real_extract`), register the import in `_extractors.py`, then run `python -m devscripts.run_tests <Site>`; CONTRIBUTING.md documents this flow.",
+          "sources": [
+            "CONTRIBUTING.md#L220-248",
+            "yt_dlp/extractor/_extractors.py",
+            "devscripts/run_tests.py#L56-59"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Test commands: `make test` (pytest -Werror + ruff + autopep8), `make offlinetest` / `devscripts.run_tests core` for no-network runs, `devscripts.run_tests download` for live-site tests, `devscripts.run_tests <Name>` for a single extractor.",
+          "sources": [
+            "Makefile#L79-88",
+            "devscripts/run_tests.py#L39-82"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Trap — extractor order is semantic: the first `suitable()` match wins, YouTube classes are hoisted first and `GenericIE` ('.*') must stay last; reordering `_extractors.py` imports changes routing behavior.",
+          "sources": [
+            "yt_dlp/extractor/extractors.py#L25-31",
+            "yt_dlp/extractor/__init__.py#L17-29",
+            "yt_dlp/extractor/generic.py#L53-56"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Trap — `lazy_extractors.py` is a generated build artifact (not committed); dev runs use the eager `_extractors` path, and `YTDLP_NO_LAZY_EXTRACTORS` forces eager loading in built binaries.",
+          "sources": [
+            "yt_dlp/extractor/extractors.py#L7-18",
+            "Makefile#L166-170",
+            "pyproject.toml#L162-173"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Trap — plugins are on by default: `plugin_dirs=['default']` searches user config dirs and PYTHONPATH, so local `yt_dlp_plugins` packages can shadow behavior during debugging; use `YTDLP_NO_PLUGINS` or `--no-plugin-dirs` to isolate.",
+          "sources": [
+            "yt_dlp/globals.py#L24",
+            "yt_dlp/plugins.py#L194-198",
+            "yt_dlp/options.py#L456-458"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Config contract: CLI options are defined in `options.py` `create_parser`, mapped into the `ydl_opts` params dict in `parse_options` (`__init__.py`), and consumed everywhere via `self.params.get(...)`; new options need edits in both places plus README regeneration via `make README.md`.",
+          "sources": [
+            "yt_dlp/options.py#L247",
+            "yt_dlp/__init__.py#L742-961",
+            "Makefile#L132-133"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Public API boundary: `yt_dlp.__all__` exports `YoutubeDL`, `gen_extractors`, `list_extractors`, `main`, `parse_options`; the pot/jsc provider READMEs explicitly mark everything outside the listed modules as internal-only.",
+          "sources": [
+            "yt_dlp/__init__.py#L1108-1114",
+            "yt_dlp/extractor/youtube/pot/README.md#L11-22"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Debuggability: `-v/--verbose` prints the debug header (`print_debug_header` reports version/python/env/ffmpeg), `write_debug` emits `[debug]` traces, and `debug_printtraffic` makes RequestDirector log handler selection per request.",
+          "sources": [
+            "yt_dlp/YoutubeDL.py#L4089",
+            "yt_dlp/networking/common.py#L64-92"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Broken-site convention: set `_WORKING = False` on the IE (surfaced as '(CURRENTLY BROKEN)' in --list-extractors and skipped in download tests) rather than deleting the extractor.",
+          "sources": [
+            "yt_dlp/extractor/common.py#L644-647",
+            "yt_dlp/__init__.py#L110-111",
+            "test/test_download.py#L95-97"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_prompt": "You are working on yt-dlp, a Python 3.10+ CLI/library for downloading audio/video from ~1750 sites (commit c7fb478, master). IMPORTANT POLICY: the repo contains `.NO_AI/README.md` and a CONTRIBUTING.md section forbidding AI/LLM-authored contributions to upstream — surface this to the operator before preparing patches intended for the yt-dlp project itself.\n\nArchitecture: entry is `yt_dlp.main()` (`yt_dlp/__init__.py`) via console script or `python -m yt_dlp` (`__main__.py`). `parse_options()` (`__init__.py` + `options.py`, optparse) merges CLI args and config files into a flat `ydl_opts` dict that configures the central `YoutubeDL` class (`YoutubeDL.py`, ~4500 lines). Flow per URL: `ydl.download` -> `extract_info` picks the first `InfoExtractor` whose `_VALID_URL` regex matches -> `ie.extract()` -> info dict -> `process_ie_result`/`process_video_result` -> `process_info` writes sidecars and calls `dl()` -> `downloader/__init__.py` maps the format protocol to a FileDownloader (HttpFD, HlsFD, DashSegmentsFD, FFmpegFD, external tools) which writes `.part`/`.ytdl` files -> post-processors (`postprocessor/`, keyed by POSTPROCESS_WHEN stages) run ffmpeg etc. -> download archive line appended.\n\nKey registries (all `Indirect` cells in `globals.py`): extractors (`extractor/_extractors.py` imports all IE classes; order matters — YouTube first, GenericIE `.*` last), postprocessors (`postprocessor/__init__.py`), request handlers (`networking/common.py` `_REQUEST_HANDLERS`, classes ending `RH`), plugins (`plugins.py`, `yt_dlp_plugins.*` namespace packages loaded by default from config dirs — `YTDLP_NO_PLUGINS`/`--no-plugin-dirs` to disable), JS runtimes (`supported_js_runtimes`), YouTube PO-token providers (`extractor/youtube/pot`, suffix PTP) and JS-challenge providers (`jsc`, suffix JCP).\n\nConventions: ruff + autopep8 (120 cols, single quotes, banned `from <stdlib> import` for json/re/os/etc. — see `flake8-import-conventions.banned-from` in pyproject.toml). Extractors subclass `InfoExtractor` (`extractor/common.py`): define `_VALID_URL`, `_TESTS`, `_real_extract`; set `_WORKING=False` for broken sites rather than deleting. New CLI options go in `options.py` and are mapped in `parse_options` in `__init__.py`.\n\nTests: `python -m devscripts.run_tests core` (offline, `pytest -m 'not download'`), `... download` (live-site, flaky), `... <SiteName>` for one extractor, `make test` for pytest+ruff+autopep8. Test params in `test/parameters.json`. `lazy_extractors.py` is generated (make target), not committed.\n\nSecurity-sensitive: `update.py` self-update replaces the binary (sha256-checked, not signed); `postprocessor/exec.py` runs `shell=True` commands; `cookies.py` decrypts browser credential stores; `file://` is refused by default; remote components (`ejs:github`/`ejs:npm`) download JS solver code at runtime. Treat all as load-bearing and review-sensitive."
+  },
+  "analysis": {
+    "agent": "devin",
+    "model": "swe-2",
+    "runtime_ms": null,
+    "cost_usd": null,
+    "collected_at": "2026-09-22T16:03:32.454Z"
   }
 }

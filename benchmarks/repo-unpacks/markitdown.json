@@ -162,7 +162,7 @@
         {
           "path": "README.md",
           "bytes": 18313,
-          "preview": "# MarkItDown\n\n[![PyPI](https://img.shields.io/pypi/v/markitdown.svg)](https://pypi.org/project/markitdown/)\n![PyPI - Downloads](https://img.shields.io/pypi/dd/markitdown)\n\n> [!IMPORTANT]\n> MarkItDown performs I/O with the privileges of the current process. Like open() or requests.get(), it will access resources that the process itself can access. Sanitize your inputs in untrusted environments, and call the narrowest `convert_*` function needed for your use case (e.g., `convert_stream()`, or `convert_local()`). See the [Security Considerations](#security-considerations) section of the documentation for more information.\n\nMarkItDown is a lightweight Python utility for converting various files to Markdown for use with LLMs and related text analysis pipelines. To this end, it is most comparable to [textract](https://github.com/deanmalmgren/textract), but with a focus on preserving important document structure and content as Markdown (including: headings, lists, tables, links, etc.) While the output is often reasonably presentable and human-friendly, it is meant to be consumed by text analysis tools -- and may not be the best option for high-fidelity document conversions for human consumption.\n\nMarkItDown currently supports the conversion from:\n\n- PDF\n- PowerPoint\n- Word\n- Excel\n- Images (EXIF metadata and OCR)\n- Audio (EXIF metadata and speech transcription)\n- HTML\n- Text-based formats (CSV, JSON, XML)\n- ZIP files (iterates over contents)\n- YouTube URLs\n- EPubs\n- ... and more!\n\n## Why Markdown?\n\nMarkdown is extremely close to plain text, with minimal markup or formatting, but still\nprovides a way to represent important document structure. Mainstream LLMs, such as\nOpenAI's GPT-4o, natively \"_speak_\" Markdown, and often incorporate Markdown into their\nresponses unprompted. This suggests that they have been trained on vast amounts of\nMarkdown-formatted text, and understand it well. As a side benefit, Markdown conventions\nare also highly token-efficient.\n\n## Prerequisites\nMarkItDown requires Python 3.10 through 3.14. It is recommended to use a virtual environment to avoid dependency conflicts.\n\nWith the standard Python installation, you can create and activate a virtual environment using the following commands:\n\n```bash\npython -m venv .venv\nsource .venv/bin/activate\n```\n\nIf using `uv`, you can create a virtual environment with:\n\n```bash\nuv venv --python=3.12 .venv\nsource .venv/bin/activate\n# NOTE: Be sure to use 'uv pip install' rather than just 'pip install' to install packages in this virtual environment\n```\n\nIf you are using Anaconda, you can create a virtual environment with:\n\n```bash\nconda create -n markitdown python=3.12\nconda activate markitdown\n```\n\n## Installation\n\nTo install MarkItDown, use pip: `pip install 'markitdown[all]'`. Alternatively, you can install it from the source:\n\n```bash\ngit clone git@github.com:microsoft/markitdown.git\ncd markitdown\npip install -e 'packages/markitdown[all]'\n```\n\n## Usage\n\n### Command-Line\n\n```bash\nmarkitdown path-to-file.pdf > document.md\n```\n\nOr use `-o` to specify the output file:\n\n```bash\nmarkitdown path-to-file.pdf -o document.md\n```\n\nYou can also pipe content:\n\n```bash\ncat path-to-file.pdf | markitdown\n```\n\n### Optional Dependencies\nMarkItDown has optional dependencies for activating various file formats. Earlier in this document, we installed all optional dependencies with the `[all]` option. However, you can also install them individually for more control. For example:\n\n```bash\npip install 'markitdown[pdf, docx, pptx]'\n```\n\nwill install only the dependencies for PDF, DOCX, and PPTX files.\n\nAt the moment, the following optional dependencies are available:\n\n* `[all]` Installs all optional dependencies\n* `[pptx]` Installs dependencies for PowerPoint files\n* `[docx]` Installs dependencies for Word files\n* `[xlsx]` Installs dependencies for Excel files\n* `[xls]` Installs dependencies for older Excel files\n* `[pdf]` Installs dependencies for PDF files\n* `[outlook]` Installs dependencies for Outlook messages\n* `[az-doc-intel]` Installs dependencies for Azure Document Intelligence\n* `[az-content-understanding]` Installs dependencies for Azure Content Understanding\n* `[audio-transcription]` Installs dependencies for audio transcription of wav and mp3 files\n* `[youtube-transcription]` Installs dependencies for fetching YouTube video transcription\n\n### Plugins\n\nMarkItDown also supports 3rd-party plugins. Plugins are disabled by default. To list installed plugins:\n\n```bash\nmarkitdown --list-plugins\n```\n\nTo enable plugins use:\n\n```bash\nmarkitdown --use-plugins path-to-file.pdf\n```\n\nTo find available plugins, search GitHub for the hashtag `#markitdown-plugin`. To develop a plugin, see `packages/markitdown-sample-plugin`.\n\n#### markitdown-ocr Plugin\n\nThe `markitdown-ocr` plugin adds OCR support to PDF, DOCX, PPTX, and XLSX converters, extracting text from embedded images using LLM Vision \u2014 the same `llm_client` / `llm_model` pattern that MarkItDown already uses for image descriptions. No new ML libraries or binary dependencies required.\n\n**Installation:**\n\n```bash\npip install markitdown-ocr\npip install openai  # or any OpenAI-compatible client\n```\n\n**Usage:**\n\nPass the same `llm_client` and `llm_model` you would use for image descriptions:\n\n```python\nfrom markitdown import MarkItDown\nfrom openai import OpenAI\n\nmd = MarkItDown(\n    enable_plugins=True,\n    llm_client=OpenAI(),\n    llm_model=\"gpt-4o\",\n)\nresult = md.convert(\"document_with_images.pdf\")\nprint(result.markdown)\n```\n\nIf no `llm_client` is provided the plugin still loads, but OCR is silently skipped and the standard built-in converter is used instead.\n\nSee [`packages/markitdown-ocr/README.md`](packages/markitdown-ocr/README.md) for detailed documentation.\n\n### Azure Content Understanding\n\n[Azure Content Understanding](https://learn.microsoft.com/azure/ai-services/content-understanding/) provides higher-quality conversion with structured field extraction (YAML front matter), multi-modal support (documents, images, audio, video), and configurable analyzers.\n\nInstall: `pip install 'markitdown[az-content-understanding]'`\n\n#### When to use Content Understanding\n\nContent Understanding is ideal when you need capabilities beyond what built-in or Document Intelligence converters provide:\n\n- **Audio and video files** \u2014 CU is the only option for video, and the higher-quality cloud option for audio. Built-in converters have no video support and only basic audio transcription.\n- **Structured field extraction** \u2014 [Prebuilt](https://learn.microsoft.com/azure/ai-services/content-understanding/concepts/prebuilt-analyzers) or [custom-built](https://learn.microsoft.com/azure/ai-services/content-understanding/how-to/customize-analyzer-content-understanding-studio?tabs=portal) analyzers extract domain-specific fields (invoice amounts, receipt dates, contract clauses) serialized as YAML front matter. Neither built-in nor Doc Intel integration exposes fields.\n- **Higher-quality document extraction** \u2014 Cloud-based layout analysis and OCR for scanned PDFs, complex tables, and multi-page documents.\n- **Single API for all modalities** \u2014 One `cu_endpoint` handles documents, images, audio, and video with automatic analyzer routing.\n\n| Capability | Built-in converters | Azure Document Intelligence | Azure Content Understanding |\n|------------|---------------------|-----------------------------|-----------------------------|\n| Document conversion | Offline, format-specific extraction | Cloud layout extraction | Cloud multimodal extraction |\n| Structured fields | Not available | Not exposed by this integration | YAML front matter from analyzer fields |\n| Custom analyzers | Not available | Not configurable in this integration | Supported with `cu_analyzer_id` |\n| Audio and video | Basic audio, no video | Not supported | Audio and video analyzers |\n| Cost | Local compute only | Billable Azure API calls | Billable Azure API calls |\n\n**CLI:**\n\n```bash\nmarkitdown path-to-file.pdf --use-cu --cu-endpoint \"<content_understanding_endpoint>\"\n```\n\nThe endpoint can also be set once in the environment, so callers only need `--use-cu`:\n\n```bash\nexport MARKITDOWN_CU_ENDPOINT=\"<content_un"
+          "preview": "# MarkItDown\n\n[![PyPI](https://img.shields.io/pypi/v/markitdown.svg)](https://pypi.org/project/markitdown/)\n![PyPI - Downloads](https://img.shields.io/pypi/dd/markitdown)\n\n> [!IMPORTANT]\n> MarkItDown performs I/O with the privileges of the current process. Like open() or requests.get(), it will access resources that the process itself can access. Sanitize your inputs in untrusted environments, and call the narrowest `convert_*` function needed for your use case (e.g., `convert_stream()`, or `convert_local()`). See the [Security Considerations](#security-considerations) section of the documentation for more information.\n\nMarkItDown is a lightweight Python utility for converting various files to Markdown for use with LLMs and related text analysis pipelines. To this end, it is most comparable to [textract](https://github.com/deanmalmgren/textract), but with a focus on preserving important document structure and content as Markdown (including: headings, lists, tables, links, etc.) While the output is often reasonably presentable and human-friendly, it is meant to be consumed by text analysis tools -- and may not be the best option for high-fidelity document conversions for human consumption.\n\nMarkItDown currently supports the conversion from:\n\n- PDF\n- PowerPoint\n- Word\n- Excel\n- Images (EXIF metadata and OCR)\n- Audio (EXIF metadata and speech transcription)\n- HTML\n- Text-based formats (CSV, JSON, XML)\n- ZIP files (iterates over contents)\n- YouTube URLs\n- EPubs\n- ... and more!\n\n## Why Markdown?\n\nMarkdown is extremely close to plain text, with minimal markup or formatting, but still\nprovides a way to represent important document structure. Mainstream LLMs, such as\nOpenAI's GPT-4o, natively \"_speak_\" Markdown, and often incorporate Markdown into their\nresponses unprompted. This suggests that they have been trained on vast amounts of\nMarkdown-formatted text, and understand it well. As a side benefit, Markdown conventions\nare also highly token-efficient.\n\n## Prerequisites\nMarkItDown requires Python 3.10 through 3.14. It is recommended to use a virtual environment to avoid dependency conflicts.\n\nWith the standard Python installation, you can create and activate a virtual environment using the following commands:\n\n```bash\npython -m venv .venv\nsource .venv/bin/activate\n```\n\nIf using `uv`, you can create a virtual environment with:\n\n```bash\nuv venv --python=3.12 .venv\nsource .venv/bin/activate\n# NOTE: Be sure to use 'uv pip install' rather than just 'pip install' to install packages in this virtual environment\n```\n\nIf you are using Anaconda, you can create a virtual environment with:\n\n```bash\nconda create -n markitdown python=3.12\nconda activate markitdown\n```\n\n## Installation\n\nTo install MarkItDown, use pip: `pip install 'markitdown[all]'`. Alternatively, you can install it from the source:\n\n```bash\ngit clone git@github.com:microsoft/markitdown.git\ncd markitdown\npip install -e 'packages/markitdown[all]'\n```\n\n## Usage\n\n### Command-Line\n\n```bash\nmarkitdown path-to-file.pdf > document.md\n```\n\nOr use `-o` to specify the output file:\n\n```bash\nmarkitdown path-to-file.pdf -o document.md\n```\n\nYou can also pipe content:\n\n```bash\ncat path-to-file.pdf | markitdown\n```\n\n### Optional Dependencies\nMarkItDown has optional dependencies for activating various file formats. Earlier in this document, we installed all optional dependencies with the `[all]` option. However, you can also install them individually for more control. For example:\n\n```bash\npip install 'markitdown[pdf, docx, pptx]'\n```\n\nwill install only the dependencies for PDF, DOCX, and PPTX files.\n\nAt the moment, the following optional dependencies are available:\n\n* `[all]` Installs all optional dependencies\n* `[pptx]` Installs dependencies for PowerPoint files\n* `[docx]` Installs dependencies for Word files\n* `[xlsx]` Installs dependencies for Excel files\n* `[xls]` Installs dependencies for older Excel files\n* `[pdf]` Installs dependencies for PDF files\n* `[outlook]` Installs dependencies for Outlook messages\n* `[az-doc-intel]` Installs dependencies for Azure Document Intelligence\n* `[az-content-understanding]` Installs dependencies for Azure Content Understanding\n* `[audio-transcription]` Installs dependencies for audio transcription of wav and mp3 files\n* `[youtube-transcription]` Installs dependencies for fetching YouTube video transcription\n\n### Plugins\n\nMarkItDown also supports 3rd-party plugins. Plugins are disabled by default. To list installed plugins:\n\n```bash\nmarkitdown --list-plugins\n```\n\nTo enable plugins use:\n\n```bash\nmarkitdown --use-plugins path-to-file.pdf\n```\n\nTo find available plugins, search GitHub for the hashtag `#markitdown-plugin`. To develop a plugin, see `packages/markitdown-sample-plugin`.\n\n#### markitdown-ocr Plugin\n\nThe `markitdown-ocr` plugin adds OCR support to PDF, DOCX, PPTX, and XLSX converters, extracting text from embedded images using LLM Vision — the same `llm_client` / `llm_model` pattern that MarkItDown already uses for image descriptions. No new ML libraries or binary dependencies required.\n\n**Installation:**\n\n```bash\npip install markitdown-ocr\npip install openai  # or any OpenAI-compatible client\n```\n\n**Usage:**\n\nPass the same `llm_client` and `llm_model` you would use for image descriptions:\n\n```python\nfrom markitdown import MarkItDown\nfrom openai import OpenAI\n\nmd = MarkItDown(\n    enable_plugins=True,\n    llm_client=OpenAI(),\n    llm_model=\"gpt-4o\",\n)\nresult = md.convert(\"document_with_images.pdf\")\nprint(result.markdown)\n```\n\nIf no `llm_client` is provided the plugin still loads, but OCR is silently skipped and the standard built-in converter is used instead.\n\nSee [`packages/markitdown-ocr/README.md`](packages/markitdown-ocr/README.md) for detailed documentation.\n\n### Azure Content Understanding\n\n[Azure Content Understanding](https://learn.microsoft.com/azure/ai-services/content-understanding/) provides higher-quality conversion with structured field extraction (YAML front matter), multi-modal support (documents, images, audio, video), and configurable analyzers.\n\nInstall: `pip install 'markitdown[az-content-understanding]'`\n\n#### When to use Content Understanding\n\nContent Understanding is ideal when you need capabilities beyond what built-in or Document Intelligence converters provide:\n\n- **Audio and video files** — CU is the only option for video, and the higher-quality cloud option for audio. Built-in converters have no video support and only basic audio transcription.\n- **Structured field extraction** — [Prebuilt](https://learn.microsoft.com/azure/ai-services/content-understanding/concepts/prebuilt-analyzers) or [custom-built](https://learn.microsoft.com/azure/ai-services/content-understanding/how-to/customize-analyzer-content-understanding-studio?tabs=portal) analyzers extract domain-specific fields (invoice amounts, receipt dates, contract clauses) serialized as YAML front matter. Neither built-in nor Doc Intel integration exposes fields.\n- **Higher-quality document extraction** — Cloud-based layout analysis and OCR for scanned PDFs, complex tables, and multi-page documents.\n- **Single API for all modalities** — One `cu_endpoint` handles documents, images, audio, and video with automatic analyzer routing.\n\n| Capability | Built-in converters | Azure Document Intelligence | Azure Content Understanding |\n|------------|---------------------|-----------------------------|-----------------------------|\n| Document conversion | Offline, format-specific extraction | Cloud layout extraction | Cloud multimodal extraction |\n| Structured fields | Not available | Not exposed by this integration | YAML front matter from analyzer fields |\n| Custom analyzers | Not available | Not configurable in this integration | Supported with `cu_analyzer_id` |\n| Audio and video | Basic audio, no video | Not supported | Audio and video analyzers |\n| Cost | Local compute only | Billable Azure API calls | Billable Azure API calls |\n\n**CLI:**\n\n```bash\nmarkitdown path-to-file.pdf --use-cu --cu-endpoint \"<content_understanding_endpoint>\"\n```\n\nThe endpoint can also be set once in the environment, so callers only need `--use-cu`:\n\n```bash\nexport MARKITDOWN_CU_ENDPOINT=\"<content_un"
         }
       ],
       "config_files": [
@@ -5061,7 +5061,7 @@
         "steps": [
           {
             "id": "serialize",
-            "label": "JSON serialize (inventory \u2192 SQLite)",
+            "label": "JSON serialize (inventory → SQLite)",
             "ms": 0,
             "pct": 0
           },
@@ -5080,5 +5080,783 @@
         ]
       }
     ]
+  },
+  "report": {
+    "overview": "MarkItDown is a Microsoft-maintained Python monorepo whose core package converts files, URLs, and byte streams into Markdown optimized for LLM consumption. It dispatches input through a priority-ordered registry of pluggable DocumentConverter classes after sniffing content with Google's magika model and charset-normalizer. The repo also ships an MCP (Model Context Protocol) server package exposing conversion as a tool, an official OCR plugin that uses LLM vision models, and a sample plugin demonstrating the entry-point-based plugin API.",
+    "system_map": {
+      "summary": "The repo is a uv/pip-installable Python monorepo under packages/ with four distributions: markitdown (the library + `markitdown` CLI), markitdown-mcp (an MCP server wrapping the library), markitdown-ocr (a first-party plugin adding LLM-vision OCR), and markitdown-sample-plugin (an RTF reference plugin). The core engine is the MarkItDown class in _markitdown.py, which owns a requests.Session, a magika.Magika identifier, and a priority-sorted list of ConverterRegistration entries. All format logic lives in ~25 DocumentConverter subclasses under converters/ plus shared helpers in converter_utils/. Build is hatchling-based; tests run via `hatch test` or pytest in CI across Python 3.10-3.14 on Linux, Windows, and Windows ARM64.",
+      "claims": [
+        {
+          "claim": "The central orchestrator is class MarkItDown in packages/markitdown/src/markitdown/_markitdown.py (line 141); its constructor builds a requests.Session with an 'Accept: text/markdown, text/html;q=0.9, ...' header and instantiates magika.Magika() for file-type identification.",
+          "sources": [
+            "packages/markitdown/src/markitdown/_markitdown.py#L141-168"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Built-in converters are registered in enable_builtins() in a deliberate order: PlainTextConverter, ZipConverter, and HtmlConverter get PRIORITY_GENERIC_FILE_FORMAT (10.0) while ~15 specific converters get PRIORITY_SPECIFIC_FILE_FORMAT (0.0); lower values are tried first and registration order within a priority is reversed (insert at index 0).",
+          "sources": [
+            "packages/markitdown/src/markitdown/_markitdown.py#L101-107",
+            "packages/markitdown/src/markitdown/_markitdown.py#L226-253",
+            "packages/markitdown/src/markitdown/_markitdown.py#L737-739"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Every converter implements the DocumentConverter interface defined in _base_converter.py: accepts(file_stream, stream_info, **kwargs) -> bool and convert(...) -> DocumentConverterResult; DocumentConverterResult carries `markdown` plus optional `title`, with `text_content` kept as a soft-deprecated alias.",
+          "sources": [
+            "packages/markitdown/src/markitdown/_base_converter.py#L5-105"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Stream metadata flows through the frozen dataclass StreamInfo (mimetype, extension, charset, filename, local_path, url) with a copy_and_update() merge helper in _stream_info.py.",
+          "sources": [
+            "packages/markitdown/src/markitdown/_stream_info.py#L5-32"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The CLI entrypoint is `markitdown = markitdown.__main__:main` declared in pyproject [project.scripts]; __main__.py builds an argparse parser supporting -o/--output, -x/--extension, -m/--mime-type, -c/--charset, -d/--use-docintel, --use-cu, -p/--use-plugins, --list-plugins, and --keep-data-uris.",
+          "sources": [
+            "packages/markitdown/pyproject.toml#L74-75",
+            "packages/markitdown/src/markitdown/__main__.py#L51-145"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The MCP server package markitdown-mcp defines one tool `convert_to_markdown(uri)` on an MCPServer('markitdown') instance and can run over stdio (mcp.run()) or HTTP via a combined Starlette app merging the SSE and Streamable-HTTP sub-apps served by uvicorn on 127.0.0.1:3001 by default.",
+          "sources": [
+            "packages/markitdown-mcp/src/markitdown_mcp/__main__.py#L16-24",
+            "packages/markitdown-mcp/src/markitdown_mcp/__main__.py#L58-135"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Core runtime dependencies are deliberately thin: beautifulsoup4, requests, markdownify, magika~=0.6.1, charset-normalizer, defusedxml; all heavy parsers (mammoth, python-pptx, pandas/openpyxl/xlrd, pdfminer.six, pdfplumber, olefile, pydub, SpeechRecognition, youtube-transcript-api, Azure SDKs) are optional extras declared in pyproject.toml [project.optional-dependencies].",
+          "sources": [
+            "packages/markitdown/pyproject.toml#L27-64"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Third-party plugins are discovered via importlib.metadata entry_points(group='markitdown.plugin') in _load_plugins(); each plugin module must expose register_converters(markitdown, **kwargs), demonstrated by the sample plugin and the markitdown-ocr package's [project.entry-points.\"markitdown.plugin\"] declaration.",
+          "sources": [
+            "packages/markitdown/src/markitdown/_markitdown.py#L110-130",
+            "packages/markitdown-sample-plugin/src/markitdown_sample_plugin/_plugin.py#L25-31",
+            "packages/markitdown-ocr/pyproject.toml#L55-57"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The root Dockerfile builds a python:3.13-slim-trixie image installing ffmpeg and libimage-exiftool-perl, sets EXIFTOOL_PATH/FFMPEG_PATH/ORT_DISABLE_TELEMETRY env vars, pip-installs markitdown[all] plus the sample plugin, drops to USER nobody:nogroup, and uses ENTRYPOINT ['markitdown'] for stdin->stdout conversion.",
+          "sources": [
+            "Dockerfile#L1-34"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CI runs three pytest/hatch jobs in .github/workflows/tests.yml (core hatch test matrix on ubuntu + windows + windows-11-vs2026-arm; ocr-tests installing both local packages; mcp-tests installing markitdown[all] + markitdown-mcp) plus a separate pre-commit workflow, with PIP_CONSTRAINT/UV_CONSTRAINT pinned to .github/constraints.txt.",
+          "sources": [
+            ".github/workflows/tests.yml",
+            ".github/workflows/pre-commit.yml",
+            ".github/constraints.txt"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The public API surface is explicitly re-exported in markitdown/__init__.py: MarkItDown, DocumentConverter, DocumentConverterResult, StreamInfo, the exception hierarchy, and the two PRIORITY_* constants; converter classes are importable from markitdown.converters.",
+          "sources": [
+            "packages/markitdown/src/markitdown/__init__.py#L5-34",
+            "packages/markitdown/src/markitdown/converters/__init__.py#L5-54"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Versions are managed per-package via hatch's [tool.hatch.version] pointing at each package's __about__.py: markitdown 0.1.8, markitdown-mcp 0.0.1a7, markitdown-ocr 0.1.1.",
+          "sources": [
+            "packages/markitdown/pyproject.toml#L71-72",
+            "packages/markitdown/src/markitdown/__about__.py",
+            "packages/markitdown-mcp/src/markitdown_mcp/__about__.py",
+            "packages/markitdown-ocr/src/markitdown_ocr/__about__.py"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "feature_catalog": {
+      "summary": "User-facing surface is three-fold: the `markitdown` CLI, the MarkItDown Python API (convert/convert_local/convert_stream/convert_uri/convert_response), and the `markitdown-mcp` server tool. Format coverage spans office docs (docx/xlsx/xls/pptx), PDF, images, audio, HTML plus URL-specialized converters (Wikipedia, YouTube, Bing SERP), EPUB, Outlook .msg, Jupyter notebooks, CSV, ZIP archives, and plain text. Cloud integrations offer Azure Document Intelligence and Azure Content Understanding as opt-in converters, and LLM-based image captions via a caller-supplied OpenAI-compatible client.",
+      "claims": [
+        {
+          "claim": "The CLI accepts a filename or stdin (sys.stdin.buffer wrapped in BytesIO), writes markdown to stdout or -o file, and supports hint flags -x/-m/-c that populate a StreamInfo passed to convert().",
+          "sources": [
+            "packages/markitdown/src/markitdown/__main__.py#L251-263",
+            "packages/markitdown/src/markitdown/__main__.py#L180-188"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "--use-docintel / -d requires -e/--endpoint or env var MARKITDOWN_DOCINTEL_ENDPOINT and registers DocumentIntelligenceConverter, which calls Azure's prebuilt-layout model via DocumentIntelligenceClient.begin_analyze_document with markdown output format.",
+          "sources": [
+            "packages/markitdown/src/markitdown/__main__.py#L207-218",
+            "packages/markitdown/src/markitdown/converters/_doc_intel_converter.py#L241-258"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "--use-cu requires --cu-endpoint or env MARKITDOWN_CU_ENDPOINT, accepts --cu-analyzer and --cu-file-types, and registers ContentUnderstandingConverter which supports documents, email, images, video and audio per the ContentUnderstandingFileType enum.",
+          "sources": [
+            "packages/markitdown/src/markitdown/__main__.py#L219-247",
+            "packages/markitdown/src/markitdown/converters/_cu_converter.py#L55-98"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "--use-plugins / --list-plugins controls third-party plugin loading; plugins are disabled by default and discovered via the 'markitdown.plugin' entry-point group.",
+          "sources": [
+            "packages/markitdown/src/markitdown/__main__.py#L126-137",
+            "packages/markitdown/src/markitdown/__main__.py#L190-205"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "--keep-data-uris controls whether base64 data URIs are kept in output; default behavior truncates them via the keep_data_uris option of _CustomMarkdownify.",
+          "sources": [
+            "packages/markitdown/src/markitdown/__main__.py#L139-143",
+            "packages/markitdown/src/markitdown/converters/_markdownify.py#L35-39"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "DocxConverter subclasses HtmlConverter: it pre-processes the .docx zip (OMML math -> LaTeX via converter_utils/docx), merges caller style_map + embedded style map + a default 'u => u' underline rule, runs mammoth.convert_to_html, optionally adapts embedded images through an overridable _image_to_html hook, then converts the HTML via _CustomMarkdownify.",
+          "sources": [
+            "packages/markitdown/src/markitdown/converters/_docx_converter.py#L43-143",
+            "packages/markitdown/src/markitdown/converter_utils/docx/pre_process.py#L34-80"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "PdfConverter (589 lines) uses pdfminer.six and pdfplumber with helpers to emit aligned Markdown tables (_to_markdown_table), merge MasterFormat partial numbering, and extract form content; missing deps raise MissingDependencyException pointing at the [pdf] extra.",
+          "sources": [
+            "packages/markitdown/src/markitdown/converters/_pdf_converter.py#L60-120"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "XlsxConverter/XlsConverter share one module using pandas.read_excel with openpyxl/xlrd engines, including a repair path that renames the non-schema 'showZeroes' attribute inside <sheetView> start tags only.",
+          "sources": [
+            "packages/markitdown/src/markitdown/converters/_xlsx_converter.py#L14-60"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "ImageConverter emits exiftool-extracted metadata fields (ImageSize, GPSPosition, etc.) and, when llm_client+llm_model kwargs are present, calls _get_llm_description which base64-embeds the image into an OpenAI chat.completions vision request.",
+          "sources": [
+            "packages/markitdown/src/markitdown/converters/_image_converter.py#L39-138"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "AudioConverter combines exiftool metadata with SpeechRecognition transcription (recognize_google) for wav/mp3/m4a/mp4 after pydub conversion to wav; missing pydub/SpeechRecognition raises MissingDependencyException for the [audio-transcription] extra.",
+          "sources": [
+            "packages/markitdown/src/markitdown/converters/_audio_converter.py#L46-101",
+            "packages/markitdown/src/markitdown/converters/_transcribe_audio.py#L29-58"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "YouTubeConverter accepts HTML streams whose stream_info.url parses to a youtu.be/youtube.com video id, scrapes metadata from the HTML, and optionally fetches transcripts via youtube-transcript-api; WikipediaConverter and BingSerpConverter similarly gate accepts() on the source URL.",
+          "sources": [
+            "packages/markitdown/src/markitdown/converters/_youtube_converter.py#L41-80",
+            "packages/markitdown/src/markitdown/converters/_wikipedia_converter.py#L21-46",
+            "packages/markitdown/src/markitdown/converters/_bing_serp_converter.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "EpubConverter opens the EPUB zip in-memory, parses META-INF/container.xml and content.opf with defusedxml.minidom, extracts Dublin Core metadata, resolves spine hrefs (with percent-decoding fallback), and converts each spine HTML file through HtmlConverter.",
+          "sources": [
+            "packages/markitdown/src/markitdown/converters/_epub_converter.py#L55-134"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "OutlookMsgConverter parses .msg OLE files with olefile, including manual decoding of the __properties_version1.0 stream and a CODEPAGE_CODECS table mapping ~30 Windows code page IDs to Python codecs for ANSI-encoded bodies.",
+          "sources": [
+            "packages/markitdown/src/markitdown/converters/_outlook_msg_converter.py#L21-75"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "ZipConverter recursively converts each archive member by calling self._markitdown.convert_stream on the decompressed bytes, prefixing each result with '## File: <name>' and silently skipping members that raise UnsupportedFormatException or FileConversionException.",
+          "sources": [
+            "packages/markitdown/src/markitdown/converters/_zip_converter.py#L87-130"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The markitdown-mcp package exposes a single MCP tool convert_to_markdown(uri) that accepts http:, https:, file: and data: URIs and returns markdown text, mapping internal exceptions to sanitized ToolError messages.",
+          "sources": [
+            "packages/markitdown-mcp/src/markitdown_mcp/__main__.py#L19-47"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "markitdown-ocr ships four enhanced converters (PdfConverterWithOCR, DocxConverterWithOCR, PptxConverterWithOCR, XlsxConverterWithOCR) that extract embedded images and OCR them via an LLMVisionOCRService wrapping an OpenAI-compatible chat.completions call.",
+          "sources": [
+            "packages/markitdown-ocr/src/markitdown_ocr/_plugin.py#L49-68",
+            "packages/markitdown-ocr/src/markitdown_ocr/_ocr_service.py#L24-111",
+            "packages/markitdown-ocr/src/markitdown_ocr/_pdf_converter_with_ocr.py#L1-50"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "data_flow": {
+      "summary": "Data enters through convert()/convert_local()/convert_stream()/convert_uri()/convert_response(), is normalized to a seekable BinaryIO plus a list of StreamInfo guesses, then fanned out to priority-sorted converters. Type detection is layered: caller hints and headers produce a base StreamInfo, mimetypes fills gaps, then magika identifies content from bytes and charset-normalizer guesses text encoding; incompatible guesses produce two candidate StreamInfos tried in order. The winning converter returns a DocumentConverterResult whose markdown is normalized (trailing whitespace stripped, 3+ newlines collapsed) before returning.",
+      "claims": [
+        {
+          "claim": "convert() is a type-based dispatcher: str with scheme http/https/file/data routes to convert_uri, other strings and Path to convert_local, requests.Response to convert_response, and readable non-TextIO objects to convert_stream; anything else raises TypeError.",
+          "sources": [
+            "packages/markitdown/src/markitdown/_markitdown.py#L322-366"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "convert_local() seeds StreamInfo with local_path, os.path.splitext extension, and basename, merges caller stream_info (plus deprecated file_extension/url kwargs), opens the file 'rb', guesses stream info, then calls _convert.",
+          "sources": [
+            "packages/markitdown/src/markitdown/_markitdown.py#L368-403"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "convert_stream() buffers non-seekable streams fully into io.BytesIO (4 KiB chunks) before guessing — the entire file is resident in memory from that point on.",
+          "sources": [
+            "packages/markitdown/src/markitdown/_markitdown.py#L435-450"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "convert_uri() branches by scheme: file: URIs are resolved by file_uri_to_path (rejecting non-localhost netlocs and UNC/device paths), data: URIs are decoded by parse_data_uri (base64 or percent), and http(s): is fetched with self._requests_session.get(uri, stream=True) then converted via convert_response.",
+          "sources": [
+            "packages/markitdown/src/markitdown/_markitdown.py#L471-531",
+            "packages/markitdown/src/markitdown/_uri_utils.py#L15-75"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "convert_response() builds the base StreamInfo from Content-Type (mimetype + charset), Content-Disposition filename (parsed via email.message.Message, RFC 2231-aware), or the URL path extension, then buffers the whole body via response.iter_content(chunk_size=512) into BytesIO.",
+          "sources": [
+            "packages/markitdown/src/markitdown/_markitdown.py#L533-604",
+            "packages/markitdown/src/markitdown/_markitdown.py#L56-70"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "_get_stream_info_guesses() enhances the base guess via the mimetypes module, then calls magika.identify_stream; for text predictions it samples up to 64 KiB (completing a split trailing UTF-8 char via _read_charset_sample) and runs charset_normalizer.from_bytes().best() for charset detection.",
+          "sources": [
+            "packages/markitdown/src/markitdown/_markitdown.py#L741-840",
+            "packages/markitdown/src/markitdown/_markitdown.py#L73-98"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "When magika's prediction is incompatible with caller-supplied mimetype/extension/charset, both the enhanced base guess and the magika guess are appended as separate StreamInfo candidates, each tried in sequence against all converters in _convert.",
+          "sources": [
+            "packages/markitdown/src/markitdown/_markitdown.py#L787-833",
+            "packages/markitdown/src/markitdown/_markitdown.py#L622"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "_convert() iterates 'stream_info_guesses + [StreamInfo()]' outer loop and priority-sorted converters inner loop, asserting the stream position is unchanged by accepts(); on convert() success it normalizes text_content (rstrip each line, collapse >=3 newlines to 2) and returns immediately.",
+          "sources": [
+            "packages/markitdown/src/markitdown/_markitdown.py#L606-690"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Per-call kwargs are enriched in _convert with global llm_client/llm_model/llm_prompt/style_map/exiftool_path, a private _parent_converters list for nested processing, and legacy file_extension/url keys derived from the current StreamInfo guess.",
+          "sources": [
+            "packages/markitdown/src/markitdown/_markitdown.py#L630-657"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Converters signal outcomes via exceptions: convert() failures are collected as FailedConversionAttempt and, if no converter succeeds, raised as FileConversionException (with per-converter trace summary); if no converter even accepted, UnsupportedFormatException is raised.",
+          "sources": [
+            "packages/markitdown/src/markitdown/_markitdown.py#L671-699",
+            "packages/markitdown/src/markitdown/_exceptions.py#L42-82"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Office/HTML converters converge on HTML as an intermediate: DocxConverter (mammoth), EpubConverter (spine files), PptxConverter and RSS/Wikipedia converters produce HTML that is finalized by HtmlConverter -> _CustomMarkdownify, which also strips javascript links and truncates data URIs unless keep_data_uris is set.",
+          "sources": [
+            "packages/markitdown/src/markitdown/converters/_docx_converter.py#L113-123",
+            "packages/markitdown/src/markitdown/converters/_html_converter.py#L42-91",
+            "packages/markitdown/src/markitdown/converters/_markdownify.py#L25-120"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "In the MCP server, each convert_to_markdown call constructs a fresh MarkItDown instance (plugins gated by env MARKITDOWN_ENABLE_PLUGINS) and calls convert_uri; every exception type is mapped to a ToolError that deliberately omits internal detail (e.g., FileConversionException becomes 'File conversion failed.', OSError reports only os.strerror).",
+          "sources": [
+            "packages/markitdown-mcp/src/markitdown_mcp/__main__.py#L19-55"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "behavior_traces": {
+      "summary": "Three load-bearing flows were traced end-to-end. (1) CLI file conversion: argparse -> MarkItDown() -> convert -> convert_local -> _get_stream_info_guesses -> _convert -> _handle_output. (2) HTTP/MCP conversion: convert_uri -> requests GET -> convert_response -> _convert, with the MCP tool wrapping it in sanitized ToolErrors. (3) Plugin registration + nested zip/docx conversion showing the recursive and registry-driven design.",
+      "claims": [
+        {
+          "claim": "CLI local-file flow: main() parses args -> normalizes extension/mime/charset hints into StreamInfo -> constructs MarkItDown(enable_plugins=args.use_plugins) -> markitdown.convert(filename) -> convert_local -> open(path,'rb') -> _get_stream_info_guesses (mimetypes -> magika -> charset_normalizer) -> _convert -> _handle_output writes markdown to -o file or stdout with errors='replace' encoding.",
+          "sources": [
+            "packages/markitdown/src/markitdown/__main__.py#L148-263",
+            "packages/markitdown/src/markitdown/_markitdown.py#L368-403"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Inside _convert, converters are tried in (guess, converter) order; each converter's accepts() runs first under a stream-position assertion, then convert() runs inside try/finally that always seeks the stream back to cur_pos — so every converter sees the stream from the same offset.",
+          "sources": [
+            "packages/markitdown/src/markitdown/_markitdown.py#L619-690"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "HTTP fetch flow: convert_uri('https://...') -> self._requests_session.get(uri, stream=True) -> raise_for_status -> convert_response parses content-type/content-disposition headers -> iter_content buffering -> _get_stream_info_guesses -> _convert; the default session sends 'Accept: text/markdown, text/html;q=0.9, text/plain;q=0.8, */*;q=0.1'.",
+          "sources": [
+            "packages/markitdown/src/markitdown/_markitdown.py#L517-527",
+            "packages/markitdown/src/markitdown/_markitdown.py#L533-604",
+            "packages/markitdown/src/markitdown/_markitdown.py#L155-166"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "MCP tool flow: client calls tools/call convert_to_markdown{uri} -> handler creates MarkItDown(enable_plugins=check_plugins_enabled()) -> convert_uri -> on success returns result.markdown; on failure the except chain converts UnsupportedFormatException/HTTPError/RequestException/FileConversionException/OSError/ValueError into ToolError messages.",
+          "sources": [
+            "packages/markitdown-mcp/src/markitdown_mcp/__main__.py#L19-55"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "MCP HTTP startup: main() parses --http/--sse/--host/--port -> for non-localhost hosts prints a security warning to stderr -> create_starlette_app mounts mcp.sse_app() and mcp.streamable_http_app(json_response=True, stateless_http=True) routes under a combined lifespan -> uvicorn.run(app, host, port or 3001).",
+          "sources": [
+            "packages/markitdown-mcp/src/markitdown_mcp/__main__.py#L58-135"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Plugin activation flow: MarkItDown(enable_plugins=True) -> enable_plugins() -> _load_plugins() iterates entry_points(group='markitdown.plugin'), entry_point.load() with per-plugin try/except+warn -> plugin.register_converters(self, **kwargs) -> each converter lands in self._converters via register_converter(priority).",
+          "sources": [
+            "packages/markitdown/src/markitdown/_markitdown.py#L110-130",
+            "packages/markitdown/src/markitdown/_markitdown.py#L302-320",
+            "packages/markitdown-ocr/src/markitdown_ocr/_plugin.py#L19-68"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "ZIP recursion flow: ZipConverter.convert opens zipfile.ZipFile on the stream -> for each entry reads bytes into BytesIO + a fresh StreamInfo(extension, filename) -> calls self._markitdown.convert_stream (the same MarkItDown instance passed at construction) -> concatenates results under '## File:' headings; failures are swallowed per-member.",
+          "sources": [
+            "packages/markitdown/src/markitdown/converters/_zip_converter.py#L61-130"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "DOCX conversion flow: DocxConverter.convert -> dependency check raising MissingDependencyException -> pre_process_docx (rewrites document.xml: OMML oMath -> LaTeX $...$/$...$ w:t replacements) -> mammoth.convert_to_html with merged style_map -> optional _DocxImages adapter when _image_to_html is overridden -> HtmlConverter.convert_string -> _CustomMarkdownify.",
+          "sources": [
+            "packages/markitdown/src/markitdown/converters/_docx_converter.py#L70-143",
+            "packages/markitdown/src/markitdown/converter_utils/docx/pre_process.py#L34-80"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "EPUB conversion flow: EpubConverter.convert -> zipfile -> defusedxml.minidom.parse('META-INF/container.xml') -> locate content.opf -> extract dc:* metadata and manifest/spine -> _resolve_manifest_href per spine item -> HtmlConverter.convert on each zip member stream -> metadata block prepended, title set on result.",
+          "sources": [
+            "packages/markitdown/src/markitdown/converters/_epub_converter.py#L55-134"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Stdin flow: when no filename is given, main() wraps sys.stdin.buffer.read() in io.BytesIO (because Windows pipe-backed stdin can falsely report seekable()) and calls convert_stream with the hint StreamInfo and keep_data_uris flag.",
+          "sources": [
+            "packages/markitdown/src/markitdown/__main__.py#L251-257",
+            "packages/markitdown/src/markitdown/_markitdown.py#L435-444"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "LLM image-caption flow: ImageConverter.convert -> exiftool_metadata (subprocess exiftool -json -, version-gated >=12.24 for CVE-2021-22204) -> if llm_client+llm_model kwargs present, _get_llm_description base64-encodes the stream into a data URI and calls client.chat.completions.create(model=..., messages=[...image_url...]).",
+          "sources": [
+            "packages/markitdown/src/markitdown/converters/_image_converter.py#L46-138",
+            "packages/markitdown/src/markitdown/converters/_exiftool.py#L10-57",
+            "packages/markitdown/src/markitdown/converters/_llm_caption.py#L7-50"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "testing_signals": {
+      "summary": "Tests are pytest-based and live in packages/*/tests. The core package has ~35 test modules anchored by a declarative FileTestVector harness (_test_vectors.py) asserting must_include/must_not_include substrings across 20+ real fixture files in tests/test_files. Coverage spans stream-info guessing, CLI vectors, per-converter edge cases (PDF tables/memory, docx math/images/styles, pptx images/SVG/notes, xlsx images, RSS titles, Outlook ANSI codepages, charset edge cases) and URI handling; remote-URL tests are skipped under GITHUB_ACTIONS. MCP tests drive the real stdio server subprocess and an in-process Starlette app via httpx.",
+      "claims": [
+        {
+          "claim": "packages/markitdown/tests/_test_vectors.py defines FileTestVector(filename, mimetype, charset, url, must_include, must_not_include) and two vector sets (GENERAL_TEST_VECTORS with 16 entries, DATA_URI_TEST_VECTORS) that parametrized tests consume.",
+          "sources": [
+            "packages/markitdown/tests/_test_vectors.py#L5-279"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "test_module_vectors.py parametrizes every vector across test_guess_stream_info, test_convert_local, test_convert_stream_with_hints and more; tests needing live URLs are gated by skip_remote = bool(os.environ.get('GITHUB_ACTIONS')).",
+          "sources": [
+            "packages/markitdown/tests/test_module_vectors.py#L21-80"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Fixture corpus is real binary files under packages/markitdown/tests/test_files (docx/xlsx/xls/pptx/pdf/msg/epub/zip/html/csv/json/ipynb/jpg/mp3/m4a/wav and edge cases like random.bin, medical-report scans, borderless-table PDFs).",
+          "sources": [
+            "packages/markitdown/tests/test_files"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Edge-case suites are organized per concern: test_pdf_tables.py (1198 lines), test_cu_converter.py (1035 lines), test_pdf_memory.py, test_pdf_masterformat.py, test_docx_math*.py, test_docx_styles.py, test_pptx_images.py, test_xlsx_images.py, test_outlook_msg_ansi.py, test_charset_sample.py, test_undetectable_charset.py, test_csv_line_endings.py, test_csv_blank_runs.py, test_file_paths.py, test_zip_kwargs.py.",
+          "sources": [
+            "packages/markitdown/tests"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "URI/URL parsing is tested in test_module_misc.py: data: URIs (base64, charset attributes, missing mime), file:// URIs including localhost netloc, percent-encoded Windows drive letters, and case-insensitive schemes.",
+          "sources": [
+            "packages/markitdown/tests/test_module_misc.py#L250-380"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "MCP tests include test_stdio_protocols.py which spawns `python -m markitdown_mcp` as a subprocess and feeds newline-delimited JSON-RPC covering both the legacy initialize handshake and a 2026-07-28 server/discover request, plus test_http_transports.py exercising create_starlette_app in-process with httpx, and test_tool_errors.py for error mapping.",
+          "sources": [
+            "packages/markitdown-mcp/tests/test_stdio_protocols.py#L1-60",
+            "packages/markitdown-mcp/tests/test_http_transports.py#L1-40"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "markitdown-ocr tests cover each enhanced converter (test_pdf/docx/pptx/xlsx_converter.py), inheritance behavior proving the OCR variants subclass the built-ins, and OCR metadata propagation, with fixtures under tests/ocr_test_data.",
+          "sources": [
+            "packages/markitdown-ocr/tests"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CI matrix: tests.yml runs hatch test for packages/markitdown on Python 3.10-3.14 (ubuntu) plus 3.12 on windows-latest and windows-11-vs2026-arm; separate jobs pip-install local packages and run pytest for markitdown-ocr and markitdown-mcp; PYTHONUTF8=1 is set for captured CLI output.",
+          "sources": [
+            ".github/workflows/tests.yml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Coverage config lives in each pyproject ([tool.coverage.run] branch=true, source_pkgs covering src + tests) and hatch envs define `hatch test` (hatch-test env with openai extra dep) and a types env running `mypy --ignore-missing-imports` over src and tests.",
+          "sources": [
+            "packages/markitdown/pyproject.toml#L77-113"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "There are no unit tests for the CLI's Azure paths or plugin loading mechanics in the core package, and remote-URL vectors (YouTube/Wikipedia/Bing) are skipped in CI — those converter paths are only exercised by local HTML fixtures.",
+          "sources": [
+            "packages/markitdown/tests/test_module_vectors.py#L21-23",
+            "packages/markitdown/tests/_test_vectors.py#L111-140"
+          ],
+          "kind": "inference"
+        }
+      ]
+    },
+    "risk_map": {
+      "summary": "The dominant risk theme is I/O breadth: the library deliberately performs filesystem, network, and subprocess I/O with the caller's privileges, and the README explicitly warns callers to sanitize inputs. Specific hotspots: unrestricted HTTP fetching (SSRF) via convert_uri, file:// URI local file reads, unbounded in-memory buffering of remote/stream content, subprocess invocation of exiftool, plugin code execution via entry points, and an unauthenticated MCP HTTP mode. Defusedxml and an exiftool version check show some hardening is present.",
+      "claims": [
+        {
+          "claim": "convert_uri fetches arbitrary http(s) URLs with the process's requests session and no allowlist — the README's Security Considerations section tells integrators to block private/loopback/link-local/metadata-service addresses themselves; nothing in code enforces this.",
+          "sources": [
+            "packages/markitdown/src/markitdown/_markitdown.py#L517-527",
+            "README.md#L394-400"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "file:// URIs resolve to local paths and convert_local opens them; file_uri_to_path rejects non-localhost netlocs and UNC/device paths but permits any absolute local path — the MCP tool exposes this to remote clients in HTTP mode.",
+          "sources": [
+            "packages/markitdown/src/markitdown/_uri_utils.py#L15-39",
+            "packages/markitdown-mcp/src/markitdown_mcp/__main__.py#L19-24"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The MCP server's --http mode has NO authentication; the code itself prints a warning when --host is non-loopback stating any reachable user 'can read files and fetch network resources accessible to this user'.",
+          "sources": [
+            "packages/markitdown-mcp/src/markitdown_mcp/__main__.py#L114-127"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Remote and stream inputs are buffered fully into memory: convert_response iter_content into BytesIO and convert_stream buffers non-seekable streams — a hostile or huge response/stream can exhaust memory.",
+          "sources": [
+            "packages/markitdown/src/markitdown/_markitdown.py#L594-598",
+            "packages/markitdown/src/markitdown/_markitdown.py#L435-444"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "exiftool_metadata shells out to subprocess.run([exiftool_path, ...]); the exiftool path is resolved from the EXIFTOOL_PATH env var, kwargs, or a PATH search restricted to well-known directories, and a version gate rejects exiftool <12.24 citing CVE-2021-22204.",
+          "sources": [
+            "packages/markitdown/src/markitdown/converters/_exiftool.py#L20-47",
+            "packages/markitdown/src/markitdown/_markitdown.py#L202-224"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Plugin loading executes arbitrary installed Python code: entry_points(group='markitdown.plugin').load() then register_converters(); failures are only warned about. Plugins are off by default but -p/--use-plugins or enable_plugins=True activates all of them.",
+          "sources": [
+            "packages/markitdown/src/markitdown/_markitdown.py#L113-130",
+            "packages/markitdown/src/markitdown/_markitdown.py#L302-320"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The _convert loop asserts (not raises) on stream-position invariants ('assert cur_pos == file_stream.tell()') — running under python -O disables these checks, silently removing the safety net that protects converters from a misbehaving accepts().",
+          "sources": [
+            "packages/markitdown/src/markitdown/_markitdown.py#L625-669"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Each MCP convert_to_markdown call constructs a brand-new MarkItDown() — re-registering ~17 converters and re-instantiating magika.Magika() (a model load) per request, which is a latency/CPU cost on every tool call.",
+          "sources": [
+            "packages/markitdown-mcp/src/markitdown_mcp/__main__.py#L22",
+            "packages/markitdown/src/markitdown/_markitdown.py#L168"
+          ],
+          "kind": "inference"
+        },
+        {
+          "claim": "BeautifulSoup 'html.parser' and defusedxml are used for untrusted markup/XML (EPUB container/OPF via defusedxml.minidom), but docx pre-processing parses document.xml with BeautifulSoup and xml.etree.ElementTree — XML bomb surface depends on those parsers' defaults rather than defusedxml.",
+          "sources": [
+            "packages/markitdown/src/markitdown/converters/_epub_converter.py#L5-71",
+            "packages/markitdown/src/markitdown/converter_utils/docx/pre_process.py#L1-10"
+          ],
+          "kind": "inference"
+        },
+        {
+          "claim": "HtmlConverter's markdownify path can hit RecursionError on deeply nested HTML; it falls back to get_text() unless a 'strict' kwarg is set — acceptable degradation but callers get silently different output shape.",
+          "sources": [
+            "packages/markitdown/src/markitdown/converters/_html_converter.py#L68-81"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "ZipConverter swallows FileConversionException/UnsupportedFormatException per member and the archive is read via zipObj.read(entry) fully into memory per entry; nested zips recurse through the same converter stack without a depth limit visible in this file.",
+          "sources": [
+            "packages/markitdown/src/markitdown/converters/_zip_converter.py#L108-128"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Error detail asymmetry: FileConversionException aggregates per-converter exception messages (which can include SDK/internal detail) while the MCP layer deliberately sanitizes to generic ToolError strings — good for the MCP boundary, but library callers receive verbose internals.",
+          "sources": [
+            "packages/markitdown/src/markitdown/_exceptions.py#L52-82",
+            "packages/markitdown-mcp/src/markitdown_mcp/__main__.py#L27-47"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "extension_points": {
+      "summary": "MarkItDown is explicitly designed for extension at two levels: in-process registration via MarkItDown.register_converter(converter, priority=...) and distribution-level plugins via the 'markitdown.plugin' entry-point group. Converters subclass DocumentConverter and implement accepts()/convert(); several built-ins expose finer hooks (DocxConverter._image_to_html, style_map, llm_* kwargs). The markitdown-ocr package is the canonical example of a plugin that overrides built-ins by registering with negative priority.",
+      "claims": [
+        {
+          "claim": "register_converter(converter, *, priority=PRIORITY_SPECIFIC_FILE_FORMAT) inserts a ConverterRegistration at index 0 of self._converters; docstring documents that equal priorities preserve registration order with most-recent-first, and that plugins can pick priorities (e.g., 9) to slot between specific and generic converters.",
+          "sources": [
+            "packages/markitdown/src/markitdown/_markitdown.py#L709-739"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Plugin contract: a package declares [project.entry-points.\"markitdown.plugin\"] name = 'module', the module defines __plugin_interface_version__ = 1 and register_converters(markitdown, **kwargs) which calls markitdown.register_converter(...).",
+          "sources": [
+            "packages/markitdown-sample-plugin/pyproject.toml",
+            "packages/markitdown-sample-plugin/src/markitdown_sample_plugin/_plugin.py#L13-31"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "markitdown-ocr demonstrates priority-based replacement: it registers its four converters at priority -1.0 so they run before all built-ins at 0.0, and its *WithOCR classes subclass the built-in converters so inherits tests verify drop-in compatibility.",
+          "sources": [
+            "packages/markitdown-ocr/src/markitdown_ocr/_plugin.py#L49-68",
+            "packages/markitdown-ocr/tests/test_docx_inheritance.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New converters plug in by subclassing DocumentConverter and implementing accepts(file_stream, stream_info, **kwargs)->bool and convert(...)->DocumentConverterResult; the docstrings document that accepts() must restore the stream position if it reads.",
+          "sources": [
+            "packages/markitdown/src/markitdown/_base_converter.py#L42-105"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "DocxConverter._image_to_html is an overridable hook: if a subclass overrides it, convert() wires a _DocxImages adapter into mammoth's convert_image callback so subclasses can render embedded images as custom HTML fragments.",
+          "sources": [
+            "packages/markitdown/src/markitdown/converters/_docx_converter.py#L105-143"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Global kwargs llm_client, llm_model, llm_prompt, style_map, and exiftool_path are injected into every converter call by _convert(), letting callers extend behavior (e.g., captions, custom docx style maps) without subclassing.",
+          "sources": [
+            "packages/markitdown/src/markitdown/_markitdown.py#L630-657"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "_parent_converters is passed through kwargs so container converters (ZipConverter holds a MarkItDown reference; epub/docx delegate to HtmlConverter) can recurse with the full registry — a nested-conversion extension channel.",
+          "sources": [
+            "packages/markitdown/src/markitdown/_markitdown.py#L648-649",
+            "packages/markitdown/src/markitdown/converters/_zip_converter.py#L61-67"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "_CustomMarkdownify subclasses markdownify.MarkdownConverter, so any markdownify option can be passed through kwargs from converters that emit HTML (HtmlConverter, DocxConverter, EpubConverter, RssConverter, etc.).",
+          "sources": [
+            "packages/markitdown/src/markitdown/converters/_markdownify.py#L25-39",
+            "packages/markitdown/src/markitdown/converters/_html_converter.py#L93-110"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Cloud converters are opt-in registrations: passing docintel_endpoint/cu_endpoint (+credential/file_types/analyzer_id kwargs) to MarkItDown() registers DocumentIntelligenceConverter/ContentUnderstandingConverter at default priority, effectively a DI-based extension point.",
+          "sources": [
+            "packages/markitdown/src/markitdown/_markitdown.py#L254-296"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "register_page_converter() remains as a deprecated alias emitting DeprecationWarning, showing the registration API is the stable public seam.",
+          "sources": [
+            "packages/markitdown/src/markitdown/_markitdown.py#L701-707"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_handoff": {
+      "summary": "Edit surface is small and regular: to add/change a format, touch one file in converters/ plus tests. The invariants that matter: accepts() must leave the stream position unchanged; converters must raise MissingDependencyException (not ImportError) for optional deps; registration order is reversed within a priority. Run tests per-package (hatch test or pytest). Avoid touching _markitdown.py's _convert loop casually — many subtle contracts (position asserts, guess iteration, legacy kwargs) live there.",
+      "claims": [
+        {
+          "claim": "To add a format: create converters/_foo_converter.py with ACCEPTED_MIME_TYPE_PREFIXES/ACCEPTED_FILE_EXTENSIONS constants and a DocumentConverter subclass, export it in converters/__init__.py, register it in MarkItDown.enable_builtins at the right spot, and add the extra to pyproject [project.optional-dependencies].",
+          "sources": [
+            "packages/markitdown/src/markitdown/converters/__init__.py#L5-54",
+            "packages/markitdown/src/markitdown/_markitdown.py#L229-253",
+            "packages/markitdown/pyproject.toml#L36-64"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Optional-dependency convention: wrap the import in try/except ImportError storing sys.exc_info() in a module-level _dependency_exc_info, then raise MissingDependencyException(MISSING_DEPENDENCY_MESSAGE.format(converter=..., extension=..., feature=...)) inside convert().",
+          "sources": [
+            "packages/markitdown/src/markitdown/converters/_docx_converter.py#L14-22",
+            "packages/markitdown/src/markitdown/converters/_docx_converter.py#L76-88",
+            "packages/markitdown/src/markitdown/_exceptions.py#L3-8"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Hard invariant from _base_converter docstring and _convert asserts: if accepts() reads from file_stream it MUST seek back; a converter that violates this triggers AssertionError inside _convert.",
+          "sources": [
+            "packages/markitdown/src/markitdown/_base_converter.py#L62-70",
+            "packages/markitdown/src/markitdown/_markitdown.py#L666-669"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Registration order is counterintuitive: register_converter inserts at index 0, so LATER registrations are tried FIRST among equal priority — the comment in enable_builtins warns 'the most specific converters should appear below the most generic converters' in source order.",
+          "sources": [
+            "packages/markitdown/src/markitdown/_markitdown.py#L226-228",
+            "packages/markitdown/src/markitdown/_markitdown.py#L737-739"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Test workflow: cd packages/markitdown && pip install hatch && hatch test (hatch env auto-installs [all] + openai); or run pytest directly after installing 'markitdown[all]' editable. CI also runs per-package pytest for markitdown-ocr and markitdown-mcp.",
+          "sources": [
+            "packages/markitdown/pyproject.toml#L77-94",
+            ".github/workflows/tests.yml",
+            "README.md#L369-392"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New test-vector files go in tests/test_files plus a FileTestVector entry in tests/_test_vectors.py; expected-output assertions are substring-based (must_include/must_not_include), not snapshot diffs.",
+          "sources": [
+            "packages/markitdown/tests/_test_vectors.py#L5-33",
+            "packages/markitdown/tests/test_module_vectors.py#L59-70"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Deprecated kwargs file_extension/url still flow through convert_local/convert_stream/convert_response and _convert injects them from stream_info — preserve them when refactoring signatures or tests like test_zip_kwargs.py will break.",
+          "sources": [
+            "packages/markitdown/src/markitdown/_markitdown.py#L368-403",
+            "packages/markitdown/src/markitdown/_markitdown.py#L651-657",
+            "packages/markitdown/tests/test_zip_kwargs.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "MCP error contract: do not let raw exceptions leak — convert_to_markdown deliberately maps each exception class to a sanitized ToolError; new exception types from the library need explicit handling there.",
+          "sources": [
+            "packages/markitdown-mcp/src/markitdown_mcp/__main__.py#L26-47",
+            "packages/markitdown-mcp/tests/test_tool_errors.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Read first: _markitdown.py (engine), _base_converter.py + _stream_info.py (contracts), one representative converter (_docx_converter.py for the optional-dep + HTML-intermediate pattern), and _markdownify.py for output shaping; for plugin work, _plugin.py in both markitdown-ocr and markitdown-sample-plugin.",
+          "sources": [
+            "packages/markitdown/src/markitdown/_markitdown.py",
+            "packages/markitdown/src/markitdown/_base_converter.py",
+            "packages/markitdown/src/markitdown/converters/_docx_converter.py"
+          ],
+          "kind": "inference"
+        },
+        {
+          "claim": "Known trap: tests/test_module_vectors.py sets skip_remote only on GITHUB_ACTIONS — local runs may hit raw.githubusercontent.com for some vectors, so sandboxed agents should set GITHUB_ACTIONS=1 or expect network tests.",
+          "sources": [
+            "packages/markitdown/tests/test_module_vectors.py#L21-26"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Version bumps happen per package in each src/<pkg>/__about__.py via hatch dynamic versioning — there is no root-level version file.",
+          "sources": [
+            "packages/markitdown/pyproject.toml#L71-72",
+            "packages/markitdown/src/markitdown/__about__.py"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_prompt": "You are working in the MarkItDown monorepo (github.com/microsoft/markitdown), a Python utility that converts files, URLs, and streams to Markdown for LLM pipelines. Layout: four hatch-built packages under packages/ — markitdown (core lib + `markitdown` CLI), markitdown-mcp (MCP server with one tool `convert_to_markdown`), markitdown-ocr (first-party LLM-vision OCR plugin), markitdown-sample-plugin (RTF reference plugin).\n\nArchitecture: `MarkItDown` (packages/markitdown/src/markitdown/_markitdown.py) owns a requests.Session, a magika.Magika file-type identifier, and a list of ConverterRegistration(converter, priority). Entry methods — convert (dispatches on source type), convert_local, convert_stream, convert_uri (file:/data:/http(s):), convert_response — all funnel to _get_stream_info_guesses() (mimetypes + magika + charset_normalizer on a 64KiB sample) then _convert(), which iterates StreamInfo guesses x priority-sorted converters, calling converter.accepts() then converter.convert(). First success wins; failures aggregate into FileConversionException, or UnsupportedFormatException if nothing accepted.\n\nContracts you must preserve: (1) accepts() and convert() must leave file_stream position unchanged — _convert asserts this; (2) optional deps use the _dependency_exc_info pattern and raise MissingDependencyException with MISSING_DEPENDENCY_MESSAGE; (3) register_converter inserts at index 0 so later registrations win within a priority — built-ins register most-generic last; (4) global kwargs llm_client/llm_model/llm_prompt/style_map/exiftool_path and _parent_converters are auto-injected into every convert call; (5) deprecated file_extension/url kwargs must keep flowing.\n\nAdding a format: new converters/_x_converter.py (ACCEPTED_MIME_TYPE_PREFIXES + ACCEPTED_FILE_EXTENSIONS + DocumentConverter subclass), export in converters/__init__.py, register in enable_builtins, add a pyproject extra if it needs deps, and add a fixture in tests/test_files plus a FileTestVector in tests/_test_vectors.py. Most converters emit HTML then reuse HtmlConverter/_CustomMarkdownify.\n\nPlugins: discovered via entry_points(group='markitdown.plugin'); module must expose register_converters(markitdown, **kwargs). Plugins are off unless enable_plugins/-p. markitdown-ocr registers at priority -1.0 to preempt built-ins.\n\nTesting: cd packages/markitdown && hatch test (or pytest after `pip install -e .[all]`); sibling packages use plain pytest. Some remote tests run locally but are skipped on CI via GITHUB_ACTIONS env. Type check: hatch run types:check.\n\nSecurity notes: conversion performs I/O with process privileges — no SSRF guard, file:// reads local files, remote/stream bodies are fully buffered in memory, exiftool is shelled out (version-gated >=12.24), plugins execute arbitrary installed code, and markitdown-mcp --http has no auth. Do not weaken the MCP layer's sanitized ToolError mapping or the file_uri_to_path UNC/device-path rejection.",
+    "_self_check": "verified paths: packages/markitdown/src/markitdown/{_markitdown,_base_converter,_stream_info,_uri_utils,_exceptions,__init__,__main__,__about__}.py; converters/*; converter_utils/docx/pre_process.py; packages/{markitdown-mcp,markitdown-ocr,markitdown-sample-plugin}/... ; tests/*; .github/workflows/*; Dockerfile; README.md"
+  },
+  "analysis": {
+    "agent": "devin",
+    "model": "swe-2",
+    "runtime_ms": null,
+    "cost_usd": null,
+    "collected_at": "2026-09-22T16:03:31.819Z"
   }
 }

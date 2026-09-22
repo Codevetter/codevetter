@@ -76,7 +76,7 @@
         {
           "path": "README.md",
           "bytes": 20851,
-          "preview": "<!-- markdownlint-disable first-line-h1 -->\n<!-- markdownlint-disable html -->\n<!-- markdownlint-disable no-duplicate-header -->\n\n<div align=\"center\">\n  <img src=\"https://github.com/deepseek-ai/DeepSeek-V2/blob/main/figures/logo.svg?raw=true\" width=\"60%\" alt=\"DeepSeek-V3\" />\n</div>\n<hr>\n<div align=\"center\" style=\"line-height: 1;\">\n  <a href=\"https://www.deepseek.com/\"><img alt=\"Homepage\"\n    src=\"https://github.com/deepseek-ai/DeepSeek-V2/blob/main/figures/badge.svg?raw=true\"/></a>\n  <a href=\"https://chat.deepseek.com/\"><img alt=\"Chat\"\n    src=\"https://img.shields.io/badge/\ud83e\udd16%20Chat-DeepSeek%20V3-536af5?color=536af5&logoColor=white\"/></a>\n  <a href=\"https://huggingface.co/deepseek-ai\"><img alt=\"Hugging Face\"\n    src=\"https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-DeepSeek%20AI-ffc107?color=ffc107&logoColor=white\"/></a>\n  <br>\n  <a href=\"https://discord.gg/Tc7c45Zzu5\"><img alt=\"Discord\"\n    src=\"https://img.shields.io/badge/Discord-DeepSeek%20AI-7289da?logo=discord&logoColor=white&color=7289da\"/></a>\n  <a href=\"https://github.com/deepseek-ai/DeepSeek-V2/blob/main/figures/qr.jpeg?raw=true\"><img alt=\"Wechat\"\n    src=\"https://img.shields.io/badge/WeChat-DeepSeek%20AI-brightgreen?logo=wechat&logoColor=white\"/></a>\n  <a href=\"https://twitter.com/deepseek_ai\"><img alt=\"Twitter Follow\"\n    src=\"https://img.shields.io/badge/Twitter-deepseek_ai-white?logo=x&logoColor=white\"/></a>\n  <br>\n  <a href=\"https://github.com/deepseek-ai/DeepSeek-V3/blob/main/LICENSE-CODE\"><img alt=\"Code License\"\n    src=\"https://img.shields.io/badge/Code_License-MIT-f5de53?&color=f5de53\"/></a>\n  <a href=\"https://github.com/deepseek-ai/DeepSeek-V3/blob/main/LICENSE-MODEL\"><img alt=\"Model License\"\n    src=\"https://img.shields.io/badge/Model_License-Model_Agreement-f5de53?&color=f5de53\"/></a>\n  <br>\n  <a href=\"https://arxiv.org/pdf/2412.19437\"><b>Paper Link</b>\ud83d\udc41\ufe0f</a>\n</div>\n\n## Table of Contents\n\n1. [Introduction](#1-introduction)\n2. [Model Summary](#2-model-summary)\n3. [Model Downloads](#3-model-downloads)\n4. [Evaluation Results](#4-evaluation-results)\n5. [Chat Website & API Platform](#5-chat-website--api-platform)\n6. [How to Run Locally](#6-how-to-run-locally)\n7. [License](#7-license)\n8. [Citation](#8-citation)\n9. [Contact](#9-contact)\n\n\n## 1. Introduction\n\nWe present DeepSeek-V3, a strong Mixture-of-Experts (MoE) language model with 671B total parameters with 37B activated for each token. \nTo achieve efficient inference and cost-effective training, DeepSeek-V3 adopts Multi-head Latent Attention (MLA) and DeepSeekMoE architectures, which were thoroughly validated in DeepSeek-V2. \nFurthermore, DeepSeek-V3 pioneers an auxiliary-loss-free strategy for load balancing and sets a multi-token prediction training objective for stronger performance. \nWe pre-train DeepSeek-V3 on 14.8 trillion diverse and high-quality tokens, followed by Supervised Fine-Tuning and Reinforcement Learning stages to fully harness its capabilities. \nComprehensive evaluations reveal that DeepSeek-V3 outperforms other open-source models and achieves performance comparable to leading closed-source models.\nDespite its excellent performance, DeepSeek-V3 requires only 2.788M H800 GPU hours for its full training.\nIn addition, its training process is remarkably stable. \nThroughout the entire training process, we did not experience any irrecoverable loss spikes or perform any rollbacks. \n<p align=\"center\">\n  <img width=\"80%\" src=\"figures/benchmark.png\">\n</p>\n\n## 2. Model Summary\n\n---\n\n**Architecture: Innovative Load Balancing Strategy and Training Objective**\n\n- On top of the efficient architecture of DeepSeek-V2, we pioneer an auxiliary-loss-free strategy for load balancing, which minimizes the performance degradation that arises from encouraging load balancing.\n-  We investigate a Multi-Token Prediction (MTP) objective and prove it beneficial to model performance. \n    It can also be used for speculative decoding for inference acceleration. \n\n---\n\n**Pre-Training: Towards Ultimate Training Efficiency**\n\n- We design an FP8 mixed precision training framework and, for the first time, validate the feasibility and effectiveness of FP8 training on an extremely large-scale model.  \n- Through co-design of algorithms, frameworks, and hardware, we overcome the communication bottleneck in cross-node MoE training, nearly achieving full computation-communication overlap.  \n  This significantly enhances our training efficiency and reduces the training costs, enabling us to further scale up the model size without additional overhead.  \n- At an economical cost of only 2.664M H800 GPU hours, we complete the pre-training of DeepSeek-V3 on 14.8T tokens, producing the currently strongest open-source base model. The subsequent training stages after pre-training require only 0.1M GPU hours.\n\n---\n\n**Post-Training: Knowledge Distillation from DeepSeek-R1**\n\n-   We introduce an innovative methodology to distill reasoning capabilities from the long-Chain-of-Thought (CoT) model, specifically from one of the DeepSeek R1 series models, into standard LLMs, particularly DeepSeek-V3. Our pipeline elegantly incorporates the verification and reflection patterns of R1 into DeepSeek-V3 and notably improves its reasoning performance. Meanwhile, we also maintain a control over the output style and length of DeepSeek-V3.\n\n---\n\n\n## 3. Model Downloads\n\n<div align=\"center\">\n\n| **Model** | **#Total Params** | **#Activated Params** | **Context Length** | **Download** |\n| :------------: | :------------: | :------------: | :------------: | :------------: |\n| DeepSeek-V3-Base | 671B | 37B | 128K   | [\ud83e\udd17 Hugging Face](https://huggingface.co/deepseek-ai/DeepSeek-V3-Base)   |\n| DeepSeek-V3   | 671B | 37B |  128K   | [\ud83e\udd17 Hugging Face](https://huggingface.co/deepseek-ai/DeepSeek-V3)   |\n\n</div>\n\n> [!NOTE]\n> The total size of DeepSeek-V3 models on Hugging Face is 685B, which includes 671B of the Main Model weights and 14B of the Multi-Token Prediction (MTP) Module weights.\n\nTo ensure optimal performance and flexibility, we have partnered with open-source communities and hardware vendors to provide multiple ways to run the model locally. For step-by-step guidance, check out Section 6: [How_to Run_Locally](#6-how-to-run-locally).\n\nFor developers looking to dive deeper, we recommend exploring [README_WEIGHTS.md](./README_WEIGHTS.md) for details on the Main Model weights and the Multi-Token Prediction (MTP) Modules. Please note that MTP support is currently under active development within the community, and we welcome your contributions and feedback.\n\n## 4. Evaluation Results\n### Base Model\n#### Standard Benchmarks\n\n<div align=\"center\">\n\n\n|  | Benchmark (Metric) | # Shots | DeepSeek-V2 | Qwen2.5 72B | LLaMA3.1 405B | DeepSeek-V3 |\n|---|-------------------|----------|--------|-------------|---------------|---------|\n| | Architecture | - | MoE | Dense | Dense | MoE |\n| | # Activated Params | - | 21B | 72B | 405B | 37B |\n| | # Total Params | - | 236B | 72B | 405B | 671B |\n| English | Pile-test (BPB) | - | 0.606 | 0.638 | **0.542** | 0.548 |\n| | BBH (EM) | 3-shot | 78.8 | 79.8 | 82.9 | **87.5** |\n| | MMLU (Acc.) | 5-shot | 78.4 | 85.0 | 84.4 | **87.1** |\n| | MMLU-Redux (Acc.) | 5-shot | 75.6 | 83.2 | 81.3 | **86.2** |\n| | MMLU-Pro (Acc.) | 5-shot | 51.4 | 58.3 | 52.8 | **64.4** |\n| | DROP (F1) | 3-shot | 80.4 | 80.6 | 86.0 | **89.0** |\n| | ARC-Easy (Acc.) | 25-shot | 97.6 | 98.4 | 98.4 | **98.9** |\n| | ARC-Challenge (Acc.) | 25-shot | 92.2 | 94.5 | **95.3** | **95.3** |\n| | HellaSwag (Acc.) | 10-shot | 87.1 | 84.8 | **89.2** | 88.9 |\n| | PIQA (Acc.) | 0-shot | 83.9 | 82.6 | **85.9** | 84.7 |\n| | WinoGrande (Acc.) | 5-shot | **86.3** | 82.3 | 85.2 | 84.9 |\n| | RACE-Middle (Acc.) | 5-shot | 73.1 | 68.1 | **74.2** | 67.1 |\n| | RACE-High (Acc.) | 5-shot | 52.6 | 50.3 | **56.8** | 51.3 |\n| | TriviaQA (EM) | 5-shot | 80.0 | 71.9 | 82.7 | **82.9** |\n| | NaturalQuestions (EM) | 5-shot | 38.6 | 33.2 | **41.5** | 40.0 |\n| | AGIEval (Acc.) | 0-shot | 57.5 | 75.8 | 60.6 | **79.6** |\n| Code | HumanEval (Pass@1) | 0-shot | 43.3 | 53.0 | 54.9 | **65.2** |\n| | MBPP (Pass@1) | 3-shot | 65.0 | 72.6 | 68.4 | **75.4** |\n| | LiveCodeBench-Base (Pass@1) | 3-shot | 11.6 |"
+          "preview": "<!-- markdownlint-disable first-line-h1 -->\n<!-- markdownlint-disable html -->\n<!-- markdownlint-disable no-duplicate-header -->\n\n<div align=\"center\">\n  <img src=\"https://github.com/deepseek-ai/DeepSeek-V2/blob/main/figures/logo.svg?raw=true\" width=\"60%\" alt=\"DeepSeek-V3\" />\n</div>\n<hr>\n<div align=\"center\" style=\"line-height: 1;\">\n  <a href=\"https://www.deepseek.com/\"><img alt=\"Homepage\"\n    src=\"https://github.com/deepseek-ai/DeepSeek-V2/blob/main/figures/badge.svg?raw=true\"/></a>\n  <a href=\"https://chat.deepseek.com/\"><img alt=\"Chat\"\n    src=\"https://img.shields.io/badge/🤖%20Chat-DeepSeek%20V3-536af5?color=536af5&logoColor=white\"/></a>\n  <a href=\"https://huggingface.co/deepseek-ai\"><img alt=\"Hugging Face\"\n    src=\"https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-DeepSeek%20AI-ffc107?color=ffc107&logoColor=white\"/></a>\n  <br>\n  <a href=\"https://discord.gg/Tc7c45Zzu5\"><img alt=\"Discord\"\n    src=\"https://img.shields.io/badge/Discord-DeepSeek%20AI-7289da?logo=discord&logoColor=white&color=7289da\"/></a>\n  <a href=\"https://github.com/deepseek-ai/DeepSeek-V2/blob/main/figures/qr.jpeg?raw=true\"><img alt=\"Wechat\"\n    src=\"https://img.shields.io/badge/WeChat-DeepSeek%20AI-brightgreen?logo=wechat&logoColor=white\"/></a>\n  <a href=\"https://twitter.com/deepseek_ai\"><img alt=\"Twitter Follow\"\n    src=\"https://img.shields.io/badge/Twitter-deepseek_ai-white?logo=x&logoColor=white\"/></a>\n  <br>\n  <a href=\"https://github.com/deepseek-ai/DeepSeek-V3/blob/main/LICENSE-CODE\"><img alt=\"Code License\"\n    src=\"https://img.shields.io/badge/Code_License-MIT-f5de53?&color=f5de53\"/></a>\n  <a href=\"https://github.com/deepseek-ai/DeepSeek-V3/blob/main/LICENSE-MODEL\"><img alt=\"Model License\"\n    src=\"https://img.shields.io/badge/Model_License-Model_Agreement-f5de53?&color=f5de53\"/></a>\n  <br>\n  <a href=\"https://arxiv.org/pdf/2412.19437\"><b>Paper Link</b>👁️</a>\n</div>\n\n## Table of Contents\n\n1. [Introduction](#1-introduction)\n2. [Model Summary](#2-model-summary)\n3. [Model Downloads](#3-model-downloads)\n4. [Evaluation Results](#4-evaluation-results)\n5. [Chat Website & API Platform](#5-chat-website--api-platform)\n6. [How to Run Locally](#6-how-to-run-locally)\n7. [License](#7-license)\n8. [Citation](#8-citation)\n9. [Contact](#9-contact)\n\n\n## 1. Introduction\n\nWe present DeepSeek-V3, a strong Mixture-of-Experts (MoE) language model with 671B total parameters with 37B activated for each token. \nTo achieve efficient inference and cost-effective training, DeepSeek-V3 adopts Multi-head Latent Attention (MLA) and DeepSeekMoE architectures, which were thoroughly validated in DeepSeek-V2. \nFurthermore, DeepSeek-V3 pioneers an auxiliary-loss-free strategy for load balancing and sets a multi-token prediction training objective for stronger performance. \nWe pre-train DeepSeek-V3 on 14.8 trillion diverse and high-quality tokens, followed by Supervised Fine-Tuning and Reinforcement Learning stages to fully harness its capabilities. \nComprehensive evaluations reveal that DeepSeek-V3 outperforms other open-source models and achieves performance comparable to leading closed-source models.\nDespite its excellent performance, DeepSeek-V3 requires only 2.788M H800 GPU hours for its full training.\nIn addition, its training process is remarkably stable. \nThroughout the entire training process, we did not experience any irrecoverable loss spikes or perform any rollbacks. \n<p align=\"center\">\n  <img width=\"80%\" src=\"figures/benchmark.png\">\n</p>\n\n## 2. Model Summary\n\n---\n\n**Architecture: Innovative Load Balancing Strategy and Training Objective**\n\n- On top of the efficient architecture of DeepSeek-V2, we pioneer an auxiliary-loss-free strategy for load balancing, which minimizes the performance degradation that arises from encouraging load balancing.\n-  We investigate a Multi-Token Prediction (MTP) objective and prove it beneficial to model performance. \n    It can also be used for speculative decoding for inference acceleration. \n\n---\n\n**Pre-Training: Towards Ultimate Training Efficiency**\n\n- We design an FP8 mixed precision training framework and, for the first time, validate the feasibility and effectiveness of FP8 training on an extremely large-scale model.  \n- Through co-design of algorithms, frameworks, and hardware, we overcome the communication bottleneck in cross-node MoE training, nearly achieving full computation-communication overlap.  \n  This significantly enhances our training efficiency and reduces the training costs, enabling us to further scale up the model size without additional overhead.  \n- At an economical cost of only 2.664M H800 GPU hours, we complete the pre-training of DeepSeek-V3 on 14.8T tokens, producing the currently strongest open-source base model. The subsequent training stages after pre-training require only 0.1M GPU hours.\n\n---\n\n**Post-Training: Knowledge Distillation from DeepSeek-R1**\n\n-   We introduce an innovative methodology to distill reasoning capabilities from the long-Chain-of-Thought (CoT) model, specifically from one of the DeepSeek R1 series models, into standard LLMs, particularly DeepSeek-V3. Our pipeline elegantly incorporates the verification and reflection patterns of R1 into DeepSeek-V3 and notably improves its reasoning performance. Meanwhile, we also maintain a control over the output style and length of DeepSeek-V3.\n\n---\n\n\n## 3. Model Downloads\n\n<div align=\"center\">\n\n| **Model** | **#Total Params** | **#Activated Params** | **Context Length** | **Download** |\n| :------------: | :------------: | :------------: | :------------: | :------------: |\n| DeepSeek-V3-Base | 671B | 37B | 128K   | [🤗 Hugging Face](https://huggingface.co/deepseek-ai/DeepSeek-V3-Base)   |\n| DeepSeek-V3   | 671B | 37B |  128K   | [🤗 Hugging Face](https://huggingface.co/deepseek-ai/DeepSeek-V3)   |\n\n</div>\n\n> [!NOTE]\n> The total size of DeepSeek-V3 models on Hugging Face is 685B, which includes 671B of the Main Model weights and 14B of the Multi-Token Prediction (MTP) Module weights.\n\nTo ensure optimal performance and flexibility, we have partnered with open-source communities and hardware vendors to provide multiple ways to run the model locally. For step-by-step guidance, check out Section 6: [How_to Run_Locally](#6-how-to-run-locally).\n\nFor developers looking to dive deeper, we recommend exploring [README_WEIGHTS.md](./README_WEIGHTS.md) for details on the Main Model weights and the Multi-Token Prediction (MTP) Modules. Please note that MTP support is currently under active development within the community, and we welcome your contributions and feedback.\n\n## 4. Evaluation Results\n### Base Model\n#### Standard Benchmarks\n\n<div align=\"center\">\n\n\n|  | Benchmark (Metric) | # Shots | DeepSeek-V2 | Qwen2.5 72B | LLaMA3.1 405B | DeepSeek-V3 |\n|---|-------------------|----------|--------|-------------|---------------|---------|\n| | Architecture | - | MoE | Dense | Dense | MoE |\n| | # Activated Params | - | 21B | 72B | 405B | 37B |\n| | # Total Params | - | 236B | 72B | 405B | 671B |\n| English | Pile-test (BPB) | - | 0.606 | 0.638 | **0.542** | 0.548 |\n| | BBH (EM) | 3-shot | 78.8 | 79.8 | 82.9 | **87.5** |\n| | MMLU (Acc.) | 5-shot | 78.4 | 85.0 | 84.4 | **87.1** |\n| | MMLU-Redux (Acc.) | 5-shot | 75.6 | 83.2 | 81.3 | **86.2** |\n| | MMLU-Pro (Acc.) | 5-shot | 51.4 | 58.3 | 52.8 | **64.4** |\n| | DROP (F1) | 3-shot | 80.4 | 80.6 | 86.0 | **89.0** |\n| | ARC-Easy (Acc.) | 25-shot | 97.6 | 98.4 | 98.4 | **98.9** |\n| | ARC-Challenge (Acc.) | 25-shot | 92.2 | 94.5 | **95.3** | **95.3** |\n| | HellaSwag (Acc.) | 10-shot | 87.1 | 84.8 | **89.2** | 88.9 |\n| | PIQA (Acc.) | 0-shot | 83.9 | 82.6 | **85.9** | 84.7 |\n| | WinoGrande (Acc.) | 5-shot | **86.3** | 82.3 | 85.2 | 84.9 |\n| | RACE-Middle (Acc.) | 5-shot | 73.1 | 68.1 | **74.2** | 67.1 |\n| | RACE-High (Acc.) | 5-shot | 52.6 | 50.3 | **56.8** | 51.3 |\n| | TriviaQA (EM) | 5-shot | 80.0 | 71.9 | 82.7 | **82.9** |\n| | NaturalQuestions (EM) | 5-shot | 38.6 | 33.2 | **41.5** | 40.0 |\n| | AGIEval (Acc.) | 0-shot | 57.5 | 75.8 | 60.6 | **79.6** |\n| Code | HumanEval (Pass@1) | 0-shot | 43.3 | 53.0 | 54.9 | **65.2** |\n| | MBPP (Pass@1) | 3-shot | 65.0 | 72.6 | 68.4 | **75.4** |\n| | LiveCodeBench-Base (Pass@1) | 3-shot | 11.6 |"
         }
       ],
       "config_files": [],
@@ -1077,7 +1077,7 @@
         "steps": [
           {
             "id": "serialize",
-            "label": "JSON serialize (inventory \u2192 SQLite)",
+            "label": "JSON serialize (inventory → SQLite)",
             "ms": 0,
             "pct": 0
           },
@@ -1096,5 +1096,831 @@
         ]
       }
     ]
+  },
+  "report": {
+    "overview": "DeepSeek-V3 is the official reference implementation ('DeepSeek-Infer Demo') for the DeepSeek-V3 671B-parameter Mixture-of-Experts language model (37B activated per token). It ships a minimal PyTorch/Triton inference stack — model definition, FP8 quantization kernels, a torchrun-based chat/batch generation CLI, and checkpoint-conversion scripts — intended as a correctness reference rather than a production serving framework (the README points users to SGLang, vLLM, LMDeploy, TensorRT-LLM, and LightLLM for real deployments). Distinctive features are the Multi-head Latent Attention (MLA) architecture with an optional low-rank 'absorb' KV-cache path, auxiliary-loss-free MoE routing with grouped top-k gating, and native FP8 (e4m3, 128x128 block-scaled) weight support.",
+    "system_map": {
+      "summary": "The repo is a small, flat reference codebase: all executable code lives under inference/ (five Python files plus a configs/ directory of JSON model presets). The primary entrypoint is generate.py, launched via torchrun for multi-node, tensor-parallel inference; convert.py and fp8_cast_bf16.py are standalone CLI utilities for checkpoint preparation. model.py contains the entire model definition (Transformer, Block, MLA, MoE, Gate, parallel linears) and kernel.py contains the Triton kernels for FP8 quantization and GEMM. There is no build system, package manifest, or test suite — the only CI is a GitHub Actions stale-issue bot. Weights are safetensors files on disk, sharded per rank by convert.py, and runtime state is GPU-resident KV-cache buffers.",
+      "claims": [
+        {
+          "claim": "All runnable code lives in inference/: model.py (model definition, 808 lines), kernel.py (Triton kernels), generate.py (CLI entrypoint), convert.py (HF->demo checkpoint converter), fp8_cast_bf16.py (FP8->BF16 weight converter), plus configs/*.json presets.",
+          "sources": [
+            "inference/model.py",
+            "inference/kernel.py",
+            "inference/generate.py",
+            "inference/convert.py",
+            "inference/fp8_cast_bf16.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "generate.py is the primary entrypoint, designed to be launched by torchrun; main() reads WORLD_SIZE, RANK, and LOCAL_RANK environment variables and calls dist.init_process_group('nccl') when world_size > 1.",
+          "sources": [
+            "inference/generate.py#L100-104",
+            "README.md#L295-303"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "model.py defines the full architecture in one file: Transformer wraps ParallelEmbedding, a ModuleList of Block (MLA attention + MLP or MoE FFN), final RMSNorm, and a ColumnParallelLinear head.",
+          "sources": [
+            "inference/model.py#L738-798",
+            "inference/model.py#L696-735"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "kernel.py provides three Triton kernels — act_quant_kernel (per-128-block activation quantization to float8_e4m3fn), weight_dequant_kernel (blockwise FP8->BF16 dequant), and an autotuned fp8_gemm_kernel accumulating in fp32.",
+          "sources": [
+            "inference/kernel.py#L9-57",
+            "inference/kernel.py#L60-110",
+            "inference/kernel.py#L113-196"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Checkpoints are stored as per-rank safetensors shards named model{rank}-mp{world_size}.safetensors, produced by convert.py and consumed by generate.py via safetensors.torch.load_model.",
+          "sources": [
+            "inference/convert.py#L80-81",
+            "inference/generate.py#L119"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Model hyperparameters are supplied as JSON files under inference/configs/ (config_16B.json, config_236B.json, config_671B.json, config_v3.1.json) deserialized directly into the ModelArgs dataclass in main().",
+          "sources": [
+            "inference/generate.py#L112-113",
+            "inference/configs/config_671B.json",
+            "inference/model.py#L19-86"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Dependencies are pinned in inference/requirements.txt: torch==2.4.1, triton==3.0.0, transformers==4.46.3, safetensors==0.4.5; the README states Linux + Python 3.10 only, with Mac and Windows unsupported.",
+          "sources": [
+            "inference/requirements.txt",
+            "README.md#L254-265"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "There is no package manifest (no setup.py/pyproject.toml) and imports are bare sibling imports ('from kernel import ...', 'from model import ...'), so scripts must be run from inside the inference/ directory.",
+          "sources": [
+            "inference/generate.py#L11",
+            "inference/model.py#L10",
+            "inference/fp8_cast_bf16.py#L10"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The only CI/CD automation is .github/workflows/stale.yml, a daily actions/stale@v9 job that marks issues stale after 30 days and closes them after 14 more; there is no build, lint, or test workflow.",
+          "sources": [
+            ".github/workflows/stale.yml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Runtime state is GPU-resident: MLA registers non-persistent buffers kv_cache/pe_cache (absorb impl) or k_cache/v_cache (naive impl) sized [max_batch_size, max_seq_len, ...] at construction.",
+          "sources": [
+            "inference/model.py#L439-444"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Tensor parallelism is implemented via ColumnParallelLinear/RowParallelLinear, ParallelEmbedding, and expert-sharded MoE, synchronized with dist.all_reduce / dist.all_gather at layer boundaries.",
+          "sources": [
+            "inference/model.py#L208-267",
+            "inference/model.py#L89-128",
+            "inference/model.py#L691-697"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The tokenizer is loaded from the checkpoint directory with transformers AutoTokenizer.from_pretrained(ckpt_path), so the converted output dir must contain HF tokenizer files (convert.py copies files matching '*token*').",
+          "sources": [
+            "inference/generate.py#L117",
+            "inference/convert.py#L83-85"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Production deployment is delegated to external frameworks; the README recommends SGLang, LMDeploy, TensorRT-LLM, vLLM, and LightLLM, and notes Hugging Face Transformers is not directly supported.",
+          "sources": [
+            "README.md#L231-250",
+            "README.md#L305-341"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Licensing is split: code under MIT (LICENSE-CODE) and model weights under a separate Model License (LICENSE-MODEL), with commercial use permitted.",
+          "sources": [
+            "README.md#L344-345"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "feature_catalog": {
+      "summary": "User-facing surface is deliberately small: a torchrun-launched CLI supporting interactive multi-turn chat and batch file inference, two checkpoint-conversion utilities, and a set of compile-time implementation switches (attention impl, GEMM impl, gate score function, quantization scale format). Config presets cover 16B/236B/671B model sizes plus the V3.1 variant with ue8m0 scale format. The README documents the model itself (benchmarks, weights layout, deployment ecosystem) more than the code, which is positioned as a demo.",
+      "claims": [
+        {
+          "claim": "Interactive chat mode (--interactive) presents a '>>> ' prompt loop with two built-in slash commands: /exit to quit and /clear to reset message history.",
+          "sources": [
+            "inference/generate.py#L121-144"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Batch mode (--input-file FILE) reads one prompt per line, applies the chat template to each as a single user message, and prints Prompt/Completion pairs; prompt count is asserted <= args.max_batch_size.",
+          "sources": [
+            "inference/generate.py#L145-155"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Sampling supports temperature-scaled multinomial sampling (implemented as argmax of probs/exponential(1), i.e. the Gumbel-max trick) and greedy decoding when temperature <= 0 via logits.argmax.",
+          "sources": [
+            "inference/generate.py#L14-27",
+            "inference/generate.py#L62-65"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Multi-turn context is maintained in a messages list and rendered each turn by tokenizer.apply_chat_template(messages, add_generation_prompt=True).",
+          "sources": [
+            "inference/generate.py#L139-144"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "convert.py converts a Hugging Face checkpoint directory into per-rank demo shards, with required CLI args --hf-ckpt-path, --save-path, --n-experts, --model-parallel.",
+          "sources": [
+            "inference/convert.py#L88-96",
+            "README.md#L283-289"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "fp8_cast_bf16.py converts an FP8 HF checkpoint to BF16 by dequantizing every 1-byte weight with its *_scale_inv tensor and rewriting model.safetensors.index.json.",
+          "sources": [
+            "inference/fp8_cast_bf16.py#L63-103",
+            "README.md#L242-247"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Two attention implementations are selectable via the module-level attn_impl global: 'naive' (materializes per-head k/v caches) and 'absorb' (default; caches latent kv + rope pe vectors).",
+          "sources": [
+            "inference/model.py#L17",
+            "inference/model.py#L439-497"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Two GEMM paths are selectable via the gemm_impl global: 'bf16' dequantizes FP8 weights then calls F.linear; 'fp8' quantizes activations with act_quant and runs fp8_gemm.",
+          "sources": [
+            "inference/model.py#L16",
+            "inference/model.py#L131-163"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "MoE gating supports grouped top-k expert routing with either softmax or sigmoid scoring (score_func), an optional learned bias for auxiliary-loss-free balancing, and route_scale weight scaling.",
+          "sources": [
+            "inference/model.py#L535-598",
+            "inference/configs/config_671B.json"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "YaRN-style RoPE extension is implemented in precompute_freqs_cis using original_seq_len, rope_factor, beta_fast/beta_slow correction ranges, and an mscale-adjusted softmax_scale for long context.",
+          "sources": [
+            "inference/model.py#L297-375",
+            "inference/model.py#L435-437"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Four shipped config presets parameterize the same code for different models: config_16B (DeepSeek-V2-Lite-like, q_lora_rank 0, softmax gate), config_236B, config_671B (61 layers, 256 experts, sigmoid gate, fp8), and config_v3.1 (adds scale_fmt ue8m0).",
+          "sources": [
+            "inference/configs/config_16B.json",
+            "inference/configs/config_236B.json",
+            "inference/configs/config_671B.json",
+            "inference/configs/config_v3.1.json"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "model.py doubles as a smoke-test script: its __main__ block builds a default ModelArgs Transformer on CUDA and prints the output logits shape.",
+          "sources": [
+            "inference/model.py#L801-808"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The Multi-Token Prediction (MTP) module weights documented in README_WEIGHTS.md (layer 61: enorm, hnorm, eh_proj, shared_head) are not supported by the demo — convert.py explicitly skips any tensor whose name contains 'model.layers.61'.",
+          "sources": [
+            "README_WEIGHTS.md#L33-48",
+            "inference/convert.py#L53-54"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Non-rank-0 ranks participate in interactive chat by receiving the prompt via dist.broadcast_object_list, so all ranks stay synchronized through the input loop.",
+          "sources": [
+            "inference/generate.py#L124-133"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "data_flow": {
+      "summary": "Data moves along three pipelines: (1) offline checkpoint conversion — HF safetensors are renamed via the convert.py mapping table, column/row-sharded across mp ranks, and experts are partitioned contiguously; (2) startup — JSON config -> ModelArgs -> Transformer construction -> safetensors load_model into each rank's shard; (3) inference — token IDs flow through vocab-parallel embedding, N Blocks of RMSNorm->MLA->residual and RMSNorm->(MLP|MoE)->residual, a final norm + head producing logits that are all-gathered across ranks, then sampled and appended back into the token buffer. FP8 support threads through as blockwise scale tensors attached to Linear weights.",
+      "claims": [
+        {
+          "claim": "Config data flows: --config JSON -> json.load -> ModelArgs(**dict); every architecture knob (dim, n_layers, n_routed_experts, dtype, scale_fmt, rope params) is a ModelArgs field with defaults matching the 16B model.",
+          "sources": [
+            "inference/generate.py#L112-113",
+            "inference/model.py#L19-86",
+            "inference/configs/config_16B.json"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Weight-name conversion is driven by the convert.py `mapping` dict, which renames HF keys (e.g. self_attn.q_a_proj -> attn.wq_a, mlp.gate_proj -> ffn.w1, weight_scale_inv -> scale, e_score_correction_bias -> bias) and records the shard axis (0 or 1) per tensor type.",
+          "sources": [
+            "inference/convert.py#L11-30",
+            "inference/convert.py#L56-65"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Expert sharding in convert.py assigns expert i to rank floor(i / n_local_experts); non-expert tensors with a shard axis are narrowed into mp contiguous slices, asserted divisible by mp.",
+          "sources": [
+            "inference/convert.py#L66-76"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "At startup each rank loads only its shard file model{rank}-mp{world_size}.safetensors after a 2-token warmup generate call that exercises the model before weights are loaded.",
+          "sources": [
+            "inference/generate.py#L115-119"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Token flow: input IDs -> ParallelEmbedding (each rank embeds only its vocab slice, masks others to zero, then all_reduce) -> h [bsz, seqlen, dim].",
+          "sources": [
+            "inference/model.py#L107-128",
+            "inference/model.py#L784-785"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "MLA forward computes q via wq or wq_a->q_norm->wq_b, splits q into q_nope/q_pe, applies RoPE to q_pe and to the k_pe slice of wkv_a output, then either writes k/v caches (naive) or caches normalized kv latent + pe (absorb).",
+          "sources": [
+            "inference/model.py#L446-487"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Attention scores are softmaxed in float32 then cast back to the input dtype; the causal mask is an additive -inf upper-triangular tensor built only when seqlen > 1.",
+          "sources": [
+            "inference/model.py#L488-490",
+            "inference/model.py#L787-789"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "MoE forward flattens tokens to [tokens, dim], routes via Gate (scores -> optional group masking -> top-k indices -> gather original scores -> normalize -> route_scale), then loops over local experts scattering weighted outputs, adds shared_experts output, and all_reduces across ranks.",
+          "sources": [
+            "inference/model.py#L669-693",
+            "inference/model.py#L566-598"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Final logits are produced by ColumnParallelLinear head and reassembled across ranks with dist.all_gather + concat along the vocab dimension.",
+          "sources": [
+            "inference/model.py#L792-797"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The decode loop writes prompt tokens into a -1-padded buffer, iterates cur_pos from min(prompt_lens) to total_len calling model.forward on the slice [prev_pos:cur_pos], and forces prompt positions via prompt_mask so prefilled tokens override sampled ones.",
+          "sources": [
+            "inference/generate.py#L51-71"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "FP8 quantization data flow: act_quant produces (float8_e4m3fn tensor, fp32 scales) per 128-element block; fp8_gemm multiplies scaled blocks accumulating in fp32; weight scales live as a .scale Parameter on each Linear whose weight element_size() == 1.",
+          "sources": [
+            "inference/kernel.py#L38-57",
+            "inference/kernel.py#L118-172",
+            "inference/model.py#L183-189"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "fp8_cast_bf16 reads model.safetensors.index.json weight_map to locate tensors across shard files, keeps a 2-file LRU cache of loaded safetensors on cuda, dequantizes each FP8 weight with weight_dequant, and strips *_scale_inv entries from the output index.",
+          "sources": [
+            "inference/fp8_cast_bf16.py#L34-103"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "EOS handling: finished flags update only for generated positions (not prompt), generation breaks early when all sequences finish, and each completion is truncated at its first eos_id.",
+          "sources": [
+            "inference/generate.py#L68-78"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "behavior_traces": {
+      "summary": "Three flows were traced end-to-end. Startup: torchrun env -> process group -> config -> model construction -> warmup -> weight load. Interactive turn: input -> broadcast -> chat template -> generate loop -> decode -> history append. Per-decode-step forward: embed -> freqs_cis slice -> per-Block (attn_norm -> MLA -> residual; ffn_norm -> MLP/MoE -> residual) -> final norm -> head -> all-gather -> sample. Offline conversion runs glob -> safe_open -> rename -> shard/expert-partition -> save_file -> tokenizer copy.",
+      "claims": [
+        {
+          "claim": "Startup trace: torchrun sets WORLD_SIZE/RANK/LOCAL_RANK -> main() reads them via os.getenv -> dist.init_process_group('nccl') if world_size>1 -> non-rank-0 rebinds print to a no-op -> torch.cuda.set_device(local_rank) -> set_default_dtype(bfloat16) -> ModelArgs loaded from --config JSON.",
+          "sources": [
+            "inference/generate.py#L100-114"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Startup continues: Transformer(args) constructor sets globals world_size/rank from torch.distributed and Linear.dtype (float8_e4m3fn if args.dtype=='fp8' else bfloat16), then builds embed/layers/norm/head and precomputes freqs_cis.",
+          "sources": [
+            "inference/model.py#L750-770"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Startup finishes with a warmup: tokenizer loaded via AutoTokenizer, generate() called on the tokenized string 'DeepSeek' for 2 tokens, then safetensors load_model applies the rank's shard into the already-allocated module tree.",
+          "sources": [
+            "inference/generate.py#L115-119"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Interactive turn trace: input('>>> ') on rank 0 -> dist.broadcast_object_list propagates to other ranks -> '/exit' breaks, '/clear' empties messages -> messages.append(user) -> apply_chat_template -> generate() -> tokenizer.decode(skip_special_tokens=True) -> print -> messages.append(assistant).",
+          "sources": [
+            "inference/generate.py#L121-144"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Decode-step trace inside generate(): for each cur_pos, model.forward(tokens[:, prev_pos:cur_pos], prev_pos) -> Transformer.forward embeds tokens, slices freqs_cis[start_pos:start_pos+seqlen], builds causal mask if seqlen>1, runs every Block, applies final norm on the last position only (h[:, -1]), projects to logits, all_gathers across ranks.",
+          "sources": [
+            "inference/generate.py#L60-69",
+            "inference/model.py#L772-798"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "MLA 'absorb' trace: wq_a -> q_norm -> wq_b -> view to heads -> split q_nope/q_pe -> apply_rotary_emb(q_pe) -> wkv_a -> split kv/k_pe -> apply_rotary_emb(k_pe) -> kv_norm(kv) written to kv_cache, k_pe to pe_cache -> scores = einsum(q_nope,kv_cache)+einsum(q_pe,pe_cache) -> softmax fp32 -> einsum with kv_cache then wkv_b value slice -> wo.",
+          "sources": [
+            "inference/model.py#L461-497"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Gate trace: linear(x, gate.weight) -> softmax-or-sigmoid scores -> add bias if present -> if n_groups>1, compute group scores (amax without bias, topk(2) sum with bias), keep top topk_groups groups via masked_fill(-inf) -> topk(n_activated_experts) indices -> gather weights from pre-bias scores -> sigmoid weights normalized -> *= route_scale.",
+          "sources": [
+            "inference/model.py#L576-598"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "MoE trace: gate(x) -> bincount per-expert counts -> for each local expert index with count>0, torch.where(indices==i) selects tokens and y[idx] += expert(x[idx]) * weight -> shared_experts MLP on all tokens -> dist.all_reduce(y) -> return (y+z).view(shape).",
+          "sources": [
+            "inference/model.py#L679-693"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Conversion trace: glob(hf_ckpt_path/*.safetensors) -> safe_open each file -> per tensor: skip 'model.layers.61', strip 'model.' prefix, apply name replacements, look up (new_key, shard_dim) in mapping -> for each rank i: filter experts to that rank's contiguous range or narrow the tensor along shard_dim -> save_file per rank -> copy *token* files.",
+          "sources": [
+            "inference/convert.py#L50-85"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "fp8->bf16 trace: load index.json weight_map -> sort *.safetensors -> per file: load to cuda, drop *_scale_inv entries, weight_dequant each 1-byte tensor with its scale_inv (warning + passthrough on KeyError) -> save_file -> prune scale_inv keys from weight_map -> write new index.json.",
+          "sources": [
+            "inference/fp8_cast_bf16.py#L63-103"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "testing_signals": {
+      "summary": "There is effectively no test infrastructure: no test directory, no test framework in requirements.txt, and no CI workflow that builds or runs code — the sole GitHub Actions job is a stale-issue bot. Verification relies on a __main__ smoke block in model.py, a hardcoded warmup generation at startup, and liberal use of runtime asserts for shape/divisibility/contiguity preconditions. The README's benchmark tables are external evaluation results, not runnable tests.",
+      "claims": [
+        {
+          "claim": "No test files or directories exist in the repo; requirements.txt contains only runtime deps (torch, triton, transformers, safetensors) with no pytest, and the only workflow is stale.yml, which runs actions/stale and no code.",
+          "sources": [
+            "inference/requirements.txt",
+            ".github/workflows/stale.yml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "model.py's __main__ block is the only executable self-check: it builds a default Transformer on CUDA with a random [2,128] token batch and prints logits size — it asserts nothing and requires a GPU to run.",
+          "sources": [
+            "inference/model.py#L801-808"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "generate.py performs a warmup call generate(model, [tokenizer.encode('DeepSeek')], 2, -1, 1.) before weights are loaded, which smoke-tests allocation and the forward path but is not a correctness assertion (eos_id=-1 is a placeholder).",
+          "sources": [
+            "inference/generate.py#L117-118"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Defensive asserts are used as the main correctness mechanism: vocab/out/in features and expert counts must divide by world_size, tensors must be contiguous, and scale/weight dims must be 2-D.",
+          "sources": [
+            "inference/model.py#L101",
+            "inference/model.py#L219",
+            "inference/model.py#L248",
+            "inference/model.py#L658",
+            "inference/kernel.py#L51-52",
+            "inference/kernel.py#L104-105"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "fp8_gemm_kernel is wrapped in triton.autotune over 36 configs (BLOCK_SIZE_M x BLOCK_SIZE_N x num_stages) keyed on N,K — a performance-regression mechanism, not a correctness test.",
+          "sources": [
+            "inference/kernel.py#L113-118"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The .gitignore is a stock Python template (references pytest_cache, coverage, tox, Django/Flask artifacts) that does not reflect any tooling actually present — e.g., no safetensors or checkpoint patterns are ignored.",
+          "sources": [
+            ".gitignore"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Benchmark tables in README.md (MMLU, HumanEval, AIME, etc.) are published results from external evaluation harnesses; nothing in the repo reproduces them.",
+          "sources": [
+            "README.md#L105-219"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Issue hygiene is semi-automated: stale.yml marks issues stale after 30 days and closes after 14, exempting 'pinned' and 'security' labels; PRs are exempt (days-before-pr-stale: -1).",
+          "sources": [
+            ".github/workflows/stale.yml#L14-29"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Untested critical surface includes the entire convert.py shard/rename pipeline and the Gate routing math — a silent mismatch there yields wrong weights or wrong routing with no failure signal.",
+          "sources": [
+            "inference/convert.py",
+            "inference/model.py#L566-598"
+          ],
+          "kind": "inference"
+        }
+      ]
+    },
+    "risk_map": {
+      "summary": "The codebase is a demo, and its risks match: correctness depends on runtime asserts (stripped under -O), module-level globals that must be set before model construction, a hardcoded dim==7168 special case in Gate, and silent behaviors like dropping all layer-61 (MTP) weights during conversion. The distributed path uses pickle-based broadcast_object_list and suppresses stdout on non-zero ranks. Memory is pre-allocated aggressively (full-length KV caches). There is no input validation on paths and no test coverage anywhere.",
+      "claims": [
+        {
+          "claim": "Gate creates its correction bias only when self.dim == 7168 — a magic-number coupling to the 671B config; any other model dim that needs e_score_correction_bias (e.g., V3.1-style variants on different dims) would silently load-mismatch.",
+          "sources": [
+            "inference/model.py#L563-564"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "world_size, rank, gemm_impl, attn_impl, and block_size are module-level globals in model.py; world_size/rank are only (re)assigned inside Transformer.__init__, so constructing modules before the Transformer or changing impl flags post-hoc gives stale values.",
+          "sources": [
+            "inference/model.py#L13-17",
+            "inference/model.py#L757-759"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "gemm_impl and attn_impl are not exposed as CLI flags in generate.py — changing them requires editing model.py, and nothing validates the combination against the loaded checkpoint dtype.",
+          "sources": [
+            "inference/model.py#L16-17",
+            "inference/generate.py#L176-185"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "main() rebinds the builtin name 'print' to a no-op lambda on non-zero ranks via 'global print' — any library code or later edits relying on print on those ranks are silently swallowed.",
+          "sources": [
+            "inference/generate.py#L105-107"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "convert.py unconditionally skips every tensor containing 'model.layers.61', silently discarding the MTP module weights without warning.",
+          "sources": [
+            "inference/convert.py#L53-54",
+            "README_WEIGHTS.md#L46-48"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Interactive mode synchronizes ranks with dist.broadcast_object_list, which pickles Python objects over the wire — acceptable for a trusted torchrun cluster but unsafe if any peer is untrusted.",
+          "sources": [
+            "inference/generate.py#L128-133"
+          ],
+          "kind": "inference"
+        },
+        {
+          "claim": "User-supplied paths (--ckpt-path, --config, --input-file, --hf-ckpt-path, --save-path) are used directly in open()/glob()/os.makedirs with no validation; this is a CLI tool so impact is limited to the invoking user's privileges.",
+          "sources": [
+            "inference/generate.py#L112",
+            "inference/generate.py#L146",
+            "inference/convert.py#L50",
+            "inference/convert.py#L78"
+          ],
+          "kind": "inference"
+        },
+        {
+          "claim": "Validation is assert-based throughout (CLI arg checks, batch-size limit, divisibility, contiguity); running under python -O strips all of it, turning config errors into shape mismatches deep in the forward pass.",
+          "sources": [
+            "inference/generate.py#L148",
+            "inference/generate.py#L184",
+            "inference/kernel.py#L51-52",
+            "inference/convert.py#L95"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "KV caches are allocated at construction as zeros(max_batch_size, max_seq_len, ...) — with defaults max_seq_len=16384 that's a large always-on GPU allocation per layer regardless of actual prompt lengths.",
+          "sources": [
+            "inference/model.py#L439-444",
+            "inference/model.py#L55-56"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The MoE expert dispatch is a Python loop over experts with torch.where gather per expert — O(n_routed_experts) kernel launches per layer per step; correct but far from production performance (README itself steers users to SGLang/vLLM).",
+          "sources": [
+            "inference/model.py#L683-689",
+            "README.md#L229-238"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "weight_dequant inside the absorb attention path runs every forward step when wkv_b is FP8 (wkv_b.scale is not None), dequantizing the full kv_b weight per decode step — a hidden per-token cost.",
+          "sources": [
+            "inference/model.py#L481"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "sample() divides probs in-place by an exponential_ tensor (probs.div_); logits are also divided by max(temperature,1e-5) — correct Gumbel-max sampling, but in-place mutation of freshly computed probs is fragile if reused.",
+          "sources": [
+            "inference/generate.py#L25-27"
+          ],
+          "kind": "inference"
+        },
+        {
+          "claim": "fp8_cast_bf16 loads entire safetensor files to cuda and caches up to 2 files; on machines with less VRAM than 2 shards this OOMs, and the 'missing scale_inv' path only prints a warning while still writing the FP8 weight into a 'BF16' checkpoint.",
+          "sources": [
+            "inference/fp8_cast_bf16.py#L60-94"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "generate() pads the token buffer with -1 and relies on prompt_mask; if a batch mixes prompt lengths, positions before min(prompt_lens) are forced from the buffer — correct, but the loop can never start before min(prompt_lens), so shorter prompts waste no steps while all sequences share total_len.",
+          "sources": [
+            "inference/generate.py#L54-66"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "extension_points": {
+      "summary": "This is a reference implementation, not a plugin architecture — there are no registries or hook interfaces. Extension happens through four narrow seams: the ModelArgs/configs JSON surface for new model sizes, the convert.py `mapping` table for new HF weight names, the module-level Literal switches (gemm_impl, attn_impl, score_func, scale_fmt) for implementation variants, and the fp8_gemm_configs autotune list for kernel tuning. New chat commands are string-matched literals in the interactive loop.",
+      "claims": [
+        {
+          "claim": "ModelArgs is the single configuration surface: adding support for a new checkpoint size means adding a JSON file under inference/configs/ whose keys match ModelArgs field names — unknown keys would raise TypeError in ModelArgs(**json.load(f)).",
+          "sources": [
+            "inference/model.py#L19-86",
+            "inference/generate.py#L113",
+            "inference/configs/config_v3.1.json"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "convert.py's `mapping` dict is the extension table for weight renames: to support a new HF parameter name, add an entry mapping the HF key segment to (demo_name, shard_axis_or_None); unmapped keys hit 'assert key in mapping'.",
+          "sources": [
+            "inference/convert.py#L11-30",
+            "inference/convert.py#L62-65"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "attn_impl is a Literal['naive','absorb'] global switch; a third attention backend would slot into MLA.__init__'s cache-buffer branch and MLA.forward's score/output branches.",
+          "sources": [
+            "inference/model.py#L17",
+            "inference/model.py#L439-497"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "gemm_impl is a Literal['bf16','fp8'] switch consulted in the linear() helper; a new GEMM path plugs in there and applies globally to every Linear subclass.",
+          "sources": [
+            "inference/model.py#L16",
+            "inference/model.py#L153-163"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Gate.score_func is a Literal['softmax','sigmoid'] switch with per-branch logic in forward (scoring and weight normalization); adding a scorer means touching both places.",
+          "sources": [
+            "inference/model.py#L72",
+            "inference/model.py#L577-598"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "scale_fmt is threaded from ModelArgs -> Linear.scale_fmt -> linear() -> act_quant -> act_quant_kernel constexpr; 'ue8m0' is the only implemented format (power-of-two scales via ceil(log2)), so new scale formats extend kernel.py's branch.",
+          "sources": [
+            "inference/model.py#L58",
+            "inference/model.py#L159",
+            "inference/kernel.py#L29-31",
+            "inference/configs/config_v3.1.json"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "fp8_gemm_configs is an explicit list of triton.Config tile parameters; new shapes/tunings are added by editing this list, and @triton.autotune keys on N,K.",
+          "sources": [
+            "inference/kernel.py#L113-118"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Chat slash commands are hardcoded string comparisons in the interactive loop ('/exit', '/clear'); a new command is another elif before messages.append.",
+          "sources": [
+            "inference/generate.py#L134-138"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Block selects dense-vs-MoE FFN purely by layer_id < args.n_dense_layers; architectures with interleaved or partially-MoE layouts require changing this branch, not just config.",
+          "sources": [
+            "inference/model.py#L716"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Experts are constructed per-rank with None placeholders in the ModuleList for non-local indices — extending to expert-parallel offload or remote experts would hook at this construction and the dispatch loop.",
+          "sources": [
+            "inference/model.py#L660-666",
+            "inference/model.py#L684-689"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "There is no plugin/registry system; all behavior changes are source edits. The repo's own recommendation for anything beyond demo use is to switch frameworks (SGLang/vLLM/LMDeploy/TRT-LLM/LightLLM).",
+          "sources": [
+            "README.md#L229-238"
+          ],
+          "kind": "inference"
+        }
+      ]
+    },
+    "agent_handoff": {
+      "summary": "Small codebase, high blast radius: five Python files where every edit is near the numerics. Read README.md section 6 first for the intended workflow, then generate.py (orchestration), model.py (all architecture), kernel.py (Triton numerics), and convert.py (weight naming contract). Validation is manual — there are no tests — so the smoke path is `python model.py` (needs CUDA) or a short torchrun generate. Known traps: module globals set only in Transformer.__init__, the dim==7168 gate-bias hack, silent layer-61 drops in convert.py, assert-based validation, and the requirement to run everything from inside inference/ with per-rank shard naming.",
+      "claims": [
+        {
+          "claim": "Read order for onboarding: README.md (workflow + ecosystem) -> inference/generate.py (CLI + distributed setup) -> inference/model.py (ModelArgs + all modules) -> inference/kernel.py (FP8 kernels) -> inference/convert.py (weight-name contract) -> README_WEIGHTS.md (checkpoint layout).",
+          "sources": [
+            "README.md#L227-303",
+            "inference/generate.py",
+            "inference/model.py",
+            "inference/kernel.py",
+            "inference/convert.py",
+            "README_WEIGHTS.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Environment setup is exactly: cd inference && pip install -r requirements.txt (torch 2.4.1, triton 3.0.0, transformers 4.46.3, safetensors 0.4.5); Linux + Python 3.10 + CUDA only — Triton kernels and torch.set_default_device('cuda') mean no CPU/macOS path.",
+          "sources": [
+            "inference/requirements.txt",
+            "README.md#L254-257",
+            "inference/model.py#L803"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Canonical run commands: convert with 'python convert.py --hf-ckpt-path <hf> --save-path <out> --n-experts 256 --model-parallel 16', then generate with 'torchrun --nnodes N --nproc-per-node 8 generate.py --ckpt-path <out> --config configs/config_671B.json --interactive'.",
+          "sources": [
+            "README.md#L283-303",
+            "inference/convert.py#L88-96",
+            "inference/generate.py#L176-185"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Checkpoint shard naming is a strict contract between convert.py and generate.py: files must be named model{rank}-mp{world_size}.safetensors in --ckpt-path; a mismatch in world_size between conversion and torchrun silently loads nothing-compatible.",
+          "sources": [
+            "inference/convert.py#L81",
+            "inference/generate.py#L119"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Always run scripts from inside inference/ — imports are bare ('from kernel import ...', 'from model import ...') with no package structure.",
+          "sources": [
+            "inference/model.py#L10",
+            "inference/generate.py#L11",
+            "inference/fp8_cast_bf16.py#L10"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Trap: Gate.bias exists iff args.dim == 7168. When adding a config or changing dim, also check whether the checkpoint has e_score_correction_bias tensors, or load_model will fail on unexpected keys.",
+          "sources": [
+            "inference/model.py#L563-564",
+            "inference/convert.py#L61"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Trap: world_size/rank globals and Linear.dtype are only assigned inside Transformer.__init__; never instantiate Block/MLA/Linear standalone expecting distributed or fp8 behavior.",
+          "sources": [
+            "inference/model.py#L757-761",
+            "inference/model.py#L13-17"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Trap: convert.py drops all 'model.layers.61' tensors (MTP module). If asked to support MTP/speculative decoding, this skip plus the missing eh_proj/enorm/hnorm mapping entries are the first things to change.",
+          "sources": [
+            "inference/convert.py#L53-54",
+            "inference/convert.py#L11-30",
+            "README_WEIGHTS.md#L41-48"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Smoke-test procedure after edits: 'python model.py' should print a logits shape (requires CUDA); for a real check, convert a small config (config_16B.json) and run a 2-token generate — there is no automated test to run instead.",
+          "sources": [
+            "inference/model.py#L801-808",
+            "inference/configs/config_16B.json"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Code conventions: every public class/function carries a docstring with Args/Returns; type hints use typing.Literal for mode switches; distributed code checks 'if world_size > 1' before every collective; keep new code consistent.",
+          "sources": [
+            "inference/model.py",
+            "inference/kernel.py",
+            "inference/generate.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Safe edit boundaries: kernel.py Triton code and Gate routing math are numerics-critical and untested — changes there need manual numerical comparison; generate.py CLI plumbing and convert.py key renames are lower-risk.",
+          "sources": [
+            "inference/kernel.py",
+            "inference/model.py#L535-598",
+            "inference/generate.py",
+            "inference/convert.py"
+          ],
+          "kind": "inference"
+        },
+        {
+          "claim": "Do not commit model weights or generated shards — nothing in .gitignore excludes *.safetensors or checkpoint dirs, so a careless 'git add -A' can stage hundreds of GB.",
+          "sources": [
+            ".gitignore"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Do not change the pinned repo state expecting upstream compatibility: HF Transformers is explicitly unsupported, and the demo expects weights already converted to its shard format.",
+          "sources": [
+            "README.md#L249-250",
+            "inference/generate.py#L119"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_prompt": "You are working in the DeepSeek-V3 repository — the official minimal reference inference implementation for the DeepSeek-V3 671B MoE model. It is NOT a framework: five Python files under inference/ implement the model (model.py), Triton FP8 kernels (kernel.py), a torchrun CLI for interactive/batch generation (generate.py), an HF->demo checkpoint converter (convert.py), and an FP8->BF16 converter (fp8_cast_bf16.py). There is no package, no tests, and no CI beyond a stale-issue bot.\n\nEnvironment: Linux + Python 3.10 + CUDA only. Install with `pip install -r inference/requirements.txt` (torch 2.4.1, triton 3.0.0, transformers 4.46.3, safetensors 0.4.5). All scripts must run from inside inference/ because imports are bare sibling imports.\n\nArchitecture: model.py defines ModelArgs (dataclass populated from configs/*.json), ParallelEmbedding, Linear + Column/RowParallelLinear (with FP8 weight .scale parameters when dtype is float8_e4m3fn), RMSNorm, MLA attention with two implementations selected by the module global attn_impl ('naive' = per-head k/v caches; 'absorb' = latent kv_cache + pe_cache), MLP, Gate (grouped top-k MoE routing with softmax/sigmoid scoring and an aux-loss-free bias), Expert, MoE, Block, and Transformer. kernel.py implements act_quant, weight_dequant, and an autotuned fp8_gemm; gemm_impl ('bf16'|'fp8') selects the path in the linear() helper.\n\nTypical flow: `python convert.py --hf-ckpt-path <hf_dir> --save-path <out> --n-experts 256 --model-parallel 16` produces per-rank shards named model{rank}-mp{world_size}.safetensors plus copied tokenizer files; then `torchrun --nproc-per-node <mp> generate.py --ckpt-path <out> --config configs/config_671B.json --interactive --temperature 0.7`.\n\nKey traps:\n- world_size, rank, gemm_impl, attn_impl, block_size are module-level globals in model.py; world_size/rank are set only in Transformer.__init__ from torch.distributed, and Linear.dtype/scale_fmt are class attributes set there too. Never instantiate layers standalone expecting distributed/FP8 behavior.\n- Gate creates its bias parameter only when dim == 7168 (hardcoded). Other dims with e_score_correction_bias checkpoints will break.\n- convert.py silently skips all 'model.layers.61' tensors (the MTP module) and only maps keys present in its `mapping` dict.\n- Validation is assert-based; python -O removes it. User-supplied paths are used raw.\n- attn_impl/gemm_impl are not CLI flags — they are edited in source.\n- KV caches are preallocated at max_batch_size x max_seq_len; watch GPU memory.\n- The .gitignore does not exclude *.safetensors — never 'git add -A' near checkpoint dirs.\n\nValidation after changes: run `python model.py` (CUDA required; prints logits shape) as a smoke test, or do a real conversion + short generate. Numerics changes in kernel.py or Gate require manual output comparison — nothing automated exists. Match existing style: docstrings on all public functions, Literal-typed mode switches, 'if world_size > 1' guards around collectives."
+  },
+  "analysis": {
+    "agent": "devin",
+    "model": "swe-2",
+    "runtime_ms": null,
+    "cost_usd": null,
+    "collected_at": "2026-09-22T16:03:31.303Z"
   }
 }

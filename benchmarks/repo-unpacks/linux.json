@@ -37768,5 +37768,881 @@
         ]
       }
     ]
+  },
+  "report": {
+    "overview": "This is the Linux kernel source tree (torvalds/linux) at version 7.3.0-rc4, codename \"Baby Opossum Posse\" — the monolithic Unix-like kernel that manages hardware, memory, processes, filesystems, networking and security for all Linux userspace. It is written primarily in C (~26MB of C scanned) with a first-class Rust component under rust/ that wraps kernel APIs for in-tree Rust drivers, and is built by a recursive Kbuild system configured through hierarchical Kconfig files. The runtime boundary is the syscall ABI: per-architecture entry code (e.g. arch/x86/entry/) dispatches into generic kernel code where VFS, mm, scheduler and security (LSM) layers mediate everything userspace can do.",
+    "system_map": {
+      "summary": "The tree is organized as core kernel code (init/, kernel/, mm/, ipc/), a VFS layer with ~50 filesystems (fs/), networking (net/), block layer (block/), io_uring (io_uring/), drivers (drivers/), security modules (security/), crypto (crypto/), per-architecture ports (arch/, 22 architectures), Rust support (rust/), userspace tooling (tools/), documentation (Documentation/, ~4000 rst files) and scripts/ for the build. There is no single binary entrypoint: the linker composes initcall sections and start_kernel() in init/main.c is the canonical C entry after arch-specific setup. Build is driven by the top-level Makefile (VERSION=7 PATCHLEVEL=3 SUBLEVEL=0 EXTRAVERSION=-rc4) plus Kconfig; there are no CI configs in-tree. The runtime boundary is the syscall table, generated from per-arch .tbl files.",
+      "claims": [
+        {
+          "claim": "Top-level Makefile pins the release: VERSION=7, PATCHLEVEL=3, SUBLEVEL=0, EXTRAVERSION=-rc4, NAME=\"Baby Opossum Posse\"; requires GNU Make >= 4.0 and uses a recursive Kbuild descent where sub-Makefiles only modify their own directory.",
+          "sources": [
+            "Makefile#L2-6",
+            "Makefile#L25-41"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "start_kernel() in init/main.c is the architecture-independent C entrypoint; it runs a strictly ordered bring-up — set_task_stack_end_magic, smp_setup_processor_id, boot_cpu_init, setup_arch, mm_core_init_early/mm_core_init, sched_init, rcu_init, early_irq_init, init_IRQ, timers_init, hrtimers_init — and ends by calling rest_init().",
+          "sources": [
+            "init/main.c#L986-1100",
+            "init/main.c#L1186-1192"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "rest_init() creates PID 1 by calling kernel_clone() with kernel_init as the thread function and creates kthreadd via kernel_thread(); the boot CPU then becomes the idle thread via schedule_preempt_disabled() and cpu_startup_entry(CPUHP_ONLINE).",
+          "sources": [
+            "init/main.c#L681-732",
+            "kernel/fork.c#L2715-2813"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Subsystem initialization is linker-ordered: __define_initcall macros (early_initcall, core_initcall ... device_initcall, late_initcall) emit function pointers into initcall sections, and do_initcalls() walks initcall_levels[0..7] calling do_one_initcall on each entry; do_pre_smp_initcalls() runs the 'early' level before smp_init().",
+          "sources": [
+            "include/linux/init.h#L284-311",
+            "init/main.c#L1427-1470",
+            "init/main.c#L1658-1675"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The top-level Kconfig file is an aggregator that sources init/Kconfig, kernel/Kconfig.freezer, fs/Kconfig.binfmt, mm/Kconfig, net/Kconfig, drivers/Kconfig, fs/Kconfig, security/Kconfig, crypto/Kconfig, lib/Kconfig, lib/Kconfig.debug, Documentation/Kconfig and io_uring/Kconfig.",
+          "sources": [
+            "Kconfig#L1-35"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The init/ Makefile links the boot sequence objects: main.o, version.o, mounts.o (do_mounts.o plus do_mounts_rd.o/do_mounts_initrd.o when initrd support is enabled), initramfs.o or noinitramfs.o, calibrate.o and initramfs_test.o under CONFIG_INITRAMFS_TEST.",
+          "sources": [
+            "init/Makefile#L1-20",
+            "init/do_mounts.c"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "x86-64 syscall entry is arch/x86/entry/entry_64.S entry_SYSCALL_64, which calls do_syscall_64() in arch/x86/entry/syscall_64.c; that function wraps dispatch in syscall_enter_from_user_mode_randomize_stack()/syscall_exit_to_user_mode() and calls do_syscall_x64, which bounds-checks nr with array_index_nospec and calls x64_sys_call — a dense switch generated from <asm/syscalls_64.h> rather than the legacy sys_call_table[] pointer jump.",
+          "sources": [
+            "arch/x86/entry/entry_64.S#L87-121",
+            "arch/x86/entry/syscall_64.c#L23-90"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Syscall numbers and their implementing symbols are declared per-architecture in table files such as arch/x86/entry/syscalls/syscall_64.tbl (e.g. nr 9 mmap -> sys_mmap, nr 16 ioctl -> sys_ioctl), which are compiled into generated headers that build both the switch dispatcher and sys_call_table[] (kept only for trace_syscalls).",
+          "sources": [
+            "arch/x86/entry/syscalls/syscall_64.tbl",
+            "arch/x86/entry/syscall_64.c#L23-43"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Rust is a first-class in-tree language: rust/kernel/lib.rs defines a #![no_std] 'kernel' crate that all Rust kernel code depends on, with per-subsystem modules (alloc, block, driver, fs, i2c, ...) gated by CONFIG_* cfgs; its doc comment instructs contributors to wrap missing C APIs in this crate rather than bypass it.",
+          "sources": [
+            "rust/kernel/lib.rs#L1-60",
+            "rust/macros/module.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The device model lives in drivers/base/: bus.c implements bus/driver/device matching and dd.c runs probing via driver_probe_device -> __driver_probe_device -> really_probe, which calls driver_sysfs_add and the driver's probe hook.",
+          "sources": [
+            "drivers/base/dd.c#L483-900",
+            "drivers/base/bus.c",
+            "drivers/base/core.c"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Loadable kernel modules are handled by kernel/module/main.c: SYSCALL_DEFINE3(init_module) and SYSCALL_DEFINE3(finit_module) both call may_init_module() (CAP_SYS_MODULE + modules_disabled check) then load_module(), which validates the ELF image, checks signatures and modinfo, lays out sections and calls do_init_module().",
+          "sources": [
+            "kernel/module/main.c#L3223-3229",
+            "kernel/module/main.c#L3433-3667",
+            "kernel/module/main.c#L3812-3820"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The LSM layer in security/security.c generates dispatch wrappers via call_int_hook()/call_void_hook() over hook lists declared in include/linux/lsm_hook_defs.h; security/lsm_init.c registers staged LSM initcalls (pure, early, core, subsys, fs) and early_security_init()/security_init() are invoked from start_kernel().",
+          "sources": [
+            "security/security.c#L90-515",
+            "security/lsm_init.c#L383-544",
+            "include/linux/lsm_hook_defs.h",
+            "init/main.c#L1011-1014"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "There is no CI configuration in the repository root (no .github or .gitlab-ci.yml); the contribution pipeline is email/patch based and documented in Documentation/process/, with scripts/checkpatch.pl and scripts/get_maintainer.pl as the local quality gates.",
+          "sources": [
+            "Documentation/process/submitting-patches.rst",
+            "scripts/checkpatch.pl",
+            "scripts/get_maintainer.pl"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "feature_catalog": {
+      "summary": "User-visible features are the syscall surface plus pseudo-filesystems and kernel subsystems. The catalog spans process management (fork/clone3/execve), file I/O (openat2, read/write family, io_uring), sockets and the full network stack, loadable modules, eBPF programs/maps, namespaces and cgroups, SysV/POSIX IPC, the crypto API with AF_ALG userspace access, pluggable schedulers (including BPF-extensible sched_ext), security modules (SELinux, AppArmor, Smack, TOMOYO, Landlock, IPE, Yama, LoadPin), tracing (ftrace, perf events) and sysctl/procfs/sysfs configuration interfaces.",
+      "claims": [
+        {
+          "claim": "File-opening syscalls open, openat, openat2 and creat are defined in fs/open.c via SYSCALL_DEFINE macros; openat2 takes an extensible struct open_how copied with copy_struct_from_user and size-bounded against OPEN_HOW_SIZE_VER0/PAGE_SIZE.",
+          "sources": [
+            "fs/open.c#L1427-1467",
+            "fs/open.c#L1495-1499"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The read/write syscall family (read, write, lseek, readv, writev, pread64, pwrite64, preadv2, pwritev2 and compat variants) is implemented in fs/read_write.c, all funneling to vfs_read/vfs_write which dispatch to f_op->read or f_op->read_iter via new_sync_read/new_sync_write.",
+          "sources": [
+            "fs/read_write.c#L412-580",
+            "fs/read_write.c#L705-750",
+            "fs/read_write.c#L991-1222"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Process creation syscalls fork, vfork, clone and clone3 are all implemented in kernel/fork.c and converge on kernel_clone() -> copy_process(); clone3 takes a versioned struct clone_args validated by clone3_args_valid/clone3_stack_valid.",
+          "sources": [
+            "kernel/fork.c#L2715-2873",
+            "kernel/fork.c#L2983-3051"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "execve program loading lives in fs/exec.c, which opens the target via do_file_open() and hands off to registered binary-format handlers such as fs/binfmt_elf.c for ELF binaries.",
+          "sources": [
+            "fs/exec.c#L780-790",
+            "fs/binfmt_elf.c"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The BSD socket API is implemented in net/socket.c: SYSCALL_DEFINE3(socket) -> __sys_socket -> __sys_socket_create -> __sock_create, wrapped by security_socket_create/security_socket_post_create LSM hooks, with sock_create_lite available for in-kernel sockets.",
+          "sources": [
+            "net/socket.c#L1453-1493",
+            "net/socket.c#L1591-1832"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "io_uring provides the async I/O interface: SYSCALL_DEFINE2(io_uring_setup) creates the ring, SYSCALL_DEFINE6(io_uring_enter) -> io_submit_sqes consumes SQEs and calls io_issue_sqe, which dispatches per-opcode through the io_issue_defs[] table in io_uring/opdef.c.",
+          "sources": [
+            "io_uring/io_uring.c#L1368-1450",
+            "io_uring/io_uring.c#L2013-2637",
+            "io_uring/io_uring.c#L3136",
+            "io_uring/opdef.c#L54-79"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The bpf(2) syscall multiplexes eBPF map/program/link operations; bpf_prog_load() runs the 21k-line verifier (kernel/bpf/verifier.c) before a program may attach, and every step is gated by security_bpf* LSM hooks.",
+          "sources": [
+            "kernel/bpf/syscall.c#L2605-2917",
+            "kernel/bpf/syscall.c#L3133",
+            "kernel/bpf/verifier.c",
+            "include/uapi/linux/bpf.h"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The scheduler implements multiple classes — EEVDF/fair (fair.c), realtime (rt.c), deadline (deadline.c), idle (idle.c) — plus sched_ext in kernel/sched/ext/, which lets BPF programs implement custom scheduling policies.",
+          "sources": [
+            "kernel/sched/core.c",
+            "kernel/sched/ext/ext.c",
+            "kernel/sched/fair.c",
+            "kernel/sched/rt.c"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Filesystems self-register through register_filesystem()/unregister_filesystem() in fs/filesystems.c; the tree ships ~50 filesystems including ext4, btrfs, f2fs, xfs, nfs and procfs (fs/proc/root.c).",
+          "sources": [
+            "fs/filesystems.c#L88-120",
+            "fs/ext4/super.c",
+            "fs/btrfs",
+            "fs/xfs",
+            "fs/proc/root.c"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Module administration syscalls init_module/finit_module/delete_module are exposed in kernel/module/main.c, gated on CAP_SYS_MODULE and modules_disabled, with signature enforcement under CONFIG_MODULE_SIG/MODULE_SIG_FORCE.",
+          "sources": [
+            "kernel/module/main.c#L804",
+            "kernel/module/main.c#L3647-3667",
+            "kernel/module/Kconfig#L252-295"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "System V IPC (msg.c, sem.c, shm.c) and POSIX message queues (mqueue.c) live in ipc/, with per-namespace accounting in ipc/namespace.c; process namespaces are managed in kernel/nsproxy.c and kernel/pid_namespace.c.",
+          "sources": [
+            "ipc/msg.c",
+            "ipc/sem.c",
+            "ipc/shm.c",
+            "ipc/mqueue.c",
+            "kernel/nsproxy.c"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Observability subsystems include ftrace/tracepoints (kernel/trace/trace.c), perf events (kernel/events/core.c) and the printk ring buffer (kernel/printk/printk.c); sysctl tables are registered through kernel/sysctl.c with subsystem additions such as mm/hugetlb_sysctl.c.",
+          "sources": [
+            "kernel/trace/trace.c",
+            "kernel/events/core.c",
+            "kernel/printk/printk.c",
+            "kernel/sysctl.c",
+            "mm/hugetlb_sysctl.c"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The crypto API in crypto/ exposes symmetric/asymmetric algorithms and the AF_ALG socket family (af_alg.c, algif_*.c) so userspace can request kernel crypto operations via sockets.",
+          "sources": [
+            "crypto/af_alg.c"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "data_flow": {
+      "summary": "Data enters through arch entry code (syscalls, interrupts, faults), is validated at each layer boundary, and flows through generic frameworks — VFS for files, socket layer for network, the block layer for storage, page-fault machinery for memory. Ownership is layered: user buffers are copied at syscall edges (access_ok, copy_struct_from_user), VFS resolves paths through the dentry/inode caches into struct file, LSM hooks interpose at every security-relevant hop, and the scheduler/RCU control when shared state may be mutated or reclaimed.",
+      "claims": [
+        {
+          "claim": "Boot parameter flow: arch code fills boot_command_line; start_kernel calls setup_command_line then parse_early_param (walking __setup_start..__setup_end obs_kernel_param entries via do_early_param) and parse_args over the __param section; unknown options after '--' become init's argv via set_init_arg.",
+          "sources": [
+            "init/main.c#L146-156",
+            "init/main.c#L736-749",
+            "init/main.c#L1009-1036"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "open(2) data flow: sys_openat -> do_sys_open -> do_sys_openat2 (build_open_flags) -> do_file_open -> path_openat, which calls path_init, loops link_path_walk + open_last_lookups, then do_open; the resulting struct file is installed as an fd via FD_ADD.",
+          "sources": [
+            "fs/open.c#L1408-1440",
+            "fs/namei.c#L4980-5036"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Path lookup runs lock-free RCU mode first (LOOKUP_RCU) and escalates: path_openat retries ref-walked on -ECHILD and again with LOOKUP_REVAL on -ESTALE; -EOPENSTALE from a filesystem is translated to -ECHILD/-ESTALE to trigger the retry ladder.",
+          "sources": [
+            "fs/namei.c#L5010-5060",
+            "fs/namei.c#L2578-2860"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Permission checking during lookup: inode_permission() -> do_inode_permission() applies POSIX mode/ACL checks, then devcgroup_inode_permission (device cgroup) and finally security_inode_permission (LSM) — three stacked authorization layers per path component.",
+          "sources": [
+            "fs/namei.c#L568-698"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "read(2) data flow: sys_read -> ksys_read looks up the fd's struct file, vfs_read validates FMODE_READ/FMODE_CAN_READ and access_ok on the user buffer, calls rw_verify_area, then f_op->read or new_sync_read(f_op->read_iter); on success fsnotify_access() and add_rchar/inc_syscr update accounting.",
+          "sources": [
+            "fs/read_write.c#L554-580",
+            "fs/read_write.c#L705-725"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "clone/fork data flow: sys_clone3 -> clone3_args_valid -> kernel_clone normalizes flags (CLONE_EMPTY_MNTNS implies CLONE_NEWNS; CLONE_PIDFD vs CLONE_PARENT_SETTID exclusion), copy_process duplicates the task (dup_task_struct -> sched_fork -> copy_thread), then wake_up_new_task enqueues the child and optional PTRACE_EVENT_* reports fire.",
+          "sources": [
+            "kernel/fork.c#L2715-2813",
+            "kernel/fork.c#L2012-2320",
+            "kernel/fork.c#L3010-3051"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Page-fault data flow: arch fault handler -> handle_mm_fault checks arch_vma_access_permitted, calls mem_cgroup_enter_user_fault for user faults, routes to hugetlb_fault or __handle_mm_fault -> handle_pte_fault -> do_anonymous_page (anon) or do_fault -> __do_fault (vm_ops->fault for file-backed); VM_DROPPABLE VMAs get non-fatal OOM handling.",
+          "sources": [
+            "mm/memory.c#L6841-6906",
+            "mm/memory.c#L6514-6707",
+            "mm/memory.c#L4698-4700"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Module-load data flow: finit_module reads the fd's ELF image, may_init_module enforces CAP_SYS_MODULE/modules_disabled, load_module calls module_sig_check, elf_validity_ehdr (magic/type/machine validation) and check_modinfo (vermagic, livepatch, retpoline), then do_init_module runs the module's init function.",
+          "sources": [
+            "kernel/module/main.c#L1882-1931",
+            "kernel/module/main.c#L2478-2663",
+            "kernel/module/main.c#L3418-3820"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Socket creation flow: sys_socket -> __sys_socket_create -> __sock_create checks the protocol family, calls security_socket_create before allocation and security_socket_post_create after the family's create op runs; __sys_socket_file wraps the socket in a file/fd for the syscall ABI.",
+          "sources": [
+            "net/socket.c#L1591-1720",
+            "net/socket.c#L1756-1832"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "io_uring submission flow: io_uring_enter -> io_submit_sqes pulls SQEs from the shared ring, io_issue_sqe reads io_issue_defs[req->opcode] for per-op flags and calls the opcode's issue handler; completion state is written back to the shared CQ ring.",
+          "sources": [
+            "io_uring/io_uring.c#L1368-1450",
+            "io_uring/io_uring.c#L2013-2637",
+            "io_uring/opdef.c#L54-79",
+            "io_uring/io_uring.h#L358"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Context-switch flow: schedule() -> __schedule() takes rq->lock, updates rq clock, calls pick_next_task() (class order: stop -> deadline -> rt -> fair/ext -> idle), then context_switch() swaps the mm and register state; preemption is driven by TIF_NEED_RESCHED set in sched_tick.",
+          "sources": [
+            "kernel/sched/core.c#L7073-7302",
+            "kernel/sched/core.c#L5471-5540",
+            "kernel/sched/core.c#L6153-6271"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Usermode-helper flow: call_usermodehelper_exec_async runs inside a user_mode_thread, intersects the new cred's capabilities with usermodehelper_bset/usermodehelper_inheritable, then kernel_execve's the helper binary (e.g. modprobe, hotplug) — a kernel-to-userspace privilege boundary.",
+          "sources": [
+            "kernel/umh.c#L34-130"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "behavior_traces": {
+      "summary": "Key flows traced end-to-end: (1) full boot from start_kernel through initcall levels to PID 1 exec of /sbin/init; (2) a syscall from entry_SYSCALL_64 through the generated dispatch switch to sys_openat and VFS path walk; (3) process creation via clone3->kernel_clone->copy_process->wake_up_new_task; (4) module load via finit_module->load_module->do_init_module; (5) scheduling via __schedule's pick_next_task/context_switch; (6) rootfs mounting via prepare_namespace->mount_root->init_mount.",
+      "claims": [
+        {
+          "claim": "Boot trace (phase 1): start_kernel -> set_task_stack_end_magic -> smp_setup_processor_id -> boot_cpu_init -> setup_arch -> mm_core_init_early -> jump_label_init/static_call_init -> early_security_init -> setup_boot_config/setup_command_line -> parse_early_param/parse_args -> random_init_early -> trap_init -> mm_core_init -> sched_init -> early_irq_init -> init_IRQ -> timers_init -> hrtimers_init -> rest_init.",
+          "sources": [
+            "init/main.c#L986-1100"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Boot trace (phase 2): rest_init -> kernel_clone(kernel_init) creates PID 1 -> kernel_thread(kthreadd) creates PID 2 -> complete(&kthreadd_done) -> schedule_preempt_disabled -> cpu_startup_entry; the boot CPU becomes the idle loop while PID 1 continues initialization.",
+          "sources": [
+            "init/main.c#L681-732"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Boot trace (phase 3): kernel_init -> init_userspace_fs -> wait_for_completion(kthreadd_done) -> kernel_init_freeable -> smp_prepare_cpus -> workqueue_init -> do_pre_smp_initcalls -> smp_init -> sched_init_smp -> do_basic_setup (cpuset_init_smp, ksysfs_init, driver_init, do_initcalls) -> kunit_run_all_tests -> wait_for_initramfs -> console_on_rootfs -> prepare_namespace.",
+          "sources": [
+            "init/main.c#L1554-1565",
+            "init/main.c#L1646-1706"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Boot trace (phase 4): after initcalls, kernel_init -> async_synchronize_full -> free_initmem -> mark_readonly (mark_rodata_ro + rodata_test under STRICT_KERNEL_RWX) -> pti_finalize -> system_state=SYSTEM_RUNNING -> run_init_process tries ramdisk_execute_command(/init), then execute_command (init= param), then CONFIG_DEFAULT_INIT, then /sbin/init, /etc/init, /bin/init, /bin/sh — panicking if none works.",
+          "sources": [
+            "init/main.c#L1565-1628",
+            "init/main.c#L1503-1547"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Rootfs mount trace: kernel_init_freeable -> prepare_namespace (init/do_mounts.c) -> mount_root -> mount_root_generic -> do_mount_root -> init_mount(name, \"/root\", fstype, flags, data) -> init_chdir(\"/root\"); falls back through configured rootfstype list (ext4 etc.) or nfs/cifs for network roots.",
+          "sources": [
+            "init/do_mounts.c#L142-200",
+            "init/do_mounts.c#L356-483",
+            "init/main.c#L1693"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Syscall trace: userspace syscall instruction -> entry_SYSCALL_64 (entry_64.S) saves regs -> call do_syscall_64 -> syscall_enter_from_user_mode_randomize_stack -> do_syscall_x64 (nr < NR_syscalls, array_index_nospec) -> x64_sys_call switch case -> __x64_sys_* wrapper -> syscall_exit_to_user_mode; the return value of do_syscall_64 selects SYSRET vs IRET after validating cx/r11/cs/ss/ip/flags.",
+          "sources": [
+            "arch/x86/entry/entry_64.S#L87-170",
+            "arch/x86/entry/syscall_64.c#L57-130",
+            "include/linux/entry-common.h#L179-199"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "openat trace: __x64_sys_openat -> do_sys_open -> do_sys_openat2 -> build_open_flags -> do_file_open -> set_nameidata -> path_openat(LOOKUP_RCU) -> path_init -> link_path_walk -> open_last_lookups -> do_open -> vfs_open -> may_open -> inode_permission -> f_op->open; retries drop LOOKUP_RCU on -ECHILD then add LOOKUP_REVAL on -ESTALE; FD_ADD installs the fd.",
+          "sources": [
+            "fs/open.c#L1408-1440",
+            "fs/namei.c#L4980-5060",
+            "fs/namei.c#L4231-4252"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "clone3 trace: __x64_sys_clone3 -> clone3_args_valid (size/version checks, CSIGNAL rules, clone3_stack_valid) -> kernel_clone -> copy_process -> dup_task_struct -> sched_fork -> copy_thread -> wake_up_new_task -> returns child pid; vfork additionally blocks the parent on the vfork_done completion.",
+          "sources": [
+            "kernel/fork.c#L2983-3051",
+            "kernel/fork.c#L2715-2813",
+            "kernel/fork.c#L2133-2320"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Module-load trace: __x64_sys_finit_module -> may_init_module (CAP_SYS_MODULE) -> load_module -> module_sig_check -> elf_validity_ehdr -> layout_and_allocate -> check_modinfo (vermagic/livepatch/retpoline) -> do_init_module -> mod->init(); delete_module requires the module to be unused and !modules_disabled.",
+          "sources": [
+            "kernel/module/main.c#L1882-1931",
+            "kernel/module/main.c#L3088",
+            "kernel/module/main.c#L3418-3820",
+            "kernel/module/main.c#L804"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Schedule trace: schedule() -> __schedule(SM_NONE) -> rq_lock -> update_rq_clock -> pick_next_task -> __pick_next_task iterates sched classes -> context_switch(rq, prev, next) switches address space and CPU state -> rq unlock; on the idle path cpu_startup_entry calls schedule() in a loop until a task wakes.",
+          "sources": [
+            "kernel/sched/core.c#L7111-7302",
+            "kernel/sched/core.c#L7395-7433",
+            "init/main.c#L726-732"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "testing_signals": {
+      "summary": "Testing is built into the tree: KUnit (lib/kunit/) is the in-kernel unit-test framework, run at boot via kunit_run_all_tests() or via the tools/testing/kunit/kunit.py harness under UML/QEMU. kselftest (tools/testing/selftests/, ~135 target dirs) provides userspace-driven syscall/feature tests emitting KTAP. Numerous ad-hoc selftest .c files live next to core code (initramfs_test.c, kallsyms_selftest.c, sysctl-test.c, dmapool_test.c, gup_test.c). There is no in-tree CI config — validation is maintainer/review driven, with checkpatch.pl/get_maintainer.pl as local gates; external systems (syzbot, kernelci, 0-day) do continuous testing.",
+      "claims": [
+        {
+          "claim": "KUnit is the kernel unit-test framework: lib/kunit/ contains test.c, executor.c, try-catch.c, string-stream.c, debugfs.c and assertion helpers, with public headers in include/kunit/test.h.",
+          "sources": [
+            "lib/kunit/test.c",
+            "lib/kunit/Makefile",
+            "include/kunit/test.h"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "KUnit tests execute during boot inside kernel_init_freeable via kunit_run_all_tests(), after do_basic_setup() and before prepare_namespace(), so late-init tests run with the full kernel initialized.",
+          "sources": [
+            "init/main.c#L1675-1679",
+            "lib/kunit/executor.c"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "tools/testing/kunit/ provides the Python runner: kunit.py orchestrates builds (kunit_config.py) and runs kernels under QEMU (qemu_config.py, qemu_configs/), parsing KTAP output via kunit_parser.py.",
+          "sources": [
+            "tools/testing/kunit/kunit.py",
+            "tools/testing/kunit/kunit_config.py",
+            "tools/testing/kunit/qemu_config.py",
+            "tools/testing/kunit/kunit_parser.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Per-subsystem .kunitconfig fragments select test builds: init/.kunitconfig sets CONFIG_KUNIT=y + CONFIG_INITRAMFS_TEST=y; rust/.kunitconfig sets CONFIG_KUNIT + CONFIG_RUST + CONFIG_RUST_KERNEL_DOCTESTS.",
+          "sources": [
+            "init/.kunitconfig",
+            "rust/.kunitconfig"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "kselftest lives in tools/testing/selftests/: the top Makefile aggregates ~135 TARGETS (acct, bpf, cgroup, clone3, exec, futex, memblock-adjacent dirs, net, ...), and runner.sh/run_kselftest.sh plus ksft.py/ktap_helpers.sh provide the KTAP-emitting harness.",
+          "sources": [
+            "tools/testing/selftests/Makefile#L1-30",
+            "tools/testing/selftests/run_kselftest.sh",
+            "tools/testing/selftests/kselftest/runner.sh",
+            "tools/testing/selftests/kselftest/ksft.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Ad-hoc selftests sit beside production code: init/initramfs_test.c (CONFIG_INITRAMFS_TEST), kernel/kallsyms_selftest.c, kernel/sysctl-test.c, kernel/crash_core_test.c, kernel/resource_kunit.c, mm/dmapool_test.c and mm/gup_test.c.",
+          "sources": [
+            "init/initramfs_test.c",
+            "kernel/kallsyms_selftest.c",
+            "kernel/sysctl-test.c",
+            "kernel/resource_kunit.c",
+            "mm/dmapool_test.c",
+            "mm/gup_test.c"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "tools/testing/ also hosts standalone harnesses for library code — memblock, radix-tree, rbtree, scatterlist, vma, vsock — that compile kernel sources directly in userspace for fast unit testing.",
+          "sources": [
+            "tools/testing/memblock",
+            "tools/testing/radix-tree",
+            "tools/testing/vma",
+            "tools/testing/rbtree"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Rust has its own test plumbing: rust/kernel/kunit.rs plus the #[kunit] proc-macro support in rust/macros/kunit.rs, an example test in lib/kunit/kunit-example-test.c style, and CONFIG_RUST_KERNEL_DOCTESTS for doc tests.",
+          "sources": [
+            "rust/kernel/kunit.rs",
+            "rust/macros/kunit.rs",
+            "rust/.kunitconfig",
+            "lib/kunit/kunit-example-test.c"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "There is no .github/, .gitlab-ci.yml or similar CI config in the tree; contribution gating is the email review flow documented in Documentation/process/submitting-patches.rst with scripts/checkpatch.pl as the pre-submit style checker.",
+          "sources": [
+            "Documentation/process/submitting-patches.rst",
+            "scripts/checkpatch.pl",
+            "scripts/get_maintainer.pl"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Coverage is uneven by construction: selftests concentrate in tools/testing/selftests and a minority of core files carry paired test modules (e.g. kernel/sysctl-test.c for kernel/sysctl.c), so most of mm/, net/ and drivers/ has no in-tree unit coverage and relies on external fuzzing/CI.",
+          "sources": [
+            "kernel/sysctl-test.c",
+            "kernel/sysctl.c",
+            "tools/testing/selftests/Makefile"
+          ],
+          "kind": "inference"
+        }
+      ]
+    },
+    "risk_map": {
+      "summary": "The highest-risk paths are the ones that cross privilege boundaries: module loading (ring-0 code injection gated by CAP_SYS_MODULE and signatures), the eBPF verifier, io_uring's single-fd multiplexer over dozens of opcodes, usermodehelper exec, seccomp filter evaluation, and every user-memory copy in syscall bodies. Concurrency hazards concentrate in the RCU path-walk retry ladder and the scheduler's rq-lock protocol. Boot is fail-hard: missing init or corrupt initmem panics the machine.",
+      "claims": [
+        {
+          "claim": "Module loading is the most direct ring-0 injection path: may_init_module() requires CAP_SYS_MODULE and respects modules_disabled; module_sig_check enforces CONFIG_MODULE_SIG/MODULE_SIG_FORCE; elf_validity_ehdr rejects malformed images — a bypass anywhere here yields full kernel compromise.",
+          "sources": [
+            "kernel/module/main.c#L3223-3229",
+            "kernel/module/main.c#L3453",
+            "kernel/module/main.c#L1882-1931",
+            "kernel/module/Kconfig#L252-295"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "call_usermodehelper execs userspace binaries from kernel context with usermodehelper_bset/CAP_FULL_SET defaults; callers like request_module (kernel/module/kmod.c) make this a kernel->userspace escalation surface that must sanitize inputs.",
+          "sources": [
+            "kernel/umh.c#L34-130",
+            "kernel/module/kmod.c"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The eBPF verifier (kernel/bpf/verifier.c, ~21.5k lines) is the barrier between unprivileged/privileged userspace and in-kernel JIT'd code; bpf_prog_load -> bpf_check -> security_bpf_prog chains show the gating, and verifier bugs historically yield privilege escalation.",
+          "sources": [
+            "kernel/bpf/verifier.c",
+            "kernel/bpf/syscall.c#L2917-3133"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "io_uring multiplexes ~all VFS/socket/block operations through one fd via the io_issue_defs[] opcode table; BUG_ON checks in opdef.c enforce invariants at registration, but the breadth of reachable kernel code makes it a persistent CVE hotspot.",
+          "sources": [
+            "io_uring/opdef.c#L54-79",
+            "io_uring/opdef.c#L864-879",
+            "io_uring/io_uring.c#L2586-2637"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "seccomp evaluates user-supplied cBPF on every syscall via struct seccomp_filter trees linked through ->prev; filters are immutable once attached and the cache (seccomp_cache_check_allow) fast-paths 'allow' decisions — subtle bugs here weaken sandboxing.",
+          "sources": [
+            "kernel/seccomp.c#L177-230",
+            "kernel/seccomp.c#L367-398"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "User-memory crossings are scattered and easy to get wrong: openat2 copy_struct_from_user for extensible open_how, vfs_read/vfs_write access_ok checks, put_user in kernel_clone for parent_tid — each is a potential info-leak/overflow if bounds slip.",
+          "sources": [
+            "fs/open.c#L1442-1466",
+            "fs/read_write.c#L554-570",
+            "kernel/fork.c#L2784-2785"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "RCU path-walk retry semantics are fragile: filesystems and callers must tolerate -ECHILD/-ESTALE/-EOPENSTALE restart loops in do_file_open; code that caches dentry state across a restart risks use-after-free or TOCTOU.",
+          "sources": [
+            "fs/namei.c#L5010-5060",
+            "fs/namei.c#L2834-2860"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Boot integrity self-checks exist but only warn/panic: mark_readonly() under STRICT_KERNEL_RWX runs mark_rodata_ro, debug_checkwx and rodata_test; failures print warnings or panic, and CONFIG_STRICT_KERNEL_RWX can be disabled via the rodata= boot param.",
+          "sources": [
+            "init/main.c#L1503-1547"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Failure mode for missing init is panic(): after trying /init, init=, CONFIG_DEFAULT_INIT, /sbin/init, /etc/init, /bin/init and /bin/sh, kernel_init calls panic(\"No working init found\") — misconfigured rootfs/ramdisk bricks boot.",
+          "sources": [
+            "init/main.c#L1621-1628",
+            "kernel/panic.c"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "ptrace hooks in kernel_clone (PTRACE_EVENT_FORK/VFORK/CLONE) expose every process creation to tracers; ptrace_event_enabled checks happen before copy_process, so tracer attachments change observable behavior — a classic audit/evasion concern.",
+          "sources": [
+            "kernel/fork.c#L2751-2767",
+            "kernel/fork.c#L2800-2808"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Correctness depends on out-of-tree validation: no CI config exists in the repo, selftests cover only a slice of core code, and the scheduler/mm concurrency contracts (documented in block comments like the __schedule memory-barrier notes) are enforced by review rather than automated checks.",
+          "sources": [
+            "kernel/sched/core.c#L7141-7160",
+            "tools/testing/selftests/Makefile",
+            "Documentation/process/submitting-patches.rst"
+          ],
+          "kind": "inference"
+        },
+        {
+          "claim": "The Rust/C boundary is a concentrated audit point: rust/kernel/lib.rs wraps C APIs with documented safety invariants and explicitly forbids bypassing the crate; new wrappers that misstate C contracts propagate unsoundness to every Rust driver.",
+          "sources": [
+            "rust/kernel/lib.rs#L1-15",
+            "rust/kernel/driver.rs",
+            "rust/kernel/error.rs"
+          ],
+          "kind": "inference"
+        }
+      ]
+    },
+    "extension_points": {
+      "summary": "The kernel is extension-by-design: initcall levels order boot-time registration, LSM hook tables add security policies, file_operations/inode_operations/super_operations vtables plug filesystems, struct device_driver + bus match functions plug drivers, register_filesystem adds filesystems, the syscall .tbl files add syscalls, module_init/module_exit wrap loadable code, eBPF program types (including sched_ext and bpf_struct_ops) let userspace extend behavior at runtime, and io_uring opcodes extend async I/O. Rust extensions go through the kernel crate + #[module] proc-macro.",
+      "claims": [
+        {
+          "claim": "initcall levels are the primary boot-time extension mechanism: __define_initcall emits entries into named linker sections (early, core, postcore, arch, subsys, fs, device, late, plus *_sync variants) consumed by do_initcalls in order.",
+          "sources": [
+            "include/linux/init.h#L200-311",
+            "init/main.c#L1427-1470"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New security modules plug in via the LSM framework: hook implementations are registered into lists declared in include/linux/lsm_hook_defs.h, dispatched by call_int_hook/call_void_hook in security/security.c, and initialized through the staged security_initcall_* initcalls in security/lsm_init.c.",
+          "sources": [
+            "include/linux/lsm_hook_defs.h",
+            "security/security.c#L90-515",
+            "security/lsm_init.c#L497-544"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Filesystems extend via struct file_system_type registered with register_filesystem()/unregister_filesystem() in fs/filesystems.c, then implement super_operations/inode_operations/file_operations that VFS calls through f_op->read/write_iter/open.",
+          "sources": [
+            "fs/filesystems.c#L88-120",
+            "fs/read_write.c#L571-574",
+            "fs/open.c#L1096-1124"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Drivers plug into the driver model: bus_type match functions pair devices with device_driver structs, and driver_probe_device -> really_probe invokes drv->probe plus sysfs integration (driver_sysfs_add).",
+          "sources": [
+            "drivers/base/dd.c#L483-900",
+            "drivers/base/bus.c",
+            "drivers/base/core.c"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Loadable modules extend the kernel at runtime: module_init maps to device_initcall for built-ins or runs in do_init_module for loaded modules; check_modinfo enforces vermagic/license/livepatch metadata compatibility.",
+          "sources": [
+            "kernel/module/main.c#L2478-2663",
+            "kernel/module/main.c#L3088",
+            "include/linux/init.h#L306-311"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "eBPF is the runtime extension fabric: bpf(2) loads verified programs/maps (kernel/bpf/syscall.c), attachable to kprobes/tracepoints/LSM (bpf_lsm.c), and sched_ext (kernel/sched/ext/) exposes the CPU scheduler itself to BPF policies.",
+          "sources": [
+            "kernel/bpf/syscall.c#L2917-3133",
+            "kernel/bpf/bpf_lsm.c",
+            "kernel/sched/ext/ext.c"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New syscalls are added by a row in the per-arch .tbl files (e.g. arch/x86/entry/syscalls/syscall_64.tbl) plus a SYSCALL_DEFINE body; generated asm/syscalls_64.h feeds both the x64_sys_call switch and sys_call_table[].",
+          "sources": [
+            "arch/x86/entry/syscalls/syscall_64.tbl",
+            "arch/x86/entry/syscall_64.c#L23-43",
+            "fs/open.c#L1427"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "io_uring opcodes extend through the io_issue_defs[] table in io_uring/opdef.c: each IORING_OP_* entry declares prep/issue handlers and capability flags, with BUILD_BUG_ON/early-init validation that every opcode has both handlers.",
+          "sources": [
+            "io_uring/opdef.c#L54-79",
+            "io_uring/opdef.c#L864-879"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Rust modules are wired by the kernel crate + macros: rust/kernel/ exposes safe wrappers (driver.rs, device.rs, fs.rs) and rust/macros/module.rs generates module metadata; samples/rust/*.rs (rust_minimal.rs, rust_driver_i2c.rs, rust_driver_pci.rs, ...) are the canonical examples.",
+          "sources": [
+            "rust/kernel/lib.rs#L1-60",
+            "rust/macros/module.rs",
+            "samples/rust/rust_minimal.rs",
+            "samples/rust/rust_driver_i2c.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Kconfig + Kbuild wiring is the build-time extension pattern: add a config FOO to a subsystem Kconfig (sourced via the top-level Kconfig chain) and gate objects with obj-$(CONFIG_FOO) in the directory Makefile.",
+          "sources": [
+            "Kconfig#L7-35",
+            "init/Makefile#L7-20",
+            "init/Kconfig"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "sysctl knobs are registered through kernel/sysctl.c tables, with subsystem-specific registrations such as mm/hugetlb_sysctl.c exposing runtime-tunable parameters under /proc/sys.",
+          "sources": [
+            "kernel/sysctl.c",
+            "mm/hugetlb_sysctl.c",
+            "fs/proc/root.c"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "kselftest suites extend by adding a directory under tools/testing/selftests and a TARGETS += entry in the top Makefile; each suite emits KTAP via kselftest/ktap_helpers.sh/ksft.py.",
+          "sources": [
+            "tools/testing/selftests/Makefile#L1-30",
+            "tools/testing/selftests/kselftest/ktap_helpers.sh"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_handoff": {
+      "summary": "This is a review-driven C codebase with hard ABI boundaries (syscalls, UAPI headers, module interface) and strict process rules: coding-style.rst + checkpatch.pl for style, MAINTAINERS + get_maintainer.pl for ownership, submitting-patches.rst for the email workflow, and a dedicated coding-assistants.rst that forbids AI agents from adding Signed-off-by and prescribes an Assisted-by: LLM tag plus a reproducer-then-fix discipline. Safe first edits live in leaf drivers/ or new selftests; touching kernel/sched, mm, fs/namei or arch entry code requires reading the extensive lock-ordering and retry-protocol comments. Test with kunit.py and kselftest; build with make + Kconfig.",
+      "claims": [
+        {
+          "claim": "Style and patch hygiene: follow Documentation/process/coding-style.rst, run scripts/checkpatch.pl on diffs, and locate reviewers via scripts/get_maintainer.pl against MAINTAINERS (M:/R:/L:/S:/F: entry format documented at the top of MAINTAINERS).",
+          "sources": [
+            "Documentation/process/coding-style.rst",
+            "scripts/checkpatch.pl",
+            "MAINTAINERS#L1-40",
+            "scripts/get_maintainer.pl"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "AI-specific contribution rules exist: Documentation/process/coding-assistants.rst states agents MUST NOT add Signed-off-by (only humans certify the DCO), contributions should carry an 'Assisted-by: LLM [tools]' tag, and bug fixes require reading full process docs plus a working reproducer before submitting.",
+          "sources": [
+            "Documentation/process/coding-assistants.rst",
+            "Documentation/process/generated-content.rst",
+            "Documentation/process/submitting-patches.rst"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Build from the top Makefile: 'make' runs recursive Kbuild (sub-Makefiles only touch their own dir), config via Kconfig ('make menuconfig'/'make defconfig'); per-dir objects are wired with obj-y/obj-$(CONFIG_*) lists as in init/Makefile.",
+          "sources": [
+            "Makefile#L25-41",
+            "init/Makefile#L7-20",
+            "Documentation/kbuild/kbuild.rst"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Run tests with tools/testing/kunit/kunit.py (e.g. './tools/testing/kunit/kunit.py run' under UML/QEMU) for KUnit, and tools/testing/selftests via run_kselftest.sh/runner.sh; per-subsystem .kunitconfig fragments (init/.kunitconfig, rust/.kunitconfig) show minimal configs.",
+          "sources": [
+            "tools/testing/kunit/kunit.py",
+            "tools/testing/selftests/run_kselftest.sh",
+            "init/.kunitconfig",
+            "rust/.kunitconfig"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Read-first files for orientation: init/main.c (boot ordering and initcall protocol), the subsystem's Makefile+Kconfig, the relevant MAINTAINERS entry, and for syscall work arch/x86/entry/syscall_64.c + syscall_64.tbl.",
+          "sources": [
+            "init/main.c",
+            "MAINTAINERS",
+            "arch/x86/entry/syscall_64.c"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Trap — stable syscall ABI: never renumber or change entries in arch/x86/entry/syscalls/syscall_64.tbl or alter UAPI headers under include/uapi/ incompatibly; new syscalls append new numbers and new structs must be extensible like struct open_how (size-checked via copy_struct_from_user).",
+          "sources": [
+            "arch/x86/entry/syscalls/syscall_64.tbl",
+            "include/uapi/linux/bpf.h",
+            "fs/open.c#L1442-1456"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Trap — __init lifetime: functions/data marked __init are freed by free_initmem() after boot (SYSTEM_FREEING_INITMEM -> SYSTEM_RUNNING); calling them post-boot crashes, and mark_readonly() then enforces STRICT_KERNEL_RWX on kernel text/rodata.",
+          "sources": [
+            "init/main.c#L1549-1583",
+            "init/main.c#L1503-1547"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Trap — namei retry protocol: path lookup restarts on -ECHILD (RCU->ref walk), -ESTALE (revalidation) and translates -EOPENSTALE; any code holding state across link_path_walk must handle restarts, and dcache lookups may run under RCU with no refcounting.",
+          "sources": [
+            "fs/namei.c#L5010-5060",
+            "fs/namei.c#L2801-2860",
+            "fs/dcache.c"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Trap — scheduler locking: __schedule() holds rq->lock and documents exact memory-barrier pairings (smp_mb__after_spinlock vs signal wake-up paths); violating these or calling schedule() with preemption enabled corrupts task state.",
+          "sources": [
+            "kernel/sched/core.c#L7073-7160"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Privilege checks precede security hooks: kernel code calls capable()/CAP_* first (e.g. may_init_module requires CAP_SYS_MODULE), then LSM hooks (security_*) run via call_int_hook — new code must wire both layers, not just one.",
+          "sources": [
+            "kernel/module/main.c#L3223-3229",
+            "security/security.c#L463-515",
+            "kernel/cred.c"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Rust contributions must go through rust/kernel wrappers — the crate docs explicitly forbid bypassing it with raw C calls — and module glue is generated by rust/macros/module.rs; study samples/rust/rust_minimal.rs before writing drivers.",
+          "sources": [
+            "rust/kernel/lib.rs#L1-15",
+            "rust/macros/module.rs",
+            "samples/rust/rust_minimal.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Safe edit boundaries: leaf drivers (drivers/*/*) and new tools/testing/selftests entries are low blast-radius; init/main.c, kernel/fork.c, kernel/sched/core.c, mm/memory.c, fs/namei.c and arch/*/entry/* are blast-radius hotspots where changes affect every task/syscall.",
+          "sources": [
+            "kernel/sched/core.c",
+            "mm/memory.c",
+            "fs/namei.c",
+            "drivers/base/dd.c"
+          ],
+          "kind": "inference"
+        }
+      ]
+    },
+    "agent_prompt": "You are working on the Linux kernel source tree (torvalds/linux), version 7.3.0-rc4 \"Baby Opossum Posse\". It is a monolithic kernel written in C with an in-tree Rust component; there is no userspace entrypoint or app runtime — the deliverable is the vmlinux image plus modules, built by recursive Kbuild under the top-level Makefile and configured through hierarchical Kconfig files.\n\nOrientation map: init/main.c contains start_kernel(), the ordered boot sequence ending in rest_init() which spawns PID 1 (kernel_init) and PID 2 (kthreadd); kernel_init_freeable() runs smp_init(), do_basic_setup()->do_initcalls() over linker-ordered initcall levels (see include/linux/init.h for early/core/subsys/device/late_initcall), then prepare_namespace() mounts the rootfs (init/do_mounts.c) and kernel_init execs /init, init=, CONFIG_DEFAULT_INIT, or /sbin/init via kernel_execve. Syscall entry on x86-64: entry_SYSCALL_64 (arch/x86/entry/entry_64.S) -> do_syscall_64 -> x64_sys_call switch generated from arch/x86/entry/syscalls/syscall_64.tbl. Core subsystems: kernel/fork.c (process creation via kernel_clone->copy_process), kernel/sched/core.c (__schedule/pick_next_task/context_switch), mm/memory.c (handle_mm_fault->handle_pte_fault->do_anonymous_page/do_fault), fs/open.c + fs/read_write.c + fs/namei.c (VFS syscall bodies and RCU path walk with -ECHILD/-ESTALE retry), kernel/module/main.c (module loading), net/socket.c (socket layer), io_uring/ (async I/O with io_issue_defs opcode table), security/ (LSM dispatch via call_int_hook over include/linux/lsm_hook_defs.h), kernel/bpf/ (eBPF syscall + verifier), drivers/base/ (driver model: really_probe binds drivers to devices). Rust lives in rust/kernel (the 'kernel' crate — always wrap C APIs there rather than bypassing) with proc-macros in rust/macros and examples in samples/rust/.\n\nRules that will get your patch rejected if ignored: read Documentation/process/coding-style.rst and run scripts/checkpatch.pl; use scripts/get_maintainer.pl + MAINTAINERS to find reviewers; per Documentation/process/coding-assistants.rst you MUST NOT add Signed-off-by tags (only humans certify the DCO) — use 'Assisted-by: LLM' attribution instead, and produce a reproducer plus a fix in the same session for any bug. The syscall ABI is frozen — append new numbers in syscall_64.tbl, never renumber; use size-extensible structs (struct open_how pattern) for new UAPI.\n\nTesting: KUnit tests live in lib/kunit/ and beside source files (*_test.c, *-test.c, *_selftest.c); run them with ./tools/testing/kunit/kunit.py run (UML/QEMU; see init/.kunitconfig and rust/.kunitconfig for minimal configs). Userspace-level tests are kselftests under tools/testing/selftests/ (~135 TARGETS; runner.sh emits KTAP). There is no in-tree CI — review is the gate.\n\nDanger zones: user-memory copies (access_ok, copy_struct_from_user, put_user), the RCU namei retry ladder, rq->lock scheduler invariants, __init section lifetime (freed post-boot), capability+LSM double-gating, and the kernel->userspace usermodehelper exec path. Prefer small, reviewable diffs in leaf directories (drivers/, new selftests) until you have read the subsystem's locking and lifetime documentation."
+  },
+  "analysis": {
+    "agent": "devin",
+    "model": "swe-2",
+    "runtime_ms": null,
+    "cost_usd": null,
+    "collected_at": "2026-09-22T16:03:31.724Z"
   }
 }
