@@ -12,6 +12,7 @@ const ROOT = new URL('..', import.meta.url).pathname;
 const CASES_DIR = join(ROOT, 'benchmarks/public-catch-rate/cases');
 const RESULTS = join(ROOT, 'apps/landing-page-astro/src/data/benchmark-results.json');
 const OUT = join(ROOT, 'apps/landing-page-astro/src/data/xray-examples.json');
+const API_AI = join(ROOT, 'apps/landing-page-astro/public/api-ai.json');
 
 const results = JSON.parse(readFileSync(RESULTS, 'utf8'));
 const byId = new Map(results.codevetter.cases.map((c) => [c.id, c]));
@@ -51,6 +52,23 @@ for (const dir of readdirSync(CASES_DIR).sort()) {
 }
 
 writeFileSync(OUT, `${JSON.stringify(entries, null, 2)}\n`, 'utf8');
+
+// Every public route must appear in /api/ai's surface catalog (enforced by
+// scripts/verify-agent-surfaces.mjs in the deploy workflow).
+const catalog = JSON.parse(readFileSync(API_AI, 'utf8'));
+const known = new Set(catalog.surfaces.map((s) => s.id));
+for (const entry of entries) {
+  const id = `xray-${entry.id}`;
+  if (known.has(id)) continue;
+  catalog.surfaces.push({
+    id,
+    url: `https://codevetter.com/xray/${entry.id}`,
+    md: `https://codevetter.com/xray/${entry.id}.md`,
+    kind: 'static',
+    description: `Adjudicated ${entry.language} ${String(entry.finding.title).toLowerCase()} example`,
+  });
+}
+writeFileSync(API_AI, `${JSON.stringify(catalog, null, 2)}\n`, 'utf8');
 console.log(
   `xray-examples.json: ${entries.length} cases (${existing.size} preserved, ${entries.length - existing.size} generated)`
 );
