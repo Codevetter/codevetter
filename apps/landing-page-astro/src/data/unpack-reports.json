@@ -1,0 +1,2642 @@
+[
+  {
+    "slug": "axios",
+    "repo": "axios/axios",
+    "name": "axios",
+    "codevetterVersion": "codevetter 1.12.0",
+    "collectedAt": "2026-09-22T05:15:33.541Z",
+    "commit": {
+      "sha": "56a5f1acdc41965f464eb59bec6cc828113ba546",
+      "date": "2026-09-16",
+      "subject": "fix(fetch): preserve response size errors across runtime wrappers (#11179)"
+    },
+    "stats": {
+      "filesScanned": 457,
+      "filesSkipped": 16,
+      "size": "2.7 MB",
+      "maxFilesHit": false,
+      "strategy": "full_walk"
+    },
+    "languages": [
+      {
+        "language": "JavaScript",
+        "files": 216,
+        "bytes": 1119522
+      },
+      {
+        "language": "Markdown",
+        "files": 160,
+        "bytes": 1215474
+      },
+      {
+        "language": "TypeScript",
+        "files": 29,
+        "bytes": 107848
+      },
+      {
+        "language": "JSON",
+        "files": 12,
+        "bytes": 176480
+      },
+      {
+        "language": "YAML",
+        "files": 10,
+        "bytes": 28787
+      },
+      {
+        "language": "HTML",
+        "files": 9,
+        "bytes": 41258
+      },
+      {
+        "language": "CSS",
+        "files": 1,
+        "bytes": 4285
+      }
+    ],
+    "manifest": {
+      "path": "package.json",
+      "name": "axios",
+      "version": "1.20.0",
+      "dependencyCount": 43,
+      "dependencies": [
+        "@babel/core",
+        "@babel/preset-env",
+        "@commitlint/cli",
+        "@commitlint/config-conventional",
+        "@eslint/js",
+        "@rollup/plugin-alias",
+        "@rollup/plugin-babel",
+        "@rollup/plugin-commonjs",
+        "@rollup/plugin-json",
+        "@rollup/plugin-node-resolve",
+        "@rollup/plugin-terser",
+        "@vitest/browser"
+      ]
+    },
+    "entrypoints": [
+      {
+        "path": "README.md",
+        "kind": "docs",
+        "reason": "Repository readme"
+      },
+      {
+        "path": "AGENTS.md",
+        "kind": "docs",
+        "reason": "Agent instructions"
+      },
+      {
+        "path": "CLAUDE.md",
+        "kind": "docs",
+        "reason": "Claude instructions"
+      },
+      {
+        "path": ".github/workflows/bundle-size.yml",
+        "kind": "config",
+        "reason": "GitHub Actions workflow"
+      },
+      {
+        "path": ".github/workflows/verify-build-reproducibility.yml",
+        "kind": "config",
+        "reason": "GitHub Actions workflow"
+      },
+      {
+        "path": ".github/workflows/lockfile-lint.yml",
+        "kind": "config",
+        "reason": "GitHub Actions workflow"
+      },
+      {
+        "path": ".github/workflows/publish.yml",
+        "kind": "config",
+        "reason": "GitHub Actions workflow"
+      },
+      {
+        "path": ".github/workflows/release-branch.yml",
+        "kind": "config",
+        "reason": "GitHub Actions workflow"
+      },
+      {
+        "path": ".github/workflows/moderator.yml",
+        "kind": "config",
+        "reason": "GitHub Actions workflow"
+      },
+      {
+        "path": ".github/workflows/zizmor.yml",
+        "kind": "config",
+        "reason": "GitHub Actions workflow"
+      }
+    ],
+    "topDirs": [
+      {
+        "path": "tests",
+        "file_count": 162,
+        "bytes": 925403
+      },
+      {
+        "path": "docs",
+        "file_count": 155,
+        "bytes": 1030591
+      },
+      {
+        "path": "lib",
+        "file_count": 73,
+        "bytes": 253019
+      },
+      {
+        "path": "examples",
+        "file_count": 17,
+        "bytes": 38276
+      },
+      {
+        "path": ".github",
+        "file_count": 14,
+        "bytes": 36375
+      },
+      {
+        "path": "sandbox",
+        "file_count": 3,
+        "bytes": 17598
+      },
+      {
+        "path": "scripts",
+        "file_count": 1,
+        "bytes": 633
+      },
+      {
+        "path": ".devcontainer",
+        "file_count": 1,
+        "bytes": 459
+      }
+    ],
+    "docs": [
+      "AGENTS.md",
+      "CLAUDE.md",
+      "CONTRIBUTING.md",
+      "README.md",
+      "docs/es/index.md",
+      "docs/es/pages/advanced/adapters.md",
+      "docs/es/pages/advanced/api-reference.md",
+      "docs/es/pages/advanced/authentication.md",
+      "docs/es/pages/advanced/cancellation.md",
+      "docs/es/pages/advanced/config-defaults.md"
+    ],
+    "stackTags": [
+      "GitHub Actions",
+      "Vitest",
+      "Vue"
+    ],
+    "health": {
+      "averageScore": 9.7,
+      "hotspotCount": 2,
+      "filesAnalyzed": 92,
+      "summary": "Deterministic scan scored 92 source files across simple size, churn, structural, test-adjacency, and performance-risk signals. 2 hotspots surfaced; average score is 9.7/10. Treat these as review leads, not proof of a bug.",
+      "topFiles": [
+        {
+          "path": "lib/adapters/http.js",
+          "score": 5.9,
+          "lines": 1407,
+          "findings": [
+            "Large file",
+            "Deep nesting"
+          ]
+        },
+        {
+          "path": "lib/adapters/fetch.js",
+          "score": 6.4,
+          "lines": 715,
+          "findings": [
+            "Large file",
+            "Deep nesting"
+          ]
+        },
+        {
+          "path": "lib/core/Axios.js",
+          "score": 7.1,
+          "lines": 306,
+          "findings": [
+            "Deep nesting",
+            "Long function/block"
+          ]
+        }
+      ]
+    },
+    "history": [
+      {
+        "sha": "56a5f1acdc41",
+        "date": "2026-09-17",
+        "subject": "fix(fetch): preserve response size errors across runtime wrappers (#11179)",
+        "files": [
+          ".devcontainer/devcontainer.json",
+          ".github/FUNDING.yml",
+          ".github/ISSUE_TEMPLATE.md",
+          ".github/PULL_REQUEST_TEMPLATE.md",
+          ".github/copilot-instructions.md",
+          ".github/dependabot.yml",
+          ".github/workflows/bundle-size.yml",
+          ".github/workflows/lockfile-lint.yml",
+          ".github/workflows/moderator.yml",
+          ".github/workflows/publish.yml",
+          ".github/workflows/release-branch.yml",
+          ".github/workflows/run-ci.yml",
+          ".github/workflows/verify-build-reproducibility.yml",
+          ".github/workflows/zizmor.yml",
+          "AGENTS.md",
+          "CHANGELOG.md",
+          "CLAUDE.md",
+          "CODE_OF_CONDUCT.md",
+          "COLLABORATOR_GUIDE.md",
+          "CONTRIBUTING.md",
+          "CONTRIBUTORS.md",
+          "ECOSYSTEM.md",
+          "MIGRATION_GUIDE.md",
+          "PRE_RELEASE_CHANGELOG.md"
+        ]
+      }
+    ],
+    "qaReadiness": {
+      "status": "missing",
+      "summary": "Repo does not expose enough local browser QA structure for a reliable Synthetic QA workflow yet."
+    },
+    "readmePreview": "<h3 align=\"center\">💎 Platinum sponsors <br /></h3>\n<table align=\"center\">\n    <tr>\n        <td align=\"center\" width=\"50%\">\n            <a\n                href=\"https://thanks.dev/?utm_source&#x3D;axios&amp;utm_medium&#x3D;sponsorlist&amp;utm_campaign&#x3D;sponsorship\"\n          "
+  },
+  {
+    "slug": "curl",
+    "repo": "curl/curl",
+    "name": "curl",
+    "codevetterVersion": "codevetter 1.12.0",
+    "collectedAt": "2026-09-22T05:15:36.698Z",
+    "commit": {
+      "sha": "53be819ca8291b591332aeeae480bd0ae0d08d24",
+      "date": "2026-09-21",
+      "subject": "escape: use hex-pair lookup in curl_easy_escape"
+    },
+    "stats": {
+      "filesScanned": 4000,
+      "filesSkipped": 1,
+      "size": "14.1 MB",
+      "maxFilesHit": true,
+      "strategy": "stratified_git_sample"
+    },
+    "languages": [
+      {
+        "language": "C",
+        "files": 1043,
+        "bytes": 0
+      },
+      {
+        "language": "Markdown",
+        "files": 930,
+        "bytes": 0
+      },
+      {
+        "language": "Python",
+        "files": 51,
+        "bytes": 0
+      },
+      {
+        "language": "Shell",
+        "files": 30,
+        "bytes": 0
+      },
+      {
+        "language": "YAML",
+        "files": 30,
+        "bytes": 0
+      },
+      {
+        "language": "C++",
+        "files": 2,
+        "bytes": 0
+      },
+      {
+        "language": "TOML",
+        "files": 2,
+        "bytes": 0
+      },
+      {
+        "language": "JSON",
+        "files": 1,
+        "bytes": 0
+      }
+    ],
+    "manifest": null,
+    "entrypoints": [
+      {
+        "path": "README.md",
+        "kind": "docs",
+        "reason": "Repository readme"
+      },
+      {
+        "path": ".github/workflows/appveyor-status.yml",
+        "kind": "config",
+        "reason": "GitHub Actions workflow"
+      },
+      {
+        "path": ".github/workflows/checkdocs.yml",
+        "kind": "config",
+        "reason": "GitHub Actions workflow"
+      },
+      {
+        "path": ".github/workflows/checksrc.yml",
+        "kind": "config",
+        "reason": "GitHub Actions workflow"
+      },
+      {
+        "path": ".github/workflows/checkurls.yml",
+        "kind": "config",
+        "reason": "GitHub Actions workflow"
+      },
+      {
+        "path": ".github/workflows/codeql.yml",
+        "kind": "config",
+        "reason": "GitHub Actions workflow"
+      },
+      {
+        "path": ".github/workflows/configure-vs-cmake.yml",
+        "kind": "config",
+        "reason": "GitHub Actions workflow"
+      },
+      {
+        "path": ".github/workflows/curl-for-win.yml",
+        "kind": "config",
+        "reason": "GitHub Actions workflow"
+      },
+      {
+        "path": ".github/workflows/distcheck.yml",
+        "kind": "config",
+        "reason": "GitHub Actions workflow"
+      },
+      {
+        "path": ".github/workflows/http3-linux.yml",
+        "kind": "config",
+        "reason": "GitHub Actions workflow"
+      }
+    ],
+    "topDirs": [
+      {
+        "path": "tests",
+        "file_count": 2178,
+        "bytes": 2556819
+      },
+      {
+        "path": "docs",
+        "file_count": 1070,
+        "bytes": 3159331
+      },
+      {
+        "path": "lib",
+        "file_count": 393,
+        "bytes": 5576622
+      },
+      {
+        "path": "src",
+        "file_count": 96,
+        "bytes": 753605
+      },
+      {
+        "path": "projects",
+        "file_count": 74,
+        "bytes": 1023574
+      },
+      {
+        "path": ".github",
+        "file_count": 53,
+        "bytes": 336758
+      },
+      {
+        "path": "scripts",
+        "file_count": 40,
+        "bytes": 260443
+      },
+      {
+        "path": "CMake",
+        "file_count": 31,
+        "bytes": 170559
+      }
+    ],
+    "docs": [
+      "README",
+      "README.md",
+      "docs/ALTSVC.md",
+      "docs/BINDINGS.md",
+      "docs/BUG-BOUNTY.md",
+      "docs/BUGS.md",
+      "docs/CIPHERS-TLS12.md",
+      "docs/CIPHERS.md",
+      "docs/CODE_OF_CONDUCT.md",
+      "docs/CODE_REVIEW.md"
+    ],
+    "stackTags": [
+      "Docker",
+      "GitHub Actions"
+    ],
+    "health": {
+      "averageScore": 10,
+      "hotspotCount": 0,
+      "filesAnalyzed": 0,
+      "summary": "No source files were eligible for deterministic health analysis.",
+      "topFiles": []
+    },
+    "history": [
+      {
+        "sha": "53be819ca829",
+        "date": "2026-09-21",
+        "subject": "escape: use hex-pair lookup in curl_easy_escape",
+        "files": [
+          ".circleci/config.yml",
+          ".clang-tidy.yml",
+          ".github/CONTRIBUTING.md",
+          ".github/FUNDING.yml",
+          ".github/ISSUE_TEMPLATE/bug_report.yml",
+          ".github/ISSUE_TEMPLATE/config.yml",
+          ".github/ISSUE_TEMPLATE/docs.yml",
+          ".github/actions/pkg-install/action.yml",
+          ".github/dependabot.yml",
+          ".github/egress-firewall.yaml",
+          ".github/labeler.yml",
+          ".github/lock.yml",
+          ".github/pull_request_template.md",
+          ".github/scripts/pyspelling.yaml",
+          ".github/scripts/typos.toml",
+          ".github/scripts/yamlcheck.yaml",
+          ".github/stale.yml",
+          ".github/workflows/appveyor-status.yml",
+          ".github/workflows/checkdocs.yml",
+          ".github/workflows/checksrc.yml",
+          ".github/workflows/checkurls.yml",
+          ".github/workflows/codeql.yml",
+          ".github/workflows/configure-vs-cmake.yml",
+          ".github/workflows/curl-for-win.yml"
+        ]
+      }
+    ],
+    "qaReadiness": {
+      "status": "missing",
+      "summary": "Repo does not expose enough local browser QA structure for a reliable Synthetic QA workflow yet."
+    },
+    "readmePreview": "                                  _   _ ____  _\n                              ___| | | |  _ \\| |\n                             / __| | | | |_) | |\n                            | (__| |_| |  _ <| |___\n                             \\___|\\___/|_| \\_\\_____|\n\nREADME\n\n  Curl is a command "
+  },
+  {
+    "slug": "express",
+    "repo": "expressjs/express",
+    "name": "express",
+    "codevetterVersion": "codevetter 1.12.0",
+    "collectedAt": "2026-09-22T05:15:33.318Z",
+    "commit": {
+      "sha": "9a34acf03cb818ff3f8bc40e44176e277a25cbb9",
+      "date": "2026-09-15",
+      "subject": "fix(res.send): preserve ETag generation with Transfer-Encoding (#7459)"
+    },
+    "stats": {
+      "filesScanned": 214,
+      "filesSkipped": 0,
+      "size": "700 KB",
+      "maxFilesHit": false,
+      "strategy": "full_walk"
+    },
+    "languages": [
+      {
+        "language": "JavaScript",
+        "files": 141,
+        "bytes": 548685
+      },
+      {
+        "language": "HTML",
+        "files": 8,
+        "bytes": 1014
+      },
+      {
+        "language": "YAML",
+        "files": 7,
+        "bytes": 15296
+      },
+      {
+        "language": "CSS",
+        "files": 4,
+        "bytes": 601
+      },
+      {
+        "language": "Markdown",
+        "files": 4,
+        "bytes": 139775
+      },
+      {
+        "language": "JSON",
+        "files": 1,
+        "bytes": 2731
+      }
+    ],
+    "manifest": {
+      "path": "package.json",
+      "name": "express",
+      "version": "5.2.1",
+      "dependencyCount": 44,
+      "dependencies": [
+        "accepts",
+        "after",
+        "body-parser",
+        "connect-redis",
+        "content-disposition",
+        "content-type",
+        "cookie",
+        "cookie-parser",
+        "cookie-session",
+        "cookie-signature",
+        "debug",
+        "depd"
+      ]
+    },
+    "entrypoints": [
+      {
+        "path": ".github/workflows/npm-publish.yml",
+        "kind": "config",
+        "reason": "GitHub Actions workflow"
+      },
+      {
+        "path": ".github/workflows/legacy.yml",
+        "kind": "config",
+        "reason": "GitHub Actions workflow"
+      },
+      {
+        "path": ".github/workflows/codeql.yml",
+        "kind": "config",
+        "reason": "GitHub Actions workflow"
+      },
+      {
+        "path": ".github/workflows/ci.yml",
+        "kind": "config",
+        "reason": "GitHub Actions workflow"
+      },
+      {
+        "path": ".github/workflows/scorecard.yml",
+        "kind": "config",
+        "reason": "GitHub Actions workflow"
+      },
+      {
+        "path": "package.json",
+        "kind": "config",
+        "reason": "npm scripts: lint, lint:fix, test, test-ci, test-cov, test-tap"
+      }
+    ],
+    "topDirs": [
+      {
+        "path": "test",
+        "file_count": 112,
+        "bytes": 437590
+      },
+      {
+        "path": "examples",
+        "file_count": 80,
+        "bytes": 59339
+      },
+      {
+        "path": "lib",
+        "file_count": 6,
+        "bytes": 62030
+      },
+      {
+        "path": ".github",
+        "file_count": 6,
+        "bytes": 14881
+      }
+    ],
+    "docs": [
+      "Readme.md"
+    ],
+    "stackTags": [
+      "GitHub Actions"
+    ],
+    "health": {
+      "averageScore": 9.2,
+      "hotspotCount": 5,
+      "filesAnalyzed": 96,
+      "summary": "Deterministic scan scored 96 source files across simple size, churn, structural, test-adjacency, and performance-risk signals. 5 hotspots surfaced; average score is 9.2/10. Treat these as review leads, not proof of a bug.",
+      "topFiles": [
+        {
+          "path": "test/app.router.js",
+          "score": 5.7,
+          "lines": 1217,
+          "findings": [
+            "Large file",
+            "Deep nesting"
+          ]
+        },
+        {
+          "path": "test/express.urlencoded.js",
+          "score": 6.2,
+          "lines": 828,
+          "findings": [
+            "Large file",
+            "Deep nesting"
+          ]
+        },
+        {
+          "path": "test/res.send.js",
+          "score": 6.2,
+          "lines": 635,
+          "findings": [
+            "Large file",
+            "Deep nesting"
+          ]
+        }
+      ]
+    },
+    "history": [
+      {
+        "sha": "9a34acf03cb8",
+        "date": "2026-09-16",
+        "subject": "fix(res.send): preserve ETag generation with Transfer-Encoding (#7459)",
+        "files": [
+          ".eslintrc.yml",
+          ".github/dependabot.yml",
+          ".github/workflows/ci.yml",
+          ".github/workflows/codeql.yml",
+          ".github/workflows/legacy.yml",
+          ".github/workflows/npm-publish.yml",
+          ".github/workflows/scorecard.yml",
+          "History.md",
+          "Readme.md",
+          "examples/README.md",
+          "examples/auth/index.js",
+          "examples/content-negotiation/db.js",
+          "examples/content-negotiation/index.js",
+          "examples/content-negotiation/users.js",
+          "examples/cookie-sessions/index.js",
+          "examples/cookies/index.js",
+          "examples/downloads/index.js",
+          "examples/ejs/index.js",
+          "examples/error-pages/index.js",
+          "examples/error/index.js",
+          "examples/hello-world/index.js",
+          "examples/markdown/index.js",
+          "examples/markdown/views/index.md",
+          "examples/multi-router/controllers/api_v1.js"
+        ]
+      }
+    ],
+    "qaReadiness": {
+      "status": "missing",
+      "summary": "Repo does not expose enough local browser QA structure for a reliable Synthetic QA workflow yet."
+    },
+    "readmePreview": "<a href=\"https://expressjs.com/\">\n  <picture>\n    <source media=\"(prefers-color-scheme: dark)\" srcset=\"https://expressjs.com/images/logos/logo-express-white.svg\">\n    <img alt=\"Express Logo\" src=\"https://expressjs.com/images/logos/logo-express-black.svg\" width=\"280\">\n  </picture>"
+  },
+  {
+    "slug": "fastapi",
+    "repo": "fastapi/fastapi",
+    "name": "fastapi",
+    "codevetterVersion": "codevetter 1.12.0",
+    "collectedAt": "2026-09-22T05:15:35.454Z",
+    "commit": {
+      "sha": "50113da16fec53b66b80d75e80a89296de4fa5a5",
+      "date": "2026-09-01",
+      "subject": "📝 Update release notes"
+    },
+    "stats": {
+      "filesScanned": 2950,
+      "filesSkipped": 189,
+      "size": "21.0 MB",
+      "maxFilesHit": false,
+      "strategy": "full_walk"
+    },
+    "languages": [
+      {
+        "language": "Markdown",
+        "files": 1692,
+        "bytes": 12503344
+      },
+      {
+        "language": "Python",
+        "files": 1138,
+        "bytes": 3972016
+      },
+      {
+        "language": "YAML",
+        "files": 42,
+        "bytes": 262400
+      },
+      {
+        "language": "HTML",
+        "files": 5,
+        "bytes": 8190
+      },
+      {
+        "language": "Shell",
+        "files": 5,
+        "bytes": 574
+      },
+      {
+        "language": "JavaScript",
+        "files": 4,
+        "bytes": 22183
+      },
+      {
+        "language": "CSS",
+        "files": 3,
+        "bytes": 16064
+      },
+      {
+        "language": "TOML",
+        "files": 1,
+        "bytes": 11581
+      }
+    ],
+    "manifest": {
+      "path": "pyproject.toml",
+      "name": "fastapi",
+      "version": "{ source = \"file\", path = \"fastapi/__init__.py\" }",
+      "dependencyCount": 56,
+      "dependencies": [
+        "standard",
+        "fastapi-cli[standard]",
+        "fastar",
+        "#",
+        "httpx",
+        "#",
+        "jinja2",
+        "#",
+        "python-multipart",
+        "#",
+        "email-validator",
+        "#"
+      ]
+    },
+    "entrypoints": [
+      {
+        "path": "README.md",
+        "kind": "docs",
+        "reason": "Repository readme"
+      },
+      {
+        "path": ".github/workflows/guard-dependencies.yml",
+        "kind": "config",
+        "reason": "GitHub Actions workflow"
+      },
+      {
+        "path": ".github/workflows/smokeshow.yml",
+        "kind": "config",
+        "reason": "GitHub Actions workflow"
+      },
+      {
+        "path": ".github/workflows/issue-manager.yml",
+        "kind": "config",
+        "reason": "GitHub Actions workflow"
+      },
+      {
+        "path": ".github/workflows/deploy-docs.yml",
+        "kind": "config",
+        "reason": "GitHub Actions workflow"
+      },
+      {
+        "path": ".github/workflows/publish.yml",
+        "kind": "config",
+        "reason": "GitHub Actions workflow"
+      },
+      {
+        "path": ".github/workflows/test.yml",
+        "kind": "config",
+        "reason": "GitHub Actions workflow"
+      },
+      {
+        "path": ".github/workflows/pre-commit.yml",
+        "kind": "config",
+        "reason": "GitHub Actions workflow"
+      },
+      {
+        "path": ".github/workflows/add-to-project.yml",
+        "kind": "config",
+        "reason": "GitHub Actions workflow"
+      },
+      {
+        "path": ".github/workflows/create-draft-release.yml",
+        "kind": "config",
+        "reason": "GitHub Actions workflow"
+      }
+    ],
+    "topDirs": [
+      {
+        "path": "docs",
+        "file_count": 1733,
+        "bytes": 17818389
+      },
+      {
+        "path": "tests",
+        "file_count": 594,
+        "bytes": 2844156
+      },
+      {
+        "path": "docs_src",
+        "file_count": 464,
+        "bytes": 215314
+      },
+      {
+        "path": "scripts",
+        "file_count": 68,
+        "bytes": 208997
+      },
+      {
+        "path": "fastapi",
+        "file_count": 56,
+        "bytes": 789092
+      },
+      {
+        "path": ".github",
+        "file_count": 28,
+        "bytes": 63454
+      }
+    ],
+    "docs": [
+      "README.md",
+      "docs/de/docs/_llm-test.md",
+      "docs/de/docs/about/index.md",
+      "docs/de/docs/advanced/additional-responses.md",
+      "docs/de/docs/advanced/additional-status-codes.md",
+      "docs/de/docs/advanced/advanced-dependencies.md",
+      "docs/de/docs/advanced/advanced-python-types.md",
+      "docs/de/docs/advanced/async-tests.md",
+      "docs/de/docs/advanced/behind-a-proxy.md",
+      "docs/de/docs/advanced/custom-response.md"
+    ],
+    "stackTags": [
+      "GitHub Actions",
+      "Python"
+    ],
+    "health": {
+      "averageScore": 9,
+      "hotspotCount": 1,
+      "filesAnalyzed": 96,
+      "summary": "Deterministic scan scored 96 source files across simple size, churn, structural, test-adjacency, and performance-risk signals. 1 hotspot surfaced; average score is 9.0/10. Treat these as review leads, not proof of a bug.",
+      "topFiles": [
+        {
+          "path": "scripts/docs.py",
+          "score": 5.9,
+          "lines": 919,
+          "findings": [
+            "Large file",
+            "Deep nesting"
+          ]
+        },
+        {
+          "path": "fastapi/routing.py",
+          "score": 6.6,
+          "lines": 1236,
+          "findings": [
+            "Large file",
+            "Deep nesting"
+          ]
+        },
+        {
+          "path": "fastapi/dependencies/utils.py",
+          "score": 6.6,
+          "lines": 1053,
+          "findings": [
+            "Large file",
+            "Deep nesting"
+          ]
+        }
+      ]
+    },
+    "history": [
+      {
+        "sha": "50113da16fec",
+        "date": "2026-09-01",
+        "subject": "📝 Update release notes",
+        "files": [
+          ".github/DISCUSSION_TEMPLATE/questions.yml",
+          ".github/DISCUSSION_TEMPLATE/translations.yml",
+          ".github/ISSUE_TEMPLATE/config.yml",
+          ".github/ISSUE_TEMPLATE/privileged.yml",
+          ".github/dependabot.yml",
+          ".github/latest-changes.yml",
+          ".github/pr-push.yml",
+          ".github/pr-submit.yml",
+          ".github/workflows/add-to-project.yml",
+          ".github/workflows/build-docs.yml",
+          ".github/workflows/bump-pre-commit-hooks.yml",
+          ".github/workflows/create-draft-release.yml",
+          ".github/workflows/deploy-docs.yml",
+          ".github/workflows/detect-conflicts.yml",
+          ".github/workflows/guard-dependencies.yml",
+          ".github/workflows/issue-manager.yml",
+          ".github/workflows/label-approved.yml",
+          ".github/workflows/notify-translations.yml",
+          ".github/workflows/pre-commit.yml",
+          ".github/workflows/prepare-release.yml",
+          ".github/workflows/publish.yml",
+          ".github/workflows/smokeshow.yml",
+          ".github/workflows/sponsors.yml",
+          ".github/workflows/test-redistribute.yml"
+        ]
+      }
+    ],
+    "qaReadiness": {
+      "status": "missing",
+      "summary": "Repo does not expose enough local browser QA structure for a reliable Synthetic QA workflow yet."
+    },
+    "readmePreview": "<p align=\"center\">\n  <a href=\"https://fastapi.tiangolo.com\"><img src=\"https://fastapi.tiangolo.com/img/logo-margin/logo-teal.png\" alt=\"FastAPI\"></a>\n</p>\n<p align=\"center\">\n    <em>FastAPI framework, high performance, easy to learn, fast to code, ready for production</em>\n</p>\n<p"
+  },
+  {
+    "slug": "flask",
+    "repo": "pallets/flask",
+    "name": "flask",
+    "codevetterVersion": "codevetter 1.12.0",
+    "collectedAt": "2026-09-22T05:15:33.584Z",
+    "commit": {
+      "sha": "d73fa1cdcbd8b1465c151db8924ba58b1dd14e35",
+      "date": "2026-09-08",
+      "subject": "fix docs ref"
+    },
+    "stats": {
+      "filesScanned": 230,
+      "filesSkipped": 6,
+      "size": "1.1 MB",
+      "maxFilesHit": false,
+      "strategy": "full_walk"
+    },
+    "languages": [
+      {
+        "language": "Python",
+        "files": 83,
+        "bytes": 589437
+      },
+      {
+        "language": "HTML",
+        "files": 20,
+        "bytes": 10474
+      },
+      {
+        "language": "YAML",
+        "files": 8,
+        "bytes": 8503
+      },
+      {
+        "language": "Markdown",
+        "files": 6,
+        "bytes": 4671
+      },
+      {
+        "language": "TOML",
+        "files": 5,
+        "bytes": 8790
+      },
+      {
+        "language": "CSS",
+        "files": 2,
+        "bytes": 1714
+      },
+      {
+        "language": "JSON",
+        "files": 2,
+        "bytes": 488
+      },
+      {
+        "language": "SQL",
+        "files": 2,
+        "bytes": 892
+      }
+    ],
+    "manifest": {
+      "path": "pyproject.toml",
+      "name": "flask",
+      "version": "3.2.0.dev",
+      "dependencyCount": 2,
+      "dependencies": [
+        "async",
+        "dotenv"
+      ]
+    },
+    "entrypoints": [
+      {
+        "path": "README.md",
+        "kind": "docs",
+        "reason": "Repository readme"
+      }
+    ],
+    "topDirs": [
+      {
+        "path": "docs",
+        "file_count": 82,
+        "bytes": 462567
+      },
+      {
+        "path": "tests",
+        "file_count": 61,
+        "bytes": 218338
+      },
+      {
+        "path": "examples",
+        "file_count": 42,
+        "bytes": 42719
+      },
+      {
+        "path": "src",
+        "file_count": 26,
+        "bytes": 348482
+      },
+      {
+        "path": ".github",
+        "file_count": 9,
+        "bytes": 9270
+      },
+      {
+        "path": ".devcontainer",
+        "file_count": 2,
+        "bytes": 599
+      }
+    ],
+    "docs": [
+      "README.md"
+    ],
+    "stackTags": [
+      "GitHub Actions",
+      "Python"
+    ],
+    "health": {
+      "averageScore": 8.9,
+      "hotspotCount": 0,
+      "filesAnalyzed": 35,
+      "summary": "Deterministic scan scored 35 source files across simple size, churn, structural, test-adjacency, and performance-risk signals. 0 hotspots surfaced; average score is 8.9/10. Treat these as review leads, not proof of a bug.",
+      "topFiles": [
+        {
+          "path": "src/flask/app.py",
+          "score": 6.9,
+          "lines": 1222,
+          "findings": [
+            "Large file",
+            "Deep nesting"
+          ]
+        },
+        {
+          "path": "src/flask/cli.py",
+          "score": 6.9,
+          "lines": 1127,
+          "findings": [
+            "Large file",
+            "Deep nesting"
+          ]
+        },
+        {
+          "path": "src/flask/sansio/app.py",
+          "score": 6.9,
+          "lines": 1013,
+          "findings": [
+            "Large file",
+            "Deep nesting"
+          ]
+        }
+      ]
+    },
+    "history": [
+      {
+        "sha": "d73fa1cdcbd8",
+        "date": "2026-09-08",
+        "subject": "fix docs ref",
+        "files": [
+          ".devcontainer/devcontainer.json",
+          ".github/ISSUE_TEMPLATE/bug-report.md",
+          ".github/ISSUE_TEMPLATE/config.yml",
+          ".github/ISSUE_TEMPLATE/feature-request.md",
+          ".github/pull_request_template.md",
+          ".github/workflows/lock.yaml",
+          ".github/workflows/pre-commit.yaml",
+          ".github/workflows/publish.yaml",
+          ".github/workflows/tests.yaml",
+          ".github/workflows/zizmor.yaml",
+          ".pre-commit-config.yaml",
+          ".readthedocs.yaml",
+          "README.md",
+          "docs/Makefile",
+          "examples/celery/README.md",
+          "examples/celery/pyproject.toml",
+          "examples/javascript/pyproject.toml",
+          "examples/tutorial/flaskr/schema.sql",
+          "examples/tutorial/pyproject.toml",
+          "examples/tutorial/tests/data.sql",
+          "pyproject.toml",
+          "src/flask/sansio/README.md",
+          "tests/static/config.json",
+          "tests/static/config.toml"
+        ]
+      }
+    ],
+    "qaReadiness": {
+      "status": "missing",
+      "summary": "Repo does not expose enough local browser QA structure for a reliable Synthetic QA workflow yet."
+    },
+    "readmePreview": "<div align=\"center\"><img src=\"https://raw.githubusercontent.com/pallets/flask/refs/heads/stable/docs/_static/flask-name.svg\" alt=\"\" height=\"150\"></div>\n\n# Flask\n\nFlask is a lightweight [WSGI] web application framework. It is designed\nto make getting started quick and easy, with t"
+  },
+  {
+    "slug": "httpie",
+    "repo": "httpie/cli",
+    "name": "httpie",
+    "codevetterVersion": "codevetter 1.12.0",
+    "collectedAt": "2026-09-22T05:15:33.545Z",
+    "commit": {
+      "sha": "5b604c37c6c67e18e7c3e9aee6c88a8c22b98345",
+      "date": "2024-12-17",
+      "subject": "Fix `https` behaviour in fish (#1611)"
+    },
+    "stats": {
+      "filesScanned": 262,
+      "filesSkipped": 3,
+      "size": "969 KB",
+      "maxFilesHit": false,
+      "strategy": "full_walk"
+    },
+    "languages": [
+      {
+        "language": "Python",
+        "files": 133,
+        "bytes": 587883
+      },
+      {
+        "language": "JSON",
+        "files": 26,
+        "bytes": 25143
+      },
+      {
+        "language": "Markdown",
+        "files": 24,
+        "bytes": 151796
+      },
+      {
+        "language": "YAML",
+        "files": 19,
+        "bytes": 23125
+      },
+      {
+        "language": "Shell",
+        "files": 4,
+        "bytes": 1492
+      },
+      {
+        "language": "Ruby",
+        "files": 2,
+        "bytes": 5356
+      }
+    ],
+    "manifest": null,
+    "entrypoints": [
+      {
+        "path": "README.md",
+        "kind": "docs",
+        "reason": "Repository readme"
+      },
+      {
+        "path": ".github/workflows/docs-deploy.yml",
+        "kind": "config",
+        "reason": "GitHub Actions workflow"
+      },
+      {
+        "path": ".github/workflows/coverage.yml",
+        "kind": "config",
+        "reason": "GitHub Actions workflow"
+      },
+      {
+        "path": ".github/workflows/test-package-mac-brew.yml",
+        "kind": "config",
+        "reason": "GitHub Actions workflow"
+      },
+      {
+        "path": ".github/workflows/release-choco.yml",
+        "kind": "config",
+        "reason": "GitHub Actions workflow"
+      },
+      {
+        "path": ".github/workflows/release-linux-standalone.yml",
+        "kind": "config",
+        "reason": "GitHub Actions workflow"
+      },
+      {
+        "path": ".github/workflows/code-style.yml",
+        "kind": "config",
+        "reason": "GitHub Actions workflow"
+      },
+      {
+        "path": ".github/workflows/test-package-linux-snap.yml",
+        "kind": "config",
+        "reason": "GitHub Actions workflow"
+      },
+      {
+        "path": ".github/workflows/stale.yml",
+        "kind": "config",
+        "reason": "GitHub Actions workflow"
+      },
+      {
+        "path": ".github/workflows/benchmark.yml",
+        "kind": "config",
+        "reason": "GitHub Actions workflow"
+      }
+    ],
+    "topDirs": [
+      {
+        "path": "tests",
+        "file_count": 102,
+        "bytes": 384614
+      },
+      {
+        "path": "httpie",
+        "file_count": 78,
+        "bytes": 302596
+      },
+      {
+        "path": "docs",
+        "file_count": 31,
+        "bytes": 160109
+      },
+      {
+        "path": ".github",
+        "file_count": 19,
+        "bytes": 15023
+      },
+      {
+        "path": "extras",
+        "file_count": 16,
+        "bytes": 68923
+      }
+    ],
+    "docs": [
+      "CONTRIBUTING.md",
+      "README.md",
+      "docs/README.md",
+      "docs/contributors/README.md",
+      "docs/installation/README.md",
+      "docs/packaging/README.md",
+      "docs/packaging/brew/README.md",
+      "docs/packaging/linux-arch/README.md",
+      "docs/packaging/linux-centos/README.md",
+      "docs/packaging/linux-debian/README.md"
+    ],
+    "stackTags": [
+      "GitHub Actions"
+    ],
+    "health": {
+      "averageScore": 9.1,
+      "hotspotCount": 0,
+      "filesAnalyzed": 83,
+      "summary": "Deterministic scan scored 83 source files across simple size, churn, structural, test-adjacency, and performance-risk signals. 0 hotspots surfaced; average score is 9.1/10. Treat these as review leads, not proof of a bug.",
+      "topFiles": [
+        {
+          "path": "httpie/cli/definition.py",
+          "score": 6.9,
+          "lines": 956,
+          "findings": [
+            "Large file",
+            "Deep nesting"
+          ]
+        },
+        {
+          "path": "httpie/client.py",
+          "score": 7.1,
+          "lines": 400,
+          "findings": [
+            "Deep nesting",
+            "No adjacent test signal"
+          ]
+        },
+        {
+          "path": "httpie/cli/argparser.py",
+          "score": 7.4,
+          "lines": 613,
+          "findings": [
+            "Large file",
+            "Deep nesting"
+          ]
+        }
+      ]
+    },
+    "history": [
+      {
+        "sha": "5b604c37c6c6",
+        "date": "2024-12-17",
+        "subject": "Fix `https` behaviour in fish (#1611)",
+        "files": [
+          ".github/ISSUE_TEMPLATE/bug_report.md",
+          ".github/ISSUE_TEMPLATE/feature_request.md",
+          ".github/ISSUE_TEMPLATE/other.md",
+          ".github/dependabot.yml",
+          ".github/workflows/benchmark.yml",
+          ".github/workflows/code-style.yml",
+          ".github/workflows/content.yml",
+          ".github/workflows/coverage.yml",
+          ".github/workflows/docs-check-markdown.yml",
+          ".github/workflows/docs-deploy.yml",
+          ".github/workflows/release-brew.yml",
+          ".github/workflows/release-choco.yml",
+          ".github/workflows/release-linux-standalone.yml",
+          ".github/workflows/release-pypi.yml",
+          ".github/workflows/release-snap.yml",
+          ".github/workflows/stale.yml",
+          ".github/workflows/test-package-linux-snap.yml",
+          ".github/workflows/test-package-mac-brew.yml",
+          ".github/workflows/tests.yml",
+          ".packit.yaml",
+          "AUTHORS.md",
+          "CHANGELOG.md",
+          "CODE_OF_CONDUCT.md",
+          "CONTRIBUTING.md"
+        ]
+      }
+    ],
+    "qaReadiness": {
+      "status": "missing",
+      "summary": "Repo does not expose enough local browser QA structure for a reliable Synthetic QA workflow yet."
+    },
+    "readmePreview": "<h2 align=\"center\">\n    <a href=\"https://httpie.io\" target=\"blank_\">\n        <img height=\"100\" alt=\"HTTPie\" src=\"https://raw.githubusercontent.com/httpie/cli/master/docs/httpie-logo.svg\" />\n    </a>\n    <br>\n    HTTPie CLI: human-friendly HTTP client for the API era\n</h2>\n\n<div a"
+  },
+  {
+    "slug": "jsonwebtoken",
+    "repo": "auth0/node-jsonwebtoken",
+    "name": "jsonwebtoken",
+    "codevetterVersion": "codevetter 1.12.0",
+    "collectedAt": "2026-09-22T05:15:33.259Z",
+    "commit": {
+      "sha": "b924272f29192e12926b5414546f7c5bfcc9579d",
+      "date": "2026-06-25",
+      "subject": "ci: replace npx changelog call with npm script and fix prepare-release workflow (#1037)"
+    },
+    "stats": {
+      "filesScanned": 84,
+      "filesSkipped": 0,
+      "size": "238 KB",
+      "maxFilesHit": false,
+      "strategy": "full_walk"
+    },
+    "languages": [
+      {
+        "language": "JavaScript",
+        "files": 46,
+        "bytes": 153023
+      },
+      {
+        "language": "YAML",
+        "files": 6,
+        "bytes": 6219
+      },
+      {
+        "language": "JSON",
+        "files": 5,
+        "bytes": 3151
+      },
+      {
+        "language": "Markdown",
+        "files": 2,
+        "bytes": 59304
+      }
+    ],
+    "manifest": {
+      "path": "package.json",
+      "name": "jsonwebtoken",
+      "version": "9.0.3",
+      "dependencyCount": 24,
+      "dependencies": [
+        "@commitlint/cli",
+        "@commitlint/config-conventional",
+        "@semantic-release/exec",
+        "atob",
+        "chai",
+        "conventional-changelog",
+        "conventional-changelog-conventionalcommits",
+        "eslint",
+        "husky",
+        "jws",
+        "lodash.includes",
+        "lodash.isboolean"
+      ]
+    },
+    "entrypoints": [
+      {
+        "path": "README.md",
+        "kind": "docs",
+        "reason": "Repository readme"
+      },
+      {
+        "path": ".github/workflows/release.yml",
+        "kind": "config",
+        "reason": "GitHub Actions workflow"
+      },
+      {
+        "path": ".github/workflows/commitlint.yml",
+        "kind": "config",
+        "reason": "GitHub Actions workflow"
+      },
+      {
+        "path": ".github/workflows/test.yml",
+        "kind": "config",
+        "reason": "GitHub Actions workflow"
+      },
+      {
+        "path": ".github/workflows/prepare-release.yml",
+        "kind": "config",
+        "reason": "GitHub Actions workflow"
+      },
+      {
+        "path": ".github/workflows/sca-scan.yml",
+        "kind": "config",
+        "reason": "GitHub Actions workflow"
+      },
+      {
+        "path": "package.json",
+        "kind": "config",
+        "reason": "npm scripts: coverage, lint, prepare, test, update-changelog"
+      }
+    ],
+    "topDirs": [
+      {
+        "path": "test",
+        "file_count": 52,
+        "bytes": 148688
+      },
+      {
+        "path": "lib",
+        "file_count": 8,
+        "bytes": 4140
+      },
+      {
+        "path": ".github",
+        "file_count": 5,
+        "bytes": 6153
+      },
+      {
+        "path": "bin",
+        "file_count": 1,
+        "bytes": 1419
+      },
+      {
+        "path": ".husky",
+        "file_count": 1,
+        "bytes": 35
+      }
+    ],
+    "docs": [
+      "README.md"
+    ],
+    "stackTags": [
+      "GitHub Actions"
+    ],
+    "health": {
+      "averageScore": 9.6,
+      "hotspotCount": 0,
+      "filesAnalyzed": 45,
+      "summary": "Deterministic scan scored 45 source files across simple size, churn, structural, test-adjacency, and performance-risk signals. 0 hotspots surfaced; average score is 9.6/10. Treat these as review leads, not proof of a bug.",
+      "topFiles": [
+        {
+          "path": "test/claim-aud.test.js",
+          "score": 7.9,
+          "lines": 436,
+          "findings": [
+            "Deep nesting",
+            "Long function/block"
+          ]
+        },
+        {
+          "path": "test/claim-exp.test.js",
+          "score": 8.6,
+          "lines": 343,
+          "findings": [
+            "Deep nesting",
+            "Long function/block"
+          ]
+        },
+        {
+          "path": "test/claim-nbf.test.js",
+          "score": 8.6,
+          "lines": 339,
+          "findings": [
+            "Deep nesting",
+            "Long function/block"
+          ]
+        }
+      ]
+    },
+    "history": [
+      {
+        "sha": "b924272f2919",
+        "date": "2026-06-25",
+        "subject": "ci: replace npx changelog call with npm script and fix prepare-release workflow (#1037)",
+        "files": [
+          ".commitlintrc.json",
+          ".eslintrc.json",
+          ".github/workflows/commitlint.yml",
+          ".github/workflows/prepare-release.yml",
+          ".github/workflows/release.yml",
+          ".github/workflows/sca-scan.yml",
+          ".github/workflows/test.yml",
+          ".releaserc.json",
+          "CHANGELOG.md",
+          "README.md",
+          "decode.js",
+          "index.js",
+          "lib/JsonWebTokenError.js",
+          "lib/NotBeforeError.js",
+          "lib/TokenExpiredError.js",
+          "lib/asymmetricKeyDetailsSupported.js",
+          "lib/psSupported.js",
+          "lib/rsaPssKeyDetailsSupported.js",
+          "lib/timespan.js",
+          "lib/validateAsymmetricKey.js",
+          "opslevel.yml",
+          "package.json",
+          "sign.js",
+          "test/.eslintrc.json"
+        ]
+      }
+    ],
+    "qaReadiness": {
+      "status": "missing",
+      "summary": "Repo does not expose enough local browser QA structure for a reliable Synthetic QA workflow yet."
+    },
+    "readmePreview": "# jsonwebtoken\n\n| **Build**                                                                                                                               | **Dependency**                                                                                                         |\n|--"
+  },
+  {
+    "slug": "lodash",
+    "repo": "lodash/lodash",
+    "name": "lodash",
+    "codevetterVersion": "codevetter 1.12.0",
+    "collectedAt": "2026-09-22T05:15:33.855Z",
+    "commit": {
+      "sha": "2b5e6f7399a7b48005140b5d5c6bc6c0e62919a8",
+      "date": "2026-09-11",
+      "subject": "ci: update actions to latest versions (#6279)"
+    },
+    "stats": {
+      "filesScanned": 64,
+      "filesSkipped": 1,
+      "size": "1.8 MB",
+      "maxFilesHit": false,
+      "strategy": "full_walk"
+    },
+    "languages": [
+      {
+        "language": "JavaScript",
+        "files": 27,
+        "bytes": 1543734
+      },
+      {
+        "language": "YAML",
+        "files": 8,
+        "bytes": 9925
+      },
+      {
+        "language": "Markdown",
+        "files": 7,
+        "bytes": 326770
+      },
+      {
+        "language": "HTML",
+        "files": 5,
+        "bytes": 35861
+      },
+      {
+        "language": "JSON",
+        "files": 2,
+        "bytes": 2347
+      }
+    ],
+    "manifest": {
+      "path": "package.json",
+      "name": "lodash",
+      "version": "4.18.1",
+      "dependencyCount": 27,
+      "dependencies": [
+        "async",
+        "benchmark",
+        "chalk",
+        "cheerio",
+        "codecov.io",
+        "coveralls",
+        "curl-amd",
+        "docdown",
+        "dojo",
+        "ecstatic",
+        "fs-extra",
+        "glob"
+      ]
+    },
+    "entrypoints": [
+      {
+        "path": "README.md",
+        "kind": "docs",
+        "reason": "Repository readme"
+      },
+      {
+        "path": ".github/workflows/renovate.yml",
+        "kind": "config",
+        "reason": "GitHub Actions workflow"
+      },
+      {
+        "path": ".github/workflows/ci-dist-sync.yml",
+        "kind": "config",
+        "reason": "GitHub Actions workflow"
+      },
+      {
+        "path": ".github/workflows/scorecards.yml",
+        "kind": "config",
+        "reason": "GitHub Actions workflow"
+      },
+      {
+        "path": ".github/workflows/browser-testing.yml",
+        "kind": "config",
+        "reason": "GitHub Actions workflow"
+      },
+      {
+        "path": ".github/workflows/codeql.yml",
+        "kind": "config",
+        "reason": "GitHub Actions workflow"
+      },
+      {
+        "path": ".github/workflows/ci-bun.yml",
+        "kind": "config",
+        "reason": "GitHub Actions workflow"
+      },
+      {
+        "path": ".github/workflows/ci-docs.yml",
+        "kind": "config",
+        "reason": "GitHub Actions workflow"
+      },
+      {
+        "path": ".github/workflows/ci-node.yml",
+        "kind": "config",
+        "reason": "GitHub Actions workflow"
+      },
+      {
+        "path": "package.json",
+        "kind": "config",
+        "reason": "npm scripts: build, build:fp, build:fp-modules, build:main, build:main-modules, doc, doc:fp, doc:site"
+      }
+    ],
+    "topDirs": [
+      {
+        "path": "lib",
+        "file_count": 21,
+        "bytes": 31101
+      },
+      {
+        "path": "test",
+        "file_count": 10,
+        "bytes": 920611
+      },
+      {
+        "path": ".github",
+        "file_count": 9,
+        "bytes": 13185
+      },
+      {
+        "path": "fp",
+        "file_count": 4,
+        "bytes": 27089
+      },
+      {
+        "path": "perf",
+        "file_count": 3,
+        "bytes": 62158
+      },
+      {
+        "path": "doc",
+        "file_count": 1,
+        "bytes": 295392
+      }
+    ],
+    "docs": [
+      "README.md"
+    ],
+    "stackTags": [
+      "GitHub Actions"
+    ],
+    "health": {
+      "averageScore": 9.4,
+      "hotspotCount": 1,
+      "filesAnalyzed": 27,
+      "summary": "Deterministic scan scored 27 source files across simple size, churn, structural, test-adjacency, and performance-risk signals. 1 hotspot surfaced; average score is 9.4/10. Treat these as review leads, not proof of a bug.",
+      "topFiles": [
+        {
+          "path": "test/test.js",
+          "score": 6.2,
+          "lines": 2639,
+          "findings": [
+            "Large file",
+            "Deep nesting"
+          ]
+        },
+        {
+          "path": "test/test-fp.js",
+          "score": 6.7,
+          "lines": 2322,
+          "findings": [
+            "Large file",
+            "Deep nesting"
+          ]
+        },
+        {
+          "path": "perf/perf.js",
+          "score": 6.7,
+          "lines": 1978,
+          "findings": [
+            "Large file",
+            "Deep nesting"
+          ]
+        }
+      ]
+    },
+    "history": [
+      {
+        "sha": "2b5e6f7399a7",
+        "date": "2026-09-11",
+        "subject": "ci: update actions to latest versions (#6279)",
+        "files": [
+          ".github/CONTRIBUTING.md",
+          ".github/workflows/browser-testing.yml",
+          ".github/workflows/ci-bun.yml",
+          ".github/workflows/ci-dist-sync.yml",
+          ".github/workflows/ci-docs.yml",
+          ".github/workflows/ci-node.yml",
+          ".github/workflows/codeql.yml",
+          ".github/workflows/renovate.yml",
+          ".github/workflows/scorecards.yml",
+          ".markdown-doctest-setup.js",
+          "GOVERNANCE.md",
+          "README.md",
+          "SECURITY.md",
+          "dist/lodash.core.js",
+          "dist/lodash.fp.js",
+          "dist/lodash.js",
+          "dist/mapping.fp.js",
+          "doc/README.md",
+          "fp/_baseConvert.js",
+          "fp/_convertBrowser.js",
+          "fp/_mapping.js",
+          "fp/placeholder.js",
+          "incident_response_plan.md",
+          "lib/common/file.js"
+        ]
+      }
+    ],
+    "qaReadiness": {
+      "status": "missing",
+      "summary": "Repo does not expose enough local browser QA structure for a reliable Synthetic QA workflow yet."
+    },
+    "readmePreview": "# lodash v4.18.1\n\n[Site](https://lodash.com/) |\n[Docs](https://lodash.com/docs) |\n[FP Guide](https://github.com/lodash/lodash/wiki/FP-Guide) |\n[Contributing](https://github.com/lodash/lodash/blob/main/.github/CONTRIBUTING.md) |\n[Wiki](https://github.com/lodash/lodash/wiki \"Change"
+  },
+  {
+    "slug": "redis",
+    "repo": "redis/redis",
+    "name": "redis",
+    "codevetterVersion": "codevetter 1.12.0",
+    "collectedAt": "2026-09-22T05:15:34.273Z",
+    "commit": {
+      "sha": "c3215f019a4c11c35d438f241114e94730fe39e5",
+      "date": "2026-09-22",
+      "subject": "CI remove unused redis_docs_sync workflow (#15816)"
+    },
+    "stats": {
+      "filesScanned": 1866,
+      "filesSkipped": 3,
+      "size": "20.8 MB",
+      "maxFilesHit": false,
+      "strategy": "full_walk"
+    },
+    "languages": [
+      {
+        "language": "C",
+        "files": 788,
+        "bytes": 13596998
+      },
+      {
+        "language": "JSON",
+        "files": 465,
+        "bytes": 879113
+      },
+      {
+        "language": "Shell",
+        "files": 83,
+        "bytes": 116827
+      },
+      {
+        "language": "Python",
+        "files": 48,
+        "bytes": 256878
+      },
+      {
+        "language": "Markdown",
+        "files": 27,
+        "bytes": 276270
+      },
+      {
+        "language": "YAML",
+        "files": 22,
+        "bytes": 140679
+      },
+      {
+        "language": "Lua",
+        "files": 20,
+        "bytes": 11887
+      },
+      {
+        "language": "Ruby",
+        "files": 9,
+        "bytes": 23536
+      }
+    ],
+    "manifest": null,
+    "entrypoints": [
+      {
+        "path": "README.md",
+        "kind": "docs",
+        "reason": "Repository readme"
+      },
+      {
+        "path": ".github/workflows/post-release-automation.yml",
+        "kind": "config",
+        "reason": "GitHub Actions workflow"
+      },
+      {
+        "path": ".github/workflows/codecov.yml",
+        "kind": "config",
+        "reason": "GitHub Actions workflow"
+      },
+      {
+        "path": ".github/workflows/reply-schemas-linter.yml",
+        "kind": "config",
+        "reason": "GitHub Actions workflow"
+      },
+      {
+        "path": ".github/workflows/codeql-analysis.yml",
+        "kind": "config",
+        "reason": "GitHub Actions workflow"
+      },
+      {
+        "path": ".github/workflows/modules-build-flow.yml",
+        "kind": "config",
+        "reason": "GitHub Actions workflow"
+      },
+      {
+        "path": ".github/workflows/coverity.yml",
+        "kind": "config",
+        "reason": "GitHub Actions workflow"
+      },
+      {
+        "path": ".github/workflows/spell-check.yml",
+        "kind": "config",
+        "reason": "GitHub Actions workflow"
+      },
+      {
+        "path": ".github/workflows/daily.yml",
+        "kind": "config",
+        "reason": "GitHub Actions workflow"
+      },
+      {
+        "path": ".github/workflows/external.yml",
+        "kind": "config",
+        "reason": "GitHub Actions workflow"
+      }
+    ],
+    "topDirs": [
+      {
+        "path": "deps",
+        "file_count": 707,
+        "bytes": 6158931
+      },
+      {
+        "path": "src",
+        "file_count": 693,
+        "bytes": 9866100
+      },
+      {
+        "path": "tests",
+        "file_count": 306,
+        "bytes": 4561778
+      },
+      {
+        "path": "modules",
+        "file_count": 66,
+        "bytes": 622723
+      },
+      {
+        "path": "utils",
+        "file_count": 40,
+        "bytes": 109290
+      },
+      {
+        "path": ".github",
+        "file_count": 16,
+        "bytes": 101550
+      },
+      {
+        "path": "scripts",
+        "file_count": 13,
+        "bytes": 77728
+      },
+      {
+        "path": ".config",
+        "file_count": 1,
+        "bytes": 1711
+      }
+    ],
+    "docs": [
+      "CONTRIBUTING.md",
+      "README.md"
+    ],
+    "stackTags": [
+      "GitHub Actions"
+    ],
+    "health": {
+      "averageScore": 8.8,
+      "hotspotCount": 0,
+      "filesAnalyzed": 23,
+      "summary": "Deterministic scan scored 23 source files across simple size, churn, structural, test-adjacency, and performance-risk signals. 0 hotspots surfaced; average score is 8.8/10. Treat these as review leads, not proof of a bug.",
+      "topFiles": [
+        {
+          "path": "tools/array-bench.py",
+          "score": 7.1,
+          "lines": 431,
+          "findings": [
+            "Deep nesting",
+            "No adjacent test signal"
+          ]
+        },
+        {
+          "path": "utils/generate-command-code.py",
+          "score": 7.4,
+          "lines": 635,
+          "findings": [
+            "Large file",
+            "Deep nesting"
+          ]
+        },
+        {
+          "path": "utils/req-res-log-validator.py",
+          "score": 7.8,
+          "lines": 364,
+          "findings": [
+            "Deep nesting",
+            "I/O inside loop"
+          ]
+        }
+      ]
+    },
+    "history": [
+      {
+        "sha": "c3215f019a4c",
+        "date": "2026-09-22",
+        "subject": "CI remove unused redis_docs_sync workflow (#15816)",
+        "files": [
+          ".config/typos.toml",
+          ".github/ISSUE_TEMPLATE/bug_report.md",
+          ".github/ISSUE_TEMPLATE/crash_report.md",
+          ".github/ISSUE_TEMPLATE/feature_request.md",
+          ".github/ISSUE_TEMPLATE/other_stuff.md",
+          ".github/ISSUE_TEMPLATE/question.md",
+          ".github/dependabot.yml",
+          ".github/workflows/ci.yml",
+          ".github/workflows/codecov.yml",
+          ".github/workflows/codeql-analysis.yml",
+          ".github/workflows/coverity.yml",
+          ".github/workflows/daily.yml",
+          ".github/workflows/external.yml",
+          ".github/workflows/modules-build-flow.yml",
+          ".github/workflows/post-release-automation.yml",
+          ".github/workflows/reply-schemas-linter.yml",
+          ".github/workflows/spell-check.yml",
+          "CODE_OF_CONDUCT.md",
+          "CONTRIBUTING.md",
+          "Makefile",
+          "README.md",
+          "SECURITY.md",
+          "TLS.md",
+          "codecov.yml"
+        ]
+      }
+    ],
+    "qaReadiness": {
+      "status": "missing",
+      "summary": "Repo does not expose enough local browser QA structure for a reliable Synthetic QA workflow yet."
+    },
+    "readmePreview": "[![codecov](https://codecov.io/github/redis/redis/graph/badge.svg?token=6bVHb5fRuz)](https://codecov.io/github/redis/redis)\n\nThis document serves as both a quick start guide to Redis and a detailed resource for building it from source.\n\n- New to Redis? Start with [What is Redis]("
+  },
+  {
+    "slug": "requests",
+    "repo": "psf/requests",
+    "name": "requests",
+    "codevetterVersion": "codevetter 1.12.0",
+    "collectedAt": "2026-09-22T05:15:33.932Z",
+    "commit": {
+      "sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+      "date": "2026-09-21",
+      "subject": "Bump the actions group with 3 updates (#7628)"
+    },
+    "stats": {
+      "filesScanned": 124,
+      "filesSkipped": 6,
+      "size": "1.5 MB",
+      "maxFilesHit": false,
+      "strategy": "full_walk"
+    },
+    "languages": [
+      {
+        "language": "Python",
+        "files": 37,
+        "bytes": 407127
+      },
+      {
+        "language": "Markdown",
+        "files": 13,
+        "bytes": 81800
+      },
+      {
+        "language": "YAML",
+        "files": 12,
+        "bytes": 12921
+      },
+      {
+        "language": "CSS",
+        "files": 1,
+        "bytes": 287
+      },
+      {
+        "language": "HTML",
+        "files": 1,
+        "bytes": 1361
+      },
+      {
+        "language": "TOML",
+        "files": 1,
+        "bytes": 3404
+      }
+    ],
+    "manifest": {
+      "path": "pyproject.toml",
+      "name": "requests",
+      "version": "{attr = \"requests.__version__.__version__\"}",
+      "dependencyCount": 3,
+      "dependencies": [
+        "security",
+        "socks",
+        "use_chardet_on_py3"
+      ]
+    },
+    "entrypoints": [
+      {
+        "path": "README.md",
+        "kind": "docs",
+        "reason": "Repository readme"
+      },
+      {
+        "path": ".github/workflows/publish.yml",
+        "kind": "config",
+        "reason": "GitHub Actions workflow"
+      },
+      {
+        "path": ".github/workflows/codeql-analysis.yml",
+        "kind": "config",
+        "reason": "GitHub Actions workflow"
+      },
+      {
+        "path": ".github/workflows/lint.yml",
+        "kind": "config",
+        "reason": "GitHub Actions workflow"
+      },
+      {
+        "path": ".github/workflows/typecheck.yml",
+        "kind": "config",
+        "reason": "GitHub Actions workflow"
+      },
+      {
+        "path": ".github/workflows/run-tests.yml",
+        "kind": "config",
+        "reason": "GitHub Actions workflow"
+      },
+      {
+        "path": ".github/workflows/lock-issues.yml",
+        "kind": "config",
+        "reason": "GitHub Actions workflow"
+      },
+      {
+        "path": ".github/workflows/zizmor.yml",
+        "kind": "config",
+        "reason": "GitHub Actions workflow"
+      },
+      {
+        "path": ".github/workflows/close-issues.yml",
+        "kind": "config",
+        "reason": "GitHub Actions workflow"
+      }
+    ],
+    "topDirs": [
+      {
+        "path": "tests",
+        "file_count": 42,
+        "bytes": 199102
+      },
+      {
+        "path": "docs",
+        "file_count": 25,
+        "bytes": 131164
+      },
+      {
+        "path": "src",
+        "file_count": 20,
+        "bytes": 216088
+      },
+      {
+        "path": ".github",
+        "file_count": 19,
+        "bytes": 25646
+      },
+      {
+        "path": "ext",
+        "file_count": 2,
+        "bytes": 883845
+      }
+    ],
+    "docs": [
+      "README.md"
+    ],
+    "stackTags": [
+      "GitHub Actions",
+      "Python"
+    ],
+    "health": {
+      "averageScore": 8.8,
+      "hotspotCount": 0,
+      "filesAnalyzed": 22,
+      "summary": "Deterministic scan scored 22 source files across simple size, churn, structural, test-adjacency, and performance-risk signals. 0 hotspots surfaced; average score is 8.8/10. Treat these as review leads, not proof of a bug.",
+      "topFiles": [
+        {
+          "path": "src/requests/models.py",
+          "score": 6.6,
+          "lines": 1184,
+          "findings": [
+            "Large file",
+            "Deep nesting"
+          ]
+        },
+        {
+          "path": "src/requests/sessions.py",
+          "score": 6.6,
+          "lines": 920,
+          "findings": [
+            "Large file",
+            "Deep nesting"
+          ]
+        },
+        {
+          "path": "src/requests/utils.py",
+          "score": 6.9,
+          "lines": 1155,
+          "findings": [
+            "Large file",
+            "Deep nesting"
+          ]
+        }
+      ]
+    },
+    "history": [
+      {
+        "sha": "611c6162cbc4",
+        "date": "2026-09-21",
+        "subject": "Bump the actions group with 3 updates (#7628)",
+        "files": [
+          ".github/AI_POLICY.md",
+          ".github/CODE_OF_CONDUCT.md",
+          ".github/CONTRIBUTING.md",
+          ".github/FUNDING.yml",
+          ".github/ISSUE_TEMPLATE.md",
+          ".github/ISSUE_TEMPLATE/Bug_report.md",
+          ".github/ISSUE_TEMPLATE/Custom.md",
+          ".github/ISSUE_TEMPLATE/Feature_request.md",
+          ".github/SECURITY.md",
+          ".github/dependabot.yml",
+          ".github/workflows/close-issues.yml",
+          ".github/workflows/codeql-analysis.yml",
+          ".github/workflows/lint.yml",
+          ".github/workflows/lock-issues.yml",
+          ".github/workflows/publish.yml",
+          ".github/workflows/run-tests.yml",
+          ".github/workflows/typecheck.yml",
+          ".github/workflows/zizmor.yml",
+          ".pre-commit-config.yaml",
+          ".readthedocs.yaml",
+          "HISTORY.md",
+          "Makefile",
+          "README.md",
+          "docs/Makefile"
+        ]
+      }
+    ],
+    "qaReadiness": {
+      "status": "missing",
+      "summary": "Repo does not expose enough local browser QA structure for a reliable Synthetic QA workflow yet."
+    },
+    "readmePreview": "# Requests\n\n[![Version](https://img.shields.io/pypi/v/requests.svg?maxAge=86400)](https://pypi.org/project/requests/)\n[![Supported Versions](https://img.shields.io/pypi/pyversions/requests.svg)](https://pypi.org/project/requests)\n[![Downloads](https://static.pepy.tech/badge/reque"
+  },
+  {
+    "slug": "ripgrep",
+    "repo": "BurntSushi/ripgrep",
+    "name": "ripgrep",
+    "codevetterVersion": "codevetter 1.12.0",
+    "collectedAt": "2026-09-22T05:15:33.380Z",
+    "commit": {
+      "sha": "3fce3b5bb0236da2df6d99672afb8a719642eca7",
+      "date": "2026-08-04",
+      "subject": "ignore-0.4.33"
+    },
+    "stats": {
+      "filesScanned": 232,
+      "filesSkipped": 5,
+      "size": "3.1 MB",
+      "maxFilesHit": false,
+      "strategy": "full_walk"
+    },
+    "languages": [
+      {
+        "language": "Rust",
+        "files": 110,
+        "bytes": 1902104
+      },
+      {
+        "language": "Markdown",
+        "files": 23,
+        "bytes": 217094
+      },
+      {
+        "language": "TOML",
+        "files": 14,
+        "bytes": 14640
+      },
+      {
+        "language": "YAML",
+        "files": 5,
+        "bytes": 26513
+      },
+      {
+        "language": "Shell",
+        "files": 3,
+        "bytes": 32257
+      },
+      {
+        "language": "Lua",
+        "files": 1,
+        "bytes": 192
+      },
+      {
+        "language": "Ruby",
+        "files": 1,
+        "bytes": 804
+      }
+    ],
+    "manifest": {
+      "path": "Cargo.toml",
+      "name": "integration",
+      "version": "15.2.0\"  #:version",
+      "dependencyCount": 14,
+      "dependencies": [
+        "anyhow",
+        "bstr",
+        "grep",
+        "grep-index",
+        "ignore",
+        "lexopt",
+        "log",
+        "serde",
+        "serde_derive",
+        "serde_json",
+        "termcolor",
+        "textwrap"
+      ]
+    },
+    "entrypoints": [
+      {
+        "path": "README.md",
+        "kind": "docs",
+        "reason": "Repository readme"
+      },
+      {
+        "path": ".github/workflows/release.yml",
+        "kind": "config",
+        "reason": "GitHub Actions workflow"
+      },
+      {
+        "path": ".github/workflows/ci.yml",
+        "kind": "config",
+        "reason": "GitHub Actions workflow"
+      }
+    ],
+    "topDirs": [
+      {
+        "path": "crates",
+        "file_count": 147,
+        "bytes": 1802084
+      },
+      {
+        "path": "benchsuite",
+        "file_count": 30,
+        "bytes": 901680
+      },
+      {
+        "path": "tests",
+        "file_count": 19,
+        "bytes": 284124
+      },
+      {
+        "path": ".github",
+        "file_count": 6,
+        "bytes": 27102
+      },
+      {
+        "path": "fuzz",
+        "file_count": 4,
+        "bytes": 2557
+      },
+      {
+        "path": "ci",
+        "file_count": 4,
+        "bytes": 5989
+      },
+      {
+        "path": "pkg",
+        "file_count": 3,
+        "bytes": 2937
+      },
+      {
+        "path": "scripts",
+        "file_count": 1,
+        "bytes": 1114
+      }
+    ],
+    "docs": [
+      "CONTRIBUTING.md",
+      "README.md"
+    ],
+    "stackTags": [
+      "GitHub Actions",
+      "Rust"
+    ],
+    "health": {
+      "averageScore": 8.2,
+      "hotspotCount": 17,
+      "filesAnalyzed": 93,
+      "summary": "Deterministic scan scored 93 source files across simple size, churn, structural, test-adjacency, and performance-risk signals. 17 hotspots surfaced; average score is 8.2/10. Treat these as review leads, not proof of a bug.",
+      "topFiles": [
+        {
+          "path": "crates/ignore/src/walk.rs",
+          "score": 5.2,
+          "lines": 2375,
+          "findings": [
+            "Large file",
+            "Deep nesting"
+          ]
+        },
+        {
+          "path": "crates/ignore/src/incremental.rs",
+          "score": 5.2,
+          "lines": 1286,
+          "findings": [
+            "Large file",
+            "Deep nesting"
+          ]
+        },
+        {
+          "path": "crates/ignore/src/gitignore.rs",
+          "score": 5.7,
+          "lines": 885,
+          "findings": [
+            "Large file",
+            "Deep nesting"
+          ]
+        }
+      ]
+    },
+    "history": [
+      {
+        "sha": "3fce3b5bb023",
+        "date": "2026-08-04",
+        "subject": "ignore-0.4.33",
+        "files": [
+          ".cargo/config.toml",
+          ".github/FUNDING.yml",
+          ".github/ISSUE_TEMPLATE/bug_report.yml",
+          ".github/ISSUE_TEMPLATE/config.yml",
+          ".github/ISSUE_TEMPLATE/feature_request.md",
+          ".github/workflows/ci.yml",
+          ".github/workflows/release.yml",
+          "AI_POLICY.md",
+          "CHANGELOG.md",
+          "CONTRIBUTING.md",
+          "Cargo.toml",
+          "FAQ.md",
+          "GUIDE.md",
+          "README.md",
+          "RELEASE-CHECKLIST.md",
+          "benchsuite/runs/2020-10-14-archlinux-frink/README.md",
+          "benchsuite/runs/2022-12-16-archlinux-duff/README.md",
+          "build.rs",
+          "crates/cli/Cargo.toml",
+          "crates/cli/README.md",
+          "crates/cli/src/decompress.rs",
+          "crates/cli/src/escape.rs",
+          "crates/cli/src/hostname.rs",
+          "crates/cli/src/human.rs"
+        ]
+      }
+    ],
+    "qaReadiness": {
+      "status": "missing",
+      "summary": "Repo does not expose enough local browser QA structure for a reliable Synthetic QA workflow yet."
+    },
+    "readmePreview": "ripgrep (rg)\n------------\nripgrep is a line-oriented search tool that recursively searches the current\ndirectory for a regex pattern. By default, ripgrep will respect gitignore rules\nand automatically skip hidden files/directories and binary files. (To disable\nall automatic filte"
+  },
+  {
+    "slug": "sqlite",
+    "repo": "sqlite/sqlite",
+    "name": "sqlite",
+    "codevetterVersion": "codevetter 1.12.0",
+    "collectedAt": "2026-09-22T05:15:37.718Z",
+    "commit": {
+      "sha": "fde3a84dddf35f4c19797c8afad04a44c596f4d8",
+      "date": "2026-09-21",
+      "subject": "Latest preprocessor for various cleanups and fixes. Duplicate the tester1 concurrency warning in the worker-based copy."
+    },
+    "stats": {
+      "filesScanned": 2207,
+      "filesSkipped": 17,
+      "size": "34.5 MB",
+      "maxFilesHit": false,
+      "strategy": "full_walk"
+    },
+    "languages": [
+      {
+        "language": "C",
+        "files": 357,
+        "bytes": 14560849
+      },
+      {
+        "language": "Java",
+        "files": 58,
+        "bytes": 471722
+      },
+      {
+        "language": "JavaScript",
+        "files": 42,
+        "bytes": 1071813
+      },
+      {
+        "language": "Markdown",
+        "files": 27,
+        "bytes": 271989
+      },
+      {
+        "language": "HTML",
+        "files": 21,
+        "bytes": 158759
+      },
+      {
+        "language": "SQL",
+        "files": 14,
+        "bytes": 51083
+      },
+      {
+        "language": "Shell",
+        "files": 14,
+        "bytes": 21239
+      },
+      {
+        "language": "C#",
+        "files": 2,
+        "bytes": 23719
+      }
+    ],
+    "manifest": null,
+    "entrypoints": [
+      {
+        "path": "README.md",
+        "kind": "docs",
+        "reason": "Repository readme"
+      },
+      {
+        "path": "AGENTS.md",
+        "kind": "docs",
+        "reason": "Agent instructions"
+      }
+    ],
+    "topDirs": [
+      {
+        "path": "test",
+        "file_count": 1285,
+        "bytes": 14341427
+      },
+      {
+        "path": "ext",
+        "file_count": 593,
+        "bytes": 9934748
+      },
+      {
+        "path": "src",
+        "file_count": 154,
+        "bytes": 8624312
+      },
+      {
+        "path": "tool",
+        "file_count": 95,
+        "bytes": 1022311
+      },
+      {
+        "path": "autosetup",
+        "file_count": 22,
+        "bytes": 1137518
+      },
+      {
+        "path": "autoconf",
+        "file_count": 15,
+        "bytes": 87262
+      },
+      {
+        "path": "doc",
+        "file_count": 13,
+        "bytes": 140150
+      },
+      {
+        "path": "mptest",
+        "file_count": 6,
+        "bytes": 58620
+      }
+    ],
+    "docs": [
+      "AGENTS.md",
+      "LICENSE.md",
+      "README.md"
+    ],
+    "stackTags": [],
+    "health": {
+      "averageScore": 9,
+      "hotspotCount": 12,
+      "filesAnalyzed": 93,
+      "summary": "Deterministic scan scored 93 source files across simple size, churn, structural, test-adjacency, and performance-risk signals. 12 hotspots surfaced; average score is 9.0/10. Treat these as review leads, not proof of a bug.",
+      "topFiles": [
+        {
+          "path": "ext/wasm/api/sqlite3-opfs-async-proxy.c-pp.js",
+          "score": 5.9,
+          "lines": 978,
+          "findings": [
+            "Large file",
+            "Deep nesting"
+          ]
+        },
+        {
+          "path": "ext/wasm/tester1.c-pp.js",
+          "score": 6.2,
+          "lines": 2129,
+          "findings": [
+            "Large file",
+            "Deep nesting"
+          ]
+        },
+        {
+          "path": "ext/wasm/api/sqlite3-vfs-kvvfs.c-pp.js",
+          "score": 6.2,
+          "lines": 2094,
+          "findings": [
+            "Large file",
+            "Deep nesting"
+          ]
+        }
+      ]
+    },
+    "history": [
+      {
+        "sha": "fde3a84dddf3",
+        "date": "2026-09-21",
+        "subject": "Latest preprocessor for various cleanups and fixes. Duplicate the tester1 concurrency warning in the worker-based copy.",
+        "files": [
+          "AGENTS.md",
+          "LICENSE.md",
+          "README.md",
+          "autosetup/README.md",
+          "autosetup/jimsh0.c",
+          "doc/compile-for-unix.md",
+          "doc/compile-for-windows.md",
+          "doc/json-enhancements.md",
+          "doc/jsonb.md",
+          "doc/tcl-extension-testing.md",
+          "doc/testrunner.md",
+          "doc/trusted-schema.md",
+          "doc/vdbesort-memory.md",
+          "doc/wal-lock.md",
+          "ext/README.md",
+          "ext/expert/README.md",
+          "ext/expert/expert.c",
+          "ext/expert/sqlite3expert.c",
+          "ext/expert/sqlite3expert.h",
+          "ext/expert/test_expert.c",
+          "ext/fts3/fts3.c",
+          "ext/fts3/fts3.h",
+          "ext/fts3/fts3Int.h",
+          "ext/fts3/fts3_aux.c"
+        ]
+      }
+    ],
+    "qaReadiness": {
+      "status": "missing",
+      "summary": "Repo does not expose enough local browser QA structure for a reliable Synthetic QA workflow yet."
+    },
+    "readmePreview": "<h1 align=\"center\">SQLite Source Repository</h1>\n\nThis repository contains the complete source code for the\n[SQLite database engine](https://sqlite.org/) going back\nto 2000-05-29.  The tree includes many tests and some\ndocumentation, though additional tests and most documentation"
+  }
+]
