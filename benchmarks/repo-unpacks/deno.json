@@ -2340,7 +2340,7 @@
         {
           "path": "CLAUDE.md",
           "bytes": 11866,
-          "preview": "# Deno Development Guide\n\n## Table of Contents\n\n- [Git workflow](#git-workflow)\n- [High Level Overview](#high-level-overview)\n- [Quick Start](#quick-start)\n- [Commands](#commands)\n- [Testing](#testing)\n- [Development Workflows](#development-workflows)\n- [Debugging](#debugging)\n- [Codebase Navigation](#codebase-navigation)\n- [Troubleshooting](#troubleshooting)\n\n## Git workflow\n\nDeno uses a GH based standard git workflow. The main branch is `main`. All\ndevelopment happens in feature branches, which are then merged into `main` via\npull requests.\n\nWhen the feature is finished and ready to for review, follow these steps:\n\n- Create a new git branch, if you haven't already, with a descriptive name\n  (e.g., `feature/new-cli-command` or `fix/bug-in-worker-threads`).\n- Commit your changes with clear and descriptive commit messages.\n- Push your branch to the remote repository.\n- Open a pull request (PR) against the `main` branch on GitHub.\n- Before committing, make sure `tools/format.js` is run to format your code\n- Before committing, if only non-Rust was changed, make sure to run\n  `tools/lint.js --js` and fix any lint errors before committing\n- If you changed Rust code, make sure to run `tools/lint.js` and fix any lint\n  errors before committing\n- In the PR description, provide a clear summary of the changes you made, why\n  they were necessary, and any relevant context or links to related issues.\n- When pushing updates to the PR, make sure to never force push. Create as many\n  commits as you need, all of them get squashed when the PR is merged, so there\n  is no need to rewrite history. This also allows reviewers to see the\n  incremental changes you made in response to feedback.\n- Keep your changes minimal, don't do drive-by changes in a PR. If you need to\n  make a change that is not directly related to the PR, create a separate PR for\n  it. This keeps the review process focused and efficient.\n\n## High Level Overview\n\nThe user visible interface and high level integration is in the `deno` crate\n(located in `./cli`).\n\nThis includes flag parsing, subcommands, package management tooling, etc. Flag\nparsing is in `cli/args/flags.rs`. Tools are in `cli/tools/<tool>`.\n\nThe `deno_runtime` crate (`./runtime`) assembles the JavaScript runtime,\nincluding all \"extensions\" (native functionality exposed to JavaScript). The\nextensions themselves are in the `ext/` directory, and provide system access to\nJavaScript – for instance filesystem operations and networking.\n\n### Key Directories\n\n- `cli/` - User-facing CLI implementation, subcommands, and tools\n- `runtime/` - JavaScript runtime assembly and integration\n- `ext/` - Extensions providing native functionality to JS (fs, net, etc.)\n- `tests/specs/` - Integration tests (spec tests)\n- `tests/unit/` - Unit tests\n- `tests/testdata/` - Test fixtures and data files\n\n## Quick Start\n\nBefore building, install the required prerequisites (Rust, native compilers,\ncmake, protobuf, etc.) and clone with `--recurse-submodules` as described in\n[`.github/CONTRIBUTING.md`](.github/CONTRIBUTING.md#building-from-source).\n\n### Building Deno\n\nTo compile after making changes:\n\n```bash\ncargo build\n```\n\nFor faster iteration during development (less optimization):\n\n```bash\ncargo build --bin deno\n```\n\nExecute your development build:\n\n```bash\n./target/debug/deno eval 'console.log(\"Hello from dev build\")'\n```\n\n### Running with your changes\n\n```bash\n# Run a local file\n./target/debug/deno run path/to/file.ts\n\n# Run with permissions\n./target/debug/deno run --allow-net --allow-read script.ts\n\n# Run the REPL\n./target/debug/deno\n```\n\n## Commands\n\n### Compilation and Checks\n\n```bash\n# Check for compilation errors (fast, no binary output)\ncargo check\n\n# Check specific package\ncargo check -p deno_runtime\n\n# Build release version (slow, optimized)\ncargo build --release\n```\n\n### Code Quality\n\n```bash\n# Lint the code\n./tools/lint.js\n\n# Format the code\n./tools/format.js\n\n# Both lint and format\n./tools/format.js && ./tools/lint.js\n```\n\n## Testing\n\n### Running Tests\n\n```bash\n# Run all tests (this takes a while)\ncargo test\n\n# Filter tests by name\ncargo test <nameOfTest>\n\n# Run tests in a specific package\ncargo test -p deno_core\n\n# Run just the CLI integration tests\ncargo test --bin deno\n\n# Run spec tests only\ncargo test specs\n\n# Run a specific spec test\ncargo test spec::test_name\n```\n\n### Unit Tests (`tests/unit/`)\n\nJavaScript/TypeScript unit tests live in `tests/unit/` as `*_test.ts` files. Run\nthem via `cargo test`:\n\n```bash\n# Run all unit tests in a specific file\ncargo test unit::webcrypto_test\n\n# Run all unit tests\ncargo test unit::\n\n# Run Node.js compatibility unit tests (tests/unit_node/)\ncargo test unit_node::crypto_test\n\n# Run all Node.js compat unit tests\ncargo test unit_node::\n```\n\nDo NOT run these directly with `./target/debug/deno test` — they depend on the\ncargo test harness for correct setup.\n\n### Test Organization\n\n- **Spec tests** (`tests/specs/`) - Main integration tests, CLI command\n  execution and output validation\n- **Unit tests** (`tests/unit/`) - JavaScript/TypeScript unit tests for runtime\n  APIs\n- **Integration tests** (`tests/integration/`) - Additional integration tests\n- **WPT** (`tests/wpt/`) - Web Platform Tests for web standards compliance\n\n## \"spec\" tests\n\nThe main form of integration test in deno is the \"spec\" test. These tests can be\nfound in `tests/specs`. The idea is that you have a `__test__.jsonc` file that\nlays out one or more tests, where a test is a CLI command to execute and the\noutput is captured and asserted against.\n\nThe name of the test comes from the directory the `__test__.jsonc` appears in.\n\n### Creating a New Spec Test\n\n1. Create a directory in `tests/specs/` with a descriptive name\n2. Add a `__test__.jsonc` file describing your test steps\n3. Add any input files needed for the test\n4. Add `.out` files for expected output (or inline in `__test__.jsonc`)\n\nExample:\n\n```\ntests/specs/my_feature/\n  __test__.jsonc\n  main.ts\n  expected.out\n```\n\n### `__test__.jsonc` schema\n\nThe schema for `__test__.jsonc` can be found in `tests/specs/schema.json`.\n\nExample test structure:\n\n```jsonc\n{\n  \"tests\": {\n    \"basic_case\": {\n      \"args\": \"run main.ts\",\n      \"output\": \"expected.out\"\n    },\n    \"with_flag\": {\n      \"steps\": [\n        {\n          \"args\": \"run --allow-net main.ts\",\n          \"output\": \"[WILDCARD]success[WILDCARD]\"\n        }\n      ]\n    }\n  }\n}\n```\n\n### Output assertions\n\nThe expected output can be inline in a `__test__.jsonc` file or in a file ending\nwith `.out`. For a given test step, the `output` field tells you either the\ninline expectation or the name of the file containing the **expectation**. The\nexpectation uses a small matching language to support wildcards and things like\nthat. A literal character means you expect that exact character, so `Foo bar`\nwould expect the output to be \"Foo bar\". Then there are things with special\nmeanings:\n\n- `[WILDCARD]` : matches 0 or more of any character, like `.*` in regex. this\n  can cross newlines\n- `[WILDLINE]` : matches 0 or more of any character, ending at the end of a line\n- `[WILDCHAR]` - match the next character\n- `[WILDCHARS(5)]` - match any of the next 5 characters\n- `[UNORDERED_START]` followed by many lines then `[UNORDERED_END]` will match\n  the lines in any order (useful for non-deterministic output)\n- `[# example]` - line comments start with `[#` and end with `]`\n\nExample `.out` file:\n\n```\nCheck file://[WILDCARD]/main.ts\n[WILDCARD]\nSuccessfully compiled [WILDLINE]\n```\n\n## Development Workflows\n\n### Adding a New CLI Subcommand\n\n1. Define the command structure in `cli/args/flags.rs`\n2. Add the command handler in `cli/tools/<command_name>.rs` or\n   `cli/tools/<command_name>/mod.rs`\n3. Wire it up in `cli/main.rs`\n4. Add spec tests in `tests/specs/<command_name>/`\n\nExample files to reference:\n\n- Simple command: `cli/tools/fmt.rs`\n- Complex command: `cli/tools/test/`\n\n### Modifying or Adding an Extension\n\n1. Navigate to `ext/<extension_name>/` (e.g., `ext/fs/`, `ext/net/`)\n2. Rust code provides the ops (operations) exposed to JavaScript\n3. JavaScript code in the extension provides the higher-level APIs\n4. Update `runtime/worker.rs` to register the extension "
+          "preview": "# Deno Development Guide\n\n## Table of Contents\n\n- [Git workflow](#git-workflow)\n- [High Level Overview](#high-level-overview)\n- [Quick Start](#quick-start)\n- [Commands](#commands)\n- [Testing](#testing)\n- [Development Workflows](#development-workflows)\n- [Debugging](#debugging)\n- [Codebase Navigation](#codebase-navigation)\n- [Troubleshooting](#troubleshooting)\n\n## Git workflow\n\nDeno uses a GH based standard git workflow. The main branch is `main`. All\ndevelopment happens in feature branches, which are then merged into `main` via\npull requests.\n\nWhen the feature is finished and ready to for review, follow these steps:\n\n- Create a new git branch, if you haven't already, with a descriptive name\n  (e.g., `feature/new-cli-command` or `fix/bug-in-worker-threads`).\n- Commit your changes with clear and descriptive commit messages.\n- Push your branch to the remote repository.\n- Open a pull request (PR) against the `main` branch on GitHub.\n- Before committing, make sure `tools/format.js` is run to format your code\n- Before committing, if only non-Rust was changed, make sure to run\n  `tools/lint.js --js` and fix any lint errors before committing\n- If you changed Rust code, make sure to run `tools/lint.js` and fix any lint\n  errors before committing\n- In the PR description, provide a clear summary of the changes you made, why\n  they were necessary, and any relevant context or links to related issues.\n- When pushing updates to the PR, make sure to never force push. Create as many\n  commits as you need, all of them get squashed when the PR is merged, so there\n  is no need to rewrite history. This also allows reviewers to see the\n  incremental changes you made in response to feedback.\n- Keep your changes minimal, don't do drive-by changes in a PR. If you need to\n  make a change that is not directly related to the PR, create a separate PR for\n  it. This keeps the review process focused and efficient.\n\n## High Level Overview\n\nThe user visible interface and high level integration is in the `deno` crate\n(located in `./cli`).\n\nThis includes flag parsing, subcommands, package management tooling, etc. Flag\nparsing is in `cli/args/flags.rs`. Tools are in `cli/tools/<tool>`.\n\nThe `deno_runtime` crate (`./runtime`) assembles the JavaScript runtime,\nincluding all \"extensions\" (native functionality exposed to JavaScript). The\nextensions themselves are in the `ext/` directory, and provide system access to\nJavaScript \u2013 for instance filesystem operations and networking.\n\n### Key Directories\n\n- `cli/` - User-facing CLI implementation, subcommands, and tools\n- `runtime/` - JavaScript runtime assembly and integration\n- `ext/` - Extensions providing native functionality to JS (fs, net, etc.)\n- `tests/specs/` - Integration tests (spec tests)\n- `tests/unit/` - Unit tests\n- `tests/testdata/` - Test fixtures and data files\n\n## Quick Start\n\nBefore building, install the required prerequisites (Rust, native compilers,\ncmake, protobuf, etc.) and clone with `--recurse-submodules` as described in\n[`.github/CONTRIBUTING.md`](.github/CONTRIBUTING.md#building-from-source).\n\n### Building Deno\n\nTo compile after making changes:\n\n```bash\ncargo build\n```\n\nFor faster iteration during development (less optimization):\n\n```bash\ncargo build --bin deno\n```\n\nExecute your development build:\n\n```bash\n./target/debug/deno eval 'console.log(\"Hello from dev build\")'\n```\n\n### Running with your changes\n\n```bash\n# Run a local file\n./target/debug/deno run path/to/file.ts\n\n# Run with permissions\n./target/debug/deno run --allow-net --allow-read script.ts\n\n# Run the REPL\n./target/debug/deno\n```\n\n## Commands\n\n### Compilation and Checks\n\n```bash\n# Check for compilation errors (fast, no binary output)\ncargo check\n\n# Check specific package\ncargo check -p deno_runtime\n\n# Build release version (slow, optimized)\ncargo build --release\n```\n\n### Code Quality\n\n```bash\n# Lint the code\n./tools/lint.js\n\n# Format the code\n./tools/format.js\n\n# Both lint and format\n./tools/format.js && ./tools/lint.js\n```\n\n## Testing\n\n### Running Tests\n\n```bash\n# Run all tests (this takes a while)\ncargo test\n\n# Filter tests by name\ncargo test <nameOfTest>\n\n# Run tests in a specific package\ncargo test -p deno_core\n\n# Run just the CLI integration tests\ncargo test --bin deno\n\n# Run spec tests only\ncargo test specs\n\n# Run a specific spec test\ncargo test spec::test_name\n```\n\n### Unit Tests (`tests/unit/`)\n\nJavaScript/TypeScript unit tests live in `tests/unit/` as `*_test.ts` files. Run\nthem via `cargo test`:\n\n```bash\n# Run all unit tests in a specific file\ncargo test unit::webcrypto_test\n\n# Run all unit tests\ncargo test unit::\n\n# Run Node.js compatibility unit tests (tests/unit_node/)\ncargo test unit_node::crypto_test\n\n# Run all Node.js compat unit tests\ncargo test unit_node::\n```\n\nDo NOT run these directly with `./target/debug/deno test` \u2014 they depend on the\ncargo test harness for correct setup.\n\n### Test Organization\n\n- **Spec tests** (`tests/specs/`) - Main integration tests, CLI command\n  execution and output validation\n- **Unit tests** (`tests/unit/`) - JavaScript/TypeScript unit tests for runtime\n  APIs\n- **Integration tests** (`tests/integration/`) - Additional integration tests\n- **WPT** (`tests/wpt/`) - Web Platform Tests for web standards compliance\n\n## \"spec\" tests\n\nThe main form of integration test in deno is the \"spec\" test. These tests can be\nfound in `tests/specs`. The idea is that you have a `__test__.jsonc` file that\nlays out one or more tests, where a test is a CLI command to execute and the\noutput is captured and asserted against.\n\nThe name of the test comes from the directory the `__test__.jsonc` appears in.\n\n### Creating a New Spec Test\n\n1. Create a directory in `tests/specs/` with a descriptive name\n2. Add a `__test__.jsonc` file describing your test steps\n3. Add any input files needed for the test\n4. Add `.out` files for expected output (or inline in `__test__.jsonc`)\n\nExample:\n\n```\ntests/specs/my_feature/\n  __test__.jsonc\n  main.ts\n  expected.out\n```\n\n### `__test__.jsonc` schema\n\nThe schema for `__test__.jsonc` can be found in `tests/specs/schema.json`.\n\nExample test structure:\n\n```jsonc\n{\n  \"tests\": {\n    \"basic_case\": {\n      \"args\": \"run main.ts\",\n      \"output\": \"expected.out\"\n    },\n    \"with_flag\": {\n      \"steps\": [\n        {\n          \"args\": \"run --allow-net main.ts\",\n          \"output\": \"[WILDCARD]success[WILDCARD]\"\n        }\n      ]\n    }\n  }\n}\n```\n\n### Output assertions\n\nThe expected output can be inline in a `__test__.jsonc` file or in a file ending\nwith `.out`. For a given test step, the `output` field tells you either the\ninline expectation or the name of the file containing the **expectation**. The\nexpectation uses a small matching language to support wildcards and things like\nthat. A literal character means you expect that exact character, so `Foo bar`\nwould expect the output to be \"Foo bar\". Then there are things with special\nmeanings:\n\n- `[WILDCARD]` : matches 0 or more of any character, like `.*` in regex. this\n  can cross newlines\n- `[WILDLINE]` : matches 0 or more of any character, ending at the end of a line\n- `[WILDCHAR]` - match the next character\n- `[WILDCHARS(5)]` - match any of the next 5 characters\n- `[UNORDERED_START]` followed by many lines then `[UNORDERED_END]` will match\n  the lines in any order (useful for non-deterministic output)\n- `[# example]` - line comments start with `[#` and end with `]`\n\nExample `.out` file:\n\n```\nCheck file://[WILDCARD]/main.ts\n[WILDCARD]\nSuccessfully compiled [WILDLINE]\n```\n\n## Development Workflows\n\n### Adding a New CLI Subcommand\n\n1. Define the command structure in `cli/args/flags.rs`\n2. Add the command handler in `cli/tools/<command_name>.rs` or\n   `cli/tools/<command_name>/mod.rs`\n3. Wire it up in `cli/main.rs`\n4. Add spec tests in `tests/specs/<command_name>/`\n\nExample files to reference:\n\n- Simple command: `cli/tools/fmt.rs`\n- Complex command: `cli/tools/test/`\n\n### Modifying or Adding an Extension\n\n1. Navigate to `ext/<extension_name>/` (e.g., `ext/fs/`, `ext/net/`)\n2. Rust code provides the ops (operations) exposed to JavaScript\n3. JavaScript code in the extension provides the higher-level APIs\n4. Update `runtime/worker.rs` to register the extension "
         },
         {
           "path": "LICENSE.md",
@@ -2350,7 +2350,7 @@
         {
           "path": "README.md",
           "bytes": 3807,
-          "preview": "# Deno\n\n[![](https://img.shields.io/crates/v/deno.svg)](https://crates.io/crates/deno)\n[![Twitter badge][]][Twitter link] [![Bluesky badge][]][Bluesky link]\n[![Discord badge][]][Discord link] [![YouTube badge][]][YouTube link]\n\n<img align=\"right\" src=\"https://deno.land/logo.svg\" height=\"150px\" alt=\"the deno mascot dinosaur standing in the rain\">\n\n[Deno](https://deno.com)\n([/ˈdiːnoʊ/](https://ipa-reader.com/?text=%CB%88di%CB%90no%CA%8A), pronounced\n`dee-no`) is a JavaScript, TypeScript, and WebAssembly runtime with secure\ndefaults and a great developer experience. It's built on [V8](https://v8.dev/),\n[Rust](https://www.rust-lang.org/), and [Tokio](https://tokio.rs/).\n\nLearn more about the Deno runtime\n[in the documentation](https://docs.deno.com/runtime/manual).\n\n## Installation\n\nInstall the Deno runtime on your system using one of the commands below. Note\nthat there are a number of ways to install Deno - a comprehensive list of\ninstallation options can be found\n[here](https://docs.deno.com/runtime/manual/getting_started/installation).\n\nShell (Mac, Linux):\n\n```sh\ncurl -fsSL https://deno.land/install.sh | sh\n```\n\nPowerShell (Windows):\n\n```powershell\nirm https://deno.land/install.ps1 | iex\n```\n\n[Homebrew](https://formulae.brew.sh/formula/deno) (Mac):\n\n```sh\nbrew install deno\n```\n\n[Chocolatey](https://community.chocolatey.org/packages/deno) (Windows):\n\n```powershell\nchoco install deno\n```\n\n[WinGet](https://winstall.app/apps/DenoLand.Deno) (Windows):\n\n```powershell\nwinget install --id=DenoLand.Deno\n```\n\n[Scoop](https://scoop.sh/#/apps?q=deno&id=678d8fb557b611df996989c675b1099630a5bbee)\n(Windows):\n\n```powershell\nscoop install main/deno\n```\n\n### Build and install from source\n\nComplete instructions for building Deno from source can be found\n[here](https://github.com/denoland/deno/blob/main/.github/CONTRIBUTING.md#building-from-source).\n\n## Your first Deno program\n\nDeno can be used for many different applications, but is most commonly used to\nbuild web servers. Create a file called `server.ts` and include the following\nTypeScript code:\n\n```ts\nDeno.serve((_req: Request) => {\n  return new Response(\"Hello, world!\");\n});\n```\n\nRun your server with the following command:\n\n```sh\ndeno run --allow-net server.ts\n```\n\nThis should start a local web server on\n[http://localhost:8000](http://localhost:8000).\n\nLearn more about writing and running Deno programs\n[in the docs](https://docs.deno.com/runtime/manual).\n\n## Additional resources\n\n- **[Deno Docs](https://docs.deno.com)**: official guides and reference docs for\n  the Deno runtime, [Deno Deploy](https://deno.com/deploy), and beyond.\n- **[Deno Standard Library](https://jsr.io/@std)**: officially supported common\n  utilities for Deno programs.\n- **[JSR](https://jsr.io/)**: The open-source package registry for modern\n  JavaScript and TypeScript\n- **[Developer Blog](https://deno.com/blog)**: Product updates, tutorials, and\n  more from the Deno team.\n\n## Contributing\n\nWe appreciate your help! To contribute, please read our\n[contributing instructions](.github/CONTRIBUTING.md).\n\n[Build status - Cirrus]: https://github.com/denoland/deno/workflows/ci/badge.svg?branch=main&event=push\n[Build status]: https://github.com/denoland/deno/actions\n[Twitter badge]: https://img.shields.io/twitter/follow/deno_land.svg?style=social&label=Follow\n[Twitter link]: https://twitter.com/intent/follow?screen_name=deno_land\n[Bluesky badge]: https://img.shields.io/badge/Follow-whitesmoke?logo=bluesky\n[Bluesky link]: https://bsky.app/profile/deno.land\n[YouTube badge]: https://img.shields.io/youtube/channel/subscribers/UCqC2G2M-rg4fzg1esKFLFIw?style=social\n[YouTube link]: https://www.youtube.com/@deno_land\n[Discord badge]: https://img.shields.io/discord/684898665143206084?logo=discord&style=social\n[Discord link]: https://discord.gg/deno\n"
+          "preview": "# Deno\n\n[![](https://img.shields.io/crates/v/deno.svg)](https://crates.io/crates/deno)\n[![Twitter badge][]][Twitter link] [![Bluesky badge][]][Bluesky link]\n[![Discord badge][]][Discord link] [![YouTube badge][]][YouTube link]\n\n<img align=\"right\" src=\"https://deno.land/logo.svg\" height=\"150px\" alt=\"the deno mascot dinosaur standing in the rain\">\n\n[Deno](https://deno.com)\n([/\u02c8di\u02d0no\u028a/](https://ipa-reader.com/?text=%CB%88di%CB%90no%CA%8A), pronounced\n`dee-no`) is a JavaScript, TypeScript, and WebAssembly runtime with secure\ndefaults and a great developer experience. It's built on [V8](https://v8.dev/),\n[Rust](https://www.rust-lang.org/), and [Tokio](https://tokio.rs/).\n\nLearn more about the Deno runtime\n[in the documentation](https://docs.deno.com/runtime/manual).\n\n## Installation\n\nInstall the Deno runtime on your system using one of the commands below. Note\nthat there are a number of ways to install Deno - a comprehensive list of\ninstallation options can be found\n[here](https://docs.deno.com/runtime/manual/getting_started/installation).\n\nShell (Mac, Linux):\n\n```sh\ncurl -fsSL https://deno.land/install.sh | sh\n```\n\nPowerShell (Windows):\n\n```powershell\nirm https://deno.land/install.ps1 | iex\n```\n\n[Homebrew](https://formulae.brew.sh/formula/deno) (Mac):\n\n```sh\nbrew install deno\n```\n\n[Chocolatey](https://community.chocolatey.org/packages/deno) (Windows):\n\n```powershell\nchoco install deno\n```\n\n[WinGet](https://winstall.app/apps/DenoLand.Deno) (Windows):\n\n```powershell\nwinget install --id=DenoLand.Deno\n```\n\n[Scoop](https://scoop.sh/#/apps?q=deno&id=678d8fb557b611df996989c675b1099630a5bbee)\n(Windows):\n\n```powershell\nscoop install main/deno\n```\n\n### Build and install from source\n\nComplete instructions for building Deno from source can be found\n[here](https://github.com/denoland/deno/blob/main/.github/CONTRIBUTING.md#building-from-source).\n\n## Your first Deno program\n\nDeno can be used for many different applications, but is most commonly used to\nbuild web servers. Create a file called `server.ts` and include the following\nTypeScript code:\n\n```ts\nDeno.serve((_req: Request) => {\n  return new Response(\"Hello, world!\");\n});\n```\n\nRun your server with the following command:\n\n```sh\ndeno run --allow-net server.ts\n```\n\nThis should start a local web server on\n[http://localhost:8000](http://localhost:8000).\n\nLearn more about writing and running Deno programs\n[in the docs](https://docs.deno.com/runtime/manual).\n\n## Additional resources\n\n- **[Deno Docs](https://docs.deno.com)**: official guides and reference docs for\n  the Deno runtime, [Deno Deploy](https://deno.com/deploy), and beyond.\n- **[Deno Standard Library](https://jsr.io/@std)**: officially supported common\n  utilities for Deno programs.\n- **[JSR](https://jsr.io/)**: The open-source package registry for modern\n  JavaScript and TypeScript\n- **[Developer Blog](https://deno.com/blog)**: Product updates, tutorials, and\n  more from the Deno team.\n\n## Contributing\n\nWe appreciate your help! To contribute, please read our\n[contributing instructions](.github/CONTRIBUTING.md).\n\n[Build status - Cirrus]: https://github.com/denoland/deno/workflows/ci/badge.svg?branch=main&event=push\n[Build status]: https://github.com/denoland/deno/actions\n[Twitter badge]: https://img.shields.io/twitter/follow/deno_land.svg?style=social&label=Follow\n[Twitter link]: https://twitter.com/intent/follow?screen_name=deno_land\n[Bluesky badge]: https://img.shields.io/badge/Follow-whitesmoke?logo=bluesky\n[Bluesky link]: https://bsky.app/profile/deno.land\n[YouTube badge]: https://img.shields.io/youtube/channel/subscribers/UCqC2G2M-rg4fzg1esKFLFIw?style=social\n[YouTube link]: https://www.youtube.com/@deno_land\n[Discord badge]: https://img.shields.io/discord/684898665143206084?logo=discord&style=social\n[Discord link]: https://discord.gg/deno\n"
         }
       ],
       "config_files": [],
@@ -17508,7 +17508,7 @@
         "steps": [
           {
             "id": "serialize",
-            "label": "JSON serialize (inventory → SQLite)",
+            "label": "JSON serialize (inventory \u2192 SQLite)",
             "ms": 0,
             "pct": 0
           },
@@ -17529,9 +17529,9 @@
     ]
   },
   "report": {
-    "overview": "This is the Deno runtime monorepo — a Rust workspace (~80 crates) that builds a JavaScript/TypeScript/WebAssembly runtime on V8 and Tokio, plus the `deno` CLI that wraps it with a package manager, type checker, formatter, linter, test runner, LSP server, and single-file-binary compiler. The distinctive shape is three layers: `libs/` holds vendored foundational crates (notably `deno_core` v0.412.0 at `libs/core`, the op2 proc-macro at `libs/ops`, and a hand-rolled zero-allocation flag parser at `libs/cli_parser` that replaced clap with `const` command tables), `ext/` holds 32 self-contained extension crates that expose native ops to JS, and `runtime/`+`cli/` assemble them into the shipped binary. Everything user code touches passes through a capability permission system (`runtime/permissions/lib.rs`, ~11.7k lines) that gates read/write/net/env/sys/run/ffi/import, and the CLI is built around a lazily-memoised dependency-injection container (`CliFactory`) so that `deno fmt` never pays for the npm resolver. It targets JS/TS application developers and, increasingly, Node.js users — a large fraction of `ext/node` exists purely for npm/Node compatibility.",
+    "overview": "This is the Deno runtime monorepo \u2014 a Rust workspace (~80 crates) that builds a JavaScript/TypeScript/WebAssembly runtime on V8 and Tokio, plus the `deno` CLI that wraps it with a package manager, type checker, formatter, linter, test runner, LSP server, and single-file-binary compiler. The distinctive shape is three layers: `libs/` holds vendored foundational crates (notably `deno_core` v0.412.0 at `libs/core`, the op2 proc-macro at `libs/ops`, and a hand-rolled zero-allocation flag parser at `libs/cli_parser` that replaced clap with `const` command tables), `ext/` holds 32 self-contained extension crates that expose native ops to JS, and `runtime/`+`cli/` assemble them into the shipped binary. Everything user code touches passes through a capability permission system (`runtime/permissions/lib.rs`, ~11.7k lines) that gates read/write/net/env/sys/run/ffi/import, and the CLI is built around a lazily-memoised dependency-injection container (`CliFactory`) so that `deno fmt` never pays for the npm resolver. It targets JS/TS application developers and, increasingly, Node.js users \u2014 a large fraction of `ext/node` exists purely for npm/Node compatibility.",
     "system_map": {
-      "summary": "The binary entry is a nine-line `cli/main.rs` that delegates to `deno::main()` in `cli/lib.rs`, which parses flags, initialises V8, and dispatches a `DenoSubcommand` to a handler under `cli/tools/`. Shared services are constructed lazily through `CliFactory`, a container of `Deferred<T>` once-cells covering caches, resolvers, the file fetcher, npm installer, type checker, and permission container. The JS runtime is assembled in `runtime/worker.rs::common_extensions`, which registers ~35 extension crates from `ext/` in a strict, snapshot-sensitive order; a V8 startup snapshot is baked at build time by `cli/snapshot/build.rs`. Storage is the DENO_DIR: SQLite caches (`cli/cache/caches.rs`) for dep analysis, type checking, code cache, fast-check, and lint/fmt incremental state, plus an HTTP cache and npm package cache. Builds run through `cargo`/`./x`, CI is generated TypeScript (`.github/workflows/ci.ts` → `ci.generated.yml`), and the deployment shape is a single statically-linked executable distributed per-platform.",
+      "summary": "The binary entry is a nine-line `cli/main.rs` that delegates to `deno::main()` in `cli/lib.rs`, which parses flags, initialises V8, and dispatches a `DenoSubcommand` to a handler under `cli/tools/`. Shared services are constructed lazily through `CliFactory`, a container of `Deferred<T>` once-cells covering caches, resolvers, the file fetcher, npm installer, type checker, and permission container. The JS runtime is assembled in `runtime/worker.rs::common_extensions`, which registers ~35 extension crates from `ext/` in a strict, snapshot-sensitive order; a V8 startup snapshot is baked at build time by `cli/snapshot/build.rs`. Storage is the DENO_DIR: SQLite caches (`cli/cache/caches.rs`) for dep analysis, type checking, code cache, fast-check, and lint/fmt incremental state, plus an HTTP cache and npm package cache. Builds run through `cargo`/`./x`, CI is generated TypeScript (`.github/workflows/ci.ts` \u2192 `ci.generated.yml`), and the deployment shape is a single statically-linked executable distributed per-platform.",
       "claims": [
         {
           "claim": "`cli/main.rs` is deliberately a 9-line shim calling `deno::main()`; the real entrypoint is `pub fn main()` in `cli/lib.rs`, which sets a panic hook, raises the fd limit, installs the aws-lc-rs rustls crypto provider, and runs everything inside `create_and_run_current_thread_with_maybe_metrics`.",
@@ -17549,7 +17549,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "`DenoSubcommand` is defined in the vendored parser crate at `libs/cli_parser/src/flags.rs:786` with 47 variants (Add, Audit, Bundle, Compile, Deploy, Desktop, Jupyter, Lsp, Pack, Publish, X, …); the CLI re-exports it via `pub use deno_cli_parser::flags::*` in `cli/args/flags.rs`.",
+          "claim": "`DenoSubcommand` is defined in the vendored parser crate at `libs/cli_parser/src/flags.rs:786` with 47 variants (Add, Audit, Bundle, Compile, Deploy, Desktop, Jupyter, Lsp, Pack, Publish, X, \u2026); the CLI re-exports it via `pub use deno_cli_parser::flags::*` in `cli/args/flags.rs`.",
           "sources": [
             "libs/cli_parser/src/flags.rs#L786-833",
             "cli/args/flags.rs#L12-14"
@@ -17565,7 +17565,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "`CliFactory` is the dependency-injection root: `CliFactoryServices` holds ~25 `Deferred<T>` (once-cell) slots — `caches`, `file_fetcher`, `npm_installer_factory`, `resolver_factory`, `type_checker`, `root_permissions_container`, `module_graph_builder` — so a subcommand only constructs the services it actually touches.",
+          "claim": "`CliFactory` is the dependency-injection root: `CliFactoryServices` holds ~25 `Deferred<T>` (once-cell) slots \u2014 `caches`, `file_fetcher`, `npm_installer_factory`, `resolver_factory`, `type_checker`, `root_permissions_container`, `module_graph_builder` \u2014 so a subcommand only constructs the services it actually touches.",
           "sources": [
             "cli/factory.rs#L255-345",
             "cli/factory.rs#L383-440"
@@ -17616,7 +17616,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "There are two runtime binaries: the full `deno` CLI (`cli/`) and `denort` (`cli/rt_desktop`, v2.7.4) — a trimmed runtime used as the base for compiled output, with its own `binary.rs`, `file_system.rs`, and `code_cache.rs`.",
+          "claim": "There are two runtime binaries: the full `deno` CLI (`cli/`) and `denort` (`cli/rt_desktop`, v2.7.4) \u2014 a trimmed runtime used as the base for compiled output, with its own `binary.rs`, `file_system.rs`, and `code_cache.rs`.",
           "sources": [
             "cli/rt_desktop/Cargo.toml",
             "cli/rt/lib.rs",
@@ -17690,7 +17690,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "The tunnel feature connects to `tunnel.global.prod.deno-cluster.net:443` (overridable via `DENO_DEPLOY_TUNNEL_ENDPOINT`), authenticates with `Authentication::App { token, org, app }`, prints 'You are connected to https://…' on `Event::Routed`, and injects the tunnel's returned metadata as process env vars.",
+          "claim": "The tunnel feature connects to `tunnel.global.prod.deno-cluster.net:443` (overridable via `DENO_DEPLOY_TUNNEL_ENDPOINT`), authenticates with `Authentication::App { token, org, app }`, prints 'You are connected to https://\u2026' on `Event::Routed`, and injects the tunnel's returned metadata as process env vars.",
           "sources": [
             "cli/lib.rs#L1360-1560",
             "ext/net/tunnel.rs#L32"
@@ -17739,7 +17739,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Node compatibility is the largest single extension: `ext/node` (~6 MB of source) declares `deno_core::extension!(deno_node, …)` with ops for blocklists, buffers, DNS, module hooks, and a `polyfills/` directory of 119 entries covering node:fs, node:http, node:stream, node:child_process, node:cluster, node:repl and more.",
+          "claim": "Node compatibility is the largest single extension: `ext/node` (~6 MB of source) declares `deno_core::extension!(deno_node, \u2026)` with ops for blocklists, buffers, DNS, module hooks, and a `polyfills/` directory of 119 entries covering node:fs, node:http, node:stream, node:child_process, node:cluster, node:repl and more.",
           "sources": [
             "ext/node/lib.rs#L201-230",
             "ext/node/lib.rs#L470-530"
@@ -17763,7 +17763,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "`deno task` is a real shell interpreter, not a passthrough: `cli/task_runner.rs` parses scripts with `deno_task_shell::parser::parse` and registers custom `ShellCommand` implementations — `NpmCommand`, `NpxCommand`, `NodeCommand`, `NodeGypCommand`, `DenoCommand` — that rewrite invocations back onto the current `deno` executable.",
+          "claim": "`deno task` is a real shell interpreter, not a passthrough: `cli/task_runner.rs` parses scripts with `deno_task_shell::parser::parse` and registers custom `ShellCommand` implementations \u2014 `NpmCommand`, `NpxCommand`, `NodeCommand`, `NodeGypCommand`, `DenoCommand` \u2014 that rewrite invocations back onto the current `deno` executable.",
           "sources": [
             "cli/task_runner.rs#L178-230",
             "cli/task_runner.rs#L306-460"
@@ -17771,7 +17771,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Experimental/warned-on surfaces are explicitly labelled at dispatch: `deno bundle` prints '⚠️ deno bundle is experimental', `deno bump-version` prints a yellow experimental warning, and `deno vendor` is a hard error pointing at the Deno 1.x→2.x migration guide.",
+          "claim": "Experimental/warned-on surfaces are explicitly labelled at dispatch: `deno bundle` prints '\u26a0\ufe0f deno bundle is experimental', `deno bump-version` prints a yellow experimental warning, and `deno vendor` is a hard error pointing at the Deno 1.x\u21922.x migration guide.",
           "sources": [
             "cli/lib.rs#L161-168",
             "cli/lib.rs#L515-527"
@@ -17784,7 +17784,7 @@
       "summary": "Input boundaries are argv (parsed into `Flags` by the const-table parser), environment variables and `.env` files, config files (`deno.json`/`package.json`) discovered through the workspace factory, and remote sources fetched over HTTP from JSR and npm registries. `CliFactory` owns the service graph; `ModuleGraphBuilder` builds a `deno_graph::ModuleGraph` from roots, `TypeChecker` optionally validates it against a TSC-backed cache, and `CliEmitter` transpiles TypeScript to JavaScript. At runtime, `CliModuleLoader::load` serves module source out of the prepared graph (or delegates to JS load hooks, or to an eszip), and V8 executes it. Every side-effecting op re-enters Rust through `PermissionsContainer`, which is the single state owner for capability decisions. Output boundaries are stdout/stderr (via `deno_print`/`DrawThread`), the DENO_DIR SQLite and HTTP caches, the lockfile, OpenTelemetry exporters, and for `compile`, a written executable.",
       "claims": [
         {
-          "claim": "argv → `Flags` happens in `resolve_flags_and_init`, which special-cases the `COMPLETE` env var for shell completions, distinguishes `--version` from `-V` before parsing, and only then calls `flags_from_vec_with_initial_cwd`.",
+          "claim": "argv \u2192 `Flags` happens in `resolve_flags_and_init`, which special-cases the `COMPLETE` env var for shell completions, distinguishes `--version` from `-V` before parsing, and only then calls `flags_from_vec_with_initial_cwd`.",
           "sources": [
             "cli/lib.rs#L967-1000"
           ],
@@ -17820,7 +17820,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "The load-hook bridge deliberately skips CJS modules because `Module._load` already runs `executeLoadHookChain` synchronously — going through both would invoke user hooks twice.",
+          "claim": "The load-hook bridge deliberately skips CJS modules because `Module._load` already runs `executeLoadHookChain` synchronously \u2014 going through both would invoke user hooks twice.",
           "sources": [
             "cli/module_loader.rs#L1445-1463"
           ],
@@ -17865,7 +17865,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Bootstrap data crosses the Rust→JS boundary as a positional array: `bootstrapMainRuntime(runtimeOptions)` destructures indices 0–19 (denoVersion, location, unstableFeatures, hasNodeModulesDir, argv0, nodeDebug, mode, servePort, serveHost, otelConfig, standalone, nodeClusterUniqueId, …) and then removes the bootstrap object from the global scope.",
+          "claim": "Bootstrap data crosses the Rust\u2192JS boundary as a positional array: `bootstrapMainRuntime(runtimeOptions)` destructures indices 0\u201319 (denoVersion, location, unstableFeatures, hasNodeModulesDir, argv0, nodeDebug, mode, servePort, serveHost, otelConfig, standalone, nodeClusterUniqueId, \u2026) and then removes the bootstrap object from the global scope.",
           "sources": [
             "runtime/js/99_main.js#L936-1060"
           ],
@@ -17887,7 +17887,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "`deno run -` reads stdin fully into memory and injects it as a synthetic file via `file_fetcher.insert_memory_files(File { url: main_module, … })` so the type checker and graph builder can see it as a normal module.",
+          "claim": "`deno run -` reads stdin fully into memory and injects it as a synthetic file via `file_fetcher.insert_memory_files(File { url: main_module, \u2026 })` so the type checker and graph builder can see it as a normal module.",
           "sources": [
             "cli/tools/run/mod.rs#L249-290"
           ],
@@ -17896,10 +17896,10 @@
       ]
     },
     "behavior_traces": {
-      "summary": "Three flows dominate. Startup: `main()` → panic hook/logging/fd-limit → optional control-socket handshake → `resolve_flags_and_init` → `init_v8` → `run_subcommand`. Primary action (`deno run`): `tools::run::run_script` → `CliFactory` service warm-up → main-module resolution → npm install → `create_cli_main_worker_factory_with_roots` → `create_main_worker_with_unconfigured_runtime` → `CliMainWorker::run`. Persistence (`deno compile`): `compile_inner` → module graph creation → `DenoCompileBinaryWriter::write_bin` → VFS build → `MAGIC_BYTES`-framed binary written to disk. A fourth path worth knowing is the pre-warmed-runtime handshake on Unix, where `DENO_UNSTABLE_CONTROL_SOCK` lets a parent hand this process an already-initialised `UnconfiguredRuntime` and a replacement argv.",
+      "summary": "Three flows dominate. Startup: `main()` \u2192 panic hook/logging/fd-limit \u2192 optional control-socket handshake \u2192 `resolve_flags_and_init` \u2192 `init_v8` \u2192 `run_subcommand`. Primary action (`deno run`): `tools::run::run_script` \u2192 `CliFactory` service warm-up \u2192 main-module resolution \u2192 npm install \u2192 `create_cli_main_worker_factory_with_roots` \u2192 `create_main_worker_with_unconfigured_runtime` \u2192 `CliMainWorker::run`. Persistence (`deno compile`): `compile_inner` \u2192 module graph creation \u2192 `DenoCompileBinaryWriter::write_bin` \u2192 VFS build \u2192 `MAGIC_BYTES`-framed binary written to disk. A fourth path worth knowing is the pre-warmed-runtime handshake on Unix, where `DENO_UNSTABLE_CONTROL_SOCK` lets a parent hand this process an already-initialised `UnconfiguredRuntime` and a replacement argv.",
       "claims": [
         {
-          "claim": "Startup order in `main()` is: `boot_phase(\"main start\")` → `setup_panic_hook()` → `init_logging(None, None)` → `raise_fd_limit()` / `ensure_stdio_open()` → set prompt callbacks to `DrawThread::hide`/`show` → `maybe_setup_permission_broker()` → install aws-lc-rs → `maybe_rewrite_node_arg0(args)`.",
+          "claim": "Startup order in `main()` is: `boot_phase(\"main start\")` \u2192 `setup_panic_hook()` \u2192 `init_logging(None, None)` \u2192 `raise_fd_limit()` / `ensure_stdio_open()` \u2192 set prompt callbacks to `DrawThread::hide`/`show` \u2192 `maybe_setup_permission_broker()` \u2192 install aws-lc-rs \u2192 `maybe_rewrite_node_arg0(args)`.",
           "sources": [
             "cli/lib.rs#L863-895"
           ],
@@ -17914,7 +17914,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "On Unix, `wait_for_start` reads `DENO_UNSTABLE_CONTROL_SOCK`, immediately removes the env var, and may return `(UnconfiguredRuntime, Vec<OsString> args, PathBuf cwd)` — a pre-initialised runtime that causes `main()` to skip `init_v8` entirely.",
+          "claim": "On Unix, `wait_for_start` reads `DENO_UNSTABLE_CONTROL_SOCK`, immediately removes the env var, and may return `(UnconfiguredRuntime, Vec<OsString> args, PathBuf cwd)` \u2014 a pre-initialised runtime that causes `main()` to skip `init_v8` entirely.",
           "sources": [
             "cli/lib.rs#L1185-1200",
             "cli/lib.rs#L900-935"
@@ -17936,7 +17936,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "`initialize_tunnel` resolves credentials through a four-way fallback — (DENO_DEPLOY_TOKEN + ORG + APP) → deploy config app + env token → deploy config + keyring token → interactive `auth_tunnel` — and on `Error::Unauthorized` deletes the stored credential and retries once after re-auth.",
+          "claim": "`initialize_tunnel` resolves credentials through a four-way fallback \u2014 (DENO_DEPLOY_TOKEN + ORG + APP) \u2192 deploy config app + env token \u2192 deploy config + keyring token \u2192 interactive `auth_tunnel` \u2014 and on `Error::Unauthorized` deletes the stored credential and retries once after re-auth.",
           "sources": [
             "cli/lib.rs#L1400-1520"
           ],
@@ -17950,7 +17950,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "`run_script` order is: `check_permission_before_script` → watch-mode branch → `CliFactory::from_flags` → `cli_options` → `deno_dir` → `http_client_provider` → `workspace_resolver` → `node_resolver` → background upgrade check → `resolve_main_module_with_resolver` → `maybe_npm_install` → `try_run_npm_bin_executable` → worker factory → `worker.run()`.",
+          "claim": "`run_script` order is: `check_permission_before_script` \u2192 watch-mode branch \u2192 `CliFactory::from_flags` \u2192 `cli_options` \u2192 `deno_dir` \u2192 `http_client_provider` \u2192 `workspace_resolver` \u2192 `node_resolver` \u2192 background upgrade check \u2192 `resolve_main_module_with_resolver` \u2192 `maybe_npm_install` \u2192 `try_run_npm_bin_executable` \u2192 worker factory \u2192 `worker.run()`.",
           "sources": [
             "cli/tools/run/mod.rs#L170-247"
           ],
@@ -17964,7 +17964,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "`check_permission_before_script` warns (but does not fail) when permission flags appear *after* the script argument — a common user error that would otherwise silently pass them to the script as argv.",
+          "claim": "`check_permission_before_script` warns (but does not fail) when permission flags appear *after* the script argument \u2014 a common user error that would otherwise silently pass them to the script as argv.",
           "sources": [
             "cli/tools/run/mod.rs#L29-40"
           ],
@@ -18002,7 +18002,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "A spec test step executes as: `run_step` merges test-level and step-level envs → applies variant substitutions → builds a `TestContext` command with args/cwd/commandName/stdin/timeout → `command.run()` → output matched against the `.out` expectation with the wildcard language.",
+          "claim": "A spec test step executes as: `run_step` merges test-level and step-level envs \u2192 applies variant substitutions \u2192 builds a `TestContext` command with args/cwd/commandName/stdin/timeout \u2192 `command.run()` \u2192 output matched against the `.out` expectation with the wildcard language.",
           "sources": [
             "tests/specs/mod.rs#L560-680",
             "tests/util/lib/wildcard.rs"
@@ -18023,7 +18023,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "There are 58 top-level spec categories under `tests/specs/` (add, bundle, cert, check, compile, coverage, cpu_prof, deploy, jsr, jupyter, lockfile, npm, permission, publish, serve, task, watch, workspaces, x, …), each containing many per-directory manifests.",
+          "claim": "There are 58 top-level spec categories under `tests/specs/` (add, bundle, cert, check, compile, coverage, cpu_prof, deploy, jsr, jupyter, lockfile, npm, permission, publish, serve, task, watch, workspaces, x, \u2026), each containing many per-directory manifests.",
           "sources": [
             "tests/specs/",
             "tests/specs/schema.json"
@@ -18071,7 +18071,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Rust-side integration tests live in `tests/integration/` as 28 files (`lsp_tests.rs`, `npm_tests.rs`, `publish_tests.rs`, `watcher_tests.rs`, `upgrade_tests.rs`, `compile_tests.rs`, `sqlite_extension_tests.rs`, …) in the `integration_tests` crate, with an `upgrade` cargo feature gating upgrade tests.",
+          "claim": "Rust-side integration tests live in `tests/integration/` as 28 files (`lsp_tests.rs`, `npm_tests.rs`, `publish_tests.rs`, `watcher_tests.rs`, `upgrade_tests.rs`, `compile_tests.rs`, `sqlite_extension_tests.rs`, \u2026) in the `integration_tests` crate, with an `upgrade` cargo feature gating upgrade tests.",
           "sources": [
             "tests/integration/Cargo.toml#L1-20",
             "tests/integration/mod.rs"
@@ -18103,14 +18103,14 @@
           "kind": "evidence"
         },
         {
-          "claim": "CI asserts tests do not mutate the working tree: after running a test crate it checks git status and fails with '❌ Git working directory is dirty. Ensure `cargo test` is not modifying git tracked files.'",
+          "claim": "CI asserts tests do not mutate the working tree: after running a test crate it checks git status and fails with '\u274c Git working directory is dirty. Ensure `cargo test` is not modifying git tracked files.'",
           "sources": [
             ".github/workflows/ci.ts#L1498-1525"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "Lint is itself partly a test suite: `tools/lint.js` runs clippy plus bespoke checks — `ensureNoNonPermissionCapitalLetterShortFlags`, `ensureDisallowedMethodsEnforced`, `lintBootstraps`, `lintNodePolyfillDenoApis`, `ensureWorkflowYmlsUpToDate`, `ensureNoUnusedOutFiles`, `ensureNoNewTopLevelEntries`, and `checkCopyright`.",
+          "claim": "Lint is itself partly a test suite: `tools/lint.js` runs clippy plus bespoke checks \u2014 `ensureNoNonPermissionCapitalLetterShortFlags`, `ensureDisallowedMethodsEnforced`, `lintBootstraps`, `lintNodePolyfillDenoApis`, `ensureWorkflowYmlsUpToDate`, `ensureNoUnusedOutFiles`, `ensureNoNewTopLevelEntries`, and `checkCopyright`.",
           "sources": [
             "tools/lint.js#L19-55"
           ],
@@ -18124,7 +18124,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "The tunnel client, `initialize_tunnel`'s credential fallback chain, and `cli/standalone/binary.rs` binary framing have no dedicated test module in their files — unlike `cli/tools/deploy.rs`, `cli/worker.rs`, and `cli/file_fetcher.rs`, which each carry `#[cfg(test)] mod tests`.",
+          "claim": "The tunnel client, `initialize_tunnel`'s credential fallback chain, and `cli/standalone/binary.rs` binary framing have no dedicated test module in their files \u2014 unlike `cli/tools/deploy.rs`, `cli/worker.rs`, and `cli/file_fetcher.rs`, which each carry `#[cfg(test)] mod tests`.",
           "sources": [
             "cli/lib.rs#L1360-1560",
             "cli/tools/deploy.rs#L113-130",
@@ -18139,7 +18139,7 @@
       "summary": "The blast radius concentrates in three places: the permission system (an 11.7k-line file that every capability check funnels through), the extension ordering list in `runtime/worker.rs` (silently snapshot-coupled across four files), and the many `unsafe { std::env::set_var(...) }` calls in startup that are only sound because they run before any thread is spawned. Security-sensitive paths include FFI `dlopen`, subprocess spawn with LD_PRELOAD-style env filtering, the permission broker's IPC socket, the Deno Deploy keyring token, the runtime-fetched deploy CLI executed with `allow_all`, and the `node` shim that mutates the process `PATH`. Several performance-motivated lazy-loading decisions (lazy node polyfills, hoisted `registerDeclarativeServer` guard) are fragile in the sense that they encode non-obvious invariants in comments rather than tests.",
       "claims": [
         {
-          "claim": "`deno deploy` executes code fetched from JSR at runtime with `PermissionsContainer::allow_all` — the version is chosen by `resolve_deploy_cli_version` from `@deno/deploy/meta.json`, so a compromised or unexpected JSR publish would run fully privileged on the user's machine.",
+          "claim": "`deno deploy` executes code fetched from JSR at runtime with `PermissionsContainer::allow_all` \u2014 the version is chosen by `resolve_deploy_cli_version` from `@deno/deploy/meta.json`, so a compromised or unexpected JSR publish would run fully privileged on the user's machine.",
           "sources": [
             "cli/tools/deploy.rs#L59-101"
           ],
@@ -18153,14 +18153,14 @@
           "kind": "evidence"
         },
         {
-          "claim": "`op_ffi_load` gates on `check_ffi_partial_with_path` and then calls `Library::open` on the (possibly denort-remapped) path — once loaded, the dynamic library runs with full process privileges outside the permission model.",
+          "claim": "`op_ffi_load` gates on `check_ffi_partial_with_path` and then calls `Library::open` on the (possibly denort-remapped) path \u2014 once loaded, the dynamic library runs with full process privileges outside the permission model.",
           "sources": [
             "ext/ffi/dlfcn.rs#L145-175"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "The permission prompter defends against terminal spoofing by escaping bidi and zero-width Unicode formatting controls (U+202E RTL Override, U+2066 isolates, U+200B ZWSP, …) that would otherwise let a malicious path forge the prompt label — the Trojan-Source vector.",
+          "claim": "The permission prompter defends against terminal spoofing by escaping bidi and zero-width Unicode formatting controls (U+202E RTL Override, U+2066 isolates, U+200B ZWSP, \u2026) that would otherwise let a malicious path forge the prompt label \u2014 the Trojan-Source vector.",
           "sources": [
             "runtime/permissions/prompter.rs#L26-62"
           ],
@@ -18184,7 +18184,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Startup performs multiple `unsafe { std::env::set_var(...) }` calls — `DENO_CONNECTED`, `DENO_COVERAGE_DIR`, `DENO_DEPLOY_CLI_SANDBOX`, `PATH`, and every key/value the tunnel server returns in its metadata — each justified only by a comment asserting single-threadedness; adding a thread earlier in startup would make these unsound.",
+          "claim": "Startup performs multiple `unsafe { std::env::set_var(...) }` calls \u2014 `DENO_CONNECTED`, `DENO_COVERAGE_DIR`, `DENO_DEPLOY_CLI_SANDBOX`, `PATH`, and every key/value the tunnel server returns in its metadata \u2014 each justified only by a comment asserting single-threadedness; adding a thread earlier in startup would make these unsound.",
           "sources": [
             "cli/lib.rs#L1057-1062",
             "cli/lib.rs#L1540-1552",
@@ -18201,7 +18201,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "The `node` PATH shim writes a symlink (Unix) or `.exe`-named shim (Windows) into DENO_DIR and prepends that directory to `PATH`, meaning any process spawned by user code — not just Deno — resolves `node` to the Deno binary; correctness depends on the scan finding no real Node first.",
+          "claim": "The `node` PATH shim writes a symlink (Unix) or `.exe`-named shim (Windows) into DENO_DIR and prepends that directory to `PATH`, meaning any process spawned by user code \u2014 not just Deno \u2014 resolves `node` to the Deno binary; correctness depends on the scan finding no real Node first.",
           "sources": [
             "cli/node_compat_shim.rs#L1-30",
             "cli/node_compat_shim.rs#L173-310"
@@ -18224,7 +18224,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "`runtime/permissions/lib.rs` is a single 11,756-line module owning every descriptor type, the allow/deny/prompt state machine, and `PermissionsContainer` — the highest-blast-radius file in the repo for security regressions.",
+          "claim": "`runtime/permissions/lib.rs` is a single 11,756-line module owning every descriptor type, the allow/deny/prompt state machine, and `PermissionsContainer` \u2014 the highest-blast-radius file in the repo for security regressions.",
           "sources": [
             "runtime/permissions/lib.rs#L1-200",
             "runtime/permissions/lib.rs#L4132-4160"
@@ -18240,7 +18240,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "The `registerDeclarativeServer` fast path in `99_main.js` encodes a performance optimisation as a behavioural guard — it skips loading ~430 KB of serve/streams modules unless the default export has an own `fetch` — and the comment explicitly notes `dflt == null` must still call through to preserve the existing TypeError.",
+          "claim": "The `registerDeclarativeServer` fast path in `99_main.js` encodes a performance optimisation as a behavioural guard \u2014 it skips loading ~430 KB of serve/streams modules unless the default export has an own `fetch` \u2014 and the comment explicitly notes `dflt == null` must still call through to preserve the existing TypeError.",
           "sources": [
             "runtime/js/99_main.js#L989-1012"
           ],
@@ -18254,7 +18254,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "The `NodeCommand` shell command silently rewrites `node script.js` inside `deno task` to `deno run -A --unstable-bare-node-builtins --unstable-detect-cjs --unstable-sloppy-imports --unstable-unsafe-proto script.js` — granting all permissions and four unstable flags that the task author never wrote.",
+          "claim": "The `NodeCommand` shell command silently rewrites `node script.js` inside `deno task` to `deno run -A --unstable-bare-node-builtins --unstable-detect-cjs --unstable-sloppy-imports --unstable-unsafe-proto script.js` \u2014 granting all permissions and four unstable flags that the task author never wrote.",
           "sources": [
             "cli/task_runner.rs#L378-420"
           ],
@@ -18266,7 +18266,7 @@
       "summary": "New native capability is added as an `ext/<name>` crate using `deno_core::extension!` (ops + esm + lazy_loaded_esm), registered into the ordered list in `runtime/worker.rs::common_extensions`, and exposed to JS from the extension's own `.js`/`.ts` files. New CLI surface is added by extending the `const` tables in `libs/cli_parser/src/defs.rs`, adding a `DenoSubcommand` variant in `flags.rs`, a conversion in `convert.rs`, an arm in `run_subcommand`, and a handler module under `cli/tools/`. New shared services are added as `Deferred<T>` fields on `CliFactoryServices` with an accessor method. The `deno task` shell has its own `ShellCommand` registry, the module loader has a JS-level load-hook registry, and the developer tooling itself is extensible via `tools/x.ts`'s command record and `.claude/skills/`.",
       "claims": [
         {
-          "claim": "An extension is declared with the `deno_core::extension!` macro taking `deps`, `parameters`, `ops = [...]`, `esm = [...]`, `lazy_loaded_esm = [...]`, and `synthetic_esm = [...]` — `ext/node/lib.rs:201` is the most elaborate example, parameterised over `InNpmPackageChecker`, `NpmPackageFolderResolver`, and `ExtNodeSys`.",
+          "claim": "An extension is declared with the `deno_core::extension!` macro taking `deps`, `parameters`, `ops = [...]`, `esm = [...]`, `lazy_loaded_esm = [...]`, and `synthetic_esm = [...]` \u2014 `ext/node/lib.rs:201` is the most elaborate example, parameterised over `InNpmPackageChecker`, `NpmPackageFolderResolver`, and `ExtNodeSys`.",
           "sources": [
             "ext/node/lib.rs#L201-230",
             "ext/node/lib.rs#L468-530"
@@ -18334,7 +18334,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "CLI-only ops live in `cli/ops/` (`bench.rs`, `deploy.rs`, `jupyter.rs`, `lint.rs`, `testing.rs`) and are injected per-subcommand via the `custom_extensions: Vec<Extension>` parameter of `create_custom_worker` — the deploy path passes `ops::deploy::deno_deploy::init()`.",
+          "claim": "CLI-only ops live in `cli/ops/` (`bench.rs`, `deploy.rs`, `jupyter.rs`, `lint.rs`, `testing.rs`) and are injected per-subcommand via the `custom_extensions: Vec<Extension>` parameter of `create_custom_worker` \u2014 the deploy path passes `ops::deploy::deno_deploy::init()`.",
           "sources": [
             "cli/ops/mod.rs",
             "cli/worker.rs#L596-610",
@@ -18351,7 +18351,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Agent workflows plug in via `.claude/skills/`: six skills (`fmt`, `lint-all`, `lint-js`, `node-compat`, `issue-triage`, `review-pr`) each declare frontmatter with `allowed-tools` — e.g. `review-pr` is scoped to `Bash(gh *) Bash(git *) Read Glob Grep Agent`.",
+          "claim": "Agent workflows plug in via `.claude/skills/`: six skills (`fmt`, `lint-all`, `lint-js`, `node-compat`, `issue-triage`, `review-pr`) each declare frontmatter with `allowed-tools` \u2014 e.g. `review-pr` is scoped to `Bash(gh *) Bash(git *) Read Glob Grep Agent`.",
           "sources": [
             ".claude/skills/review-pr/SKILL.md#L1-10",
             ".claude/skills/fmt/SKILL.md"
@@ -18368,7 +18368,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "New integration coverage is added by dropping a directory with `__test__.jsonc` into `tests/specs/` — no Rust registration needed, since collection is directory-driven; `schema.json` documents the available keys (`args`, `output`, `envs`, `cwd`, `exitCode`, `flaky`, `if`, `tempDir`, `variants`, `repeat`, `timeout`).",
+          "claim": "New integration coverage is added by dropping a directory with `__test__.jsonc` into `tests/specs/` \u2014 no Rust registration needed, since collection is directory-driven; `schema.json` documents the available keys (`args`, `output`, `envs`, `cwd`, `exitCode`, `flaky`, `if`, `tempDir`, `variants`, `repeat`, `timeout`).",
           "sources": [
             "tests/specs/mod.rs#L290-305",
             "tests/specs/schema.json#L1-70",
@@ -18396,7 +18396,7 @@
       ]
     },
     "agent_handoff": {
-      "summary": "Read `CLAUDE.md`, `tools/x.ts`, `cli/lib.rs`, and `cli/factory.rs` first — those four give you the command surface, the dispatch table, and the service graph. Use `./x` rather than raw cargo: `./x check` for fast feedback, `./x build` for a binary, `./x test-spec <filter>` for integration tests (a filter is mandatory and the runner will panic without one under Claude Code), and `./x verify` (fmt + lint-js) before committing. The repo's conventions are enforced mechanically: dprint formatting, a copyright-header check, generated-workflow freshness, and a clippy `disallowed_methods` list that is why you see `#[allow(clippy::disallowed_methods, reason = \"…\")]` sprinkled through startup code. Keep diffs minimal and avoid drive-by changes — the CLAUDE.md git workflow says so explicitly, and PRs are squash-merged so never force-push.",
+      "summary": "Read `CLAUDE.md`, `tools/x.ts`, `cli/lib.rs`, and `cli/factory.rs` first \u2014 those four give you the command surface, the dispatch table, and the service graph. Use `./x` rather than raw cargo: `./x check` for fast feedback, `./x build` for a binary, `./x test-spec <filter>` for integration tests (a filter is mandatory and the runner will panic without one under Claude Code), and `./x verify` (fmt + lint-js) before committing. The repo's conventions are enforced mechanically: dprint formatting, a copyright-header check, generated-workflow freshness, and a clippy `disallowed_methods` list that is why you see `#[allow(clippy::disallowed_methods, reason = \"\u2026\")]` sprinkled through startup code. Keep diffs minimal and avoid drive-by changes \u2014 the CLAUDE.md git workflow says so explicitly, and PRs are squash-merged so never force-push.",
       "claims": [
         {
           "claim": "Read first, in order: `CLAUDE.md` (build/test/PR conventions), `tools/x.ts` (the command registry with long help strings), `cli/lib.rs` (`main()` at :863 and `run_subcommand` at :124), `cli/factory.rs` (`CliFactoryServices` at :302), and `runtime/worker.rs` (`common_extensions` at :1199).",
@@ -18410,7 +18410,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Never run the full spec suite: `tests/specs/mod.rs::main` panics when `CLAUDE_CODE_ENTRYPOINT` is set without a filter — always use `./x test-spec <filter>` or `./x test-spec --list`.",
+          "claim": "Never run the full spec suite: `tests/specs/mod.rs::main` panics when `CLAUDE_CODE_ENTRYPOINT` is set without a filter \u2014 always use `./x test-spec <filter>` or `./x test-spec --list`.",
           "sources": [
             "tests/specs/mod.rs#L266-279",
             "tools/x.ts#L235-270"
@@ -18443,7 +18443,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Every source file needs the copyright header `// Copyright 2018-2026 the Deno authors. MIT license.` — `checkCopyright()` runs as part of `tools/lint.js` whenever both JS and Rust linting are enabled.",
+          "claim": "Every source file needs the copyright header `// Copyright 2018-2026 the Deno authors. MIT license.` \u2014 `checkCopyright()` runs as part of `tools/lint.js` whenever both JS and Rust linting are enabled.",
           "sources": [
             "tools/lint.js#L18-44",
             "tools/copyright_checker.js",
@@ -18470,7 +18470,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Anything in `.github/workflows/*.generated.yml` is build output — edit the `.ts` sibling and regenerate, or `ensureWorkflowYmlsUpToDate()` in `tools/lint.js` will fail CI.",
+          "claim": "Anything in `.github/workflows/*.generated.yml` is build output \u2014 edit the `.ts` sibling and regenerate, or `ensureWorkflowYmlsUpToDate()` in `tools/lint.js` will fail CI.",
           "sources": [
             ".github/workflows/ci.ts#L1-40",
             "tools/lint.js#L38"
@@ -18486,7 +18486,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Trap: large futures overflow the stack on Windows debug builds. `spawn_subcommand` uses `boxed_local()`, several subcommands add explicit `.boxed_local()`, and `Deferred::get_or_try_init_async` documents boxing for the same reason — preserve these when refactoring.",
+          "claim": "Trap: large futures overflow the stack on Windows debug builds. `spawn_subcommand` uses `boxed_local()`, several subcommands add explicit `.boxed_local()`, and `Deferred::get_or_try_init_async` documents boxing for the same reason \u2014 preserve these when refactoring.",
           "sources": [
             "cli/lib.rs#L108-122",
             "cli/factory.rs#L280-290",
@@ -18495,7 +18495,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Git workflow per `CLAUDE.md`: branch off `main`, never force-push to a PR (commits are squashed on merge so incremental commits help reviewers), and keep changes scoped — no drive-by fixes in an unrelated PR.",
+          "claim": "Git workflow per `CLAUDE.md`: branch off `main`, never force-push to a PR (commits are squashed on merge so incremental commits help reviewers), and keep changes scoped \u2014 no drive-by fixes in an unrelated PR.",
           "sources": [
             "CLAUDE.md"
           ],
@@ -18529,11 +18529,11 @@
         }
       ]
     },
-    "agent_prompt": "You are working in the Deno runtime monorepo (github.com/denoland/deno, branch `main`). It is a Rust cargo workspace of ~80 crates that builds the `deno` CLI — a JavaScript/TypeScript/WebAssembly runtime on V8 + Tokio, plus a package manager, type checker, formatter, linter, test runner, LSP, and single-binary compiler.\n\nLayout. `cli/` is the user-facing binary: `cli/main.rs` is a 9-line shim into `cli/lib.rs`, where `pub fn main()` (line ~863) does startup and `run_subcommand` (line ~124) is a single `match` over `DenoSubcommand` mapping each variant to a handler under `cli/tools/`. `cli/factory.rs` holds `CliFactory`, a lazy DI container whose `CliFactoryServices` struct is ~25 `Deferred<T>` once-cells (caches, file_fetcher, npm_installer_factory, resolver_factory, type_checker, root_permissions_container) — so `deno fmt` never constructs the npm resolver. `runtime/` assembles the JS runtime; the authoritative extension list is the ordered `vec![]` in `runtime/worker.rs::common_extensions` (~line 1199), and a comment there warns its ordering must stay in sync with `web_worker.rs`, `snapshot_info.rs`, and `snapshot.rs`. `ext/` holds 32 extension crates (fs, net, http, fetch, crypto, ffi, napi, kv, cron, webgpu, node, …) each declared with `deno_core::extension!`. `libs/` holds vendored foundations: `libs/core` IS `deno_core` (v0.412.0), `libs/ops` is the `#[op2]` proc macro, and `libs/cli_parser` is a hand-rolled zero-allocation flag parser built on `const` `ArgDef`/`CommandDef` tables in `defs.rs` — `DenoSubcommand` lives at `libs/cli_parser/src/flags.rs:786`, not in `cli/`.\n\nUse `./x` (a Deno script, `tools/x.ts`) rather than raw cargo. `./x check` = fast `cargo check`. `./x build` = `cargo build --bin deno` → `target/debug/deno`. `./x test-spec <filter>` / `test-unit` / `test-node` / `test-compat` / `test-core` / `test-napi`. `./x fmt`, `./x lint-js`, `./x lint`, `./x verify` (fmt + lint-js). Every test command REQUIRES a filter; `tests/specs/mod.rs` deliberately panics if `CLAUDE_CODE_ENTRYPOINT` is set and no filter was given. `--list` enumerates tests.\n\nTesting. Five cargo crates with `harness = false` each use `file_test_runner`: `specs_tests` (the primary integration suite — one directory per test under `tests/specs/` containing `__test__.jsonc`, with output matched by a wildcard language: `[WILDCARD]`, `[WILDLINE]`, `[WILDCHARS(n)]`, `[UNORDERED_START]`/`[UNORDERED_END]`), `unit_tests` (`tests/unit/*_test.ts` — run via cargo, never via `./target/debug/deno test`), `unit_node_tests`, `node_compat_tests` (real Node suite as a submodule), and `integration_tests` (28 Rust files). WPT runs from `tests/wpt/suite`.\n\nConventions and traps. Every file starts with `// Copyright 2018-2026 the Deno authors. MIT license.` — `tools/lint.js` enforces it, along with clippy `disallowed_methods`, bootstrap linting, and workflow freshness. `.github/workflows/*.generated.yml` are GENERATED from `.ts` siblings — edit the TypeScript. Formatting is dprint only (`tools/format.js`). Futures are `boxed_local()` in many places specifically to avoid Windows debug stack overflows — preserve that. Startup does several `unsafe { std::env::set_var }` calls whose safety depends on no threads existing yet; don't move thread spawns earlier. Security-sensitive code: `runtime/permissions/lib.rs` (11.7k lines, all capability checks), `runtime/permissions/prompter.rs` (bidi/zero-width escaping), `runtime/permissions/broker.rs` (IPC socket via `DENO_PERMISSION_BROKER_PATH`), `ext/process/lib.rs::check_run_permission` (LD_PRELOAD blocking), `ext/ffi/dlfcn.rs::op_ffi_load`, and `cli/tools/deploy.rs` (runs a JSR-fetched CLI with allow-all). Debug with `DENO_STARTUP_PHASES=1`, `DENO_LOG=debug`, `DENO_AUDIT_PERMISSIONS=<file|otel>`, `RUST_BACKTRACE=1`.\n\nGit: branch off `main`, small scoped diffs, no drive-by changes, never force-push a PR (commits squash on merge), PR titles as `type(scope): description`. Read `CLAUDE.md` before your first change."
+    "agent_prompt": "You are working in the Deno runtime monorepo (github.com/denoland/deno, branch `main`). It is a Rust cargo workspace of ~80 crates that builds the `deno` CLI \u2014 a JavaScript/TypeScript/WebAssembly runtime on V8 + Tokio, plus a package manager, type checker, formatter, linter, test runner, LSP, and single-binary compiler.\n\nLayout. `cli/` is the user-facing binary: `cli/main.rs` is a 9-line shim into `cli/lib.rs`, where `pub fn main()` (line ~863) does startup and `run_subcommand` (line ~124) is a single `match` over `DenoSubcommand` mapping each variant to a handler under `cli/tools/`. `cli/factory.rs` holds `CliFactory`, a lazy DI container whose `CliFactoryServices` struct is ~25 `Deferred<T>` once-cells (caches, file_fetcher, npm_installer_factory, resolver_factory, type_checker, root_permissions_container) \u2014 so `deno fmt` never constructs the npm resolver. `runtime/` assembles the JS runtime; the authoritative extension list is the ordered `vec![]` in `runtime/worker.rs::common_extensions` (~line 1199), and a comment there warns its ordering must stay in sync with `web_worker.rs`, `snapshot_info.rs`, and `snapshot.rs`. `ext/` holds 32 extension crates (fs, net, http, fetch, crypto, ffi, napi, kv, cron, webgpu, node, \u2026) each declared with `deno_core::extension!`. `libs/` holds vendored foundations: `libs/core` IS `deno_core` (v0.412.0), `libs/ops` is the `#[op2]` proc macro, and `libs/cli_parser` is a hand-rolled zero-allocation flag parser built on `const` `ArgDef`/`CommandDef` tables in `defs.rs` \u2014 `DenoSubcommand` lives at `libs/cli_parser/src/flags.rs:786`, not in `cli/`.\n\nUse `./x` (a Deno script, `tools/x.ts`) rather than raw cargo. `./x check` = fast `cargo check`. `./x build` = `cargo build --bin deno` \u2192 `target/debug/deno`. `./x test-spec <filter>` / `test-unit` / `test-node` / `test-compat` / `test-core` / `test-napi`. `./x fmt`, `./x lint-js`, `./x lint`, `./x verify` (fmt + lint-js). Every test command REQUIRES a filter; `tests/specs/mod.rs` deliberately panics if `CLAUDE_CODE_ENTRYPOINT` is set and no filter was given. `--list` enumerates tests.\n\nTesting. Five cargo crates with `harness = false` each use `file_test_runner`: `specs_tests` (the primary integration suite \u2014 one directory per test under `tests/specs/` containing `__test__.jsonc`, with output matched by a wildcard language: `[WILDCARD]`, `[WILDLINE]`, `[WILDCHARS(n)]`, `[UNORDERED_START]`/`[UNORDERED_END]`), `unit_tests` (`tests/unit/*_test.ts` \u2014 run via cargo, never via `./target/debug/deno test`), `unit_node_tests`, `node_compat_tests` (real Node suite as a submodule), and `integration_tests` (28 Rust files). WPT runs from `tests/wpt/suite`.\n\nConventions and traps. Every file starts with `// Copyright 2018-2026 the Deno authors. MIT license.` \u2014 `tools/lint.js` enforces it, along with clippy `disallowed_methods`, bootstrap linting, and workflow freshness. `.github/workflows/*.generated.yml` are GENERATED from `.ts` siblings \u2014 edit the TypeScript. Formatting is dprint only (`tools/format.js`). Futures are `boxed_local()` in many places specifically to avoid Windows debug stack overflows \u2014 preserve that. Startup does several `unsafe { std::env::set_var }` calls whose safety depends on no threads existing yet; don't move thread spawns earlier. Security-sensitive code: `runtime/permissions/lib.rs` (11.7k lines, all capability checks), `runtime/permissions/prompter.rs` (bidi/zero-width escaping), `runtime/permissions/broker.rs` (IPC socket via `DENO_PERMISSION_BROKER_PATH`), `ext/process/lib.rs::check_run_permission` (LD_PRELOAD blocking), `ext/ffi/dlfcn.rs::op_ffi_load`, and `cli/tools/deploy.rs` (runs a JSR-fetched CLI with allow-all). Debug with `DENO_STARTUP_PHASES=1`, `DENO_LOG=debug`, `DENO_AUDIT_PERMISSIONS=<file|otel>`, `RUST_BACKTRACE=1`.\n\nGit: branch off `main`, small scoped diffs, no drive-by changes, never force-push a PR (commits squash on merge), PR titles as `type(scope): description`. Read `CLAUDE.md` before your first change."
   },
   "analysis": {
     "agent": "claude",
-    "model": "cli:claude",
+    "model": "claude-opus-5",
     "runtime_ms": 495459,
     "cost_usd": 4.677635000000001,
     "collected_at": "2026-09-22T09:32:04.190Z"

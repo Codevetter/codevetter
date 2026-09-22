@@ -199,7 +199,7 @@
         {
           "path": "README.md",
           "bytes": 3623,
-          "preview": "# lodash v4.18.1\n\n[Site](https://lodash.com/) |\n[Docs](https://lodash.com/docs) |\n[FP Guide](https://github.com/lodash/lodash/wiki/FP-Guide) |\n[Contributing](https://github.com/lodash/lodash/blob/main/.github/CONTRIBUTING.md) |\n[Wiki](https://github.com/lodash/lodash/wiki \"Changelog, Roadmap, etc.\") |\n[Code of Conduct](https://github.com/openjs-foundation/cross-project-council/blob/main/CODE_OF_CONDUCT.md) |\n[Governance](https://github.com/lodash/lodash/blob/HEAD/GOVERNANCE.md) |\n[Twitter](https://twitter.com/bestiejs) |\n[Chat](https://gitter.im/lodash/lodash)\n\n> [!IMPORTANT]\n> As announced on the [OpenJS Foundation blog](https://openjsf.org/blog/sta-supports-lodash), Lodash has received support from the Sovereign Tech Agency and will transition to the Feature-Complete maturity stage so that it remains stable, secure, and sustainable long-term. As part of this effort, Lodash is rebooting its governance. A draft charter will be published shortly. The upcoming Technical Steering Committee (TSC) is already at work. For transparency, its members are listed in [GOVERNANCE.md](https://github.com/lodash/lodash/blob/HEAD/GOVERNANCE.md).\n\nThe [Lodash](https://lodash.com/) library exported as a [UMD](https://github.com/umdjs/umd) module.\n\nGenerated using [lodash-cli](https://www.npmjs.com/package/lodash-cli):\n```shell\n$ npm run build\n$ lodash -o ./dist/lodash.js\n$ lodash core -o ./dist/lodash.core.js\n```\n\n## Download\n\n * [Core build](https://raw.githubusercontent.com/lodash/lodash/4.18.1/dist/lodash.core.js) ([~4 kB gzipped](https://raw.githubusercontent.com/lodash/lodash/4.18.1/dist/lodash.core.min.js))\n * [Full build](https://raw.githubusercontent.com/lodash/lodash/4.18.1/dist/lodash.js) ([~24 kB gzipped](https://raw.githubusercontent.com/lodash/lodash/4.18.1/dist/lodash.min.js))\n * [CDN copies](https://www.jsdelivr.com/projects/lodash)\n\nLodash is released under the [MIT license](https://raw.githubusercontent.com/lodash/lodash/4.18.1/LICENSE) & supports modern environments.<br>\nReview the [build differences](https://github.com/lodash/lodash/wiki/build-differences) & pick one that’s right for you.\n\n## Installation\n\nIn a browser:\n```html\n<script src=\"lodash.js\"></script>\n```\n\nUsing npm:\n```shell\n$ npm i -g npm\n$ npm i --save lodash\n```\n\nIn Node.js:\n```js\n// Load the full build.\nvar _ = require('lodash');\n// Load the core build.\nvar _ = require('lodash/core');\n// Load the FP build for immutable auto-curried iteratee-first data-last methods.\nvar fp = require('lodash/fp');\n\n// Load method categories.\nvar array = require('lodash/array');\nvar object = require('lodash/fp/object');\n\n// Cherry-pick methods for smaller browserify/rollup/webpack bundles.\nvar at = require('lodash/at');\nvar curryN = require('lodash/fp/curryN');\n```\n\n## Why Lodash?\n\nLodash makes JavaScript easier by taking the hassle out of working with arrays,<br>\nnumbers, objects, strings, etc. Lodash’s modular methods are great for:\n\n * Iterating arrays, objects, & strings\n * Manipulating & testing values\n * Creating composite functions\n\n## Module Formats\n\nLodash is available in a [variety of builds](https://lodash.com/custom-builds) & module formats.\n\n * [lodash](https://www.npmjs.com/package/lodash) & [per method packages](https://www.npmjs.com/browse/keyword/lodash-modularized)\n * [lodash-es](https://www.npmjs.com/package/lodash-es), [babel-plugin-lodash](https://www.npmjs.com/package/babel-plugin-lodash), & [lodash-webpack-plugin](https://www.npmjs.com/package/lodash-webpack-plugin)\n * [lodash/fp](https://github.com/lodash/lodash/tree/npm/fp)\n * [lodash-amd](https://www.npmjs.com/package/lodash-amd)\n\n\n"
+          "preview": "# lodash v4.18.1\n\n[Site](https://lodash.com/) |\n[Docs](https://lodash.com/docs) |\n[FP Guide](https://github.com/lodash/lodash/wiki/FP-Guide) |\n[Contributing](https://github.com/lodash/lodash/blob/main/.github/CONTRIBUTING.md) |\n[Wiki](https://github.com/lodash/lodash/wiki \"Changelog, Roadmap, etc.\") |\n[Code of Conduct](https://github.com/openjs-foundation/cross-project-council/blob/main/CODE_OF_CONDUCT.md) |\n[Governance](https://github.com/lodash/lodash/blob/HEAD/GOVERNANCE.md) |\n[Twitter](https://twitter.com/bestiejs) |\n[Chat](https://gitter.im/lodash/lodash)\n\n> [!IMPORTANT]\n> As announced on the [OpenJS Foundation blog](https://openjsf.org/blog/sta-supports-lodash), Lodash has received support from the Sovereign Tech Agency and will transition to the Feature-Complete maturity stage so that it remains stable, secure, and sustainable long-term. As part of this effort, Lodash is rebooting its governance. A draft charter will be published shortly. The upcoming Technical Steering Committee (TSC) is already at work. For transparency, its members are listed in [GOVERNANCE.md](https://github.com/lodash/lodash/blob/HEAD/GOVERNANCE.md).\n\nThe [Lodash](https://lodash.com/) library exported as a [UMD](https://github.com/umdjs/umd) module.\n\nGenerated using [lodash-cli](https://www.npmjs.com/package/lodash-cli):\n```shell\n$ npm run build\n$ lodash -o ./dist/lodash.js\n$ lodash core -o ./dist/lodash.core.js\n```\n\n## Download\n\n * [Core build](https://raw.githubusercontent.com/lodash/lodash/4.18.1/dist/lodash.core.js) ([~4 kB gzipped](https://raw.githubusercontent.com/lodash/lodash/4.18.1/dist/lodash.core.min.js))\n * [Full build](https://raw.githubusercontent.com/lodash/lodash/4.18.1/dist/lodash.js) ([~24 kB gzipped](https://raw.githubusercontent.com/lodash/lodash/4.18.1/dist/lodash.min.js))\n * [CDN copies](https://www.jsdelivr.com/projects/lodash)\n\nLodash is released under the [MIT license](https://raw.githubusercontent.com/lodash/lodash/4.18.1/LICENSE) & supports modern environments.<br>\nReview the [build differences](https://github.com/lodash/lodash/wiki/build-differences) & pick one that\u2019s right for you.\n\n## Installation\n\nIn a browser:\n```html\n<script src=\"lodash.js\"></script>\n```\n\nUsing npm:\n```shell\n$ npm i -g npm\n$ npm i --save lodash\n```\n\nIn Node.js:\n```js\n// Load the full build.\nvar _ = require('lodash');\n// Load the core build.\nvar _ = require('lodash/core');\n// Load the FP build for immutable auto-curried iteratee-first data-last methods.\nvar fp = require('lodash/fp');\n\n// Load method categories.\nvar array = require('lodash/array');\nvar object = require('lodash/fp/object');\n\n// Cherry-pick methods for smaller browserify/rollup/webpack bundles.\nvar at = require('lodash/at');\nvar curryN = require('lodash/fp/curryN');\n```\n\n## Why Lodash?\n\nLodash makes JavaScript easier by taking the hassle out of working with arrays,<br>\nnumbers, objects, strings, etc. Lodash\u2019s modular methods are great for:\n\n * Iterating arrays, objects, & strings\n * Manipulating & testing values\n * Creating composite functions\n\n## Module Formats\n\nLodash is available in a [variety of builds](https://lodash.com/custom-builds) & module formats.\n\n * [lodash](https://www.npmjs.com/package/lodash) & [per method packages](https://www.npmjs.com/browse/keyword/lodash-modularized)\n * [lodash-es](https://www.npmjs.com/package/lodash-es), [babel-plugin-lodash](https://www.npmjs.com/package/babel-plugin-lodash), & [lodash-webpack-plugin](https://www.npmjs.com/package/lodash-webpack-plugin)\n * [lodash/fp](https://github.com/lodash/lodash/tree/npm/fp)\n * [lodash-amd](https://www.npmjs.com/package/lodash-amd)\n\n\n"
         }
       ],
       "config_files": [
@@ -3789,7 +3789,7 @@
         "steps": [
           {
             "id": "serialize",
-            "label": "JSON serialize (inventory → SQLite)",
+            "label": "JSON serialize (inventory \u2192 SQLite)",
             "ms": 0,
             "pct": 0
           },
@@ -3810,9 +3810,9 @@
     ]
   },
   "report": {
-    "overview": "This is the lodash monorepo root: the hand-maintained single-file UMD source `lodash.js` (v4.18.1, ~546 KB, one IIFE wrapping a `runInContext` factory), the `fp/` converter that re-wraps every method into immutable auto-curried iteratee-first data-last form, and a small Node build/doc toolchain under `lib/` that copies, minifies, webpacks, and doc-generates artifacts into `dist/` and `doc/`. It is not an application — it is a library plus its release machinery, consumed by downstream repos (`lodash-cli`, the `npm` branch) that call `build:main-modules`/`build:fp-modules` with a target directory. What's distinctive is the test posture: ~1750 QUnit assertions in a single 814 KB `test/test.js` that deliberately sabotages host globals (\"bizarro\" shims), plus vendored Backbone and Underscore suites run against lodash, driven in Node and across six Playwright browser projects. The repo is now under OpenJS Foundation governance with a published threat model that explicitly scopes prototype pollution and `_.template` code injection as in-scope vulnerability classes.",
+    "overview": "This is the lodash monorepo root: the hand-maintained single-file UMD source `lodash.js` (v4.18.1, ~546 KB, one IIFE wrapping a `runInContext` factory), the `fp/` converter that re-wraps every method into immutable auto-curried iteratee-first data-last form, and a small Node build/doc toolchain under `lib/` that copies, minifies, webpacks, and doc-generates artifacts into `dist/` and `doc/`. It is not an application \u2014 it is a library plus its release machinery, consumed by downstream repos (`lodash-cli`, the `npm` branch) that call `build:main-modules`/`build:fp-modules` with a target directory. What's distinctive is the test posture: ~1750 QUnit assertions in a single 814 KB `test/test.js` that deliberately sabotages host globals (\"bizarro\" shims), plus vendored Backbone and Underscore suites run against lodash, driven in Node and across six Playwright browser projects. The repo is now under OpenJS Foundation governance with a published threat model that explicitly scopes prototype pollution and `_.template` code injection as in-scope vulnerability classes.",
     "system_map": {
-      "summary": "There is no server or CLI entrypoint; the shipped artifact is `lodash.js`, declared as `main` in a `private: true` package.json, exported via a three-way UMD tail (AMD `define`, CommonJS `freeModule.exports`, global `root._`). All build logic lives in `lib/`, split into `lib/common/` (file copy, uglify wrapper, error-throwing callback, Hash), `lib/main/` (dist, modules, docdown, site HTML) and `lib/fp/` (webpack dist, `.jst`-templated module emission, FP wiki). The only persistent storage is the filesystem: `dist/` for builds and `doc/README.md` for generated API docs. Eight GitHub Actions workflows cover Node 4–25, four Bun versions, browser matrix, docs generation, dist-sync verification, CodeQL, OSSF Scorecard and Renovate. Deployment is out-of-repo — the Release Team publishes to npm, and `dist/lodash.core.js` is produced by the external `lodash-cli`, not by `npm run build`.",
+      "summary": "There is no server or CLI entrypoint; the shipped artifact is `lodash.js`, declared as `main` in a `private: true` package.json, exported via a three-way UMD tail (AMD `define`, CommonJS `freeModule.exports`, global `root._`). All build logic lives in `lib/`, split into `lib/common/` (file copy, uglify wrapper, error-throwing callback, Hash), `lib/main/` (dist, modules, docdown, site HTML) and `lib/fp/` (webpack dist, `.jst`-templated module emission, FP wiki). The only persistent storage is the filesystem: `dist/` for builds and `doc/README.md` for generated API docs. Eight GitHub Actions workflows cover Node 4\u201325, four Bun versions, browser matrix, docs generation, dist-sync verification, CodeQL, OSSF Scorecard and Renovate. Deployment is out-of-repo \u2014 the Release Team publishes to npm, and `dist/lodash.core.js` is produced by the external `lodash-cli`, not by `npm run build`.",
       "claims": [
         {
           "claim": "The package is `private: true` with `main: \"lodash.js\"` and `engines.node >= 4.0.0`, so the repo itself is never published; it is the source-of-truth checkout that other release tooling consumes.",
@@ -3831,7 +3831,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "The export tail branches three ways in strict order — AMD `define.amd` (also assigning `root._` to survive script-tag loading), then `freeModule.exports` for Node/CommonJS, then a bare global assignment — which is why the file works unchanged in every listed CI runtime.",
+          "claim": "The export tail branches three ways in strict order \u2014 AMD `define.amd` (also assigning `root._` to survive script-tag loading), then `freeModule.exports` for Node/CommonJS, then a bare global assignment \u2014 which is why the file works unchanged in every listed CI runtime.",
           "sources": [
             "lodash.js#L17236-17256"
           ],
@@ -3845,7 +3845,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "`npm run build` is only `build:main && build:fp`: `lib/main/build-dist.js` copies `lodash.js` → `dist/lodash.js` and minifies it, while `lib/fp/build-dist.js` runs two webpack passes (`fp/_mapping.js` → `dist/mapping.fp.js`, `fp/_convertBrowser.js` → `dist/lodash.fp.js`, both UMD) then minifies.",
+          "claim": "`npm run build` is only `build:main && build:fp`: `lib/main/build-dist.js` copies `lodash.js` \u2192 `dist/lodash.js` and minifies it, while `lib/fp/build-dist.js` runs two webpack passes (`fp/_mapping.js` \u2192 `dist/mapping.fp.js`, `fp/_convertBrowser.js` \u2192 `dist/lodash.fp.js`, both UMD) then minifies.",
           "sources": [
             "package.json#L11-14",
             "lib/main/build-dist.js#L24-31",
@@ -3890,7 +3890,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "`doc/README.md` is a checked-in 295 KB generated artifact (its first line carries the `v4.18.1` docdown title), and `doc/*.html` is gitignored — so the markdown is versioned but the site HTML is not.",
+          "claim": "`doc/README.md` is a checked-in 295 KB generated artifact (its first line carries the `v4.18.1` docdown title), and `doc/*.html` is gitignored \u2014 so the markdown is versioned but the site HTML is not.",
           "sources": [
             "doc/README.md#L1-3",
             ".gitignore#L1-4",
@@ -3899,7 +3899,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Eight workflows exist: `ci-node.yml` (Node 4 through 25 on ubuntu, `npm run validate`), `ci-bun.yml` (Bun 1.0–1.3), `browser-testing.yml` (Playwright), `ci-docs.yml`, `ci-dist-sync.yml`, `codeql.yml`, `scorecards.yml`, `renovate.yml`.",
+          "claim": "Eight workflows exist: `ci-node.yml` (Node 4 through 25 on ubuntu, `npm run validate`), `ci-bun.yml` (Bun 1.0\u20131.3), `browser-testing.yml` (Playwright), `ci-docs.yml`, `ci-dist-sync.yml`, `codeql.yml`, `scorecards.yml`, `renovate.yml`.",
           "sources": [
             ".github/workflows/ci-node.yml#L14-50",
             ".github/workflows/ci-bun.yml#L10-38",
@@ -3917,7 +3917,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "`vendor/` carries four vendored third-party trees used only by the browser harnesses — Backbone (source + 7 test files + setup), Underscore (source, min, 7 test files), json-js `json2.js`, and a ~960 KB `firebug-lite` console used by the perf page.",
+          "claim": "`vendor/` carries four vendored third-party trees used only by the browser harnesses \u2014 Backbone (source + 7 test files + setup), Underscore (source, min, 7 test files), json-js `json2.js`, and a ~960 KB `firebug-lite` console used by the perf page.",
           "sources": [
             "test/backbone.html#L88-98",
             "test/underscore.html#L383-390",
@@ -3936,7 +3936,7 @@
       ]
     },
     "feature_catalog": {
-      "summary": "User-facing surface is the lodash API itself (~300 methods attached to the `lodash` function plus a lazy-evaluating chain wrapper), the `fp` variant, and the four per-method build/doc npm scripts. `fp/_mapping.js` is the declarative feature table that defines the entire FP surface: aliases, arity buckets, rearg orders, spread configs, mutation classes and skip lists. The repo also ships two interactive HTML surfaces — a QUnit test runner with build/loader dropdowns, and a Benchmark.js perf page comparing lodash against Underscore. There is no HTTP API, no routes, and no CLI subcommands; the `lib/*/build-*.js` scripts are the closest thing to commands and take their target directory from the last `process.argv` element.",
+      "summary": "User-facing surface is the lodash API itself (~300 methods attached to the `lodash` function plus a lazy-evaluating chain wrapper), the `fp` variant, and the four per-method build/doc npm scripts. `fp/_mapping.js` is the declarative feature table that defines the entire FP surface: aliases, arity buckets, rearg orders, spread configs, mutation classes and skip lists. The repo also ships two interactive HTML surfaces \u2014 a QUnit test runner with build/loader dropdowns, and a Benchmark.js perf page comparing lodash against Underscore. There is no HTTP API, no routes, and no CLI subcommands; the `lib/*/build-*.js` scripts are the closest thing to commands and take their target directory from the last `process.argv` element.",
       "claims": [
         {
           "claim": "The full lodash API is assembled by explicit `lodash.<name> = <fn>` assignment inside `runInContext`, including `lodash.runInContext`, `lodash.VERSION` and the chainable `lodash.prototype.*` sequence methods (`at`, `chain`, `commit`, `next`, `plant`, `reverse`, `toJSON`/`valueOf`/`value`).",
@@ -3954,7 +3954,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "`fp/_mapping.js` declares the FP surface across 12 exported tables — `aliasToReal`, `aryMethod`, `aryRearg`, `iterateeAry`, `iterateeRearg`, `methodRearg`, `methodSpread`, `mutate`, `realToAlias`, `remap`, `skipFixed`, `skipRearg`.",
+          "claim": "`fp/_mapping.js` declares the FP surface across 12 exported tables \u2014 `aliasToReal`, `aryMethod`, `aryRearg`, `iterateeAry`, `iterateeRearg`, `methodRearg`, `methodSpread`, `mutate`, `realToAlias`, `remap`, `skipFixed`, `skipRearg`.",
           "sources": [
             "fp/_mapping.js#L1-2",
             "fp/_mapping.js#L71-72",
@@ -3979,7 +3979,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "FP conversion is configurable per-call and per-method through five boolean options — `cap`, `curry`, `fixed`, `immutable`, `rearg` — each defaulting to `true`, exposed as `fp.convert({...})` and `fp.someMethod.convert({...})`.",
+          "claim": "FP conversion is configurable per-call and per-method through five boolean options \u2014 `cap`, `curry`, `fixed`, `immutable`, `rearg` \u2014 each defaulting to `true`, exposed as `fp.convert({...})` and `fp.someMethod.convert({...})`.",
           "sources": [
             "fp/_baseConvert.js#L152-158",
             "fp/_baseConvert.js#L377-396",
@@ -3988,7 +3988,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "`npm run build:main-modules <target>` copies `dist/lodash.core.js`, `dist/lodash.core.min.js` and `dist/lodash.min.js` into a target directory as `core.js`, `core.min.js` and `lodash.min.js` — the per-method npm package layout.",
+          "claim": "`npm run build:main-modules <target>` copies `dist/lodash.core.js`, `dist/lodash.core.min.js` and `dist/lodash.min.js` into a target directory as `core.js`, `core.min.js` and `lodash.min.js` \u2014 the per-method npm package layout.",
           "sources": [
             "lib/main/build-modules.js#L13-34",
             "package.json#L15"
@@ -4005,7 +4005,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "`npm run doc:fp` renders the public FP-Guide wiki page from `lib/fp/template/doc/wiki.jst`, computing the method lists at build time with helpers `toFuncList` (sorted, chunked by 5) and `toArgOrder` (index permutation → `(a, b, c)` string).",
+          "claim": "`npm run doc:fp` renders the public FP-Guide wiki page from `lib/fp/template/doc/wiki.jst`, computing the method lists at build time with helpers `toFuncList` (sorted, chunked by 5) and `toArgOrder` (index permutation \u2192 `(a, b, c)` string).",
           "sources": [
             "lib/fp/build-doc.js#L30-63",
             "lib/fp/template/doc/wiki.jst#L69-140"
@@ -4030,7 +4030,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "`test/remove.js` is a small standalone Node utility that takes a `/pattern/flags` string plus a file path and strips matched line groups in place — used to prune generated sources.",
+          "claim": "`test/remove.js` is a small standalone Node utility that takes a `/pattern/flags` string plus a file path and strips matched line groups in place \u2014 used to prune generated sources.",
           "sources": [
             "test/remove.js#L8-27"
           ],
@@ -4046,7 +4046,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "`_.runInContext(context)` lets callers swap built-ins: `contextProps` lists the 30 globals (Array, Buffer, Map, Promise, Set, Symbol, WeakMap, setTimeout, …) that get `_.pick`-ed from `root` and defaulted into the supplied context.",
+          "claim": "`_.runInContext(context)` lets callers swap built-ins: `contextProps` lists the 30 globals (Array, Buffer, Map, Promise, Set, Symbol, WeakMap, setTimeout, \u2026) that get `_.pick`-ed from `root` and defaulted into the supplied context.",
           "sources": [
             "lodash.js#L297-303",
             "lodash.js#L1449-1450",
@@ -4057,7 +4057,7 @@
       ]
     },
     "data_flow": {
-      "summary": "Two distinct flows exist. At library runtime, data enters as plain JS values through method arguments, is normalized by `castPath`/`toKey`/`baseIteratee`, mutated or cloned by `base*` internals, and exits either as a new value or — in chain mode — as a `LazyWrapper`/`lodash` wrapper holding `__wrapped__` and an `__actions__` queue that is only drained on `.value()`. At build time, the input boundary is `lodash.js` plus `fp/_mapping.js`; transforms are `fs.copy`, `uglify.minify`, `webpack`, `docdown` and `_.template`-compiled `.jst` files; the output boundary is the filesystem (`dist/`, `doc/`, or an arbitrary `target` from `process.argv`). The FP path is unusual: `_mapping.js` is pure data that is read three times — by `_baseConvert` at runtime, by `build-modules.js` to decide which template to emit, and by `build-doc.js` to render the wiki.",
+      "summary": "Two distinct flows exist. At library runtime, data enters as plain JS values through method arguments, is normalized by `castPath`/`toKey`/`baseIteratee`, mutated or cloned by `base*` internals, and exits either as a new value or \u2014 in chain mode \u2014 as a `LazyWrapper`/`lodash` wrapper holding `__wrapped__` and an `__actions__` queue that is only drained on `.value()`. At build time, the input boundary is `lodash.js` plus `fp/_mapping.js`; transforms are `fs.copy`, `uglify.minify`, `webpack`, `docdown` and `_.template`-compiled `.jst` files; the output boundary is the filesystem (`dist/`, `doc/`, or an arbitrary `target` from `process.argv`). The FP path is unusual: `_mapping.js` is pure data that is read three times \u2014 by `_baseConvert` at runtime, by `build-modules.js` to decide which template to emit, and by `build-doc.js` to render the wiki.",
       "claims": [
         {
           "claim": "Property paths are the main untrusted input boundary: `castPath` converts strings/arrays to key arrays and `toKey` normalizes each segment before any read or write in `baseGet`/`baseSet`/`baseUnset`.",
@@ -4069,14 +4069,14 @@
           "kind": "evidence"
         },
         {
-          "claim": "Writes funnel through `assignValue` → `baseAssignValue`, which special-cases the key `__proto__` by using `Object.defineProperty` with an own data descriptor rather than plain assignment, so it lands on the object instead of the prototype.",
+          "claim": "Writes funnel through `assignValue` \u2192 `baseAssignValue`, which special-cases the key `__proto__` by using `Object.defineProperty` with an own data descriptor rather than plain assignment, so it lands on the object instead of the prototype.",
           "sources": [
             "lodash.js#L2597-2610"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "Deep merge reads go through `safeGet`, which returns `undefined` for `__proto__` and for `constructor` when it resolves to a function — cutting the read side of the pollution chain.",
+          "claim": "Deep merge reads go through `safeGet`, which returns `undefined` for `__proto__` and for `constructor` when it resolves to a function \u2014 cutting the read side of the pollution chain.",
           "sources": [
             "lodash.js#L6697-6715"
           ],
@@ -4091,7 +4091,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "In `_baseConvert`, each method flows through a fixed transform pipeline — immutability wrapper → `castFixed` (arity cap or `flatSpread`) → `castRearg` (argument permutation) → `castCap` (iteratee arity cap) → `castCurry` — with `methodSpread[name].afterRearg` deciding whether fixed or rearg runs first.",
+          "claim": "In `_baseConvert`, each method flows through a fixed transform pipeline \u2014 immutability wrapper \u2192 `castFixed` (arity cap or `flatSpread`) \u2192 `castRearg` (argument permutation) \u2192 `castCap` (iteratee arity cap) \u2192 `castCurry` \u2014 with `methodSpread[name].afterRearg` deciding whether fixed or rearg runs first.",
           "sources": [
             "fp/_baseConvert.js#L468-512"
           ],
@@ -4107,7 +4107,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Conversion output is assembled as `pairs` of `[name, wrappedFn]` — first for every name in `mapping.aryMethod[1..4]`, then for remaining own function keys — and only then assigned back onto `_`, deliberately leaving `_.prototype` untouched so chaining still works.",
+          "claim": "Conversion output is assembled as `pairs` of `[name, wrappedFn]` \u2014 first for every name in `mapping.aryMethod[1..4]`, then for remaining own function keys \u2014 and only then assigned back onto `_`, deliberately leaving `_.prototype` untouched so chaining still works.",
           "sources": [
             "fp/_baseConvert.js#L520-560"
           ],
@@ -4121,7 +4121,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Build data flows from `fp/_mapping.js` → `lib/common/mapping.js` (null-prototype Hash) → `lib/fp/build-modules.js`, where `_.union(mapping.aryMethod[1..4])` forms `aryMethods` and drives the `isThru` decision for every emitted module.",
+          "claim": "Build data flows from `fp/_mapping.js` \u2192 `lib/common/mapping.js` (null-prototype Hash) \u2192 `lib/fp/build-modules.js`, where `_.union(mapping.aryMethod[1..4])` forms `aryMethods` and drives the `isThru` decision for every emitted module.",
           "sources": [
             "lib/common/mapping.js#L3-9",
             "lib/fp/build-modules.js#L15-20",
@@ -4130,7 +4130,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "`.jst` templates are compiled to functions at require time by `file.globTemplate`, which globs `*.jst`, keys them by basename, and runs each through `_.template` — so `template.module`, `template.alias`, `template.wiki` are lodash templates executed with `{name, mapping}` data.",
+          "claim": "`.jst` templates are compiled to functions at require time by `file.globTemplate`, which globs `*.jst`, keys them by basename, and runs each through `_.template` \u2014 so `template.module`, `template.alias`, `template.wiki` are lodash templates executed with `{name, mapping}` data.",
           "sources": [
             "lib/common/file.js#L32-37",
             "lib/fp/build-modules.js#L12-13",
@@ -4146,14 +4146,14 @@
           "kind": "evidence"
         },
         {
-          "claim": "The site build derives its output filename from the document itself — it removes the first `<h1>`, reads the version out of its `<span>`, and writes `doc/<version>.html`; if that span is missing the front matter records `version: null`.",
+          "claim": "The site build derives its output filename from the document itself \u2014 it removes the first `<h1>`, reads the version out of its `<span>`, and writes `doc/<version>.html`; if that span is missing the front matter records `version: null`.",
           "sources": [
             "lib/main/build-site.js#L204-236"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "In the browser harness, the build path is a URL query parameter: `test-ui.js` parses `?build=` and `?loader=`, maps them to file paths, and `test/index.html` `document.write`s those paths as script tags — the page loads whatever path the URL names, including a full remote URL (`ui.isForeign`).",
+          "claim": "In the browser harness, the build path is a URL query parameter: `test-ui.js` parses `?build=` and `?loader=`, maps them to file paths, and `test/index.html` `document.write`s those paths as script tags \u2014 the page loads whatever path the URL names, including a full remote URL (`ui.isForeign`).",
           "sources": [
             "test/asset/test-ui.js#L8-11",
             "test/asset/test-ui.js#L109-137",
@@ -4175,7 +4175,7 @@
       "summary": "Four flows matter here: library initialization, an FP conversion, the `npm test` path, and the browser-test path. Library init is entirely synchronous at require time. The Node test path is unusual because `pretest` forces a full build first, meaning `npm test` cannot run without webpack and uglify succeeding. The browser path is a three-stage `document.write` cascade that deliberately corrupts globals before loading lodash, snapshots the result as `lodashBizarro`, restores the globals, then loads the real build and the suite.",
       "claims": [
         {
-          "claim": "Library startup: the outer IIFE defines constants and regexes → detects `freeGlobal`/`root`/`freeModule` → defines `runInContext` → calls `var _ = runInContext()` at line 17232 → picks one of three export branches. No async work and no I/O occurs.",
+          "claim": "Library startup: the outer IIFE defines constants and regexes \u2192 detects `freeGlobal`/`root`/`freeModule` \u2192 defines `runInContext` \u2192 calls `var _ = runInContext()` at line 17232 \u2192 picks one of three export branches. No async work and no I/O occurs.",
           "sources": [
             "lodash.js#L9-15",
             "lodash.js#L431-446",
@@ -4184,7 +4184,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Inside `runInContext`, the sequence is: default the context from `contextProps` → alias built-ins (`Array`, `Object`, `Function`, …) → derive `maskSrcKey` from `context['__core-js_shared__']` → build `reIsNative` from `funcToString.call(hasOwnProperty)` → define all internals → attach them to `lodash` → return `lodash`.",
+          "claim": "Inside `runInContext`, the sequence is: default the context from `contextProps` \u2192 alias built-ins (`Array`, `Object`, `Function`, \u2026) \u2192 derive `maskSrcKey` from `context['__core-js_shared__']` \u2192 build `reIsNative` from `funcToString.call(hasOwnProperty)` \u2192 define all internals \u2192 attach them to `lodash` \u2192 return `lodash`.",
           "sources": [
             "lodash.js#L1449-1500",
             "lodash.js#L16900-16960",
@@ -4193,7 +4193,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "FP conversion of the whole library: `baseConvert(util, name, func, options)` detects `isObj`/`isLib` → builds `config` from the five option flags → snapshots `pristine` → iterates `mapping.aryMethod[1..4]` calling `wrap(key, func, _)` for each → sweeps remaining own function keys attaching only `.convert` → assigns all pairs onto `_` → sets `_.convert` and `_.placeholder` → finally assigns aliases.",
+          "claim": "FP conversion of the whole library: `baseConvert(util, name, func, options)` detects `isObj`/`isLib` \u2192 builds `config` from the five option flags \u2192 snapshots `pristine` \u2192 iterates `mapping.aryMethod[1..4]` calling `wrap(key, func, _)` for each \u2192 sweeps remaining own function keys attaching only `.convert` \u2192 assigns all pairs onto `_` \u2192 sets `_.convert` and `_.placeholder` \u2192 finally assigns aliases.",
           "sources": [
             "fp/_baseConvert.js#L138-166",
             "fp/_baseConvert.js#L520-560"
@@ -4201,7 +4201,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "A single method's wrap: `wrap()` resolves `realName` via `aliasToReal` → applies a named special-case wrapper if one exists in `wrappers` (castArray, iteratee, mixin, nthArg, rearg, runInContext) → else applies `wrapImmutable` with the cloner chosen from `mapping.mutate` → then runs the castFixed/castRearg/castCap/castCurry chain → attaches `.convert` and `.placeholder`.",
+          "claim": "A single method's wrap: `wrap()` resolves `realName` via `aliasToReal` \u2192 applies a named special-case wrapper if one exists in `wrappers` (castArray, iteratee, mixin, nthArg, rearg, runInContext) \u2192 else applies `wrapImmutable` with the cloner chosen from `mapping.mutate` \u2192 then runs the castFixed/castRearg/castCap/castCurry chain \u2192 attaches `.convert` and `.placeholder`.",
           "sources": [
             "fp/_baseConvert.js#L199-262",
             "fp/_baseConvert.js#L468-518"
@@ -4209,7 +4209,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "`npm test` fires `pretest` → `npm run build` → `build:main` (copy + minify) → `build:fp` (webpack mapping, webpack fp, minify) → then `test:main` = `node test/test` and `test:fp` = `node test/test-fp`.",
+          "claim": "`npm test` fires `pretest` \u2192 `npm run build` \u2192 `build:main` (copy + minify) \u2192 `build:fp` (webpack mapping, webpack fp, minify) \u2192 then `test:main` = `node test/test` and `test:fp` = `node test/test-fp`.",
           "sources": [
             "package.json#L11-14",
             "package.json#L20",
@@ -4218,7 +4218,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "`node test/test` bootstrap: resolve `filePath` from argv (defaulting to `../lodash.js`, then `fs.realpathSync` + `require.resolve`) → build the `ui` object with `isModularize`/`isStrict` flags → poison `global.root` with a throwing getter → require `qunit-extras` → load the previous stable lodash from `node_modules/lodash/lodash.js` as `lodashStable` → `interopRequire(filePath)` as `_`.",
+          "claim": "`node test/test` bootstrap: resolve `filePath` from argv (defaulting to `../lodash.js`, then `fs.realpathSync` + `require.resolve`) \u2192 build the `ui` object with `isModularize`/`isStrict` flags \u2192 poison `global.root` with a throwing getter \u2192 require `qunit-extras` \u2192 load the previous stable lodash from `node_modules/lodash/lodash.js` as `lodashStable` \u2192 `interopRequire(filePath)` as `_`.",
           "sources": [
             "test/test.js#L213-242",
             "test/test.js#L320-347"
@@ -4265,7 +4265,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Stage 3 (AMD path) configures the loader with three package aliases pointing at the same files through different paths — `lodash`, `shimmed` (`./abc/../`) and `underscore` (`./xyz/../`) — loads all three, tags each with `moduleName`, optionally pulls `_baseEach`/`_isIndex`/`_isIterateeCall`, then `require(['test'])` and `QUnit.start()`.",
+          "claim": "Stage 3 (AMD path) configures the loader with three package aliases pointing at the same files through different paths \u2014 `lodash`, `shimmed` (`./abc/../`) and `underscore` (`./xyz/../`) \u2014 loads all three, tags each with `moduleName`, optionally pulls `_baseEach`/`_isIndex`/`_isIterateeCall`, then `require(['test'])` and `QUnit.start()`.",
           "sources": [
             "test/index.html#L214-327",
             "test/test.js#L766-796"
@@ -4273,7 +4273,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "The Playwright flow is: workflow installs deps and browsers → `npm run build` → `npx http-server -p 9001 &` → `npx playwright test` → each spec navigates to one of four pages and asserts the text `0 failed` appears within 60s, across 6 browser projects.",
+          "claim": "The Playwright flow is: workflow installs deps and browsers \u2192 `npm run build` \u2192 `npx http-server -p 9001 &` \u2192 `npx playwright test` \u2192 each spec navigates to one of four pages and asserts the text `0 failed` appears within 60s, across 6 browser projects.",
           "sources": [
             ".github/workflows/browser-testing.yml#L22-38",
             "test/playwright-runner.spec.js#L5-24",
@@ -4282,14 +4282,14 @@
           "kind": "evidence"
         },
         {
-          "claim": "The dist-sync check trace is: checkout → `npm install` → `npm run build` → `git diff --exit-code dist/`; a non-empty diff emits a `::error::` annotation telling the contributor to rebuild and commit.",
+          "claim": "The dist-sync check trace is: checkout \u2192 `npm install` \u2192 `npm run build` \u2192 `git diff --exit-code dist/`; a non-empty diff emits a `::error::` annotation telling the contributor to rebuild and commit.",
           "sources": [
             ".github/workflows/ci-dist-sync.yml#L24-37"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "`npm run doc` traces to `node lib/main/build-doc github` → `_.last(process.argv)` yields `'github'` → `_.defaults({}, config.base, config.github)` → `docdown(options)` → `postprocess` brackets `Symbol.*` references → write `doc/README.md` → then `markdown-doctest doc/*.md` executes every fenced example against a real lodash with `lodash-doc-globals` in scope.",
+          "claim": "`npm run doc` traces to `node lib/main/build-doc github` \u2192 `_.last(process.argv)` yields `'github'` \u2192 `_.defaults({}, config.base, config.github)` \u2192 `docdown(options)` \u2192 `postprocess` brackets `Symbol.*` references \u2192 write `doc/README.md` \u2192 then `markdown-doctest doc/*.md` executes every fenced example against a real lodash with `lodash-doc-globals` in scope.",
           "sources": [
             "package.json#L16",
             "package.json#L27",
@@ -4301,7 +4301,7 @@
       ]
     },
     "testing_signals": {
-      "summary": "Testing is QUnit 2 (`qunitjs` + `qunit-extras`) driven two ways: directly under Node via `node test/test` and `node test/test-fp`, and in browsers via Playwright asserting `0 failed` on four static pages. Coverage of the main library is very broad — 307 QUnit modules and ~1754 assertions in `test/test.js` alone, plus 85/134 for FP — and is supplemented by running the vendored Backbone and Underscore suites against lodash. Style is enforced by JSCS across `lodash.js`, `fp/`, `lib/`, `perf/` and `test/`, and docs are tested by executing every README code fence via `markdown-doctest`. The notable gaps are the `lib/` build scripts themselves and the Playwright runner's coarse assertion.",
+      "summary": "Testing is QUnit 2 (`qunitjs` + `qunit-extras`) driven two ways: directly under Node via `node test/test` and `node test/test-fp`, and in browsers via Playwright asserting `0 failed` on four static pages. Coverage of the main library is very broad \u2014 307 QUnit modules and ~1754 assertions in `test/test.js` alone, plus 85/134 for FP \u2014 and is supplemented by running the vendored Backbone and Underscore suites against lodash. Style is enforced by JSCS across `lodash.js`, `fp/`, `lib/`, `perf/` and `test/`, and docs are tested by executing every README code fence via `markdown-doctest`. The notable gaps are the `lib/` build scripts themselves and the Playwright runner's coarse assertion.",
       "claims": [
         {
           "claim": "`test/test.js` contains 307 `QUnit.module(` and 1754 `QUnit.test(` calls in a single 814 KB file; `test/test-fp.js` adds 85 modules and 134 tests.",
@@ -4312,7 +4312,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "`npm run validate` is the CI gate everywhere — it chains `npm run style` (four JSCS invocations) and `npm test` — and is what both `ci-node.yml` and `ci-bun.yml` run.",
+          "claim": "`npm run validate` is the CI gate everywhere \u2014 it chains `npm run style` (four JSCS invocations) and `npm test` \u2014 and is what both `ci-node.yml` and `ci-bun.yml` run.",
           "sources": [
             "package.json#L21-30",
             ".github/workflows/ci-node.yml#L58-59",
@@ -4342,14 +4342,14 @@
           "kind": "evidence"
         },
         {
-          "claim": "Each Playwright spec asserts only that the literal text `0 failed` becomes visible — it does not read which tests ran, so a page that silently fails to load its suite and renders nothing will time out rather than report a specific failure.",
+          "claim": "Each Playwright spec asserts only that the literal text `0 failed` becomes visible \u2014 it does not read which tests ran, so a page that silently fails to load its suite and renders nothing will time out rather than report a specific failure.",
           "sources": [
             "test/playwright-runner.spec.js#L5-13"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "Cross-library regression coverage: `test/backbone.html` runs Backbone's own 7 test files against lodash after `mixin`-ing 17 lodash methods and aliasing `indexBy`→`keyBy`, `invoke`→`invokeMap`, `rest`→`tail`.",
+          "claim": "Cross-library regression coverage: `test/backbone.html` runs Backbone's own 7 test files against lodash after `mixin`-ing 17 lodash methods and aliasing `indexBy`\u2192`keyBy`, `invoke`\u2192`invokeMap`, `rest`\u2192`tail`.",
           "sources": [
             "test/backbone.html#L29-98"
           ],
@@ -4371,7 +4371,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "There is an explicit minification guard test asserting no exported method name is ≤2 characters except `_`, `at`, `eq`, `gt`, `lt` — catching accidentally shipped minified production builds.",
+          "claim": "There is an explicit minification guard test asserting no exported method name is \u22642 characters except `_`, `at`, `eq`, `gt`, `lt` \u2014 catching accidentally shipped minified production builds.",
           "sources": [
             "test/test.js#L16311-16327"
           ],
@@ -4395,7 +4395,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Nothing under `lib/` is unit-tested — `style:fp` lints `lib/**/*.js` but no test file requires `lib/common/file.js`, `lib/common/minify.js` or any `build-*.js`; their only verification is that CI's build step doesn't throw.",
+          "claim": "Nothing under `lib/` is unit-tested \u2014 `style:fp` lints `lib/**/*.js` but no test file requires `lib/common/file.js`, `lib/common/minify.js` or any `build-*.js`; their only verification is that CI's build step doesn't throw.",
           "sources": [
             "package.json#L22",
             "package.json#L26-29",
@@ -4442,21 +4442,21 @@
           "kind": "evidence"
         },
         {
-          "claim": "`baseSet` returns the object untouched if any path segment is `__proto__`, `constructor` or `prototype` — a blanket block that also silently no-ops legitimate writes to a literal `constructor` key.",
+          "claim": "`baseSet` returns the object untouched if any path segment is `__proto__`, `constructor` or `prototype` \u2014 a blanket block that also silently no-ops legitimate writes to a literal `constructor` key.",
           "sources": [
             "lodash.js#L4036-4043"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "`baseUnset` uses a different, narrower rule than `baseSet`: it blocks `__proto__` only when the object lacks an own `__proto__`, and blocks `constructor`/`prototype` only in non-terminal positions — the asymmetry is deliberate but easy to break when editing one and not the other.",
+          "claim": "`baseUnset` uses a different, narrower rule than `baseSet`: it blocks `__proto__` only when the object lacks an own `__proto__`, and blocks `constructor`/`prototype` only in non-terminal positions \u2014 the asymmetry is deliberate but easy to break when editing one and not the other.",
           "sources": [
             "lodash.js#L4382-4404"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "Prototype-pollution defense is spread across four unrelated call sites — `baseAssignValue`, `baseSet`, `baseUnset`, `safeGet` — plus `isKey`'s `value !== '__proto__'` check, so a new path-writing method added without touching all of them would be unprotected.",
+          "claim": "Prototype-pollution defense is spread across four unrelated call sites \u2014 `baseAssignValue`, `baseSet`, `baseUnset`, `safeGet` \u2014 plus `isKey`'s `value !== '__proto__'` check, so a new path-writing method added without touching all of them would be unprotected.",
           "sources": [
             "lodash.js#L2597-2610",
             "lodash.js#L4036-4043",
@@ -4476,7 +4476,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Because `npm run build` never writes `dist/lodash.core*.js`, `ci-dist-sync.yml`'s `git diff --exit-code dist/` will pass even when the core build is stale relative to an edited `lodash.js` — a silent staleness hole in the sync gate.",
+          "claim": "Because `npm run build` never writes `dist/lodash.core*.js`, `ci-dist-sync.yml`'s `git diff --exit-code dist/` will pass even when the core build is stale relative to an edited `lodash.js` \u2014 a silent staleness hole in the sync gate.",
           "sources": [
             ".github/workflows/ci-dist-sync.yml#L30-37",
             "lib/main/build-dist.js#L24-31"
@@ -4511,7 +4511,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "The test suite deletes and replaces host globals (`Object.create`, `Symbol`, `Map`, `Promise`, `Set`, `WeakMap`, `Function.prototype.toString`) and restores them by hand in a separate function — an asymmetry that leaks global state into all subsequent tests if `removeBizarroMethods` drifts from `addBizarroMethods`.",
+          "claim": "The test suite deletes and replaces host globals (`Object.create`, `Symbol`, `Map`, `Promise`, `Set`, `WeakMap`, `Function.prototype.toString`) and restores them by hand in a separate function \u2014 an asymmetry that leaks global state into all subsequent tests if `removeBizarroMethods` drifts from `addBizarroMethods`.",
           "sources": [
             "test/index.html#L49-131",
             "test/index.html#L133-188"
@@ -4519,7 +4519,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "`test/test.js` intentionally defines a non-configurable throwing getter on `global.root` and calls `require('vm').runInNewContext` to build a cross-realm fixture — both are process-level side effects that make the suite hostile to running inside other harnesses.",
+          "claim": "`test/test.js` intentionally defines a non-configurable throwing getter on `global.root` and calls `require('vm').runInNewContext` to build a cross-realm fixture \u2014 both are process-level side effects that make the suite hostile to running inside other harnesses.",
           "sources": [
             "test/test.js#L313-320",
             "test/test.js#L632-635"
@@ -4527,7 +4527,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "The browser harness will load an arbitrary remote origin: `ui.isForeign` is set when the `build` query param matches `^(\\w+:)?//`, and `index.html` then `document.write`s that URL as a script src — fine for a localhost runner, dangerous if the page is ever hosted publicly.",
+          "claim": "The browser harness will load an arbitrary remote origin: `ui.isForeign` is set when the `build` query param matches `^(\\w+:)?//`, and `index.html` then `document.write`s that URL as a script src \u2014 fine for a localhost runner, dangerous if the page is ever hosted publicly.",
           "sources": [
             "test/asset/test-ui.js#L109-142",
             "test/index.html#L204-207"
@@ -4535,7 +4535,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "`test/remove.js` builds a `RegExp` from `process.argv` and does a blind `fs.writeFileSync` over a resolved path with no existence or backup check — a mistyped argument overwrites the target file.",
+          "claim": "`test/remove.js` builds a `RegExp` from `process.argv` and does a blind `fs.writeFileSync` over a resolved path with no existence or backup check \u2014 a mistyped argument overwrites the target file.",
           "sources": [
             "test/remove.js#L11-27"
           ],
@@ -4551,7 +4551,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "`lib/common/util.js:pitch` is the only error handling in the entire build toolchain — it rethrows synchronously from an `async.series` callback, so a failed copy or minify surfaces as an unhandled throw with no cleanup of partially written `dist/` files.",
+          "claim": "`lib/common/util.js:pitch` is the only error handling in the entire build toolchain \u2014 it rethrows synchronously from an `async.series` callback, so a failed copy or minify surfaces as an unhandled throw with no cleanup of partially written `dist/` files.",
           "sources": [
             "lib/common/util.js#L31-40",
             "lib/main/build-dist.js#L25-28",
@@ -4562,10 +4562,10 @@
       ]
     },
     "extension_points": {
-      "summary": "The intended way to add a method is: implement it in `lodash.js`, attach it with `lodash.<name> = <name>` in the assignment block, add tests in `test/test.js`, and — if it should exist in FP form — register it in the right `fp/_mapping.js` tables. `fp/_mapping.js` is the real registry: arity bucket, rearg order, iteratee cap, spread config, mutation class, alias and remap are all declarative. `_baseConvert`'s `wrappers` object is the escape hatch for methods whose conversion can't be expressed in tables. At runtime, `_.mixin` and `_.runInContext` are the library's public extension APIs, and `templateSettings` is the configuration hook for `_.template`.",
+      "summary": "The intended way to add a method is: implement it in `lodash.js`, attach it with `lodash.<name> = <name>` in the assignment block, add tests in `test/test.js`, and \u2014 if it should exist in FP form \u2014 register it in the right `fp/_mapping.js` tables. `fp/_mapping.js` is the real registry: arity bucket, rearg order, iteratee cap, spread config, mutation class, alias and remap are all declarative. `_baseConvert`'s `wrappers` object is the escape hatch for methods whose conversion can't be expressed in tables. At runtime, `_.mixin` and `_.runInContext` are the library's public extension APIs, and `templateSettings` is the configuration hook for `_.template`.",
       "claims": [
         {
-          "claim": "The method registry is the literal assignment block near the end of `runInContext` — every public method appears as `lodash.<name> = <name>`, and omitting a line there makes an implemented function unreachable.",
+          "claim": "The method registry is the literal assignment block near the end of `runInContext` \u2014 every public method appears as `lodash.<name> = <name>`, and omitting a line there makes an implemented function unreachable.",
           "sources": [
             "lodash.js#L16900-16960",
             "lodash.js#L17008"
@@ -4582,7 +4582,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "`_baseConvert`'s `wrappers` object is a named override table — `castArray`, `iteratee`, `mixin`, `nthArg`, `rearg`, `runInContext` each get bespoke conversion logic that bypasses the table-driven pipeline.",
+          "claim": "`_baseConvert`'s `wrappers` object is a named override table \u2014 `castArray`, `iteratee`, `mixin`, `nthArg`, `rearg`, `runInContext` each get bespoke conversion logic that bypasses the table-driven pipeline.",
           "sources": [
             "fp/_baseConvert.js#L199-262",
             "fp/_baseConvert.js#L470-475"
@@ -4617,7 +4617,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "The `lib/fp/template/modules/*.jst` set is the emission plugin surface — `getTemplate()` dispatches to `alias`, `category`, `thru` or `module` based on `isAlias`/`isCategory`/`isThru`, so a new module shape means a new `.jst` plus a branch there.",
+          "claim": "The `lib/fp/template/modules/*.jst` set is the emission plugin surface \u2014 `getTemplate()` dispatches to `alias`, `category`, `thru` or `module` based on `isAlias`/`isCategory`/`isThru`, so a new module shape means a new `.jst` plus a branch there.",
           "sources": [
             "lib/fp/build-modules.js#L87-103",
             "lib/fp/template/modules/category.jst",
@@ -4641,7 +4641,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "`_.runInContext(context)` is the sandboxing extension point — the `contextProps` array enumerates the 30 substitutable globals, documented with the example of swapping `setTimeout` for `setImmediate`.",
+          "claim": "`_.runInContext(context)` is the sandboxing extension point \u2014 the `contextProps` array enumerates the 30 substitutable globals, documented with the example of swapping `setTimeout` for `setImmediate`.",
           "sources": [
             "lodash.js#L297-303",
             "lodash.js#L1440-1450"
@@ -4665,7 +4665,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "The Playwright project list in `playwright.config.js` is the browser-matrix registry — adding a browser or device is one entry in `projects`, and adding a page to test is one `test()` block in `test/playwright-runner.spec.js`.",
+          "claim": "The Playwright project list in `playwright.config.js` is the browser-matrix registry \u2014 adding a browser or device is one entry in `projects`, and adding a page to test is one `test()` block in `test/playwright-runner.spec.js`.",
           "sources": [
             "playwright.config.js#L14-30",
             "test/playwright-runner.spec.js#L5-24"
@@ -4680,7 +4680,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "`test-ui.js`'s `ui.buildPath` switch is the harness registry for testable builds — the four cases (`lodash`, `lodash-dev`, `lodash-core`, `lodash-core-dev`) must be kept in sync with the `<option>` values written into the toolbar.",
+          "claim": "`test-ui.js`'s `ui.buildPath` switch is the harness registry for testable builds \u2014 the four cases (`lodash`, `lodash-dev`, `lodash-core`, `lodash-core-dev`) must be kept in sync with the `<option>` values written into the toolbar.",
           "sources": [
             "test/asset/test-ui.js#L72-80",
             "test/asset/test-ui.js#L109-120"
@@ -4690,7 +4690,7 @@
       ]
     },
     "agent_handoff": {
-      "summary": "Read `.github/CONTRIBUTING.md` first — it states the core rule that for additions or bug fixes you should only modify `lodash.js` and add tests in `test/`, and explicitly says not to regenerate `dist/` or `doc/`. That rule is in tension with `ci-dist-sync.yml`, which fails the build if `npm run build` changes `dist/`, so a change to `lodash.js` does require a rebuild and commit of `dist/lodash.js` and `dist/lodash.min.js`. The style gate is JSCS with unusual rules (`requireEarlyReturn`, no `with`, single quotes, 2-space indent, JSDoc types required), so match the surrounding code exactly. Never hand-edit `dist/*`, `doc/README.md`, or anything under `vendor/` — they are generated or vendored.",
+      "summary": "Read `.github/CONTRIBUTING.md` first \u2014 it states the core rule that for additions or bug fixes you should only modify `lodash.js` and add tests in `test/`, and explicitly says not to regenerate `dist/` or `doc/`. That rule is in tension with `ci-dist-sync.yml`, which fails the build if `npm run build` changes `dist/`, so a change to `lodash.js` does require a rebuild and commit of `dist/lodash.js` and `dist/lodash.min.js`. The style gate is JSCS with unusual rules (`requireEarlyReturn`, no `with`, single quotes, 2-space indent, JSDoc types required), so match the surrounding code exactly. Never hand-edit `dist/*`, `doc/README.md`, or anything under `vendor/` \u2014 they are generated or vendored.",
       "claims": [
         {
           "claim": "CONTRIBUTING states the contract directly: \"For additions or bug fixes you should only need to modify `lodash.js`. Include updated unit tests in the `test` directory... Don't worry about regenerating the `dist/` or `doc/` files.\"",
@@ -4700,7 +4700,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Despite that guidance, `ci-dist-sync.yml` runs `npm run build` then `git diff --exit-code dist/` and fails with an explicit \"Run 'npm run build' and commit the updated dist/ files\" error — so an agent editing `lodash.js` must also commit the rebuilt `dist/lodash.js` and `dist/lodash.min.js`.",
+          "claim": "Despite that guidance, `ci-dist-sync.yml` runs `npm run build` then `git diff --exit-code dist/` and fails with an explicit \"Run 'npm run build' and commit the updated dist/ files\" error \u2014 so an agent editing `lodash.js` must also commit the rebuilt `dist/lodash.js` and `dist/lodash.min.js`.",
           "sources": [
             ".github/workflows/ci-dist-sync.yml#L30-37",
             ".github/CONTRIBUTING.md#L24-26"
@@ -4735,7 +4735,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "`node test/test <path>` accepts an alternate build path as its last argument, defaulting to `../lodash.js` — this is how you point the suite at `dist/lodash.min.js` or a core build.",
+          "claim": "`node test/test <path>` accepts an alternate build path as its last argument, defaulting to `../lodash.js` \u2014 this is how you point the suite at `dist/lodash.min.js` or a core build.",
           "sources": [
             "test/test.js#L213-234"
           ],
@@ -4773,7 +4773,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Safe edit boundary — do not touch: `dist/*` (generated, and `lodash.core*` only by external lodash-cli), `doc/README.md` (docdown output), `vendor/**` (Backbone/Underscore/json2/firebug-lite), `package-lock.json` unless deliberately updating deps.",
+          "claim": "Safe edit boundary \u2014 do not touch: `dist/*` (generated, and `lodash.core*` only by external lodash-cli), `doc/README.md` (docdown output), `vendor/**` (Backbone/Underscore/json2/firebug-lite), `package-lock.json` unless deliberately updating deps.",
           "sources": [
             "lib/main/build-dist.js#L24-29",
             "lib/main/build-doc.js#L76-81",
@@ -4792,7 +4792,7 @@
           "kind": "inference"
         },
         {
-          "claim": "Trap: `test/test.js` is 814 KB and `lodash.js` is 546 KB — read targeted line ranges rather than whole files, and locate work by grepping for `QUnit.module('<methodName>'` or `function base<Name>(`.",
+          "claim": "Trap: `test/test.js` is 814 KB and `lodash.js` is 546 KB \u2014 read targeted line ranges rather than whole files, and locate work by grepping for `QUnit.module('<methodName>'` or `function base<Name>(`.",
           "sources": [
             "test/test.js#L1-10",
             "lodash.js#L1-15"
@@ -4800,7 +4800,7 @@
           "kind": "inference"
         },
         {
-          "claim": "Trap: security-relevant behavior around `__proto__`/`constructor` is asserted by the threat model as intended design — changing `baseSet`, `baseUnset` or `safeGet` guards without reading `threat-model.md` risks reintroducing CVE-2019-10744-class bugs.",
+          "claim": "Trap: security-relevant behavior around `__proto__`/`constructor` is asserted by the threat model as intended design \u2014 changing `baseSet`, `baseUnset` or `safeGet` guards without reading `threat-model.md` risks reintroducing CVE-2019-10744-class bugs.",
           "sources": [
             "threat-model.md#L36-42",
             "threat-model.md#L69-77",
@@ -4828,11 +4828,11 @@
         }
       ]
     },
-    "agent_prompt": "You are working in the lodash repository (v4.18.1, branch main, OpenJS Foundation). This is a LIBRARY plus its release machinery, not an application. There is no server, no router, and no CLI.\n\nLAYOUT. `lodash.js` is the hand-maintained 546 KB UMD source — a single IIFE whose entire API is constructed inside a `runInContext(context)` factory (line ~1449) and attached via an explicit `lodash.<name> = <name>` assignment block near line 16900. It exports three ways at the tail (AMD `define`, `freeModule.exports`, global `root._`). `fp/` holds the functional-programming converter: `_baseConvert.js` re-wraps every method into immutable auto-curried iteratee-first data-last form, driven entirely by the declarative tables in `_mapping.js` (`aliasToReal`, `aryMethod[1..4]`, `aryRearg`, `iterateeAry`, `iterateeRearg`, `methodRearg`, `methodSpread`, `mutate`, `remap`, `skipFixed`, `skipRearg`). `lib/` is the Node build toolchain: `lib/common/` (file thunks, uglify wrapper, `pitch` rethrow, null-prototype `Hash`), `lib/main/` (dist copy+minify, docdown, marky-markdown site HTML), `lib/fp/` (webpack dist, `.jst`-templated module emission, FP wiki). `dist/` and `doc/README.md` are generated. `vendor/` is third-party (Backbone, Underscore, json2, firebug-lite).\n\nCOMMANDS. `npm run build` = `build:main` (copy `lodash.js`→`dist/lodash.js`, uglify→`.min.js`) + `build:fp` (two webpack passes producing `dist/mapping.fp.js` and `dist/lodash.fp.js`, then minify). `npm test` runs `pretest`→build, then `node test/test` and `node test/test-fp`. `npm run validate` = JSCS style across `lodash.js`, `fp/`, `lib/`, `perf/`, `test/` plus the tests — this is what CI runs. `npm run doc` regenerates `doc/README.md` via docdown and then executes every code fence with markdown-doctest.\n\nTESTING. QUnit 2 via `qunitjs` + `qunit-extras`. `test/test.js` is 814 KB with 307 modules / ~1754 tests; `test/test-fp.js` adds 85/134. It loads the previous published lodash from `node_modules/lodash/lodash.js` as `lodashStable` and bails silently if absent. Browser coverage is Playwright over six projects (Chromium, Firefox, WebKit, Edge, Mobile Safari, Mobile Chrome) asserting the literal text `0 failed` on `test/index.html`, `fp.html`, `backbone.html`, `underscore.html`. `index.html` deliberately sabotages host globals (`addBizarroMethods`) before loading lodash, snapshots it as `lodashBizarro`, then restores. Vendored Backbone and Underscore suites run against lodash, with known divergences listed in `QUnit.config.excused`.\n\nRULES OF ENGAGEMENT. Per `.github/CONTRIBUTING.md`, bug fixes and additions should touch only `lodash.js` plus tests in `test/`. However `ci-dist-sync.yml` runs `npm run build` and fails on any `git diff` in `dist/`, so you must also commit the rebuilt `dist/lodash.js` and `dist/lodash.min.js`. Note `dist/lodash.core*.js` is built by the EXTERNAL `lodash-cli`, not by `npm run build` — the sync check cannot detect a stale core build. Never hand-edit `dist/`, `doc/README.md`, or `vendor/`. Match JSCS: 2-space indent, single quotes, semicolons, no `with`, early returns, JSDoc with types.\n\nSECURITY. Read `threat-model.md` before touching `_.set`, `_.unset`, `_.merge`, `_.defaultsDeep` or `_.template`. Prototype-pollution guards live in four separate places — `baseAssignValue` (`__proto__` via `defineProperty`), `baseSet` (blanket block on `__proto__`/`constructor`/`prototype`), `baseUnset` (narrower positional rules), and `safeGet` — and they intentionally differ. `_.template` compiles via the `Function` constructor, is documented as insecure, and is slated for removal in v5; its only hardening is whitespace normalization of `sourceURL` and a forbidden-character regex on `variable`.\n\nADDING AN FP-VISIBLE METHOD requires registering it in `fp/_mapping.js` (arity bucket plus any of alias/remap/rearg/cap/mutate/skip tables) or the FP build and generated wiki will silently omit or mis-wrap it. Bespoke conversions go in the `wrappers` object in `fp/_baseConvert.js`.\n\nBoth `lodash.js` and `test/test.js` are enormous — grep for `QUnit.module('<name>'` or `function base<Name>(` and read targeted line ranges rather than whole files."
+    "agent_prompt": "You are working in the lodash repository (v4.18.1, branch main, OpenJS Foundation). This is a LIBRARY plus its release machinery, not an application. There is no server, no router, and no CLI.\n\nLAYOUT. `lodash.js` is the hand-maintained 546 KB UMD source \u2014 a single IIFE whose entire API is constructed inside a `runInContext(context)` factory (line ~1449) and attached via an explicit `lodash.<name> = <name>` assignment block near line 16900. It exports three ways at the tail (AMD `define`, `freeModule.exports`, global `root._`). `fp/` holds the functional-programming converter: `_baseConvert.js` re-wraps every method into immutable auto-curried iteratee-first data-last form, driven entirely by the declarative tables in `_mapping.js` (`aliasToReal`, `aryMethod[1..4]`, `aryRearg`, `iterateeAry`, `iterateeRearg`, `methodRearg`, `methodSpread`, `mutate`, `remap`, `skipFixed`, `skipRearg`). `lib/` is the Node build toolchain: `lib/common/` (file thunks, uglify wrapper, `pitch` rethrow, null-prototype `Hash`), `lib/main/` (dist copy+minify, docdown, marky-markdown site HTML), `lib/fp/` (webpack dist, `.jst`-templated module emission, FP wiki). `dist/` and `doc/README.md` are generated. `vendor/` is third-party (Backbone, Underscore, json2, firebug-lite).\n\nCOMMANDS. `npm run build` = `build:main` (copy `lodash.js`\u2192`dist/lodash.js`, uglify\u2192`.min.js`) + `build:fp` (two webpack passes producing `dist/mapping.fp.js` and `dist/lodash.fp.js`, then minify). `npm test` runs `pretest`\u2192build, then `node test/test` and `node test/test-fp`. `npm run validate` = JSCS style across `lodash.js`, `fp/`, `lib/`, `perf/`, `test/` plus the tests \u2014 this is what CI runs. `npm run doc` regenerates `doc/README.md` via docdown and then executes every code fence with markdown-doctest.\n\nTESTING. QUnit 2 via `qunitjs` + `qunit-extras`. `test/test.js` is 814 KB with 307 modules / ~1754 tests; `test/test-fp.js` adds 85/134. It loads the previous published lodash from `node_modules/lodash/lodash.js` as `lodashStable` and bails silently if absent. Browser coverage is Playwright over six projects (Chromium, Firefox, WebKit, Edge, Mobile Safari, Mobile Chrome) asserting the literal text `0 failed` on `test/index.html`, `fp.html`, `backbone.html`, `underscore.html`. `index.html` deliberately sabotages host globals (`addBizarroMethods`) before loading lodash, snapshots it as `lodashBizarro`, then restores. Vendored Backbone and Underscore suites run against lodash, with known divergences listed in `QUnit.config.excused`.\n\nRULES OF ENGAGEMENT. Per `.github/CONTRIBUTING.md`, bug fixes and additions should touch only `lodash.js` plus tests in `test/`. However `ci-dist-sync.yml` runs `npm run build` and fails on any `git diff` in `dist/`, so you must also commit the rebuilt `dist/lodash.js` and `dist/lodash.min.js`. Note `dist/lodash.core*.js` is built by the EXTERNAL `lodash-cli`, not by `npm run build` \u2014 the sync check cannot detect a stale core build. Never hand-edit `dist/`, `doc/README.md`, or `vendor/`. Match JSCS: 2-space indent, single quotes, semicolons, no `with`, early returns, JSDoc with types.\n\nSECURITY. Read `threat-model.md` before touching `_.set`, `_.unset`, `_.merge`, `_.defaultsDeep` or `_.template`. Prototype-pollution guards live in four separate places \u2014 `baseAssignValue` (`__proto__` via `defineProperty`), `baseSet` (blanket block on `__proto__`/`constructor`/`prototype`), `baseUnset` (narrower positional rules), and `safeGet` \u2014 and they intentionally differ. `_.template` compiles via the `Function` constructor, is documented as insecure, and is slated for removal in v5; its only hardening is whitespace normalization of `sourceURL` and a forbidden-character regex on `variable`.\n\nADDING AN FP-VISIBLE METHOD requires registering it in `fp/_mapping.js` (arity bucket plus any of alias/remap/rearg/cap/mutate/skip tables) or the FP build and generated wiki will silently omit or mis-wrap it. Bespoke conversions go in the `wrappers` object in `fp/_baseConvert.js`.\n\nBoth `lodash.js` and `test/test.js` are enormous \u2014 grep for `QUnit.module('<name>'` or `function base<Name>(` and read targeted line ranges rather than whole files."
   },
   "analysis": {
     "agent": "claude",
-    "model": "cli:claude",
+    "model": "claude-opus-5",
     "runtime_ms": 396381,
     "cost_usd": 2.6760670000000006,
     "collected_at": "2026-09-22T08:36:59.752Z"

@@ -138,6 +138,7 @@ const started = Date.now();
 
 let text;
 let cost = null;
+let modelUsed = `cli:${agent}`;
 if (agent === 'codex') {
   // codex exec: JSONL events on stdout; the last agent message is the result.
   // stdin is closed (`input: ''`) so parallel runs don't contend for it.
@@ -182,6 +183,8 @@ if (agent === 'codex') {
   const envelope = JSON.parse(raw);
   text = envelope.result ?? '';
   cost = envelope.total_cost_usd ?? null;
+  const usage = Object.values(envelope.modelUsage ?? {})[0];
+  if (usage?.canonicalModel) modelUsed = usage.canonicalModel;
 }
 const jsonStart = text.indexOf('{');
 const jsonEnd = text.lastIndexOf('}');
@@ -194,7 +197,7 @@ const report = JSON.parse(text.slice(jsonStart, jsonEnd + 1));
 record.report = report;
 record.analysis = {
   agent,
-  model: `cli:${agent}`,
+  model: modelUsed,
   runtime_ms: Date.now() - started,
   cost_usd: cost,
   collected_at: new Date().toISOString(),

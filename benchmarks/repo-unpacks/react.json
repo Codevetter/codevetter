@@ -23481,7 +23481,7 @@
         "steps": [
           {
             "id": "serialize",
-            "label": "JSON serialize (inventory → SQLite)",
+            "label": "JSON serialize (inventory \u2192 SQLite)",
             "ms": 0,
             "pct": 0
           },
@@ -23502,12 +23502,12 @@
     ]
   },
   "report": {
-    "overview": "This is the facebook/react monorepo at commit 59aff3e — the React runtime (isomorphic `react`, the Fiber reconciler, the Fizz SSR server, the Flight/Server-Components client+server, DevTools, and the Scheduler) plus a largely independent `compiler/` sub-project holding the React Compiler in both TypeScript (`babel-plugin-react-compiler`) and an in-progress Rust port (12 `react_compiler_*` crates behind a napi bridge). It is a library-publishing repo, not an app: nearly every artifact is a Rollup-built npm bundle produced per *release channel* (stable / canary / experimental / www-classic / www-modern / xplat), with behaviour toggled by ~67 `enable*` feature flags that are fork-substituted at build time. What is distinctive is the fork/shim architecture — `ReactFiberConfig`, `ReactFeatureFlags`, `ReactFlightServerConfig` and friends are placeholder modules that *throw* unless Rollup or Jest swaps in a renderer-specific implementation — and a CI matrix that runs the same Jest suite 18 ways × 5 shards to prove every channel behaves.",
+    "overview": "This is the facebook/react monorepo at commit 59aff3e \u2014 the React runtime (isomorphic `react`, the Fiber reconciler, the Fizz SSR server, the Flight/Server-Components client+server, DevTools, and the Scheduler) plus a largely independent `compiler/` sub-project holding the React Compiler in both TypeScript (`babel-plugin-react-compiler`) and an in-progress Rust port (12 `react_compiler_*` crates behind a napi bridge). It is a library-publishing repo, not an app: nearly every artifact is a Rollup-built npm bundle produced per *release channel* (stable / canary / experimental / www-classic / www-modern / xplat), with behaviour toggled by ~67 `enable*` feature flags that are fork-substituted at build time. What is distinctive is the fork/shim architecture \u2014 `ReactFiberConfig`, `ReactFeatureFlags`, `ReactFlightServerConfig` and friends are placeholder modules that *throw* unless Rollup or Jest swaps in a renderer-specific implementation \u2014 and a CI matrix that runs the same Jest suite 18 ways \u00d7 5 shards to prove every channel behaves.",
     "system_map": {
-      "summary": "There is no single entrypoint; the repo is a set of publishable packages under `packages/` (workspace glob in `package.json`) plus a nested Yarn/Cargo workspace under `compiler/`. The public runtime entrypoints are `packages/react/index.js` (isomorphic), `packages/react-dom/client.js` → `ReactDOMRoot.createRoot`, `packages/react-dom/server.node.js` → Fizz, and `packages/react-server-dom-*/server.*` → Flight. Everything is compiled by `scripts/rollup/build.js`, driven by a bundle table in `scripts/rollup/bundles.js` and a module-substitution table in `scripts/rollup/forks.js`; `build-all-release-channels.js` runs the whole thing once per channel and rewrites versions from `ReactVersions.js`. There is no database or persistent storage layer — the only 'storage' is the Fiber tree in memory, npm as the deployment target, and GitHub Actions artifacts. Tests never run `jest` directly; `scripts/jest/jest-cli.js` picks one of six configs and spawns Jest with channel/env/variant globals injected.",
+      "summary": "There is no single entrypoint; the repo is a set of publishable packages under `packages/` (workspace glob in `package.json`) plus a nested Yarn/Cargo workspace under `compiler/`. The public runtime entrypoints are `packages/react/index.js` (isomorphic), `packages/react-dom/client.js` \u2192 `ReactDOMRoot.createRoot`, `packages/react-dom/server.node.js` \u2192 Fizz, and `packages/react-server-dom-*/server.*` \u2192 Flight. Everything is compiled by `scripts/rollup/build.js`, driven by a bundle table in `scripts/rollup/bundles.js` and a module-substitution table in `scripts/rollup/forks.js`; `build-all-release-channels.js` runs the whole thing once per channel and rewrites versions from `ReactVersions.js`. There is no database or persistent storage layer \u2014 the only 'storage' is the Fiber tree in memory, npm as the deployment target, and GitHub Actions artifacts. Tests never run `jest` directly; `scripts/jest/jest-cli.js` picks one of six configs and spawns Jest with channel/env/variant globals injected.",
       "claims": [
         {
-          "claim": "`package.json` declares a Yarn-1 workspace over `packages/*` with `packageManager: yarn@1.22.22`, and blocks direct Jest invocation via `\"jest\": {\"testRegex\": \"/scripts/jest/dont-run-jest-directly\\\\.js$\"}` — all testing must go through `yarn test` → `scripts/jest/jest-cli.js`.",
+          "claim": "`package.json` declares a Yarn-1 workspace over `packages/*` with `packageManager: yarn@1.22.22`, and blocks direct Jest invocation via `\"jest\": {\"testRegex\": \"/scripts/jest/dont-run-jest-directly\\\\.js$\"}` \u2014 all testing must go through `yarn test` \u2192 `scripts/jest/jest-cli.js`.",
           "sources": [
             "package.json#L119-L160",
             "scripts/jest/dont-run-jest-directly.js"
@@ -23530,7 +23530,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "The reconciler's public surface is `packages/react-reconciler/src/ReactFiberReconciler.js` — `createContainer`, `updateContainer`, `updateContainerSync`, and `updateContainerImpl` which builds an update via `createUpdate(lane)` / `enqueueUpdate` and hands off to `scheduleUpdateOnFiber(root, rootFiber, lane)`.",
+          "claim": "The reconciler's public surface is `packages/react-reconciler/src/ReactFiberReconciler.js` \u2014 `createContainer`, `updateContainer`, `updateContainerSync`, and `updateContainerImpl` which builds an update via `createUpdate(lane)` / `enqueueUpdate` and hands off to `scheduleUpdateOnFiber(root, rootFiber, lane)`.",
           "sources": [
             "packages/react-reconciler/src/ReactFiberReconciler.js#L235-L250",
             "packages/react-reconciler/src/ReactFiberReconciler.js#L353-L455"
@@ -23538,7 +23538,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "The renderer boundary is the `ReactFiberConfig` shim: `packages/react-reconciler/src/ReactFiberConfig.js` contains only `throw new Error('This module must be shimmed by a specific renderer.')` — Rollup (`scripts/rollup/forks.js`) and Jest (`scripts/jest/setupHostConfigs.js`) both substitute a real host config per renderer.",
+          "claim": "The renderer boundary is the `ReactFiberConfig` shim: `packages/react-reconciler/src/ReactFiberConfig.js` contains only `throw new Error('This module must be shimmed by a specific renderer.')` \u2014 Rollup (`scripts/rollup/forks.js`) and Jest (`scripts/jest/setupHostConfigs.js`) both substitute a real host config per renderer.",
           "sources": [
             "packages/react-reconciler/src/ReactFiberConfig.js#L10-L22",
             "scripts/rollup/forks.js#L235-L268",
@@ -23547,7 +23547,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "`scripts/shared/inlinedHostConfigs.js` enumerates ~20 renderer targets by `shortName` (`dom-browser`, `dom-node`, `dom-edge-webpack`, `dom-node-turbopack`, `dom-node-parcel`, `dom-bun`, `fabric`, `markup`, `dom-fb`, …), each with an `entryPoints` list — this table is the authoritative list of runtime boundaries.",
+          "claim": "`scripts/shared/inlinedHostConfigs.js` enumerates ~20 renderer targets by `shortName` (`dom-browser`, `dom-node`, `dom-edge-webpack`, `dom-node-turbopack`, `dom-node-parcel`, `dom-bun`, `fabric`, `markup`, `dom-fb`, \u2026), each with an `entryPoints` list \u2014 this table is the authoritative list of runtime boundaries.",
           "sources": [
             "scripts/shared/inlinedHostConfigs.js#L11-L700"
           ],
@@ -23563,7 +23563,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Builds are orchestrated by `scripts/rollup/build.js` (`buildEverything` → `createBundle` per bundle × bundleType, with Babel, Google Closure Compiler for prod bundles, and `rollup-plugin-prettier` for FB/dev output) over the ~20 `bundleTypes` declared in `scripts/rollup/bundles.js` (NODE_DEV/PROD/PROFILING, ESM_*, BUN_*, FB_WWW_*, RN_OSS_*, RN_FB_*, BROWSER_SCRIPT, CJS_DTS/ESM_DTS).",
+          "claim": "Builds are orchestrated by `scripts/rollup/build.js` (`buildEverything` \u2192 `createBundle` per bundle \u00d7 bundleType, with Babel, Google Closure Compiler for prod bundles, and `rollup-plugin-prettier` for FB/dev output) over the ~20 `bundleTypes` declared in `scripts/rollup/bundles.js` (NODE_DEV/PROD/PROFILING, ESM_*, BUN_*, FB_WWW_*, RN_OSS_*, RN_FB_*, BROWSER_SCRIPT, CJS_DTS/ESM_DTS).",
           "sources": [
             "scripts/rollup/build.js#L639-L917",
             "scripts/rollup/bundles.js#L10-L55"
@@ -23612,7 +23612,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Repo-level agent conventions are codified in `CLAUDE.md` plus `.claude/skills/*/SKILL.md` — `/verify` runs `yarn prettier` → `yarn linc` → `/flow` + `/test` + `/test www` in parallel, and explicitly instructs that builds are CI's job and should not be run locally.",
+          "claim": "Repo-level agent conventions are codified in `CLAUDE.md` plus `.claude/skills/*/SKILL.md` \u2014 `/verify` runs `yarn prettier` \u2192 `yarn linc` \u2192 `/flow` + `/test` + `/test www` in parallel, and explicitly instructs that builds are CI's job and should not be run locally.",
           "sources": [
             "CLAUDE.md",
             ".claude/skills/verify/SKILL.md",
@@ -23626,7 +23626,7 @@
       "summary": "User-facing surface is API surface, not screens. `packages/react/src/ReactClient.js` is the canonical export list for the isomorphic package; `react-dom` fans out to client, server (Node/Edge/Browser/Bun), static prerender and test-utils entrypoints; `react-server-dom-{webpack,turbopack,parcel,esm,unbundled,fb}` each ship a bundler-specific Flight client+server pair. Tooling packages are first-class features too: `eslint-plugin-react-hooks` (now also re-exporting compiler-derived rules), `react-refresh` (Fast Refresh Babel plugin + runtime), DevTools in five packaging flavours, and two MCP servers. Behaviour is further gated by ~67 `enable*` flags in `packages/shared/ReactFeatureFlags.js`, inspectable via `yarn flags`.",
       "claims": [
         {
-          "claim": "The isomorphic `react` package exports the full modern surface including `use`, `cache`, `cacheSignal`, `Activity`, `ViewTransition`, `addTransitionType`, `unstable_SuspenseList`, `unstable_TracingMarker`, and `__COMPILER_RUNTIME` — enumerated in `packages/react/index.js` and implemented in `ReactClient.js`.",
+          "claim": "The isomorphic `react` package exports the full modern surface including `use`, `cache`, `cacheSignal`, `Activity`, `ViewTransition`, `addTransitionType`, `unstable_SuspenseList`, `unstable_TracingMarker`, and `__COMPILER_RUNTIME` \u2014 enumerated in `packages/react/index.js` and implemented in `ReactClient.js`.",
           "sources": [
             "packages/react/index.js#L27-L60",
             "packages/react/src/ReactClient.js#L25-L80"
@@ -23642,7 +23642,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "`react-dom` ships eleven distinct entrypoints — `client.js`, `server.js`/`server.node.js`/`server.edge.js`/`server.browser.js`/`server.bun.js`, `static.js`/`static.node.js`/`static.edge.js`/`static.browser.js`, `profiling.js`, `test-utils.js`, `unstable_testing.js` and `unstable_server-external-runtime.js`.",
+          "claim": "`react-dom` ships eleven distinct entrypoints \u2014 `client.js`, `server.js`/`server.node.js`/`server.edge.js`/`server.browser.js`/`server.bun.js`, `static.js`/`static.node.js`/`static.edge.js`/`static.browser.js`, `profiling.js`, `test-utils.js`, `unstable_testing.js` and `unstable_server-external-runtime.js`.",
           "sources": [
             "packages/react-dom/client.js",
             "packages/react-dom/server.node.js",
@@ -23652,7 +23652,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Streaming SSR is `renderToPipeableStream` in `packages/react-dom/src/server/ReactDOMFizzServerNode.js`, which builds a request via `createRequestImpl` → `createRequest`, kicks off `startWork(request)`, and exposes `pipe(destination)` that calls `startFlowing(request, destination)`.",
+          "claim": "Streaming SSR is `renderToPipeableStream` in `packages/react-dom/src/server/ReactDOMFizzServerNode.js`, which builds a request via `createRequestImpl` \u2192 `createRequest`, kicks off `startWork(request)`, and exposes `pipe(destination)` that calls `startFlowing(request, destination)`.",
           "sources": [
             "packages/react-dom/src/server/ReactDOMFizzServerNode.js#L104-L151",
             "packages/react-server/src/ReactFizzServer.js#L601-L620",
@@ -23703,7 +23703,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "DevTools ships in five packaging flavours — `react-devtools` (standalone), `-core`, `-extensions` (browser extension), `-inline`, `-fusebox` (React Native / Chrome DevTools frontend) — all sharing `react-devtools-shared`, plus `react-devtools-shell` for local development.",
+          "claim": "DevTools ships in five packaging flavours \u2014 `react-devtools` (standalone), `-core`, `-extensions` (browser extension), `-inline`, `-fusebox` (React Native / Chrome DevTools frontend) \u2014 all sharing `react-devtools-shared`, plus `react-devtools-shell` for local development.",
           "sources": [
             "packages/react-devtools-extensions/src/panel.js",
             "packages/react-devtools-shared/src/bridge.js#L317-L347",
@@ -23764,7 +23764,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "`ensureRootIsScheduled` does not schedule work directly — it appends the root to an intrusive linked list (`firstScheduledRoot`/`lastScheduledRoot` via `root.next`), sets `mightHavePendingSyncWork = true`, and defers to a microtask that runs `processRootScheduleInMicrotask` → `scheduleTaskForRootDuringMicrotask`.",
+          "claim": "`ensureRootIsScheduled` does not schedule work directly \u2014 it appends the root to an intrusive linked list (`firstScheduledRoot`/`lastScheduledRoot` via `root.next`), sets `mightHavePendingSyncWork = true`, and defers to a microtask that runs `processRootScheduleInMicrotask` \u2192 `scheduleTaskForRootDuringMicrotask`.",
           "sources": [
             "packages/react-reconciler/src/ReactFiberRootScheduler.js#L116-L170",
             "packages/react-reconciler/src/ReactFiberRootScheduler.js#L259-L513"
@@ -23780,7 +23780,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "`performWorkOnRoot` decides between `renderRootConcurrent` and `renderRootSync` from `shouldTimeSlice`, which is false for blocking lanes, expired lanes, or `forceSync` — but forced true when `checkIfRootIsPrerendering(root, lanes)` so prerendering never blocks the main thread.",
+          "claim": "`performWorkOnRoot` decides between `renderRootConcurrent` and `renderRootSync` from `shouldTimeSlice`, which is false for blocking lanes, expired lanes, or `forceSync` \u2014 but forced true when `checkIfRootIsPrerendering(root, lanes)` so prerendering never blocks the main thread.",
           "sources": [
             "packages/react-reconciler/src/ReactFiberWorkLoop.js#L1163-L1182"
           ],
@@ -23803,7 +23803,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "`root.render(children)` writes nothing directly — it calls `updateContainer(children, root, null, null)`, which becomes an update object on the host-root fiber's update queue via `createUpdate(lane)` + `enqueueUpdate(rootFiber, update, lane)`.",
+          "claim": "`root.render(children)` writes nothing directly \u2014 it calls `updateContainer(children, root, null, null)`, which becomes an update object on the host-root fiber's update queue via `createUpdate(lane)` + `enqueueUpdate(rootFiber, update, lane)`.",
           "sources": [
             "packages/react-dom/src/client/ReactDOMRoot.js#L110-L136",
             "packages/react-reconciler/src/ReactFiberReconciler.js#L353-L455"
@@ -23829,7 +23829,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Server-Action input crosses a trust boundary as untyped `FormData`: `decodeAction` copies every non-`$ACTION_` field into a fresh `FormData`, decodes bound args by replaying them through `createResponse`/`getRoot` in `decodeBoundActionMetaData`, and binds the result — so client-supplied bytes drive `resolveServerReference(bundlerConfig, id)`.",
+          "claim": "Server-Action input crosses a trust boundary as untyped `FormData`: `decodeAction` copies every non-`$ACTION_` field into a fresh `FormData`, decodes bound args by replaying them through `createResponse`/`getRoot` in `decodeBoundActionMetaData`, and binds the result \u2014 so client-supplied bytes drive `resolveServerReference(bundlerConfig, id)`.",
           "sources": [
             "packages/react-server/src/ReactFlightActionServer.js#L46-L160"
           ],
@@ -23852,7 +23852,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "The renderer registers itself with the page-global `__REACT_DEVTOOLS_GLOBAL_HOOK__` (installed by `installHook(target)` with `Object.defineProperty`, and explicitly documented as a de-facto public API) via `renderers.set(id, renderer)` — that global is the whole runtime↔DevTools data channel.",
+          "claim": "The renderer registers itself with the page-global `__REACT_DEVTOOLS_GLOBAL_HOOK__` (installed by `installHook(target)` with `Object.defineProperty`, and explicitly documented as a de-facto public API) via `renderers.set(id, renderer)` \u2014 that global is the whole runtime\u2194DevTools data channel.",
           "sources": [
             "packages/react-devtools-shared/src/hook.js#L3-L10",
             "packages/react-devtools-shared/src/hook.js#L59-L72",
@@ -23882,14 +23882,14 @@
       "summary": "Three flows are worth walking: (1) client startup/first paint, from `createRoot` through the microtask scheduler into render and commit; (2) the compile flow, where Babel hands a function to either the TS `Pipeline.ts` or the Rust `pipeline.rs`; (3) the release flow, where a commit becomes npm artifacts. The commit phase in particular is a fixed three-pass sequence with `root.current = finishedWork` as the atomic swap point between mutation and layout, and passive effects flushed later. Each trace below names the functions in call order with line anchors.",
       "claims": [
         {
-          "claim": "Startup trace: `createRoot(container, options)` → validate via `isValidContainer` → `createContainer(container, ConcurrentRoot, …, onUncaughtError, onCaughtError, onRecoverableError)` → `markContainerAsRoot(root.current, container)` → `listenToAllSupportedEvents(rootContainerElement)` → `new ReactDOMRoot(root)`.",
+          "claim": "Startup trace: `createRoot(container, options)` \u2192 validate via `isValidContainer` \u2192 `createContainer(container, ConcurrentRoot, \u2026, onUncaughtError, onCaughtError, onRecoverableError)` \u2192 `markContainerAsRoot(root.current, container)` \u2192 `listenToAllSupportedEvents(rootContainerElement)` \u2192 `new ReactDOMRoot(root)`.",
           "sources": [
             "packages/react-dom/src/client/ReactDOMRoot.js#L171-L261"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "First render trace: `root.render(children)` → `updateContainer` → `updateContainerImpl` → `requestUpdateLane(current)` → `createUpdate(lane)` → `enqueueUpdate(rootFiber, update, lane)` → `scheduleUpdateOnFiber(root, rootFiber, lane)`.",
+          "claim": "First render trace: `root.render(children)` \u2192 `updateContainer` \u2192 `updateContainerImpl` \u2192 `requestUpdateLane(current)` \u2192 `createUpdate(lane)` \u2192 `enqueueUpdate(rootFiber, update, lane)` \u2192 `scheduleUpdateOnFiber(root, rootFiber, lane)`.",
           "sources": [
             "packages/react-dom/src/client/ReactDOMRoot.js#L110-L136",
             "packages/react-reconciler/src/ReactFiberReconciler.js#L341-L455"
@@ -23897,7 +23897,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Scheduling trace: `scheduleUpdateOnFiber` → `markRootUpdated(root, lane)` → `ensureRootIsScheduled(root)` → `ensureScheduleIsScheduled()` → `scheduleImmediateRootScheduleTask()` → (microtask) `processRootScheduleInMicrotask` → `scheduleTaskForRootDuringMicrotask` → `Scheduler_scheduleCallback(priorityLevel, performWorkOnRootViaSchedulerTask)`.",
+          "claim": "Scheduling trace: `scheduleUpdateOnFiber` \u2192 `markRootUpdated(root, lane)` \u2192 `ensureRootIsScheduled(root)` \u2192 `ensureScheduleIsScheduled()` \u2192 `scheduleImmediateRootScheduleTask()` \u2192 (microtask) `processRootScheduleInMicrotask` \u2192 `scheduleTaskForRootDuringMicrotask` \u2192 `Scheduler_scheduleCallback(priorityLevel, performWorkOnRootViaSchedulerTask)`.",
           "sources": [
             "packages/react-reconciler/src/ReactFiberWorkLoop.js#L1091",
             "packages/react-reconciler/src/ReactFiberRootScheduler.js#L116-L200",
@@ -23907,7 +23907,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Render trace: `performWorkOnRoot(root, lanes, forceSync)` computes `shouldTimeSlice`, dispatches to `renderRootConcurrent` (line 2779) or `renderRootSync` (line 2623), then loops on the `RootExitStatus` — handling `RootInProgress` (yield, `startYieldTimer`), store inconsistency (re-render sync), and `RootErrored` (`getLanesToRetrySynchronouslyOnError` → `recoverFromConcurrentError`).",
+          "claim": "Render trace: `performWorkOnRoot(root, lanes, forceSync)` computes `shouldTimeSlice`, dispatches to `renderRootConcurrent` (line 2779) or `renderRootSync` (line 2623), then loops on the `RootExitStatus` \u2014 handling `RootInProgress` (yield, `startYieldTimer`), store inconsistency (re-render sync), and `RootErrored` (`getLanesToRetrySynchronouslyOnError` \u2192 `recoverFromConcurrentError`).",
           "sources": [
             "packages/react-reconciler/src/ReactFiberWorkLoop.js#L1137-L1280",
             "packages/react-reconciler/src/ReactFiberWorkLoop.js#L2623-L2790"
@@ -23924,7 +23924,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Commit trace: `commitRoot` (line 3725) → `commitBeforeMutationEffects(root, finishedWork, lanes)` → `commitMutationEffects(root, finishedWork, lanes)` → `root.current = finishedWork` (the tree swap, line 4051) → `commitLayoutEffects(finishedWork, root, lanes)` → `flushSpawnedWork()`; passive effects run later via `flushPendingEffects` → `commitPassiveMountEffects`.",
+          "claim": "Commit trace: `commitRoot` (line 3725) \u2192 `commitBeforeMutationEffects(root, finishedWork, lanes)` \u2192 `commitMutationEffects(root, finishedWork, lanes)` \u2192 `root.current = finishedWork` (the tree swap, line 4051) \u2192 `commitLayoutEffects(finishedWork, root, lanes)` \u2192 `flushSpawnedWork()`; passive effects run later via `flushPendingEffects` \u2192 `commitPassiveMountEffects`.",
           "sources": [
             "packages/react-reconciler/src/ReactFiberWorkLoop.js#L3725-L4160",
             "packages/react-reconciler/src/ReactFiberWorkLoop.js#L4655-L4800"
@@ -23932,7 +23932,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Yield trace: inside a Scheduler task, `workLoop(initialTime)` drains the min-heap and stops when `shouldYieldToHost()` returns true (elapsed ≥ `frameInterval`); the continuation is re-armed by `schedulePerformWorkUntilDeadline()` through `setImmediate`/`MessageChannel`/`setTimeout`.",
+          "claim": "Yield trace: inside a Scheduler task, `workLoop(initialTime)` drains the min-heap and stops when `shouldYieldToHost()` returns true (elapsed \u2265 `frameInterval`); the continuation is re-armed by `schedulePerformWorkUntilDeadline()` through `setImmediate`/`MessageChannel`/`setTimeout`.",
           "sources": [
             "packages/scheduler/src/forks/Scheduler.js#L193-L200",
             "packages/scheduler/src/forks/Scheduler.js#L456-L570"
@@ -23940,7 +23940,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "SSR trace: `renderToPipeableStream(children, options)` → `createRequestImpl` → `createRequest(...)` → `startWork(request)` (line 6370) → tasks retried through `retryTask`/`renderNode` → consumer calls `pipe(destination)` → `startFlowing(request, destination)` (line 6464) → `flushCompletedQueues` (line 6175); `abort(request, reason)` is the cancellation path (line 6557).",
+          "claim": "SSR trace: `renderToPipeableStream(children, options)` \u2192 `createRequestImpl` \u2192 `createRequest(...)` \u2192 `startWork(request)` (line 6370) \u2192 tasks retried through `retryTask`/`renderNode` \u2192 consumer calls `pipe(destination)` \u2192 `startFlowing(request, destination)` (line 6464) \u2192 `flushCompletedQueues` (line 6175); `abort(request, reason)` is the cancellation path (line 6557).",
           "sources": [
             "packages/react-dom/src/server/ReactDOMFizzServerNode.js#L104-L160",
             "packages/react-server/src/ReactFizzServer.js#L5327-L6560"
@@ -23948,28 +23948,28 @@
           "kind": "evidence"
         },
         {
-          "claim": "Server Action trace: HTTP POST FormData → `decodeAction(body, serverManifest)` → detect `$ACTION_REF_*` or `$ACTION_ID_*` → `decodeBoundActionMetaData` (for bound args) → `loadServerReference` → `resolveServerReference(bundlerConfig, id)` → `preloadModule` → `requireModule` → `bindArgs(fn, args)` → returned action `fn.bind(null, formData)`.",
+          "claim": "Server Action trace: HTTP POST FormData \u2192 `decodeAction(body, serverManifest)` \u2192 detect `$ACTION_REF_*` or `$ACTION_ID_*` \u2192 `decodeBoundActionMetaData` (for bound args) \u2192 `loadServerReference` \u2192 `resolveServerReference(bundlerConfig, id)` \u2192 `preloadModule` \u2192 `requireModule` \u2192 `bindArgs(fn, args)` \u2192 returned action `fn.bind(null, formData)`.",
           "sources": [
             "packages/react-server/src/ReactFlightActionServer.js#L40-L162"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "TS compile trace: `compileFn` builds `Environment` from `findContextIdentifiers(func)`, then runs `lower(func, env)` → `PruneMaybeThrows` → `ValidateContextVariableLValues` → `MergeConsecutiveBlocks` → `SSA` → `EliminateRedundantPhi` → `ConstantPropagation` → `InferTypes` → `AnalyseFunctions` → `InferMutationAliasingEffects` → `DeadCodeElimination` → `InferMutationAliasingRanges` → `InferReactivePlaces` → `buildReactiveFunction` → `renameVariables`, logging each step through the `log(value)` callback.",
+          "claim": "TS compile trace: `compileFn` builds `Environment` from `findContextIdentifiers(func)`, then runs `lower(func, env)` \u2192 `PruneMaybeThrows` \u2192 `ValidateContextVariableLValues` \u2192 `MergeConsecutiveBlocks` \u2192 `SSA` \u2192 `EliminateRedundantPhi` \u2192 `ConstantPropagation` \u2192 `InferTypes` \u2192 `AnalyseFunctions` \u2192 `InferMutationAliasingEffects` \u2192 `DeadCodeElimination` \u2192 `InferMutationAliasingRanges` \u2192 `InferReactivePlaces` \u2192 `buildReactiveFunction` \u2192 `renameVariables`, logging each step through the `log(value)` callback.",
           "sources": [
             "compiler/packages/babel-plugin-react-compiler/src/Entrypoint/Pipeline.ts#L119-L540"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "Rust compile trace mirrors it: `compile_fn` → `react_compiler_lowering::lower` → `validate_context_variable_lvalues` → `validate_use_memo` → `enter_ssa` → `eliminate_redundant_phi` → `infer_types` → `analyse_functions` → `infer_mutation_aliasing_effects` → `infer_mutation_aliasing_ranges` → validations → `infer_reactive_places` → `infer_reactive_scope_variables` → scope alignment passes.",
+          "claim": "Rust compile trace mirrors it: `compile_fn` \u2192 `react_compiler_lowering::lower` \u2192 `validate_context_variable_lvalues` \u2192 `validate_use_memo` \u2192 `enter_ssa` \u2192 `eliminate_redundant_phi` \u2192 `infer_types` \u2192 `analyse_functions` \u2192 `infer_mutation_aliasing_effects` \u2192 `infer_mutation_aliasing_ranges` \u2192 validations \u2192 `infer_reactive_places` \u2192 `infer_reactive_scope_variables` \u2192 scope alignment passes.",
           "sources": [
             "compiler/crates/react_compiler/src/entrypoint/pipeline.rs#L37-L640"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "The compiler is fault-tolerant rather than fail-fast: passes call `env.recordError(diagnostic)`, validation passes are wrapped in `env.tryRecord(() => pass(hir))`, and errors are aggregated at the end via `env.hasErrors()` / `env.aggregateErrors()` — `CompilerError.invariant()` is the only category that always throws.",
+          "claim": "The compiler is fault-tolerant rather than fail-fast: passes call `env.recordError(diagnostic)`, validation passes are wrapped in `env.tryRecord(() => pass(hir))`, and errors are aggregated at the end via `env.hasErrors()` / `env.aggregateErrors()` \u2014 `CompilerError.invariant()` is the only category that always throws.",
           "sources": [
             "compiler/CLAUDE.md",
             "compiler/packages/babel-plugin-react-compiler/src/Entrypoint/Pipeline.ts#L119-L200"
@@ -23985,7 +23985,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Release trace: `yarn build` → `prebuild` links the compiler via `scripts/react-compiler/link-compiler.sh` → `build-all-release-channels.js` → `buildForChannel(channel)` spawns `scripts/rollup/build.js` → `processStable`/`processExperimental` rewrite versions from `ReactVersions.js` + short SHA → `scripts/release/publish.js` validates tags and publishes with OIDC.",
+          "claim": "Release trace: `yarn build` \u2192 `prebuild` links the compiler via `scripts/react-compiler/link-compiler.sh` \u2192 `build-all-release-channels.js` \u2192 `buildForChannel(channel)` spawns `scripts/rollup/build.js` \u2192 `processStable`/`processExperimental` rewrite versions from `ReactVersions.js` + short SHA \u2192 `scripts/release/publish.js` validates tags and publishes with OIDC.",
           "sources": [
             "package.json#L122-L124",
             "scripts/rollup/build-all-release-channels.js#L24-L180",
@@ -23994,7 +23994,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Error-minification trace: prod bundles emit `/*! <expected-error-format>\"…\"</expected-error-format>` markers; `yarn extract-errors` greps the `build` dir with `execSync('git --no-pager grep …')`, assigns the next free numeric code, and appends to `scripts/error-codes/codes.json` (~66 KB of registered messages).",
+          "claim": "Error-minification trace: prod bundles emit `/*! <expected-error-format>\"\u2026\"</expected-error-format>` markers; `yarn extract-errors` greps the `build` dir with `execSync('git --no-pager grep \u2026')`, assigns the next free numeric code, and appends to `scripts/error-codes/codes.json` (~66 KB of registered messages).",
           "sources": [
             "scripts/error-codes/extract-errors.js#L1-L55",
             "scripts/error-codes/codes.json"
@@ -24004,7 +24004,7 @@
       ]
     },
     "testing_signals": {
-      "summary": "Jest 30 is the runtime test framework, with 544 test files under `packages/**/__tests__`, and it is deliberately unusable directly — `package.json`'s `testRegex` points at `dont-run-jest-directly.js`, forcing everything through `scripts/jest/jest-cli.js`. That CLI selects one of six configs (source, source-www, source-xplat, source-persistent, build, build-devtools) and injects `__DEV__`, `__EXPERIMENTAL__` and `__VARIANT__` globals; individual tests opt in/out of behaviour with `// @gate <flag>` pragmas resolved by `scripts/jest/TestFlags.js`. The compiler uses a different harness entirely: `yarn snap` over ~1,543 fixture files with `.expect.md` snapshots, plus Playwright e2e for the playground and the flight fixture. CI runs the runtime suite as an 18-config × 5-shard matrix; the Rust port has its own workflow gating on `cargo check`, `cargo build`, two shell test scripts and `yarn snap --rust`.",
+      "summary": "Jest 30 is the runtime test framework, with 544 test files under `packages/**/__tests__`, and it is deliberately unusable directly \u2014 `package.json`'s `testRegex` points at `dont-run-jest-directly.js`, forcing everything through `scripts/jest/jest-cli.js`. That CLI selects one of six configs (source, source-www, source-xplat, source-persistent, build, build-devtools) and injects `__DEV__`, `__EXPERIMENTAL__` and `__VARIANT__` globals; individual tests opt in/out of behaviour with `// @gate <flag>` pragmas resolved by `scripts/jest/TestFlags.js`. The compiler uses a different harness entirely: `yarn snap` over ~1,543 fixture files with `.expect.md` snapshots, plus Playwright e2e for the playground and the flight fixture. CI runs the runtime suite as an 18-config \u00d7 5-shard matrix; the Rust port has its own workflow gating on `cargo check`, `cargo build`, two shell test scripts and `yarn snap --rust`.",
       "claims": [
         {
           "claim": "Jest is pinned at `^30.4.1` (`jest`, `jest-cli`, `jest-environment-jsdom`, `babel-jest`) with `jest-silent-reporter` and `jest-snapshot-serializer-raw` for output control.",
@@ -24030,7 +24030,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Six Jest configs cover the test surfaces: `config.source.js`, `config.source-www.js`, `config.source-xplat.js`, `config.source-persistent.js`, `config.build.js` and `config.build-devtools.js` — so the same specs are exercised against source and against built bundles.",
+          "claim": "Six Jest configs cover the test surfaces: `config.source.js`, `config.source-www.js`, `config.source-xplat.js`, `config.source-persistent.js`, `config.build.js` and `config.build-devtools.js` \u2014 so the same specs are exercised against source and against built bundles.",
           "sources": [
             "scripts/jest/config.source.js",
             "scripts/jest/config.build.js",
@@ -24047,7 +24047,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "`scripts/jest/setupHostConfigs.js` rewires module resolution so each test file resolves `react-reconciler/src/ReactFiberConfig` to the right renderer's host config, iterating over `inlinedHostConfigs` — without it every reconciler test would hit the throwing shim.",
+          "claim": "`scripts/jest/setupHostConfigs.js` rewires module resolution so each test file resolves `react-reconciler/src/ReactFiberConfig` to the right renderer's host config, iterating over `inlinedHostConfigs` \u2014 without it every reconciler test would hit the throwing shim.",
           "sources": [
             "scripts/jest/setupHostConfigs.js#L1-L220",
             "packages/react-reconciler/src/ReactFiberConfig.js#L10-L22"
@@ -24055,7 +24055,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "`packages/internal-test-utils` supplies the shared test vocabulary — `internalAct.js`, `ReactInternalTestUtils.js`, `consoleMock.js`, `shouldIgnoreConsoleError.js`/`shouldIgnoreConsoleWarn.js`, and `simulateBrowserEventDispatch.js` — and is itself tested.",
+          "claim": "`packages/internal-test-utils` supplies the shared test vocabulary \u2014 `internalAct.js`, `ReactInternalTestUtils.js`, `consoleMock.js`, `shouldIgnoreConsoleError.js`/`shouldIgnoreConsoleWarn.js`, and `simulateBrowserEventDispatch.js` \u2014 and is itself tested.",
           "sources": [
             "packages/internal-test-utils/internalAct.js",
             "packages/internal-test-utils/ReactInternalTestUtils.js",
@@ -24064,7 +24064,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "The runtime CI matrix in `runtime_build_and_test.yml` runs 18 parameter sets (stable/experimental/www-classic/www-modern/xplat × development/production × variant true/false, plus two persistent configs) crossed with 5 shards, i.e. 90 parallel `yarn test` jobs.",
+          "claim": "The runtime CI matrix in `runtime_build_and_test.yml` runs 18 parameter sets (stable/experimental/www-classic/www-modern/xplat \u00d7 development/production \u00d7 variant true/false, plus two persistent configs) crossed with 5 shards, i.e. 90 parallel `yarn test` jobs.",
           "sources": [
             ".github/workflows/runtime_build_and_test.yml#L217-L272"
           ],
@@ -24094,21 +24094,21 @@
           "kind": "evidence"
         },
         {
-          "claim": "Fixture naming encodes expected failure modes: `error.todo-*.js` means an unsupported feature that correctly bails with a Todo error, `error.bug-*.js` means a known bug producing the wrong error — so some fixtures are assertions about known gaps, not passing behaviour.",
+          "claim": "Fixture naming encodes expected failure modes: `error.todo-*.js` means an unsupported feature that correctly bails with a Todo error, `error.bug-*.js` means a known bug producing the wrong error \u2014 so some fixtures are assertions about known gaps, not passing behaviour.",
           "sources": [
             "compiler/CLAUDE.md"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "The Rust port has its own CI gate: `compiler_rust.yml` runs `cargo check`, `cargo build`, `bash scripts/test-babel-ast.sh`, `bash scripts/test-rust-port.sh`, then builds `snap` and runs `yarn snap --rust` — i.e. the Rust implementation is validated against the same fixture snapshots as the TS one.",
+          "claim": "The Rust port has its own CI gate: `compiler_rust.yml` runs `cargo check`, `cargo build`, `bash scripts/test-babel-ast.sh`, `bash scripts/test-rust-port.sh`, then builds `snap` and runs `yarn snap --rust` \u2014 i.e. the Rust implementation is validated against the same fixture snapshots as the TS one.",
           "sources": [
             ".github/workflows/compiler_rust.yml#L24-L68"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "Only 14 TypeScript unit-test files exist across the whole `compiler/` tree, versus 1,543 fixtures — the compiler's coverage is almost entirely end-to-end snapshot, with very little unit-level testing of individual passes.",
+          "claim": "Only 14 TypeScript unit-test files exist across the whole `compiler/` tree, versus 1,543 fixtures \u2014 the compiler's coverage is almost entirely end-to-end snapshot, with very little unit-level testing of individual passes.",
           "sources": [
             "compiler/packages/babel-plugin-react-compiler/src/__tests__",
             "compiler/packages/snap"
@@ -24127,24 +24127,24 @@
       ]
     },
     "risk_map": {
-      "summary": "The genuinely security-sensitive surface is small but sharp: Flight's Server Actions turn attacker-controlled FormData into a module lookup and function invocation, the taint registry is the only guard against serialising server secrets to the client and it is experimental-only, and the DevTools extension bridges page-world `postMessage` to privileged `chrome.runtime` ports while also running string-`eval` payloads through `chrome.devtools.inspectedWindow.eval`. Operationally the biggest fragility is the fork/shim system — `ReactFiberConfig` and `ReactFeatureFlags` resolve differently under Rollup, Jest and Flow, so a change that passes locally can break a channel nobody ran. `ReactFiberWorkLoop.js` at 5,683 lines with ~60 exported functions and module-level mutable state is the highest blast-radius file in the repo, and the Rust port is a live second implementation of the compiler that must stay snapshot-identical to the TypeScript one.",
+      "summary": "The genuinely security-sensitive surface is small but sharp: Flight's Server Actions turn attacker-controlled FormData into a module lookup and function invocation, the taint registry is the only guard against serialising server secrets to the client and it is experimental-only, and the DevTools extension bridges page-world `postMessage` to privileged `chrome.runtime` ports while also running string-`eval` payloads through `chrome.devtools.inspectedWindow.eval`. Operationally the biggest fragility is the fork/shim system \u2014 `ReactFiberConfig` and `ReactFeatureFlags` resolve differently under Rollup, Jest and Flow, so a change that passes locally can break a channel nobody ran. `ReactFiberWorkLoop.js` at 5,683 lines with ~60 exported functions and module-level mutable state is the highest blast-radius file in the repo, and the Rust port is a live second implementation of the compiler that must stay snapshot-identical to the TypeScript one.",
       "claims": [
         {
-          "claim": "`loadServerReference` resolves a client-supplied string id straight into `resolveServerReference(bundlerConfig, id)` → `preloadModule` → `requireModule`; the only validation is `typeof id !== 'string'` (which silently returns `null as any`), so the security boundary rests entirely on the bundler-generated `serverManifest`.",
+          "claim": "`loadServerReference` resolves a client-supplied string id straight into `resolveServerReference(bundlerConfig, id)` \u2192 `preloadModule` \u2192 `requireModule`; the only validation is `typeof id !== 'string'` (which silently returns `null as any`), so the security boundary rests entirely on the bundler-generated `serverManifest`.",
           "sources": [
             "packages/react-server/src/ReactFlightActionServer.js#L46-L75"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "`decodeAction` distinguishes action fields purely by string prefix (`$ACTION_REF_`, `$ACTION_ID_`, `$ACTION_`) on attacker-controlled FormData keys, and a mismatch falls through to `throw new Error('Cannot handle action key. This is a bug in React.')` — a user-reachable throw framed as an internal invariant.",
+          "claim": "`decodeAction` distinguishes action fields purely by string prefix (`$ACTION_REF_`, `$ACTION_ID_`, `$ACTION_`) on attacker-controlled FormData keys, and a mismatch falls through to `throw new Error('Cannot handle action key. This is a bug in React.')` \u2014 a user-reachable throw framed as an internal invariant.",
           "sources": [
             "packages/react-server/src/ReactFlightActionServer.js#L107-L160"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "The taint protection against leaking secrets to the client is gated off by default outside experimental builds (`export const enableTaint = __EXPERIMENTAL__`), and `taintUniqueValue` early-returns when the flag is false — stable consumers get no taint enforcement.",
+          "claim": "The taint protection against leaking secrets to the client is gated off by default outside experimental builds (`export const enableTaint = __EXPERIMENTAL__`), and `taintUniqueValue` early-returns when the flag is false \u2014 stable consumers get no taint enforcement.",
           "sources": [
             "packages/shared/ReactFeatureFlags.js#L94",
             "packages/react/src/ReactTaint.js#L56-L62"
@@ -24152,7 +24152,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "`TaintRegistryValues` is a plain `Map<string|bigint, TaintEntry>` with manual refcounting in `cleanup()`, relying on `FinalizationRegistry`; the code explicitly notes that if `FinalizationRegistry` is absent it 'assume[s] that objects live forever' — a correctness cliff on older runtimes.",
+          "claim": "`TaintRegistryValues` is a plain `Map<string|bigint, TaintEntry>` with manual refcounting in `cleanup()`, relying on `FinalizationRegistry`; the code explicitly notes that if `FinalizationRegistry` is absent it 'assume[s] that objects live forever' \u2014 a correctness cliff on older runtimes.",
           "sources": [
             "packages/react/src/ReactTaintRegistry.js#L17-L28",
             "packages/react/src/ReactTaint.js#L33-L54"
@@ -24167,7 +24167,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "The extension's content scripts relay untrusted page-world messages into privileged extension ports: `prepareInjection.js` listens on `window.addEventListener('message', ...)` and `proxy.js` forwards across `chrome.runtime.connect(...)` / `chrome.runtime.onMessage` and back out via `window.postMessage` — a classic content-script trust boundary.",
+          "claim": "The extension's content scripts relay untrusted page-world messages into privileged extension ports: `prepareInjection.js` listens on `window.addEventListener('message', ...)` and `proxy.js` forwards across `chrome.runtime.connect(...)` / `chrome.runtime.onMessage` and back out via `window.postMessage` \u2014 a classic content-script trust boundary.",
           "sources": [
             "packages/react-devtools-extensions/src/contentScripts/prepareInjection.js#L11",
             "packages/react-devtools-extensions/src/contentScripts/proxy.js#L123-L255",
@@ -24176,7 +24176,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "The DevTools bridge lets the frontend write arbitrary values into a live app — `overrideProps`, `overrideState`, `overrideHookState`, `overrideContext` are first-class bridge events — so anything that can speak the bridge protocol can mutate application state.",
+          "claim": "The DevTools bridge lets the frontend write arbitrary values into a live app \u2014 `overrideProps`, `overrideState`, `overrideHookState`, `overrideContext` are first-class bridge events \u2014 so anything that can speak the bridge protocol can mutate application state.",
           "sources": [
             "packages/react-devtools-shared/src/bridge.js#L485-L525",
             "packages/react-devtools-shared/src/bridge.js#L207-L230"
@@ -24192,14 +24192,14 @@
           "kind": "evidence"
         },
         {
-          "claim": "`ReactFiberWorkLoop.js` is 5,683 lines with roughly 60 exports and heavy module-level mutable state (`workInProgressRoot`, `workInProgressSuspendedReason`, `workInProgressRootExitStatus`, `executionContext`), making it the single highest blast-radius file — almost every reconciler behaviour change lands here.",
+          "claim": "`ReactFiberWorkLoop.js` is 5,683 lines with roughly 60 exports and heavy module-level mutable state (`workInProgressRoot`, `workInProgressSuspendedReason`, `workInProgressRootExitStatus`, `executionContext`), making it the single highest blast-radius file \u2014 almost every reconciler behaviour change lands here.",
           "sources": [
             "packages/react-reconciler/src/ReactFiberWorkLoop.js#L538-L5683"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "The fork system is fragile by design: `scripts/rollup/forks.js` substitutes 13 module paths (shared internals, feature flags, fiber config, stream/fizz/flight configs, `EventListener`, `useSyncExternalStore`) and Jest substitutes them differently — so a module can resolve three ways (Rollup, Jest, Flow) and only CI exercises all of them.",
+          "claim": "The fork system is fragile by design: `scripts/rollup/forks.js` substitutes 13 module paths (shared internals, feature flags, fiber config, stream/fizz/flight configs, `EventListener`, `useSyncExternalStore`) and Jest substitutes them differently \u2014 so a module can resolve three ways (Rollup, Jest, Flow) and only CI exercises all of them.",
           "sources": [
             "scripts/rollup/forks.js#L55-L470",
             "scripts/jest/setupHostConfigs.js#L137-L220"
@@ -24207,7 +24207,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "There are 13 `ReactFeatureFlags` forks (`www`, `www-dynamic`, `native-fb`, `native-oss`, `test-renderer`, `eslint-plugin.www`, `readonly`, …); a flag added to the base file without updating every fork is a known failure mode, which is exactly why CI has a dedicated `flags` job and a `/flags` skill.",
+          "claim": "There are 13 `ReactFeatureFlags` forks (`www`, `www-dynamic`, `native-fb`, `native-oss`, `test-renderer`, `eslint-plugin.www`, `readonly`, \u2026); a flag added to the base file without updating every fork is a known failure mode, which is exactly why CI has a dedicated `flags` job and a `/flags` skill.",
           "sources": [
             "packages/shared/forks",
             ".github/workflows/runtime_build_and_test.yml#L192-L215",
@@ -24216,7 +24216,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "`scripts/release/ci-npmrc` writes `//registry.npmjs.org/:_authToken=${NPM_TOKEN}` and three compiler prerelease workflows inject `NPM_TOKEN` from repository secrets — any workflow change that widens trigger conditions on those files widens publish access.",
+          "claim": "`scripts/release/ci-npmrc` writes `//registry.npmjs.org/:_authToken=${NPM_TOKEN}` and three compiler prerelease workflows inject `NPM_TOKEN` from repository secrets \u2014 any workflow change that widens trigger conditions on those files widens publish access.",
           "sources": [
             "scripts/release/ci-npmrc",
             ".github/workflows/compiler_prereleases.yml#L29-L36",
@@ -24226,21 +24226,21 @@
           "kind": "evidence"
         },
         {
-          "claim": "The MCP server's runtime-perf tool launches a real browser (`puppeteer.launch()`) and runs `page.evaluate` on supplied component code — that is code execution on the developer's machine driven by MCP tool input.",
+          "claim": "The MCP server's runtime-perf tool launches a real browser (`puppeteer.launch()`) and runs `page.evaluate` on supplied component code \u2014 that is code execution on the developer's machine driven by MCP tool input.",
           "sources": [
             "compiler/packages/react-mcp-server/src/tools/runtimePerf.ts#L2-L195"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "An Algolia app id and search API key are hard-coded in `compiler/packages/react-mcp-server/src/utils/algolia.ts` (with a source comment pointing at react.dev's public config) — low severity since they are public search-only credentials, but they are real credentials living in the tree.",
+          "claim": "An Algolia app id and search API key are hard-coded in `compiler/packages/react-mcp-server/src/utils/algolia.ts` (with a source comment pointing at react.dev's public config) \u2014 low severity since they are public search-only credentials, but they are real credentials living in the tree.",
           "sources": [
             "compiler/packages/react-mcp-server/src/utils/algolia.ts#L12-L22"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "The Rust port is a duplicated implementation of a complex pipeline: `compiler/crates/react_compiler/src/entrypoint/pipeline.rs` re-implements the same ~40 passes as `Pipeline.ts`, and `react_compiler/src/lib.rs` re-exports crates 'for backwards compatibility' — divergence between the two is caught only by `yarn snap --rust` in CI.",
+          "claim": "The Rust port is a duplicated implementation of a complex pipeline: `compiler/crates/react_compiler/src/entrypoint/pipeline.rs` re-implements the same ~40 passes as `Pipeline.ts`, and `react_compiler/src/lib.rs` re-exports crates 'for backwards compatibility' \u2014 divergence between the two is caught only by `yarn snap --rust` in CI.",
           "sources": [
             "compiler/crates/react_compiler/src/entrypoint/pipeline.rs#L37-L640",
             "compiler/crates/react_compiler/src/lib.rs#L1-L11",
@@ -24249,7 +24249,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "The napi bridge converts Rust panics into `napi::Error` strings rather than structured diagnostics, and relies on a hand-tuned 64 MB thread stack to avoid overflow on deep ASTs — both are heuristic mitigations rather than guarantees.",
+          "claim": "The napi bridge converts Rust panics into `napi::Error` strings rather than structured diagnostics, and relies on a hand-tuned 64 MB thread stack to avoid overflow on deep ASTs \u2014 both are heuristic mitigations rather than guarantees.",
           "sources": [
             "compiler/packages/babel-plugin-react-compiler-rust/native/src/lib.rs#L26-L48"
           ],
@@ -24267,7 +24267,7 @@
       ]
     },
     "extension_points": {
-      "summary": "The repo's main extension mechanism is the host-config pattern: write a `ReactFiberConfig.<renderer>.js`, register the renderer in `scripts/shared/inlinedHostConfigs.js` and add a fork rule, and you get a new React renderer sharing the reconciler unchanged. Bundles are similarly table-driven — add an entry to `scripts/rollup/bundles.js` and a version to `ReactVersions.js` and the build/publish pipeline picks it up. Inside the compiler, the pass list in `Pipeline.ts` / `pipeline.rs` is the ordered registry, `HIR/Globals.ts` is where hook aliasing signatures are declared, and `Environment.ts` is where feature flags live. For tooling, the ESLint plugin merges rules from a `allRules` map, the MCP servers register tools with `server.tool(name, description, schema, handler)`, and Jest behaviour is extended via `@gate` flags declared in `TestFlags.js`.",
+      "summary": "The repo's main extension mechanism is the host-config pattern: write a `ReactFiberConfig.<renderer>.js`, register the renderer in `scripts/shared/inlinedHostConfigs.js` and add a fork rule, and you get a new React renderer sharing the reconciler unchanged. Bundles are similarly table-driven \u2014 add an entry to `scripts/rollup/bundles.js` and a version to `ReactVersions.js` and the build/publish pipeline picks it up. Inside the compiler, the pass list in `Pipeline.ts` / `pipeline.rs` is the ordered registry, `HIR/Globals.ts` is where hook aliasing signatures are declared, and `Environment.ts` is where feature flags live. For tooling, the ESLint plugin merges rules from a `allRules` map, the MCP servers register tools with `server.tool(name, description, schema, handler)`, and Jest behaviour is extended via `@gate` flags declared in `TestFlags.js`.",
       "claims": [
         {
           "claim": "New renderers plug in through the host-config shim: implement the interface, then register in `scripts/shared/inlinedHostConfigs.js` with a `shortName` and `entryPoints`, and add a substitution branch in `scripts/rollup/forks.js` for `./packages/react-reconciler/src/ReactFiberConfig.js`.",
@@ -24279,7 +24279,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "`packages/react-noop-renderer` is the reference implementation of that extension point — a full renderer with `persistent.js`, `server.js`, `flight-client.js`, `flight-server.js` and `flight-modules.js` variants, used as the testbed for reconciler features.",
+          "claim": "`packages/react-noop-renderer` is the reference implementation of that extension point \u2014 a full renderer with `persistent.js`, `server.js`, `flight-client.js`, `flight-server.js` and `flight-modules.js` variants, used as the testbed for reconciler features.",
           "sources": [
             "packages/react-noop-renderer/index.js",
             "packages/react-noop-renderer/persistent.js",
@@ -24295,7 +24295,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "New build outputs plug into the `bundles.js` table via `bundleTypes` and `moduleTypes` (`ISOMORPHIC`, `RENDERER`, …); `scripts/rollup/build.js#shouldSkipBundle` then decides per bundle×type whether to emit.",
+          "claim": "New build outputs plug into the `bundles.js` table via `bundleTypes` and `moduleTypes` (`ISOMORPHIC`, `RENDERER`, \u2026); `scripts/rollup/build.js#shouldSkipBundle` then decides per bundle\u00d7type whether to emit.",
           "sources": [
             "scripts/rollup/bundles.js#L10-L60",
             "scripts/rollup/build.js#L552-L560"
@@ -24303,7 +24303,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "`scripts/rollup/forks.js` is itself an extension registry — a map from module path to a substitution function, currently covering `ReactSharedInternals`, `ReactDOMSharedInternals`, `ReactFeatureFlags`, `SchedulerFeatureFlags`, `DefaultPrepareStackTrace`, `ReactFiberConfig`, `ReactServerStreamConfig`, `ReactFizzConfig`, `ReactFlightServerConfig`, `ReactFlightClientConfig`, `EventListener`, `useSyncExternalStore` and `isServerEnvironment`.",
+          "claim": "`scripts/rollup/forks.js` is itself an extension registry \u2014 a map from module path to a substitution function, currently covering `ReactSharedInternals`, `ReactDOMSharedInternals`, `ReactFeatureFlags`, `SchedulerFeatureFlags`, `DefaultPrepareStackTrace`, `ReactFiberConfig`, `ReactServerStreamConfig`, `ReactFizzConfig`, `ReactFlightServerConfig`, `ReactFlightClientConfig`, `EventListener`, `useSyncExternalStore` and `isServerEnvironment`.",
           "sources": [
             "scripts/rollup/forks.js#L55-L470"
           ],
@@ -24337,7 +24337,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Hook semantics are extensible through aliasing signatures registered in `src/HIR/Globals.ts` via `addHook(DEFAULT_SHAPES, {positionalParams, restParam, returnType, calleeEffect, hookKind, returnValueKind, aliasing: {receiver, params, rest, returns, temporaries, effects}}, id)` — missing an `aliasing` block silently falls back to `DefaultNonmutatingHook`.",
+          "claim": "Hook semantics are extensible through aliasing signatures registered in `src/HIR/Globals.ts` via `addHook(DEFAULT_SHAPES, {positionalParams, restParam, returnType, calleeEffect, hookKind, returnValueKind, aliasing: {receiver, params, rest, returns, temporaries, effects}}, id)` \u2014 missing an `aliasing` block silently falls back to `DefaultNonmutatingHook`.",
           "sources": [
             "compiler/CLAUDE.md",
             "compiler/packages/babel-plugin-react-compiler/src/HIR/Globals.ts"
@@ -24361,7 +24361,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "The ESLint plugin composes its rule table from two hand-written rules plus a spread of `allRules` from `shared/ReactCompiler`, and derives `recommended`/`recommendedLatest` presets by mapping compiler severities through `mapErrorSeverityToESlint` — new compiler diagnostics become lint rules without touching `index.ts`.",
+          "claim": "The ESLint plugin composes its rule table from two hand-written rules plus a spread of `allRules` from `shared/ReactCompiler`, and derives `recommended`/`recommendedLatest` presets by mapping compiler severities through `mapErrorSeverityToESlint` \u2014 new compiler diagnostics become lint rules without touching `index.ts`.",
           "sources": [
             "packages/eslint-plugin-react-hooks/src/index.ts#L9-L80"
           ],
@@ -24376,7 +24376,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Agent-facing workflows are extensible through `.claude/skills/*/SKILL.md` — currently `verify`, `test`, `fix`, `flow`, `flags`, `feature-flags` and `extract-errors`, each a self-contained markdown procedure with frontmatter.",
+          "claim": "Agent-facing workflows are extensible through `.claude/skills/*/SKILL.md` \u2014 currently `verify`, `test`, `fix`, `flow`, `flags`, `feature-flags` and `extract-errors`, each a self-contained markdown procedure with frontmatter.",
           "sources": [
             ".claude/skills/verify/SKILL.md",
             ".claude/skills/feature-flags/SKILL.md",
@@ -24395,7 +24395,7 @@
       ]
     },
     "agent_handoff": {
-      "summary": "Treat `/compiler/` and everything else as two separate projects with separate package managers, lockfiles, CI workflows and conventions — the root `CLAUDE.md` says so explicitly, and `compiler/CLAUDE.md` even documents Sapling (`sl`) rather than git for that subtree. Never run `jest` or `rollup` directly; use `yarn test` / `yarn flow` / `yarn linc` / `yarn prettier`, and let CI do builds. The single most important structural fact to internalise before editing is the fork/shim system: `ReactFiberConfig`, `ReactFeatureFlags` and the flight/fizz configs resolve differently under Rollup, Jest and Flow, so 'it works in one channel' is not a signal. Read the work loop, the root scheduler and the feature-flag file before touching reconciler behaviour, and read the relevant `docs/passes/` doc before touching a compiler pass.",
+      "summary": "Treat `/compiler/` and everything else as two separate projects with separate package managers, lockfiles, CI workflows and conventions \u2014 the root `CLAUDE.md` says so explicitly, and `compiler/CLAUDE.md` even documents Sapling (`sl`) rather than git for that subtree. Never run `jest` or `rollup` directly; use `yarn test` / `yarn flow` / `yarn linc` / `yarn prettier`, and let CI do builds. The single most important structural fact to internalise before editing is the fork/shim system: `ReactFiberConfig`, `ReactFeatureFlags` and the flight/fizz configs resolve differently under Rollup, Jest and Flow, so 'it works in one channel' is not a signal. Read the work loop, the root scheduler and the feature-flag file before touching reconciler behaviour, and read the relevant `docs/passes/` doc before touching a compiler pass.",
       "claims": [
         {
           "claim": "The repo is explicitly split: root `CLAUDE.md` scopes itself to 'All files outside `/compiler/`' and defers the compiler to its own instructions; `compiler/` has its own `package.json`, `yarn.lock`, `Cargo.toml` and CI workflows.",
@@ -24418,7 +24418,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "The prescribed pre-commit gate is `/verify`: `yarn prettier` → `yarn linc` (stop on failure), then `/flow`, `/test` and `/test www` in parallel — mirroring the CI jobs, so passing it locally is a strong predictor of green CI.",
+          "claim": "The prescribed pre-commit gate is `/verify`: `yarn prettier` \u2192 `yarn linc` (stop on failure), then `/flow`, `/test` and `/test www` in parallel \u2014 mirroring the CI jobs, so passing it locally is a strong predictor of green CI.",
           "sources": [
             ".claude/skills/verify/SKILL.md",
             ".github/workflows/runtime_build_and_test.yml#L118-L285"
@@ -24435,7 +24435,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Do not invoke Jest directly — the root `jest.testRegex` deliberately points at `scripts/jest/dont-run-jest-directly.js`; run `yarn test -r <channel> --env <env>` instead, and `yarn test-www` / `yarn test-stable` for the common channels.",
+          "claim": "Do not invoke Jest directly \u2014 the root `jest.testRegex` deliberately points at `scripts/jest/dont-run-jest-directly.js`; run `yarn test -r <channel> --env <env>` instead, and `yarn test-www` / `yarn test-stable` for the common channels.",
           "sources": [
             "package.json#L119-L121",
             "package.json#L138-L142",
@@ -24502,7 +24502,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Trap: `packages/react/src/` contains parallel client and server builds of the same package (`ReactClient.js`, `ReactServer.js`, `ReactServer.experimental.js`, `ReactServer.fb.js`, `ReactSharedInternalsClient.js` vs `…Server.js`) — an export added to one is not automatically present in the other.",
+          "claim": "Trap: `packages/react/src/` contains parallel client and server builds of the same package (`ReactClient.js`, `ReactServer.js`, `ReactServer.experimental.js`, `ReactServer.fb.js`, `ReactSharedInternalsClient.js` vs `\u2026Server.js`) \u2014 an export added to one is not automatically present in the other.",
           "sources": [
             "packages/react/src/ReactClient.js",
             "packages/react/src/ReactServer.js",
@@ -24522,7 +24522,7 @@
           "kind": "inference"
         },
         {
-          "claim": "Flow is the type system for runtime code (`flow-bin@^0.317.0`, `postinstall` runs `scripts/flow/createFlowConfigs.js` to generate per-renderer configs) while the compiler and ESLint plugin are TypeScript — so `@flow` pragmas and `$FlowFixMe` suppressions are normal in `packages/` and out of place in `compiler/`.",
+          "claim": "Flow is the type system for runtime code (`flow-bin@^0.317.0`, `postinstall` runs `scripts/flow/createFlowConfigs.js` to generate per-renderer configs) while the compiler and ESLint plugin are TypeScript \u2014 so `@flow` pragmas and `$FlowFixMe` suppressions are normal in `packages/` and out of place in `compiler/`.",
           "sources": [
             "package.json#L82-L85",
             "package.json#L137",
@@ -24533,11 +24533,11 @@
         }
       ]
     },
-    "agent_prompt": "You are working in facebook/react (commit 59aff3e, branch main) — the React monorepo. Read this before touching anything.\n\nSHAPE. Two projects share one repo. Everything outside `/compiler/` is the React runtime: publishable packages under `packages/` (react, react-dom, react-reconciler, scheduler, react-server, react-client, react-server-dom-*, react-devtools-*, react-refresh, eslint-plugin-react-hooks, shared), build/test tooling under `scripts/`, and manual-test apps under `fixtures/`. `/compiler/` is the React Compiler: a TypeScript implementation (`packages/babel-plugin-react-compiler`) plus an in-progress Rust port (12 crates under `crates/`, reached from JS through a napi bridge in `packages/babel-plugin-react-compiler-rust`). Each half has its own package.json, yarn.lock and CI workflows. Root `CLAUDE.md` and `compiler/CLAUDE.md` are both authoritative for their halves.\n\nTHE ONE STRUCTURAL FACT. React is built per *release channel* (stable, canary, experimental, www-classic, www-modern, xplat) and per renderer, using module substitution. `packages/react-reconciler/src/ReactFiberConfig.js` literally throws `'This module must be shimmed by a specific renderer.'` — Rollup (`scripts/rollup/forks.js`) and Jest (`scripts/jest/setupHostConfigs.js`) swap in the real implementation, driven by the renderer table in `scripts/shared/inlinedHostConfigs.js`. The same happens for `ReactFeatureFlags` (13 forks in `packages/shared/forks/`), `ReactSharedInternals`, and the fizz/flight configs. Consequence: code can resolve three different ways, and 'it works locally' is not evidence. CI runs the Jest suite as 18 configs × 5 shards for exactly this reason.\n\nRUNTIME MENTAL MODEL. `createRoot(container)` (`packages/react-dom/src/client/ReactDOMRoot.js`) → `createContainer` + `listenToAllSupportedEvents`. `root.render(children)` → `updateContainer` → `createUpdate`/`enqueueUpdate` → `scheduleUpdateOnFiber(root, fiber, lane)` (`ReactFiberWorkLoop.js:987`). That marks the root and calls `ensureRootIsScheduled` (`ReactFiberRootScheduler.js:116`), which only adds the root to a linked list and arms a microtask; the microtask runs `processRootScheduleInMicrotask` → `scheduleTaskForRootDuringMicrotask` → `Scheduler_scheduleCallback`. Work runs in `performWorkOnRoot` (line 1137), which picks `renderRootConcurrent` or `renderRootSync` from `shouldTimeSlice`. Commit is `commitRoot` → `commitBeforeMutationEffects` → `commitMutationEffects` → `root.current = finishedWork` (line 4051) → `commitLayoutEffects` → `flushSpawnedWork`, with passive effects deferred to `flushPendingEffects`. Priority is a 31-lane bitmask in `ReactFiberLane.js`. Hooks swap `ReactSharedInternals.H` between mount/update dispatchers inside `renderWithHooks` (`ReactFiberHooks.js:505`).\n\nCOMMANDS. `yarn test [-r stable|experimental|www-classic|www-modern|xplat] [--env development|production]` (never run `jest` directly — the root testRegex deliberately points at `dont-run-jest-directly.js`), `yarn flow`, `yarn linc`, `yarn prettier`, `yarn flags`, `yarn extract-errors`. The `/verify` skill runs prettier → linc → flow + test + test-www. Do NOT run `yarn build` locally unless asked; CI owns builds. In `compiler/`: `yarn snap` (fixture snapshots), `yarn snap -p <pattern> -d` (per-pass HIR dump), `yarn snap -u` (update `.expect.md`), `yarn snap compile <path>`, `yarn snap minimize <path>`, and `cargo check`/`cargo build`/`yarn snap --rust` for the Rust port.\n\nTRAPS. Adding a feature flag means editing the base `packages/shared/ReactFeatureFlags.js` AND every fork. Tests that depend on a flag need a `// @gate <expr>` pragma (see `scripts/jest/TestFlags.js`). A new user-visible `throw` needs `yarn extract-errors` and a `scripts/error-codes/codes.json` delta. `packages/react/src/` has parallel client and server builds — an export added to `ReactClient.js` is not in `ReactServer.js`. Runtime code is Flow-typed; compiler and ESLint-plugin code is TypeScript. Compiler passes are ordered lists in `Entrypoint/Pipeline.ts` and `crates/react_compiler/src/entrypoint/pipeline.rs` and must stay in sync; read `docs/passes/` before changing one.\n\nSENSITIVE PATHS. `ReactFlightActionServer.js` turns client FormData into module lookups (`loadServerReference` → `resolveServerReference` → `requireModule`). `ReactTaint.js`/`ReactTaintRegistry.js` are the only leak guard and are experimental-only. The DevTools extension bridges page `postMessage` to `chrome.runtime` ports and runs string-eval payloads (`evalScripts.js`, `contentScripts/proxy.js`). `scripts/release/` and the `NPM_TOKEN`-bearing workflows are the publish path. Treat all four as review-with-care.\n\nHIGHEST BLAST RADIUS: `ReactFiberWorkLoop.js` (5,683 lines, ~60 exports, module-level mutable state), `ReactFiberCommitWork.js`, `ReactFiberHooks.js`, `ReactFizzServer.js`, `scripts/rollup/*`. Prefer small diffs, cite the channel you tested, and say explicitly which channels you did not."
+    "agent_prompt": "You are working in facebook/react (commit 59aff3e, branch main) \u2014 the React monorepo. Read this before touching anything.\n\nSHAPE. Two projects share one repo. Everything outside `/compiler/` is the React runtime: publishable packages under `packages/` (react, react-dom, react-reconciler, scheduler, react-server, react-client, react-server-dom-*, react-devtools-*, react-refresh, eslint-plugin-react-hooks, shared), build/test tooling under `scripts/`, and manual-test apps under `fixtures/`. `/compiler/` is the React Compiler: a TypeScript implementation (`packages/babel-plugin-react-compiler`) plus an in-progress Rust port (12 crates under `crates/`, reached from JS through a napi bridge in `packages/babel-plugin-react-compiler-rust`). Each half has its own package.json, yarn.lock and CI workflows. Root `CLAUDE.md` and `compiler/CLAUDE.md` are both authoritative for their halves.\n\nTHE ONE STRUCTURAL FACT. React is built per *release channel* (stable, canary, experimental, www-classic, www-modern, xplat) and per renderer, using module substitution. `packages/react-reconciler/src/ReactFiberConfig.js` literally throws `'This module must be shimmed by a specific renderer.'` \u2014 Rollup (`scripts/rollup/forks.js`) and Jest (`scripts/jest/setupHostConfigs.js`) swap in the real implementation, driven by the renderer table in `scripts/shared/inlinedHostConfigs.js`. The same happens for `ReactFeatureFlags` (13 forks in `packages/shared/forks/`), `ReactSharedInternals`, and the fizz/flight configs. Consequence: code can resolve three different ways, and 'it works locally' is not evidence. CI runs the Jest suite as 18 configs \u00d7 5 shards for exactly this reason.\n\nRUNTIME MENTAL MODEL. `createRoot(container)` (`packages/react-dom/src/client/ReactDOMRoot.js`) \u2192 `createContainer` + `listenToAllSupportedEvents`. `root.render(children)` \u2192 `updateContainer` \u2192 `createUpdate`/`enqueueUpdate` \u2192 `scheduleUpdateOnFiber(root, fiber, lane)` (`ReactFiberWorkLoop.js:987`). That marks the root and calls `ensureRootIsScheduled` (`ReactFiberRootScheduler.js:116`), which only adds the root to a linked list and arms a microtask; the microtask runs `processRootScheduleInMicrotask` \u2192 `scheduleTaskForRootDuringMicrotask` \u2192 `Scheduler_scheduleCallback`. Work runs in `performWorkOnRoot` (line 1137), which picks `renderRootConcurrent` or `renderRootSync` from `shouldTimeSlice`. Commit is `commitRoot` \u2192 `commitBeforeMutationEffects` \u2192 `commitMutationEffects` \u2192 `root.current = finishedWork` (line 4051) \u2192 `commitLayoutEffects` \u2192 `flushSpawnedWork`, with passive effects deferred to `flushPendingEffects`. Priority is a 31-lane bitmask in `ReactFiberLane.js`. Hooks swap `ReactSharedInternals.H` between mount/update dispatchers inside `renderWithHooks` (`ReactFiberHooks.js:505`).\n\nCOMMANDS. `yarn test [-r stable|experimental|www-classic|www-modern|xplat] [--env development|production]` (never run `jest` directly \u2014 the root testRegex deliberately points at `dont-run-jest-directly.js`), `yarn flow`, `yarn linc`, `yarn prettier`, `yarn flags`, `yarn extract-errors`. The `/verify` skill runs prettier \u2192 linc \u2192 flow + test + test-www. Do NOT run `yarn build` locally unless asked; CI owns builds. In `compiler/`: `yarn snap` (fixture snapshots), `yarn snap -p <pattern> -d` (per-pass HIR dump), `yarn snap -u` (update `.expect.md`), `yarn snap compile <path>`, `yarn snap minimize <path>`, and `cargo check`/`cargo build`/`yarn snap --rust` for the Rust port.\n\nTRAPS. Adding a feature flag means editing the base `packages/shared/ReactFeatureFlags.js` AND every fork. Tests that depend on a flag need a `// @gate <expr>` pragma (see `scripts/jest/TestFlags.js`). A new user-visible `throw` needs `yarn extract-errors` and a `scripts/error-codes/codes.json` delta. `packages/react/src/` has parallel client and server builds \u2014 an export added to `ReactClient.js` is not in `ReactServer.js`. Runtime code is Flow-typed; compiler and ESLint-plugin code is TypeScript. Compiler passes are ordered lists in `Entrypoint/Pipeline.ts` and `crates/react_compiler/src/entrypoint/pipeline.rs` and must stay in sync; read `docs/passes/` before changing one.\n\nSENSITIVE PATHS. `ReactFlightActionServer.js` turns client FormData into module lookups (`loadServerReference` \u2192 `resolveServerReference` \u2192 `requireModule`). `ReactTaint.js`/`ReactTaintRegistry.js` are the only leak guard and are experimental-only. The DevTools extension bridges page `postMessage` to `chrome.runtime` ports and runs string-eval payloads (`evalScripts.js`, `contentScripts/proxy.js`). `scripts/release/` and the `NPM_TOKEN`-bearing workflows are the publish path. Treat all four as review-with-care.\n\nHIGHEST BLAST RADIUS: `ReactFiberWorkLoop.js` (5,683 lines, ~60 exports, module-level mutable state), `ReactFiberCommitWork.js`, `ReactFiberHooks.js`, `ReactFizzServer.js`, `scripts/rollup/*`. Prefer small diffs, cite the channel you tested, and say explicitly which channels you did not."
   },
   "analysis": {
     "agent": "claude",
-    "model": "cli:claude",
+    "model": "claude-opus-5",
     "runtime_ms": 485248,
     "cost_usd": 3.1288505,
     "collected_at": "2026-09-22T09:23:10.354Z"

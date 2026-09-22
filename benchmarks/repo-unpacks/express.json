@@ -177,7 +177,7 @@
         {
           "path": "Readme.md",
           "bytes": 10371,
-          "preview": "<a href=\"https://expressjs.com/\">\n  <picture>\n    <source media=\"(prefers-color-scheme: dark)\" srcset=\"https://expressjs.com/images/logos/logo-express-white.svg\">\n    <img alt=\"Express Logo\" src=\"https://expressjs.com/images/logos/logo-express-black.svg\" width=\"280\">\n  </picture>\n</a>\n\n**Fast, unopinionated, minimalist web framework for [Node.js](https://nodejs.org).**\n\n## Table of contents\n\n- [Installation](#installation)\n- [Features](#features)\n- [Docs \\& Community](#docs--community)\n- [Quick Start](#quick-start)\n- [Philosophy](#philosophy)\n- [Examples](#examples)\n- [Contributing](#contributing)\n  - [Security Issues](#security-issues)\n  - [Running Tests](#running-tests)\n- [Current project team members](#current-project-team-members)\n  - [TC (Technical Committee)](#tc-technical-committee)\n    - [TC emeriti members](#tc-emeriti-members)\n  - [Triagers](#triagers)\n    - [Emeritus Triagers](#emeritus-triagers)\n- [License](#license)\n\n\n[![NPM Version][npm-version-image]][npm-url]\n[![NPM Downloads][npm-downloads-image]][npm-downloads-url]\n[![Linux Build][github-actions-ci-image]][github-actions-ci-url]\n[![Test Coverage][coveralls-image]][coveralls-url]\n[![OpenSSF Scorecard Badge][ossf-scorecard-badge]][ossf-scorecard-visualizer]\n\n\n```js\nimport express from 'express'\n\nconst app = express()\n\napp.get('/', (req, res) => {\n  res.send('Hello World')\n})\n\napp.listen(3000, () => {\n  console.log('Server is running on http://localhost:3000')\n})\n```\n\n## Installation\n\nThis is a [Node.js](https://nodejs.org/en/) module available through the\n[npm registry](https://www.npmjs.com/).\n\nBefore installing, [download and install Node.js](https://nodejs.org/en/download/).\nNode.js 18 or higher is required.\n\nIf this is a brand new project, make sure to create a `package.json` first with\nthe [`npm init` command](https://docs.npmjs.com/creating-a-package-json-file).\n\nInstallation is done using the\n[`npm install` command](https://docs.npmjs.com/downloading-and-installing-packages-locally):\n\n```bash\nnpm install express\n```\n\nFollow [our installing guide](https://expressjs.com/en/starter/installing.html)\nfor more information.\n\n## Features\n\n  * Robust routing\n  * Focus on high performance\n  * Super-high test coverage\n  * HTTP helpers (redirection, caching, etc)\n  * View system supporting 14+ template engines\n  * Content negotiation\n  * Executable for generating applications quickly\n\n## Docs & Community\n\n  * [Website and Documentation](https://expressjs.com/) - [[website repo](https://github.com/expressjs/expressjs.com)]\n  * [GitHub Organization](https://github.com/expressjs) for Official Middleware & Modules\n  * [GitHub Discussions](https://github.com/expressjs/discussions) for discussion on the development and usage of Express\n\n**PROTIP** Be sure to read the [migration guide to v5](https://expressjs.com/en/guide/migrating-5)\n\n## Quick Start\n\n  The quickest way to get started with express is to utilize the executable [`express(1)`](https://github.com/expressjs/generator) to generate an application as shown below:\n\n  Install the executable. The executable's major version will match Express's:\n\n```bash\nnpm install -g express-generator@4\n```\n\n  Create the app:\n\n```bash\nexpress /tmp/foo && cd /tmp/foo\n```\n\n  Install dependencies:\n\n```bash\nnpm install\n```\n\n  Start the server:\n\n```bash\nnpm start\n```\n\n  View the website at: http://localhost:3000\n\n## Philosophy\n\n  The Express philosophy is to provide small, robust tooling for HTTP servers, making\n  it a great solution for single page applications, websites, hybrids, or public\n  HTTP APIs.\n\n  Express does not force you to use any specific ORM or template engine. With support for over\n  14 template engines via [@ladjs/consolidate](https://github.com/ladjs/consolidate),\n  you can quickly craft your perfect framework.\n\n## Examples\n\n  To view the examples, clone the Express repository:\n\n```bash\ngit clone https://github.com/expressjs/express.git --depth 1 && cd express\n```\n\n  Then install the dependencies:\n\n```bash\nnpm install\n```\n\n  Then run whichever example you want:\n\n```bash\nnode examples/content-negotiation\n```\n\n## Contributing\n\nThe Express.js project welcomes all constructive contributions. Contributions take many forms,\nfrom code for bug fixes and enhancements, to additions and fixes to documentation, additional\ntests, triaging incoming pull requests and issues, and more!\n\nSee the [Contributing Guide] for more technical details on contributing.\n\nThis project has a [Code of Conduct]. By participating, you are expected to uphold this code.\n\n### Security Issues\n\nIf you discover a security vulnerability in Express, please see [Security Policies and Procedures](https://github.com/expressjs/express/security/policy).\n\n### Running Tests\n\nTo run the test suite, first install the dependencies:\n\n```bash\nnpm install\n```\n\nThen run `npm test`:\n\n```bash\nnpm test\n```\n\n## Current project team members\n\nFor information about the governance of the express.js project, see [GOVERNANCE.md](https://github.com/expressjs/discussions/blob/HEAD/docs/GOVERNANCE.md).\n\nThe original author of Express is [TJ Holowaychuk](https://github.com/tj)\n\n[List of all contributors](https://github.com/expressjs/express/graphs/contributors)\n\n### TC (Technical Committee)\n\n* [UlisesGascon](https://github.com/UlisesGascon) - **Ulises Gascón** (he/him)\n* [jonchurch](https://github.com/jonchurch) - **Jon Church**\n* [wesleytodd](https://github.com/wesleytodd) - **Wes Todd**\n* [LinusU](https://github.com/LinusU) - **Linus Unnebäck**\n* [blakeembrey](https://github.com/blakeembrey) - **Blake Embrey**\n* [sheplu](https://github.com/sheplu) - **Jean Burellier**\n* [crandmck](https://github.com/crandmck) - **Rand McKinney**\n* [ctcpip](https://github.com/ctcpip) - **Chris de Almeida**\n\n<details>\n<summary>TC emeriti members</summary>\n\n#### TC emeriti members\n\n  * [dougwilson](https://github.com/dougwilson) - **Douglas Wilson**\n  * [hacksparrow](https://github.com/hacksparrow) - **Hage Yaapa**\n  * [jonathanong](https://github.com/jonathanong) - **jongleberry**\n  * [niftylettuce](https://github.com/niftylettuce) - **niftylettuce**\n  * [troygoode](https://github.com/troygoode) - **Troy Goode**\n</details>\n\n\n### Triagers\n\n* [aravindvnair99](https://github.com/aravindvnair99) - **Aravind Nair**\n* [bjohansebas](https://github.com/bjohansebas) - **Sebastian Beltran**\n* [carpasse](https://github.com/carpasse) - **Carlos Serrano**\n* [CBID2](https://github.com/CBID2) - **Christine Belzie**\n* [UlisesGascon](https://github.com/UlisesGascon) - **Ulises Gascón** (he/him)\n* [IamLizu](https://github.com/IamLizu) - **S M Mahmudul Hasan** (he/him)\n* [Phillip9587](https://github.com/Phillip9587) - **Phillip Barta**\n* [efekrskl](https://github.com/efekrskl) - **Efe Karasakal**\n* [rxmarbles](https://github.com/rxmarbles) - **Rick Markins** (he/him)\n* [krzysdz](https://github.com/krzysdz)\n* [GroophyLifefor](https://github.com/GroophyLifefor) - **Murat Kirazkaya**\n\n<details>\n<summary>Triagers emeriti members</summary>\n\n#### Emeritus Triagers\n\n  * [AuggieH](https://github.com/AuggieH) - **Auggie Hudak**\n  * [G-Rath](https://github.com/G-Rath) - **Gareth Jones**\n  * [MohammadXroid](https://github.com/MohammadXroid) - **Mohammad Ayashi**\n  * [NawafSwe](https://github.com/NawafSwe) - **Nawaf Alsharqi**\n  * [NotMoni](https://github.com/NotMoni) - **Moni**\n  * [VigneshMurugan](https://github.com/VigneshMurugan) - **Vignesh Murugan**\n  * [davidmashe](https://github.com/davidmashe) - **David Ashe**\n  * [digitaIfabric](https://github.com/digitaIfabric) - **David**\n  * [e-l-i-s-e](https://github.com/e-l-i-s-e) - **Elise Bonner**\n  * [fed135](https://github.com/fed135) - **Frederic Charette**\n  * [firmanJS](https://github.com/firmanJS) - **Firman Abdul Hakim**\n  * [getspooky](https://github.com/getspooky) - **Yasser Ameur**\n  * [ghinks](https://github.com/ghinks) - **Glenn**\n  * [ghousemohamed](https://github.com/ghousemohamed) - **Ghouse Mohamed**\n  * [gireeshpunathil](https://github.com/gireeshpunathil) - **Gireesh Punathil**\n  * [jake32321](https://github.com/jake32321) - **Jake Reed**\n  * [jonchurch](https://github.com/jonchurch) - **Jon Church**\n  * [lekanikotun](https://github.com/lekanikotun) - **Troy Goode**\n  * [m"
+          "preview": "<a href=\"https://expressjs.com/\">\n  <picture>\n    <source media=\"(prefers-color-scheme: dark)\" srcset=\"https://expressjs.com/images/logos/logo-express-white.svg\">\n    <img alt=\"Express Logo\" src=\"https://expressjs.com/images/logos/logo-express-black.svg\" width=\"280\">\n  </picture>\n</a>\n\n**Fast, unopinionated, minimalist web framework for [Node.js](https://nodejs.org).**\n\n## Table of contents\n\n- [Installation](#installation)\n- [Features](#features)\n- [Docs \\& Community](#docs--community)\n- [Quick Start](#quick-start)\n- [Philosophy](#philosophy)\n- [Examples](#examples)\n- [Contributing](#contributing)\n  - [Security Issues](#security-issues)\n  - [Running Tests](#running-tests)\n- [Current project team members](#current-project-team-members)\n  - [TC (Technical Committee)](#tc-technical-committee)\n    - [TC emeriti members](#tc-emeriti-members)\n  - [Triagers](#triagers)\n    - [Emeritus Triagers](#emeritus-triagers)\n- [License](#license)\n\n\n[![NPM Version][npm-version-image]][npm-url]\n[![NPM Downloads][npm-downloads-image]][npm-downloads-url]\n[![Linux Build][github-actions-ci-image]][github-actions-ci-url]\n[![Test Coverage][coveralls-image]][coveralls-url]\n[![OpenSSF Scorecard Badge][ossf-scorecard-badge]][ossf-scorecard-visualizer]\n\n\n```js\nimport express from 'express'\n\nconst app = express()\n\napp.get('/', (req, res) => {\n  res.send('Hello World')\n})\n\napp.listen(3000, () => {\n  console.log('Server is running on http://localhost:3000')\n})\n```\n\n## Installation\n\nThis is a [Node.js](https://nodejs.org/en/) module available through the\n[npm registry](https://www.npmjs.com/).\n\nBefore installing, [download and install Node.js](https://nodejs.org/en/download/).\nNode.js 18 or higher is required.\n\nIf this is a brand new project, make sure to create a `package.json` first with\nthe [`npm init` command](https://docs.npmjs.com/creating-a-package-json-file).\n\nInstallation is done using the\n[`npm install` command](https://docs.npmjs.com/downloading-and-installing-packages-locally):\n\n```bash\nnpm install express\n```\n\nFollow [our installing guide](https://expressjs.com/en/starter/installing.html)\nfor more information.\n\n## Features\n\n  * Robust routing\n  * Focus on high performance\n  * Super-high test coverage\n  * HTTP helpers (redirection, caching, etc)\n  * View system supporting 14+ template engines\n  * Content negotiation\n  * Executable for generating applications quickly\n\n## Docs & Community\n\n  * [Website and Documentation](https://expressjs.com/) - [[website repo](https://github.com/expressjs/expressjs.com)]\n  * [GitHub Organization](https://github.com/expressjs) for Official Middleware & Modules\n  * [GitHub Discussions](https://github.com/expressjs/discussions) for discussion on the development and usage of Express\n\n**PROTIP** Be sure to read the [migration guide to v5](https://expressjs.com/en/guide/migrating-5)\n\n## Quick Start\n\n  The quickest way to get started with express is to utilize the executable [`express(1)`](https://github.com/expressjs/generator) to generate an application as shown below:\n\n  Install the executable. The executable's major version will match Express's:\n\n```bash\nnpm install -g express-generator@4\n```\n\n  Create the app:\n\n```bash\nexpress /tmp/foo && cd /tmp/foo\n```\n\n  Install dependencies:\n\n```bash\nnpm install\n```\n\n  Start the server:\n\n```bash\nnpm start\n```\n\n  View the website at: http://localhost:3000\n\n## Philosophy\n\n  The Express philosophy is to provide small, robust tooling for HTTP servers, making\n  it a great solution for single page applications, websites, hybrids, or public\n  HTTP APIs.\n\n  Express does not force you to use any specific ORM or template engine. With support for over\n  14 template engines via [@ladjs/consolidate](https://github.com/ladjs/consolidate),\n  you can quickly craft your perfect framework.\n\n## Examples\n\n  To view the examples, clone the Express repository:\n\n```bash\ngit clone https://github.com/expressjs/express.git --depth 1 && cd express\n```\n\n  Then install the dependencies:\n\n```bash\nnpm install\n```\n\n  Then run whichever example you want:\n\n```bash\nnode examples/content-negotiation\n```\n\n## Contributing\n\nThe Express.js project welcomes all constructive contributions. Contributions take many forms,\nfrom code for bug fixes and enhancements, to additions and fixes to documentation, additional\ntests, triaging incoming pull requests and issues, and more!\n\nSee the [Contributing Guide] for more technical details on contributing.\n\nThis project has a [Code of Conduct]. By participating, you are expected to uphold this code.\n\n### Security Issues\n\nIf you discover a security vulnerability in Express, please see [Security Policies and Procedures](https://github.com/expressjs/express/security/policy).\n\n### Running Tests\n\nTo run the test suite, first install the dependencies:\n\n```bash\nnpm install\n```\n\nThen run `npm test`:\n\n```bash\nnpm test\n```\n\n## Current project team members\n\nFor information about the governance of the express.js project, see [GOVERNANCE.md](https://github.com/expressjs/discussions/blob/HEAD/docs/GOVERNANCE.md).\n\nThe original author of Express is [TJ Holowaychuk](https://github.com/tj)\n\n[List of all contributors](https://github.com/expressjs/express/graphs/contributors)\n\n### TC (Technical Committee)\n\n* [UlisesGascon](https://github.com/UlisesGascon) - **Ulises Gasc\u00f3n** (he/him)\n* [jonchurch](https://github.com/jonchurch) - **Jon Church**\n* [wesleytodd](https://github.com/wesleytodd) - **Wes Todd**\n* [LinusU](https://github.com/LinusU) - **Linus Unneb\u00e4ck**\n* [blakeembrey](https://github.com/blakeembrey) - **Blake Embrey**\n* [sheplu](https://github.com/sheplu) - **Jean Burellier**\n* [crandmck](https://github.com/crandmck) - **Rand McKinney**\n* [ctcpip](https://github.com/ctcpip) - **Chris de Almeida**\n\n<details>\n<summary>TC emeriti members</summary>\n\n#### TC emeriti members\n\n  * [dougwilson](https://github.com/dougwilson) - **Douglas Wilson**\n  * [hacksparrow](https://github.com/hacksparrow) - **Hage Yaapa**\n  * [jonathanong](https://github.com/jonathanong) - **jongleberry**\n  * [niftylettuce](https://github.com/niftylettuce) - **niftylettuce**\n  * [troygoode](https://github.com/troygoode) - **Troy Goode**\n</details>\n\n\n### Triagers\n\n* [aravindvnair99](https://github.com/aravindvnair99) - **Aravind Nair**\n* [bjohansebas](https://github.com/bjohansebas) - **Sebastian Beltran**\n* [carpasse](https://github.com/carpasse) - **Carlos Serrano**\n* [CBID2](https://github.com/CBID2) - **Christine Belzie**\n* [UlisesGascon](https://github.com/UlisesGascon) - **Ulises Gasc\u00f3n** (he/him)\n* [IamLizu](https://github.com/IamLizu) - **S M Mahmudul Hasan** (he/him)\n* [Phillip9587](https://github.com/Phillip9587) - **Phillip Barta**\n* [efekrskl](https://github.com/efekrskl) - **Efe Karasakal**\n* [rxmarbles](https://github.com/rxmarbles) - **Rick Markins** (he/him)\n* [krzysdz](https://github.com/krzysdz)\n* [GroophyLifefor](https://github.com/GroophyLifefor) - **Murat Kirazkaya**\n\n<details>\n<summary>Triagers emeriti members</summary>\n\n#### Emeritus Triagers\n\n  * [AuggieH](https://github.com/AuggieH) - **Auggie Hudak**\n  * [G-Rath](https://github.com/G-Rath) - **Gareth Jones**\n  * [MohammadXroid](https://github.com/MohammadXroid) - **Mohammad Ayashi**\n  * [NawafSwe](https://github.com/NawafSwe) - **Nawaf Alsharqi**\n  * [NotMoni](https://github.com/NotMoni) - **Moni**\n  * [VigneshMurugan](https://github.com/VigneshMurugan) - **Vignesh Murugan**\n  * [davidmashe](https://github.com/davidmashe) - **David Ashe**\n  * [digitaIfabric](https://github.com/digitaIfabric) - **David**\n  * [e-l-i-s-e](https://github.com/e-l-i-s-e) - **Elise Bonner**\n  * [fed135](https://github.com/fed135) - **Frederic Charette**\n  * [firmanJS](https://github.com/firmanJS) - **Firman Abdul Hakim**\n  * [getspooky](https://github.com/getspooky) - **Yasser Ameur**\n  * [ghinks](https://github.com/ghinks) - **Glenn**\n  * [ghousemohamed](https://github.com/ghousemohamed) - **Ghouse Mohamed**\n  * [gireeshpunathil](https://github.com/gireeshpunathil) - **Gireesh Punathil**\n  * [jake32321](https://github.com/jake32321) - **Jake Reed**\n  * [jonchurch](https://github.com/jonchurch) - **Jon Church**\n  * [lekanikotun](https://github.com/lekanikotun) - **Troy Goode**\n  * [m"
         }
       ],
       "config_files": [],
@@ -4437,8 +4437,8 @@
                         ]
                       },
                       {
-                        "name": "CCTV大赛上海分赛区.txt",
-                        "path": "examples/downloads/files/CCTV大赛上海分赛区.txt",
+                        "name": "CCTV\u5927\u8d5b\u4e0a\u6d77\u5206\u8d5b\u533a.txt",
+                        "path": "examples/downloads/files/CCTV\u5927\u8d5b\u4e0a\u6d77\u5206\u8d5b\u533a.txt",
                         "is_dir": false,
                         "file_count": 1,
                         "children": []
@@ -5571,14 +5571,14 @@
                     ]
                   },
                   {
-                    "name": "snow ☃",
-                    "path": "test/fixtures/snow ☃",
+                    "name": "snow \u2603",
+                    "path": "test/fixtures/snow \u2603",
                     "is_dir": true,
                     "file_count": 1,
                     "children": [
                       {
                         "name": ".gitkeep",
-                        "path": "test/fixtures/snow ☃/.gitkeep",
+                        "path": "test/fixtures/snow \u2603/.gitkeep",
                         "is_dir": false,
                         "file_count": 1,
                         "children": []
@@ -6374,7 +6374,7 @@
         "steps": [
           {
             "id": "serialize",
-            "label": "JSON serialize (inventory → SQLite)",
+            "label": "JSON serialize (inventory \u2192 SQLite)",
             "ms": 0,
             "pct": 0
           },
@@ -6395,12 +6395,12 @@
     ]
   },
   "report": {
-    "overview": "Express 5.2.1 is the minimalist Node.js HTTP framework, and this repository holds only its core: ~5,500 lines across six files in `lib/` that layer settings management, request/response sugar, and a template-resolution system on top of Node's `http` primitives. What is distinctive about the v5 line is how much has been pushed out of the tree — routing lives entirely in the external `router` package, body parsing in `body-parser`, static serving in `serve-static` — so this repo is mostly a prototype-mixin façade plus a large behavioural test suite (70 unit files, 18 acceptance files that boot the `examples/` apps). It targets Node >= 18 and ships to npm as a library; there is no build step, no bundler, and no storage layer. The audience is every Node web developer, and the maintenance posture is visibly conservative: pinned SHA GitHub Actions, OpenSSF Scorecard, CodeQL, dependabot with major-version updates ignored.",
+    "overview": "Express 5.2.1 is the minimalist Node.js HTTP framework, and this repository holds only its core: ~5,500 lines across six files in `lib/` that layer settings management, request/response sugar, and a template-resolution system on top of Node's `http` primitives. What is distinctive about the v5 line is how much has been pushed out of the tree \u2014 routing lives entirely in the external `router` package, body parsing in `body-parser`, static serving in `serve-static` \u2014 so this repo is mostly a prototype-mixin fa\u00e7ade plus a large behavioural test suite (70 unit files, 18 acceptance files that boot the `examples/` apps). It targets Node >= 18 and ships to npm as a library; there is no build step, no bundler, and no storage layer. The audience is every Node web developer, and the maintenance posture is visibly conservative: pinned SHA GitHub Actions, OpenSSF Scorecard, CodeQL, dependabot with major-version updates ignored.",
     "system_map": {
-      "summary": "A single npm entrypoint (`index.js` → `lib/express.js`) exposes a factory, `createApplication()`, that returns a callable function decorated with the application prototype and EventEmitter. Five runtime modules split responsibility: `application.js` (settings, dispatch, mounting, rendering), `request.js` and `response.js` (prototypes grafted onto `http.IncomingMessage`/`http.ServerResponse`), `view.js` (template lookup), and `utils.js` (compilers for etag/query/trust). The runtime boundary is deliberately thin — routing, body parsing and static file serving are re-exported from sibling npm packages rather than implemented here. There is no persistent storage; all state is per-app in-memory objects. Distribution is npm-only, driven by a GitHub release event.",
+      "summary": "A single npm entrypoint (`index.js` \u2192 `lib/express.js`) exposes a factory, `createApplication()`, that returns a callable function decorated with the application prototype and EventEmitter. Five runtime modules split responsibility: `application.js` (settings, dispatch, mounting, rendering), `request.js` and `response.js` (prototypes grafted onto `http.IncomingMessage`/`http.ServerResponse`), `view.js` (template lookup), and `utils.js` (compilers for etag/query/trust). The runtime boundary is deliberately thin \u2014 routing, body parsing and static file serving are re-exported from sibling npm packages rather than implemented here. There is no persistent storage; all state is per-app in-memory objects. Distribution is npm-only, driven by a GitHub release event.",
       "claims": [
         {
-          "claim": "`index.js` is a three-line re-export of `lib/express.js`, and `package.json` restricts the published tarball to `LICENSE`, `Readme.md`, `index.js` and `lib/` — so `test/` and `examples/` never ship.",
+          "claim": "`index.js` is a three-line re-export of `lib/express.js`, and `package.json` restricts the published tarball to `LICENSE`, `Readme.md`, `index.js` and `lib/` \u2014 so `test/` and `examples/` never ship.",
           "sources": [
             "index.js",
             "package.json#L95-L100"
@@ -6432,7 +6432,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Body parsing is a pure re-export — `express.json`, `express.raw`, `express.text`, `express.urlencoded` all point straight at `body-parser`, and `express.static` at `serve-static`.",
+          "claim": "Body parsing is a pure re-export \u2014 `express.json`, `express.raw`, `express.text`, `express.urlencoded` all point straight at `body-parser`, and `express.static` at `serve-static`.",
           "sources": [
             "lib/express.js#L77-L81",
             "test/exports.js#L11-L35"
@@ -6440,7 +6440,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "All per-app state lives in three null-prototype objects created in `app.init()` — `this.cache` (compiled views), `this.engines` (extension→renderer), `this.settings` — plus `this.locals`; there is no database or persistence layer anywhere in `lib/`.",
+          "claim": "All per-app state lives in three null-prototype objects created in `app.init()` \u2014 `this.cache` (compiled views), `this.engines` (extension\u2192renderer), `this.settings` \u2014 plus `this.locals`; there is no database or persistence layer anywhere in `lib/`.",
           "sources": [
             "lib/application.js#L59-L66",
             "lib/application.js#L118-L128"
@@ -6464,14 +6464,14 @@
           "kind": "evidence"
         },
         {
-          "claim": "There is no build step. The npm scripts are `lint` (eslint), `test` (mocha over `test/` and `test/acceptance/` with `--check-leaks`), `test-ci` (nyc → lcovonly), `test-cov` (nyc → html) and `test-tap`.",
+          "claim": "There is no build step. The npm scripts are `lint` (eslint), `test` (mocha over `test/` and `test/acceptance/` with `--check-leaks`), `test-ci` (nyc \u2192 lcovonly), `test-cov` (nyc \u2192 html) and `test-tap`.",
           "sources": [
             "package.json#L101-L107"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "CI runs a 2-OS × 9-Node matrix (ubuntu/windows × Node 18–26) in `ci.yml`, with a separate `legacy.yml` still exercising Node 16 and 17 despite `engines.node` declaring `>= 18`.",
+          "claim": "CI runs a 2-OS \u00d7 9-Node matrix (ubuntu/windows \u00d7 Node 18\u201326) in `ci.yml`, with a separate `legacy.yml` still exercising Node 16 and 17 despite `engines.node` declaring `>= 18`.",
           "sources": [
             ".github/workflows/ci.yml#L44-L52",
             ".github/workflows/legacy.yml#L30-L36",
@@ -6496,7 +6496,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "`app.listen()` is a thin wrapper over `http.createServer(this)` that only adds `once`-wrapped error forwarding when the last argument is a callback — HTTPS is left to the caller.",
+          "claim": "`app.listen()` is a thin wrapper over `http.createServer(this)` that only adds `once`-wrapped error forwarding when the last argument is a callback \u2014 HTTPS is left to the caller.",
           "sources": [
             "lib/application.js#L598-L607",
             "test/app.listen.js#L7-L26"
@@ -6534,7 +6534,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "`app.set()` has four magic settings that compile a companion function: `etag`→`etag fn`, `query parser`→`query parser fn`, `trust proxy`→`trust proxy fn`; each compiler throws `TypeError` on unknown string values.",
+          "claim": "`app.set()` has four magic settings that compile a companion function: `etag`\u2192`etag fn`, `query parser`\u2192`query parser fn`, `trust proxy`\u2192`trust proxy fn`; each compiler throws `TypeError` on unknown string values.",
           "sources": [
             "lib/application.js#L354-L382",
             "lib/utils.js#L130-L215",
@@ -6621,7 +6621,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Request-side features are all lazy getters defined through a local `defineGetter` helper: `query`, `protocol`, `secure`, `ip`, `ips`, `subdomains`, `path`, `host`, `hostname`, `fresh`, `stale`, `xhr` — plus the methods `get`/`header`, `accepts*`, `range`, `is`.",
+          "claim": "Request-side features are all lazy getters defined through a local `defineGetter` helper: `query`, `protocol`, `secure`, `ip`, `ips`, `subdomains`, `path`, `host`, `hostname`, `fresh`, `stale`, `xhr` \u2014 plus the methods `get`/`header`, `accepts*`, `range`, `is`.",
           "sources": [
             "lib/request.js#L230-L527"
           ],
@@ -6636,7 +6636,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "The `examples/` tree is a catalogued feature gallery of 26 runnable apps (auth, mvc, vhost, multi-router, view-constructor, web-service, …), indexed in `examples/README.md`.",
+          "claim": "The `examples/` tree is a catalogued feature gallery of 26 runnable apps (auth, mvc, vhost, multi-router, view-constructor, web-service, \u2026), indexed in `examples/README.md`.",
           "sources": [
             "examples/README.md#L1-L28",
             "examples/mvc/index.js",
@@ -6647,10 +6647,10 @@
       ]
     },
     "data_flow": {
-      "summary": "Data enters as a raw Node `IncomingMessage`, is re-prototyped in `app.handle` so that Express getters become available, then flows through the external router's middleware stack where `body-parser` populates `req.body` and the router populates `req.params`, `req.baseUrl` and `req.next`. Derived request values are computed lazily and are never cached — every read of `req.query`, `req.ip` or `req.host` re-runs its parser against the raw headers, gated by the compiled `trust proxy fn`. Output converges on `res.send`, which is where Content-Type, Content-Length, ETag and freshness negotiation are decided before `res.end`. Template rendering is a side channel: `res.render` → `app.render` → `View#render` produces a string that is then fed back into `res.send`. Anything that escapes the stack terminates in `finalhandler`.",
+      "summary": "Data enters as a raw Node `IncomingMessage`, is re-prototyped in `app.handle` so that Express getters become available, then flows through the external router's middleware stack where `body-parser` populates `req.body` and the router populates `req.params`, `req.baseUrl` and `req.next`. Derived request values are computed lazily and are never cached \u2014 every read of `req.query`, `req.ip` or `req.host` re-runs its parser against the raw headers, gated by the compiled `trust proxy fn`. Output converges on `res.send`, which is where Content-Type, Content-Length, ETag and freshness negotiation are decided before `res.end`. Template rendering is a side channel: `res.render` \u2192 `app.render` \u2192 `View#render` produces a string that is then fed back into `res.send`. Anything that escapes the stack terminates in `finalhandler`.",
       "claims": [
         {
-          "claim": "The input boundary is `app.handle(req, res, callback)`, which mutates the incoming Node objects in place via `Object.setPrototypeOf(req, this.request)` / `(res, this.response)` — Express never wraps or copies the request.",
+          "claim": "The input boundary is `app.handle(req, res, callback)`, which mutates the incoming Node objects in place via `Object.setPrototypeOf(req, this.request)` / `(res, this.response)` \u2014 Express never wraps or copies the request.",
           "sources": [
             "lib/application.js#L152-L182"
           ],
@@ -6672,7 +6672,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "The `extended` query parser routes through `qs.parse(str, { allowPrototypes: true })`, while the default `simple` parser is `node:querystring.parse` — two materially different object shapes behind one setting.",
+          "claim": "The `extended` query parser routes through `qs.parse(str, { allowPrototypes: true })`, while the default `simple` parser is `node:querystring.parse` \u2014 two materially different object shapes behind one setting.",
           "sources": [
             "lib/utils.js#L162-L192",
             "lib/utils.js#L267-L271"
@@ -6721,7 +6721,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Render data is merged in a fixed precedence — `app.locals`, then `res.locals` (passed as `opts._locals`), then the caller's options — with `cache` defaulting to the `view cache` setting when not explicitly provided.",
+          "claim": "Render data is merged in a fixed precedence \u2014 `app.locals`, then `res.locals` (passed as `opts._locals`), then the caller's options \u2014 with `cache` defaulting to the `view cache` setting when not explicitly provided.",
           "sources": [
             "lib/application.js#L522-L546",
             "lib/response.js#L896-L920"
@@ -6744,7 +6744,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Static file responses bypass `res.send` entirely — `sendfile()` attaches listeners for `directory`, `end`, `error`, `file`, `stream` plus `on-finished`, applies `options.headers` on the `headers` event, and then `file.pipe(res)`.",
+          "claim": "Static file responses bypass `res.send` entirely \u2014 `sendfile()` attaches listeners for `directory`, `end`, `error`, `file`, `stream` plus `on-finished`, applies `options.headers` on the `headers` event, and then `file.pipe(res)`.",
           "sources": [
             "lib/response.js#L923-L1010"
           ],
@@ -6767,10 +6767,10 @@
       ]
     },
     "behavior_traces": {
-      "summary": "Four flows carry essentially all of Express's behaviour: application construction, request dispatch, response emission, and view rendering. Each is short and traceable by name — the framework is only three or four stack frames deep before control reaches an external package. The traces below name functions in call order as they appear in `lib/`.",
+      "summary": "Four flows carry essentially all of Express's behaviour: application construction, request dispatch, response emission, and view rendering. Each is short and traceable by name \u2014 the framework is only three or four stack frames deep before control reaches an external package. The traces below name functions in call order as they appear in `lib/`.",
       "claims": [
         {
-          "claim": "STARTUP: `require('express')` → `index.js` → `lib/express.js` → user calls `createApplication()` → `mixin(app, EventEmitter.prototype)` → `mixin(app, proto)` → `Object.create(req/res)` → `app.init()` → `app.defaultConfiguration()` → settings seeded and the `'mount'` listener attached → `Object.defineProperty(this, 'router', getter)` installs the lazy router.",
+          "claim": "STARTUP: `require('express')` \u2192 `index.js` \u2192 `lib/express.js` \u2192 user calls `createApplication()` \u2192 `mixin(app, EventEmitter.prototype)` \u2192 `mixin(app, proto)` \u2192 `Object.create(req/res)` \u2192 `app.init()` \u2192 `app.defaultConfiguration()` \u2192 settings seeded and the `'mount'` listener attached \u2192 `Object.defineProperty(this, 'router', getter)` installs the lazy router.",
           "sources": [
             "index.js",
             "lib/express.js#L36-L56",
@@ -6779,7 +6779,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "STARTUP (server): `app.listen(...)` → `http.createServer(this)` → if the last arg is a function it is wrapped with `once()` and registered on the server's `'error'` event → `server.listen.apply(server, args)`; the returned value is the `http.Server`, not the app.",
+          "claim": "STARTUP (server): `app.listen(...)` \u2192 `http.createServer(this)` \u2192 if the last arg is a function it is wrapped with `once()` and registered on the server's `'error'` event \u2192 `server.listen.apply(server, args)`; the returned value is the `http.Server`, not the app.",
           "sources": [
             "lib/application.js#L598-L607",
             "test/app.listen.js#L13-L26"
@@ -6787,7 +6787,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "ROUTE REGISTRATION: `app.get('/x', fn)` → generated method sees `arguments.length > 1` → `this.route(path)` → `this.router.route(path)` (first access instantiates `new Router`) → `route.get(fn)`.",
+          "claim": "ROUTE REGISTRATION: `app.get('/x', fn)` \u2192 generated method sees `arguments.length > 1` \u2192 `this.route(path)` \u2192 `this.router.route(path)` (first access instantiates `new Router`) \u2192 `route.get(fn)`.",
           "sources": [
             "lib/application.js#L471-L483",
             "lib/application.js#L259-L261",
@@ -6796,7 +6796,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "DISPATCH: socket → `app(req, res)` closure → `app.handle` → `finalhandler(...)` built → `res.setHeader('X-Powered-By')` → `req.res`/`res.req` cross-links → both prototypes swapped → `res.locals` ensured → `this.router.handle(req, res, done)` hands off to the external router package.",
+          "claim": "DISPATCH: socket \u2192 `app(req, res)` closure \u2192 `app.handle` \u2192 `finalhandler(...)` built \u2192 `res.setHeader('X-Powered-By')` \u2192 `req.res`/`res.req` cross-links \u2192 both prototypes swapped \u2192 `res.locals` ensured \u2192 `this.router.handle(req, res, done)` hands off to the external router package.",
           "sources": [
             "lib/express.js#L37-L39",
             "lib/application.js#L152-L182"
@@ -6804,7 +6804,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "PRIMARY ACTION (`res.send('hi')`): typeof-string branch sets charset via `setCharset` or `this.type('html')` → `app.get('etag fn')` → length computed and `Content-Length` set unless `Transfer-Encoding` present → `etagFn(chunk, encoding)` → `this.set('ETag')` → `if (req.fresh) this.status(304)` → header stripping for 204/304/205 → `this.end(chunk, encoding)` (or bare `end()` for HEAD).",
+          "claim": "PRIMARY ACTION (`res.send('hi')`): typeof-string branch sets charset via `setCharset` or `this.type('html')` \u2192 `app.get('etag fn')` \u2192 length computed and `Content-Length` set unless `Transfer-Encoding` present \u2192 `etagFn(chunk, encoding)` \u2192 `this.set('ETag')` \u2192 `if (req.fresh) this.status(304)` \u2192 header stripping for 204/304/205 \u2192 `this.end(chunk, encoding)` (or bare `end()` for HEAD).",
           "sources": [
             "lib/response.js#L126-L226",
             "lib/utils.js#L225-L241"
@@ -6812,7 +6812,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "JSON PATH: `res.json(obj)` → reads `json escape`/`json replacer`/`json spaces` → `stringify()` → sets `Content-Type: application/json` only if unset → delegates to `res.send(body)`, which then re-enters the string branch and applies the charset.",
+          "claim": "JSON PATH: `res.json(obj)` \u2192 reads `json escape`/`json replacer`/`json spaces` \u2192 `stringify()` \u2192 sets `Content-Type: application/json` only if unset \u2192 delegates to `res.send(body)`, which then re-enters the string branch and applies the charset.",
           "sources": [
             "lib/response.js#L236-L260",
             "lib/response.js#L126-L150"
@@ -6820,7 +6820,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "JSONP PATH: `res.jsonp` → `stringify()` → reads the callback from `req.query[app.get('jsonp callback name')]` → takes `callback[0]` if an array → strips everything outside `[^\\[\\]\\w$.]` → sets `X-Content-Type-Options: nosniff` and `text/javascript` → escapes U+2028/U+2029 → wraps in the `/**/ typeof cb === 'function' && cb(...)` Rosetta-Flash mitigation → `res.send`.",
+          "claim": "JSONP PATH: `res.jsonp` \u2192 `stringify()` \u2192 reads the callback from `req.query[app.get('jsonp callback name')]` \u2192 takes `callback[0]` if an array \u2192 strips everything outside `[^\\[\\]\\w$.]` \u2192 sets `X-Content-Type-Options: nosniff` and `text/javascript` \u2192 escapes U+2028/U+2029 \u2192 wraps in the `/**/ typeof cb === 'function' && cb(...)` Rosetta-Flash mitigation \u2192 `res.send`.",
           "sources": [
             "lib/response.js#L264-L318",
             "test/res.jsonp.js"
@@ -6828,7 +6828,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "RENDER PATH: `res.render(view, opts)` → `opts._locals = res.locals` → default callback `(err, str) => err ? req.next(err) : self.send(str)` → `app.render(name, opts, done)` → locals merged → cache consulted → `new View(name, { defaultEngine, root, engines })` → `view.lookup()` → `View#resolve` → `tryStat` → `tryRender(view, opts, done)` → `View#render` → engine → `process.nextTick` → `res.send(html)`.",
+          "claim": "RENDER PATH: `res.render(view, opts)` \u2192 `opts._locals = res.locals` \u2192 default callback `(err, str) => err ? req.next(err) : self.send(str)` \u2192 `app.render(name, opts, done)` \u2192 locals merged \u2192 cache consulted \u2192 `new View(name, { defaultEngine, root, engines })` \u2192 `view.lookup()` \u2192 `View#resolve` \u2192 `tryStat` \u2192 `tryRender(view, opts, done)` \u2192 `View#render` \u2192 engine \u2192 `process.nextTick` \u2192 `res.send(html)`.",
           "sources": [
             "lib/response.js#L896-L920",
             "lib/application.js#L522-L583",
@@ -6845,14 +6845,14 @@
           "kind": "evidence"
         },
         {
-          "claim": "VIEW LOOKUP fallback: `View#resolve` first tries `<dir>/<file>` and, failing that, `<dir>/<basename>/index<ext>` — both via synchronous `fs.statSync` wrapped in `tryStat`.",
+          "claim": "VIEW LOOKUP fallback: `View#resolve` first tries `<dir>/<file>` and, failing that, `<dir>/<basename>/index<ext>` \u2014 both via synchronous `fs.statSync` wrapped in `tryStat`.",
           "sources": [
             "lib/view.js#L169-L204"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "FILE TRANSFER: `res.sendFile` → argument validation (throws on missing/non-string path, and on a relative path with no `root`) → `encodeURI(path)` → `opts.etag = app.enabled('etag')` → `send(req, pathname, opts)` → `sendfile(res, file, opts, cb)` → listeners registered → `file.pipe(res)`; the `onfinish` handler uses `setImmediate` to distinguish a completed stream from an aborted one.",
+          "claim": "FILE TRANSFER: `res.sendFile` \u2192 argument validation (throws on missing/non-string path, and on a relative path with no `root`) \u2192 `encodeURI(path)` \u2192 `opts.etag = app.enabled('etag')` \u2192 `send(req, pathname, opts)` \u2192 `sendfile(res, file, opts, cb)` \u2192 listeners registered \u2192 `file.pipe(res)`; the `onfinish` handler uses `setImmediate` to distinguish a completed stream from an aborted one.",
           "sources": [
             "lib/response.js#L375-L430",
             "lib/response.js#L923-L1010"
@@ -6860,21 +6860,21 @@
           "kind": "evidence"
         },
         {
-          "claim": "DOWNLOAD: `res.download` → argument shuffling for the (filename|options|callback) overloads → `Content-Disposition` built from `basename(name || path)` → caller headers copied except `content-disposition` → `opts = Object.create(opts)` so user options stay on the prototype → `resolve(path)` when no `root` → `this.sendFile(fullPath, opts, done)`.",
+          "claim": "DOWNLOAD: `res.download` \u2192 argument shuffling for the (filename|options|callback) overloads \u2192 `Content-Disposition` built from `basename(name || path)` \u2192 caller headers copied except `content-disposition` \u2192 `opts = Object.create(opts)` so user options stay on the prototype \u2192 `resolve(path)` when no `root` \u2192 `this.sendFile(fullPath, opts, done)`.",
           "sources": [
             "lib/response.js#L437-L486"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "REDIRECT: `res.redirect([status,] url)` → optional `depd` deprecation calls → `this.location(address)` runs `encodeUrl` and re-reads the header → `res.format({ text, html, default })` picks a body → `res.status(status)` → explicit `Content-Length` via `Buffer.byteLength` → `end()` (body skipped for HEAD).",
+          "claim": "REDIRECT: `res.redirect([status,] url)` \u2192 optional `depd` deprecation calls \u2192 `this.location(address)` runs `encodeUrl` and re-reads the header \u2192 `res.format({ text, html, default })` picks a body \u2192 `res.status(status)` \u2192 explicit `Content-Length` via `Buffer.byteLength` \u2192 `end()` (body skipped for HEAD).",
           "sources": [
             "lib/response.js#L796-L870"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "SUB-APP MOUNT: `app.use('/admin', subApp)` → duck-type check passes → `subApp.mountpath = '/admin'`, `subApp.parent = this` → `router.use(path, mounted_app)` → `subApp.emit('mount', this)` → the child's `'mount'` listener re-parents its `request`/`response`/`engines`/`settings` prototypes; at request time `mounted_app` restores `orig.request`/`orig.response` before calling `next`.",
+          "claim": "SUB-APP MOUNT: `app.use('/admin', subApp)` \u2192 duck-type check passes \u2192 `subApp.mountpath = '/admin'`, `subApp.parent = this` \u2192 `router.use(path, mounted_app)` \u2192 `subApp.emit('mount', this)` \u2192 the child's `'mount'` listener re-parents its `request`/`response`/`engines`/`settings` prototypes; at request time `mounted_app` restores `orig.request`/`orig.response` before calling `next`.",
           "sources": [
             "lib/application.js#L190-L241",
             "lib/application.js#L109-L123",
@@ -6893,7 +6893,7 @@
       ]
     },
     "testing_signals": {
-      "summary": "Testing is mocha + supertest with `after` for multi-assertion coordination, and it is unusually thorough for a codebase this size: 70 unit files under `test/` plus 18 acceptance files under `test/acceptance/`, totalling ~15,400 lines against ~5,500 lines of `lib/`. Unit files are named one-per-API (`res.send.js`, `req.host.js`, `app.param.js`), which makes the mapping from source method to test file mechanical. Acceptance tests do not use fixtures — they `require('../../examples/<name>')` and drive the real example apps, so `examples/` is effectively production test surface. Coverage runs through nyc in CI across the whole matrix, is merged with lcov and shipped to Coveralls.",
+      "summary": "Testing is mocha + supertest with `after` for multi-assertion coordination, and it is unusually thorough for a codebase this size: 70 unit files under `test/` plus 18 acceptance files under `test/acceptance/`, totalling ~15,400 lines against ~5,500 lines of `lib/`. Unit files are named one-per-API (`res.send.js`, `req.host.js`, `app.param.js`), which makes the mapping from source method to test file mechanical. Acceptance tests do not use fixtures \u2014 they `require('../../examples/<name>')` and drive the real example apps, so `examples/` is effectively production test surface. Coverage runs through nyc in CI across the whole matrix, is merged with lcov and shipped to Coveralls.",
       "claims": [
         {
           "claim": "The runner is mocha with `--require test/support/env --check-leaks`, covering both `test/` and `test/acceptance/`; `--check-leaks` means any accidental global assignment fails the suite.",
@@ -6913,7 +6913,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "HTTP assertions run through `supertest` against the app function directly, without binding a port — e.g. `request(app).get('/').expect(200, done)`.",
+          "claim": "HTTP assertions run through `supertest` against the app function directly, without binding a port \u2014 e.g. `request(app).get('/').expect(200, done)`.",
           "sources": [
             "test/exports.js#L59-L70",
             "test/middleware.basic.js#L36-L42",
@@ -6922,7 +6922,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "`test/support/utils.js` provides the shared assertion vocabulary: `shouldHaveBody`, `shouldHaveHeader`, `shouldNotHaveBody`, `shouldNotHaveHeader`, `shouldSkipQuery` — with body comparison done on hex-encoded buffers.",
+          "claim": "`test/support/utils.js` provides the shared assertion vocabulary: `shouldHaveBody`, `shouldHaveHeader`, `shouldNotHaveBody`, `shouldNotHaveHeader`, `shouldSkipQuery` \u2014 with body comparison done on hex-encoded buffers.",
           "sources": [
             "test/support/utils.js#L17-L40"
           ],
@@ -6956,7 +6956,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "All 18 acceptance files import example apps rather than fixtures — `test/acceptance/auth.js` requires `../../examples/auth` and drives the full login/session/restricted flow including cookie extraction.",
+          "claim": "All 18 acceptance files import example apps rather than fixtures \u2014 `test/acceptance/auth.js` requires `../../examples/auth` and drives the full login/session/restricted flow including cookie extraction.",
           "sources": [
             "test/acceptance/auth.js#L1-L10",
             "examples/auth/index.js"
@@ -6964,7 +6964,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Seven of the 26 examples have no acceptance test: `online`, `route-middleware`, `search`, `session`, `static-files`, `view-constructor`, `view-locals` — leaving the custom-`View`-constructor extension point exercised only by the example itself.",
+          "claim": "Seven of the 26 examples have no acceptance test: `online`, `route-middleware`, `search`, `session`, `static-files`, `view-constructor`, `view-locals` \u2014 leaving the custom-`View`-constructor extension point exercised only by the example itself.",
           "sources": [
             "examples/README.md#L5-L28",
             "test/acceptance/route-map.js",
@@ -6973,21 +6973,21 @@
           "kind": "evidence"
         },
         {
-          "claim": "`test/exports.js` deliberately mutates `express.application`, `express.request` and `express.response` prototypes to prove the extension contract holds — meaning test ordering has real cross-file coupling.",
+          "claim": "`test/exports.js` deliberately mutates `express.application`, `express.request` and `express.response` prototypes to prove the extension contract holds \u2014 meaning test ordering has real cross-file coupling.",
           "sources": [
             "test/exports.js#L52-L70"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "`test/regression.js` is a deliberately tiny guard file — currently one case asserting that throwing after `res.end()` still yields a clean 200 response.",
+          "claim": "`test/regression.js` is a deliberately tiny guard file \u2014 currently one case asserting that throwing after `res.end()` still yields a clean 200 response.",
           "sources": [
             "test/regression.js#L6-L20"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "Coverage is produced per matrix cell (`npm run test-ci` → nyc lcovonly), uploaded as `coverage-node-<ver>-<os>` artifacts, then merged in a dedicated `coverage` job with `lcov -a` and pushed to Coveralls.",
+          "claim": "Coverage is produced per matrix cell (`npm run test-ci` \u2192 nyc lcovonly), uploaded as `coverage-node-<ver>-<os>` artifacts, then merged in a dedicated `coverage` job with `lcov -a` and pushed to Coveralls.",
           "sources": [
             ".github/workflows/ci.yml#L74-L116",
             "package.json#L104"
@@ -6995,7 +6995,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "nyc excludes `examples`, `test` and `benchmarks` from instrumentation, so the acceptance tests contribute coverage for `lib/` only — and the `benchmarks` exclude refers to a directory that no longer exists in the tree.",
+          "claim": "nyc excludes `examples`, `test` and `benchmarks` from instrumentation, so the acceptance tests contribute coverage for `lib/` only \u2014 and the `benchmarks` exclude refers to a directory that no longer exists in the tree.",
           "sources": [
             "package.json#L104-L105"
           ],
@@ -7020,10 +7020,10 @@
       ]
     },
     "risk_map": {
-      "summary": "The security-sensitive surface concentrates in four places: proxy trust (which decides whether client-supplied `X-Forwarded-*` headers are believed), JSONP callback sanitisation, file transfer via `res.sendFile`/`res.download`, and dynamic `require()` inside the view system. Blast radius is dominated by `res.send` — `json`, `jsonp`, `sendStatus` and the default `render` callback all funnel through it, so any change there touches nearly every response. Coupling risks come from prototype mutation: `app.handle` re-prototypes live Node objects and mounting re-parents settings chains, so behaviour can change at a distance. Supply-chain posture is strong, but `.npmrc` disables lockfiles, so local installs are not reproducible.",
+      "summary": "The security-sensitive surface concentrates in four places: proxy trust (which decides whether client-supplied `X-Forwarded-*` headers are believed), JSONP callback sanitisation, file transfer via `res.sendFile`/`res.download`, and dynamic `require()` inside the view system. Blast radius is dominated by `res.send` \u2014 `json`, `jsonp`, `sendStatus` and the default `render` callback all funnel through it, so any change there touches nearly every response. Coupling risks come from prototype mutation: `app.handle` re-prototypes live Node objects and mounting re-parents settings chains, so behaviour can change at a distance. Supply-chain posture is strong, but `.npmrc` disables lockfiles, so local installs are not reproducible.",
       "claims": [
         {
-          "claim": "SECURITY — proxy trust: `req.ip`, `req.ips`, `req.protocol`, `req.secure` and `req.host` all believe client-supplied headers whenever `trust proxy fn` returns true; setting `trust proxy` to `true` makes `compileTrust` return a constant-true function, so `X-Forwarded-For`/`-Proto`/`-Host` become fully spoofable.",
+          "claim": "SECURITY \u2014 proxy trust: `req.ip`, `req.ips`, `req.protocol`, `req.secure` and `req.host` all believe client-supplied headers whenever `trust proxy fn` returns true; setting `trust proxy` to `true` makes `compileTrust` return a constant-true function, so `X-Forwarded-For`/`-Proto`/`-Host` become fully spoofable.",
           "sources": [
             "lib/utils.js#L194-L215",
             "lib/request.js#L297-L343",
@@ -7032,28 +7032,28 @@
           "kind": "evidence"
         },
         {
-          "claim": "SECURITY — dynamic require: the `View` constructor derives a module name from the view's file extension and calls `require(mod)`. An application that renders a view name built from user input can drive module resolution, and the thrown errors leak which module was attempted.",
+          "claim": "SECURITY \u2014 dynamic require: the `View` constructor derives a module name from the view's file extension and calls `require(mod)`. An application that renders a view name built from user input can drive module resolution, and the thrown errors leak which module was attempted.",
           "sources": [
             "lib/view.js#L58-L88"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "SECURITY — JSONP: the callback is taken from `req.query` and filtered with `replace(/[^\\[\\]\\w$.]/g, '')`; correctness of this allowlist plus the `/**/ typeof` wrapper and forced `X-Content-Type-Options: nosniff` are the only things standing between `res.jsonp` and reflected script injection.",
+          "claim": "SECURITY \u2014 JSONP: the callback is taken from `req.query` and filtered with `replace(/[^\\[\\]\\w$.]/g, '')`; correctness of this allowlist plus the `/**/ typeof` wrapper and forced `X-Content-Type-Options: nosniff` are the only things standing between `res.jsonp` and reflected script injection.",
           "sources": [
             "lib/response.js#L264-L318"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "SECURITY — prototype keys: the `extended` query parser calls `qs.parse` with `allowPrototypes: true`, which is a deliberate compatibility choice that permits keys like `constructor` in parsed query objects.",
+          "claim": "SECURITY \u2014 prototype keys: the `extended` query parser calls `qs.parse` with `allowPrototypes: true`, which is a deliberate compatibility choice that permits keys like `constructor` in parsed query objects.",
           "sources": [
             "lib/utils.js#L267-L271"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "SECURITY — file IO outside repo root: `res.sendFile` only enforces \"absolute path or `root` option\" and `encodeURI`; every actual containment check is delegated to the `send` package, so a `send` regression is an Express path-traversal regression.",
+          "claim": "SECURITY \u2014 file IO outside repo root: `res.sendFile` only enforces \"absolute path or `root` option\" and `encodeURI`; every actual containment check is delegated to the `send` package, so a `send` regression is an Express path-traversal regression.",
           "sources": [
             "lib/response.js#L398-L420",
             "package.json#L52"
@@ -7061,7 +7061,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "SECURITY — information disclosure by default: `x-powered-by` is enabled in `defaultConfiguration` and `app.handle` sets the `X-Powered-By: Express` header on every response unless explicitly disabled.",
+          "claim": "SECURITY \u2014 information disclosure by default: `x-powered-by` is enabled in `defaultConfiguration` and `app.handle` sets the `X-Powered-By: Express` header on every response unless explicitly disabled.",
           "sources": [
             "lib/application.js#L94-L95",
             "lib/application.js#L160-L163"
@@ -7069,14 +7069,14 @@
           "kind": "evidence"
         },
         {
-          "claim": "SECURITY — cookie signing depends on a foreign property: `res.cookie` reads `this.req.secret`, which Express never sets; it throws `cookieParser(\"secret\") required for signed cookies` if `cookie-parser` was not installed upstream, making signing silently middleware-order dependent.",
+          "claim": "SECURITY \u2014 cookie signing depends on a foreign property: `res.cookie` reads `this.req.secret`, which Express never sets; it throws `cookieParser(\"secret\") required for signed cookies` if `cookie-parser` was not installed upstream, making signing silently middleware-order dependent.",
           "sources": [
             "lib/response.js#L747-L755"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "BLAST RADIUS — `res.send` is the shared exit for `res.json`, `res.jsonp`, `res.sendStatus` and the default `res.render` callback; the HEAD-vs-body, 204/304/205 header stripping, ETag and Content-Length rules all live in that one function.",
+          "claim": "BLAST RADIUS \u2014 `res.send` is the shared exit for `res.json`, `res.jsonp`, `res.sendStatus` and the default `res.render` callback; the HEAD-vs-body, 204/304/205 header stripping, ETag and Content-Length rules all live in that one function.",
           "sources": [
             "lib/response.js#L126-L226",
             "lib/response.js#L236-L334",
@@ -7085,7 +7085,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "FRAGILE COUPLING — mutation of live Node objects: `app.handle` calls `Object.setPrototypeOf` on the actual `IncomingMessage`/`ServerResponse`, and `mounted_app` must manually restore the parent prototypes after a sub-app completes; forgetting that restore silently leaks the child's prototype into sibling middleware.",
+          "claim": "FRAGILE COUPLING \u2014 mutation of live Node objects: `app.handle` calls `Object.setPrototypeOf` on the actual `IncomingMessage`/`ServerResponse`, and `mounted_app` must manually restore the parent prototypes after a sub-app completes; forgetting that restore silently leaks the child's prototype into sibling middleware.",
           "sources": [
             "lib/application.js#L168-L182",
             "lib/application.js#L217-L226"
@@ -7093,7 +7093,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "FRAGILE COUPLING — settings inheritance is by prototype chain (`Object.setPrototypeOf(this.settings, parent.settings)`), guarded by a string symbol `'@@symbol:trust_proxy_default'` that is deleted/redefined in two separate places to preserve back-compat.",
+          "claim": "FRAGILE COUPLING \u2014 settings inheritance is by prototype chain (`Object.setPrototypeOf(this.settings, parent.settings)`), guarded by a string symbol `'@@symbol:trust_proxy_default'` that is deleted/redefined in two separate places to preserve back-compat.",
           "sources": [
             "lib/application.js#L47",
             "lib/application.js#L100-L123",
@@ -7102,7 +7102,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "PERFORMANCE — synchronous file IO on the request path: `View#resolve` calls `fs.statSync` up to twice per lookup, and `view cache` is only auto-enabled when `NODE_ENV === 'production'`, so non-production deployments stat the filesystem on every render.",
+          "claim": "PERFORMANCE \u2014 synchronous file IO on the request path: `View#resolve` calls `fs.statSync` up to twice per lookup, and `view cache` is only auto-enabled when `NODE_ENV === 'production'`, so non-production deployments stat the filesystem on every render.",
           "sources": [
             "lib/view.js#L169-L204",
             "lib/application.js#L143-L145"
@@ -7110,7 +7110,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "PERFORMANCE — `req.query`, `req.host`, `req.protocol` and `req.ip` are non-memoised getters; each access re-parses. Middleware that reads `req.query` repeatedly pays the `qs`/`querystring` cost every time.",
+          "claim": "PERFORMANCE \u2014 `req.query`, `req.host`, `req.protocol` and `req.ip` are non-memoised getters; each access re-parses. Middleware that reads `req.query` repeatedly pays the `qs`/`querystring` cost every time.",
           "sources": [
             "lib/request.js#L230-L241",
             "lib/request.js#L521-L527"
@@ -7118,7 +7118,7 @@
           "kind": "inference"
         },
         {
-          "claim": "LEGACY — `depd` deprecation paths remain live in `res.redirect` for missing URLs, non-string URLs and non-number statuses, meaning three invalid-argument shapes still produce a response instead of throwing.",
+          "claim": "LEGACY \u2014 `depd` deprecation paths remain live in `res.redirect` for missing URLs, non-string URLs and non-number statuses, meaning three invalid-argument shapes still produce a response instead of throwing.",
           "sources": [
             "lib/response.js#L814-L840",
             "lib/response.js#L17"
@@ -7126,7 +7126,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "LEGACY — `legacy.yml` still runs the full suite on Node 16 and 17 even though `package.json` declares `engines.node >= 18`; the two signals disagree about the supported floor.",
+          "claim": "LEGACY \u2014 `legacy.yml` still runs the full suite on Node 16 and 17 even though `package.json` declares `engines.node >= 18`; the two signals disagree about the supported floor.",
           "sources": [
             ".github/workflows/legacy.yml#L30-L36",
             "package.json#L91-L93"
@@ -7134,7 +7134,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "REPRODUCIBILITY — `.npmrc` sets `package-lock=false`, and no lockfile is committed, so CI and local installs resolve dependency versions independently at install time; `min-release-age=7` is the mitigation.",
+          "claim": "REPRODUCIBILITY \u2014 `.npmrc` sets `package-lock=false`, and no lockfile is committed, so CI and local installs resolve dependency versions independently at install time; `min-release-age=7` is the mitigation.",
           "sources": [
             ".npmrc",
             ".gitignore"
@@ -7142,14 +7142,14 @@
           "kind": "evidence"
         },
         {
-          "claim": "SUBTLE API — `res.download` rebinds options with `opts = Object.create(opts)` so caller options live on the prototype rather than as own properties; any downstream code doing `Object.keys(opts)` or a spread will not see them.",
+          "claim": "SUBTLE API \u2014 `res.download` rebinds options with `opts = Object.create(opts)` so caller options live on the prototype rather than as own properties; any downstream code doing `Object.keys(opts)` or a spread will not see them.",
           "sources": [
             "lib/response.js#L475-L480"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "BREAKING-CHANGE HAZARD — `res.status` now throws `TypeError` for non-integers and `RangeError` outside 100–999, so any code path that computed a status dynamically can convert a soft bug into a thrown exception mid-response.",
+          "claim": "BREAKING-CHANGE HAZARD \u2014 `res.status` now throws `TypeError` for non-integers and `RangeError` outside 100\u2013999, so any code path that computed a status dynamically can convert a soft bug into a thrown exception mid-response.",
           "sources": [
             "lib/response.js#L65-L78",
             "test/res.status.js"
@@ -7159,7 +7159,7 @@
       ]
     },
     "extension_points": {
-      "summary": "Express is designed to be extended by mutation rather than by configuration. Three exported prototypes (`express.application`, `express.request`, `express.response`) are public and explicitly documented as mutable by the test suite. Beyond that there are four first-class registries — the template-engine map, the `view` constructor, the compiled-function settings (`etag`/`query parser`/`trust proxy`), and route params — plus mounting, which composes whole apps. The verb table is itself generated from Node's `http.METHODS`, so new HTTP methods appear automatically.",
+      "summary": "Express is designed to be extended by mutation rather than by configuration. Three exported prototypes (`express.application`, `express.request`, `express.response`) are public and explicitly documented as mutable by the test suite. Beyond that there are four first-class registries \u2014 the template-engine map, the `view` constructor, the compiled-function settings (`etag`/`query parser`/`trust proxy`), and route params \u2014 plus mounting, which composes whole apps. The verb table is itself generated from Node's `http.METHODS`, so new HTTP methods appear automatically.",
       "claims": [
         {
           "claim": "`app.engine(ext, fn)` is the template-engine registry: it normalises the leading dot and stores into `this.engines[extension]`, which `View` consults before falling back to a dynamic `require`.",
@@ -7171,7 +7171,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "`app.set('view', CustomViewCtor)` swaps the entire view-resolution class — `app.render` reads `this.get('view')` and does `new View(name, { defaultEngine, root, engines })`, requiring only a `.path` property and a `.render(options, cb)` method.",
+          "claim": "`app.set('view', CustomViewCtor)` swaps the entire view-resolution class \u2014 `app.render` reads `this.get('view')` and does `new View(name, { defaultEngine, root, engines })`, requiring only a `.path` property and a `.render(options, cb)` method.",
           "sources": [
             "lib/application.js#L136",
             "lib/application.js#L548-L568",
@@ -7181,7 +7181,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "The three compiler settings all short-circuit on a function argument — `compileETag`, `compileQueryParser` and `compileTrust` each begin with `if (typeof val === 'function') return val`, so any of them can be fully replaced by user code.",
+          "claim": "The three compiler settings all short-circuit on a function argument \u2014 `compileETag`, `compileQueryParser` and `compileTrust` each begin with `if (typeof val === 'function') return val`, so any of them can be fully replaced by user code.",
           "sources": [
             "lib/utils.js#L130-L215",
             "test/config.js#L45-L62"
@@ -7189,7 +7189,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "`express.application`, `express.request` and `express.response` are exported prototypes and the test suite asserts that mutating them affects all subsequently created apps — the documented monkey-patch seam.",
+          "claim": "`express.application`, `express.request` and `express.response` are exported prototypes and the test suite asserts that mutating them affects all subsequently created apps \u2014 the documented monkey-patch seam.",
           "sources": [
             "lib/express.js#L62-L64",
             "test/exports.js#L52-L70"
@@ -7205,7 +7205,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "The HTTP verb table is not hardcoded — `exports.methods` maps `require('node:http').METHODS` to lowercase and `methods.forEach` generates both `app[method]` and the per-method registration used by `app.all`.",
+          "claim": "The HTTP verb table is not hardcoded \u2014 `exports.methods` maps `require('node:http').METHODS` to lowercase and `methods.forEach` generates both `app[method]` and the per-method registration used by `app.all`.",
           "sources": [
             "lib/utils.js#L29",
             "lib/application.js#L471-L501"
@@ -7222,7 +7222,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "`app.use(path, subApp)` is the composition primitive: any object with `.handle` and `.set` is treated as a mountable app, receives `mountpath`/`parent`, and emits `'mount'` — which applications may listen to for their own inheritance logic.",
+          "claim": "`app.use(path, subApp)` is the composition primitive: any object with `.handle` and `.set` is treated as a mountable app, receives `mountpath`/`parent`, and emits `'mount'` \u2014 which applications may listen to for their own inheritance logic.",
           "sources": [
             "lib/application.js#L205-L241",
             "examples/multi-router/index.js"
@@ -7239,7 +7239,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "`res.format(obj)` is a per-response dispatch table keyed by MIME type or extension name, with an optional `default` key — the content-negotiation extension point, and itself the mechanism behind `res.redirect`'s body selection.",
+          "claim": "`res.format(obj)` is a per-response dispatch table keyed by MIME type or extension name, with an optional `default` key \u2014 the content-negotiation extension point, and itself the mechanism behind `res.redirect`'s body selection.",
           "sources": [
             "lib/response.js#L573-L604",
             "lib/response.js#L841-L858",
@@ -7287,7 +7287,7 @@
       "summary": "This is a mature, style-conservative library where the diff bar is high and behaviour is pinned by a very large test suite. Read `lib/express.js`, `lib/application.js`, then the method you are changing in `lib/response.js` or `lib/request.js`; the test file name mirrors the API name, so `res.send` changes belong in `test/res.send.js`. The single biggest trap is that `test/acceptance/*` boots the real apps in `examples/`, so editing an example breaks tests in a different directory. Dependencies are installed fresh (no lockfile, no committed `node_modules`), so `npm install` is a required first step.",
       "claims": [
         {
-          "claim": "READ FIRST, in order: `lib/express.js` (the factory and the export surface), `lib/application.js` (settings, `handle`, `use`, `render`), then the specific prototype file you are touching — `lib/response.js` or `lib/request.js`.",
+          "claim": "READ FIRST, in order: `lib/express.js` (the factory and the export surface), `lib/application.js` (settings, `handle`, `use`, `render`), then the specific prototype file you are touching \u2014 `lib/response.js` or `lib/request.js`.",
           "sources": [
             "lib/express.js",
             "lib/application.js",
@@ -7306,7 +7306,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "TESTS TO RUN: `npm test` for the full mocha suite (`test/` + `test/acceptance/`), `npm run test-cov` for an HTML coverage report, and `npm run lint` before committing — CI runs lint as a separate required job.",
+          "claim": "TESTS TO RUN: `npm test` for the full mocha suite (`test/` + `test/acceptance/`), `npm run test-cov` for an HTML coverage report, and `npm run lint` before committing \u2014 CI runs lint as a separate required job.",
           "sources": [
             "package.json#L101-L107",
             ".github/workflows/ci.yml#L26-L42"
@@ -7314,7 +7314,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "LINT RULES that bite: 2-space `indent` with `MemberExpression: off`, `eqeqeq` with `allow-null`, `eol-last`, `no-trailing-spaces`, and a `no-restricted-globals` rule banning the global `Buffer` — you must write `const { Buffer } = require('node:buffer')`.",
+          "claim": "LINT RULES that bite: 2-space `indent` with `MemberExpression: off`, `eqeqeq` with `allow-null`, `eol-last`, `no-trailing-spaces`, and a `no-restricted-globals` rule banning the global `Buffer` \u2014 you must write `const { Buffer } = require('node:buffer')`.",
           "sources": [
             ".eslintrc.yml",
             "lib/response.js#L36",
@@ -7323,7 +7323,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "STYLE: `lib/` is ES5-flavoured — `var` declarations, `'use strict'` at the top of every file, JSDoc blocks with explicit `@public`/`@private` on every exported member. Match it rather than modernising opportunistically.",
+          "claim": "STYLE: `lib/` is ES5-flavoured \u2014 `var` declarations, `'use strict'` at the top of every file, JSDoc blocks with explicit `@public`/`@private` on every exported member. Match it rather than modernising opportunistically.",
           "sources": [
             "lib/application.js#L1-L50",
             "lib/request.js#L1-L40"
@@ -7331,7 +7331,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "NODE BUILTINS are always imported with the `node:` prefix (`node:http`, `node:path`, `node:fs`, `node:net`, `node:querystring`, `node:buffer`, `node:events`) — follow this in new code and in tests.",
+          "claim": "NODE BUILTINS are always imported with the `node:` prefix (`node:http`, `node:path`, `node:fs`, `node:net`, `node:querystring`, `node:buffer`, `node:events`) \u2014 follow this in new code and in tests.",
           "sources": [
             "lib/application.js#L19-L24",
             "lib/view.js#L18-L20",
@@ -7349,7 +7349,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "TRAP — cross-directory coupling: the 18 files in `test/acceptance/` `require('../../examples/<name>')`, so an edit to an example app fails tests that do not mention it. Check `test/acceptance/` before touching `examples/`.",
+          "claim": "TRAP \u2014 cross-directory coupling: the 18 files in `test/acceptance/` `require('../../examples/<name>')`, so an edit to an example app fails tests that do not mention it. Check `test/acceptance/` before touching `examples/`.",
           "sources": [
             "test/acceptance/auth.js#L1",
             "test/acceptance/mvc.js",
@@ -7358,21 +7358,21 @@
           "kind": "evidence"
         },
         {
-          "claim": "TRAP — `test/exports.js` permanently mutates `express.application`, `express.request` and `express.response` for the remainder of the mocha process; new global-prototype tests can interact with it.",
+          "claim": "TRAP \u2014 `test/exports.js` permanently mutates `express.application`, `express.request` and `express.response` for the remainder of the mocha process; new global-prototype tests can interact with it.",
           "sources": [
             "test/exports.js#L52-L70"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "TRAP — `--check-leaks` is enabled, so any implicit global created during a test (including in `lib/`) fails the run with a leak error rather than an assertion error.",
+          "claim": "TRAP \u2014 `--check-leaks` is enabled, so any implicit global created during a test (including in `lib/`) fails the run with a leak error rather than an assertion error.",
           "sources": [
             "package.json#L103"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "TRAP — the test env sets `NO_DEPRECATION=body-parser,express`, so `depd` warnings you add will be invisible locally; assert on behaviour, not on console output.",
+          "claim": "TRAP \u2014 the test env sets `NO_DEPRECATION=body-parser,express`, so `depd` warnings you add will be invisible locally; assert on behaviour, not on console output.",
           "sources": [
             "test/support/env.js",
             "lib/response.js#L17"
@@ -7380,7 +7380,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "SAFE EDIT BOUNDARY — routing, body parsing and static serving are NOT in this repo. Bugs in path matching, `req.params`, `req.body` or directory traversal belong to `router`, `body-parser`, `send` and `serve-static`.",
+          "claim": "SAFE EDIT BOUNDARY \u2014 routing, body parsing and static serving are NOT in this repo. Bugs in path matching, `req.params`, `req.body` or directory traversal belong to `router`, `body-parser`, `send` and `serve-static`.",
           "sources": [
             "package.json#L27-L56",
             "lib/express.js#L19-L81"
@@ -7397,7 +7397,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "PUBLISHED SURFACE is limited by `package.json` `files` to `LICENSE`, `Readme.md`, `index.js`, `lib/` — a new runtime file must live under `lib/` to be shipped at all.",
+          "claim": "PUBLISHED SURFACE is limited by `package.json` `files` to `LICENSE`, `Readme.md`, `index.js`, `lib/` \u2014 a new runtime file must live under `lib/` to be shipped at all.",
           "sources": [
             "package.json#L95-L100"
           ],
@@ -7420,11 +7420,11 @@
         }
       ]
     },
-    "agent_prompt": "You are working on the Express.js core repository (`expressjs/express`, v5.2.1, branch `master`). Read this before touching anything.\n\nWHAT IT IS. Express is the minimalist Node.js HTTP framework. This repo contains only the core — about 5,500 lines across six files in `lib/` — plus roughly 15,400 lines of tests and 26 runnable example apps. There is no build step, no bundler, no database, and no storage layer. Node >= 18 is required.\n\nARCHITECTURE. `index.js` re-exports `lib/express.js`, which exposes `createApplication()`. That factory returns a callable function `app(req, res, next)` that forwards to `app.handle`, mixes in `EventEmitter.prototype` and the `lib/application.js` prototype via `merge-descriptors`, and creates per-app `request`/`response` prototypes with `app` bound as an own property. `app.init()` seeds `cache`, `engines`, `settings` (all `Object.create(null)`), calls `defaultConfiguration()`, and installs a lazy `app.router` getter.\n\nThe six modules: `application.js` (settings, dispatch, mounting, rendering, listen), `request.js` (lazy getters grafted onto `http.IncomingMessage.prototype`), `response.js` (~24 helpers on `http.ServerResponse.prototype`), `view.js` (template lookup and engine loading), `utils.js` (compilers for etag/query-parser/trust-proxy, MIME normalisation), `express.js` (the factory and export surface).\n\nCRITICAL: routing, body parsing and static file serving are NOT in this repo. `express.Router`/`express.Route` come from the `router` package; `express.json`/`raw`/`text`/`urlencoded` are direct re-exports of `body-parser`; `express.static` is `serve-static`; file streaming is `send`. Bugs in path matching, `req.params`, `req.body`, or directory traversal belong to those packages, not here.\n\nREQUEST FLOW. socket → `app(req,res)` → `app.handle` (builds `finalhandler`, sets `X-Powered-By`, cross-links `req.res`/`res.req`, `Object.setPrototypeOf`s BOTH live Node objects, ensures `res.locals`) → `this.router.handle`. Responses funnel through `res.send`, which decides Content-Type, Content-Length (skipped when `Transfer-Encoding` is set), ETag, 304-on-fresh, header stripping for 204/304/205, and the HEAD body skip. `res.json`, `res.jsonp`, `res.sendStatus` and the default `res.render` callback all end in `res.send` — it is the highest blast-radius function in the codebase.\n\nSECURITY-SENSITIVE PATHS. (1) `compileTrust` in `lib/utils.js` governs whether `req.ip`/`ips`/`protocol`/`secure`/`host` believe `X-Forwarded-*`. (2) `res.jsonp` sanitises the callback with `/[^\\[\\]\\w$.]/g` plus the `/**/ typeof` Rosetta-Flash wrapper and `nosniff`. (3) `res.sendFile`/`res.download` only check absolute-or-root and `encodeURI`; containment is delegated to `send`. (4) `lib/view.js` performs a dynamic `require(mod)` derived from the view's file extension. (5) `qs.parse` runs with `allowPrototypes: true` for the `extended` query parser.\n\nCONVENTIONS. `lib/` is ES5-flavoured: `var`, `'use strict'` per file, JSDoc with `@public`/`@private` on everything exported. Always `require('node:http')` style for builtins. ESLint bans the global `Buffer` — use `const { Buffer } = require('node:buffer')`. Two-space indent, `eqeqeq` allow-null, `eol-last`.\n\nWORKFLOW. `node_modules/` is absent and there is no lockfile (`.npmrc` sets `package-lock=false`), so run `npm install` first. Then `npm test` (mocha, supertest, `--check-leaks`, covers `test/` and `test/acceptance/`) and `npm run lint`. Test files mirror API names exactly: `test/res.send.js`, `test/req.host.js`, `test/app.param.js`. Add a new file for a new method rather than appending to a catch-all.\n\nTRAPS. The 18 files in `test/acceptance/` `require('../../examples/<name>')`, so editing an example breaks tests elsewhere. `test/exports.js` permanently mutates the global prototypes mid-suite. `--check-leaks` turns any accidental global into a test failure. `NO_DEPRECATION=body-parser,express` hides `depd` output locally. Only `LICENSE`, `Readme.md`, `index.js` and `lib/` are published, so new runtime code must live in `lib/`. Dependabot ignores all semver-major bumps — do not bundle one into a feature change. Keep diffs small and add a matching test."
+    "agent_prompt": "You are working on the Express.js core repository (`expressjs/express`, v5.2.1, branch `master`). Read this before touching anything.\n\nWHAT IT IS. Express is the minimalist Node.js HTTP framework. This repo contains only the core \u2014 about 5,500 lines across six files in `lib/` \u2014 plus roughly 15,400 lines of tests and 26 runnable example apps. There is no build step, no bundler, no database, and no storage layer. Node >= 18 is required.\n\nARCHITECTURE. `index.js` re-exports `lib/express.js`, which exposes `createApplication()`. That factory returns a callable function `app(req, res, next)` that forwards to `app.handle`, mixes in `EventEmitter.prototype` and the `lib/application.js` prototype via `merge-descriptors`, and creates per-app `request`/`response` prototypes with `app` bound as an own property. `app.init()` seeds `cache`, `engines`, `settings` (all `Object.create(null)`), calls `defaultConfiguration()`, and installs a lazy `app.router` getter.\n\nThe six modules: `application.js` (settings, dispatch, mounting, rendering, listen), `request.js` (lazy getters grafted onto `http.IncomingMessage.prototype`), `response.js` (~24 helpers on `http.ServerResponse.prototype`), `view.js` (template lookup and engine loading), `utils.js` (compilers for etag/query-parser/trust-proxy, MIME normalisation), `express.js` (the factory and export surface).\n\nCRITICAL: routing, body parsing and static file serving are NOT in this repo. `express.Router`/`express.Route` come from the `router` package; `express.json`/`raw`/`text`/`urlencoded` are direct re-exports of `body-parser`; `express.static` is `serve-static`; file streaming is `send`. Bugs in path matching, `req.params`, `req.body`, or directory traversal belong to those packages, not here.\n\nREQUEST FLOW. socket \u2192 `app(req,res)` \u2192 `app.handle` (builds `finalhandler`, sets `X-Powered-By`, cross-links `req.res`/`res.req`, `Object.setPrototypeOf`s BOTH live Node objects, ensures `res.locals`) \u2192 `this.router.handle`. Responses funnel through `res.send`, which decides Content-Type, Content-Length (skipped when `Transfer-Encoding` is set), ETag, 304-on-fresh, header stripping for 204/304/205, and the HEAD body skip. `res.json`, `res.jsonp`, `res.sendStatus` and the default `res.render` callback all end in `res.send` \u2014 it is the highest blast-radius function in the codebase.\n\nSECURITY-SENSITIVE PATHS. (1) `compileTrust` in `lib/utils.js` governs whether `req.ip`/`ips`/`protocol`/`secure`/`host` believe `X-Forwarded-*`. (2) `res.jsonp` sanitises the callback with `/[^\\[\\]\\w$.]/g` plus the `/**/ typeof` Rosetta-Flash wrapper and `nosniff`. (3) `res.sendFile`/`res.download` only check absolute-or-root and `encodeURI`; containment is delegated to `send`. (4) `lib/view.js` performs a dynamic `require(mod)` derived from the view's file extension. (5) `qs.parse` runs with `allowPrototypes: true` for the `extended` query parser.\n\nCONVENTIONS. `lib/` is ES5-flavoured: `var`, `'use strict'` per file, JSDoc with `@public`/`@private` on everything exported. Always `require('node:http')` style for builtins. ESLint bans the global `Buffer` \u2014 use `const { Buffer } = require('node:buffer')`. Two-space indent, `eqeqeq` allow-null, `eol-last`.\n\nWORKFLOW. `node_modules/` is absent and there is no lockfile (`.npmrc` sets `package-lock=false`), so run `npm install` first. Then `npm test` (mocha, supertest, `--check-leaks`, covers `test/` and `test/acceptance/`) and `npm run lint`. Test files mirror API names exactly: `test/res.send.js`, `test/req.host.js`, `test/app.param.js`. Add a new file for a new method rather than appending to a catch-all.\n\nTRAPS. The 18 files in `test/acceptance/` `require('../../examples/<name>')`, so editing an example breaks tests elsewhere. `test/exports.js` permanently mutates the global prototypes mid-suite. `--check-leaks` turns any accidental global into a test failure. `NO_DEPRECATION=body-parser,express` hides `depd` output locally. Only `LICENSE`, `Readme.md`, `index.js` and `lib/` are published, so new runtime code must live in `lib/`. Dependabot ignores all semver-major bumps \u2014 do not bundle one into a feature change. Keep diffs small and add a matching test."
   },
   "analysis": {
     "agent": "claude",
-    "model": "cli:claude",
+    "model": "claude-opus-5",
     "runtime_ms": 328475,
     "cost_usd": 1.8504450000000001,
     "collected_at": "2026-09-22T08:30:06.736Z"

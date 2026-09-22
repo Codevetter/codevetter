@@ -298,7 +298,7 @@
     "readmePreview": "💎 Platinum sponsors We're passionate about making open source sustainable.",
     "analysis": {
       "agent": "claude",
-      "model": "cli:claude",
+      "model": "claude-opus-5",
       "runtime_ms": 380480,
       "cost_usd": 2.7744590000000002,
       "collected_at": "2026-09-22T08:36:43.850Z"
@@ -3893,7 +3893,7 @@
     "readmePreview": "Bun Documentation &nbsp;&nbsp;•&nbsp;&nbsp; Discord &nbsp;&nbsp;•&nbsp;&nbsp; Issues &nbsp;&nbsp;•&nbsp;&nbsp; Roadmap Read the docs → What is Bun? Bun is an all-in-one toolkit for JavaScript and TypeScript apps.",
     "analysis": {
       "agent": "claude",
-      "model": "cli:claude",
+      "model": "claude-opus-5",
       "runtime_ms": 448536,
       "cost_usd": 3.7470829999999995,
       "collected_at": "2026-09-22T09:31:17.267Z"
@@ -5156,7 +5156,7 @@
     "readmePreview": "| | | | \\| | / | | | | |) | | | (| || | <| | \\|\\/|| \\\\| README Curl is a command line tool for transferring data specified with URL syntax.",
     "analysis": {
       "agent": "claude",
-      "model": "cli:claude",
+      "model": "claude-opus-5",
       "runtime_ms": 589835,
       "cost_usd": 4.186151999999999,
       "collected_at": "2026-09-22T08:57:46.719Z"
@@ -8396,7 +8396,7 @@
     "readmePreview": "Deno [![Twitter badge][]][Twitter link] [![Bluesky badge][]][Bluesky link] [![Discord badge][]][Discord link] [![YouTube badge][]][YouTube link] Deno (/ˈdiːnoʊ/, pronounced dee-no) is a JavaScript, TypeScript, and WebAssembly runtime with secure defaults and a",
     "analysis": {
       "agent": "claude",
-      "model": "cli:claude",
+      "model": "claude-opus-5",
       "runtime_ms": 495459,
       "cost_usd": 4.677635000000001,
       "collected_at": "2026-09-22T09:32:04.190Z"
@@ -12914,7 +12914,7 @@
     "readmePreview": "Fast, unopinionated, minimalist web framework for Node.js.",
     "analysis": {
       "agent": "claude",
-      "model": "cli:claude",
+      "model": "claude-opus-5",
       "runtime_ms": 328475,
       "cost_usd": 1.8504450000000001,
       "collected_at": "2026-09-22T08:30:06.736Z"
@@ -14229,7 +14229,7 @@
     "readmePreview": "FastAPI framework, high performance, easy to learn, fast to code, ready for production --- Documentation: https://fastapi.tiangolo.com Source Code: https://github.com/fastapi/fastapi --- FastAPI is a modern, fast (high-performance), web framework for building",
     "analysis": {
       "agent": "claude",
-      "model": "cli:claude",
+      "model": "claude-opus-5",
       "runtime_ms": 413440,
       "cost_usd": 3.4690280000000002,
       "collected_at": "2026-09-22T08:43:59.938Z"
@@ -15589,7 +15589,7 @@
     "readmePreview": "Flask Flask is a lightweight [WSGI] web application framework.",
     "analysis": {
       "agent": "claude",
-      "model": "cli:claude",
+      "model": "claude-opus-5",
       "runtime_ms": 395908,
       "cost_usd": 3.6256890000000004,
       "collected_at": "2026-09-22T08:36:59.279Z"
@@ -17374,7 +17374,7 @@
     "readmePreview": "HTTPie CLI: human-friendly HTTP client for the API era HTTPie (pronounced aitch-tee-tee-pie) is a command-line HTTP client.",
     "analysis": {
       "agent": "claude",
-      "model": "cli:claude",
+      "model": "claude-opus-5",
       "runtime_ms": 613687,
       "cost_usd": 4.3858665,
       "collected_at": "2026-09-22T08:47:20.185Z"
@@ -18757,7 +18757,7 @@
     "readmePreview": "jsonwebtoken | Build | Dependency | |-----------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------",
     "analysis": {
       "agent": "claude",
-      "model": "cli:claude",
+      "model": "claude-opus-5",
       "runtime_ms": 345333,
       "cost_usd": 1.7264470000000003,
       "collected_at": "2026-09-22T08:42:51.831Z"
@@ -20184,7 +20184,7 @@
     "readmePreview": "lodash v4.18.1 Site | Docs | FP Guide | Contributing | Wiki | Code of Conduct | Governance | Twitter | Chat [!IMPORTANT] As announced on the OpenJS Foundation blog, Lodash has received support from the Sovereign Tech Agency and will transition to the Feature-C",
     "analysis": {
       "agent": "claude",
-      "model": "cli:claude",
+      "model": "claude-opus-5",
       "runtime_ms": 396381,
       "cost_usd": 2.6760670000000006,
       "collected_at": "2026-09-22T08:36:59.752Z"
@@ -21538,7 +21538,7 @@
     "readmePreview": "Next.js Getting Started Used by some of the world's largest companies, Next.js enables you to create full-stack web applications by extending the latest React features, and integrating powerful Rust-based JavaScript tooling for the fastest builds.",
     "analysis": {
       "agent": "claude",
-      "model": "cli:claude",
+      "model": "claude-opus-5",
       "runtime_ms": 513388,
       "cost_usd": 3.9642074999999997,
       "collected_at": "2026-09-22T09:23:38.493Z"
@@ -22858,7 +22858,7 @@
     "readmePreview": "Node.js Node.js is an open-source, cross-platform JavaScript runtime environment.",
     "analysis": {
       "agent": "claude",
-      "model": "cli:claude",
+      "model": "claude-opus-5",
       "runtime_ms": 422346,
       "cost_usd": 2.6922639999999998,
       "collected_at": "2026-09-22T09:30:51.077Z"
@@ -26003,7 +26003,7 @@
     "readmePreview": "React &middot; React is a JavaScript library for building user interfaces.",
     "analysis": {
       "agent": "claude",
-      "model": "cli:claude",
+      "model": "claude-opus-5",
       "runtime_ms": 485248,
       "cost_usd": 3.1288505,
       "collected_at": "2026-09-22T09:23:10.354Z"
@@ -27306,7 +27306,7 @@
     "readmePreview": "This document serves as both a quick start guide to Redis and a detailed resource for building it from source.",
     "analysis": {
       "agent": "claude",
-      "model": "cli:claude",
+      "model": "claude-opus-5",
       "runtime_ms": 476014,
       "cost_usd": 2.96313,
       "collected_at": "2026-09-22T08:55:20.683Z"
@@ -28768,7 +28768,7 @@
     "readmePreview": "Requests Requests is a simple, yet elegant, HTTP library.",
     "analysis": {
       "agent": "claude",
-      "model": "cli:claude",
+      "model": "claude-opus-5",
       "runtime_ms": 338249,
       "cost_usd": 2.6370324999999997,
       "collected_at": "2026-09-22T08:36:01.620Z"
@@ -31335,7 +31335,7 @@
     "readmePreview": "ripgrep (rg) ------------ ripgrep is a line-oriented search tool that recursively searches the current directory for a regex pattern.",
     "analysis": {
       "agent": "claude",
-      "model": "cli:claude",
+      "model": "claude-opus-5",
       "runtime_ms": 374034,
       "cost_usd": 2.9614865,
       "collected_at": "2026-09-22T08:43:20.535Z"
@@ -34833,7 +34833,7 @@
     "readmePreview": "SQLite Source Repository This repository contains the complete source code for the SQLite database engine going back to 2000-05-29.",
     "analysis": {
       "agent": "claude",
-      "model": "cli:claude",
+      "model": "claude-opus-5",
       "runtime_ms": 542747,
       "cost_usd": 3.320705,
       "collected_at": "2026-09-22T08:56:27.416Z"
@@ -37709,7 +37709,7 @@
     "readmePreview": "What is Svelte? Svelte is a new way to build web applications.",
     "analysis": {
       "agent": "claude",
-      "model": "cli:claude",
+      "model": "claude-opus-5",
       "runtime_ms": 426440,
       "cost_usd": 3.09017,
       "collected_at": "2026-09-22T09:22:11.544Z"
@@ -39948,7 +39948,7 @@
     "readmePreview": "A utility-first CSS framework for rapidly building custom user interfaces.",
     "analysis": {
       "agent": "claude",
-      "model": "cli:claude",
+      "model": "claude-opus-5",
       "runtime_ms": 395795,
       "cost_usd": 3.5398699999999996,
       "collected_at": "2026-09-22T09:30:24.526Z"
@@ -43401,7 +43401,7 @@
     "readmePreview": "Vite ⚡ Next Generation Frontend Tooling - 💡 Instant Server Start - ⚡️ Lightning Fast HMR - 🛠️ Rich Features - 📦 Optimized Build - 🔩 Universal Plugin Interface - 🔑 Fully Typed APIs Vite (French word for \"quick\", pronounced /viːt/, like \"veet\") is a build t",
     "analysis": {
       "agent": "claude",
-      "model": "cli:claude",
+      "model": "claude-opus-5",
       "runtime_ms": 408542,
       "cost_usd": 2.871144,
       "collected_at": "2026-09-22T09:21:53.646Z"
@@ -46649,7 +46649,7 @@
     "readmePreview": "vuejs/core Getting Started Please follow the documentation at vuejs.org!",
     "analysis": {
       "agent": "claude",
-      "model": "cli:claude",
+      "model": "claude-opus-5",
       "runtime_ms": 436157,
       "cost_usd": 3.0303655,
       "collected_at": "2026-09-22T09:22:21.261Z"
@@ -47839,7 +47839,7 @@
     "readmePreview": "[![npm][npm]][npm-url] [![node][node]][node-url] [![builds1][builds1]][builds1-url] [![dependency-review][dependency-review]][dependency-review-url] [![coverage][cover]][cover-url] [![PR's welcome][prs]][prs-url] webpack Webpack is a module bundler.",
     "analysis": {
       "agent": "claude",
-      "model": "cli:claude",
+      "model": "claude-opus-5",
       "runtime_ms": 467183,
       "cost_usd": 3.548572,
       "collected_at": "2026-09-22T09:31:35.914Z"

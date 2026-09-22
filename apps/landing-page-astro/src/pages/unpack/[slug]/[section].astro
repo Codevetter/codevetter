@@ -37,7 +37,9 @@ const { report, section, sectionKey, title } = Astro.props;
         {report.collectedAt.slice(0, 10)}.
         {report.analysis && (
           <>
-            {' '}Deep analysis by <code>{report.analysis.model}</code>.
+            {' '}Deep analysis by <code>{report.analysis.model}</code> via the {report.analysis.agent}{' '}
+            CLI on {report.analysis.collected_at.slice(0, 10)} (
+            {Math.round(report.analysis.runtime_ms / 1000)}s).
           </>
         )}
       </p>
