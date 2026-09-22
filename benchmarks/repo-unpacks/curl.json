@@ -9797,5 +9797,1068 @@
         ]
       }
     ]
+  },
+  "report": {
+    "overview": "This is the curl project at 8.23.0-DEV: a C89-portable transfer library (libcurl, `lib/`, ~393 files) plus the `curl` command-line tool (`src/`, ~96 files) that is a thin client of that library. libcurl speaks ~25 URI schemes (HTTP/1-2-3, FTP(S), SMTP/IMAP/POP3, SCP/SFTP, LDAP, MQTT, RTSP, TFTP, DICT, Gopher, Telnet, WS(S), file) through a scheme registry of `struct Curl_scheme` records, and layers transport concerns (happy-eyeballs, SOCKS, HTTP proxy, HAProxy, TLS, QUIC, HTTP/2) as a stackable chain of connection filters rather than protocol-specific socket code. What is distinctive is the amount of pluggability compiled in: six TLS backends, two QUIC backends, two SSH backends, three DNS resolver strategies, ~50 `CURL_DISABLE_*` build knobs, and a ~2,100-case integration test suite driven by in-tree protocol servers. The audience is everyone from distro maintainers embedding libcurl to contributors adding a protocol or a command-line option.",
+    "system_map": {
+      "summary": "Two build artefacts share one repo: `lib/` builds libcurl, `src/` builds the `curl` tool on top of the public headers in `include/curl/`. The tool owns argv parsing, output files, globbing and retries; libcurl owns URL parsing, connection reuse, the multi state machine, and the filter chain that actually moves bytes. Backends live in `lib/vtls` (TLS), `lib/vquic` (QUIC/HTTP3), `lib/vssh` (SCP/SFTP), `lib/vauth` (SASL/NTLM/Kerberos), `lib/vdns` (resolvers + DoH), with `lib/curlx/` as the portability/utility layer shared by both. There is no database — persistence is flat files (cookie jar, HSTS, alt-svc, TLS session cache) plus whatever the user redirects output to. Two parallel build systems (autotools via `configure.ac`/`Makefile.am` and CMake via a 93KB `CMakeLists.txt`) are both first-class and CI-verified against each other.",
+      "claims": [
+        {
+          "claim": "The CLI process entrypoint is `main()` in src/tool_main.c, which runs `tool_init_stderr()`, `main_checkfds()` (reopens fds 0/1/2 on /dev/null so sockets can never land on stdin/stdout/stderr), ignores SIGPIPE, then calls `globalconf_init()` → `operate(argc, argv)` → `globalconf_free()`.",
+          "sources": [
+            "src/tool_main.c#L152-L213",
+            "src/tool_main.c#L86-L108"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`operate()` is the tool's real driver: it forces `LC_NUMERIC=C`, reads `.curlrc` via `parseconfig()` unless argv[1] is `-q`/`--disable`, calls `parse_args()`, creates one `CURLSH` share handle, then hands off to `run_all_transfers()`.",
+          "sources": [
+            "src/tool_operate.c#L2422-L2560"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The public API surface is 12 headers under include/curl/ — `curl.h` (options/CURLcode), `multi.h`, `easy.h`, `urlapi.h`, `websockets.h`, `header.h`, `options.h`, `mprintf.h`, `system.h`, `curlver.h` — and `curlver.h` pins this tree at LIBCURL_VERSION \"8.23.0-DEV\" / LIBCURL_VERSION_NUM 0x081700.",
+          "sources": [
+            "include/curl/curlver.h#L35-L60",
+            "include/curl/curl.h",
+            "include/curl/multi.h"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Every URI scheme libcurl knows is a `const struct Curl_scheme` (name, `run` vtable pointer, protocol bit, family bit, PROTOPT_* flags, default port) defined in lib/protocol.c and externed in lib/protocol.h; a scheme compiled out (e.g. `CURL_DISABLE_FTP`) keeps its record but gets a `ZERO_NULL` `run` pointer.",
+          "sources": [
+            "lib/protocol.h#L240-L288",
+            "lib/protocol.c#L40-L110"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Scheme lookup avoids a linear table scan: `Curl_getn_scheme()` dispatches on name length into `two_letter_scheme()` … `seven_letter_scheme()`, each a hand-written switch on the first character, and rejects any name shorter than 2 or longer than 7 characters.",
+          "sources": [
+            "lib/protocol.c#L608-L628",
+            "lib/protocol.c#L560-L604"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Transport is a chain of connection filters: `struct Curl_cftype` supplies do_connect/do_send/do_recv/do_shutdown/adjust_pollset/query, and `struct Curl_cfilter` links instances via `->next`, so TLS writes into whatever is below it without knowing whether that is a socket, a proxy tunnel, or HTTP/2.",
+          "sources": [
+            "lib/cfilters.h#L217-L242",
+            "docs/internals/CONNECTION-FILTERS.md#L14-L65"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Concrete filter types are registered as `struct Curl_cftype Curl_cft_*` across the tree: tcp/udp/unix/tcp_accept (lib/cf-socket.c), ip_happy, socks_proxy, http_proxy, h1/h2 proxy, haproxy, http_connect, nghttp2, http3 (both ngtcp2 and quiche), capsule, dns, and recvbuf.",
+          "sources": [
+            "lib/cf-socket.c#L1844",
+            "lib/cf-ip-happy.c#L964",
+            "lib/socks.c#L1307",
+            "lib/vquic/cf-ngtcp2.c#L1089"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The runtime boundary between easy and multi is one-way: the multi interface is the engine and `curl_easy_perform()` is a wrapper that creates (and caches on `data->multi_easy`) a 1-handle multi and pumps it.",
+          "sources": [
+            "lib/easy.c#L773-L845",
+            "lib/easy.c#L852-L862"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Each transfer is a 16-state machine (`MSTATE_INIT` … `MSTATE_MSGSENT`) declared in lib/multihandle.h and driven by `multi_runsingle()` in lib/multi.c, which is 4,262 lines and the single busiest file in the library.",
+          "sources": [
+            "lib/multihandle.h#L48-L64",
+            "lib/multi.c#L2714-L2890"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "TLS is selected from a compile-ordered array `available_backends[]` (wolfSSL, GnuTLS, mbedTLS, OpenSSL, Schannel, Rustls); `CURL_SSL_BACKEND` in the environment can pick among them at runtime when multiple are built in.",
+          "sources": [
+            "lib/vtls/vtls.c#L706-L726",
+            "lib/vtls/vtls.c#L790-L820"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The storage layer is plain files, not a database: cookie jars via `cookie_output()`/`Curl_flush_cookies()`, HSTS via `Curl_hsts_save()`, Alt-Svc via `Curl_altsvc_save()`, and TLS session blobs via `tool_ssls_save()` called from `operate()`.",
+          "sources": [
+            "lib/cookie.c#L1530-L1690",
+            "lib/hsts.c#L369-L400",
+            "lib/altsvc.c#L392-L425",
+            "src/tool_operate.c#L2513-L2522"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Build/test commands live in the top Makefile.am: `make check` = test + examples + check-docs; `make test`, `test-full`, `test-nonflaky`, `test-torture`, `test-event`, `test-ci`, `pytest`; plus `make checksrc`, `make badwords`, `make lint`, `make tidy`, and `make ca-bundle`.",
+          "sources": [
+            "Makefile.am#L113-L210",
+            "tests/Makefile.am#L140-L180"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CI is spread over 15 GitHub Actions workflows (linux, linux-old, macos, windows, non-native, http3-linux, distcheck, codeql, checksrc, checkdocs, checkurls, configure-vs-cmake, curl-for-win, appveyor-status, label), with AppVeyor and CircleCI configs alongside; dependency versions are pinned in workflow `env:` and bumped by Renovate.",
+          "sources": [
+            ".github/workflows/linux.yml#L34-L60",
+            ".github/workflows/checksrc.yml#L37-L60",
+            "renovate.json",
+            "appveyor.yml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The Dockerfile is not a deployment artefact — it is a pinned-digest debian:bookworm-slim reproducible *release* environment, used to run `autoreconf`, `configure`, `make`, and `scripts/maketgz` with a fixed `SOURCE_DATE_EPOCH`.",
+          "sources": [
+            "Dockerfile#L1-L42"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`lib/curlx/` is a deliberately separate portability layer (dynbuf, strparse, base64, inet_pton/ntop, timeval, nonblock, multibyte, win32-fopen, warnless) that both `lib/` and `src/` link, which is why tool code calls `curlx_*` rather than libc directly.",
+          "sources": [
+            "lib/curlx/dynbuf.h",
+            "lib/curlx/strparse.h",
+            "docs/internals/CURLX.md"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "feature_catalog": {
+      "summary": "User-facing surface splits in two. The `curl` tool exposes ~298 documented command-line options plus higher-level conveniences: URL globbing, parallel transfers, retry policies, ETag compare/store, `--write-out` templating (including JSON), config files, user-defined `--variable` expansion, `--libcurl` source generation, and xattr metadata. libcurl exposes ~91 documented API functions and ~422 documented options, covering the easy, multi, share, URL, header, mime, and WebSocket APIs. Protocol coverage is the headline feature: HTTP/1.1, HTTP/2, HTTP/3, FTP(S), SFTP/SCP, SMTP/IMAP/POP3, LDAP(S), MQTT, RTSP, TFTP, DICT, Gopher, Telnet, WS(S), and local `file`. Authentication and proxying are each their own subsystem with many interchangeable mechanisms.",
+      "claims": [
+        {
+          "claim": "The command-line grammar is a single alphabetically-sorted `aliases[]` table of `struct LongShort` (long name, ARG_* type bits such as ARG_BOOL/ARG_FILE/ARG_STRG/ARG_SECS plus ARG_NO/ARG_TLS/ARG_CLEAR modifiers, short letter, and a `C_*` id); `findlongopt()`/`findshortopt()` resolve into it.",
+          "sources": [
+            "src/tool_getparam.c#L75-L112",
+            "src/tool_getparam.c#L838-L1090"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Every command-line option has a matching curldown page — 298 files under docs/cmdline-opts/ — and the underscore-prefixed ones (`_OPTIONS.md`, `_GLOBBING.md`, `_VARIABLES.md`, `_EXITCODES.md`) are the manpage's prose sections.",
+          "sources": [
+            "docs/cmdline-opts/_OPTIONS.md",
+            "docs/cmdline-opts/_GLOBBING.md",
+            "docs/cmdline-opts/abstract-unix-socket.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`--parallel` switches the tool from `serial_transfers()` to `parallel_transfers()`, which drives a real `CURLM` with `CURLMOPT_MAX_HOST_CONNECTIONS`, a notify callback, and `curl_multi_poll()`/`curl_multi_perform()`; concurrency is capped by `MAX_PARALLEL`/`MAX_PARALLEL_HOST` with `PARALLEL_DEFAULT` as the default.",
+          "sources": [
+            "src/tool_operate.c#L1991-L2089",
+            "src/tool_getparam.c#L2420-L2440",
+            "src/tool_cfgable.c#L323"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "URL globbing (`http://host/[1-100]`, `{a,b}`) is implemented in src/tool_urlglob.c and feeds `glob_match_url()`, which also resolves `#1`..`#9` back-references when composing output filenames.",
+          "sources": [
+            "src/tool_urlglob.c#L800-L815",
+            "src/tool_operate.c#L1063-L1092"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`--write-out` is table-driven: a `writeoutvar variables[]` array maps names like `http_code`, `time_total`, `num_retries`, `conn_id`, `filename_effective` to a CURLINFO id and a writer function, with `%{json}`, `%{header_json}`, `%header{}`, `%time{}` and `%output{}` handled as special forms.",
+          "sources": [
+            "src/tool_writeout.c#L427-L450",
+            "src/tool_writeout.c#L760-L855",
+            "src/tool_writeout_json.c"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`--libcurl <file>` makes the tool emit an equivalent C program: `easysrc_init()`/`easysrc_perform()`/`dumpeasysrc()` are wired into `operate()` and the serial loop, and the `my_setopt*` macros in src/tool_setopt.c double as source emitters.",
+          "sources": [
+            "src/tool_operate.c#L2494-L2545",
+            "src/tool_easysrc.c",
+            "src/tool_setopt.c"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`--variable` supports environment expansion with functions: src/var.c reads `getenv(name)` directly (rather than `curl_getenv()`) specifically so that a blank-but-set variable is distinguishable.",
+          "sources": [
+            "src/var.c#L395-L410"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "IPFS/IPNS URLs are a tool-level feature that reads `IPFS_GATEWAY`, then falls back to `IPFS_PATH`, then `$HOME/.ipfs/gateway`, rewriting `ipfs://` into an HTTP gateway request.",
+          "sources": [
+            "src/tool_ipfs.c#L40-L70",
+            "docs/IPFS.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Transfer resilience is a tool feature, not a library one: `retrycheck()` retries on timeouts/resolve failures, on HTTP 408/429/500/502/503/504/522/524, on FTP 4xx, on `--retry-connrefused`, and on `--retry-all-errors`, truncating the output file before each new attempt.",
+          "sources": [
+            "src/tool_operate.c#L433-L530"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "HTTP/3 ships with two interchangeable QUIC backends — ngtcp2 (`lib/vquic/cf-ngtcp2.c`) and quiche (`lib/vquic/cf-quiche.c`) — each registering a `Curl_cft_http3` filter, plus an experimental HTTP/3 proxy path via `cf-ngtcp2-proxy.c` and CONNECT-UDP capsules.",
+          "sources": [
+            "lib/vquic/cf-ngtcp2.c#L1089",
+            "lib/vquic/cf-quiche.c#L1624",
+            "lib/vquic/cf-capsule.c#L243",
+            "docs/EXPERIMENTAL.md#L37-L50"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "WebSocket support is a public API (`curl_ws_recv()`, `curl_ws_send()`, `curl_ws_meta()`) declared in include/curl/websockets.h and implemented in lib/ws.c with frame-level fragmentation handling.",
+          "sources": [
+            "include/curl/websockets.h",
+            "lib/ws.c#L1592-L1700",
+            "lib/ws.c#L1850-L1930",
+            "docs/internals/WEBSOCKET.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Authentication mechanisms are pluggable per-mechanism files under lib/vauth/: cleartext, CRAM-MD5, DIGEST (native and SSPI), NTLM (native and SSPI), Kerberos 5 (GSSAPI and SSPI), SPNEGO (GSSAPI and SSPI), OAuth2, and GSASL.",
+          "sources": [
+            "lib/vauth/vauth.h",
+            "lib/vauth/digest.c",
+            "lib/vauth/krb5_gssapi.c",
+            "lib/vauth/oauth2.c"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Request signing is supported for two schemes: AWS SigV4 (`lib/http_aws_sigv4.c`, `--aws-sigv4`) and HTTP Message Signatures (`lib/http_httpsig.c`, wired through `httpsig_setopts()` with `CURLOPT_HTTPSIG_ALGORITHM`/`CURLOPT_HTTPSIG_KEY`).",
+          "sources": [
+            "lib/http_aws_sigv4.c",
+            "lib/http_httpsig.c",
+            "src/config2setopts.c#L583-L645"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "DNS-over-HTTPS is implemented as sub-transfers: `Curl_doh()` spins up to three probes (A, AAAA, HTTPS RR) as separate easy handles attached to the parent via `CURL_EZM_DOH_PROBE` metadata and a `sub_xfer_done` callback.",
+          "sources": [
+            "lib/vdns/doh.c#L403-L490",
+            "lib/vdns/doh.c#L234-L395"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Proxy support spans SOCKS4/4a/5/5h (`lib/socks.c` plus GSSAPI/SSPI variants), HTTP proxies with CONNECT tunneling over HTTP/1 and HTTP/2 (`lib/cf-h1-proxy.c`, `lib/cf-h2-proxy.c`), and the HAProxy PROXY protocol header (`lib/cf-haproxy.c`).",
+          "sources": [
+            "lib/socks.c#L1307",
+            "lib/cf-h2-proxy.c#L1471",
+            "lib/cf-haproxy.c#L182",
+            "lib/http_proxy.c#L704"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "data_flow": {
+      "summary": "Input boundaries are argv, `.curlrc`/`-K` config files, environment variables, `.netrc`, stdin uploads, and the network. argv is normalised into a linked list of `struct OperationConfig` (one per `--next`), which `config2setopts.c` translates wholesale into `curl_easy_setopt()` calls; from there the state owner is `struct Curl_easy` (`data->set` for user intent, `data->state`/`data->req` for per-request state). The URL becomes a `CURLU` via lib/urlapi.c, resolves to a `struct Curl_scheme`, and is matched against the connection pool before a filter chain is built. Bytes in from the network flow up through `Curl_xfer_write_resp()` → `Curl_client_write()` → an ordered writer stack → `CURLOPT_WRITEFUNCTION`; bytes out flow down through the mirror-image client reader chain. Output boundaries are the write callbacks (which the tool points at files or stdout), the header callback, the progress callback, and the file-backed caches flushed at cleanup.",
+      "claims": [
+        {
+          "claim": "argv is consumed by `parse_args()`, which loops over argv, calls `getparameter()` per flag, treats bare arguments as `--url`, and on `PARAM_NEXT_OPERATION` allocates a fresh `OperationConfig` and links it onto `global->last` — so `--next` literally forks the config list.",
+          "sources": [
+            "src/tool_getparam.c#L3116-L3212"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Config files are a second input boundary parsed by the same code path: `operate()` calls `parseconfig(NULL, CONFIG_MAX_LEVELS, &curlrc_path)` for `.curlrc` before argv, and `-K` re-enters it, with recursion bounded by `CONFIG_MAX_LEVELS`.",
+          "sources": [
+            "src/tool_operate.c#L2437-L2448",
+            "src/tool_parsecfg.c"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The config→library translation is centralised in src/config2setopts.c, split into `ssh_setopts()`, `ssl_ca_setopts()`, `ssl_setopts()`, `cookie_setopts()`, `httpsig_setopts()`, `http_setopts()` and friends, all using `my_setopt_*` wrappers so the same call sites feed both libcurl and the `--libcurl` code generator.",
+          "sources": [
+            "src/config2setopts.c#L205-L710",
+            "src/tool_setopt.h"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Library-side, options land in `struct Curl_easy` guarded by `magic == CURLEASY_MAGIC_NUMBER`; `lib/setopt.c` fans out into typed setters (`setopt_long_bool`, `setopt_long_net`, `setopt_long_ssl`, `setopt_long_proxy`, `setopt_long_http`) rather than one giant switch.",
+          "sources": [
+            "lib/setopt.c#L358-L1030",
+            "lib/urldata.h#L1170-L1200",
+            "lib/api.h#L3-L16"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "URLs are parsed by `parseurl()` in lib/urlapi.c into a `CURLU`, with behaviour gated by flags such as `CURLU_GUESS_SCHEME`, `CURLU_DEFAULT_SCHEME`, `CURLU_NO_AUTHORITY`, `CURLU_DISALLOW_USER`, `CURLU_URLENCODE` and `CURLU_PATH_AS_IS`; the same parser backs the public `curl_url_*` API.",
+          "sources": [
+            "lib/urlapi.c#L1224-L1320",
+            "lib/urlapi.c#L1412-L1440",
+            "include/curl/urlapi.h"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The parsed scheme is only accepted for a connection if it passes `url_set_conn_scheme()`, which requires a non-NULL `run` vtable and membership in `data->set.allowed_protocols` (and `redir_protocols` when following a redirect) — this is the choke point that makes `--proto`/`--proto-redir` effective.",
+          "sources": [
+            "lib/url.c#L1170-L1195"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Before dialling out, libcurl asks the connection pool for a reusable `connectdata` through `Curl_cpool_find()` with a match callback; reuse eligibility consults PROTOPT_SSL/PROTOPT_SSL_REUSE/PROTOPT_CONN_REUSE and compares origins and protocol families.",
+          "sources": [
+            "lib/conncache.h#L105-L135",
+            "lib/url.c#L700-L910"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Received bytes enter the client-writer chain via `Curl_client_write()`, which lazily builds the stack (`Curl_cwt_out` at CURL_CW_CLIENT, `cw_download` at CURL_CW_PROTOCOL, `cw_raw` at CURL_CW_RAW) and inserts each new writer first within its phase.",
+          "sources": [
+            "lib/sendf.c#L331-L395",
+            "lib/sendf.c#L297-L328"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Writer ordering is a fixed phase enum — RAW → TRANSFER_DECODE → PROTOCOL → BEFORE_DECODE → CONTENT_DECODE → CLIENT — so chunked decoding, size accounting, and gzip/brotli/zstd decompression always run in that order before the application callback.",
+          "sources": [
+            "lib/sendf.h#L100-L112",
+            "lib/content_encoding.c#L635-L660",
+            "docs/internals/CLIENT-WRITERS.md#L28-L52"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`cw_download_write()` is where `--max-filesize` is enforced and where excess body bytes beyond `req.maxdownload` cause `connclose()`; exceeding the limit returns `CURLE_FILESIZE_EXCEEDED` from inside the writer chain.",
+          "sources": [
+            "lib/sendf.c#L270-L296"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Upload data flows through the mirror-image client-reader chain with phases CLIENT → CONTENT_ENCODE → PROTOCOL → TRANSFER_ENCODE → NET, entered via `Curl_client_read()`; HTTP's Expect: 100-continue is itself implemented as a reader (`cr_exp100_read`).",
+          "sources": [
+            "lib/sendf.h#L240-L250",
+            "docs/internals/CLIENT-READERS.md#L26-L45",
+            "lib/http.c#L1526-L1620"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "On the tool side the terminal output boundary is `tool_cb_wrt.c`'s write callback writing into a `struct OutStruct` (stream, filename, `fopened`, `init` offset), with `setup_outfile()` deciding stdout vs. file vs. `--out-null` and opening in append mode when resuming.",
+          "sources": [
+            "src/tool_cb_wrt.c",
+            "src/tool_operate.c#L1032-L1166"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Response headers reach the tool through `tool_cb_hdr.c`, where `parse_filename()` derives a local name from `Content-Disposition:` (or `Location:`) by trimming quotes, query/fragment, CR/LF, and any path prefix before `/` or `\\`.",
+          "sources": [
+            "src/tool_cb_hdr.c#L160-L229"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Cross-transfer state is shared deliberately: `share_setup()` enables `CURL_LOCK_DATA_COOKIE`, `DNS`, `SSL_SESSION`, `PSL`, `HSTS` on the `CURLSH`, and adds `CURL_LOCK_DATA_CONNECT` only in serial mode because parallel mode uses the multi handle's own pool.",
+          "sources": [
+            "src/tool_operate.c#L2401-L2420"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Persistence is flushed at teardown rather than continuously: `Curl_flush_cookies()` writes the jar through `cookie_output()`, and `Curl_fopen()` performs the durable write as O_EXCL temp file + `fchmod` clone of the original mode + rename.",
+          "sources": [
+            "lib/cookie.c#L1674-L1695",
+            "lib/curl_fopen.c#L78-L150"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "behavior_traces": {
+      "summary": "Three flows explain most of the codebase: tool startup, a single serial transfer, and the multi state machine that both serial and parallel modes ultimately run on. The tool never calls sockets directly — it builds `per_transfer` records, sets options, and calls `curl_easy_perform()` (serial) or feeds a `CURLM` (parallel). Inside libcurl, `curl_easy_perform()` is itself a multi loop, so every transfer walks `MSTATE_INIT` → … → `MSTATE_MSGSENT` in `multi_runsingle()`. Connection establishment is a re-entrant loop inside one filter (`cf_setup_connect`) that appends the next filter and restarts the sub-chain connect until the whole stack is up.",
+      "claims": [
+        {
+          "claim": "STARTUP: `main()` → `tool_init_stderr()` → (Windows only) `win32_init()` → `main_checkfds()` → `signal(SIGPIPE, SIG_IGN)` → `memory_tracking_init()` (reads `CURL_MEMDEBUG`/`CURL_MEMLIMIT` on debug builds) → `globalconf_init()` → `operate()` → `globalconf_free()`.",
+          "sources": [
+            "src/tool_main.c#L152-L213",
+            "src/tool_main.c#L110-L138"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "STARTUP (cont.): inside `operate()` the order is `setlocale(LC_NUMERIC,\"C\")` → `parseconfig()` for `.curlrc` → `parse_args()` → `easysrc_init()` if `--libcurl` → `curl_share_init()` → `share_setup()` → `tool_ssls_load()` → `get_args()` per OperationConfig → `run_all_transfers()` → `curl_share_cleanup()` → `dumpeasysrc()` → `varcleanup()`.",
+          "sources": [
+            "src/tool_operate.c#L2431-L2556"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "PRIMARY ACTION (serial): `run_all_transfers()` → `serial_transfers()` → `create_transfer()` → `transfer_per_config()` → `cacertpaths()` → `single_transfer()` → `create_single()`, then per item `pre_transfer()` → `curl_easy_perform()` → `post_per_transfer()`; a retry sleeps `curlx_wait_ms(delay_ms)` and re-runs the same `per`.",
+          "sources": [
+            "src/tool_operate.c#L2091-L2189",
+            "src/tool_operate.c#L2308-L2352"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`create_single()` builds one `per_transfer` by walking `setup_input_file()` → `setup_url_pattern()` → `setup_etag_files()` → `curl_easy_init()` → `add_per_transfer()`, and only then applies output/header/option setup; failure paths must both `curl_easy_cleanup()` and close any opened etag stream.",
+          "sources": [
+            "src/tool_operate.c#L1365-L1425",
+            "src/tool_operate.c#L1516-L1552"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`pre_transfer()` is what turns `-T file` into `CURLOPT_INFILESIZE_LARGE`: it opens the upload file with `curlx_open(O_RDONLY|CURL_O_BINARY)`, `fstat`s it, and deliberately skips the size for non-`S_ISREG` inputs (devices, sockets, FIFOs).",
+          "sources": [
+            "src/tool_operate.c#L246-L318"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "PRIMARY ACTION (parallel): `parallel_transfers()` → `curl_multi_init()` → set `CURLMOPT_QUICK_EXIT`, `CURLMOPT_NOTIFYFUNCTION=mnotify`, `CURLMOPT_MAX_HOST_CONNECTIONS` → `curl_multi_notify_enable(CURLMNOTIFY_INFO_READ)` → `add_parallel_transfers()` → loop { `curl_multi_poll(…,1000,…)`; `curl_multi_perform()`; `progress_meter()` } with completions harvested in `check_finished()`.",
+          "sources": [
+            "src/tool_operate.c#L1991-L2089",
+            "src/tool_operate.c#L1903-L1968"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`--fail-early` and fatal errors are implemented as a cooperative abort: `check_finished()` sets `s->wrapitup`, the main loop then sets `per->abort = TRUE` on every added transfer, and the progress callback turns that into `CURLE_ABORTED_BY_CALLBACK` which is rewritten into a clearer errorbuffer message.",
+          "sources": [
+            "src/tool_operate.c#L1919-L1926",
+            "src/tool_operate.c#L2043-L2055"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "LIBRARY ENTRY: `curl_easy_perform()` → `CURL_EAPI_ENTER` guard → `easy_perform()`, which refuses a handle already in a user multi, detaches any connect-only connection, reuses or creates `data->multi_easy` via `Curl_multi_handle(16,1,3,7,3)`, copies MAXCONNECTS/QUICK_EXIT, `Curl_multi_add_handle()`, `sigpipe_init/apply`, then `easy_transfer()`.",
+          "sources": [
+            "lib/easy.c#L773-L845"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`easy_transfer()` is the blocking pump: `curl_multi_poll()` → `curl_multi_perform()` → when `still_running` hits 0, `curl_multi_info_read()` yields the CURLcode; a CURLMcode is mapped to `CURLE_OUT_OF_MEMORY` or `CURLE_BAD_FUNCTION_ARGUMENT`.",
+          "sources": [
+            "lib/easy.c#L720-L754"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "STATE MACHINE: `multi_runsingle()` clears the handle's dirty bit, optionally runs `multi_schedule_pending()`, checks `multi_handle_timeout()`, then switches to `multistate_init/setup/connect/connecting/protoconnect/protoconnecting/do/doing/doing_more/did/ratelimiting/performing/done`, looping while any handler returns `CURLM_CALL_MULTI_PERFORM`.",
+          "sources": [
+            "lib/multi.c#L2714-L2890"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "State transitions run entry hooks from a fixed `state_enter[MSTATE_LAST]` table in `mstate()` — only CONNECT, DID, DONE and COMPLETED have hooks — and every transition is traced via `CURL_TRC_M(data, \"-> [%s]\")`, which is what `--trace-config multi` surfaces.",
+          "sources": [
+            "lib/multi.c#L152-L200"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CONNECT: `cf_setup_connect()` is a re-entrant loop that connects the sub-chain, then appends filters in a fixed order — ip_happy (happy eyeballs) → SOCKS → HTTP proxy → HAProxy → origin filters (TLS/ALPN) — restarting at `connect_sub_chain` after each addition until `CF_SETUP_DONE`.",
+          "sources": [
+            "lib/cf-setup.c#L296-L358",
+            "lib/cf-setup.c#L228-L292"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The multi handle's `admin` easy handle is a special case in `multi_runsingle()`: it consumes internal wakeups, drives `Curl_async_thrdd_multi_process()` for threaded resolution, and runs `Curl_cshutdn_perform()` for graceful connection shutdowns, then returns early.",
+          "sources": [
+            "lib/multi.c#L2735-L2750",
+            "lib/cshutdn.c"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "PERSISTENCE: at the end of `operate()`, if `--ssl-sessions` and the `ssls_export` feature are present, `tool_ssls_save()` writes the TLS session cache back out; cookie jars are written from libcurl's own cleanup path via `Curl_flush_cookies()`.",
+          "sources": [
+            "src/tool_operate.c#L2513-L2522",
+            "src/tool_ssls.c",
+            "lib/cookie.c#L1674-L1695"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "TEARDOWN: `run_all_transfers()` always drains the `transfers` list after the mode-specific loop, calling `post_per_transfer()` + `clean_getout()` + `del_per_transfer()` for each leftover, and restores the saved `global->noprogress`/`global->isatty`.",
+          "sources": [
+            "src/tool_operate.c#L2355-L2391"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "testing_signals": {
+      "summary": "curl's testing is unusually broad and almost entirely in-tree. The centre of gravity is `tests/data/` — 2,119 XML-ish test-case files run by `tests/runtests.pl` against protocol servers curl itself ships (sws, socksd, tftpd, mqttd, rtspd, dnsd, plus Perl/Python FTP/TFTP/RTSP/DICT/telnet servers). Around that sit 80 C unit tests for library internals, 6 `tunit` tests for tool-only code, 273 `libtest` programs exercising the public API, and 31 pytest modules that test HTTP/2, HTTP/3, proxying, SSL and WebSockets against real nghttpx/caddy/vsftpd. Each run can be repeated in torture mode (fail every allocation in turn), under valgrind, or event-based. Coverage gaps are structural rather than accidental: platform-specific code (Windows/VMS/AmigaOS/MSDOS branches) and the rarer TLS/QUIC backend combinations can only be exercised by the matching CI job.",
+      "claims": [
+        {
+          "claim": "The primary suite is 2,119 declarative test files in tests/data/, each an XML-like document with `<info><keywords>`, a `<reply>` server script, a `<client><command>` invocation, and a `<verify><protocol>` expectation — plus optional `<limits>` on allocation counts.",
+          "sources": [
+            "tests/data/test1#L1-L54",
+            "tests/data/Makefile.am#L24-L40"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`tests/runtests.pl` is the harness; its documented flags cover torture testing (`-t`), valgrind control, event-based runs, and keyword/feature selection such as `FTPS` or `!feat:proxy`, with per-test result flags (s/r/p/d/u/P/o/e/m/v/E) reported per run.",
+          "sources": [
+            "docs/runtests.md#L20-L80",
+            "docs/runtests.md#L120-L290",
+            "tests/runtests.pl"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Protocol servers are part of the repo, so tests need no external services: tests/server/ holds sws.c (HTTP), socksd.c, tftpd.c, mqttd.c, rtspd.c, dnsd.c and sockfilt.c, complemented by ftpserver.pl, http2-server.pl, http3-server.pl, sshserver.pl and dictserver.py.",
+          "sources": [
+            "tests/server/sws.c",
+            "tests/server/socksd.c",
+            "tests/ftpserver.pl",
+            "tests/http3-server.pl"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "80 unit tests under tests/unit/ exercise library internals directly (llist, hash, splay, strparse, urlapi, cookie parsing …) using the `UNITTEST_BEGIN_SIMPLE` macro and a `test_unitNNNN(const char *arg)` entrypoint.",
+          "sources": [
+            "tests/unit/unit1300.c#L26-L60",
+            "tests/unit/Makefile.inc"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Tool-only code has its own unit directory, tests/tunit/, with 6 files named after the test number they back (tool1394, tool1604, tool1621, tool1622, tool1623, tool1720) — this is where `src/` helpers get direct coverage.",
+          "sources": [
+            "tests/tunit/README.md",
+            "tests/tunit/tool1621.c"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "273 `libtest/libNNNN.c` programs plus a set of `cli_*.c` drivers (cli_h2_pausing, cli_hx_download, cli_ws_pingpong, cli_tls_session_reuse, cli_ev_download) test the public easy/multi/WebSocket APIs as real linked programs.",
+          "sources": [
+            "tests/libtest/lib1301.c",
+            "tests/libtest/cli_ws_pingpong.c",
+            "tests/libtest/first.c"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The pytest suite in tests/http/ has 31 modules numbered by area — 01 basic, 02 download, 07 upload, 09 push, 10/13 proxy and proxy auth, 17 ssl use, 19 shutdown, 20 websockets, 22 HTTPSRR, 30-32 vsftpd, 40 socks, 50/51 scp+sftp, 60 h3 proxy — driven by `conftest.py` and a `testenv` package.",
+          "sources": [
+            "tests/http/conftest.py",
+            "tests/http/test_20_websockets.py",
+            "tests/http/test_60_h3_proxy.py",
+            "tests/http/requirements.txt"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Make targets select the mode: `tests/Makefile.am` maps `test`/`quiet-test`/`am-test`/`ci-test`/`full-test`/`nonflaky-test`/`torture-test`/`event-test` onto `$(TEST)` with different flag sets, and `ci-pytest` runs `pytest -n auto -v $(srcdir)/http`.",
+          "sources": [
+            "tests/Makefile.am#L144-L178",
+            "Makefile.am#L126-L158"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Memory-behaviour is a first-class test axis: debug builds honour `CURL_MEMDEBUG` (log file) and `CURL_MEMLIMIT` (fail the Nth allocation) set up in `memory_tracking_init()`, with tests/memanalyze.pl and tests/memanalyzer.pm analysing the logs and test cases asserting allocation ceilings.",
+          "sources": [
+            "src/tool_main.c#L110-L138",
+            "tests/memanalyze.pl",
+            "tests/data/test1#L48-L52"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Debug builds expose test-only hooks the suite depends on: `CURL_FORBID_REUSE`, `global->test_duphandle` (perform on a `curl_easy_duphandle()` copy), `global->test_event_based` (`curl_easy_perform_ev()` / libuv-driven `parallel_event()`), and `CURL_UPLOAD_SIZE`.",
+          "sources": [
+            "src/tool_operate.c#L2120-L2144",
+            "src/tool_operate.c#L1808-L1900",
+            "src/tool_operate.c#L301-L312"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Source-level checks run as their own CI workflow: `scripts/checksrc-all.pl` enforces the style guide, and the same job runs spellcheck, `scripts/cmakeopts.sh`, REUSE licence checks and other linters with `permissions: {}` and pinned action SHAs.",
+          "sources": [
+            ".github/workflows/checksrc.yml#L37-L60",
+            "scripts/checksrc.pl",
+            "docs/internals/CHECKSRC.md#L7-L50"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Documentation is tested too: `make check` includes `check-docs` (docs/libcurl) and `examples` (docs/examples, 129 compilable C programs), with dedicated checkdocs.yml and checkurls.yml workflows.",
+          "sources": [
+            "Makefile.am#L113-L168",
+            ".github/workflows/checkdocs.yml",
+            "docs/examples/simple.c"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The CI matrix is what covers the backend combinatorics: linux.yml pins and builds against AWS-LC, BoringSSL, LibreSSL, mbedTLS (current and previous), OpenSSL, Rustls, nghttp2, OpenLDAP and Fil-C, while http3-linux.yml, macos.yml, windows.yml, non-native.yml and linux-old.yml cover the rest.",
+          "sources": [
+            ".github/workflows/linux.yml#L34-L60",
+            ".github/workflows/http3-linux.yml",
+            ".github/workflows/non-native.yml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "There is a coverage script (`scripts/coverage.sh`) and a CodeQL workflow, but coverage is not gated in the in-tree build targets — `make check` does not compute or threshold line coverage.",
+          "sources": [
+            "scripts/coverage.sh",
+            ".github/workflows/codeql.yml",
+            "Makefile.am#L113"
+          ],
+          "kind": "inference"
+        },
+        {
+          "claim": "`configure-vs-cmake.yml` exists specifically to catch drift between the two build systems, which is the main risk of maintaining `configure.ac` (167KB) and `CMakeLists.txt` (93KB) in parallel.",
+          "sources": [
+            ".github/workflows/configure-vs-cmake.yml",
+            "configure.ac",
+            "CMakeLists.txt"
+          ],
+          "kind": "inference"
+        }
+      ]
+    },
+    "risk_map": {
+      "summary": "curl's risk profile is dominated by the fact that it parses hostile input (URLs, headers, server responses, redirect targets) in C, on every platform, across dozens of optional backends. The highest-attention paths are credential handling (.netrc, `-u`, redirects that must drop auth), filename derivation from server-controlled `Content-Disposition`, the redirect/protocol allowlist, and the TLS/QUIC backend glue. Structurally, the biggest fragility is combinatorial: ~50 `CURL_DISABLE_*` knobs times six TLS backends times two QUIC backends times platform `#ifdef`s means many buildable configurations that no single CI job exercises. Blast-radius hotspots are the few central files every protocol funnels through — lib/multi.c, lib/url.c, lib/sendf.c, lib/cfilters.c — where a regression is not protocol-local.",
+      "claims": [
+        {
+          "claim": "Server-controlled filenames reach the filesystem: `parse_filename()` in tool_cb_hdr.c strips path components and CR/LF, but the reserved-name / invalid-character sanitizer `sanitize_file_name()` is compiled only `#if defined(_WIN32) || defined(MSDOS)`, so POSIX hardening rests entirely on those `strrchr('/')`/`strrchr('\\\\')` trims.",
+          "sources": [
+            "src/tool_cb_hdr.c#L185-L229",
+            "src/tool_doswin.h#L28-L35",
+            "src/tool_doswin.c#L25-L27"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`--output-dir` is applied by naive string concatenation (`curl_maprintf(\"%s/%s\", config->output_dir, per->outfile)`) after the filename has been derived, so the safety of the combined path depends wholly on the earlier derivation step.",
+          "sources": [
+            "src/tool_operate.c#L1099-L1110"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The protocol allowlist is enforced in exactly one place — `url_set_conn_scheme()` checking `data->set.allowed_protocols` and, for redirects, `data->set.redir_protocols` — making it a single point of failure for `--proto`/`--proto-redir` and for redirect-to-`file://` style attacks.",
+          "sources": [
+            "lib/url.c#L1170-L1195"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Credential-bearing code is spread across lib/creds.c, lib/netrc.c and lib/http.c's auth state machine (`Curl_http_output_auth`, `Curl_http_input_auth`, `http_perhapsrewind`, `Curl_http_auth_act`); the recent commit history shows this area actively hardened (e.g. keeping credentials out of `CURLINFO_REDIRECT_URL`).",
+          "sources": [
+            "lib/creds.c",
+            "lib/http.c#L401-L560",
+            "lib/http.c#L1066-L1180",
+            "docs/internals/CREDENTIALS.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": ".netrc parsing is a hand-written lexer over an attacker-influenceable file with explicit hard caps — `MAX_NETRC_LINE` 16384, `MAX_NETRC_FILE` 128KB, `MAX_NETRC_TOKEN` 4096 — and a quoted-string state machine (`netrc_lexer_quoted`) that is worth re-reading before any change.",
+          "sources": [
+            "lib/netrc.c#L68-L100",
+            "lib/netrc.c#L194-L260"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Interactive password entry disables terminal echo by clearing the `ECHO` bit in `termios` and must restore it on every exit path; a failure here leaks a typed password to the screen and to scrollback.",
+          "sources": [
+            "src/tool_getpass.c#L110-L165"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Several environment variables change behaviour without any command-line trace: `IPFS_GATEWAY`/`IPFS_PATH`/`HOME` in the tool, and `CURL_SSL_BACKEND` inside libcurl, which selects among compiled-in TLS backends at runtime.",
+          "sources": [
+            "src/tool_ipfs.c#L40-L70",
+            "lib/vtls/vtls.c#L790-L820"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "DoH creates additional easy handles that perform their own network transfers with their own option set (`ERROR_CHECK_SETOPT(CURLOPT_WRITEFUNCTION, doh_probe_write_cb)` etc.); any option not deliberately propagated to the probe is silently not applied to DNS traffic.",
+          "sources": [
+            "lib/vdns/doh.c#L234-L400",
+            "lib/vdns/doh.c#L403-L490"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Explicitly-experimental surface is documented as out of scope for security handling: the quiche QUIC backend and HTTP/3 proxy / CONNECT-UDP support are experimental, and docs/EXPERIMENTAL.md states vulnerabilities in experimental features are treated as ordinary bugs.",
+          "sources": [
+            "docs/EXPERIMENTAL.md#L9-L50"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Size is itself a risk in the hot files: lib/http.c is 5,112 lines, lib/multi.c 4,262, lib/ftp.c and lib/http2.c are next; `multi_runsingle()` alone dispatches thirteen states and is the path every protocol takes.",
+          "sources": [
+            "lib/http.c",
+            "lib/multi.c#L2714-L2890",
+            "lib/ftp.c"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The `CURL_DISABLE_*` matrix (documented across ~50 entries in docs/CURL-DISABLE.md, from `CURL_DISABLE_ALTSVC` to `CURL_DISABLE_NETRC`) means many code paths are conditionally compiled; `scripts/randdisable` exists precisely because the full matrix cannot be CI-covered.",
+          "sources": [
+            "docs/CURL-DISABLE.md#L9-L130",
+            "scripts/randdisable"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`Curl_fopen()` gets the durable-write pattern right (O_EXCL temp file, 0600, `fchmod` clone only when uid/gid match, then rename), so any new cache writer that bypasses it loses those properties — a coupling that is easy to miss.",
+          "sources": [
+            "lib/curl_fopen.c#L78-L150",
+            "lib/hsts.c#L369-L400",
+            "lib/altsvc.c#L392-L425"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Parallel mode's abort path is cooperative rather than immediate: `wrapitup` only sets `per->abort`, and the transfer does not stop until its progress callback next fires — so a stalled transfer can outlive a `--fail-early` decision.",
+          "sources": [
+            "src/tool_operate.c#L2038-L2060",
+            "src/tool_operate.c#L1919-L1926"
+          ],
+          "kind": "inference"
+        },
+        {
+          "claim": "The libuv-based event loop used by `--parallel` under `test_event_based` is `#if defined(DEBUGBUILD) && defined(USE_LIBUV)` only, so `parallel_event()`, `on_uv_socket()`, `cb_socket()` and `destroy_context()` are never exercised by a release build.",
+          "sources": [
+            "src/tool_operate.c#L1672-L1902"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "libcurl defends against API misuse at runtime rather than at compile time: magic-number checks (`CURLEASY_MAGIC_NUMBER`, `CURLMULTI_MAGIC_NUMBER`) and a call-stack guard that returns `CURLE_RECURSIVE_API_CALL` when an application re-enters the API from inside a callback.",
+          "sources": [
+            "lib/api.h#L3-L60",
+            "lib/easy.c#L813-L816"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "extension_points": {
+      "summary": "curl is extended by adding a record to a table, not by subclassing. New URI schemes are `struct Curl_scheme` records pointing at a `struct Curl_protocol` vtable; new transport behaviour is a `struct Curl_cftype` inserted into the filter chain; new response processing is a `struct Curl_cwtype` registered at a phase; new TLS/SSH/DNS backends are entries in a backend array guarded by a `USE_*` define. On the tool side, a new command-line option means one row in the alphabetical `aliases[]` table, one `C_*` enum value, one case in `getparameter()`, and one curldown page. Several of these tables are additionally mirrored by generated files or documentation that CI verifies.",
+      "claims": [
+        {
+          "claim": "Adding a protocol means adding a `Curl_scheme_*` record in lib/protocol.c, externing it in lib/protocol.h, teaching the length-bucketed lookup functions about the new name, and supplying a `struct Curl_protocol` vtable; docs/internals/NEW-PROTOCOL.md documents the social and technical bar for that.",
+          "sources": [
+            "lib/protocol.h#L240-L288",
+            "lib/protocol.c#L560-L628",
+            "docs/internals/NEW-PROTOCOL.md#L37-L80"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The `struct Curl_protocol` vtable is the per-scheme hook set: setup_connection, connect, connecting, do_it, doing, done, proto_getsock/doing_pollset/domore_pollset/perform_pollset, disconnect, write_resp, write_resp_hd, connection_is_dead, attach, and follow.",
+          "sources": [
+            "lib/protocol.h#L100-L200"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "PROTOPT_* flags are the declarative knobs a new scheme uses to opt into behaviour — SSL, DUAL (two connections), NEEDSPWD, NOURLQUERY, WILDCARD, CREDSPERREQUEST, PROXY_AS_HTTP, CONN_REUSE, SSL_REUSE, NO_TRANSFER, HTTP_PROXY_TUNNEL — rather than special-casing the scheme in shared code.",
+          "sources": [
+            "lib/protocol.h#L202-L238"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New transport layers plug in as `struct Curl_cftype` instances; `Curl_cf_setup_add()` / `cf_setup_create()` build the base filter and the `cf_setup_add_*` helpers decide insertion order, so a new filter is added by writing one more `cf_setup_add_*` step.",
+          "sources": [
+            "lib/cf-setup.c#L296-L358",
+            "lib/cf-setup.c#L414-L480",
+            "lib/cfilters.h#L217-L232"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Response-processing extensions register as `struct Curl_cwtype` with a `CURL_CW_*` phase; `cwriter_add()` inserts each writer first within its phase, so ordering is declared rather than coded.",
+          "sources": [
+            "lib/sendf.c#L331-L365",
+            "lib/sendf.h#L100-L112"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Content and transfer decodings are two explicit registries — `general_unencoders[]` and `transfer_unencoders[]` — resolved by name in `find_unencode_writer()`, which is where a new `Content-Encoding` would be added alongside deflate/gzip/brotli/zstd/identity.",
+          "sources": [
+            "lib/content_encoding.c#L635-L660",
+            "lib/content_encoding.c#L724-L780"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Upload-side extensions use the mirrored client-reader registry (`struct Curl_crtype` with `CURL_CR_*` phases); HTTP's Expect: 100-continue handling is implemented this way via `http_exp100_add_reader()`.",
+          "sources": [
+            "lib/sendf.h#L240-L250",
+            "lib/http.c#L1600-L1650",
+            "docs/internals/CLIENT-READERS.md#L44-L50"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "A new TLS backend is a `struct Curl_ssl` added to `available_backends[]` behind a `USE_*` define; `curl_global_sslset()` and the `CURL_SSL_BACKEND` lookup both iterate that same array, so no other file needs to change to make it selectable.",
+          "sources": [
+            "lib/vtls/vtls.c#L706-L726",
+            "lib/vtls/vtls.c#L790-L850"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Resolver strategies are swappable at build time behind a common `lib/vdns/asyn.h` interface with three implementations — c-ares (`asyn-ares.c`), threaded (`asyn-thrdd.c`) and the shared base (`asyn-base.c`) — plus `cf-dns.c` exposing resolution as a connection filter.",
+          "sources": [
+            "lib/vdns/asyn.h",
+            "lib/vdns/asyn-thrdd.c",
+            "lib/vdns/cf-dns.c#L412"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "SSH has two interchangeable backends selected at build time (libssh2 and libssh) behind lib/vssh/vssh.h, following the same one-directory-per-backend-family convention as vtls and vquic.",
+          "sources": [
+            "lib/vssh/vssh.h",
+            "lib/vssh/libssh2.c",
+            "lib/vssh/libssh.c"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Adding a CLI option touches the alphabetically-sorted `aliases[]` table (the comment above it is explicit: \"this array MUST be alphasorted based on the 'lname'\"), the `C_*` id enum, a case in `getparameter()`, and the generated help in src/tool_listhelp.c.",
+          "sources": [
+            "src/tool_getparam.c#L75-L78",
+            "src/tool_getparam.c#L2933-L3110",
+            "src/tool_listhelp.c",
+            "src/tool_getparam.h"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New `--write-out` variables are one row in `variables[]` mapping a name to a `VAR_*` id, a `CURLINFO_*` id, and a writer function (`writeString`/`writeLong`/`writeOffset`/`writeTime`), with NULL signalling a special form handled inline.",
+          "sources": [
+            "src/tool_writeout.c#L427-L470"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New libcurl options plug into three parallel registries that must stay in sync: the `CURLOPT_*` enum in include/curl/curl.h, the typed setters in lib/setopt.c, and one curldown page under docs/libcurl/opts/ (422 of them) plus an entry in docs/libcurl/symbols-in-versions.",
+          "sources": [
+            "include/curl/curl.h",
+            "lib/setopt.c#L358-L1030",
+            "docs/libcurl/symbols-in-versions",
+            "docs/libcurl/opts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Multi-state entry hooks are themselves a small registry: the `state_enter[MSTATE_LAST]` function table in `mstate()` lets a state gain on-entry behaviour without touching `multi_runsingle()`'s switch.",
+          "sources": [
+            "lib/multi.c#L160-L196"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Cross-handle caches are extended through the share interface: `share_setup()` in the tool shows the enumerable set (`CURL_LOCK_DATA_COOKIE`, `DNS`, `SSL_SESSION`, `PSL`, `HSTS`, `CONNECT`), and `CURLSHE_NOT_BUILT_IN` is tolerated so a disabled feature does not break setup.",
+          "sources": [
+            "src/tool_operate.c#L2393-L2420"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_handoff": {
+      "summary": "Treat this repo as two coupled codebases with one very strict style contract. Read the internals docs before the code — docs/internals/ explains the four architectural ideas (connection filters, client writers, client readers, the multi state machine) that the code assumes you already know. Style is machine-enforced: `scripts/checksrc.pl` runs in CI and by default in debug builds, and a style violation fails the build before your logic is ever reviewed. Anything user-visible needs a matching curldown doc and usually a test case, and several files are generated and must not be hand-edited. The safest edits are additive table rows; the riskiest are changes to lib/multi.c, lib/url.c, lib/sendf.c, or lib/cfilters.c, which every protocol depends on.",
+      "claims": [
+        {
+          "claim": "Read first, in this order: docs/internals/README.md and the four core internals docs (CONNECTION-FILTERS.md, CLIENT-WRITERS.md, CLIENT-READERS.md, MID.md), then src/tool_main.c and src/tool_operate.c for the tool, then lib/easy.c and lib/multi.c for the library.",
+          "sources": [
+            "docs/internals/README.md",
+            "docs/internals/CONNECTION-FILTERS.md",
+            "src/tool_operate.c#L2422",
+            "lib/multi.c#L2714"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Style is non-negotiable and automated: docs/internals/CODE_STYLE.md is enforced by `scripts/checksrc.pl`, invoked via `make checksrc`, run automatically after `./configure --enable-debug`, and gated in CI by `scripts/checksrc-all.pl`.",
+          "sources": [
+            "docs/internals/CODE_STYLE.md#L17-L28",
+            "docs/internals/CHECKSRC.md#L7-L50",
+            ".github/workflows/checksrc.yml#L38-L47"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`make lint` is the full pre-push check: it runs `scripts/badwords-all`, `make checksrc` across lib/src/tests/include/examples/projects, and `scripts/spacecheck.pl`.",
+          "sources": [
+            "Makefile.am#L194-L210",
+            "scripts/spacecheck.pl",
+            "scripts/badwords-all"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Do not hand-edit generated files: src/tool_hugehelp.c is produced by src/mkhelp.pl from the manpage during the build, and src/tool_listhelp.c is likewise generated option-help data.",
+          "sources": [
+            "src/Makefile.am#L123-L185",
+            "src/mkhelp.pl",
+            "src/tool_listhelp.c"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Docs are written in curldown (a markdown dialect with a YAML-ish front matter carrying `Title`, `Section`, `Added-in`, `See-also`), documented in docs/CURLDOWN.md and converted by scripts/managen; the checkdocs workflow validates them.",
+          "sources": [
+            "docs/CURLDOWN.md",
+            "docs/runtests.md#L1-L12",
+            "scripts/managen",
+            ".github/workflows/checkdocs.yml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Adding a test means creating tests/data/testNNNN in the XML-like format and adding it to the numerically-ordered `TESTCASES` list in tests/data/Makefile.am — the file is not picked up automatically.",
+          "sources": [
+            "tests/data/Makefile.am#L24-L40",
+            "tests/data/test1#L1-L54"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "To run tests: `make test` (quiet) from the top, or drive the harness directly with `TFLAGS` — `cd tests && ./runtests.pl 1 to 200`, keyword selection like `FTPS` or `!feat:proxy`, `-t` for torture, and `make pytest` for the HTTP/2-3 python suite.",
+          "sources": [
+            "Makefile.am#L126-L158",
+            "tests/Makefile.am#L144-L178",
+            "docs/runtests.md#L26-L50"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Public ABI is a hard boundary: include/curl/curlver.h carries the version macros, docs/libcurl/ABI.md states the compatibility promise, and docs/libcurl/symbols-in-versions records when every symbol appeared — new symbols must be added there.",
+          "sources": [
+            "include/curl/curlver.h#L35-L75",
+            "docs/libcurl/ABI.md",
+            "docs/libcurl/symbols-in-versions"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Any new code must still compile with features disabled: wrap protocol/feature-specific code in the relevant `CURL_DISABLE_*` guard as documented in docs/CURL-DISABLE.md, and use `scripts/randdisable` to sanity-check random combinations.",
+          "sources": [
+            "docs/CURL-DISABLE.md#L9-L130",
+            "scripts/randdisable",
+            "lib/protocol.c#L46-L70"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Both build systems must be updated together: file lists live in lib/Makefile.inc and src/Makefile.inc for autotools and in lib/CMakeLists.txt / src/CMakeLists.txt for CMake, and configure-vs-cmake.yml exists to catch divergence.",
+          "sources": [
+            "lib/Makefile.inc",
+            "src/Makefile.inc",
+            "lib/CMakeLists.txt",
+            ".github/workflows/configure-vs-cmake.yml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Do not hand-write RELEASE-NOTES entries: it is maintained by scripts/release-notes.pl and the release flow in docs/RELEASE-PROCEDURE.md (the most recent commit on this branch is literally \"RELEASE-NOTES: synced\").",
+          "sources": [
+            "scripts/release-notes.pl",
+            "RELEASE-NOTES",
+            "docs/RELEASE-PROCEDURE.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Never file a suspected vulnerability as a normal PR or issue: SECURITY.md and docs/VULN-DISCLOSURE-POLICY.md require private reporting through the curl disclosure process.",
+          "sources": [
+            "SECURITY.md#L7-L18",
+            "docs/VULN-DISCLOSURE-POLICY.md",
+            "docs/BUG-BOUNTY.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Trap: the `aliases[]` table in src/tool_getparam.c must stay alphabetically sorted by long name — `findlongopt()` binary-searches it, so an out-of-order insertion silently breaks option lookup rather than failing to compile.",
+          "sources": [
+            "src/tool_getparam.c#L75-L78",
+            "src/tool_getparam.c#L1083-L1090"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Trap: tool code should call the `curlx_*` wrappers (`curlx_open`, `curlx_fopen`, `curlx_stat`, `curlx_strdup`, `curlx_safefree`, `curlx_dyn_*`) rather than libc directly — the wrappers carry the Windows/VMS/unicode portability that plain libc calls lose.",
+          "sources": [
+            "lib/curlx/win32-fopen.h",
+            "src/tool_operate.c#L1146-L1160",
+            "docs/internals/CURLX.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Trap: much of the interesting test machinery only exists in debug builds (`DEBUGBUILD`) — `curl_easy_perform_ev()`, `parallel_event()`, `CURL_FORBID_REUSE`, `CURL_MEMDEBUG`, `--test-duphandle` — so a change verified only against a release build has not been exercised by the full suite.",
+          "sources": [
+            "lib/easy.c#L866-L880",
+            "src/tool_operate.c#L1672-L1902",
+            "src/tool_main.c#L110-L138"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Safe edit boundaries: adding a row to a registry (schemes, filters, writers, aliases, writeout variables) is low-risk and local; edits inside lib/multi.c's state machine, lib/url.c's connection-reuse matching, or lib/sendf.c's writer stack affect every protocol at once and need the full suite plus pytest.",
+          "sources": [
+            "lib/multi.c#L2714-L2890",
+            "lib/url.c#L700-L910",
+            "lib/sendf.c#L331-L395"
+          ],
+          "kind": "inference"
+        }
+      ]
+    },
+    "agent_prompt": "You are working in the curl repository (commit c362f03, branch master, version 8.23.0-DEV). It contains two coupled C codebases plus an unusually large test and documentation corpus.\n\nLayout. `lib/` (393 files) builds libcurl. `src/` (96 files) builds the `curl` command-line tool as a client of libcurl. `include/curl/` holds the 12 public headers. Backend families live in subdirectories: `lib/vtls` (OpenSSL, GnuTLS, wolfSSL, mbedTLS, Schannel, Rustls), `lib/vquic` (ngtcp2, quiche, capsule/CONNECT-UDP), `lib/vssh` (libssh2, libssh), `lib/vauth` (Basic/Digest/NTLM/Kerberos/SPNEGO/OAuth2/GSASL), `lib/vdns` (c-ares, threaded resolver, DoH, HTTPSRR), and `lib/curlx` (portability utilities both halves use). `tests/` holds ~2,100 data-driven test cases, 80 unit tests, 6 tunit tests, 273 libtest programs, 31 pytest modules and the protocol servers to run them against. `docs/internals/` is the architecture documentation — read it before the code.\n\nFour ideas explain most of the design. (1) Connection filters: `struct Curl_cftype` instances chain via `->next` so TLS, SOCKS, HTTP proxy, HAProxy, HTTP/2 and QUIC stack on top of a socket without protocol code knowing the layout. `cf_setup_connect()` in lib/cf-setup.c appends them in a fixed order — ip_happy, SOCKS, HTTP proxy, HAProxy, origin/TLS — restarting the sub-chain connect after each addition. (2) Client writers and readers: received bytes go through `Curl_client_write()` and an ordered phase stack (RAW → TRANSFER_DECODE → PROTOCOL → BEFORE_DECODE → CONTENT_DECODE → CLIENT) before reaching `CURLOPT_WRITEFUNCTION`; uploads mirror this. (3) The multi state machine: `multi_runsingle()` in lib/multi.c walks MSTATE_INIT → SETUP → CONNECT → CONNECTING → PROTOCONNECT(ING) → DO → DOING → DOING_MORE → DID → PERFORMING → DONE → COMPLETED → MSGSENT. `curl_easy_perform()` is a thin wrapper that creates a one-handle multi and pumps `curl_multi_poll()`/`curl_multi_perform()`. (4) The scheme registry: each URI scheme is a `struct Curl_scheme` in lib/protocol.c with a `struct Curl_protocol` vtable and PROTOPT_* flags; a disabled protocol keeps its record with a NULL `run` pointer.\n\nThe tool's flow is `main()` (src/tool_main.c) → `operate()` (src/tool_operate.c) → `.curlrc` parse → `parse_args()` → a `CURLSH` share → `run_all_transfers()` → `serial_transfers()` or `parallel_transfers()`. Each URL becomes a `per_transfer` built by `create_single()`, configured by `src/config2setopts.c`, then run and post-processed by `post_per_transfer()`/`retrycheck()`.\n\nConventions that will bite you. Style is machine-enforced by `scripts/checksrc.pl` (`make checksrc`, CI job `checksrc`) — violations fail before review. The `aliases[]` table in src/tool_getparam.c must stay alphabetically sorted; `findlongopt()` binary-searches it. Never hand-edit src/tool_hugehelp.c or src/tool_listhelp.c (generated). Use `curlx_*` wrappers, not raw libc. New tests need both a tests/data/testNNNN file and an entry in tests/data/Makefile.am. New CLI options need a docs/cmdline-opts page; new CURLOPTs need a docs/libcurl/opts page and a symbols-in-versions line. Both build systems (autotools Makefile.inc files and CMakeLists.txt) must be updated together. RELEASE-NOTES is generated by scripts/release-notes.pl.\n\nVerify with `make test` (or `cd tests && ./runtests.pl <numbers|keywords>`, `-t` for torture), `make pytest` for HTTP/2-3, and `make lint`. Prefer additive changes to registries; treat lib/multi.c, lib/url.c, lib/sendf.c and lib/cfilters.c as high blast radius. Suspected vulnerabilities go through the private disclosure process in SECURITY.md, never a public PR."
+  },
+  "analysis": {
+    "agent": "claude",
+    "model": "cli:claude",
+    "runtime_ms": 589835,
+    "cost_usd": 4.186151999999999,
+    "collected_at": "2026-09-22T08:57:46.719Z"
   }
 }

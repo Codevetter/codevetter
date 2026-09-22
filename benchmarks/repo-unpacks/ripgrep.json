@@ -8049,5 +8049,980 @@
         ]
       }
     ]
+  },
+  "report": {
+    "overview": "ripgrep is a line-oriented recursive search tool (`rg`) written in Rust that walks a directory tree while respecting `.gitignore`/`.ignore` rules, matches each file with either Rust's `regex` crate or PCRE2, and prints results through one of three printers (standard/summary/JSON). The repository is a Cargo workspace: a thin binary crate at `crates/core` glues together ten reusable library crates (`grep-matcher`, `grep-regex`, `grep-pcre2`, `grep-searcher`, `grep-printer`, `grep-cli`, `ignore`, `globset`, plus the experimental `grep-index`), each published independently on crates.io. What is distinctive is the amount of engineering in the boring parts: a hand-rolled CLI parser over a 246KB table of `&dyn Flag` trait objects that also generates the man page, `--help` text and four shells' completions from the same source of truth; a directory walker that reimplements gitignore precedence with a parallel work-stealing traversal; and a searcher that chooses between memory maps, a reusable line buffer, and multi-line slice scanning per file. An unstable `unstable-index` feature adds a redb+fst ngram index behind `-X/--index` and `--x-crud`.",
+    "system_map": {
+      "summary": "The workspace root `Cargo.toml` declares the `ripgrep` package producing one binary `rg` from `crates/core/main.rs`, and lists ten workspace members under `crates/`. `crates/core` is not published as a library — it is pure glue plus the CLI definition, as its README states. Dependencies flow strictly downward: core → `grep` facade → `grep-searcher`/`grep-printer`/`grep-regex`/`grep-pcre2`/`grep-cli`/`grep-matcher`, with `ignore` and `globset` used for traversal and glob filtering. There is no network, database or server component in the default build; the only external integrations are subprocesses (decompressors, `--pre` preprocessor, hostname binary) and, under `unstable-index`, a redb embedded database on disk. Deployment is static binaries cross-compiled for ~14 targets by a tag-triggered GitHub Actions release workflow, plus a Debian package described by `[package.metadata.deb]`.",
+      "claims": [
+        {
+          "claim": "The single binary target `rg` is declared in the root manifest with `path = \"crates/core/main.rs\"`, and `autotests = false` with one explicit `[[test]] name = \"integration\", path = \"tests/tests.rs\"`.",
+          "sources": [
+            "Cargo.toml#L26-L37"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`fn main() -> ExitCode` calls `run(flags::parse())` and dispatches on `args.mode()` into seven arms: indexed search, single-threaded `search`, `search_parallel`, `index::write`, `files`/`files_parallel`, `types`, and `generate`.",
+          "sources": [
+            "crates/core/main.rs#L43-L105"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The workspace has ten members — `globset`, `grep`, `cli`, `index`, `matcher`, `pcre2`, `printer`, `regex`, `searcher`, `ignore` — sharing `edition = \"2024\"` and `rust-version = \"1.96\"` via `[workspace.package]`.",
+          "sources": [
+            "Cargo.toml#L39-L57"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`crates/grep` is a pure facade that re-exports the constituent crates as `grep::cli`, `grep::matcher`, `grep::printer`, `grep::regex`, `grep::searcher` and (feature-gated) `grep::pcre2`.",
+          "sources": [
+            "crates/grep/src/lib.rs#L15-L21",
+            "crates/grep/Cargo.toml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The published crate names differ from directory names: `crates/matcher` is `grep-matcher` v0.1.9, `crates/printer` is `grep-printer` v0.3.1, `crates/searcher` is `grep-searcher` v0.1.17, `crates/regex` is `grep-regex` v0.1.14.",
+          "sources": [
+            "crates/matcher/Cargo.toml#L1-L3",
+            "crates/printer/Cargo.toml#L1-L3",
+            "crates/searcher/Cargo.toml#L1-L3",
+            "crates/regex/Cargo.toml#L1-L3"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "There is no persistent storage in the default build; the only storage layer is the optional `grep-index` crate, which opens a redb `Database`/`ReadOnlyDatabase` at a file named `index.db` inside a discovered `.ripgrep` directory.",
+          "sources": [
+            "crates/index/src/index.rs#L7-L30",
+            "crates/index/Cargo.toml#L20-L25"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`grep-index` is marked `publish = false`, version `0.0.1`, and is wired in only through the `unstable-index` Cargo feature (`dep:grep-index`), which the root manifest itself warns \"may have very serious bugs\".",
+          "sources": [
+            "crates/index/Cargo.toml#L1-L4",
+            "Cargo.toml#L83-L87"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Index code is compiled behind a `#[path]` module swap: `crates/core/index/mod.rs` selects `disabled.rs` (which `bail!`s \"indexing not enabled in this build\") or `enabled.rs` based on the `unstable-index` feature.",
+          "sources": [
+            "crates/core/index/mod.rs#L1-L8",
+            "crates/core/index/disabled.rs",
+            "crates/core/index/enabled.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`build.rs` embeds the short git hash as `RIPGREP_BUILD_GIT_HASH` by shelling out to `git rev-parse --short=10 HEAD`, and on `windows`+`msvc` embeds `pkg/windows/Manifest.xml` via `/MANIFEST:EMBED` linker args to enable long paths.",
+          "sources": [
+            "build.rs#L1-L33",
+            "build.rs#L34-L60"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Build/test commands are `cargo build --release` (optionally `--features pcre2`) and `cargo test --all`; CI additionally runs `cargo test --workspace --features unstable-index` and `cargo fmt --all --check`.",
+          "sources": [
+            "README.md#L451-L516",
+            ".github/workflows/ci.yml#L155-L180",
+            ".github/workflows/ci.yml#L215-L225"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "On musl 64-bit targets the binary swaps in jemalloc as the `#[global_allocator]` because musl's allocator measurably slows ripgrep down; this is the only allocator override.",
+          "sources": [
+            "crates/core/main.rs#L18-L41",
+            "Cargo.toml#L76-L78"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Release shape: a `release-lto` profile (fat LTO, `panic = \"abort\"`, `codegen-units = 1`, symbols stripped) plus `.cargo/config.toml` forcing `+crt-static` for MSVC and musl targets so shipped binaries are statically linked.",
+          "sources": [
+            "Cargo.toml#L91-L104",
+            ".cargo/config.toml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The release workflow triggers only on `[0-9]+.[0-9]+.[0-9]+` tags, verifies the tag matches the `version = \"...\"` line in `Cargo.toml`, and fans out over ~14 targets including aarch64/armv7/s390x/powerpc64 Linux, macOS x86_64+arm64 and four Windows targets.",
+          "sources": [
+            ".github/workflows/release.yml#L1-L45",
+            ".github/workflows/release.yml#L64-L140"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Packaging metadata installs `rg`, licenses, CHANGELOG/README/FAQ, plus a generated man page and bash/fish/zsh completions from `deployment/deb/` — artifacts that do not exist in the repo and must be produced by `ci/build-deb`.",
+          "sources": [
+            "Cargo.toml#L106-L128"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "feature_catalog": {
+      "summary": "ripgrep's user surface is a single command with a very large flag set: `FLAGS` in `crates/core/flags/defs.rs` is a static slice of `&dyn Flag` trait objects, each carrying short/long/negated/alias names, a documentation category, short and long (mdoc) help text, a completion type, and an `update` method that mutates `LowArgs`. Beyond plain search, the binary has distinct top-level modes — `--files`, `--type-list`, `--generate`, `-h/--help`/`-V/--version` special modes, and the experimental index modes. Output modes (`--count`, `--count-matches`, `-l/--files-with-matches`, `--files-without-match`, `--json`) select among three printers. Filtering features include gitignore semantics, `-t/--type` file types, `-g/--glob` overrides, hidden-file handling and `--max-filesize`. Provider-style integrations are the pluggable regex engine (`--engine auto|default|pcre2`), decompression (`-z`), arbitrary preprocessors (`--pre`), and terminal hyperlinks.",
+      "claims": [
+        {
+          "claim": "`Mode` enumerates the five top-level behaviors — `Search(SearchMode)`, `Index(IndexMode)`, `Files`, `Types`, `Generate(GenerateMode)` — with `Mode::Search(SearchMode::Standard)` as the default.",
+          "sources": [
+            "crates/core/flags/lowargs.rs#L156-L175"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`SearchMode` has six variants (`Standard`, `FilesWithMatches`, `FilesWithoutMatch`, `Count`, `CountMatches`, `JSON`) and `HiArgs::printer` maps them onto `Printer::Standard`, `Printer::JSON` or `Printer::Summary` with a `SummaryKind`.",
+          "sources": [
+            "crates/core/flags/lowargs.rs#L204-L226",
+            "crates/core/flags/hiargs.rs#L572-L602"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`--generate` emits ancillary artifacts: `GenerateMode::Man` produces roff, and `CompleteBash`/`CompleteZsh`/`CompleteFish`/`CompletePowerShell` produce shell completions, all rendered from the same `FLAGS` table.",
+          "sources": [
+            "crates/core/main.rs#L327-L348",
+            "crates/core/flags/complete/mod.rs",
+            "crates/core/flags/doc/man.rs#L26-L49"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`-h` and `--help` render different documents (`generate_short` vs `generate_long`) from `template.short.help` / `template.long.help`, interpolating per-category placeholders like `!!filter!!` and `!!output-modes!!`.",
+          "sources": [
+            "crates/core/flags/doc/help.rs#L1-L50",
+            "crates/core/flags/mod.rs#L226-L240"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`--type-list` is implemented by `types()` in main, which iterates `args.types().definitions()` and prints `name: glob, glob` lines, exiting 1 if there are no definitions.",
+          "sources": [
+            "crates/core/main.rs#L305-L325",
+            "crates/ignore/src/types.rs#L253-L262"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "ripgrep ships a large built-in file-type table, `DEFAULT_TYPES`, mapping type names to glob lists (e.g. `ada` → `*.adb`,`*.ads`), extensible per-invocation via `--type-add`.",
+          "sources": [
+            "crates/ignore/src/default_types.rs#L1-L20",
+            "crates/ignore/src/types.rs#L421-L490"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Three regex engine choices are supported: `EngineChoice::Default` (Rust regex), `PCRE2`, and `Auto`, where `Auto` tries Rust first and falls back to PCRE2, reporting both errors side by side if both fail.",
+          "sources": [
+            "crates/core/flags/hiargs.rs#L379-L412"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`-z/--search-zip` transparently decompresses by file extension using external binaries: gzip, bzip2, xz (also for `.lzma`), lz4, brotli, zstd and `uncompress`, keyed by globs like `*.gz`, `*.tgz`, `*.zst`, `*.Z`.",
+          "sources": [
+            "crates/cli/src/decompress.rs#L490-L532"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`--pre` runs an arbitrary user program per file with the path as argv[1] and the file on stdin, optionally restricted by `--pre-glob` via `preprocessor_globs`.",
+          "sources": [
+            "crates/core/search.rs#L285-L315",
+            "crates/core/flags/hiargs.rs#L705-L718"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Hyperlink support is a first-class feature with named aliases (e.g. `\"vscode\".parse::<HyperlinkFormat>()`) and interpolation variables including `{host}` and a `{wslprefix}` derived from `WSL_DISTRO_NAME`.",
+          "sources": [
+            "crates/printer/src/hyperlink/mod.rs#L55-L110",
+            "crates/printer/src/hyperlink/mod.rs#L243-L280",
+            "crates/core/flags/hiargs.rs#L1438-L1458"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Sorting is user-selectable across four criteria — `path`, `modified`, `accessed`, `created` — with reverse variants; `HiArgs::sort` special-cases ascending path sort to be done during traversal instead of by buffering.",
+          "sources": [
+            "crates/core/flags/hiargs.rs#L773-L832",
+            "crates/core/flags/lowargs.rs#L664-L672"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The experimental indexing surface consists of `--x-crud` (create/update/remove index entries), `--x-index-force` and `--x-index-path`, all in the `Category::Indexing` group, which renders as \"Indexing is not supported in this build of ripgrep.\" when the feature is off.",
+          "sources": [
+            "crates/core/flags/defs.rs#L3552-L3620",
+            "crates/core/flags/defs.rs#L3660-L3725",
+            "crates/core/flags/mod.rs#L49-L51"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`--stats` produces either a human block (matches / matched lines / files searched / bytes printed / seconds) or, in JSON mode, an extra `{\"type\":\"summary\"}` record with `elapsed_total`.",
+          "sources": [
+            "crates/core/main.rs#L395-L455"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`ignore` exposes a second public feature beyond traversal: `IncrementalIgnore`, built via `WalkBuilder::build_matchers()`, which checks individual paths against hierarchical ignore files without re-walking the tree.",
+          "sources": [
+            "crates/ignore/src/incremental.rs#L10-L56",
+            "crates/ignore/src/walk.rs#L675-L700",
+            "crates/ignore/src/lib.rs#L51-L56"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "data_flow": {
+      "summary": "Input enters at three boundaries: `std::env::args_os()`, an optional rc file named by `RIPGREP_CONFIG_PATH`, and stdin (patterns via `-f -`, or the haystack itself). The parser folds all of these into a flat, dumb `LowArgs` struct through `Flag::update`, then `HiArgs::from_low_args` performs all the \"expensive\" derivations — compiling globs, building the type matcher, resolving the CWD and hostname, choosing thread count and mmap strategy. `HiArgs` is the single state owner for the rest of the process; every downstream object (`ignore::WalkBuilder`, `grep::searcher::Searcher`, the matcher, the printer, the `SearchWorker`) is constructed from it by a dedicated accessor. Bytes then flow file → `Searcher` → `Sink` → printer → `termcolor` writer, either directly to stdout (single-threaded) or into per-thread `termcolor::Buffer`s flushed by a `BufferWriter` (parallel). Exit status is a fourth output channel, driven by a match flag plus a global `ERRORED` atomic.",
+      "claims": [
+        {
+          "claim": "Config args are read from the file named by `RIPGREP_CONFIG_PATH`, one shell argument per line with `#` comments and blank lines skipped, then **prepended** to `std::env::args_os().skip(1)` and the whole CLI is re-parsed from scratch.",
+          "sources": [
+            "crates/core/flags/config.rs#L15-L52",
+            "crates/core/flags/config.rs#L78-L106",
+            "crates/core/flags/parse.rs#L88-L108"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`--no-config` short-circuits before the config file is read, and `-h`/`-V` short-circuit even earlier via `ParseResult::Special`, so help output never depends on the config file or the CWD.",
+          "sources": [
+            "crates/core/flags/parse.rs#L74-L92",
+            "crates/core/main.rs#L349-L366"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Each flag writes into `LowArgs` — a flat struct of ~60 public(crate) fields — via `Flag::update(FlagValue, &mut LowArgs)`, and by convention `update` only validates, deferring side effects (e.g. resolving `--hostname-bin`) to the high-level stage.",
+          "sources": [
+            "crates/core/flags/lowargs.rs#L33-L60",
+            "crates/core/flags/mod.rs#L152-L177"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Patterns are drained from `LowArgs` by `Patterns::from_low_args`, which promotes the first positional to a pattern only when neither `-e` nor `-f` was given, reads `-f -` through `grep::cli::patterns_from_stdin()`, and de-duplicates patterns to avoid pathological regex compile costs.",
+          "sources": [
+            "crates/core/flags/hiargs.rs#L1016-L1084"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`Paths::from_low_args` runs after patterns so all remaining positionals are paths; with none given it uses `grep::cli::is_readable_stdin()` as a heuristic to choose between searching `./` and searching `-` (stdin), and errors if stdin would be consumed twice.",
+          "sources": [
+            "crates/core/flags/hiargs.rs#L1105-L1172"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`State` tracks one-shot derived facts across the low→high conversion, notably `stdin_consumed`, which is what makes the double-stdin error and the CWD heuristic consistent.",
+          "sources": [
+            "crates/core/flags/hiargs.rs#L968-L1002",
+            "crates/core/flags/hiargs.rs#L1113-L1122"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Thread count is derived once in `from_low_args`: forced to 1 when `--sort` is set or only one file is searched, else `--threads`, else `available_parallelism()` capped at 12.",
+          "sources": [
+            "crates/core/flags/hiargs.rs#L178-L185"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Memory-map policy is decided from the path set: `MmapMode::Auto` only enables mmap when ≤10 paths are given and all of them are files; otherwise `MmapChoice::never()`.",
+          "sources": [
+            "crates/core/flags/hiargs.rs#L232-L259",
+            "crates/searcher/src/searcher/mmap.rs#L49-L90"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Traversal output is `Result<ignore::DirEntry, ignore::Error>`, converted by `HaystackBuilder::build_from_result` into `Option<Haystack>`; errors are reported through `err_message!` and non-file, non-explicit entries are dropped with a debug log.",
+          "sources": [
+            "crates/core/haystack.rs#L26-L80",
+            "crates/core/main.rs#L112-L118"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`SearchWorker::search` selects among four data sources per haystack in priority order: stdin lock, preprocessor subprocess, decompression subprocess, then direct `search_path`.",
+          "sources": [
+            "crates/core/search.rs#L236-L262"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Search results reach printers only through the `Sink` trait (`matched`, `context`, `context_break`, `binary_data`, `begin`, `finish`); `search_path`/`search_reader` build a `sink_with_path` per printer variant and harvest `has_match()` and `stats()` from it.",
+          "sources": [
+            "crates/searcher/src/sink.rs#L102-L228",
+            "crates/core/search.rs#L358-L400"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "In parallel mode each worker owns a cloned `SearchWorker` writing into its own `termcolor::Buffer`; the buffer is cleared before each file and printed atomically via `bufwtr.print(...)` to avoid interleaving.",
+          "sources": [
+            "crates/core/main.rs#L155-L215",
+            "crates/core/flags/hiargs.rs#L342-L358"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "In `--files` parallel mode output is funneled through an `mpsc::channel::<Haystack>` to a single dedicated printing thread, deliberately in place of a mutex.",
+          "sources": [
+            "crates/core/main.rs#L255-L303"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Exit status is computed from two independent channels: the boolean `matched` returned by the mode function and the process-global `ERRORED` atomic flipped by `err_message!`, yielding 0/1/2.",
+          "sources": [
+            "crates/core/main.rs#L99-L105",
+            "crates/core/messages.rs#L18-L26"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "behavior_traces": {
+      "summary": "Three flows dominate: startup/arg-parsing, a default recursive search, and the file-listing path. All of them funnel through `flags::parse()` → `HiArgs` and then diverge on `Mode`. The parallel search path is notable because parallelism lives entirely in the directory walker — `search_parallel` just hands a closure to `WalkParallel::run` and never manages threads itself. The indexed path currently degrades gracefully: `index::read` opens the index and then falls straight through to the ordinary exhaustive search.",
+      "claims": [
+        {
+          "claim": "Startup order: `main` → `flags::parse()` → `parse_low()` which first calls `Logger::init()`, then `Parser::new().parse(env::args_os().skip(1), &mut low)`, then `set_log_levels(&low)` so `--trace` is live before config parsing.",
+          "sources": [
+            "crates/core/flags/parse.rs#L48-L80",
+            "crates/core/logger.rs#L21-L28"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "If a config file yields arguments, the parser discards the first `LowArgs`, builds a fresh `LowArgs::default()`, re-parses `config_args ++ argv`, and re-runs `set_log_levels` because logging flags may have changed.",
+          "sources": [
+            "crates/core/flags/parse.rs#L92-L108"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`Parser::new()` returns a `&'static Parser` memoized in a `OnceLock`, so the flag-name trie (`FlagMap` over short names, long names, aliases and negations) is built exactly once per process even though `lookup()` calls it repeatedly.",
+          "sources": [
+            "crates/core/flags/parse.rs#L143-L172"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`HiArgs::from_low_args` begins by asserting `low.special == None` (\"special mode demands short-circuiting\"), which encodes the invariant that help/version never reach high-level conversion.",
+          "sources": [
+            "crates/core/flags/hiargs.rs#L114-L120"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Default search trace: `run` → `search(args, mode)` → `args.walk_builder()?.build()` → `haystack_builder.build_from_result` → `args.sort(...)` → `args.search_worker(args.matcher()?, args.searcher()?, args.printer(mode, args.stdout()))` → loop `searcher.search(&haystack)`.",
+          "sources": [
+            "crates/core/main.rs#L107-L152"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Inside one file's search: `SearchWorker::search` sets binary detection (explicit vs implicit) on the `Searcher`, then `search_path` dispatches on the `PatternMatcher` enum to the generic `search_path(m, searcher, printer, path)`, which calls `p.sink_with_path(&matcher, path)` and `searcher.search_path`.",
+          "sources": [
+            "crates/core/search.rs#L236-L262",
+            "crates/core/search.rs#L318-L360"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`Searcher::search_path` → `search_file_maybe_path` first tries `self.config.mmap.open(file, path)` and searches the resulting slice; only if mmap is unavailable does it fall back to the incremental reader path.",
+          "sources": [
+            "crates/searcher/src/searcher/mod.rs#L643-L700"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The searcher has three internal strategies implemented in `glue.rs`: `ReadByLine` (streaming reader), `SliceByLine` (whole-slice, e.g. mmap) and `MultiLine` (when `--multiline` is on).",
+          "sources": [
+            "crates/searcher/src/searcher/glue.rs#L11-L160"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Parallel search trace: `search_parallel` creates a `BufferWriter`, an `AtomicBool` matched/searched pair and an optional `Mutex<Stats>`, then `args.walk_builder()?.build_parallel().run(|| Box::new(move |result| ...))` clones a `SearchWorker` per thread.",
+          "sources": [
+            "crates/core/main.rs#L155-L200",
+            "crates/ignore/src/walk.rs#L1411-L1450"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Early exit under `-q/--quiet` is implemented twice: the sequential loop `break`s when `matched && args.quit_after_match()`, and the parallel closure returns `WalkState::Quit`, which aborts the whole traversal.",
+          "sources": [
+            "crates/core/main.rs#L138-L141",
+            "crates/core/main.rs#L206-L212",
+            "crates/core/flags/hiargs.rs#L697-L704"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Broken pipe is handled at three levels: inside the search loop (`break`), inside `bufwtr.print` (`WalkState::Quit`), and finally in `main`, which walks `err.chain()` for an `io::Error` of kind `BrokenPipe` and returns exit code 0.",
+          "sources": [
+            "crates/core/main.rs#L43-L66",
+            "crates/core/main.rs#L128-L132",
+            "crates/core/main.rs#L196-L203"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Preprocessor trace: `search_preprocessor` builds `Command::new(bin).arg(path).stdin(Stdio::from(File::open(path)?))`, wraps it in a `CommandReader`, searches the reader, then calls `rdr.close()` so a non-zero exit code surfaces stderr as a Rust error.",
+          "sources": [
+            "crates/core/search.rs#L285-L316",
+            "crates/cli/src/process.rs#L84-L135"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Indexed search currently does no index-based pruning: `index::read` calls `args.index_read()?`, discards the handle into `let _index`, and then delegates to the ordinary `search`/`search_parallel` (\"Do an exhaustive search for now\").",
+          "sources": [
+            "crates/core/index/enabled.rs#L1-L16"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Index discovery trace: `IndexDiscovery::discover` checks `RIPGREP_INDEX_PATH` first, then walks `cwd.ancestors()` looking for a `.ripgrep` directory containing `index.db`, returning `None` when nothing is found.",
+          "sources": [
+            "crates/index/src/index.rs#L104-L146",
+            "crates/core/flags/hiargs.rs#L936-L966"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Man page generation trace: `generate()` groups `FLAGS` by `doc_category()` into a `BTreeMap`, renders each flag's roff via `generate_flag`, then substitutes `!!VERSION!!` and per-category `!!name!!` placeholders in `template.rg.1`.",
+          "sources": [
+            "crates/core/flags/doc/man.rs#L26-L60",
+            "crates/core/flags/doc/template.rg.1"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "testing_signals": {
+      "summary": "Testing is two-tier and unusually thorough for a CLI. Integration tests live in `tests/` behind a single `[[test]] integration` target and drive the real `rg` binary in a temp directory via a `Dir`/`TestCommand` harness; the `rgtest!` macro automatically runs every test twice — once with the default engine and once with PCRE2 — when the `pcre2` feature is on. Unit tests live inline in `#[cfg(test)] mod tests` blocks, heavily concentrated in `crates/core/flags/defs.rs` (116 `#[test]`s, mostly per-flag parse assertions) and `crates/printer/src/standard.rs` (74). CI runs the suite on 18 build configurations including cross-compiled big-endian (s390x, powerpc64) and 32-bit targets, plus rustfmt, `cargo doc` with `-D warnings`, a wasm32-wasip1 build check, and a cargo-fuzz compile check. There is no coverage measurement and no benchmark job; `benchsuite/` is a separate Python/shell harness not run by CI.",
+      "claims": [
+        {
+          "claim": "The integration suite is one binary: `tests/tests.rs` declares modules `binary`, `feature`, `json`, `misc`, `multiline`, `regression`, plus `index` gated on `#[cfg(feature = \"unstable-index\")]`.",
+          "sources": [
+            "tests/tests.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Test volume by area: `regression.rs` has 110 `rgtest!` cases, `misc.rs` 95, `feature.rs` 82, `binary.rs` 29, `json.rs` 9, `multiline.rs` 8 — regression tests are the single largest group.",
+          "sources": [
+            "tests/regression.rs",
+            "tests/misc.rs",
+            "tests/feature.rs",
+            "tests/binary.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`rgtest!` runs each test body twice when built with the `pcre2` feature — once via `util::setup` and once via `util::setup_pcre2` — which is why CI skips PCRE2 tests under cross/qemu to avoid doubling runtime.",
+          "sources": [
+            "tests/macros.rs#L1-L16",
+            ".github/workflows/ci.yml#L166-L180"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`Dir::new` locates the `rg` binary relative to `env::current_exe()` and creates an isolated temp working directory keyed by a global atomic counter, so tests can create real files and symlinks.",
+          "sources": [
+            "tests/util.rs#L54-L110"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`TestCommand::env` exists specifically so tests can exercise environment-driven behavior such as `RIPGREP_CONFIG_PATH`.",
+          "sources": [
+            "tests/util.rs#L282-L290"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Decompression is covered by committed fixture files: `tests/data/` contains `sherlock.{gz,bz2,xz,lz4,lzma,br,zst,Z}` matching the glob table in `default_decompression_commands`.",
+          "sources": [
+            "tests/data/sherlock.gz",
+            "crates/cli/src/decompress.rs#L518-L531"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`cmd_exists` lets tests skip gracefully when an external decompression binary isn't installed on the runner, by probing `program --help`.",
+          "sources": [
+            "tests/util.rs#L45-L52"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Index tests are split into `tests/index/basic.rs` (UX happy paths) and `tests/index/disallowed.rs`, the latter asserting that `-X` combined with `--files-without-match`, `--text` or `-Eutf16` errors out.",
+          "sources": [
+            "tests/index/mod.rs",
+            "tests/index/disallowed.rs#L1-L35"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`crates/core/flags/defs.rs` carries 116 `#[test]` functions — largely `parse_low_raw([...])` assertions per flag — making the flag table the most densely unit-tested file in the repo.",
+          "sources": [
+            "crates/core/flags/defs.rs#L7997-L8010",
+            "crates/core/flags/parse.rs#L128-L140"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Structural invariants of the flag table are enforced by tests: `shorts_no_duplicates`, `longs_no_duplicates`, `shorts_all_ascii_alphanumeric` and `longs_all_ascii_alphanumeric` (which also validates aliases and negations).",
+          "sources": [
+            "crates/core/flags/defs.rs#L8026-L8100"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CI runs two informational tests with `--nocapture`: `flags::defs::tests::available_shorts` (prints unused short-flag letters) and grep-cli's `print_hostname`.",
+          "sources": [
+            ".github/workflows/ci.yml#L188-L196",
+            "crates/core/flags/defs.rs#L8000-L8024",
+            "crates/cli/src/hostname.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Shell completion correctness is tested outside cargo by the `ci/test-complete` script, which is skipped on Windows and on cross-compiled targets.",
+          "sources": [
+            "ci/test-complete",
+            ".github/workflows/ci.yml#L181-L187"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The CI matrix pins the MSRV build to Rust 1.96.0 and includes big-endian (s390x, powerpc64), 32-bit (i686, armv7) and Windows-on-ARM runners, so endianness and pointer-width bugs are caught.",
+          "sources": [
+            ".github/workflows/ci.yml#L52-L113"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Fuzzing is compile-checked only: the `fuzz_testing` CI job installs `cargo-fuzz` and runs `cargo check` in `fuzz/`; the sole target is `fuzz_glob` against the `globset` crate's `arbitrary` feature — the searcher and printer are not fuzzed.",
+          "sources": [
+            ".github/workflows/ci.yml#L240-L266",
+            "fuzz/Cargo.toml",
+            "fuzz/fuzz_targets/fuzz_glob.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Documentation is gated in CI: `cargo doc --no-deps --document-private-items --workspace` runs with `RUSTDOCFLAGS: -D warnings`, so a broken intra-doc link fails the build.",
+          "sources": [
+            ".github/workflows/ci.yml#L226-L239"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "risk_map": {
+      "summary": "ripgrep has a small but real attack surface for a search tool: it executes external programs (decompressors, `--pre`, `--hostname-bin`), reads a config file from an environment-variable-named path whose contents become command-line flags, and memory-maps files it does not control. The codebase acknowledges most of these explicitly in comments — the mmap `unsafe` block calls its own reasoning \"suspect\", and `resolve_binary` exists specifically to stop Windows CWD-relative program resolution. The most fragile coupling is the 246KB `defs.rs` flag table, where a single flag touches parsing, help text, man page and four completion generators. The experimental index path is the least-finished area: `grep-index` opens with `#![allow(warnings)]`, its literal module is self-described as a prototype, and `index::read` doesn't actually use the index yet.",
+      "claims": [
+        {
+          "claim": "Arbitrary code execution is by design in three places — `--pre` (`Command::new(bin).arg(path)`), `-z` decompressors, and `--hostname-bin` — all spawned with the user's environment inherited.",
+          "sources": [
+            "crates/core/search.rs#L285-L300",
+            "crates/cli/src/decompress.rs#L490-L532",
+            "crates/core/flags/hiargs.rs#L1361-L1404"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`resolve_binary` is a deliberate Windows security mitigation: without it, `Command::new` hands relative paths to `CreateProcess`, which searches the CWD, so `rg -z` in an untrusted tree could run an attacker-planted `gzip.exe`. On non-Windows it is a no-op returning the path unchanged.",
+          "sources": [
+            "crates/cli/src/decompress.rs#L420-L448"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`RIPGREP_CONFIG_PATH` turns a file's contents into command-line arguments that are prepended to argv, so anything that can set that env var or write that file can inject flags including `--pre` — a full code-execution vector with no allowlist or validation.",
+          "sources": [
+            "crates/core/flags/config.rs#L15-L52",
+            "crates/core/flags/parse.rs#L88-L108"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The memory-map `unsafe` block carries an explicit hazard note: a file truncated concurrently with the search can raise SIGBUS and abort the process, and the author writes \"This reasoning should be treated as suspect.\"",
+          "sources": [
+            "crates/core/flags/hiargs.rs#L232-L245",
+            "crates/searcher/src/searcher/mmap.rs#L49-L90"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "File IO is unbounded outside the repo root by nature — `walk_builder` starts at user-supplied paths with `follow_links(self.follow)` and `same_file_system(self.one_file_system)`, so `-L` on a hostile tree can be walked out of the intended subtree.",
+          "sources": [
+            "crates/core/flags/hiargs.rs#L885-L930"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Index discovery reads `RIPGREP_INDEX_PATH` and otherwise walks every ancestor of the CWD looking for `.ripgrep`, a lookup the code itself flags as \"subject to TOCTOU problems\".",
+          "sources": [
+            "crates/index/src/index.rs#L121-L146"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`crates/index/src/lib.rs` opens with `#![allow(warnings)]`, suppressing all compiler lints for the entire index crate — including dead code and unused results.",
+          "sources": [
+            "crates/index/src/lib.rs#L1-L6"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`crates/index/src/literal.rs` is self-described as \"currently a prototype ... hastily written in order to bootstrap ngram extraction\", so the ngram query construction (`GramQuery::And/Or/Literal`) is not production-hardened.",
+          "sources": [
+            "crates/index/src/literal.rs#L1-L20"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Indexed search is effectively dead weight today: `index::read` binds the opened index to `let _index` and runs a full exhaustive search anyway, so `-X` costs index-open time for zero pruning benefit.",
+          "sources": [
+            "crates/core/index/enabled.rs#L8-L16"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`crates/core/flags/defs.rs` is 246KB — larger than the next two biggest files combined — and each flag must stay consistent across `Flag::update`, `doc_short`, `doc_long`, `doc_category` and `completion_type`, making it the highest blast-radius file for CLI changes.",
+          "sources": [
+            "crates/core/flags/defs.rs#L1-L44",
+            "crates/core/flags/mod.rs#L72-L177"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`FlagValue::unwrap_switch`/`unwrap_value` panic via `unreachable!` on mismatch; this is intentional (a bug indicator) but means an `is_switch()`/`update()` inconsistency in a new flag is a runtime panic rather than a compile error.",
+          "sources": [
+            "crates/core/flags/mod.rs#L272-L307"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Error reporting is global mutable state: three `AtomicBool`s (`MESSAGES`, `IGNORE_MESSAGES`, `ERRORED`) set once at startup and read at exit, so any code path that prints an error without going through `err_message!` silently fails to change the exit code.",
+          "sources": [
+            "crates/core/messages.rs#L18-L26",
+            "crates/core/messages.rs#L78-L90"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`eprintln_locked!` calls `std::process::exit(0)`/`exit(2)` directly on write failure, bypassing destructors and any in-flight buffered output — an abrupt-termination path inside a macro used throughout the binary.",
+          "sources": [
+            "crates/core/messages.rs#L31-L67"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Sorting and parallelism are coupled by an assertion rather than the type system: `walk_builder` contains `assert_eq!(1, self.threads, \"sorting implies single threaded\")`, so a future change to the thread heuristic would panic at runtime.",
+          "sources": [
+            "crates/core/flags/hiargs.rs#L918-L926",
+            "crates/core/flags/hiargs.rs#L178-L184"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The `FLAGS` slice order is load-bearing for generated documentation (\"The order of these flags matter ... This is why the deprecated flags are last\"), an invariant no test enforces.",
+          "sources": [
+            "crates/core/flags/defs.rs#L38-L48"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`is_readable_stdin()` is documented as a heuristic with a \"terrible failure mode\": exec-process APIs that open an unused stdin pipe make `rg foo` appear to hang while it waits on stdin.",
+          "sources": [
+            "crates/core/flags/hiargs.rs#L1140-L1156"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "extension_points": {
+      "summary": "ripgrep's extension seams are almost all static tables and traits rather than runtime plugin systems. Adding a flag means adding one unit struct implementing `Flag` and one entry in the `FLAGS` slice; everything downstream (parser trie, `-h`, `--help`, man page, four shell completions) derives from that. Adding a file type means one line in `DEFAULT_TYPES`. Adding a decompressor means one `add(glob, ARGS, &mut cmds)` line. At the library level, `Matcher` and `Sink` are the two real trait-based extension points: any regex engine implementing `grep_matcher::Matcher` can be plugged into the searcher, and any output format implementing `grep_searcher::Sink` can consume results. The `ParallelVisitorBuilder` trait in `ignore` lets external callers drive the parallel walker with their own per-thread state.",
+      "claims": [
+        {
+          "claim": "The primary extension point is the `Flag` trait plus the `FLAGS: &[&dyn Flag]` slice; the module doc states the `defs` module \"provides a single global slice of `&dyn Flag` values corresponding to all of the flags in ripgrep\" used via dynamic dispatch.",
+          "sources": [
+            "crates/core/flags/mod.rs#L52-L72",
+            "crates/core/flags/defs.rs#L38-L48"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "One `Flag` impl can expose four user-visible names — short, long, `name_negated()` and an arbitrary `aliases()` list — as with `-E`/`--encoding`/`--no-encoding` sharing a single implementation.",
+          "sources": [
+            "crates/core/flags/mod.rs#L60-L115"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`Category` (Input, Search, Filter, Output, OutputModes, Indexing, Logging, OtherBehaviors) is the grouping key for generated docs; `Category::as_str` returns the template variable name interpolated into help and man templates.",
+          "sources": [
+            "crates/core/flags/mod.rs#L180-L241",
+            "crates/core/flags/doc/help.rs#L38-L50"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`CompletionType` (Other, Filename, Executable, Filetype, Encoding) is the hook a new flag uses to tell all four shell completion generators what to complete.",
+          "sources": [
+            "crates/core/flags/mod.rs#L243-L256",
+            "crates/core/flags/complete/mod.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Four completion generators are registered in `flags::mod` as `generate_complete_bash/zsh/fish/powershell` and surfaced through `GenerateMode`; adding a shell means adding a module under `flags/complete/` and a `GenerateMode` variant.",
+          "sources": [
+            "crates/core/flags/mod.rs#L18-L39",
+            "crates/core/main.rs#L327-L348"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`grep_searcher::Sink` is the output extension trait — implement `matched`, `context`, `context_break`, `binary_data`, `begin`, `finish` — and the crate ships a `sinks` submodule of closure-based conveniences (e.g. `UTF8`) for quick use.",
+          "sources": [
+            "crates/searcher/src/sink.rs#L102-L228",
+            "crates/searcher/src/lib.rs#L25-L60"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`grep_matcher::Matcher` is the regex-engine extension trait; `grep-regex` and `grep-pcre2` are two implementations, and `PatternMatcher` in core is the enum that selects between them at runtime.",
+          "sources": [
+            "crates/matcher/src/lib.rs",
+            "crates/core/search.rs#L182-L190",
+            "crates/regex/src/lib.rs#L6-L18"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Printers are extended by adding a `Printer<W>` enum variant plus a `printer_*` builder in `HiArgs`; each variant only needs `get_mut()` and a `sink_with_path` method for `search_path`/`search_reader` to work.",
+          "sources": [
+            "crates/core/search.rs#L192-L215",
+            "crates/core/flags/hiargs.rs#L606-L684"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New file types plug into `DEFAULT_TYPES`, a `&[(&[&str], &[&str])]` table of (names, globs) that the doc comment explicitly invites PRs against; users extend it per-invocation with `TypesBuilder::add`/`add_def`.",
+          "sources": [
+            "crates/ignore/src/default_types.rs#L1-L20",
+            "crates/ignore/src/types.rs#L421-L490"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New decompressors plug into `default_decompression_commands()` via a single `add(glob, ARGS_X, &mut cmds)` call; unavailable binaries are silently skipped after `resolve_binary` fails with a debug log.",
+          "sources": [
+            "crates/cli/src/decompress.rs#L490-L532"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`ignore::ParallelVisitorBuilder` and `WalkParallel::visit` let external code supply per-thread visitors with owned state, as an alternative to the closure-based `run`.",
+          "sources": [
+            "crates/ignore/src/walk.rs#L1411-L1460",
+            "crates/ignore/src/lib.rs#L51-L56"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`WalkBuilder::filter_entry` and `add_custom_ignore_filename` are the per-caller filtering hooks; ripgrep itself uses the latter to register `.rgignore`.",
+          "sources": [
+            "crates/ignore/src/walk.rs#L820-L832",
+            "crates/ignore/src/walk.rs#L1046-L1060",
+            "crates/core/flags/hiargs.rs#L912-L916"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`HyperlinkFormat` implements `FromStr` with named aliases (`HyperlinkAlias`), so new editor URL schemes are added by extending the alias table rather than the printer.",
+          "sources": [
+            "crates/printer/src/hyperlink/mod.rs#L99-L200"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`IndexDiscovery` is configurable rather than hard-wired: `env_name()`, `dir_name()`, `cwd()` and `create()` builders let embedders relocate the index away from `RIPGREP_INDEX_PATH`/`.ripgrep`.",
+          "sources": [
+            "crates/index/src/index.rs#L104-L172"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The `grep` facade crate is the intended embedding point for third parties, re-exporting the whole stack under one dependency, with a worked `simplegrep` example.",
+          "sources": [
+            "crates/grep/src/lib.rs#L1-L21",
+            "crates/grep/examples/simplegrep.rs"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_handoff": {
+      "summary": "Read `crates/core/main.rs`, `crates/core/flags/mod.rs` and `crates/core/flags/hiargs.rs` first — they define the whole control flow and the low→high argument split that every other decision hangs off. Formatting is enforced (`rustfmt.toml`: `max_width = 79`, `use_small_heuristics = \"max\"`, edition 2024) and CI fails on `cargo fmt --all --check`, so run rustfmt before proposing a diff. Most changes that touch the CLI require edits in three coordinated places: the `Flag` impl, the `FLAGS` slice, and the corresponding `LowArgs`/`HiArgs` fields. Note the repository's `AI_POLICY.md`: autonomous agents are explicitly barred from contributing upstream, and AI-written comments to maintainers may be hidden — treat this repo as read/analyze-friendly but do not open PRs or issues on it autonomously.",
+      "claims": [
+        {
+          "claim": "`AI_POLICY.md` states \"Autonomous agents are not allowed to be used for contributing to this project\" and that PRs appearing in violation will be closed, possibly without notice; `CONTRIBUTING.md` says contributions not following it will be closed.",
+          "sources": [
+            "AI_POLICY.md#L1-L25",
+            "CONTRIBUTING.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Read first, in order: `crates/core/main.rs` (dispatch), `crates/core/flags/mod.rs` (the `Flag` trait and `Category`), `crates/core/flags/hiargs.rs` (`from_low_args` and every builder accessor), `crates/core/search.rs` (`SearchWorker`).",
+          "sources": [
+            "crates/core/main.rs",
+            "crates/core/flags/mod.rs",
+            "crates/core/flags/hiargs.rs",
+            "crates/core/search.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The core crate's own README warns it is not a library and is \"glue code that brings the grep-matcher, grep-regex, grep-searcher and grep-printer crates together\" — behavior changes usually belong in a `crates/*` library, not in core.",
+          "sources": [
+            "crates/core/README.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Formatting convention is strict and narrow: `max_width = 79`, `use_small_heuristics = \"max\"`, `edition = \"2024\"`; the `rustfmt` CI job runs `cargo fmt --all --check`.",
+          "sources": [
+            "rustfmt.toml",
+            ".github/workflows/ci.yml#L215-L225"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Adding a flag requires: a unit struct implementing `Flag` (with `doc_long` in mdoc format), an entry in `FLAGS` at the right position for doc ordering, a field in `LowArgs`, and usually a matching field/accessor in `HiArgs`.",
+          "sources": [
+            "crates/core/flags/mod.rs#L72-L177",
+            "crates/core/flags/defs.rs#L38-L90",
+            "crates/core/flags/lowargs.rs#L33-L60"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Per-flag tests use `parse_low_raw([...])`, a `#[cfg(test)]`-only helper that runs the parser once with no logging and no config file — the right tool for asserting flag parsing without touching the environment.",
+          "sources": [
+            "crates/core/flags/parse.rs#L128-L140"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "By convention `Flag::update` must only validate, never act: the trait docs use `--hostname-bin` as the example of work that must be deferred so it happens once, later.",
+          "sources": [
+            "crates/core/flags/mod.rs#L152-L177"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Tests to run: `cargo test --all` for the full suite, `cargo test --features pcre2` to double-run integration tests under PCRE2, `cargo test --workspace --features unstable-index` for index tests, and `ci/test-complete` for zsh completions.",
+          "sources": [
+            "README.md#L507-L517",
+            ".github/workflows/ci.yml#L155-L187",
+            "ci/test-complete"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Integration tests create real files in a temp dir and run the built `rg` binary — they are not hermetic against the host, and `cmd_exists` gating means missing `gzip`/`xz` silently reduces coverage rather than failing.",
+          "sources": [
+            "tests/util.rs#L45-L110"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Trap: `Flag::name_long` must be ≥2 ASCII alphanumeric/`-` characters and short flags must be unique ASCII alphanumeric or `.`; violating either fails `longs_all_ascii_alphanumeric`/`shorts_no_duplicates` rather than failing to compile.",
+          "sources": [
+            "crates/core/flags/defs.rs#L8026-L8100",
+            "crates/core/flags/mod.rs#L76-L96"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Trap: changing thread-count derivation can trip `assert_eq!(1, self.threads, \"sorting implies single threaded\")` in `walk_builder`, because `--sort` and parallelism are mutually exclusive by construction.",
+          "sources": [
+            "crates/core/flags/hiargs.rs#L178-L184",
+            "crates/core/flags/hiargs.rs#L918-L926"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Trap: in parallel mode the printer must not own the file separator — `printer_standard` only calls `separator_search` when `self.threads == 1`, because the `BufferWriter` owns separator logic otherwise.",
+          "sources": [
+            "crates/core/flags/hiargs.rs#L644-L660",
+            "crates/core/main.rs#L176-L200"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Safe edit boundary: the `ignore`, `globset`, `grep-cli`, `grep-matcher`, `grep-printer`, `grep-regex` and `grep-searcher` crates are published to crates.io with independent versions and `#![deny(missing_docs)]`, so any new public item needs a doc comment or `cargo doc -D warnings` fails.",
+          "sources": [
+            "crates/ignore/src/lib.rs#L46-L48",
+            "crates/printer/src/lib.rs#L60-L62",
+            "Cargo.toml#L59-L70"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Release hygiene: `RELEASE-CHECKLIST.md` and the `#:version` marker comments next to each crate version are the mechanism for coordinated version bumps; the release workflow hard-fails if the git tag doesn't match `Cargo.toml`.",
+          "sources": [
+            "RELEASE-CHECKLIST.md",
+            "Cargo.toml#L3",
+            ".github/workflows/release.yml#L30-L36"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "User-facing documentation that needs updating alongside behavior changes lives in `GUIDE.md` (usage guide), `FAQ.md` and `CHANGELOG.md` (90KB, maintained per release), not in generated help alone.",
+          "sources": [
+            "GUIDE.md",
+            "FAQ.md",
+            "CHANGELOG.md"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_prompt": "You are working in the ripgrep repository (BurntSushi/ripgrep, master @ 3fce3b5, version 15.2.0). It is a Rust Cargo workspace producing one binary, `rg`, plus ten library crates.\n\nARCHITECTURE. The binary target is declared in the root `Cargo.toml` with `path = \"crates/core/main.rs\"`. `crates/core` is glue only — it is not published as a library (see `crates/core/README.md`). The workspace members under `crates/` are: `globset`, `grep` (a pure facade re-exporting the rest), `cli` (=`grep-cli`), `index` (=`grep-index`, unpublished), `matcher` (=`grep-matcher`), `pcre2` (=`grep-pcre2`), `printer` (=`grep-printer`), `regex` (=`grep-regex`), `searcher` (=`grep-searcher`), `ignore`. Note directory names differ from crate names.\n\nCONTROL FLOW. `main()` → `run(flags::parse())`. `flags::parse()` → `parse_low()` initializes the logger, parses `env::args_os()` into a flat `LowArgs`, short-circuits `-h`/`-V` via `ParseResult::Special`, then (unless `--no-config`) reads `RIPGREP_CONFIG_PATH`, prepends those args and re-parses from scratch. `HiArgs::from_low_args` then does all expensive derivation: compiling globs and the file-type matcher, resolving CWD and hostname, deciding thread count (`available_parallelism().min(12)`, forced to 1 when `--sort` or a single file) and mmap policy (auto only when ≤10 paths and all are files). `run` dispatches on `Mode`: `Search`, `Index`, `Files`, `Types`, `Generate`. Search goes to `search()` (single-threaded) or `search_parallel()`; parallelism lives entirely in `ignore`'s `WalkParallel::run`, and each worker writes into its own `termcolor::Buffer` flushed by a `BufferWriter`.\n\nPER-FILE SEARCH. `SearchWorker::search` (crates/core/search.rs) picks stdin / `--pre` subprocess / `-z` decompression subprocess / direct path, sets explicit-vs-implicit binary detection, then dispatches on the `PatternMatcher` enum (`RustRegex` | `PCRE2`) into `grep::searcher::Searcher`, which tries mmap first and otherwise streams. Results reach printers only via the `Sink` trait (`matched`/`context`/`binary_data`/`begin`/`finish`). Three printers exist: `Standard`, `Summary`, `JSON`.\n\nTHE FLAG SYSTEM (most important thing to understand). `crates/core/flags/defs.rs` is 246KB and holds `FLAGS: &[&dyn Flag]`, one unit struct per logical flag. Each `Flag` impl supplies short/long/negated/alias names, a `Category`, `doc_short`, `doc_long` (mdoc format), a `CompletionType`, and `update(FlagValue, &mut LowArgs)`. From this single table ripgrep derives: the parser's name trie, `-h`, `--help`, the roff man page (`doc/template.rg.1`), and bash/zsh/fish/powershell completions. Slice ORDER matters — it determines doc ordering, which is why deprecated flags are last. By convention `update` must only validate, never perform I/O.\n\nCONVENTIONS AND TRAPS. rustfmt is enforced in CI with `max_width = 79`, `use_small_heuristics = \"max\"`, edition 2024 — run `cargo fmt --all` before finishing. Library crates use `#![deny(missing_docs)]` and CI runs `cargo doc` with `-D warnings`. `walk_builder()` asserts `threads == 1` when sorting. `printer_standard` must only set `separator_search` when `threads == 1`. `FlagValue::unwrap_switch`/`unwrap_value` panic on mismatch. Error reporting uses global atomics in `crates/core/messages.rs` and drives the exit code (0 match, 1 no match, 2 error); broken pipes exit 0.\n\nTESTS. `cargo test --all`. Integration tests are one target (`tests/tests.rs`) driving the real binary in temp dirs; the `rgtest!` macro runs each case twice when the `pcre2` feature is on. ~330 integration cases, largest group is `tests/regression.rs`. Unit tests concentrate in `flags/defs.rs` (116) and `printer/src/standard.rs` (74). Index tests need `--features unstable-index`.\n\nSECURITY-SENSITIVE PATHS. `--pre`, `-z` decompressors and `--hostname-bin` spawn external processes; `resolve_binary` exists to prevent Windows CWD-relative program resolution. `RIPGREP_CONFIG_PATH` converts file contents into CLI flags with no allowlist. The mmap `unsafe` block can SIGBUS on concurrent truncation. `grep-index` is prototype quality (`#![allow(warnings)]`) and `-X` does not yet prune anything.\n\nPOLICY. `AI_POLICY.md` forbids autonomous agents from contributing to this project. Analyze, explain and prototype locally; do not open issues or PRs upstream."
+  },
+  "analysis": {
+    "agent": "claude",
+    "model": "cli:claude",
+    "runtime_ms": 374034,
+    "cost_usd": 2.9614865,
+    "collected_at": "2026-09-22T08:43:20.535Z"
   }
 }

@@ -5852,5 +5852,1088 @@
         ]
       }
     ]
+  },
+  "report": {
+    "overview": "HTTPie CLI is a Python-implemented, human-friendly command-line HTTP client that ships three console entry points -- `http`, `https`, and the `httpie` management interface -- all wired through `httpie.core.raw_main` (setup.cfg:70-74, httpie/core.py:32). Its distinguishing trait is a request-item mini-language (`Name:Value`, `name==value`, `field=value`, `field:=json`, `field@file`) that argparse parses into headers/params/data/files before delegating the actual transport to `requests` with HTTPie-specific adapters layered on top (httpie/cli/constants.py:15-27, httpie/client.py:43). Around that core sit a colorized/prettified output pipeline built on Pygments and Rich, JSON-file-backed sessions and config, a pip-driven plugin installer, and a detached background updater daemon. It targets API developers and shell scripters on Python 3.7-3.12 across Linux, macOS, and Windows, and is packaged for PyPI, Homebrew, Snap, Chocolatey, Fedora, and as a standalone PyInstaller binary.",
+    "system_map": {
+      "summary": "Three console_scripts entry points converge on a single error-handling shell: `http`/`https` map to `httpie.__main__:main` and `httpie` maps to `httpie.manager.__main__:main`, both of which call `httpie.core.raw_main` with a different parser and main_program. The package splits into `cli/` (argparse spec, request-item parsing, nested-JSON), `client.py` (requests glue), `output/` (streams, formatters, Rich UI), `sessions.py`/`config.py` (JSON persistence under the config dir), `plugins/` (entry-point registry), `manager/` (the `httpie` admin subcommands), and `internal/` (background update daemon). There is no database -- all state is JSON files under `$HTTPIE_CONFIG_DIR` or the XDG config dir. External integrations are the `requests`/`urllib3` stack, Pygments, Rich, defusedxml, requests-toolbelt, and `pip` shelled out for plugin installation. Build/test is Makefile-driven (`make install`, `make test`, `make codestyle`) with GitHub Actions running a 3-OS x 6-Python x pyopenssl matrix.",
+      "claims": [
+        {
+          "claim": "setup.cfg declares three console_scripts: `http` and `https` both point at `httpie.__main__:main`, while `httpie` points at `httpie.manager.__main__:main` -- the `https` alias is what makes `_process_url` default to the https:// scheme.",
+          "sources": [
+            "setup.cfg#L70-74",
+            "httpie/cli/argparser.py#L205-213"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`httpie/__main__.py:main()` is a thin wrapper that imports `httpie.core.main` lazily, catches KeyboardInterrupt into `ExitStatus.ERROR_CTRL_C`, and returns `exit_status.value` -- keeping import cost off the Ctrl-C path.",
+          "sources": [
+            "httpie/__main__.py#L6-16",
+            "httpie/status.py#L20"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`raw_main()` is the shared shell for both binaries: it sets `env.program_name`, decodes bytes argv via `decode_raw_args`, short-circuits into `run_daemon_task` when `--daemon` is present, loads installed plugins from `env.config.plugins_dir`, and prepends `config.default_options` to argv.",
+          "sources": [
+            "httpie/core.py#L32-52",
+            "httpie/internal/daemon_runner.py#L37-49"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The CLI surface is declared declaratively as a `ParserSpec` of named `Group`s in httpie/cli/definition.py (Positional arguments, Predefined content types, Content processing options, Output processing, Output options, Sessions, Authentication, Network, SSL, Troubleshooting) and only then converted to argparse by `to_argparse()`.",
+          "sources": [
+            "httpie/cli/definition.py#L32-49",
+            "httpie/cli/options.py#L193-221"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`httpie/client.py:collect_messages()` is the transport boundary: it builds a `requests.Session` via `build_requests_session`, mounts `HTTPieHTTPAdapter` on http:// and `HTTPieHTTPSAdapter` on https://, plus any `TransportPlugin` prefixes, then yields PreparedRequest/Response pairs as a generator so output can stream.",
+          "sources": [
+            "httpie/client.py#L43-134",
+            "httpie/client.py#L156-184"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Storage is JSON-file based via `BaseConfigDict`, which subclasses `dict`, writes with `json.dumps(indent=4, sort_keys=True, ensure_ascii=True)` and creates the parent dir with mode 0o700; `Config` (config.json) and `Session` (sessions/<host>/<name>.json) both derive from it.",
+          "sources": [
+            "httpie/config.py#L80-135",
+            "httpie/sessions.py#L124-156"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Config-dir resolution is a four-step fallback: `$HTTPIE_CONFIG_DIR`, then `%APPDATA%/httpie` on Windows, then a legacy `~/.httpie` if it exists, then `$XDG_CONFIG_HOME/httpie` (default `~/.config/httpie`).",
+          "sources": [
+            "httpie/config.py#L20-58"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The `httpie` manager binary owns a nested COMMANDS dict producing `httpie cli export-args`, `httpie cli check-updates`, `httpie cli sessions upgrade|upgrade-all`, and `httpie plugins install|upgrade|uninstall|list`; `generate_subparsers()` recursively materializes them into argparse subparsers.",
+          "sources": [
+            "httpie/manager/cli.py#L15-92",
+            "httpie/manager/cli.py#L105-126"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`Environment` is the injected runtime boundary for all I/O -- stdin/stdout/stderr, isatty flags, encodings, color depth (probed via `curses.tigetnum('colors')`), Windows colorama stream wrapping, and lazily constructed Rich consoles -- which is precisely what the test suite overrides with `MockEnvironment`.",
+          "sources": [
+            "httpie/context.py#L46-121",
+            "tests/utils/__init__.py#L127-140"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Build and test commands live in the Makefile: `make install` creates a venv and pip-installs `.[dev] .[test]` editable, `make test` runs pytest, `make test-cover` adds `--cov=httpie --cov=tests`, `make codestyle` runs flake8 over httpie/ tests/ extras/profiling/ docs/packaging/brew/, and `make build` swaps `__build_channel__.py` to `BUILD_CHANNEL = \"pip\"` before building the wheel.",
+          "sources": [
+            "Makefile#L50-70",
+            "Makefile#L110-125",
+            "Makefile#L185-192"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "pytest configuration is split across two files: setup.cfg sets `testpaths = httpie tests` with `--doctest-modules` (so module docstrings such as `ensure_path_as_is` and `humanize_bytes` are executable tests), while pytest.ini registers the `requires_installation` and `requires_external_processes` markers.",
+          "sources": [
+            "setup.cfg#L7-12",
+            "pytest.ini#L1-7",
+            "httpie/client.py#L390-393"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Deployment is many-target and workflow_dispatch-driven: release-pypi.yml publishes via `pypa/gh-action-pypi-publish`, release-linux-standalone.yml runs `extras/packaging/linux/get_release_artifacts.sh` to produce a PyInstaller `http` binary plus .deb/.rpm, and .packit.yaml proposes the Fedora rawhide downstream update on release.",
+          "sources": [
+            ".github/workflows/release-pypi.yml",
+            ".github/workflows/release-linux-standalone.yml#L28-50",
+            ".packit.yaml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Generated content (man pages under extras/man/*.1 and the installation docs) is regenerated by `make content` and auto-PR'd by the content.yml workflow, using `extras/scripts/generate_man_pages.py` and `docs/installation/generate.py`.",
+          "sources": [
+            "Makefile#L227-236",
+            ".github/workflows/content.yml",
+            "extras/scripts/generate_man_pages.py#L1-20"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`httpie/compat.py` is the portability boundary: it pins `is_windows`/`is_frozen`, back-fills `cached_property` for Python <3.8, switches between `importlib.metadata` and the `importlib_metadata` backport, and globally patches `cookiejar.DefaultCookiePolicy` to HTTPie's own policy.",
+          "sources": [
+            "httpie/compat.py#L9-21",
+            "httpie/compat.py#L73-83"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "feature_catalog": {
+      "summary": "The user-facing surface is one request-sending command with roughly fifty flags grouped into ten sections, plus a separate management binary with two command trees. Request construction supports JSON (default), form, multipart, raw body, nested-JSON keys, file embedding, and stdin piping. Output is controlled by a five-letter `--print` alphabet (H/B/h/b/m) with prettification, syntax highlighting, and streaming variants. Persistence features are named and anonymous sessions bound per host. Operational features include resumable downloads with Rich progress bars, offline request rendering, SSL/cipher/client-cert control, proxying, and a background update checker. Extensibility features are the four plugin categories plus a pip-backed plugin installer.",
+      "claims": [
+        {
+          "claim": "Request-item syntax is the headline feature: `:` headers, `;` empty header, `:@` header-from-file, `==` query params, `==@` query-from-file, `=` data string, `:=` raw JSON, `@` file upload, `=@` embed file contents, `:=@` embed raw JSON file -- each mapped to a dedicated processor function in `RequestItems.from_args`.",
+          "sources": [
+            "httpie/cli/constants.py#L14-27",
+            "httpie/cli/requestitems.py#L43-94"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Nested-JSON keys (`foo[bar][0]=baz`) are a self-contained, dependency-free sub-language with its own tokenizer, recursive-descent `parse()` returning `Path` objects, and `interpret_nested_json()` builder; syntax errors surface as `NestedJSONSyntaxError` handled specially in `raw_main`.",
+          "sources": [
+            "httpie/cli/nested_json/__init__.py",
+            "httpie/cli/nested_json/parse.py#L23-80",
+            "httpie/cli/nested_json/interpret.py#L23-33",
+            "httpie/core.py#L79-84"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Content-type modes are mutually exclusive via a `RequestType` enum: `--json/-j`, `--form/-f`, `--multipart` (with `--boundary`), and `--raw` for a literal body; `_process_request_type` expands the enum into the `args.json`/`args.form`/`args.multipart` booleans the rest of the code reads.",
+          "sources": [
+            "httpie/cli/constants.py#L131-134",
+            "httpie/cli/argparser.py#L196-203",
+            "httpie/cli/definition.py#L151-205"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Output selection uses a compact alphabet -- `H` request headers, `B` request body, `h` response headers, `b` response body, `m` response metadata -- exposed via `--print`, with `--verbose` (=HBhb), `-vv` (all, incl. meta), `--headers`, `--body`, `--meta`, `--all`, and `--history-print` as shortcuts.",
+          "sources": [
+            "httpie/cli/constants.py#L74-91",
+            "httpie/cli/argparser.py#L492-529",
+            "httpie/cli/definition.py#L405-500"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`--meta`/`-vv` prints an `Elapsed time` line computed as `response.elapsed` plus `monotonic() - response._httpie_headers_parsed_at`, i.e. header time plus body-read time, and is highlighted by a dedicated `MetadataLexer`.",
+          "sources": [
+            "httpie/models.py#L88-101",
+            "httpie/client.py#L119",
+            "tests/test_meta.py#L7-10"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Sessions come in two flavours: named sessions stored at `<config>/sessions/<host_port>/<name>.json`, and anonymous sessions triggered when the `--session` value contains a path separator, stored at the user-supplied path; `--session-read-only` loads without persisting back.",
+          "sources": [
+            "httpie/sessions.py#L42-121",
+            "httpie/client.py#L50-58",
+            "httpie/client.py#L136-140"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Download mode (`--download/-d`) implies `--follow`, moves normal output to stderr, derives a filename from Content-Disposition or the URL path (with mimetypes extension guessing and uniquifying `-N` suffixes), and supports `--continue` via a `Range: bytes=N-` header validated against the Content-Range response.",
+          "sources": [
+            "httpie/core.py#L191-194",
+            "httpie/cli/argparser.py#L227-245",
+            "httpie/downloads.py#L85-160",
+            "httpie/downloads.py#L186-237"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Download progress is rendered through Rich with three interchangeable displays -- `ProgressDisplay` when Content-Length is known, `StatusDisplay` (spinner) when it isn't, and `DummyDisplay` when `env.show_displays` is false (as in tests).",
+          "sources": [
+            "httpie/downloads.py#L325-347",
+            "httpie/output/ui/rich_progress.py#L10-60"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`--offline` renders the request without sending it: `collect_messages` yields the prepared request and never enters the send branch, and the parser flips default output options to `OUTPUT_OPTIONS_DEFAULT_OFFLINE` (request head + body).",
+          "sources": [
+            "httpie/client.py#L106-134",
+            "httpie/cli/argparser.py#L512-513",
+            "httpie/cli/constants.py#L128"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Authentication ships three builtin plugins -- `basic` (unicode-safe latin1 header re-encoding), `digest`, and `bearer` (which sets `auth_parse = False` so the raw `-a` value becomes the token) -- and `--auth-type` choices are populated from the plugin registry.",
+          "sources": [
+            "httpie/plugins/builtin.py#L47-79",
+            "httpie/plugins/registry.py#L12-21",
+            "httpie/cli/definition.py#L685"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "SSL control includes `--verify` (yes/no/CA-bundle path), `--ssl` mapped through `AVAILABLE_SSL_VERSION_ARG_MAPPING` (ssl2.3 through tls1.3, filtered by what the local `ssl` module exposes), `--ciphers`, and client certs via `--cert`/`--cert-key`/`--cert-key-pass`.",
+          "sources": [
+            "httpie/ssl_.py#L14-26",
+            "httpie/client.py#L288-311",
+            "httpie/cli/definition.py#L810-900"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`httpie plugins install/upgrade/uninstall/list` drives `pip install --prefer-binary --prefix=<plugins_dir> --no-warn-script-location` and implements uninstall by hand (unlinking `distribution.files`) because pip cannot uninstall from a custom prefix.",
+          "sources": [
+            "httpie/manager/tasks/plugins.py#L60-78",
+            "httpie/manager/tasks/plugins.py#L148-194"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`httpie cli export-args --format json` serializes the whole ParserSpec (groups, aliases, choices, types, nested options) to JSON through `to_data()` -- the machine-readable contract used to generate docs and completions.",
+          "sources": [
+            "httpie/manager/tasks/export_args.py#L16-27",
+            "httpie/cli/options.py#L113-165",
+            "httpie/cli/options.py#L238-239"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`--manual` prefers the system man page (`man 1 http`) when available and otherwise renders the Rich-formatted help through a pager; man-page availability can be disabled with the `HTTPIE_NO_MAN_PAGES` env var.",
+          "sources": [
+            "httpie/cli/argparser.py#L561-573",
+            "httpie/output/ui/man_pages.py#L8-48"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Prettification is a plugin chain of four builtin `FormatterPlugin`s -- HeadersFormatter (stable sort), JSONFormatter (re-indent/sort via `load_prefixed_json`), XMLFormatter (defusedxml-backed pretty printing), and ColorFormatter (Pygments) -- toggled by `--pretty` and tuned by `--format-options`.",
+          "sources": [
+            "httpie/plugins/registry.py#L12-21",
+            "httpie/output/formatters/headers.py#L10-18",
+            "httpie/output/formatters/json.py#L12-34",
+            "httpie/output/formatters/xml.py#L53-79"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "data_flow": {
+      "summary": "Input arrives from four boundaries -- argv, stdin, files referenced by request items, and the JSON config/session files -- and is normalized inside `HTTPieArgumentParser.parse_args`, which mutates a single `argparse.Namespace` through an ordered chain of `_process_*` methods. `RequestItems.from_args` fans the raw `KeyValueArg` list into four typed multi-dicts (headers, data, params, files) plus a multipart ordering dict. `client.collect_messages` then translates the namespace into `requests.Request` kwargs, applies session headers/cookies/auth, prepares the request, optionally deflates it, and yields message objects lazily. Output flows back through `OutputOptions.from_message` into `write_message`, which picks a stream class (Raw/Encoded/Pretty/BufferedPretty) and writes bytes to `env.stdout.buffer`. On the way out, session cookies and headers are re-materialized and written back to JSON.",
+      "claims": [
+        {
+          "claim": "The parse pipeline is strictly ordered and order-dependent: `_apply_no_options` -> `_process_request_type` -> `_process_download_options` -> `_setup_standard_streams` -> `_process_output_options` -> `_process_pretty_options` -> `_process_format_options` -> `_guess_method` -> `_parse_items` -> `_process_url` -> `_process_auth` -> `_process_ssl_cert`, followed by stdin/`--raw` body ingestion.",
+          "sources": [
+            "httpie/cli/argparser.py#L168-194"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`config.default_options` is prepended to argv (not merged post-parse), so user defaults behave exactly like typed flags and can be individually reverted with the generic `--no-OPTION` mechanism implemented in `_apply_no_options`.",
+          "sources": [
+            "httpie/core.py#L50-52",
+            "httpie/cli/argparser.py#L357-380",
+            "httpie/config.py#L139-150"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Method inference is data-driven: with no METHOD, POST is chosen if there is stdin/`--raw` input else GET; when the first positional is not alphabetic, the parser re-interprets it as a request item and shifts URL/method, then chooses POST if any item separator is in `SEPARATOR_GROUP_DATA_ITEMS`.",
+          "sources": [
+            "httpie/cli/argparser.py#L409-446",
+            "httpie/cli/constants.py#L30-36"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "In JSON mode, nested-JSON items are split out first via `split_iterable` and interpreted as a batch (so `[]` append semantics work across items), while all remaining items are processed one-by-one into their target dicts.",
+          "sources": [
+            "httpie/cli/requestitems.py#L96-120",
+            "httpie/utils.py#L248-255"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Headers use `HTTPHeadersDict`, a case-insensitive multidict where `add(key, None)` means 'explicitly unset'; `finalize_headers` later converts `None` values for urllib3's SKIPPABLE_HEADERS into `SKIP_HEADER` and strips/encodes all other values.",
+          "sources": [
+            "httpie/cli/dicts.py#L12-46",
+            "httpie/client.py#L192-209"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Because `requests`' PreparedRequest collapses duplicate headers, `apply_missing_repeated_headers` re-injects the original repeated values after preparation, skipping any field that was overridden along the way.",
+          "sources": [
+            "httpie/client.py#L212-260",
+            "httpie/adapters.py#L5-13"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Default headers are computed from the request shape: User-Agent is always `HTTPie/<version>`, JSON mode adds `Accept: application/json, */*;q=0.5` and `Content-Type: application/json`, and form mode without files adds `application/x-www-form-urlencoded; charset=utf-8`.",
+          "sources": [
+            "httpie/client.py#L35-40",
+            "httpie/client.py#L263-278"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Session headers are merged beneath CLI headers (`headers.update(base_headers)` then `headers.update(args.headers)`), so a header typed on the command line always wins over the stored session value.",
+          "sources": [
+            "httpie/client.py#L342-351",
+            "httpie/sessions.py#L230-248"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Request bodies are normalized by `prepare_request_body`: str/bytes become bytes, `RequestDataDict` becomes urlencoded bytes, file-likes go through `_prepare_file_for_upload`, and `--chunked` wraps everything in a `ChunkedUploadStream`/`ChunkedMultipartUploadStream` generator.",
+          "sources": [
+            "httpie/uploads.py#L191-227",
+            "httpie/uploads.py#L146-188"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Upload progress is echoed back to stdout through a callback loop: `program()` passes `request_body_read_callback` into `collect_messages`, which threads it into `prepare_request_body`, which wraps `file.read` so each chunk is re-emitted via `write_raw_data`.",
+          "sources": [
+            "httpie/core.py#L186-202",
+            "httpie/client.py#L60-65",
+            "httpie/uploads.py#L75-84",
+            "httpie/output/writer.py#L100-119"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Redirects are handled manually rather than by requests: `allow_redirects` is hard-set to False in `make_send_kwargs`, and `collect_messages` walks `response.next` itself so that each hop can be yielded for `--all`/`--history-print` and counted against `--max-redirects`.",
+          "sources": [
+            "httpie/client.py#L281-285",
+            "httpie/client.py#L106-134"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Response bytes are decoded adaptively: `EncodedStream` uses the declared charset if present, otherwise accumulates `charset_normalizer` guesses and locks one in after `ENCODING_GUESS_THRESHOLD` (3) consecutive agreeing guesses; bodies containing NUL bytes raise `BinarySuppressedError` and print the 'binary data not shown' notice instead.",
+          "sources": [
+            "httpie/output/streams.py#L105-167",
+            "httpie/encoding.py#L11-41",
+            "httpie/output/streams.py#L12-27"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Session write-back materializes runtime state into serializable JSON: `post_process_data` converts the `RequestsCookieJar` into a list of dicts keeping only name/expires/path/value/domain/secure, and the header multidict into a list of `{name, value}` objects, each passed through the corresponding legacy exporter.",
+          "sources": [
+            "httpie/sessions.py#L60-89",
+            "httpie/sessions.py#L185-198"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Expired cookies are pruned on the way out: every response's `Set-Cookie` is scanned by `get_expired_cookies`, which translates `max-age` into `expires` (a workaround for a requests bug) and returns name/path pairs that `Session.remove_cookies` deletes before saving.",
+          "sources": [
+            "httpie/client.py#L120-122",
+            "httpie/utils.py#L156-200",
+            "httpie/sessions.py#L263-270"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Headers written to a session deliberately drop request-specific fields: anything prefixed `Content-` or `If-`, the HTTPie-generated User-Agent, and `Cookie` (whose morsels are diverted into the cookie jar instead).",
+          "sources": [
+            "httpie/sessions.py#L32-38",
+            "httpie/sessions.py#L200-228"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "behavior_traces": {
+      "summary": "Three flows carry most of the behaviour. Startup walks __main__ -> core.raw_main -> plugin loading -> parser.parse_args -> check_updates -> core.program. The primary request flow walks program -> collect_messages -> requests.Session.send -> OutputOptions.from_message -> write_message -> stream class -> stdout buffer, message by message, as a generator so headers can print before the body arrives. Persistence walks get_httpie_session -> Session.load -> pre_process_data (with legacy fixups) -> update_headers -> save -> post_process_data. A fourth notable flow is the update daemon, which double-forks out of the main process to fetch a version index without blocking the user.",
+      "claims": [
+        {
+          "claim": "Startup, step by step: `__main__.main()` imports `core.main`, which imports `httpie.cli.definition.parser` and calls `raw_main(parser, program, argv, Environment())`; `raw_main` sets `env.program_name`, calls `decode_raw_args`, checks `is_daemon_mode`, calls `plugin_manager.load_installed_plugins`, prepends default options, then `parser.parse_args(args, env)`.",
+          "sources": [
+            "httpie/__main__.py#L6-13",
+            "httpie/core.py#L155-171",
+            "httpie/core.py#L38-52"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`--debug` is handled before parsing: `print_debug_info` writes HTTPie/Requests/Pygments/Python/platform versions plus `repr(env)` and `repr(plugin_manager)` to stderr, and a bare `http --debug` returns SUCCESS without ever building a request.",
+          "sources": [
+            "httpie/core.py#L73-77",
+            "httpie/core.py#L262-275"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "After a successful parse, `check_updates(env)` runs before `main_program`; the `_update_checker` decorator wraps it so that every exception is swallowed by `suppress(BaseException)` unless `developer_mode` is set in config.json.",
+          "sources": [
+            "httpie/core.py#L95-100",
+            "httpie/internal/update_warnings.py#L78-104",
+            "httpie/internal/update_warnings.py#L140-167"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Primary request trace: `program()` builds `ProcessingOptions.from_raw_args`, optionally constructs a `Downloader` and calls `downloader.pre_request(args.headers)`, then iterates `collect_messages(env, args, request_body_read_callback)`, calling `OutputOptions.from_message` and `write_message` per message.",
+          "sources": [
+            "httpie/core.py#L174-230",
+            "httpie/output/models.py#L34-40",
+            "httpie/models.py#L215-233"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Inside `collect_messages` the order is: resolve session -> `make_request_kwargs` -> `make_send_kwargs` -> `build_requests_session` -> apply session headers/cookies/auth -> `requests.Request(**kwargs)` -> `session.prepare_request` -> `transform_headers` -> `ensure_path_as_is` (if `--path-as-is`) -> `compress_request` (if `--compress`) -> yield/send loop.",
+          "sources": [
+            "httpie/client.py#L48-134"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`max_headers` is a context manager that temporarily monkey-patches `http.client._MAXHEADERS` around the single `session.send()` call so `--max-headers` can exceed the stdlib's default cap, restoring it in a finally block.",
+          "sources": [
+            "httpie/client.py#L113-118",
+            "httpie/client.py#L144-153"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Write trace: `write_message` -> `build_output_stream_for_message` -> `get_stream_type_and_kwargs` picks RawStream (non-tty, no prettify), EncodedStream (tty, no prettify), PrettyStream (`--stream` or `text/event-stream` auto-detect) or BufferedPrettyStream, then `write_stream` pushes each chunk to `outfile.buffer`, flushing when tty or streaming.",
+          "sources": [
+            "httpie/output/writer.py#L27-58",
+            "httpie/output/writer.py#L122-203"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`BaseStream.__iter__` defines the on-wire ordering for one message: headers, then `\\r\\n\\r\\n`, then body chunks (each fed to `on_body_chunk_downloaded`), then -- if `--meta` -- a blank line and the metadata block.",
+          "sources": [
+            "httpie/output/streams.py#L63-85"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Message separation is stateful: `program()` tracks `prev_with_body` and `force_separator`, emitting `MESSAGE_SEPARATOR_BYTES` between messages when the previous one had a body and either output is redirected or a streamed upload forced it.",
+          "sources": [
+            "httpie/core.py#L204-222",
+            "httpie/output/writer.py#L23-24"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Download trace: after the response loop, `downloader.start(initial_url, final_response)` builds a `RawStream` over the response with `chunk_downloaded` as the progress callback, `write_stream` drains it to the output file, `downloader.finish()` stops the display, and a size mismatch sets `downloader.interrupted` and an error exit status.",
+          "sources": [
+            "httpie/core.py#L224-240",
+            "httpie/downloads.py#L202-286"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Session persistence trace: `get_httpie_session` resolves the bound hostname (falling back to `localhost` for hostname-less URLs), builds the path, and calls `Session.load()`, which runs `read_raw_config` then `pre_process_data` -- importing cookies into a `RequestsCookieJar` with `HTTPieCookiePolicy` and headers into an `HTTPHeadersDict`.",
+          "sources": [
+            "httpie/sessions.py#L92-121",
+            "httpie/config.py#L103-108",
+            "httpie/sessions.py#L158-183"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "On the way out, the session is saved only when it is new or `--session-read-only` was not used: cookies are replaced with the requests session jar, expired cookies removed, then `save()` writes JSON and stamps `__meta__.httpie` with the current version.",
+          "sources": [
+            "httpie/client.py#L136-140",
+            "httpie/config.py#L110-128"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Update-daemon trace: `maybe_fetch_updates` checks the 2-week FETCH_INTERVAL, calls `spawn_daemon('fetch_updates')`, which on POSIX double-forks, calls `setsid()`, closes stdio, and re-enters `httpie.core.main(['http', 'fetch_updates', '--daemon'])` -- except on Darwin, where it spawns a subprocess instead because double-fork is unreliable there.",
+          "sources": [
+            "httpie/internal/update_warnings.py#L55-76",
+            "httpie/internal/daemons.py#L55-120",
+            "httpie/internal/daemon_runner.py#L41-49"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Manager trace with a confusing invocation: `manager.__main__.main` calls `raw_main(use_default_options=False)`; if argparse raises, `is_http_command()` silently re-parses the args with the http parser inside `env.as_silent()` and, on success, prints the 'use http/https instead' hint before returning ERROR.",
+          "sources": [
+            "httpie/manager/__main__.py#L12-48",
+            "httpie/manager/core.py#L9-23",
+            "httpie/context.py#L157-168"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Session upgrade trace: `httpie cli sessions upgrade <host> <name>` loads the session with warnings suppressed, selects fixers whose version is greater than the stored `__meta__.httpie` (3.1.0 cookie-format, 3.2.0 header-format), applies them in order, and calls `save(bump_version=True)`.",
+          "sources": [
+            "httpie/manager/tasks/sessions.py#L11-60",
+            "httpie/legacy/v3_1_0_session_cookie_format.py#L84-100",
+            "httpie/utils.py#L293-309"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "testing_signals": {
+      "summary": "Testing is pytest-based with pytest-httpbin providing a real local HTTP/HTTPS server, plus `responses`, `pytest-mock` and a hand-rolled `http_server` fixture for cases httpbin cannot express. Roughly 6,600 lines across ~35 test modules under tests/, exercising the CLI end-to-end through a `MockEnvironment` that swaps stdin/stdout for temp files and disables colors and progress displays. `--doctest-modules` means docstring examples inside httpie/ are also collected. Coverage is strongest on sessions, output, JSON, uploads, and CLI parsing; weakest on the daemon-spawning internals, Rich help/palette rendering, and the manager plugin installer (which is gated behind a `requires_installation` marker). CI runs the suite across 3 OSes x 6 Python versions x pyopenssl on/off, with a separate coverage job and a flake8 style job.",
+      "claims": [
+        {
+          "claim": "The suite runs real HTTP against pytest-httpbin: conftest.py auto-uses an `httpbin_add_ca_bundle` fixture that monkeypatches `REQUESTS_CA_BUNDLE` to pytest-httpbin's cert, and adds an `httpbin_secure_untrusted` variant that deliberately removes it for negative TLS tests.",
+          "sources": [
+            "tests/conftest.py#L29-48",
+            "tests/test_ssl.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`tests/utils/__init__.py` defines the `MockEnvironment` harness: colors=0, stdout/stdin as temp files, `show_displays=False`, plus an `Encoder`/`FakeBytesIOBuffer` pair that smuggles undecodable binary output through a text stream as `hash(N)` placeholders.",
+          "sources": [
+            "tests/utils/__init__.py#L84-140"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Tests globally disable the updater by setting `Config.DEFAULTS['disable_update_warnings'] = True` at import time, explicitly to stop hundreds of subprocesses hitting the network during a run.",
+          "sources": [
+            "tests/utils/__init__.py#L52-55",
+            "httpie/internal/update_warnings.py#L62-64"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Two pytest markers gate the expensive tests: `requires_installation` (all of tests/test_plugins_cli.py and tests/test_httpie_cli.py, which shell out to a real install) and `requires_external_processes` (parts of test_uploads.py and test_update_warnings.py), with pytest.ini documenting how to deselect them.",
+          "sources": [
+            "pytest.ini#L1-7",
+            "tests/test_plugins_cli.py#L7",
+            "tests/test_update_warnings.py#L33",
+            "tests/test_uploads.py#L126"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "tests/utils/http_server.py provides a decorator-registry `TestHandler` over `BaseHTTPRequestHandler` with `handlers[method][path]`, used for behaviours httpbin cannot produce -- notably cookie-on-redirect semantics.",
+          "sources": [
+            "tests/utils/http_server.py#L14-40",
+            "tests/test_cookie_on_redirects.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The largest test modules by line count are test_sessions.py (852), test_output.py (631), test_json.py (583), test_uploads.py (403), test_cli.py (377) and test_httpie.py (372) -- i.e. persistence, rendering, and the request-item language get the most attention.",
+          "sources": [
+            "tests/test_sessions.py",
+            "tests/test_output.py",
+            "tests/test_json.py",
+            "tests/test_cli.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Plugin extension points are covered by executable examples rather than mocks: test_transport_plugin.py registers a `FakeTransportPlugin` with prefix `http+fake`, asserts the fake adapter's response renders correctly, and unregisters it in a finally block.",
+          "sources": [
+            "tests/test_transport_plugin.py#L26-47",
+            "httpie/plugins/manager.py#L49-57"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The ParserSpec serialization contract has a golden-output test asserting the exact JSON shape (options, is_optional, is_variadic, metavar, choices, python_type_name), which is what protects `httpie cli export-args` consumers.",
+          "sources": [
+            "tests/test_parser_schema.py#L4-63",
+            "httpie/cli/options.py#L113-165"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "A dedicated `tests/utils/matching` package (parsing.py, tokens.py, test_matching.py) exists to assert on tokenized terminal output, letting colorized output be checked structurally instead of by brittle ANSI string comparison.",
+          "sources": [
+            "tests/utils/matching/test_matching.py",
+            "tests/utils/matching/tokens.py",
+            "tests/test_tokens.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`--doctest-modules` in setup.cfg means library docstrings are part of the suite -- e.g. `ensure_path_as_is`, `humanize_bytes`, `KeyValueArgType.tokenize`, and `detect_encoding` all carry assertions that fail the build if behaviour drifts.",
+          "sources": [
+            "setup.cfg#L9-11",
+            "httpie/client.py#L388-393",
+            "httpie/cli/argtypes.py#L109-115",
+            "httpie/encoding.py#L17-23"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "tests.yml runs the full matrix of {ubuntu-latest, macos-13, windows-latest} x Python {3.7..3.12} x pyopenssl {0,1}, with `fail-fast: false`; Windows runs pytest directly while Linux/macOS go through `make install && make test`.",
+          "sources": [
+            ".github/workflows/tests.yml#L22-56"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The pyopenssl matrix dimension is wired through `HTTPIE_TEST_WITH_PYOPENSSL`, which a session-scoped autouse fixture reads to call `urllib3.contrib.pyopenssl.inject_into_urllib3()` and hard-fails if the module is missing.",
+          "sources": [
+            ".github/workflows/tests.yml#L44-56",
+            "tests/conftest.py#L83-94",
+            "tests/utils/__init__.py#L33"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Coverage runs only on pull_request via coverage.yml (`make test-cover` then `make codecov-upload` with CODECOV_REPO_TOKEN, followed by `make test-dist` to verify sdist and wheel installs).",
+          "sources": [
+            ".github/workflows/coverage.yml",
+            "Makefile#L117-121",
+            "Makefile#L129-146"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Style is enforced separately by code-style.yml running `make codestyle` -> flake8 with only E501 and W503 ignored, over httpie/, tests/, extras/profiling/ and docs/packaging/brew/.",
+          "sources": [
+            ".github/workflows/code-style.yml",
+            "setup.cfg#L61-65",
+            "Makefile#L159-163"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Performance regressions have an opt-in path rather than a gate: benchmark.yml only runs when a PR is labeled `benchmark`, executing `extras/profiling/run.py --fresh --complex --min-speed=6` and posting the pyperf results as a PR comment.",
+          "sources": [
+            ".github/workflows/benchmark.yml#L1-30",
+            "extras/profiling/benchmarks.py#L1-32"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "risk_map": {
+      "summary": "The sharpest edges are in code that leaves the process or touches the filesystem outside the repo: the update daemon double-forks and re-executes the CLI, the plugin installer shells out to pip and then unlinks files by hand, and man-page display execs `man`. TLS handling has two deliberate-but-loud decisions -- a global `urllib3.disable_warnings()` and a `verify=False` fetch of the version index. Filesystem risk concentrates in download filename derivation and lock-file handling in the system temp dir. Structurally, `core.program()` and `_process_auth()` are both flagged in-repo as needing refactoring, and the argparse Namespace is a mutable god-object threaded through most modules, so changes to parse ordering have wide blast radius.",
+      "claims": [
+        {
+          "claim": "`_fetch_updates` performs `requests.get(PACKAGE_INDEX_LINK, verify=False)` against https://packages.httpie.io/latest.json -- an unauthenticated, certificate-unverified network call whose result drives the version-comparison warning shown to users.",
+          "sources": [
+            "httpie/internal/update_warnings.py#L16",
+            "httpie/internal/update_warnings.py#L40-52"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`client.py` calls `urllib3.disable_warnings()` unconditionally at import, which silences InsecureRequestWarning process-wide -- including for `--verify=no` -- so a user disabling verification gets no library-level warning.",
+          "sources": [
+            "httpie/client.py#L33",
+            "httpie/client.py#L301-311"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Daemon mode is decided by a raw substring check (`'--daemon' in args`) before argparse ever runs, so the flag is reachable from ordinary argv; the blast radius is limited only by the `assert options.task_id in DAEMONIZED_TASKS` in `run_daemon_task`, and asserts vanish under `python -O`.",
+          "sources": [
+            "httpie/internal/daemon_runner.py#L37-49",
+            "httpie/core.py#L44-45"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`_spawn_posix` double-forks, calls `os.setsid()`, closes stdin/stdout/stderr, and then re-enters `httpie.core.main(['http'] + args)` in-process with `suppress(BaseException)` -- a path that is effectively untestable in-process and whose failures are silent by construction.",
+          "sources": [
+            "httpie/internal/daemons.py#L55-99"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`spawn_daemon` copies the full parent environment into the child process context and injects a computed `PYTHONPATH` derived from `inspect.stack()[0][1]`, so anything in the caller's env (including secrets) is inherited by the detached process.",
+          "sources": [
+            "httpie/internal/daemons.py#L112-120",
+            "httpie/internal/daemons.py#L22-29"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`PluginInstaller._uninstall` deletes files directly with `os.unlink(distribution.locate_file(file))` for every entry in `distribution.files`; the only guard is a check that `self.dir` is in `base_dir.parents`, and the code's own TODO notes failures are not rolled back.",
+          "sources": [
+            "httpie/manager/tasks/plugins.py#L148-182"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`_clear_metadata` calls `shutil.rmtree(meta_path)` on `.dist-info`/`.egg-info` directories whose version differs from the freshly installed one, driven by parsing the last line of pip's stdout (`Successfully installed ...`) -- a string-parsing dependency on pip's output format.",
+          "sources": [
+            "httpie/manager/tasks/plugins.py#L111-146"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Plugin loading executes arbitrary third-party code at startup: `load_installed_plugins` calls `entry_point.load()` for every matching entry point, catching only `BaseException` into a warning -- so a malicious or broken plugin on the plugins path runs on every `http` invocation.",
+          "sources": [
+            "httpie/plugins/manager.py#L66-80",
+            "httpie/core.py#L47"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Download filenames are attacker-influenced: `filename_from_content_disposition` takes the server-supplied header and sanitizes it only with `os.path.basename(...).lstrip('.').strip()`, after which `get_unique_filename` opens the result for append in the current working directory.",
+          "sources": [
+            "httpie/downloads.py#L85-104",
+            "httpie/downloads.py#L151-159",
+            "httpie/downloads.py#L288-304"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`open_with_lockfile` derives a lock path as base64 of the target path inside the shared system temp dir and relies on `touch(exist_ok=False)` for mutual exclusion; the lock is only removed in the finally block, so a hard kill leaves a stale lock that permanently raises `LockFileError` for that file.",
+          "sources": [
+            "httpie/utils.py#L270-290",
+            "httpie/internal/update_warnings.py#L151-171"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Credentials flow into session files: when `--auth` is given alongside `--session`, `collect_messages` writes `{'type': auth_type, 'raw_auth': plugin.raw_auth}` into the session JSON, meaning plaintext `user:password` is persisted to disk under the config directory.",
+          "sources": [
+            "httpie/client.py#L77-82",
+            "httpie/sessions.py#L301-304",
+            "httpie/config.py#L110-128"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`_process_auth` also silently harvests credentials from two implicit sources -- a `user:pass@host` URL and the user's netrc via `get_netrc_auth` (for plugins with `netrc_parse = True`, i.e. basic and digest) -- unless `--ignore-netrc` forces an `ExplicitNullAuth`.",
+          "sources": [
+            "httpie/cli/argparser.py#L282-355",
+            "httpie/plugins/builtin.py#L47-68",
+            "httpie/utils.py#L124-130"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Two subprocess shell-outs exist outside the plugin installer: `man_pages.is_available`/`display_for` run `man 1 <program_name>` with `env.program_name` derived from argv[0], and the linux packaging build invokes `pyinstaller` via `subprocess.check_call`.",
+          "sources": [
+            "httpie/output/ui/man_pages.py#L16-48",
+            "httpie/core.py#L40",
+            "extras/packaging/linux/build.py#L23-38"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Two central functions carry explicit in-repo refactor warnings: `core.program()` is marked 'TODO: Refactor and drastically simplify, especially so that the separator logic is elsewhere' and `_process_auth` is marked 'TODO: refactor & simplify this method' -- both are on every request path.",
+          "sources": [
+            "httpie/core.py#L174-178",
+            "httpie/cli/argparser.py#L282-284",
+            "httpie/cli/argparser.py#L79-81"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`_setup_standard_streams` mutates `env.stdout`/`env.stdout_isatty` in place during parsing (redirecting stdout to stderr for `--download`, to devnull for `--quiet`), so any later code that captured the original stream sees stale state -- a fragile coupling the code itself labels 'FIXME: Come up with a cleaner solution'.",
+          "sources": [
+            "httpie/cli/argparser.py#L227-267",
+            "httpie/output/writer.py#L44-46"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The legacy session-format modules are live compatibility shims rather than dead code -- `pre_process`/`post_process` run on every session load and save, and the 3.1.0 fixer exists because domainless cookies were a documented security problem.",
+          "sources": [
+            "httpie/legacy/v3_1_0_session_cookie_format.py#L8-33",
+            "httpie/sessions.py#L170-198",
+            "httpie/manager/tasks/sessions.py#L11-14"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`HTTPieCookiePolicy` widens cookie security by treating `localhost` and `*.localhost` as secure origins, so `Secure` cookies are sent over plain http to those hosts -- intentional (mirrors Firefox) but a deviation from the stdlib default that affects every request.",
+          "sources": [
+            "httpie/cookies.py#L8-25",
+            "httpie/compat.py#L9-12"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "extension_points": {
+      "summary": "Extension is designed around four setuptools entry-point groups consumed by a single `PluginManager`, which is itself just a `list` subclass with typed filters. Built-in behaviour is registered through the same mechanism, so formatters and auth methods are not special-cased. Beyond plugins, the CLI itself is data: `ParserSpec`/`Group`/`Argument` describe the interface declaratively, the manager's COMMANDS dict describes subcommands, and `CLI_TASKS` and `DAEMONIZED_TASKS` are plain dict dispatch tables. Adding output behaviour means either a FormatterPlugin or a new `BaseStream` subclass selected in `get_stream_type_and_kwargs`.",
+      "claims": [
+        {
+          "claim": "The four plugin entry-point groups are `httpie.plugins.auth.v1`, `httpie.plugins.converter.v1`, `httpie.plugins.formatter.v1` and `httpie.plugins.transport.v1`, mapped to their base classes in `ENTRY_POINT_CLASSES`; adding a fifth category means editing that dict.",
+          "sources": [
+            "httpie/plugins/manager.py#L18-24",
+            "httpie/plugins/base.py#L16-165"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`plugin_manager` is a module-level singleton in httpie/plugins/registry.py where all builtins are registered (BasicAuthPlugin, DigestAuthPlugin, BearerAuthPlugin, HeadersFormatter, JSONFormatter, XMLFormatter, ColorFormatter) -- the canonical place to add a new builtin.",
+          "sources": [
+            "httpie/plugins/registry.py#L9-21"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`PluginManager` exposes `register`/`unregister`/`filter` plus typed accessors (`get_auth_plugins`, `get_auth_plugin_mapping`, `get_formatters_grouped`, `get_converters`, `get_transport_plugins`), making runtime registration in tests a two-line operation.",
+          "sources": [
+            "httpie/plugins/manager.py#L48-111",
+            "tests/test_transport_plugin.py#L37-47"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "A new `AuthPlugin` needs only `auth_type` plus `get_auth()`, and can tune behaviour through the class-level switches `auth_require`, `auth_parse`, `netrc_parse`, and `prompt_password` -- all of which `_process_auth` consults.",
+          "sources": [
+            "httpie/plugins/base.py#L16-69",
+            "httpie/cli/argparser.py#L301-351"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`TransportPlugin` extension is prefix-based: `build_requests_session` mounts `plugin.get_adapter()` at `plugin.prefix`, which is how httpie-unixsocket-style schemes (e.g. `http+unix://`) plug in.",
+          "sources": [
+            "httpie/plugins/base.py#L72-93",
+            "httpie/client.py#L176-182"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`FormatterPlugin` subclasses declare a `group_name` ('format' by default, 'colors' for ColorFormatter) and are collected by `get_formatters_grouped`; `Formatting.__init__` then instantiates only the groups named by `--pretty` and keeps those whose `self.enabled` is true.",
+          "sources": [
+            "httpie/plugins/base.py#L124-141",
+            "httpie/output/formatters/colors.py#L47",
+            "httpie/output/processing.py#L26-42"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`ConverterPlugin` is the hook for binary payloads: `Conversion.get_converter(mime)` asks each registered converter's `supports(mime)` classmethod, and PrettyStream/BufferedPrettyStream call it when they hit a NUL byte, turning what would be a 'binary suppressed' notice into rendered text.",
+          "sources": [
+            "httpie/plugins/base.py#L96-121",
+            "httpie/output/processing.py#L16-23",
+            "httpie/output/streams.py#L198-253"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New CLI flags are added declaratively to a `Group` in httpie/cli/definition.py (with `short_help`, `help`, and optional `nested_options`), never by touching argparse directly -- `to_argparse` strips the HTTPie-only keys listed in `ARGPARSE_IGNORE_KEYS` before delegating.",
+          "sources": [
+            "httpie/cli/definition.py#L49-56",
+            "httpie/cli/options.py#L83-96",
+            "httpie/cli/options.py#L184-219"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Dynamically computed choice lists use the custom `lazy_choices` argparse action registered in `to_argparse`, so expensive enumerations (available Pygments styles, auth types, SSL versions) are only materialized when help or export-args is requested.",
+          "sources": [
+            "httpie/cli/options.py#L118-129",
+            "httpie/cli/options.py#L203-204",
+            "httpie/cli/utils.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New manager subcommands plug into two places: the nested `COMMANDS` dict in httpie/manager/cli.py (which `generate_subparsers` walks recursively) and the `CLI_TASKS` dispatch dict in httpie/manager/tasks/__init__.py keyed by action name.",
+          "sources": [
+            "httpie/manager/cli.py#L15-92",
+            "httpie/manager/tasks/__init__.py#L6-11",
+            "httpie/manager/core.py#L26-42"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Background work plugs into `DAEMONIZED_TASKS`, a name->callable dict in daemon_runner.py; `_check_status` is an example entry that exists purely so tests can assert the spawn path works without touching the network.",
+          "sources": [
+            "httpie/internal/daemon_runner.py#L12-27",
+            "tests/test_update_warnings.py#L33"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New session-format migrations plug into `FIXERS_TO_VERSIONS`, a version-string -> `fix_layout` callable mapping consulted by `upgrade_session` via `is_version_greater`.",
+          "sources": [
+            "httpie/manager/tasks/sessions.py#L11-14",
+            "httpie/manager/tasks/sessions.py#L44-58",
+            "httpie/utils.py#L293-309"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New request-item separators plug into the `rules` dict inside `RequestItems.from_args`, which maps each separator constant to a (processor_func, target_dict) tuple -- plus membership in the relevant frozenset in cli/constants.py.",
+          "sources": [
+            "httpie/cli/requestitems.py#L43-119",
+            "httpie/cli/constants.py#L29-72"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New output stream behaviour plugs into `get_stream_type_and_kwargs`, the single factory that maps (isatty, prettify groups, stream flag, message type) onto RawStream / EncodedStream / PrettyStream / BufferedPrettyStream and their kwargs.",
+          "sources": [
+            "httpie/output/writer.py#L153-203",
+            "httpie/output/streams.py#L88-236"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Colour themes plug in via `make_styles()`, which generates one header style and one body style per entry in `SHADE_TO_PIE_STYLE` and merges the resulting names into `BUNDLED_STYLES` that `--style` offers.",
+          "sources": [
+            "httpie/output/formatters/colors.py#L360-388",
+            "httpie/output/ui/palette.py"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_handoff": {
+      "summary": "Read httpie/core.py, httpie/cli/argparser.py, httpie/client.py and httpie/cli/definition.py before touching anything -- those four hold the control flow, the mutation order, the transport glue, and the CLI contract. The project is conservative: contributions without tests are explicitly rejected, behaviour changes require documentation, and CHANGELOG.md is maintained by hand. Generated artefacts (extras/man/*.1, docs/installation/README.md) must never be hand-edited. The safest edit boundaries are adding a new plugin, adding a declarative flag to a group in definition.py, or adding a formatter; the riskiest are reordering `_process_*` calls, changing the `collect_messages` generator contract, and anything in httpie/internal/.",
+      "claims": [
+        {
+          "claim": "Read first, in this order: httpie/core.py (both entry shells), httpie/cli/argparser.py (the ordered mutation chain), httpie/client.py (requests translation), httpie/cli/definition.py (the flag contract), and httpie/context.py (the I/O boundary every test overrides).",
+          "sources": [
+            "httpie/core.py",
+            "httpie/cli/argparser.py#L150-194",
+            "httpie/client.py#L43-134",
+            "httpie/cli/definition.py#L32-49",
+            "httpie/context.py#L46-121"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CONTRIBUTING.md is explicit that PRs with code changes but no tests will generally not be merged, and that behaviour changes need documentation -- treat a failing or absent test as a blocker, not a nice-to-have.",
+          "sources": [
+            "CONTRIBUTING.md#L29-41"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Local workflow is `make install` (creates ./venv and pip-installs the dev+test extras editable), then `make test`; for a single module use the venv's pytest directly, and `make codestyle` before pushing since a separate CI job enforces flake8.",
+          "sources": [
+            "Makefile#L50-70",
+            "Makefile#L110-116",
+            "Makefile#L159-163",
+            ".github/workflows/code-style.yml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Never hand-edit extras/man/*.1 or docs/installation/README.md -- both are generated by `make content` (via extras/scripts/generate_man_pages.py and docs/installation/generate.py) and auto-PR'd by the content.yml workflow.",
+          "sources": [
+            "Makefile#L227-236",
+            ".github/workflows/content.yml",
+            "extras/scripts/generate_man_pages.py#L1-20",
+            "docs/installation/generate.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Man-page generation sets `HTTPIE_BUILDING_MAN_PAGES=1` before importing httpie, which flips `IS_MAN_PAGE` in definition.py so machine-specific defaults (e.g. the computed `--ciphers` list) are excluded -- any new environment-dependent default must respect that flag.",
+          "sources": [
+            "extras/scripts/generate_man_pages.py#L8-19",
+            "httpie/cli/definition.py#L27-30",
+            "httpie/ssl_.py#L106-109"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Add CLI flags only through `group.add_argument(...)` in httpie/cli/definition.py using `Qualifiers.*` instead of raw argparse constants; `to_argparse` translates them and `serialize()` exports them, so a raw argparse string will break `httpie cli export-args`.",
+          "sources": [
+            "httpie/cli/options.py#L12-25",
+            "httpie/cli/options.py#L184-219",
+            "tests/test_parser_schema.py#L4-63"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Every `--OPTION` automatically gets a `--no-OPTION` counterpart handled by `_apply_no_options`, which resets `args.<dest>` to the action's default -- so new flags must have a meaningful `default`, not rely on absence.",
+          "sources": [
+            "httpie/cli/argparser.py#L357-380",
+            "httpie/cli/definition.py#L34-38"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Trap: the order of `_process_*` calls in `parse_args` is load-bearing. `_setup_standard_streams` must run before `_process_output_options` (which reads `env.stdout_isatty`), and `_parse_items` must run before `_process_url`/`_process_auth`. Reordering silently changes defaults.",
+          "sources": [
+            "httpie/cli/argparser.py#L168-194",
+            "httpie/cli/argparser.py#L227-267",
+            "httpie/cli/argparser.py#L492-529"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Trap: `collect_messages` is a generator whose laziness is the streaming contract -- the session save at the end only runs if the caller exhausts it, so wrapping it in anything that short-circuits will silently stop sessions from persisting.",
+          "sources": [
+            "httpie/client.py#L106-140",
+            "httpie/core.py#L203-223"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Trap: do not print with `print()` or touch `sys.stdout` directly. All output must go through `env.stdout`/`env.stderr` or the Rich consoles, because `--quiet`, `--output`, `--download` and the whole test harness swap those streams.",
+          "sources": [
+            "httpie/context.py#L152-182",
+            "httpie/cli/argparser.py#L109-125",
+            "tests/utils/__init__.py#L127-140"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Trap: `--doctest-modules` is on, so any docstring in httpie/ containing a `>>>` prompt is a test. Editing `humanize_bytes`, `ensure_path_as_is`, `detect_encoding` or `KeyValueArgType.tokenize` means updating their examples too.",
+          "sources": [
+            "setup.cfg#L9-11",
+            "httpie/utils.py#L84-102",
+            "httpie/client.py#L388-393"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Trap: tests hit the network by design. `pie.dev` is used for chunked-upload and remote tests via the `httpbin_with_chunked_support` and `remote_httpbin` fixtures, which skip (not fail) when DNS does not resolve -- a green local run may simply have skipped them.",
+          "sources": [
+            "tests/conftest.py#L51-80",
+            "tests/utils/__init__.py#L26-32"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Safe edit boundary: adding a formatter, converter, auth or transport plugin touches only httpie/plugins/registry.py plus the new module, and existing plugin tests show the register/unregister pattern.",
+          "sources": [
+            "httpie/plugins/registry.py#L12-21",
+            "tests/test_transport_plugin.py#L26-47",
+            "tests/test_auth_plugins.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Risky edit boundary: httpie/internal/ (daemons.py, daemon_runner.py, update_warnings.py) forks processes and swallows every exception via `_get_suppress_context`; set `developer_mode: true` in config.json to surface errors while working there.",
+          "sources": [
+            "httpie/internal/update_warnings.py#L78-104",
+            "httpie/config.py#L165-172",
+            "httpie/internal/daemons.py#L55-99"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Version and release conventions: `httpie/__init__.py` holds `__version__` (3.2.4) and `__date__`, setup.cfg reads it via `attr:`, the Makefile refuses to publish a version containing 'dev', and `make build` rewrites `internal/__build_channel__.py` to `BUILD_CHANNEL = \"pip\"` for the PyPI artifact.",
+          "sources": [
+            "httpie/__init__.py#L6-7",
+            "setup.cfg#L16-17",
+            "Makefile#L195-204",
+            "httpie/internal/__build_channel__.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Security-relevant changes have a disclosure path rather than a public issue: SECURITY.md directs reports to security@httpie.io or huntr.dev with a reproducer, severity and CWE id.",
+          "sources": [
+            "SECURITY.md"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_prompt": "You are working on HTTPie CLI (github.com/httpie/cli), a Python 3.7-3.12 command-line HTTP client at version 3.2.4. Orient yourself with this map before editing.\n\nARCHITECTURE. Three console scripts are declared in setup.cfg: `http` and `https` -> `httpie.__main__:main`, and `httpie` -> `httpie.manager.__main__:main`. Both funnel into `httpie/core.py:raw_main()`, which sets `env.program_name`, decodes argv, checks for `--daemon` mode, loads entry-point plugins, prepends `config.default_options`, parses args, runs `check_updates()`, then calls a `main_program` -- `core.program()` for requests, `manager.core.program()` for admin commands. Package layout: `cli/` (declarative ParserSpec in definition.py, the ordered mutation chain in argparser.py, request-item parsing in requestitems.py, a self-contained nested-JSON parser in nested_json/), `client.py` (translates the argparse Namespace into requests kwargs and yields messages), `output/` (streams.py, writer.py, formatters/, Rich UI in ui/), `sessions.py` + `config.py` (JSON files under $HTTPIE_CONFIG_DIR or XDG), `plugins/` (PluginManager over four entry-point groups), `manager/` (subcommand tree), `internal/` (background update daemon).\n\nKEY FLOWS. Request: `program()` -> `collect_messages()` -> build requests.Session with HTTPieHTTPAdapter/HTTPieHTTPSAdapter -> prepare -> manual redirect loop over `response.next` (requests' own redirect following is disabled) -> per message `OutputOptions.from_message()` -> `write_message()` -> `get_stream_type_and_kwargs()` picks RawStream/EncodedStream/PrettyStream/BufferedPrettyStream -> bytes to `env.stdout.buffer`. Persistence: `get_httpie_session()` -> `Session.load()` -> `pre_process_data()` (with legacy 3.1.0 cookie and 3.2.0 header fixups) -> `update_headers()` -> `save()` at the end of `collect_messages`.\n\nCONVENTIONS. Add CLI flags declaratively to a Group in `httpie/cli/definition.py` using `Qualifiers.*`, never raw argparse -- `to_argparse()` translates them and `serialize()` feeds `httpie cli export-args`, which has a golden test in tests/test_parser_schema.py. Every `--OPTION` implicitly gains `--no-OPTION`, so give new flags a real default. Never write to `sys.stdout` directly; always go through `env.stdout`/`env.stderr` or `env.rich_console`, because `--quiet`, `--output`, `--download` and the test harness all swap those streams. Add new plugins by registering them in `httpie/plugins/registry.py`.\n\nTRAPS. (1) The `_process_*` call order in `HTTPieArgumentParser.parse_args` is load-bearing; reordering silently changes defaults. (2) `collect_messages` is a generator -- sessions only save if it is fully consumed. (3) `--doctest-modules` is enabled in setup.cfg, so `>>>` examples in httpie/ docstrings are real tests. (4) Some tests hit pie.dev and skip rather than fail when DNS is unavailable. (5) Never hand-edit `extras/man/*.1` or `docs/installation/README.md`; run `make content`. (6) Code in `httpie/internal/` double-forks and suppresses every exception -- set `developer_mode: true` in config.json to debug it.\n\nCOMMANDS. `make install` (venv + editable dev/test extras), `make test`, `make test-cover`, `make codestyle` (flake8, enforced in CI). CI runs {ubuntu, macos-13, windows} x Python 3.7-3.12 x pyopenssl on/off.\n\nEXPECTATIONS. CONTRIBUTING.md states PRs with code changes and no tests will generally not be merged, and behaviour changes require documentation. Prefer small, reviewable diffs, add a test that reproduces the bug first, and update CHANGELOG.md."
+  },
+  "analysis": {
+    "agent": "claude",
+    "model": "cli:claude",
+    "runtime_ms": 613687,
+    "cost_usd": 4.3858665,
+    "collected_at": "2026-09-22T08:47:20.185Z"
   }
 }

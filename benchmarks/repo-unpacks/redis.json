@@ -30991,5 +30991,1073 @@
         ]
       }
     ]
+  },
+  "report": {
+    "overview": "This is the Redis Open Source server (`src/version.h` reports 8.9.241, branch `unstable`) — a single-process, event-loop-driven in-memory data structure server written in C99/gnu11, plus its CLI, benchmark, sentinel, and RDB/AOF checking tools. Beyond upstream Redis it carries a substantial in-tree feature layer: a new `OBJ_ARRAY` sparse-array type (`src/t_array.c`, `src/sparsearray.c`), key eviction protection (`src/bless.c`), CuckooHeavyKeeper hot-key tracking (`src/chk.c`, `src/hotkeys.c`), atomic cluster slot migration (`src/cluster_asm.c`), zstd replication/client compression (`src/client_comp.c`), and multi-threaded IO (`src/iothread.c`). It also ships a bespoke top-level Makefile + `scripts/` orchestration layer that clones, builds, deploys, and tests four external Redis modules (RediSearch, RedisJSON, RedisBloom, RedisTimeSeries) pinned by `modules/modules.yaml`, which upstream Redis does not have.",
+    "system_map": {
+      "summary": "The runtime is one `redis-server` binary whose `main()` in `src/server.c` initializes config, ACL, the module system and connection types, then hands control to the `ae` event loop (`aeMain`). The same binary multiplexes into sentinel, `redis-check-rdb` and `redis-check-aof` modes by argv[0] inspection. Storage is entirely in-process (`kvstore`/`dict`/`listpack`/`quicklist`/`rax`/`ebuckets`), persisted by RDB snapshot and/or AOF manifest, and replicated over a custom PSYNC protocol. Build is GNU Make: `src/Makefile` compiles the core and vendored `deps/`, while the top-level `Makefile` delegates to `scripts/*.sh` for the module-bundle workflow. Deployment shape is a bare binary + `redis.conf` (or the generated `redis-full.conf`), with an Ubuntu 24.04 build image in `docker/Dockerfile.noble`.",
+      "claims": [
+        {
+          "claim": "`main()` in src/server.c is the single entrypoint for redis-server, redis-sentinel, redis-check-rdb and redis-check-aof: it calls `checkForSentinelMode()` on argv, then dispatches to `redis_check_rdb_main()` / `redis_check_aof_main()` when `strstr(exec_name, \"redis-check-rdb\"/\"redis-check-aof\")` matches, before any config parsing.",
+          "sources": [
+            "src/server.c#L8251-8365"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Startup order in `main()` is fixed and dependency-driven: `initServerConfig()` → `ACLInit()` (commented 'must be initialized ASAP because the basic networking code and client creation depends on it') → `moduleInitModulesSystem()` → `connTypeInitialize()` → `keyMetaInit()`.",
+          "sources": [
+            "src/server.c#L8330-8340"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The event loop is created in `initServer()` via `aeCreateEventLoop(server.maxclients+CONFIG_FDSET_INCR)`, and per-DB storage is allocated as three parallel structures — `kvstoreCreate()` for `db->keys`, `db->expires`, plus `blessedKvstoreCreate()` for `db->blessed_keys` and `estoreCreate()` for `db->subexpires`.",
+          "sources": [
+            "src/server.c#L3105-3130"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`main()` ends with `aeMain(server.el)` after `redisSetCpuAffinity(server.server_cpulist)` and `setOOMScoreAdj(-1)`; everything after that point is event-loop driven.",
+          "sources": [
+            "src/server.c#L8600-8614"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The core links 130+ objects listed in `REDIS_SERVER_OBJ` in src/Makefile, including the non-upstream modules `bless.o t_array.o sparsearray.o chk.o hotkeys.o gcra.o vector.o fwtree.o estore.o client_comp.o cluster_asm.o iothread.o keymeta.o`.",
+          "sources": [
+            "src/Makefile#L404"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Vendored third-party code lives in `deps/` and is built as separate targets: `DEPENDENCY_TARGETS=hiredis linenoise lua hdr_histogram fpconv xxhash tre` — note `tre` (regex) is a dependency of the new array type, which includes `../deps/tre/local_includes/tre.h`.",
+          "sources": [
+            "src/Makefile#L39",
+            "deps/",
+            "src/t_array.c#L15-17"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The top-level Makefile is not upstream's: it includes `modules/manifest.mk`, defines a `GOALS_WITH_ARGS` positional-argument capture mechanism, and routes `build`/`clean`/`test`/`deploy`/`bootstrap`/`run`/`tarball` to `scripts/*.sh` rather than recursing into `src/`.",
+          "sources": [
+            "Makefile#L13-45",
+            "Makefile#L100-160"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`modules/modules.yaml` is the single source of truth pinning four external modules to immutable refs: redisbloom v8.11.81, redisearch v8.10.1 (with `build_env: LTO=1 REDISEARCH_GENERATE_HEADERS=0 INLINE_LSE_ATOMICS=0`), redisjson v8.10.0, redistimeseries v8.10.0.",
+          "sources": [
+            "modules/modules.yaml",
+            "modules/MODULES.md#L18-40"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Test entrypoints are four shell wrappers that locate tclsh 8.5–9.0 and invoke `tests/test_helper.tcl`: `./runtest`, `./runtest-moduleapi` (which first runs `$MAKE -C tests/modules` then names 48 `--single unit/moduleapi/*` suites), `./runtest-cluster`, `./runtest-sentinel`.",
+          "sources": [
+            "runtest",
+            "runtest-moduleapi",
+            "src/Makefile#L529-541"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`make -C src test` depends on building redis-server, redis-check-aof, redis-cli, redis-benchmark and `module_tests` before shelling out to `(cd ..; ./runtest)`; `test-modules`, `test-sentinel`, `test-cluster` are separate targets.",
+          "sources": [
+            "src/Makefile#L529-541"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "External integrations are network protocols rather than SDKs: the cluster bus (`src/cluster_legacy.c`), the PSYNC replication protocol (`src/replication.c`), TLS via OpenSSL gated on `BUILD_TLS=yes|module` (`src/tls.c`), and optional zstd compression gated on `-DUSE_COMPRESSION=1` detected via pkg-config.",
+          "sources": [
+            "src/Makefile#L157-169",
+            "src/Makefile#L343-357",
+            "src/tls.c",
+            "src/client_comp.c#L1-6"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The deployment artifact set is defined by `scripts/deploy.sh` / `scripts/uninstall.sh`: core binaries and symlinks into `$(PREFIX)/bin` (default `/usr/local`) and module `.so` files into `$(PREFIX)/lib/redis/modules`, with `loadmodule` paths rewritten into a generated `redis-full.conf`.",
+          "sources": [
+            "Makefile#L117-140",
+            "scripts/deploy.sh",
+            "scripts/sync-redis-conf.sh"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`docker/Dockerfile.noble` is the only container definition — an Ubuntu 24.04 multi-arch build environment (amd64+arm64) that installs Redis prereqs and then runs `modules/docker-install-bundled-module-deps.sh` to execute each bundled module's `.install/install_script.sh`. It is a build image, not a runtime image.",
+          "sources": [
+            "docker/Dockerfile.noble#L1-55"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Memory allocator selection is a build-time runtime boundary: `MALLOC` defaults to `jemalloc` on Linux and `libc` elsewhere, and is forcibly downgraded to `libc` whenever `SANITIZER` is set.",
+          "sources": [
+            "src/Makefile#L81-120"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "feature_catalog": {
+      "summary": "User-facing surface is the RESP command set — 464 JSON command specs under `src/commands/` compiled into the 13k-line `src/commands.def`. Alongside the classic types (string/list/set/zset/hash/stream/HLL/geo/bitmap) this tree adds a first-class array type (AR* commands), key-blessing (BLESS), hot-key tracking (HOTKEYS), INCREX, hash-field expiration (HEXPIRE family), and a compiled-out GCRA rate limiter. Administrative surface spans ACL, CLIENT, CLUSTER (including atomic slot migration), CONFIG, FUNCTION, DEBUG, and the Sentinel command set. Client-side tooling ships as `redis-cli` (with a full cluster manager and ~60 flags), `redis-benchmark`, and the two check tools.",
+      "claims": [
+        {
+          "claim": "464 command specification JSON files under `src/commands/` are the declarative source of the command table; `utils/generate-command-code.py` compiles them into `src/commands.def` (13,236 lines) via the `$(COMMANDS_DEF_FILENAME).def` Make rule.",
+          "sources": [
+            "src/commands/",
+            "utils/generate-command-code.py#L1-40",
+            "src/Makefile#L503-504"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "A new `OBJ_ARRAY` (type 7) sparse-array data type is exposed via 18 commands — ARSET, ARGET, ARDEL, ARDELRANGE, ARGETRANGE, ARGREP, ARINFO, ARINSERT, ARLASTITEMS, ARLEN, ARMGET, ARMSET, ARNEXT, AROP, ARRING, ARSCAN, ARSEEK, ARCOUNT — implemented in `src/t_array.c` over `src/sparsearray.c`.",
+          "sources": [
+            "src/server.h#L900-925",
+            "src/commands/arset.json",
+            "src/t_array.c#L1-20",
+            "tests/unit/type/array.tcl#L1-20"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "BLESS marks keys as never-evictable: the NO-EVICT bit lives in the kvBits byte after each kvobj, persists through RDB and AOF, and is exposed as BLESS SET/GET/CLEAR/SCAN plus an `blessed_keys` INFO counter backed by a per-DB `db->blessed_keys` index.",
+          "sources": [
+            "src/bless.c#L1-25",
+            "src/commands/bless-set.json",
+            "src/commands/bless-scan.json",
+            "tests/unit/bless.tcl"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "HOTKEYS START/STOP/GET/RESET/HELP expose a CuckooHeavyKeeper top-K sketch (`src/chk.c`, based on the Ngo & Papatriantafilou paper plus a min-heap borrowed from RedisBloom's TopK) that can be scoped to specific cluster slot ranges via a `slotRangeArray`.",
+          "sources": [
+            "src/chk.c#L1-16",
+            "src/hotkeys.c#L1-25",
+            "src/commands/hotkeys-start.json",
+            "tests/unit/hotkeys.tcl"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "INCREX is a new string command returning a two-element reply (`{value, applied}`) that creates a missing key at 0 before incrementing, with an optional increment argument.",
+          "sources": [
+            "tests/unit/type/increx.tcl#L1-15",
+            "src/commands/"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Hash-field expiration ships as eight commands — HEXPIRE, HEXPIREAT, HPEXPIRE, HPEXPIREAT, HEXPIRETIME, HPEXPIRETIME, HGETEX, HGETDEL — backed by the `ebuckets` radix-of-buckets expiry structure and the per-DB `estore` subexpires store.",
+          "sources": [
+            "src/commands/hexpire.json",
+            "src/commands/hgetex.json",
+            "src/ebuckets.c",
+            "src/estore.c#L1-25",
+            "tests/unit/type/hash-field-expire.tcl"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "A GCRA (Generic Cell Rate Algorithm) leaky-bucket rate limiter exists as `src/gcra.c` with an `OBJ_GCRA` object type and a 4-arg `GCRA key max_burst tokens_per_period period` command, ported from redis-cell — but it is compiled out by default behind `#ifdef ENABLE_GCRA`.",
+          "sources": [
+            "src/gcra.c#L1-22",
+            "src/server.h#L917-928",
+            "tests/unit/gcra.tcl#L1-30"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Atomic slot migration is a user-facing cluster feature driven by `CLUSTER MIGRATION IMPORT <slots>` run on the destination node, handled by `clusterMigrationCommand()`, with an eight-step protocol documented in the file header.",
+          "sources": [
+            "src/cluster_asm.c#L18-45",
+            "src/cluster_asm.c#L907-1051",
+            "tests/unit/cluster/atomic-slot-migration.tcl"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Lua scripting is offered in two forms: ephemeral EVAL/EVALSHA/SCRIPT via `evalGenericCommand()` and `luaCreateFunction()` in `src/eval.c`, and persistent FUNCTION libraries via a pluggable engine registry in `src/functions.c` whose only registered engine is `LUA_ENGINE_NAME` from `src/function_lua.c`.",
+          "sources": [
+            "src/eval.c#L436-720",
+            "src/functions.c#L407-461",
+            "src/function_lua.c#L512"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`redis-cli` is a large multi-mode tool (11,561 lines) exposing analysis modes `--bigkeys --memkeys --hotkeys --keystats-samples --scan --latency --latency-dist --latency-history --intrinsic-latency --lru-test --rdb --functions-rdb --pipe --replica --eval --ldb`, RESP3/JSON output modes, and TLS flags (`--tls --cert --key --cacert --cacertdir --insecure`).",
+          "sources": [
+            "src/redis-cli.c",
+            "src/redis-cli.c#L176-270"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`redis-cli --cluster` embeds a full cluster manager dispatch table of `clusterManagerCommandProc` functions — create, add-node, del-node, info, check, fix, reshard, rebalance — with ~25 `--cluster-*` option flags.",
+          "sources": [
+            "src/redis-cli.c#L3943-4000"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Sentinel is a distinct operating mode of the same binary: `initSentinelConfig()` + `initSentinel()` run before config parsing so the config file populates monitored-master state, and `sentinelIsRunning()` replaces the normal ready-to-serve path in `main()`.",
+          "sources": [
+            "src/server.c#L8342-8352",
+            "src/server.c#L8594-8600",
+            "src/sentinel.c",
+            "sentinel.conf"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Multi-threaded IO is a runtime feature with its own event loops per thread: `initThreadedIO()` is called from `InitServerLast()`, and `readQueryFromClient()` branches on `server.io_threads_num > 1` and atomically tracks `c->pending_read` and per-thread `IOThreads[c->running_tid].io_reads_processed`.",
+          "sources": [
+            "src/server.c#L3365-3370",
+            "src/iothread.c#L991",
+            "src/networking.c#L3981-4006"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Client/replication payload compression is a user-visible option: `clientCompressionProcessPendingData()` runs in `beforeSleep()`, clients carry a `compression_state` and `CLIENT_IO_COMPRESSION_ENABLED` io_flag, and `setReplCompression(server.repl_compression)` is forced off at init when the build lacks zstd.",
+          "sources": [
+            "src/client_comp.c#L1-25",
+            "src/server.c#L1990-1998",
+            "src/server.c#L3090-3094"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`modules/vector-sets/` is an in-tree module (deliberately absent from modules.yaml) implementing HNSW vector search with its own `commands.json`, `hnsw.c`, an expression filter language in `expr.c`, and a word2vec helper `w2v.c`.",
+          "sources": [
+            "modules/vector-sets/",
+            "modules/modules.yaml#L48-50",
+            "modules/MODULES.md#L38-44"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "data_flow": {
+      "summary": "Input arrives on a connection abstraction (`connection.h` over socket/unix/TLS), is read into a per-client or thread-reusable query buffer by `readQueryFromClient()`, parsed into `pendingCommand` structs by `processInlineBuffer()`/`processMultibulkBuffer()`, dispatched by `processCommand()` and executed by `call()`. Command handlers mutate the authoritative state owner — `server.db[j]` kvstores — and any side effects are queued through `alsoPropagate()`. At the end of the execution unit `propagateNow()` fans out to exactly three sinks: the AOF buffer, the replica stream, and the atomic-slot-migration client. Replies accumulate in per-client output buffers and are flushed in `beforeSleep()` by `handleClientsWithPendingWrites()`, strictly after `flushAppendOnlyFile()` so `appendfsync=always` is honoured before acknowledgement.",
+      "claims": [
+        {
+          "claim": "The input boundary is `readQueryFromClient(connection *conn)`, which recovers the client via `connGetPrivateData(conn)` and reads `PROTO_IOBUF_LEN` bytes, except when a multibulk argument exceeds `PROTO_MBULK_BIG_ARG`, in which case it sizes the read to exactly the remaining bulk length to enable zero-copy object creation.",
+          "sources": [
+            "src/networking.c#L3981-4032"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Query buffers are pooled per IO thread: a client with no private `querybuf` borrows `thread_reusable_qb` and sets `CLIENT_IO_REUSABLE_QUERYBUFFER`; if `thread_reusable_qb_used` is already set (nested execution via `processEventsWhileBlocked()`) the client allocates a private buffer instead.",
+          "sources": [
+            "src/networking.c#L4032-4052"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`processInputBuffer()` parses ahead up to `server.lookahead` commands into `c->pending_cmds`, but clamps the lookahead to 1 for unauthenticated clients because AUTH changes the handling of succeeding commands.",
+          "sources": [
+            "src/networking.c#L3778-3800",
+            "src/networking.c#L3820-3860"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Request type is inferred from the first byte: `'*'` selects `PROTO_REQ_MULTIBULK` → `processMultibulkBuffer()`, anything else selects `PROTO_REQ_INLINE` → `processInlineBuffer()`; an unknown `reqtype` triggers `serverPanic(\"Unknown request type\")`.",
+          "sources": [
+            "src/networking.c#L3828-3862"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`processCommand()` resolves argv to a `struct redisCommand` through a three-tier lookup: an already-set `c->lookedcmd`, then `isCommandReusable(c->lastcmd, ...)` reusing the previous command, then a full `lookupCommand(c->argv, c->argc)`.",
+          "sources": [
+            "src/server.c#L4694-4712",
+            "src/server.c#L3675-3745"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The command table itself is populated once at startup by `populateCommandTable()` walking the generated `extern struct redisCommand redisCommandTable[]` from commands.def, so adding a command is a data change in `src/commands/*.json` followed by codegen.",
+          "sources": [
+            "src/server.c#L3556-3570",
+            "src/commands.def",
+            "src/Makefile#L503-504"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Module command filters get first look at every non-reprocessed command: `processCommand()` calls `moduleCallCommandFilters(c)` and `reqresAppendRequest(c)` before command lookup, meaning a module can rewrite argv before the core ever resolves the command name.",
+          "sources": [
+            "src/server.c#L4671-4678",
+            "src/module.c#L11960-11970"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`call()` records `dirty = server.dirty` and `old_master_repl_offset = server.master_repl_offset` before invoking the proc, and clears `CLIENT_FORCE_AOF|CLIENT_FORCE_REPL|CLIENT_PREVENT_PROP` so the handler must opt back into propagation.",
+          "sources": [
+            "src/server.c#L4151-4185"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`server.allowed_propagate_targets` is a global mask narrowed for the duration of each `call()` so that nested `RM_Call`/Lua `redis.set_repl()` restrictions from an outer call cannot be escaped by an inner one — this is what makes effect-command rewriting (SPOP→SREM) honour selective replication.",
+          "sources": [
+            "src/server.c#L4218-4230",
+            "src/server.c#L3070"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`propagateNow()` is the single fan-out point to the three output sinks: `feedAppendOnlyFile()` when `server.aof_state != AOF_OFF && target & PROPAGATE_AOF`, then `replicationFeedSlaves(server.slaves, ...)` and `asmFeedMigrationClient(argv, argc)` when `target & PROPAGATE_REPL`.",
+          "sources": [
+            "src/server.c#L3796-3824",
+            "src/aof.c#L1666",
+            "src/replication.c#L651"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`propagateNow()` asserts that propagation never happens while replica actions are paused — `serverAssert(!(isPausedActions(PAUSE_ACTION_REPLICA) && !server.client_pause_in_transaction))` — because a dataset change during a replica pause could be lost on failover.",
+          "sources": [
+            "src/server.c#L3813-3817"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Output ordering in `beforeSleep()` is load-bearing and commented as such: `connTypeProcessPendingData()` and `clientCompressionProcessPendingData()` must run before `flushAppendOnlyFile(0)`, which must run before `handleClientsWithPendingWrites()` and `sendPendingClientsToIOThreads()` so `appendfsync=always` is satisfied before the reply is sent.",
+          "sources": [
+            "src/server.c#L1988-2000",
+            "src/server.c#L2060-2072",
+            "src/networking.c#L3046"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Blocked-client resumption is sequenced before AOF flushing: `blockedBeforeSleep()` is called with the comment 'must be done before flushAppendOnlyFile, in case of appendfsync=always, since the unblocked clients may write data'.",
+          "sources": [
+            "src/server.c#L2008-2013",
+            "src/blocked.c"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Client-side caching invalidation is a distinct output boundary flushed per-iteration: `beforeSleep()` asserts `server.tracking_pending_keys` and `server.pending_push_messages` are empty, then calls `trackingBroadcastInvalidationMessages(NULL)` for BCAST-mode clients.",
+          "sources": [
+            "src/server.c#L2048-2058",
+            "src/tracking.c"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "On startup the persistence-to-memory direction is owned by `loadDataFromDisk()`, which honours a `preload-file` config prefixed `aof:/` or `rdb:/` (dispatching to `loadPreLoadAOFFile`/`loadPreLoadManifestFile`/`rdbLoad`), else falls back to `loadAppendOnlyFiles(server.aof_manifest)` when AOF is on, else `rdbLoad(server.rdb_filename, ...)`.",
+          "sources": [
+            "src/server.c#L7903-7975"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "behavior_traces": {
+      "summary": "Three flows dominate. Startup: `main()` → config → subsystem init → `initServer()` → `InitServerLast()` → `loadDataFromDisk()` → AOF reconciliation → `aeMain()`. Command execution: socket readable → `readQueryFromClient()` → `processInputBuffer()` → `processCommandAndResetClient()` → `processCommand()` → `call()` → handler → `alsoPropagate()` → `propagatePendingCommands()` → `propagateNow()`. Replica bootstrap: `replicaofCommand()` → `replicationSetMaster()` → `connectWithMaster()` → `syncWithMaster()` handshake → `slaveTryPartialResynchronization()` → full sync via `readSyncBulkPayload()`, with the master side running `syncCommand()` → `startBgsaveForReplication()` → `rdbSaveToSlavesSockets()`.",
+      "claims": [
+        {
+          "claim": "STARTUP step 1 — `main()` seeds entropy from `time(NULL)^getpid()^tv.tv_usec` into `srand`/`srandom`/`init_genrand64`, calls `crc64_init()`, captures `umask(server.umask = umask(0777))` early to avoid a thread race, and seeds the dict hash with 16 bytes from `getRandomBytes()` — this is what makes hash-flooding attacks impractical.",
+          "sources": [
+            "src/server.c#L8313-8330"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "STARTUP step 2 — argv parsing in `main()` conceptually appends every `--opt value` pair onto the config file text as newline-separated directives, with documented precedence 'File, stdin, explicit options -- last config is the one that matters', plus special-cases for bare `--save` and `--sentinel`.",
+          "sources": [
+            "src/server.c#L8390-8460"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "STARTUP step 3 — `initServer()` installs `SIG_IGN` for SIGHUP/SIGPIPE, runs `setupSignalHandlers()`, `ThreadsManager_init()`, `makeThreadKillable()`, then `hashTemplatesInit()`, `createSharedObjects()`, `adjustOpenFilesLimit()` and `monotonicInit(monotonicLogCallback)` before creating the event loop.",
+          "sources": [
+            "src/server.c#L3024-3110"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "STARTUP step 4 — `initServer()` decides memory accounting once and irreversibly: `server.memory_tracking_enabled = server.key_memory_histograms || clusterSlotStatsEnabled(CLUSTER_SLOT_STATS_MEM)`, documented as disable-able at runtime but never re-enable-able to avoid a full slot re-scan.",
+          "sources": [
+            "src/server.c#L3084-3090"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "STARTUP step 5 — `InitServerLast()` starts the background subsystems last: `bioInit()`, `initThreadedIO()`, `set_jemalloc_bg_thread()`, and records `server.initial_memory_usage = zmalloc_used_memory()` as the baseline for memory reporting.",
+          "sources": [
+            "src/server.c#L3365-3370"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "STARTUP step 6 — the load sequence in `main()` is `aofLoadManifestFromDisk()` → `loadDataFromDisk()` → `aofSetupAfterPreloadFile()` → `aofOpenIfNeededOnServerStart()` → `aofDelHistoryFiles()` → `applyAppendOnlyConfig()`, the last of which exists specifically to apply an `appendonly` config change that arrived while loading.",
+          "sources": [
+            "src/server.c#L8560-8572"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "STARTUP step 7 — in cluster mode `main()` hard-asserts `verifyClusterConfigWithData() == C_OK` after load, then logs 'Ready to accept connections' per non-NULL `server.listeners[j]`, notifies systemd with `READY=1` when `supervised_mode == SUPERVISED_SYSTEMD`, and finally calls `warnAboutInsecureConfig()`.",
+          "sources": [
+            "src/server.c#L8573-8593"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "COMMAND step 1 — `processCommand()` first postpones the client via `blockPostponeClient(c)` if a module is in a blocked yield that excludes `BUSY_MODULE_YIELD_CLIENTS`, then runs `commandCheckExistence()` and `commandCheckArity()`, rejecting via `rejectCommandSds()`.",
+          "sources": [
+            "src/server.c#L4680-4730"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "COMMAND step 2 — commands literally named `host:` or `post` are intercepted before any other handling and routed to `securityWarningCommand(c)` returning `C_ERR`, a cross-protocol-scripting (HTTP-to-Redis) defence.",
+          "sources": [
+            "src/server.c#L4706-4712"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "COMMAND step 3 — commands carrying `CMD_INTERNAL` are made to look nonexistent (`cmd = NULL`) unless the client has `CLIENT_INTERNAL` or `mustObeyClient(c)` is true, so masters and AOF replay are implicitly trusted while ordinary clients cannot even discover them.",
+          "sources": [
+            "src/server.c#L4714-4720"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "COMMAND step 4 — `CMD_PROTECTED` commands are gated by `allowProtectedAction(server.enable_debug_cmd, c)` for `debugCommand` and `server.enable_module_cmd` for `moduleCommand`, with an error naming `enable-debug-command`/`enable-module-command`.",
+          "sources": [
+            "src/server.c#L4732-4748"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "COMMAND step 5 — `call()` sets `CLIENT_EXECUTING_COMMAND` to suppress mid-reply client-side-caching pushes, calls `enterExecutionUnit(1, call_timer)`, and skips slowlog/stat updates entirely when `isAOFLoadingContext()` is true.",
+          "sources": [
+            "src/server.c#L4155-4215"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "COMMAND step 6 — `call()` avoids a `gettimeofday` per command when a hardware monotonic clock is available: it only calls `updateCachedTime(0)` after 10µs of monotonic drift or 25 accumulated calls (`server.accum_call_count_since_ustime > 25`).",
+          "sources": [
+            "src/server.c#L4185-4208"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "REPLICATION (replica side) — `replicaofCommand()` → `replicationSetMaster(ip, port)` → `connectWithMaster()` installs `syncWithMaster()` as the connection handler, which performs the PING/AUTH/REPLCONF handshake then calls `slaveTryPartialResynchronization(conn, read_reply)`; on `+FULLRESYNC` the handler becomes `readSyncBulkPayload()`.",
+          "sources": [
+            "src/replication.c#L4490",
+            "src/replication.c#L3621",
+            "src/replication.c#L3538",
+            "src/replication.c#L3143-2952"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "REPLICATION (master side) — `syncCommand()` handles PSYNC/SYNC and, when no partial resync is possible, calls `startBgsaveForReplication(mincapa, req)` which selects between `rdbSaveBackground()` (disk-backed) and `rdbSaveToSlavesSockets()` (diskless) based on `repl-diskless-sync`.",
+          "sources": [
+            "src/replication.c#L1208",
+            "src/replication.c#L1123",
+            "src/rdb.c#L2226",
+            "src/rdb.c#L5298"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "ATOMIC SLOT MIGRATION — the documented eight-step flow is: destination runs `CLUSTER MIGRATION IMPORT`, source forks and ships a slot snapshot as RESTORE commands over an RDB channel, streams incremental writes over a main channel, pauses writes at catch-up, destination drains and takes ownership, config propagates over the cluster bus, then the source trims migrated keys via `asmTriggerBackgroundTrim()` on a BIO thread.",
+          "sources": [
+            "src/cluster_asm.c#L18-45",
+            "src/cluster_asm.c#L3144",
+            "src/cluster_asm.c#L60-100"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "NESTED EVENT LOOP — when `ProcessingEventsWhileBlocked` is set, `beforeSleep()` takes a short-circuit path running only `connTypeProcessPendingData`, `clientCompressionProcessPendingData`, `flushAppendOnlyFile(0)`, `handleClientsWithPendingWrites`, `freeClientsInAsyncFreeQueue`, `processClientsOfAllIOThreads` and `sendPendingClientsToIOThreads`, counting them into `server.events_processed_while_blocked` and returning early.",
+          "sources": [
+            "src/server.c#L1966-1990"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "testing_signals": {
+      "summary": "Testing is a Tcl integration suite: `tests/test_helper.tcl` globs `tests/{unit,unit/type,unit/moduleapi,unit/cluster,integration}/*.tcl` into `::all_tests` and runs them against real spawned `redis-server` processes on ports from 21111. There are no C-level unit test files, but the binary embeds a `REDIS_TEST` mode invoked as `redis-server test <name>|all` for data-structure self-tests. Module API coverage is unusually deep — 48 C test modules under `tests/modules/` paired with 48 `unit/moduleapi/*.tcl` suites. CI runs eight build matrices plus an ASAN build and a commands.def drift check, with lcov/Codecov, CodeQL, Coverity, and a reply-schema linter on separate workflows.",
+      "claims": [
+        {
+          "claim": "Test discovery is directory-glob based, not a manifest: `test_helper.tcl` iterates `set test_dirs {unit unit/type unit/moduleapi unit/cluster integration}` and lsorts `*.tcl` into `::all_tests`, so a new `.tcl` file in those dirs is picked up automatically.",
+          "sources": [
+            "tests/test_helper.tcl#L28-45"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The harness is a client/server fan-out: `test_server_main`, `accept_test_clients`, `read_from_test_client` and `signal_idle_client` distribute test files across parallel Tcl clients, with `run_solo` for tests that must not run concurrently.",
+          "sources": [
+            "tests/test_helper.tcl#L261-290",
+            "tests/test_helper.tcl#L336-380",
+            "tests/test_helper.tcl#L465-485"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Support libraries sourced by every suite live in `tests/support/`: `server.tcl` (start_server), `util.tcl`, `cluster_util.tcl`, `aofmanifest.tcl`, `redis.tcl` (the Tcl RESP client), `response_transformers.tcl` (RESP2/RESP3 normalisation), and `cli.tcl`.",
+          "sources": [
+            "tests/test_helper.tcl#L20-26",
+            "tests/support/"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Module API is the most thoroughly covered subsystem: `runtest-moduleapi` enumerates 48 suites explicitly by `--single`, and `tests/modules/` holds 48 matching C test modules built by `$MAKE -C tests/modules` before the run.",
+          "sources": [
+            "runtest-moduleapi#L21-70",
+            "tests/modules/",
+            "tests/unit/moduleapi/"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The C code carries an embedded self-test harness rather than a separate unit-test binary: `main()` under `#ifdef REDIS_TEST` accepts `redis-server test <name>|all` with flags `--accurate --large-memory --valgrind --verbose`, iterates a `redisTests[]` table, and prints a pass/fail summary.",
+          "sources": [
+            "src/server.c#L8256-8305"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Cluster coverage includes 23 dedicated suites under `tests/unit/cluster/`, notably `atomic-slot-migration.tcl`, `internal-secret.tcl`, `packet-validation.tcl`, `tls-peer-impersonation.tcl` and `cluster-bus-port-protected-mode.tcl` — the security-sensitive cluster paths are explicitly exercised.",
+          "sources": [
+            "tests/unit/cluster/"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Integration coverage focuses on durability and replication edge cases: `aof-multi-part.tcl`, `aof-race.tcl`, `corrupt-dump-fuzzer.tcl`, `corrupt-dump.tcl`, `psync2*.tcl` (four files), `replication-rdbchannel.tcl`, `replication-iothreads.tcl`, `failover.tcl`, `shutdown.tcl`.",
+          "sources": [
+            "tests/integration/"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The primary CI job `test-ubuntu-latest` builds with `make REDIS_CFLAGS='-Werror' BUILD_TLS=yes` and runs `./runtest --verbose --tags -slow --dump-logs` — meaning slow-tagged tests do not gate PRs.",
+          "sources": [
+            ".github/workflows/ci.yml#L11-28"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CI enforces codegen freshness: the `validate commands.def up to date` step touches `src/commands/ping.json`, runs `make commands.def`, and fails if `git diff` is non-empty — a hand-edited commands.def will break the build.",
+          "sources": [
+            ".github/workflows/ci.yml#L22-28"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "A dedicated `test-sanitizer-address` job builds `SANITIZER=address REDIS_CFLAGS='-Werror -DDEBUG_ASSERTIONS -DREDIS_TEST' BUILD_TLS=module` and reruns the suite, so debug assertions and the embedded C tests are compiled in on that path only.",
+          "sources": [
+            ".github/workflows/ci.yml#L30-40"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The build matrix covers portability rather than behaviour: `build-debian-old` (debian:buster container), `build-macos-latest`, `build-32bit` (via gcc-multilib), `build-libc-malloc`, `build-centos-jemalloc` (centos:stream9) and `build-old-chain-jemalloc` — all compile-only, no test step.",
+          "sources": [
+            ".github/workflows/ci.yml#L42-95"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Coverage is reported but non-gating: `codecov.yml` sets both `patch` and `project` statuses to `informational: true`, and the workflow runs `make lcov` and uploads `./src/redis.info`, gated on `github.repository == 'redis/redis'` so forks skip it.",
+          "sources": [
+            "codecov.yml",
+            ".github/workflows/codecov.yml#L14-40"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Static analysis runs on separate cadences: CodeQL on every PR plus a weekly `cron: '0 0 * * 0'`, and Coverity daily (`cron: '0 0 * * *'`) with a comment noting the sub-500k-LOC quota of 21 builds/week.",
+          "sources": [
+            ".github/workflows/codeql-analysis.yml#L1-12",
+            ".github/workflows/coverity.yml#L1-10"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Command JSON specs have their own path-filtered lint gate: `reply-schemas-linter.yml` triggers only on changes to `src/commands/*.json` and runs `node ./utils/reply_schema_linter.js` after `npm install ajv`.",
+          "sources": [
+            ".github/workflows/reply-schemas-linter.yml#L1-25",
+            "utils/reply_schema_linter.js"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Heavy/long-running coverage is deferred to `daily.yml`, which runs nightly and on PRs targeting release branches matching `'[0-9].[0-9]'` — so a PR into `unstable` never exercises it.",
+          "sources": [
+            ".github/workflows/daily.yml#L1-12"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The GCRA rate-limiter test file is entirely inert: `tests/unit/gcra.tcl` wraps its body in `if 0 { ... }`, matching the fact that `src/gcra.c` is compiled out unless `-DENABLE_GCRA` is passed — so that feature has zero effective coverage.",
+          "sources": [
+            "tests/unit/gcra.tcl#L1-30",
+            "src/gcra.c#L9-12",
+            "src/server.h#L917-928"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "risk_map": {
+      "summary": "The dominant risk class is memory-safety in hand-written C parsing code reachable pre-authentication: the RESP parser, the cluster bus packet decoder, and the RDB/DUMP loader all consume untrusted bytes. Authentication is layered and easy to misconfigure — protected-mode, ACL, an auto-generated cluster internal secret, and module-supplied auth callbacks. A second class is coupling risk: the propagation invariants in `call()`/`propagateNow()`, the ordering contract inside `beforeSleep()`, and the object-type registration checklist all fail silently or assert if a contributor misses a step. Finally, there is genuinely dead code — GCRA is compiled out and its test file is `if 0`'d — and a large `DEBUG` surface with 50+ subcommands guarded only by a config flag.",
+      "claims": [
+        {
+          "claim": "The RESP parser is the pre-auth attack surface: `processMultibulkBuffer()` and `processInlineBuffer()` parse attacker-controlled bytes into `pendingCommand` structs before any AUTH check, and `readQueryFromClient()` performs manual pointer arithmetic (`(size_t)(c->bulklen+2)-(sdslen(c->querybuf)-c->qb_pos)`) to size big-argument reads.",
+          "sources": [
+            "src/networking.c#L4008-4022",
+            "src/networking.c#L3215",
+            "src/networking.c#L3828-3862"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The cluster internal secret is auto-generated with `getRandomHexChars(server.cluster->internal_secret, CLUSTER_INTERNALSECRETLEN)` and converged across nodes by a lexicographic `memcmp(...) > 0` rule in the PING extension handler — meaning any node that can join the bus can influence the shared secret used to authenticate internal connections.",
+          "sources": [
+            "src/cluster_legacy.c#L1048",
+            "src/cluster_legacy.c#L2700-2760",
+            "src/acl.c#L3341-3346"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Internal-secret password comparison correctly uses `time_independent_strcmp()`, but it is one of several parallel auth paths (`checkPasswordBasedAuth`, `ACLAuthenticateUser`, module auth callbacks) that must all stay consistent — a change to one does not automatically cover the others.",
+          "sources": [
+            "src/acl.c#L3341-3350",
+            "src/acl.c#L1522-1560",
+            "tests/unit/moduleapi/moduleauth.tcl"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`moduleLoad()` calls `dlopen(path, RTLD_NOW|RTLD_LOCAL)` on an operator-supplied path, giving any successfully loaded module full in-process code execution; the only guard is that `MODULE` carries `CMD_PROTECTED` and is gated by `server.enable_module_cmd`.",
+          "sources": [
+            "src/module.c#L13698-13715",
+            "src/server.c#L4732-4748"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`warnAboutInsecureConfig()` only logs — it never refuses to start. A server with `DefaultUser` NOPASS, `protected-mode no` and a `0.0.0.0`/`::` bind emits a WARNING and then serves traffic.",
+          "sources": [
+            "src/server.c#L8593",
+            "src/server.c (warnAboutInsecureConfig)"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`redis-server --test-memory <mb>` and `--check-system` run arbitrary memory-stressing code (`memtest()`, `syscheck()`) directly from `main()` before any config or privilege handling, and `--test-memory` with a non-numeric argument silently becomes `atoi(...) == 0`.",
+          "sources": [
+            "src/server.c#L8378-8392"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`src/debug.c` dispatches roughly 52 `DEBUG` subcommands via a chain of `strcasecmp(c->argv[1]->ptr, ...)` comparisons; the entire surface is protected only by the `enable-debug-command` config and `allowProtectedAction()`, and several subcommands (JMAP, SEGFAULT, SET-ACTIVE-EXPIRE, QUICKLIST-PACKED-THRESHOLD) can corrupt or crash a live server.",
+          "sources": [
+            "src/debug.c",
+            "src/server.c#L4732-4748"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Adding a new object type is a documented multi-file checklist with no compiler enforcement — the `server.h` comment requires coordinated edits to `rdb.c` (save/load, possibly RDB_VERSION), `aof.c` (rewrite), `db.c` (`obj_type_name`, `copyCommand`), `debug.c` (`xorObjectDigest`, `serverLogObjectDebugInfo`) and `defrag.c` (`defragKey`). Missing one produces silent data or defrag corruption, not a build error.",
+          "sources": [
+            "src/server.h#L928-940"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "GCRA is dead code in the shipped build: `src/gcra.c` is entirely inside `#ifdef ENABLE_GCRA`, `OBJ_GCRA`/`OBJ_TYPE_MAX 9` are conditional in `server.h`, the guard appears in `rdb.h`, `redismodule.h` and `acl.c`, and `tests/unit/gcra.tcl` disables its whole body with `if 0 {`. Building with `-DENABLE_GCRA` would activate untested code and change `OBJ_TYPE_MAX`, which is an RDB-visible constant.",
+          "sources": [
+            "src/gcra.c#L9-22",
+            "src/server.h#L917-928",
+            "src/rdb.h#L88-94",
+            "tests/unit/gcra.tcl#L1-5"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`beforeSleep()` encodes at least four ordering invariants in comments rather than in code structure (TLS pending data before AOF flush; `clusterBeforeSleep()` before `blockedBeforeSleep()`; `blockedBeforeSleep()` before `flushAppendOnlyFile`; AOF flush before `handleClientsWithPendingWrites`). Reordering any of them breaks `appendfsync=always` durability guarantees without failing a test deterministically.",
+          "sources": [
+            "src/server.c#L1990-2013",
+            "src/server.c#L2060-2072"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`propagateNow()` contains two assertions that convert logic errors into crashes rather than data loss: `debugServerAssert(duration != PROP_DURATION_UNKNOWN)` and the replica-pause assert. Both are reachable from any new command that queues propagation incorrectly.",
+          "sources": [
+            "src/server.c#L3798-3818"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The query-buffer pooling scheme (`thread_reusable_qb` / `thread_reusable_qb_used` / `CLIENT_IO_REUSABLE_QUERYBUFFER`) is shared mutable state whose correctness depends on nested-execution detection; the code comment notes the private-buffer fallback exists only for `processEventsWhileBlocked()` re-entry.",
+          "sources": [
+            "src/networking.c#L4032-4052"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`src/module.c` is 16,117 lines — the single largest blast-radius file. It owns command registration, `RM_Call`, command filters, keyspace hooks, data-type serialization and `dlopen`, so nearly every subsystem change can break the stable module ABI in `src/redismodule.h`.",
+          "sources": [
+            "src/module.c",
+            "src/redismodule.h"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Atomic slot migration carries its own trim-correctness risk: `ASM_DEBUG_TRIM_DEFAULT` auto-selects between background BIO-thread deletion and main-thread active deletion 'based on module subscriptions and client tracking', so keyspace notifications fire in one mode and not the other.",
+          "sources": [
+            "src/cluster_asm.c#L54-60",
+            "src/cluster_asm.c#L3081-3150"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`make` recipes shell out to scripts that perform network operations without review gates: `scripts/modules-update.sh` and `modules/common.mk` clone from GitHub URLs in `modules.yaml`, and `common.mk` resolves ref kind by probing the remote with `git ls-remote` at recipe time — so a `branch:` pin silently follows a moving target.",
+          "sources": [
+            "modules/modules.yaml#L15-30",
+            "modules/common.mk#L5-20",
+            "scripts/modules-update.sh"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CI does not run the slow test tag on PRs (`./runtest --verbose --tags -slow`), and the heavy `daily.yml` matrix only triggers on PRs to release branches matching `'[0-9].[0-9]'` — so changes merged to `unstable` get comparatively thin pre-merge validation.",
+          "sources": [
+            ".github/workflows/ci.yml#L18-21",
+            ".github/workflows/daily.yml#L1-10"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Sentinel mode initializes before config parsing and before the RDB/AOF check dispatch, and `sentinel.c` is 5,000+ lines sharing `server.c` globals with the normal server path — a startup-order change in `main()` can break sentinel in ways the default `./runtest` (which excludes sentinel) will not catch.",
+          "sources": [
+            "src/server.c#L8342-8352",
+            "src/sentinel.c",
+            "runtest-sentinel"
+          ],
+          "kind": "inference"
+        }
+      ]
+    },
+    "extension_points": {
+      "summary": "Redis has four first-class extension mechanisms. New commands are added declaratively: drop a JSON spec in `src/commands/`, implement the proc, and regenerate `src/commands.def`. New configuration parameters are appended to the `static_configs[]` table in `src/config.c` using the `create*Config` macro family. New runtime behaviour is added out-of-process via the module API (`RM_CreateCommand`/`RM_CreateSubcommand` plus data types, filters, and hooks). New scripting languages plug into `functionsRegisterEngine()`. On top of these, this tree adds a fifth: `modules/modules.yaml` as a declarative registry for bundled external modules.",
+      "claims": [
+        {
+          "claim": "Command registration is codegen-driven: `src/commands/*.json` is the input, `utils/generate-command-code.py` is the generator, and `src/Makefile`'s rule `$(COMMANDS_DEF_FILENAME).def: commands/*.json ../utils/generate-command-code.py` regenerates `src/commands.def`. CI fails if the checked-in file drifts.",
+          "sources": [
+            "src/Makefile#L503-504",
+            "utils/generate-command-code.py",
+            ".github/workflows/ci.yml#L22-28"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The generator maps declarative JSON to C enums via `ARG_TYPES` (string/integer/double/key/pattern/unix-time/pure-token/oneof/block) and `GROUPS`, which already contains the newer `COMMAND_GROUP_ARRAY` and `COMMAND_GROUP_RATE_LIMIT` — adding a command group means editing this table.",
+          "sources": [
+            "utils/generate-command-code.py#L7-40"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The runtime command registry is `redisCommandTable[]` from commands.def, loaded once by `populateCommandTable()` into dicts consulted by `lookupCommandLogic()`, `lookupCommandBySds()` and `lookupCommandByCString()` — module commands are inserted into the same dicts.",
+          "sources": [
+            "src/server.c#L3556-3570",
+            "src/server.c#L3675-3745"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Configuration is a single append-only table: `standardConfig static_configs[]` in src/config.c, populated by 119 `createBoolConfig`/`createStringConfig`/`createEnumConfig`/`createSDSConfig`/etc. calls, each taking a flags mask (`MODIFIABLE_CONFIG`, `IMMUTABLE_CONFIG`, `DEBUG_CONFIG`, `HIDDEN_CONFIG`, `SENSITIVE_CONFIG`) plus optional validate and apply callbacks.",
+          "sources": [
+            "src/config.c#L3445-3490",
+            "src/config.c#L3530-3531"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Config apply-callbacks are the hook for cross-subsystem side effects — e.g. `updateClusterFlags` on `cluster-replica-no-failover`, `updateJemallocBgThread` on `jemalloc-bg-thread`, `updateAppendonly` on `appendonly`, `updateRequirePass` on `requirepass`, and `applyClusterBusPortProtectedMode`.",
+          "sources": [
+            "src/config.c#L3445-3490",
+            "src/config.c#L3530-3531"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The module command API is `RM_CreateCommand(ctx, name, cmdfunc, strflags, firstkey, lastkey, keystep)` with `RM_CreateSubcommand(parent, ...)` for containers — the canonical way third-party code adds commands without touching the core tables.",
+          "sources": [
+            "src/module.c#L1348",
+            "src/module.c#L1479",
+            "src/redismodule.h"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Modules can intercept every command before dispatch by registering a command filter, invoked as `moduleCallCommandFilters(c)` at the top of `processCommand()`; `src/module.c` documents a flag to prevent a module's own `RM_Call()` from re-entering its filter.",
+          "sources": [
+            "src/server.c#L4671-4678",
+            "src/module.c#L11960-11975"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Server lifecycle hooks are exposed as module server events — `beforeSleep()` fires `moduleFireServerEvent(REDISMODULE_EVENT_EVENTLOOP, REDISMODULE_SUBEVENT_EVENTLOOP_BEFORE_SLEEP, NULL)` once per loop iteration when `moduleCount()` is non-zero.",
+          "sources": [
+            "src/server.c#L2024-2030",
+            "tests/unit/moduleapi/hooks.tcl",
+            "tests/unit/moduleapi/eventloop.tcl"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Scripting languages are pluggable through `functionsRegisterEngine(const char *engine_name, engine *engine)`, which stores into a module-level `static dict *engines`; `FUNCTION STATS` reflects the registry back to clients, and the only current registration is `LUA_ENGINE_NAME` from `luaEngineInitEngine` in function_lua.c.",
+          "sources": [
+            "src/functions.c#L99-100",
+            "src/functions.c#L407-420",
+            "src/functions.c#L455-465",
+            "src/function_lua.c#L512"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Keyspace notification is a central hook point via `notifyKeyspaceEvent(type, event, key, dbid)` and the newer `notifyKeyspaceEventWithSubkeys(...)` — new data types must call these to participate in keyspace events and client-side-cache invalidation.",
+          "sources": [
+            "src/notify.c#L276-285"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Connection types are a runtime-registered abstraction: `connTypeInitialize()` in `main()` sets up `server.listeners[j]` for `j < CONN_TYPE_MAX`, with implementations in `src/socket.c`, `src/unix.c` and `src/tls.c` behind `src/connection.h` — TLS can even be built as a loadable module with `BUILD_TLS=module`.",
+          "sources": [
+            "src/server.c#L8336",
+            "src/connection.h",
+            "src/Makefile#L343-357"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Bundled external modules are added declaratively by appending an entry to `modules/modules.yaml` with `name`/`repo`/`ref`/`target_module`/`loadmodule` and optional `build_env` — no new Makefile is needed, because `modules/common.mk` derives `MODULE_NAME` from `$(notdir $(CURDIR))` and reads the rest from the manifest.",
+          "sources": [
+            "modules/modules.yaml#L28-50",
+            "modules/common.mk#L5-20",
+            "modules/MODULES.md#L18-40"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "All YAML parsing has exactly one implementation: `scripts/lib/manifest.sh`, which is dual-mode — sourced as a shell library (`manifest_modules`, `manifest_field`, `manifest_ref`, `resolve_modules`) and invoked as a CLI by `modules/manifest.mk`. Extending the manifest format means editing that one file.",
+          "sources": [
+            "modules/MODULES.md#L28-34",
+            "scripts/lib/manifest.sh",
+            "modules/manifest.mk"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New top-level Make goals that take positional module names plug into the `GOALS_WITH_ARGS := <goal>:<VAR>` list in the root Makefile; the dispatch and no-op `.PHONY` targets are generated automatically by the `_capture_goal_args` define.",
+          "sources": [
+            "Makefile#L36-70"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New Tcl test suites require no registration — dropping a `.tcl` file into `tests/unit/`, `tests/unit/type/`, `tests/unit/cluster/` or `tests/integration/` is enough, since `test_helper.tcl` globs those directories. The exception is `tests/unit/moduleapi/`, where `runtest-moduleapi` lists each suite explicitly with `--single`.",
+          "sources": [
+            "tests/test_helper.tcl#L30-44",
+            "runtest-moduleapi#L21-70"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The embedded C test harness is extended through the `redisTests[]` table consumed by `getTestProcByName()` in `main()`, letting a data-structure file register a `redisTestProc` runnable as `redis-server test <name>`.",
+          "sources": [
+            "src/server.c#L8268-8305"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_handoff": {
+      "summary": "Read `src/server.h` (the 4,976-line master header that every `.c` file includes) and `src/server.c` before touching anything — nearly all global state hangs off the `server` struct declared there. Never hand-edit `src/commands.def`; edit the JSON spec and regenerate. Prefer adding config via the `static_configs[]` table and features via the module API over touching the dispatch path. Build with `make REDIS_CFLAGS='-Werror'` to match CI, and validate with `./runtest --tags -slow` plus `./runtest-moduleapi` if you touched `src/module.c`. Be aware this tree's root `Makefile` is not upstream's: plain `make` runs `scripts/build.sh`, which builds `src/` and then every cloned external module.",
+      "claims": [
+        {
+          "claim": "Read first, in order: `src/server.h` (all struct/constant/prototype definitions), `src/server.c` (`main`, `initServer`, `processCommand`, `call`, `beforeSleep`, `serverCron`), `src/networking.c` (client lifecycle and RESP parsing), and `src/config.c` (`static_configs[]`).",
+          "sources": [
+            "src/server.h",
+            "src/server.c",
+            "src/networking.c",
+            "src/config.c"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Never edit `src/commands.def` by hand. Edit `src/commands/<cmd>.json`, run `make commands.def` (which invokes `utils/generate-command-code.py`), and commit both — CI's `validate commands.def up to date` step diffs the regenerated output and fails on drift.",
+          "sources": [
+            "src/Makefile#L503-504",
+            ".github/workflows/ci.yml#L22-28"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Match CI's build flags locally: `make REDIS_CFLAGS='-Werror' BUILD_TLS=yes`. Use `REDIS_CFLAGS`/`REDIS_LDFLAGS` rather than `CFLAGS`/`LDFLAGS` — the src/Makefile header notes that plain CFLAGS propagate into the `deps/` builds (jemalloc, Lua, hiredis) too.",
+          "sources": [
+            "src/Makefile#L9-17",
+            ".github/workflows/ci.yml#L15-17"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Test commands to run: `make -C src test` (= `./runtest`) for the default suite, `./runtest --tags -slow --dump-logs` to match CI exactly, `./runtest --single unit/type/hash` to scope, `make -C src test-modules`, `test-cluster`, `test-sentinel` for the other three harnesses.",
+          "sources": [
+            "src/Makefile#L529-541",
+            "runtest",
+            ".github/workflows/ci.yml#L18-21"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Trap — building Redis alone is `make -C src all`, not `make`. The root `Makefile`'s default goal is `build`, which runs `scripts/build.sh` and will additionally try to build every module cloned under `modules/*/src`. Use `make build redis` or `make build core` to skip modules.",
+          "sources": [
+            "Makefile#L13-15",
+            "Makefile#L105-108",
+            "scripts/build.sh#L4-12"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Trap — on macOS you must use `gmake` (GNU Make ≥ 4.x), not Apple's `/usr/bin/make` 3.81. The root Makefile explicitly `export MAKE`s so recipe shells inherit the right binary, precisely because non-interactive recipe shells otherwise PATH-resolve to make 3.81.",
+          "sources": [
+            "Makefile#L3-11",
+            "modules/MODULES.md#L9-13"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Trap — adding a new object type requires coordinated edits to `rdb.c`, `aof.c`, `db.c` (`obj_type_name`, `copyCommand`), `debug.c` (`xorObjectDigest`, `serverLogObjectDebugInfo`) and `defrag.c` (`defragKey`), per the checklist comment in server.h. Nothing enforces this at compile time.",
+          "sources": [
+            "src/server.h#L928-940"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Trap — `redis.conf` is the tracked, hand-edited core config with no markers; `redis-full.conf` is untracked and regenerated by `scripts/sync-redis-conf.sh` on every `make modules-update`. Never hand-add `loadmodule` lines to `redis.conf`.",
+          "sources": [
+            "modules/MODULES.md#L32-38",
+            "scripts/sync-redis-conf.sh",
+            "redis.conf"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Safe edit boundary — prefer adding behaviour through the module API (`RM_CreateCommand`, module data types, command filters, server-event hooks) or a new `static_configs[]` entry over modifying `processCommand()`/`call()`, which carry assertions and propagation invariants.",
+          "sources": [
+            "src/module.c#L1348",
+            "src/config.c#L3445",
+            "src/server.c#L4151-4230"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Do not touch `deps/` — it is vendored third-party source (jemalloc, lua, hiredis, linenoise, hdr_histogram, fpconv, xxhash, tre) built by separate targets listed in `DEPENDENCY_TARGETS`. Changes there are lost on dependency refresh.",
+          "sources": [
+            "deps/",
+            "src/Makefile#L39",
+            "deps/README.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Style convention — the codebase is C99/gnu11 compiled with `-pedantic -Wall -W -Wstrict-prototypes -Werror=deprecated-declarations`, and falls back to `-std=c99` (also setting `SKIP_VEC_SETS=yes`) when the compiler lacks C11 `_Atomic`. New code must build under both.",
+          "sources": [
+            "src/Makefile#L44-70"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Licensing convention — every new source file carries the Redis tri-license header (RSALv2 / SSPLv1 / AGPLv3); contributions are governed by the Software Grant and CLA reproduced in full in CONTRIBUTING.md.",
+          "sources": [
+            "CONTRIBUTING.md#L1-10",
+            "src/t_array.c#L1-8",
+            "LICENSE.txt"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Security convention — do not report vulnerabilities through normal issues; SECURITY.md directs reports to the Redis Vulnerability Disclosure Program or GitHub's 'Report a Vulnerability', and notes that 32-bit, non-Linux and outdated-toolchain findings may be ruled out of scope.",
+          "sources": [
+            "SECURITY.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "When adding or changing a command's reply, update the reply schema in its `src/commands/*.json` — `.github/workflows/reply-schemas-linter.yml` triggers on changes to those files and validates them with ajv via `utils/reply_schema_linter.js`.",
+          "sources": [
+            ".github/workflows/reply-schemas-linter.yml#L1-25",
+            "utils/reply_schema_linter.js"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "For debugging a failing Tcl test, `./runtest --dump-logs` plus `tests/support/util.tcl`'s helpers and the `s <field>` / `S <index> <field>` INFO accessors in test_helper.tcl are the standard tools; servers spawn on ports starting at `::baseport 21111`.",
+          "sources": [
+            "tests/test_helper.tcl#L239-260",
+            "tests/test_helper.tcl#L45-50",
+            "tests/support/util.tcl"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Bumping a bundled module is a one-line change: edit `ref:` in `modules/modules.yaml` then run `make modules-update <name>`. Ref kind is resolved dynamically against the remote in the order tag → branch → commit, and an unmatched ref errors out with 'unknown ref kind'.",
+          "sources": [
+            "modules/modules.yaml#L15-35",
+            "scripts/modules-update.sh"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_prompt": "You are working in the Redis Open Source repository (branch `unstable`, version 8.9.241 per `src/version.h`). This is a C codebase of roughly 210 files and 200k+ lines under `src/`, plus vendored dependencies in `deps/`, a Tcl integration test suite in `tests/`, and a bespoke external-module orchestration layer in `Makefile` + `scripts/` + `modules/`.\n\nARCHITECTURE. One binary, `redis-server`, whose `main()` lives at `src/server.c:8251`. It multiplexes into sentinel, `redis-check-rdb` and `redis-check-aof` modes by inspecting argv[0]. Startup order is `initServerConfig()` → `ACLInit()` → `moduleInitModulesSystem()` → `connTypeInitialize()` → `keyMetaInit()` → config parse → `initServer()` (event loop + per-DB kvstores) → `InitServerLast()` (bio threads, IO threads) → `aofLoadManifestFromDisk()` → `loadDataFromDisk()` → `aeMain()`. Everything after that is event-loop driven.\n\nHOT PATH. Socket readable → `readQueryFromClient()` (src/networking.c:3981) → `processInputBuffer()` (:3778) parses up to `server.lookahead` commands into `c->pending_cmds` via `processInlineBuffer()`/`processMultibulkBuffer()` → `processCommandAndResetClient()` (:3643) → `processCommand()` (src/server.c:4660) does module command filters, command lookup, arity/existence/ACL/OOM checks → `call()` (:4151) runs the proc → side effects are queued by `alsoPropagate()` and flushed by `propagateNow()` (:3796), which fans out to exactly three sinks: `feedAppendOnlyFile()`, `replicationFeedSlaves()`, and `asmFeedMigrationClient()`. Replies flush in `beforeSleep()` (:1960), strictly after `flushAppendOnlyFile()` — that ordering is a durability contract, not a stylistic choice, and the function is full of `must be done before ...` comments. Respect them.\n\nWHAT'S NON-UPSTREAM HERE. This tree carries features you will not find in older Redis: an `OBJ_ARRAY` sparse-array type with 18 `AR*` commands (`src/t_array.c`, `src/sparsearray.c`); eviction-proof keys via BLESS (`src/bless.c`); CuckooHeavyKeeper hot-key tracking (`src/chk.c`, `src/hotkeys.c`); atomic cluster slot migration (`src/cluster_asm.c`, read its 8-step header comment); zstd client/replication compression (`src/client_comp.c`); multi-threaded IO (`src/iothread.c`); hash-field expiry via `ebuckets`/`estore`; and a GCRA rate limiter (`src/gcra.c`) that is COMPILED OUT behind `#ifdef ENABLE_GCRA` with an `if 0`'d test file — treat it as dead code.\n\nRULES. (1) Never hand-edit `src/commands.def`. Edit `src/commands/<cmd>.json`, run `make commands.def`, commit both; CI diffs the regenerated file and fails on drift. (2) Add config by appending to `standardConfig static_configs[]` in `src/config.c` using the `create*Config` macros with the right flags mask and apply-callback. (3) Prefer the module API (`RM_CreateCommand` at src/module.c:1348) over editing the dispatch path. (4) Adding an object type requires coordinated edits to rdb.c, aof.c, db.c, debug.c and defrag.c — the checklist is in `src/server.h` near line 928 and nothing enforces it at compile time. (5) Do not modify `deps/`.\n\nBUILD & TEST. `make -C src all` builds Redis core only. Plain `make` at the root runs `scripts/build.sh`, which also builds every external module cloned under `modules/*/src` — use `make build redis` to skip that. Match CI with `make REDIS_CFLAGS='-Werror' BUILD_TLS=yes` (use REDIS_CFLAGS, not CFLAGS, which leaks into deps builds). Test with `./runtest --verbose --tags -slow --dump-logs`, scope with `./runtest --single unit/type/hash`, and run `./runtest-moduleapi` if you touched `src/module.c`. Tests are Tcl, spawn real servers from port 21111, and are auto-discovered by globbing `tests/{unit,unit/type,unit/moduleapi,unit/cluster,integration}/*.tcl` — except moduleapi suites, which `runtest-moduleapi` lists explicitly. On macOS use `gmake`, not Apple's make 3.81.\n\nWATCH OUT FOR. Pre-auth attack surface in the RESP parser, cluster bus packet decoder and RDB/DUMP loader. The auto-negotiated cluster internal secret in `cluster_legacy.c`. `dlopen` in `moduleLoad()`. The ~52-subcommand DEBUG surface guarded only by `enable-debug-command`. `warnAboutInsecureConfig()` only logs — it never refuses to start. And PRs to `unstable` skip slow-tagged tests and the whole `daily.yml` matrix, so local validation matters more than the green check."
+  },
+  "analysis": {
+    "agent": "claude",
+    "model": "cli:claude",
+    "runtime_ms": 476014,
+    "cost_usd": 2.96313,
+    "collected_at": "2026-09-22T08:55:20.683Z"
   }
 }

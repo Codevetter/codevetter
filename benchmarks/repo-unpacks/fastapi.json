@@ -10718,5 +10718,947 @@
         ]
       }
     ]
+  },
+  "report": {
+    "overview": "This is the FastAPI framework source repository at version 0.141.1 — a Pydantic v2-only, Starlette-based ASGI web framework whose distinguishing trick is deriving request parsing, validation, serialization and an OpenAPI 3.1 schema from ordinary Python type hints on endpoint functions. This tree is notably ahead of the classic FastAPI architecture: `include_router()` no longer flattens child routes into the parent but stores an `_IncludedRouter` wrapper resolved at match time, the package ships first-class Server-Sent Events (`fastapi/sse.py`) and JSON-Lines streaming, a `app.frontend()` / `router.frontend()` low-priority static-SPA router, and a bundled agent skill at `fastapi/.agents/skills/fastapi/SKILL.md`. The repo is overwhelmingly documentation and tests: 1692 Markdown files across 13 translated locales, 594 test files, and 464 runnable tutorial sources in `docs_src/` that the test suite executes directly. Its audience is Python API developers, and the repo itself enforces 100% line coverage, strict mypy, ty, and Ruff on every push.",
+    "system_map": {
+      "summary": "The shipped artifact is the `fastapi/` package (~21k lines across 56 files), a thin-but-deep layer over Starlette and Pydantic v2. `fastapi/applications.py` defines the `FastAPI` app class (subclassing `starlette.applications.Starlette`) and `fastapi/routing.py` — the largest file at 6447 lines — defines `APIRouter`, `APIRoute`, the request handler factory, and the frontend static-file routing. There is no database or storage layer; the only persistent state is in-process route tables and the memoised OpenAPI schema. Everything else in the repo is supporting apparatus: `docs/` (13 locales), `docs_src/` (executable tutorial examples on `PYTHONPATH` during tests), `scripts/` (docs build, translation, release, sponsor tooling), and 23 GitHub Actions workflows. Deployment is a PyPI wheel built by pdm-backend and published via `uv publish` with OIDC trusted publishing; the docs deploy separately to Cloudflare Pages.",
+      "claims": [
+        {
+          "claim": "The public API surface is re-exported from `fastapi/__init__.py`, which pins `__version__ = \"0.141.1\"` and exposes exactly 20 names including `FastAPI`, `APIRouter`, `Depends`, `Security`, `BackgroundTasks`, `UploadFile`, `HTTPException`, `WebSocketException` and Starlette's `status` module.",
+          "sources": [
+            "fastapi/__init__.py#L1-25"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`fastapi/routing.py` (6447 lines) and `fastapi/applications.py` (4774 lines) hold the bulk of the logic; `param_functions.py` is third at 2460 lines but is almost entirely `annotated_doc.Doc` docstrings for `Query`/`Path`/`Header`/`Body`/`Depends`.",
+          "sources": [
+            "fastapi/routing.py",
+            "fastapi/applications.py",
+            "fastapi/param_functions.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Runtime boundaries are ASGI-only: `FastAPI.__call__` injects `root_path` into the scope then delegates to Starlette, and `build_middleware_stack()` composes `ServerErrorMiddleware` → user middleware → `ExceptionMiddleware` → `AsyncExitStackMiddleware` → `self.router`.",
+          "sources": [
+            "fastapi/applications.py#L1020-1068",
+            "fastapi/applications.py#L1160-1164"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "FastAPI-specific per-request state is carried in three ASGI scope keys holding `AsyncExitStack`s: `fastapi_middleware_astack` (set by `AsyncExitStackMiddleware` for closing uploaded files), plus `fastapi_inner_astack` and `fastapi_function_astack` set in the vendored `request_response`/`websocket_session` wrappers for request- and function-scoped `yield` dependencies.",
+          "sources": [
+            "fastapi/middleware/asyncexitstack.py#L1-18",
+            "fastapi/routing.py#L121-186",
+            "fastapi/dependencies/utils.py#L601-609"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Pydantic v1 support has been fully removed: `fastapi/_compat/__init__.py` re-exports only from `.shared` and `.v2`, and `PydanticV1NotSupportedError` is raised from `fastapi/encoders.py` and `fastapi/utils.py` when a v1 model is detected.",
+          "sources": [
+            "fastapi/_compat/__init__.py#L1-40",
+            "fastapi/exceptions.py#L246-250",
+            "fastapi/encoders.py#L342",
+            "fastapi/utils.py#L67"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Validation is delegated to a single `ModelField` wrapper in `fastapi/_compat/v2.py` that owns a `pydantic.TypeAdapter` and exposes `validate`, `serialize` (dump_python) and `serialize_json` (dump_json).",
+          "sources": [
+            "fastapi/_compat/v2.py#L114-235"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The CLI entrypoint `fastapi = \"fastapi.cli:main\"` is a shim that imports `fastapi_cli.cli.main` and raises a RuntimeError telling the user to `pip install \"fastapi[standard]\"` if the optional package is absent; `fastapi/__main__.py` calls the same function.",
+          "sources": [
+            "pyproject.toml#L45-47",
+            "fastapi/cli.py#L1-13",
+            "fastapi/__main__.py#L1-3"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Runtime dependencies are minimal and pinned by floor: `starlette>=0.46.0`, `pydantic>=2.9.0`, `typing-extensions>=4.8.0`, `typing-inspection>=0.4.2`, `annotated-doc>=0.0.2`, with Python >= 3.10 required.",
+          "sources": [
+            "pyproject.toml#L12-52"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`fastapi/staticfiles.py`, `fastapi/templating.py`, `fastapi/testclient.py`, `fastapi/requests.py` and `fastapi/websockets.py` are one-to-three-line re-export shims over Starlette, so those integrations (Jinja2, httpx TestClient) are Starlette's, not FastAPI's.",
+          "sources": [
+            "fastapi/staticfiles.py",
+            "fastapi/templating.py",
+            "fastapi/testclient.py",
+            "fastapi/websockets.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Build/test/lint commands are shell scripts: `scripts/test.sh` runs `pytest -n auto --dist loadgroup tests scripts/tests/` with `PYTHONPATH=./docs_src`, `scripts/test-cov.sh` adds `--cov --cov-context=test`, and `scripts/lint.sh` runs `mypy fastapi`, `ty check`, `ruff check`, `ruff format --check`.",
+          "sources": [
+            "scripts/test.sh",
+            "scripts/test-cov.sh",
+            "scripts/lint.sh",
+            "scripts/format.sh"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Release shape: `.github/workflows/publish.yml` triggers on GitHub release publication and runs `uv build` then `uv publish` with `id-token: write` (OIDC trusted publishing, no stored PyPI token).",
+          "sources": [
+            ".github/workflows/publish.yml#L1-36"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Docs deploy is a separate pipeline: `deploy-docs.yml` fires on `workflow_run` completion of Build Docs, downloads `docs-site-*` artifacts and pushes to Cloudflare Pages, reporting status through `scripts/deploy_docs_status.py`.",
+          "sources": [
+            ".github/workflows/deploy-docs.yml#L1-60",
+            "scripts/deploy_docs_status.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The package ships an agent skill inside the wheel at `fastapi/.agents/skills/fastapi/SKILL.md` with six reference pages (dependencies, path-operations, pydantic, responses, streaming, other-tools), making FastAPI conventions machine-consumable by coding agents.",
+          "sources": [
+            "fastapi/.agents/skills/fastapi/SKILL.md",
+            "fastapi/.agents/skills/fastapi/references/streaming.md",
+            "fastapi/.agents/skills/fastapi/references/dependencies.md"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "feature_catalog": {
+      "summary": "The user-facing feature set is the decorator API (`@app.get/put/post/delete/options/head/patch/trace`, `@app.websocket`, `@app.middleware`, `@app.exception_handler`), the parameter-declaration vocabulary (`Path`, `Query`, `Header`, `Cookie`, `Body`, `Form`, `File`, `Depends`, `Security`), the auto-generated OpenAPI 3.1 document plus Swagger UI and ReDoc pages, and seven built-in security schemes. This version adds three substantial features beyond classic FastAPI: Server-Sent Events via `response_class=EventSourceResponse`, JSON-Lines streaming from generator endpoints, and `app.frontend()` for serving built SPA assets as low-priority routes. Dependencies gained an explicit `scope` of `\"function\"` or `\"request\"`. Two response classes — `ORJSONResponse` and `UJSONResponse` — are now deprecated in favour of a Pydantic `dump_json` fast path.",
+      "claims": [
+        {
+          "claim": "`FastAPI.setup()` registers up to four non-schema routes at construction: `openapi_url` (default `/openapi.json`), `docs_url` (`/docs`, Swagger UI), `swagger_ui_oauth2_redirect_url`, and `redoc_url` (`/redoc`); each is skipped when its URL is set to `None`.",
+          "sources": [
+            "fastapi/applications.py#L1105-1158"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "All eight HTTP verb decorators plus `api_route`, `add_api_route`, `websocket`, `add_api_websocket_route`, `websocket_route`, `on_event`, `middleware`, `exception_handler` and `include_router` are defined on `FastAPI` and mirrored on `APIRouter`.",
+          "sources": [
+            "fastapi/applications.py#L1301-4780",
+            "fastapi/routing.py#L3133-3320"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Server-Sent Events: setting `response_class=EventSourceResponse` on a generator path operation makes the router encode each yielded item into SSE wire format via `format_sse_event`, set `Cache-Control: no-cache` and `X-Accel-Buffering: no`, and inject a `: ping` keepalive comment every `_PING_INTERVAL` (15s) of idleness.",
+          "sources": [
+            "fastapi/sse.py#L20-33",
+            "fastapi/sse.py#L236-241",
+            "fastapi/routing.py#L519-627"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`ServerSentEvent` is a Pydantic model with `data`, `raw_data`, `event`, `id`, `retry`, `comment`; validators reject multi-line `event`/`id` values and null bytes in `id`, and a model validator forbids setting `data` and `raw_data` together.",
+          "sources": [
+            "fastapi/sse.py#L36-157"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "JSON-Lines streaming: when `is_json_stream` is set, generator endpoints are wrapped into a `StreamingResponse` with media type `application/jsonl`, each item serialized by `_serialize_data` and terminated with `\\n`.",
+          "sources": [
+            "fastapi/routing.py#L636-679"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`app.frontend(path, directory=..., fallback=\"auto\", check_dir=\"auto\")` serves a built SPA; API routes match first and the frontend is consulted only through `_match_low_priority`, with `fallback=\"auto\"` preferring `404.html` and falling back to `index.html` only for navigation requests that accept `text/html`.",
+          "sources": [
+            "fastapi/applications.py#L1222-1299",
+            "fastapi/routing.py#L1944-1973",
+            "fastapi/routing.py#L2037-2045"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Seven security schemes ship in `fastapi/security/`: `APIKeyQuery`, `APIKeyHeader`, `APIKeyCookie`, `HTTPBasic`, `HTTPBearer`, `HTTPDigest`, `OAuth2` (with `OAuth2PasswordBearer` and `OAuth2AuthorizationCodeBearer`) and `OpenIdConnect`, plus the `OAuth2PasswordRequestForm` dependency and `SecurityScopes`.",
+          "sources": [
+            "fastapi/security/__init__.py#L1-15",
+            "fastapi/security/oauth2.py#L14-330",
+            "fastapi/security/api_key.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Dependency scoping is a first-class feature: `params.Depends` is a frozen dataclass carrying `dependency`, `use_cache` and `scope: Literal[\"function\", \"request\"] | None`, and `DependencyScopeError` is raised at `get_dependant` time if a request-scoped generator dependency depends on a function-scoped one.",
+          "sources": [
+            "fastapi/params.py#L745-755",
+            "fastapi/dependencies/utils.py#L302-317",
+            "fastapi/exceptions.py#L167-172"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`app.webhooks` is a dedicated `APIRouter` whose routes are documented under the OpenAPI `webhooks` key rather than `paths`.",
+          "sources": [
+            "fastapi/applications.py#L936-948",
+            "fastapi/openapi/utils.py#L647-666"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`strict_content_type` (default `True`) is threaded from app → router → route → handler; when False, a body with no Content-Type header is still parsed as JSON.",
+          "sources": [
+            "fastapi/applications.py#L996",
+            "fastapi/routing.py#L390-394",
+            "fastapi/routing.py#L433-437"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`ORJSONResponse` and `UJSONResponse` are marked `@deprecated` with `FastAPIDeprecationWarning`, directing users to declare a return type so Pydantic serializes on the Rust side instead.",
+          "sources": [
+            "fastapi/responses.py#L42-101",
+            "fastapi/exceptions.py#L252-256"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`app.dependency_overrides` is a plain dict on the app used as the `dependency_overrides_provider`; `solve_dependencies` re-derives a fresh `Dependant` for any overridden callable so the substitute's own signature is honoured.",
+          "sources": [
+            "fastapi/applications.py#L966-985",
+            "fastapi/dependencies/utils.py#L621-637"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Repo-level developer features beyond the library: `scripts/docs.py` is a Typer CLI for building/serving the 13-locale docs site and generating `README.md` from `docs/en/docs/index.md`, and `scripts/translate.py` drives a `pydantic_ai.Agent(\"openai-chat:gpt-5.5\")` to machine-translate docs pages.",
+          "sources": [
+            "scripts/docs.py#L1-50",
+            "scripts/translate.py#L1-40",
+            "scripts/translate.py#L140"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "data_flow": {
+      "summary": "Input arrives as an ASGI scope. Static declaration time happens first: at decoration, `get_dependant()` walks the endpoint signature with `analyze_param()` and sorts every parameter into `path_params`/`query_params`/`header_params`/`cookie_params`/`body_params`/`dependencies` on a `Dependant` dataclass, each field wrapped in a `ModelField` holding a Pydantic `TypeAdapter`. At request time the handler reads and decodes the body (form vs JSON vs raw bytes), then `solve_dependencies()` recursively resolves sub-dependencies, coerces each parameter group against its `ModelField`, and returns a `SolvedDependency` bundle of values, errors, background tasks and a mutable `Response`. Output flows back through `serialize_response()` (or the streaming serializers) and out as a Starlette `Response`. State owners are the router's route list, the memoised `app.openapi_schema`, and the per-request `AsyncExitStack`s in the ASGI scope.",
+      "claims": [
+        {
+          "claim": "Body decoding branches on content type: form bodies go through `await request.form()` with `body.close` pushed onto the middleware exit stack; otherwise raw bytes are parsed as JSON only when the Content-Type maintype is `application` and the subtype is `json` or ends in `+json`, else passed through as bytes.",
+          "sources": [
+            "fastapi/routing.py#L425-457"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "A `json.JSONDecodeError` during body parsing is converted into a `RequestValidationError` with a synthetic `json_invalid` error at loc `(\"body\", e.pos)`; any other parse exception becomes a 400 `HTTPException` with detail 'There was an error parsing the body'.",
+          "sources": [
+            "fastapi/routing.py#L450-471"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`solve_dependencies()` resolves sub-dependencies depth-first before extracting path/query/header/cookie values, and memoises each result in `dependency_cache` keyed by `_get_cache_key` — a tuple of `(call, sorted oauth scopes, computed scope)` — so the same dependency called twice in one request runs once unless `use_cache=False`.",
+          "sources": [
+            "fastapi/dependencies/utils.py#L618-681",
+            "fastapi/dependencies/models.py#L79-93"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Generator dependencies are entered as context managers by `_solve_generator`: async generators via `asynccontextmanager`, sync generators via `contextmanager_in_threadpool`, and pushed onto `fastapi_inner_astack` unless the dependency declares `scope=\"function\"`, in which case `fastapi_function_astack` is used so it tears down before the response is sent.",
+          "sources": [
+            "fastapi/dependencies/utils.py#L566-576",
+            "fastapi/dependencies/utils.py#L666-676",
+            "fastapi/routing.py#L134-155"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`contextmanager_in_threadpool` deliberately gives `__exit__` its own `CapacityLimiter(1)` so a blocking teardown cannot deadlock against the shared AnyIO threadpool used by a connection pool inside the dependency.",
+          "sources": [
+            "fastapi/concurrency.py#L17-41"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Form bodies flow through `_extract_form_body`, which reads `UploadFile` values into `bytes` when the declared annotation is bytes, expands sequence-of-bytes fields, and passes through any unmatched form keys as single values or lists.",
+          "sources": [
+            "fastapi/dependencies/utils.py#L912-948"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`request_body_to_args` collapses to a single un-embedded field when `len(body_fields) == 1 and not embed_body_fields`, and in that case a `BaseModel`-annotated form body is exploded into its model fields before validation.",
+          "sources": [
+            "fastapi/dependencies/utils.py#L951-1000"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Response serialization has a fast path: when a `response_field` exists and no custom `response_class` was supplied, `serialize_response(dump_json=True)` calls `ModelField.serialize_json` and the bytes are wrapped in a bare `Response(media_type=\"application/json\")`, skipping the dict → `json.dumps` round trip.",
+          "sources": [
+            "fastapi/routing.py#L710-745",
+            "fastapi/routing.py#L301-340",
+            "fastapi/_compat/v2.py#L215-235"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Headers set on the injected `Response` object by dependencies are merged into the final response via `response.headers.raw.extend(solved_result.response.headers.raw)` on every branch (SSE, JSONL, raw stream, and normal).",
+          "sources": [
+            "fastapi/routing.py#L624-627",
+            "fastapi/routing.py#L676",
+            "fastapi/routing.py#L749"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "When `is_body_allowed_for_status_code(status_code)` is false (1xx, 204, 205, 304), the serialized body is discarded by setting `response.body = b\"\"`.",
+          "sources": [
+            "fastapi/routing.py#L746-748",
+            "fastapi/utils.py#L26-41"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Validation failures never reach the endpoint: `errors` accumulated by `solve_dependencies` short-circuit the handler and raise `RequestValidationError`, which the default handler renders as HTTP 422 with `{\"detail\": jsonable_encoder(exc.errors())}`.",
+          "sources": [
+            "fastapi/routing.py#L752-756",
+            "fastapi/exception_handlers.py#L19-26"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The OpenAPI document is produced once and cached on `app.openapi_schema`, invalidated by comparing `self.router._get_routes_version()` — a recursive counter that sums `_routes_version` across all `_IncludedRouter` children — against `_openapi_routes_version`.",
+          "sources": [
+            "fastapi/applications.py#L1070-1103",
+            "fastapi/routing.py#L2573-2585"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The SSE output path decouples generator iteration from the keepalive timer using two `anyio` memory object streams with `max_buffer_size=1`, a `_producer` task and a `_keepalive_inserter` task in a task group, so `anyio.fail_after` never wraps the user generator's `__anext__` directly.",
+          "sources": [
+            "fastapi/routing.py#L552-599"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "behavior_traces": {
+      "summary": "Three flows dominate: application construction, a normal HTTP request, and OpenAPI generation. Construction is eager — dependants and response fields are computed at decoration time, so route registration errors surface at import. A request walks ASGI middleware, router matching (now indirected through `_IncludedRouter` for included routers), the exit-stack-wrapping `request_response` shim, dependency solving, endpoint invocation, and serialization. Streaming requests diverge at the handler into three branches (SSE, JSONL, raw generator). WebSockets follow a parallel but simpler path with no body parsing and no response serialization.",
+      "claims": [
+        {
+          "claim": "Startup trace: `FastAPI.__init__` assigns metadata, asserts `title` and `version` when `openapi_url` is truthy, constructs `self.router = APIRouter(...)` with `dependency_overrides_provider=self`, seeds three default `exception_handlers`, and finally calls `self.setup()` which registers the `/openapi.json`, `/docs`, oauth2-redirect and `/redoc` routes.",
+          "sources": [
+            "fastapi/applications.py#L873-1018",
+            "fastapi/applications.py#L1105-1158"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Route registration trace: `@app.get(...)` → `app.router.add_api_route` → `APIRoute.__init__` → `_populate_api_route_state(...)` (which builds `dependant`, `body_field`, `response_field`, `stream_item_field`, `unique_id`) → `self.app = request_response(self.get_route_handler())`.",
+          "sources": [
+            "fastapi/routing.py#L1161-1224",
+            "fastapi/routing.py#L961-1125"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Lifespan trace: `APIRouter.app` routes `scope[\"type\"] == \"lifespan\"` to `self.lifespan`; when no custom lifespan is given, `_DefaultLifespan` (re-vendored after Starlette removed it) calls `router._startup()` / `router._shutdown()` so `on_startup`/`on_shutdown` handlers still work, and `include_router` merges child lifespans via `_merge_lifespan_context`.",
+          "sources": [
+            "fastapi/routing.py#L233-275",
+            "fastapi/routing.py#L2719-2725",
+            "fastapi/routing.py#L3312-3319"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Matching trace for an included router: `APIRouter.app` iterates `self.routes`, an `_IncludedRouter` entry answers `matches()` by building `_EffectiveRouteContext` objects that apply the accumulated prefix/tags/dependencies, then `handle()` dispatches through `_handle_selected`.",
+          "sources": [
+            "fastapi/routing.py#L1586-1803",
+            "fastapi/routing.py#L2719-2740"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Request trace (happy path): `request_response.app` creates the `Request`, opens `fastapi_inner_astack` and `fastapi_function_astack`, awaits the handler, sends the response, then asserts `response_awaited` — raising a `FastAPIError` naming the bare-`except`-in-a-yield-dependency footgun if the stack unwound without sending.",
+          "sources": [
+            "fastapi/routing.py#L134-158"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Handler trace: `get_request_handler.app` → `_extract_endpoint_context(dependant.call)` → body read → `solve_dependencies(...)` → branch on `is_sse_stream` / `is_json_stream` / generator / plain → `run_endpoint_function` → `serialize_response` → `_build_response_args` → Response.",
+          "sources": [
+            "fastapi/routing.py#L406-762",
+            "fastapi/routing.py#L344-373"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Sync endpoints are offloaded: `run_endpoint_function` calls `run_in_threadpool(dependant.call, **values)` when `_is_coroutine_callable(dependant.call)` is false, and `serialize_response` likewise runs `field.validate` in a threadpool for sync endpoints.",
+          "sources": [
+            "fastapi/routing.py#L344-356",
+            "fastapi/routing.py#L305-311"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "SSE trace: the generator is obtained, wrapped in `_sse_producer_cm()` entered on `fastapi_inner_astack` (so teardown is structured rather than via `GeneratorExit`), each item routed through `_serialize_sse_item` → `format_sse_event`, then yielded through `_sse_with_checkpoints` which `await anyio.sleep(0)` after each chunk so cancellation can be delivered.",
+          "sources": [
+            "fastapi/routing.py#L519-630"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "WebSocket trace: `websocket_session` opens the same two exit stacks, `get_websocket_app.app` builds an endpoint context labelled `WS <path>`, calls `solve_dependencies` with no body, raises `WebSocketRequestValidationError` on errors, and otherwise awaits the endpoint directly — there is no response serialization step.",
+          "sources": [
+            "fastapi/routing.py#L165-190",
+            "fastapi/routing.py#L764-798"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "WebSocket validation failures close the socket with code 1008 (`WS_1008_POLICY_VIOLATION`) and the encoded errors as the reason, via `websocket_request_validation_exception_handler`.",
+          "sources": [
+            "fastapi/exception_handlers.py#L28-34"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Frontend fallback trace: `_FrontendStaticFiles.get_response` rejects non-GET/HEAD with 405 or 404, looks up the static resource, redirects directory hits missing a trailing slash, then applies the `404.html` / `index.html` fallback — the latter only if `_is_frontend_navigation_request` finds `text/html` or `application/xhtml+xml` with non-zero q in the Accept header.",
+          "sources": [
+            "fastapi/routing.py#L1946-1973",
+            "fastapi/routing.py#L2020-2045"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "OpenAPI trace: `app.openapi()` → `get_openapi(...)` → `get_fields_from_routes` (collects body/response/stream/param `ModelField`s across `iter_route_contexts`) → `get_flat_models_from_fields` → `get_model_name_map` → `get_definitions` → per-route `get_openapi_path` → `jsonable_encoder(OpenAPI(**output), by_alias=True, exclude_none=True)`.",
+          "sources": [
+            "fastapi/openapi/utils.py#L551-679"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Docs page trace: a GET to `/docs` runs the closure registered in `setup()`, which prefixes `openapi_url` with the scope's `root_path` and calls `get_swagger_ui_html`, emitting an HTML page that loads Swagger UI from `https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/`.",
+          "sources": [
+            "fastapi/applications.py#L1121-1137",
+            "fastapi/openapi/docs.py#L79-92",
+            "fastapi/openapi/docs.py#L152-195"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "testing_signals": {
+      "summary": "Testing is the repo's centre of gravity: 594 files under `tests/`, 213 top-level `test_*.py` modules, plus `tests/test_tutorial/` mirroring the 77 directories of `docs_src/` so every documented example is executed. The stack is pytest 9 with `pytest-xdist` (`-n auto --dist loadgroup`), `anyio[trio]`, `inline-snapshot` (used in ~299 files), `dirty-equals` (~31 files), `pytest-timeout` at 20s, and `filterwarnings = [\"error\"]`. CI enforces `coverage report --fail-under=100` over `fastapi`, `tests` and `docs_src` combined, across a matrix of Windows/macOS/Ubuntu and Python 3.10–3.14t, including free-threaded builds and a Starlette-from-git leg. Performance has its own gates via CodSpeed wall-clock and memory benchmarks. The notable gap is that everything runs through the in-process `TestClient`; there is no test that boots a real uvicorn server.",
+      "claims": [
+        {
+          "claim": "The test command is `pytest -n auto --dist loadgroup tests scripts/tests/` with `PYTHONPATH=./docs_src`, so tutorial modules are importable by name from the tutorial tests.",
+          "sources": [
+            "scripts/test.sh#L1-7",
+            "tests/test_tutorial/test_security/test_tutorial001.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "pytest is configured with `--strict-config --strict-markers --ignore=docs_src`, `strict_xfail = true`, `filterwarnings = [\"error\"]` and a 20-second per-test timeout, so any unexpected warning fails the suite.",
+          "sources": [
+            "pyproject.toml#L186-196"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Coverage is measured over three source roots (`docs_src`, `tests`, `fastapi`) with `parallel = true` and per-runner `CONTEXT`, and the `coverage-combine` CI job ends with `coverage report --fail-under=100`.",
+          "sources": [
+            "pyproject.toml#L198-220",
+            ".github/workflows/test.yml#L300-340"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The CI matrix covers Windows and macOS on Python 3.14 and 3.14t (free-threaded) plus targeted Ubuntu/macOS legs for 3.10 (with `uv-resolution: lowest-direct` and a forced `pydantic==2.9.0`), 3.12, 3.13 and 3.14, and a `starlette-git` leg installing Starlette from main.",
+          "sources": [
+            ".github/workflows/test.yml#L48-130"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "A dedicated `regression-test` job checks out the PR base revision, applies only the PR's test diff, and warns via `::warning::` if the changed tests already pass without the code change — an automated 'does this test actually prove the fix' gate.",
+          "sources": [
+            ".github/workflows/test.yml#L200-290"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Performance regressions are gated by two CodSpeed jobs: `pytest tests/benchmarks --codspeed` in simulation mode and `pytest tests/memory_benchmarks --codspeed` in memory mode.",
+          "sources": [
+            ".github/workflows/test.yml#L160-198",
+            "tests/benchmarks/test_general_performance.py",
+            "tests/memory_benchmarks/test_dependency_graph.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`inline-snapshot` is the dominant assertion style for OpenAPI and error payloads, appearing in roughly 299 test files, with CI setting `INLINE_SNAPSHOT_DEFAULT_FLAGS: review` to prevent silent snapshot rewrites.",
+          "sources": [
+            ".github/workflows/test.yml#L14-17",
+            "tests/test_security_http_basic_realm.py#L1-40"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The new frontend feature is densely covered: `tests/test_frontend.py` has 40+ tests including Accept-header q-value parsing, path-segment boundary matching, trailing-slash normalization, dependency ordering across nested `include_router`, and `PermissionError`/`ENAMETOOLONG` lookup failures.",
+          "sources": [
+            "tests/test_frontend.py#L37-860"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Streaming has dedicated suites for SSE (`tests/test_sse.py`), cancellation (`tests/test_stream_cancellation.py`), item validation errors (`tests/test_stream_json_validation_error.py`), bare types and status codes, plus tutorial tests under `tests/test_tutorial/test_server_sent_events` and `test_stream_json_lines`.",
+          "sources": [
+            "tests/test_sse.py",
+            "tests/test_stream_cancellation.py",
+            "tests/test_stream_json_validation_error.py",
+            "tests/test_tutorial/test_server_sent_events"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Security coverage is per-scheme and per-variant — around 30 files spanning `test_security_http_basic*`, `test_security_api_key_*`, `test_security_oauth2*`, `test_security_scopes*`, `test_security_openid_connect*`, plus `test_webhooks_security.py` and `test_top_level_security_scheme_in_openapi.py`.",
+          "sources": [
+            "tests/test_security_scopes.py",
+            "tests/test_security_oauth2.py",
+            "tests/test_security_api_key_cookie.py",
+            "tests/test_webhooks_security.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Performance claims in the code are pinned by behavioural tests: `tests/test_dump_json_fast_path.py` patches `starlette.responses.json.dumps` and asserts it is never called on the default-response-class path.",
+          "sources": [
+            "tests/test_dump_json_fast_path.py#L29-45",
+            "fastapi/routing.py#L710-745"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Static analysis is part of the gate, not optional: `.pre-commit-config.yaml` runs ruff check/format, `mypy fastapi` (with `strict = true`), `ty check` (`error-on-warning = true`), typos, and `zizmor` over `.github/workflows/`.",
+          "sources": [
+            ".pre-commit-config.yaml#L20-105",
+            "pyproject.toml#L160-166",
+            "pyproject.toml#L296-298"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`tests/main.py` is a shared 'kitchen sink' app used by several suites, registering `api_route`, `add_api_route`, path converters and enum/http-status params against a single `FastAPI(openapi_external_docs=...)` instance.",
+          "sources": [
+            "tests/main.py#L1-45"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Uncovered by the suite: no test exercises a real ASGI server process — every HTTP assertion goes through Starlette's in-process `TestClient`, so uvicorn/h11 interactions (real backpressure, client disconnect over a socket) are untested here.",
+          "sources": [
+            "fastapi/testclient.py",
+            "tests/test_sse.py",
+            "tests/test_stream_cancellation.py"
+          ],
+          "kind": "inference"
+        }
+      ]
+    },
+    "risk_map": {
+      "summary": "As a library, the dangerous surfaces are file IO (the new frontend static server), auth scheme edge cases, and the streaming/exit-stack machinery where resource teardown is subtle. The frontend server is the newest and widest-blast-radius addition: it reads arbitrary files from a user-supplied directory on every unmatched request. The included-router rework is the deepest structural change and introduces a per-request handler rebuild plus a ContextVar hand-off that the code itself flags as temporary. Two caches — `_endpoint_context_cache` and the `lru_cache`d callable classifiers — are keyed by object identity, which is correct only as long as the keyed objects outlive the cache. Repo-level supply-chain risk is actively managed: all Actions are SHA-pinned, `permissions: {}` is the default, `persist-credentials: false` on every checkout, and zizmor lints the workflows.",
+      "claims": [
+        {
+          "claim": "`_FrontendStaticFiles` serves files from a user-supplied directory on every request that no API route matched; it mitigates traversal by normalizing the path (`os.path.normpath(os.path.join(*path.split(\"/\")))`), delegating to Starlette's `lookup_path`, and passing `follow_symlink=False`, but the blast radius of a bug here is arbitrary file disclosure.",
+          "sources": [
+            "fastapi/routing.py#L1899-1940",
+            "fastapi/routing.py#L1974-1985"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`_lookup_path` maps a `PermissionError` on the filesystem to an HTTP 401 response, which conflates a server-side filesystem permission problem with a client authentication failure and can leak the existence of unreadable paths.",
+          "sources": [
+            "fastapi/routing.py#L1974-1985"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`APIRoute.handle` rebuilds the entire request handler — `request_response(self.get_route_handler())`, which re-runs `get_request_handler` — on every single request whenever an `_EffectiveRouteContext` is present, i.e. for all routes reached through `include_router`.",
+          "sources": [
+            "fastapi/routing.py#L1261-1284",
+            "fastapi/routing.py#L1225-1250"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The effective-route context is passed from `handle()` to `get_route_handler()` through a module-level ContextVar rather than an argument, and the code carries a `TODO: Replace or deprecate this no-scope hook` — any subclass overriding `get_route_handler()` interacts with this implicitly.",
+          "sources": [
+            "fastapi/routing.py#L1225-1233"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`_endpoint_context_cache` is an unbounded module-level `dict[int, EndpointContext]` keyed by `id(func)`; entries are never evicted, so a process that creates endpoint callables dynamically grows the dict without bound and could in principle collide on a recycled `id`.",
+          "sources": [
+            "fastapi/routing.py#L275-300"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The callable classifiers `_is_gen_callable`/`_is_async_gen_callable`/`_is_coroutine_callable` use `lru_cache(maxsize=4096)` keyed by a `_CallIdentity` whose `__hash__` is `id(self.call)`, so the cache holds a strong reference to every classified callable and identity reuse after GC is the correctness assumption.",
+          "sources": [
+            "fastapi/dependencies/models.py#L55-65",
+            "fastapi/dependencies/models.py#L130-160"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`HTTPBasic.__call__` base64-decodes the Authorization header and splits on `:`; it returns the raw username and password with no timing-safe comparison anywhere in the framework — constant-time credential checking is left entirely to the application.",
+          "sources": [
+            "fastapi/security/http.py#L202-220"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Every security scheme has an `auto_error=False` mode that returns `None` instead of raising 401; a dependency written against that mode that forgets to check for `None` silently authenticates everyone.",
+          "sources": [
+            "fastapi/security/oauth2.py#L423-431",
+            "fastapi/security/http.py#L94-104",
+            "fastapi/security/http.py#L303-317"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The default Swagger UI and ReDoc pages load JavaScript and CSS from `cdn.jsdelivr.net` (and Google Fonts for ReDoc) with no SRI hashes, so `/docs` and `/redoc` execute third-party CDN code by default in every FastAPI app.",
+          "sources": [
+            "fastapi/openapi/docs.py#L79-92",
+            "fastapi/openapi/docs.py#L236",
+            "fastapi/openapi/docs.py#L275"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Swagger UI parameter injection is defended by `_html_safe_json`, which escapes `<`, `>` and `&` before interpolating user-supplied `swagger_ui_parameters` and `init_oauth` into a `<script>` block — but `oauth2_redirect_url` is interpolated into the same script with no escaping.",
+          "sources": [
+            "fastapi/openapi/docs.py#L9-19",
+            "fastapi/openapi/docs.py#L178-181"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`_extract_endpoint_context` calls `inspect.getsourcefile` and `getsourcelines`, embedding absolute server file paths into `ValidationException.__str__`; these appear in logs and in `ResponseValidationError` tracebacks but not in the 422 JSON body, which only serializes `exc.errors()`.",
+          "sources": [
+            "fastapi/routing.py#L278-299",
+            "fastapi/exceptions.py#L192-210",
+            "fastapi/exception_handlers.py#L19-26"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`request_response` detects a swallowed exception in a `yield` dependency only after the fact, by checking a `response_awaited` flag and raising a `FastAPIError` with a docs link — a heuristic guard rather than a structural fix.",
+          "sources": [
+            "fastapi/routing.py#L137-158"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`scripts/translate.py` sends documentation content to OpenAI through `pydantic_ai.Agent(\"openai-chat:gpt-5.5\")`, and `.github/workflows/translate.yml` supplies `OPENAI_API_KEY` from repo secrets with two `zizmor: ignore[secrets-outside-env]` suppressions.",
+          "sources": [
+            "scripts/translate.py#L140",
+            ".github/workflows/translate.yml#L112-118"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Two workflows use elevated triggers with explicit zizmor suppressions: `guard-dependencies.yml` runs on `pull_request_target` (mitigated by never checking out PR code and only reading `context.payload`), and `deploy-docs.yml`/`smokeshow.yml` run on `workflow_run`.",
+          "sources": [
+            ".github/workflows/guard-dependencies.yml#L1-14",
+            ".github/workflows/deploy-docs.yml#L1-9",
+            ".github/workflows/smokeshow.yml#L1-9"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Legacy/deprecated code still present: `openapi_prefix` (warns and aliases to `root_path`), `on_event`, `_DefaultLifespan` re-vendored after Starlette deleted it, and the deprecated `ORJSONResponse`/`UJSONResponse` pair kept only for compatibility.",
+          "sources": [
+            "fastapi/applications.py#L926-935",
+            "fastapi/applications.py#L4662-4682",
+            "fastapi/routing.py#L250-275",
+            "fastapi/responses.py#L42-101"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "extension_points": {
+      "summary": "FastAPI's extension model is almost entirely composition and subclassing rather than registries. The three canonical hooks are `route_class` on `APIRouter` (swap `APIRoute` for a subclass overriding `get_route_handler`), `dependency_overrides` (a dict keyed by the original callable), and `exception_handlers` (a dict keyed by exception type or status code). Beyond those, `SecurityBase` is the contract for new auth schemes, `generate_unique_id_function` controls operation IDs for client generators, `default_response_class` and `response_class` control output encoding, and `openapi_extra` plus overriding `app.openapi()` let you post-process the schema. The `DefaultPlaceholder`/`Default()` sentinel is the mechanism that lets app → router → route parameter inheritance distinguish 'not set' from 'explicitly set to the default value'.",
+      "claims": [
+        {
+          "claim": "`APIRouter(route_class=...)` accepts any `APIRoute` subclass; the documented pattern is to override `get_route_handler()` to wrap the returned coroutine, and `tests/test_custom_route_class.py` plus `docs_src/custom_request_and_route/` exercise it.",
+          "sources": [
+            "fastapi/routing.py#L2560-2566",
+            "fastapi/routing.py#L1225-1250",
+            "tests/test_custom_route_class.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New authentication schemes plug in by subclassing `SecurityBase` — a two-attribute protocol (`model: SecurityBaseModel`, `scheme_name: str`) — which `_is_security_scheme` detects via `isinstance` on the unwrapped callable to feed OpenAPI `securitySchemes`.",
+          "sources": [
+            "fastapi/security/base.py#L1-7",
+            "fastapi/dependencies/models.py#L118-128",
+            "fastapi/openapi/utils.py#L132-158"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`dependency_overrides` is the testing seam: any object with a `.dependency_overrides` dict can be passed as `dependency_overrides_provider`, and `solve_dependencies` rebuilds the `Dependant` from the substitute callable so its own parameters are resolved.",
+          "sources": [
+            "fastapi/applications.py#L966-985",
+            "fastapi/dependencies/utils.py#L621-637",
+            "tests/test_dependency_overrides.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`exception_handlers` is a mutable dict keyed by exception class or the ints 500 / `Exception`; `build_middleware_stack` splits the 500/`Exception` entry out as `ServerErrorMiddleware`'s handler and hands the rest to `ExceptionMiddleware`.",
+          "sources": [
+            "fastapi/applications.py#L1000-1017",
+            "fastapi/applications.py#L1020-1040"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`generate_unique_id_function` (default `generate_unique_id`, which slugifies `route.name + path_format + method`) is inheritable app → router → route and is the hook for client-generator-friendly operation IDs.",
+          "sources": [
+            "fastapi/utils.py#L95-101",
+            "fastapi/routing.py#L1348-1358",
+            "tests/test_tutorial/test_generate_clients"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The `DefaultPlaceholder` / `Default()` pattern plus `get_value_or_default` is how a router's setting overrides an app's only when explicitly provided — `Default(JSONResponse)` is not the same as passing `JSONResponse`.",
+          "sources": [
+            "fastapi/datastructures.py#L153-180",
+            "fastapi/utils.py#L121-136",
+            "fastapi/routing.py#L1329-1360"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`_RouterIncludeContext.for_include` and `.combine` are the single place where inherited router attributes (prefix, tags, dependencies, responses, callbacks, deprecated, include_in_schema, unique-id fn, strict_content_type) are merged — new inheritable router options must be added to both methods.",
+          "sources": [
+            "fastapi/routing.py#L1306-1371"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`_low_priority_routes` on `APIRouter` is a general extension slot, not frontend-specific: `frontend()` appends a `_FrontendRouteGroup` to it, and `_match_low_priority` consults the list only after normal matching and redirect-slashes handling fail.",
+          "sources": [
+            "fastapi/routing.py#L2566-2569",
+            "fastapi/routing.py#L2705-2718",
+            "fastapi/routing.py#L2762-2780"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Custom response encodings plug in by subclassing `starlette.responses.Response` and passing it as `response_class`; `EventSourceResponse` is itself just such a marker subclass, detected with `lenient_issubclass(actual_response_class, EventSourceResponse)`.",
+          "sources": [
+            "fastapi/sse.py#L20-33",
+            "fastapi/routing.py#L395-397"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "OpenAPI can be extended at three levels: per-operation `openapi_extra` on a route, whole-document post-processing by reassigning `app.openapi`, and swapping the `openapi_url`/`docs_url`/`redoc_url` routes by passing `None` and registering your own.",
+          "sources": [
+            "fastapi/routing.py#L1207-1208",
+            "fastapi/applications.py#L1070-1103",
+            "docs_src/extending_openapi",
+            "docs_src/custom_docs_ui"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`jsonable_encoder` accepts `custom_encoder` and `sqlalchemy_safe`, and the class→encoder mapping is precomputed by `generate_encoders_by_class_tuples(ENCODERS_BY_TYPE)`, which is the hook for adding new type serializers.",
+          "sources": [
+            "fastapi/encoders.py#L53-128",
+            "fastapi/encoders.py#L129-200"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Middleware plugs in three ways: the `middleware=[Middleware(...)]` constructor argument, `app.add_middleware(...)`, and the `@app.middleware(\"http\")` decorator which wraps the function in `BaseHTTPMiddleware`.",
+          "sources": [
+            "fastapi/applications.py#L4683-4728",
+            "fastapi/applications.py#L1041-1052"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "For agent tooling specifically, the extension point is `fastapi/.agents/skills/fastapi/` — adding a new `references/*.md` page and linking it from `SKILL.md`'s Quick Reference list is how new guidance is surfaced, and the directory ships inside the installed package.",
+          "sources": [
+            "fastapi/.agents/skills/fastapi/SKILL.md",
+            "fastapi/.agents/skills/fastapi/references/path-operations.md"
+          ],
+          "kind": "inference"
+        }
+      ]
+    },
+    "agent_handoff": {
+      "summary": "Read `fastapi/.agents/skills/fastapi/SKILL.md` first — it is the project's own statement of intended API style and is authoritative for any user-facing example you write. Then read `fastapi/routing.py` (specifically `get_request_handler`, `include_router`, and the `_IncludedRouter`/`_EffectiveRouteContext` pair) and `fastapi/dependencies/utils.py` (`get_dependant`, `analyze_param`, `solve_dependencies`), because nearly every behavioural change lands in one of those. The hard constraints are 100% coverage, strict mypy plus ty, `filterwarnings = [\"error\"]`, and `inline-snapshot` review mode — a change that is functionally right but leaves a line uncovered or emits a warning will fail CI. Dependency files are off-limits to non-org contributors and enforced by a workflow that auto-closes such PRs.",
+      "claims": [
+        {
+          "claim": "Read first, in order: `fastapi/.agents/skills/fastapi/SKILL.md` (conventions), `fastapi/applications.py#L873-1164` (app construction), `fastapi/routing.py#L375-762` (the request handler), `fastapi/dependencies/utils.py#L271-733` (dependency graph + solving), `fastapi/_compat/v2.py#L114-235` (ModelField).",
+          "sources": [
+            "fastapi/.agents/skills/fastapi/SKILL.md",
+            "fastapi/applications.py",
+            "fastapi/routing.py",
+            "fastapi/dependencies/utils.py",
+            "fastapi/_compat/v2.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Run `bash scripts/test.sh` for the suite and `bash scripts/lint.sh` before proposing a change; `scripts/format.sh` applies `ruff --fix` and `ruff format` across `fastapi tests docs_src scripts`.",
+          "sources": [
+            "scripts/test.sh",
+            "scripts/lint.sh",
+            "scripts/format.sh"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Any new library code must be covered — CI runs `coverage report --fail-under=100` over `fastapi`, `tests` and `docs_src` combined, so genuinely unreachable branches need an explicit `# pragma: no cover` (the existing convention in `fastapi/dependencies/models.py`).",
+          "sources": [
+            ".github/workflows/test.yml#L300-340",
+            "pyproject.toml#L198-220",
+            "fastapi/dependencies/models.py#L140-146"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New documentation examples belong in `docs_src/<topic>/tutorialNNN_py310.py` with a matching `tests/test_tutorial/test_<topic>/test_tutorialNNN.py`; `docs_src` is on `PYTHONPATH` during tests and excluded from pytest collection.",
+          "sources": [
+            "scripts/test.sh#L5-6",
+            "pyproject.toml#L189",
+            "tests/test_tutorial/test_security/test_tutorial001.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Snapshot assertions must not be silently regenerated: CI sets `INLINE_SNAPSHOT_DEFAULT_FLAGS: review`, and the `[tool.inline-snapshot]` fix/create flags in `pyproject.toml` are commented out on purpose.",
+          "sources": [
+            ".github/workflows/test.yml#L14-17",
+            "pyproject.toml#L263-266"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Do not edit `pyproject.toml` or `uv.lock` on behalf of an outside contributor: `guard-dependencies.yml` auto-comments and closes any PR touching them unless the author is an org MEMBER/OWNER or `dependabot[bot]`.",
+          "sources": [
+            ".github/workflows/guard-dependencies.yml#L15-50"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Only `docs/en/` is hand-edited; the `ensure-non-translated` pre-commit hook rejects modifications to non-English docs outside the translated set, and `README.md` is generated from `docs/en/docs/index.md` by the `generate-readme` hook.",
+          "sources": [
+            ".pre-commit-config.yaml#L60-90",
+            "scripts/docs.py#L40-55"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Trap: `include_router` no longer copies routes. Code that assumes `app.routes` is a flat list of `APIRoute` objects will silently miss included routes — iterate with `routing.iter_route_contexts(routes)` and unwrap via `RouteContext`, the way `get_fields_from_routes` does.",
+          "sources": [
+            "fastapi/routing.py#L3305-3311",
+            "fastapi/routing.py#L1828-1852",
+            "fastapi/openapi/utils.py#L551-582"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Trap: after adding or mutating routes at runtime you must go through `add_route`/`add_api_route`/`include_router`/`frontend`, all of which call `_mark_routes_changed()`; appending directly to `router.routes` will leave the cached `app.openapi_schema` stale.",
+          "sources": [
+            "fastapi/routing.py#L2570-2585",
+            "fastapi/applications.py#L1084-1103"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Trap: three distinct `AsyncExitStack`s live in the scope with different lifetimes — `fastapi_middleware_astack` (files), `fastapi_inner_astack` (request-scoped yield deps and the SSE producer), `fastapi_function_astack` (function-scoped yield deps). Picking the wrong one changes when teardown runs relative to the response being sent.",
+          "sources": [
+            "fastapi/middleware/asyncexitstack.py#L10-18",
+            "fastapi/routing.py#L134-155",
+            "fastapi/dependencies/utils.py#L601-609",
+            "fastapi/dependencies/utils.py#L666-676"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Trap: every new streaming code path needs an `await anyio.sleep(0)` checkpoint after each yielded chunk, or client-disconnect cancellation is never delivered — the existing sites cite issue #14680.",
+          "sources": [
+            "fastapi/routing.py#L605-614",
+            "fastapi/routing.py#L650-656",
+            "fastapi/routing.py#L690-698"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Safe edit boundary: `fastapi/staticfiles.py`, `fastapi/templating.py`, `fastapi/testclient.py`, `fastapi/requests.py`, `fastapi/websockets.py`, `fastapi/logger.py` and `fastapi/middleware/*.py` (except `asyncexitstack.py`) are pure re-exports — behaviour changes belong upstream in Starlette, not here.",
+          "sources": [
+            "fastapi/staticfiles.py",
+            "fastapi/requests.py",
+            "fastapi/middleware/__init__.py",
+            "fastapi/logger.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Style conventions to match: parameters documented with `Annotated[..., Doc(\"\"\"...\"\"\")]` from `annotated_doc`, `from __future__` never used (ruff keeps runtime typing), PEP 604 unions throughout, and `from x import Y as Y` re-export form in `__init__.py` files (which are exempt from F401).",
+          "sources": [
+            "fastapi/param_functions.py",
+            "fastapi/__init__.py#L5-25",
+            "pyproject.toml#L241-260"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The suite runs under pytest-xdist with `--dist loadgroup`; module-level `app = FastAPI()` plus `client = TestClient(app)` is the established per-file pattern, so avoid cross-file shared mutable state.",
+          "sources": [
+            "scripts/test.sh#L6",
+            "tests/test_dump_json_fast_path.py#L14-27",
+            "tests/test_security_http_basic_realm.py#L8-19"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_prompt": "You are working in the FastAPI framework source repository (github.com/fastapi/fastapi), version 0.141.1, branch master. This is the library itself, not an application built with it.\n\nSHAPE OF THE REPO. The shipped package is `fastapi/` — 56 files, ~21k lines, Pydantic v2 only, built on Starlette. Everything else is supporting: `docs/` (1692 Markdown files across 13 locales; only `docs/en/` is hand-edited), `docs_src/` (77 directories of runnable tutorial examples, on PYTHONPATH during tests), `tests/` (594 files, 213 top-level modules), `scripts/` (docs build, translation, release), and 23 GitHub Actions workflows.\n\nWHERE THE LOGIC LIVES. `fastapi/routing.py` (6447 lines) is the heart: `get_request_handler()` builds the per-route ASGI handler; `APIRoute`/`APIRouter` define registration; `_IncludedRouter`, `_RouterIncludeContext` and `_EffectiveRouteContext` implement the modern include model; `_FrontendStaticFiles`/`_FrontendRouteGroup` implement `app.frontend()`. `fastapi/applications.py` (4774 lines) is the `FastAPI` class — `__init__`, `build_middleware_stack()`, `openapi()`, `setup()`. `fastapi/dependencies/utils.py` holds `get_dependant()`, `analyze_param()` and `solve_dependencies()`. `fastapi/_compat/v2.py` wraps Pydantic `TypeAdapter` in `ModelField`.\n\nTHINGS THAT DIFFER FROM CLASSIC FASTAPI — verify before assuming:\n1. `include_router()` does NOT copy routes into the parent. It appends an `_IncludedRouter` holding a reference to the child plus an include context resolved at match time. Never assume `app.routes` is a flat list of `APIRoute`; iterate with `routing.iter_route_contexts(routes)`.\n2. Server-Sent Events are built in (`fastapi/sse.py`): `response_class=EventSourceResponse` on a generator endpoint, with `ServerSentEvent` for full field control and a 15s `: ping` keepalive driven by two anyio memory streams.\n3. JSON-Lines streaming (`application/jsonl`) and raw generator streaming are separate branches in `get_request_handler`.\n4. `app.frontend(path, directory=...)` serves an SPA build as a low-priority route, matched only after all API routes miss.\n5. Dependencies take `scope=\"function\" | \"request\"`; there are three distinct `AsyncExitStack`s in the ASGI scope (`fastapi_middleware_astack`, `fastapi_inner_astack`, `fastapi_function_astack`).\n6. `ORJSONResponse`/`UJSONResponse` are deprecated; the default path serializes via Pydantic `dump_json` straight to bytes.\n7. Pydantic v1 is unsupported and raises `PydanticV1NotSupportedError`.\n\nCONVENTIONS. Read `fastapi/.agents/skills/fastapi/SKILL.md` before writing any example code — it is the project's own style statement (Annotated everywhere, no ellipsis defaults, no RootModel, return types over `response_model`, one HTTP verb per function). Document parameters with `Annotated[..., Doc(\"\"\"...\"\"\")]` from `annotated_doc`. Use PEP 604 unions. Re-export with `from x import Y as Y`.\n\nHOW TO VERIFY WORK. `bash scripts/test.sh` (pytest -n auto --dist loadgroup, PYTHONPATH=./docs_src), `bash scripts/lint.sh` (mypy strict + ty + ruff check + ruff format --check), `bash scripts/format.sh` to autofix. CI additionally enforces `coverage report --fail-under=100` across fastapi+tests+docs_src, `filterwarnings = [\"error\"]`, a 20s per-test timeout, `inline-snapshot` in review mode, CodSpeed wall-clock and memory benchmarks, and a regression-test job that warns if your new test already passes on the base revision.\n\nTRAPS. Route mutation must go through methods that call `_mark_routes_changed()` or the cached OpenAPI schema goes stale. Every new streaming loop needs `await anyio.sleep(0)` after each yield or cancellation never lands. `APIRoute.handle` rebuilds the handler per request for included routes via a ContextVar marked TODO. Do not touch `pyproject.toml` or `uv.lock` — a workflow auto-closes such PRs from non-org authors. Do not hand-edit non-English docs. `fastapi/staticfiles.py`, `templating.py`, `testclient.py`, `requests.py`, `websockets.py` are one-line Starlette re-exports; fixes belong upstream."
+  },
+  "analysis": {
+    "agent": "claude",
+    "model": "cli:claude",
+    "runtime_ms": 413440,
+    "cost_usd": 3.4690280000000002,
+    "collected_at": "2026-09-22T08:43:59.938Z"
   }
 }

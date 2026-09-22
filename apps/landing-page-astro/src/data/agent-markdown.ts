@@ -341,6 +341,35 @@ const unpackBody = (report: (typeof unpackReports)[number]) => {
       ...report.history.map((c) => `- ${c.sha} (${c.date}) ${c.subject}`)
     );
   }
+  if (report.sections) {
+    const titles = {
+      overview: 'Overview',
+      system_map: 'System map',
+      feature_catalog: 'Feature catalog',
+      data_flow: 'Data flow',
+      behavior_traces: 'Behavior traces',
+      testing_signals: 'Testing signals',
+      risk_map: 'Risk map',
+      extension_points: 'Extension points',
+      agent_handoff: 'Contributor handoff',
+    };
+    for (const [key, title] of Object.entries(titles)) {
+      const section = report.sections[key];
+      if (!section) continue;
+      lines.push('', `## ${title}`, '', section.summary ?? '');
+      for (const claim of section.claims ?? []) {
+        const srcs = (claim.sources ?? [])
+          .map(
+            (s) =>
+              `[${s}](https://github.com/${report.repo}/blob/${report.commit.sha}/${s.split('#')[0]})`
+          )
+          .join(' ');
+        lines.push(
+          `- ${claim.claim}${claim.kind === 'inference' ? ' (inferred)' : ''}${srcs ? ` — ${srcs}` : ''}`
+        );
+      }
+    }
+  }
   lines.push(
     '',
     `Source repository: https://github.com/${report.repo}`,
