@@ -55,8 +55,11 @@ Rules that keep this honest:
   demand. Corpus lives in `benchmarks/repo-unpacks/`; each page prints the
   scanned commit, upstream last-commit date, and `codevetter` version.
   Collect: `node scripts/collect-unpack-repo.mjs <org/repo>`; regenerate:
-  `node scripts/sync-unpack-pages.mjs`. Upgrade path: run the analysis pass
-  (`unpack` report sections) to add claim-cited system maps per repo.
+  `node scripts/sync-unpack-pages.mjs`. The claim-cited analysis layer is
+  live on all 12: `node scripts/analyze-unpack-repo.mjs <slug> --clone
+  <path>` drives `claude -p` (read-only tools) against the pinned clone —
+  ~$2-4 and 5-10 min per repo, ~120 claims and ~250 verified file
+  citations each.
 - [ ] **Phase 5 — internal-link lattice.** Once phase 2 pages exist,
   cross-link every comparison page to the nearest evidence page
   (`/xray/<case>`) and the benchmark methodology.

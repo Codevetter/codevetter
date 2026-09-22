@@ -166,6 +166,39 @@ for (const file of readdirSync(CORPUS)
       : null,
     readmePreview:
       stripHtml(inv.docs?.find((d) => /readme/i.test(d.path))?.preview)?.slice(0, 280) ?? null,
+    // Analysis layer (claude synthesis) — present only after
+    // scripts/analyze-unpack-repo.mjs runs for the slug.
+    analysis: record.analysis ?? null,
+    sections: record.report
+      ? Object.fromEntries(
+          [
+            'overview',
+            'system_map',
+            'feature_catalog',
+            'data_flow',
+            'behavior_traces',
+            'testing_signals',
+            'risk_map',
+            'extension_points',
+            'agent_handoff',
+          ]
+            .filter((k) => record.report[k])
+            .map((k) => [
+              k,
+              typeof record.report[k] === 'string'
+                ? { summary: record.report[k], claims: [] }
+                : {
+                    summary: record.report[k].summary,
+                    claims: (record.report[k].claims ?? []).slice(0, 12).map((c) => ({
+                      ...c,
+                      // Agents occasionally append "(symbol)" after a path — strip it
+                      // so the source links resolve.
+                      sources: (c.sources ?? []).map((s) => s.replace(/\s*\([^)]*\)\s*$/, '')),
+                    })),
+                  },
+            ])
+        )
+      : null,
   });
 }
 

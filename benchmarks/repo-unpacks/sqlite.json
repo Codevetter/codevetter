@@ -31861,5 +31861,1055 @@
         ]
       }
     ]
+  },
+  "report": {
+    "overview": "This is the canonical source tree for SQLite 3.54.0 (VERSION, manifest.uuid `c9b4695f...`) — a serverless, zero-configuration, public-domain SQL database engine implemented as a C library that compiles down to a single-file amalgamation (`sqlite3.c`). The tree is far more than the library: it also carries the `sqlite3` CLI shell (`src/shell.c.in`, ~14.9k lines with ~40 dot-commands), a dozen major extensions under `ext/` (FTS3/5, R-Tree/Geopoly, session/changesets, RBU, recover, intck, JNI bindings, a WASM/OPFS browser build), a TCL binding, and an unusually large test apparatus (1,195 `.test` scripts plus fuzzers). It is distinctive for being managed in Fossil rather than Git (this GitHub remote is a mirror), for refusing pull requests and agentic code on copyright grounds (AGENTS.md), for generating much of its own C (parser, opcodes, pragma table, keyword hash) from TCL/Lemon tooling, and for a testing culture where `make devtest` is the minimum bar before any check-in.",
+    "system_map": {
+      "summary": "The library is a layered stack inside one process: SQL text enters the tokenizer, goes through a Lemon-generated LALR(1) parser into a code generator, is optimized by the `where*.c` planner, and is executed as bytecode by the VDBE, which reaches storage through B-Tree → Pager → WAL → VFS. There is no daemon and no network boundary in the core; the only OS boundary is the `sqlite3_vfs` interface, implemented by `os_unix.c`, `os_win.c`, `os_kv.c` (key/value / browser localStorage) and `memdb.c`. Build is driven by autosetup (JimTCL-compatible), not GNU Autoconf, with `main.mk` holding the real rules and `Makefile.msc` mirroring them for MSVC. Deployment shape is a static/shared library plus the amalgamation tarball, the `sqlite3` CLI, and auxiliary binaries (`sqldiff`, `sqlite3_rsync`, `sqlite3_analyzer`, `testfixture`, `fuzzcheck`). Version control is Fossil; `manifest`, `manifest.uuid`, and `.fossil-settings/` are Fossil artifacts carried into the Git mirror.",
+      "claims": [
+        {
+          "claim": "The public C API is defined by the template `src/sqlite.h.in` (11,463 lines), which `tool/mksqlite3h.tcl` expands into the deliverable `sqlite3.h` by splicing in `VERSION` (3.54.0) and the SHA3 check-in id from `manifest.uuid`.",
+          "sources": [
+            "src/sqlite.h.in",
+            "tool/mksqlite3h.tcl",
+            "VERSION",
+            "manifest.uuid",
+            "README.md#L230-L246"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`openDatabase()` in `src/main.c:3388` is the single funnel for `sqlite3_open`, `sqlite3_open_v2` and `sqlite3_open16`: it calls `sqlite3_initialize()`, decides thread-safety from `SQLITE_OPEN_NOMUTEX`/`FULLMUTEX` vs `sqlite3GlobalConfig.bFullMutex`, masks off internal-only open flags, allocates the `sqlite3` handle with `sqlite3MallocZero`, and enables lookaside plus `sqlite3_wal_autocheckpoint`.",
+          "sources": [
+            "src/main.c#L3388-L3470",
+            "src/main.c#L3753-L3772"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Compilation runs through `sqlite3LockAndPrepare()` (`src/prepare.c:854`), which takes `db->mutex`, calls `sqlite3BtreeEnterAll()` to hold every B-Tree mutex, and retries `sqlite3Prepare()` on `SQLITE_ERROR_RETRY` / `SQLITE_SCHEMA` up to `SQLITE_MAX_PREPARE_RETRY`.",
+          "sources": [
+            "src/prepare.c#L854-L900"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The VDBE is the execution boundary: `sqlite3VdbeExec()` (`src/vdbe.c:902`) is one giant `for(pOp=&aOp[p->pc]; 1; pOp++)` dispatch loop over 190 `case OP_*` handlers, and `tool/mkopcodeh.tcl` scrapes those `case OP_` lines out of `vdbe.c` to assign opcode numbers.",
+          "sources": [
+            "src/vdbe.c#L902-L990",
+            "tool/mkopcodeh.tcl",
+            "AGENTS.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Storage is layered strictly: `src/btree.c` (407KB, the largest file) exposes `sqlite3BtreeOpen/BeginTrans/Cursor/CommitPhaseOne/CommitPhaseTwo`, which sits on `src/pager.c`'s `sqlite3PagerOpen/Get/Write/CommitPhaseOne`, which in turn either journals or writes WAL frames via `src/wal.c`'s `sqlite3WalFrames`/`sqlite3WalCheckpoint`.",
+          "sources": [
+            "src/btree.c#L2562-L2570",
+            "src/pager.c#L4789",
+            "src/pager.c#L6527-L6580",
+            "src/wal.c#L4361-L4390"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The OS boundary is a registry of `sqlite3_vfs` objects; `os_unix.c` registers up to 12 named VFSes (`unix`, `unix-none`, `unix-dotfile`, `unix-excl`, `unix-flock`, `unix-afp`, `unix-nfs`, `unix-proxy`, …) via a `UNIXVFS()` macro table at `src/os_unix.c:8497`, each pairing a locking style with an `IOMETHODS()`-generated `sqlite3_io_methods` vtable.",
+          "sources": [
+            "src/os_unix.c#L5808-L5945",
+            "src/os_unix.c#L8465-L8536"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Alternative VFS backends ship in-tree: `src/memdb.c` registers a `memdb` VFS backing `sqlite3_serialize`/`sqlite3_deserialize`, and `src/os_kv.c` registers `kvvfs`, the key/value VFS used by the WASM/browser build.",
+          "sources": [
+            "src/memdb.c#L750-L935",
+            "src/os_kv.c#L1086-L1095"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The build entrypoint is `./configure`, a 4-line shell wrapper that execs autosetup; `auto.def` drives it via `sqlite-configure canonical`, where `--dev` implies `--all --debug`, disables the amalgamation, and sets `CFLAGS=-O0 -g`.",
+          "sources": [
+            "configure",
+            "auto.def#L20-L35",
+            "autosetup/sqlite-config.tcl#L160-L250"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`main.mk` is the real makefile body (84KB): it defines `LIBOBJS0` (per-file objects) vs `LIBOBJS1 = sqlite3.o` (amalgamation) selected by `USE_AMALGAMATION`, and builds `sqlite3.c` by running `tool/mksqlite3c.tcl` over a generated `tsrc/` directory.",
+          "sources": [
+            "main.mk#L529-L565",
+            "main.mk#L1145-L1152",
+            "tool/mksqlite3c.tcl#L1-L25"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The CLI shell is generated, not compiled directly: `src/shell.c.in` uses `INCLUDE ../ext/...` directives (processed by `tool/mkshellc.tcl`) to inline ~25 extension source files — sha1/shathree, base64/base85, decimal, ieee754, series, regexp, fileio, completion, appendvfs, zipfile, sqlar, vfstrace, diskused, plus the `expert`, `intck`, `recover` and `qrf` libraries.",
+          "sources": [
+            "src/shell.c.in#L259-L326",
+            "tool/mkshellc.tcl"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Auxiliary deliverables live in `tool/`: `sqldiff.c` (database diffing), `sqlite3_rsync.c` (rsync-like replication over SSH), `sqlite3_analyzer.c.in` (space analysis, paired with `tool/spaceanal.tcl`), `showdb.c`/`showwal.c`/`showjournal.c` (file-format forensics), and `lemon.c` (the parser generator itself).",
+          "sources": [
+            "tool/sqldiff.c",
+            "tool/sqlite3_rsync.c#L23-L40",
+            "tool/spaceanal.tcl",
+            "tool/showwal.c",
+            "tool/lemon.c"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "A second, reduced build tree exists under `autoconf/` for the shipped amalgamation tarball (its own `auto.def`, `Makefile.in`, `Makefile.msc`, `Makefile.fallback`, plus a `tea/` TCL Extension Architecture build), and `tool/srctree-check.tcl` enforces that `autoconf/Makefile.msc` stays in sync with the top-level `Makefile.msc`.",
+          "sources": [
+            "autoconf/README.first",
+            "autoconf/Makefile.msc",
+            "tool/srctree-check.tcl#L37-L45"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "There is no CI configuration in the repository — no `.github/`, `.gitlab-ci.yml`, or Travis file exists; the only VCS metadata is `.fossil-settings/` (`binary-glob`, `empty-dirs`, `ignore-glob`) plus the Fossil `manifest`, consistent with the README's statement that the Git remote is a mirror.",
+          "sources": [
+            ".fossil-settings/ignore-glob",
+            "manifest.uuid",
+            "README.md#L13-L30"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Language-binding boundaries ship in-tree: `src/tclsqlite.c` (150KB) exposes `Sqlite3_Init`/`DbMain`/`DbObjCmd` as a TCL package, `ext/jni/src/c/sqlite3-jni.c` with 58 Java files provides JNI bindings, and `ext/wasm/api/` provides an Emscripten/WASM JS API with OPFS-backed VFS variants.",
+          "sources": [
+            "src/tclsqlite.c#L4310-L4513",
+            "ext/jni/src/c/sqlite3-jni.c",
+            "ext/wasm/api/sqlite3-api-oo1.c-pp.js",
+            "ext/wasm/api/sqlite3-vfs-opfs.c-pp.js"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "feature_catalog": {
+      "summary": "User-facing surface splits three ways: the C API in `sqlite.h.in`, the `sqlite3` CLI's dot-command language, and the loadable/compiled-in extension set. The CLI carries roughly 40 dot-commands covering schema inspection, import/export, archives, diagnostics, and integrity checking, plus 23 result-output modes now rendered by the new `ext/qrf` formatting library. Extensions add full-text search, spatial indexing, changeset/session replication, incremental update (RBU), corruption recovery, index recommendation, and a large `ext/misc/` grab-bag of 60 single-file functions and virtual tables. Configure-time feature flags (`--all` implies fts4, fts5, rtree, geopoly, session, dbpage, dbstat, carray) decide what lands in the amalgamation.",
+      "claims": [
+        {
+          "claim": "`do_meta_command()` (`src/shell.c.in:9947`) dispatches ~40 dot-commands including `.archive`, `.auth`, `.clone`, `.dump`, `.eqp`, `.expert`, `.explain`, `.filectrl`, `.fullschema`, `.import`, `.imposter`, `.intck`, `.iotrace`, `.load`, `.log`, `.mode`, `.open`, `.recover`, `.schema`, `.session`, `.stats`, `.vfsinfo`, `.vfslist`, `.vfsname` and `.wheretrace`.",
+          "sources": [
+            "src/shell.c.in#L9947-L10060"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The shell supports 23 output modes enumerated in the `aModeInfo[]` table at `src/shell.c.in:618` — ascii, box, c, column, count, csv, html, insert, jatom, jobject, json, line, list, markdown, off, psql, qbox, quote, split, table, tabs, tcl, www — each mapping to a QRF style plus separator/quoting/alignment settings.",
+          "sources": [
+            "src/shell.c.in#L618-L658"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Result formatting was factored out into a new library `ext/qrf/` (headed `2025-10-20`) whose `sqlite3_qrf_spec` struct carries style, escaping, quoting, word-wrap, column widths, alignment, screen width and `xRender`/`xWrite` callbacks; `shell_exec()` copies `pArg->mode.spec` into a local spec and installs `shellWriteQR` as the writer.",
+          "sources": [
+            "ext/qrf/qrf.h#L1-L60",
+            "src/shell.c.in#L3807-L3845"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`open_db()` auto-registers a fixed extension set on every connection: sha/shathree, uint, stmtrand, decimal, base64, base85, regexp, ieee754, series, diskused, strdup, and (outside the WASM fiddle build) fileio and completion; zipfile and sqlar are added when `SQLITE_HAVE_ZLIB` is defined and safe mode is off.",
+          "sources": [
+            "src/shell.c.in#L5155-L5182"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The shell can open databases in four modes chosen by `deduceDatabaseType()` — normal file, append-VFS (`apndvfs`), ZIP archive (opened as `:memory:`), and hex-dump/deserialize — with `~/` expanded against `$HOME` when the literal path does not exist.",
+          "sources": [
+            "src/shell.c.in#L5069-L5130"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "FTS5 is a full subsystem of 15 C files (`fts5_index.c`, `fts5_expr.c`, `fts5_storage.c`, `fts5_tokenize.c`, `fts5_vocab.c`, …) exposing a public `fts5_api` struct with `xCreateTokenizer`, `xCreateTokenizer_v2` and `xCreateFunction` for third-party tokenizers and auxiliary ranking functions.",
+          "sources": [
+            "ext/fts5/fts5.h#L350-L360",
+            "ext/fts5/fts5.h#L696-L735",
+            "ext/fts5/fts5_index.c"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The session extension implements changeset capture and replay: `sqlite3session_create`, `sqlite3session_attach`, `sqlite3session_changeset` (plus `_strm` streaming variants) and three generations of apply APIs — `sqlite3changeset_apply`, `_apply_v2`, `_apply_v3` — each with streaming counterparts.",
+          "sources": [
+            "ext/session/sqlite3session.c#L2362-L2480",
+            "ext/session/sqlite3session.c#L3213-L3240",
+            "ext/session/sqlite3session.c#L5882-L6020"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Database recovery is a first-class feature: `ext/recover/sqlite3recover.c` plus `dbdata.c` implement the `.recover` dot-command by walking raw pages of a corrupt file, and are compiled into the CLI via `INCLUDE` directives.",
+          "sources": [
+            "ext/recover/sqlite3recover.c",
+            "ext/recover/dbdata.c",
+            "src/shell.c.in#L323-L326"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The `.expert` command exposes `ext/expert/sqlite3expert.c`, which analyzes a query workload and recommends indexes; `shell_exec()` short-circuits to `expertHandleSQL()` whenever `pArg->expert.pExpert` is active.",
+          "sources": [
+            "ext/expert/sqlite3expert.c",
+            "src/shell.c.in#L3845-L3850",
+            "src/shell.c.in#L307-L308"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`.intck` runs the incremental integrity-check library `ext/intck/sqlite3intck.c`, an alternative to `PRAGMA integrity_check` that can be run in bounded steps; it ships with its own six-file test suite.",
+          "sources": [
+            "ext/intck/sqlite3intck.c",
+            "ext/intck/intck1.test",
+            "src/shell.c.in#L310-L311"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`ext/misc/` holds 60 single-file extensions (series, regexp, fileio, decimal, base64/base85, uint, sha1/shathree, appendvfs, vfstrace, zipfile, sqlar, completion, memtrace, pcachetrace, diskused, …), most of which are excluded from the core amalgamation but compiled into the CLI.",
+          "sources": [
+            "ext/misc/fileio.c",
+            "ext/misc/series.c",
+            "ext/misc/vfstrace.c",
+            "src/shell.c.in#L285-L315"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "In-memory serialization is a supported API path: `sqlite3_serialize()` (`src/memdb.c:750`) and `sqlite3_deserialize()` (`src/memdb.c:841`) move whole database images in and out of process memory, which is also what the shell's hex-db/deserialize open mode relies on.",
+          "sources": [
+            "src/memdb.c#L750-L860",
+            "src/shell.c.in#L5113-L5118"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Online backup is exposed through `sqlite3_backup_init`/`_step`/`_finish` in `src/backup.c`, and the pager cooperates by calling `sqlite3BackupRestart()` when a commit would invalidate an in-progress backup.",
+          "sources": [
+            "src/backup.c#L141",
+            "src/backup.c#L325",
+            "src/backup.c#L598",
+            "src/pager.c#L6554-L6558"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Feature selection is exposed as configure flags declared in `autosetup/sqlite-config.tcl`: `--threadsafe`, `--load-extension`, `--math`, `--json`, `--memsys3/5`, `--fts3/4/5`, `--rtree`, `--geopoly`, `--session`, `--dbpage`, `--dbstat`, `--carray`, `--update-limit`, `--column-metadata`, with `--all` expanding to `{fts4 fts5 rtree geopoly session dbpage dbstat carray}`.",
+          "sources": [
+            "autosetup/sqlite-config.tcl#L60-L72",
+            "autosetup/sqlite-config.tcl#L205-L240"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`sqlite3_rsync` is a network-facing feature: it syncs a live database between a local path and a `USER@HOST:PATH` remote, with `--ssh`, `--port`, `--exe`, `--protocol` and `--wal-only` options.",
+          "sources": [
+            "tool/sqlite3_rsync.c#L23-L40",
+            "tool/sqlite3_rsync.c#L2058-L2120"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "data_flow": {
+      "summary": "Data enters as UTF-8 (or UTF-16, transcoded at the API edge) SQL text or as bound parameter values. `sqlite3RunParser` drives `sqlite3GetToken` token-by-token into the Lemon parser, which builds `Select`/`Expr`/`SrcList` trees inside a `Parse` object; the code generators turn those trees into a VDBE program of `Op` records. At run time the VDBE owns register memory (`Mem *aMem`) and cursors; reads and writes go through B-Tree cursors into the pager's page cache, and out to disk either as rollback-journal writes or WAL frame appends, always via `sqlite3_vfs` methods. Output leaves either as `sqlite3_column_*` values pulled from `p->pResultRow`, or — in the CLI — through QRF's `xWrite` callback into a `FILE*`. Schema itself round-trips through this same machinery: `sqlite3_schema` rows are re-parsed on load, which is why a schema cookie mismatch forces `sqlite3Reprepare`.",
+      "claims": [
+        {
+          "claim": "Text input is bounded at the tokenizer: `sqlite3RunParser` decrements `mxSqlLen` (initialized from `db->aLimit[SQLITE_LIMIT_SQL_LENGTH]`) by each token length and aborts with `SQLITE_TOOBIG` when it goes negative.",
+          "sources": [
+            "src/tokenize.c#L600-L655"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The tokenizer→parser handoff is a push loop: `sqlite3GetToken()` returns a token type and length, context-sensitive keywords are disambiguated by `analyzeWindowKeyword`/`analyzeOverKeyword`/`analyzeFilterKeyword`, and each token is pushed into the Lemon engine with `sqlite3Parser(pEngine, tokenType, pParse->sLastToken)`.",
+          "sources": [
+            "src/tokenize.c#L644-L715"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "At end of input the parser is deliberately fed two synthetic tokens — `TK_SEMI` then `0` — so the grammar can reduce cleanly without a trailing semicolon in the source text.",
+          "sources": [
+            "src/tokenize.c#L672-L684"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "SQL comments are conditionally dropped in the token stream rather than the grammar: `TK_COMMENT` is skipped only when `db->init.busy` (schema reparse) or `SQLITE_DBCONFIG_ENABLE_COMMENTS` is on, otherwise it falls through to an 'unrecognized token' error.",
+          "sources": [
+            "src/tokenize.c#L697-L706"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "UTF-16 inputs are normalized at the boundary: `sqlite3_open16` converts the filename via `sqlite3ValueText(pVal, SQLITE_UTF8)` before calling `openDatabase`, and sets `SCHEMA_ENC`/`ENC` to `SQLITE_UTF16NATIVE` if the schema has not yet loaded.",
+          "sources": [
+            "src/main.c#L3773-L3805"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Query plans are produced by `sqlite3WhereBegin()`, which chooses the nesting order of FROM-clause tables based on available indexes rather than written order, and emits the cursor-opening code that `sqlite3WhereEnd()` later closes.",
+          "sources": [
+            "src/where.c#L6770-L6845",
+            "src/where.c#L7541"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`sqlite3Select()` is the funnel for all query code generation; it takes a `SelectDest` describing where rows go (`SRT_Output`, `SRT_Exists`, `SRT_Fifo`, `SRT_DistQueue`, …), so the same tree compiler serves top-level queries, subqueries, and recursive CTE queues.",
+          "sources": [
+            "src/select.c#L7680-L7735"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Dirty-page flow at commit is branch-per-journal-mode inside `sqlite3PagerCommitPhaseOne`: in WAL mode it takes `sqlite3PcacheDirtyList()` and calls `pagerWalFrames()` (forcing page 1 into the list if empty, per ticket 2d1a5c67dfc2363e), otherwise it goes down the rollback-journal or batch-atomic-write path.",
+          "sources": [
+            "src/pager.c#L6551-L6600",
+            "src/pager.c#L3233"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The pager state machine is explicit: `sqlite3PagerCommitPhaseOne` asserts the pager is in `PAGER_WRITER_LOCKED`, `WRITER_CACHEMOD`, `WRITER_DBMOD` or `PAGER_ERROR`, and returns early if it has not reached `PAGER_WRITER_CACHEMOD` (i.e. nothing was modified).",
+          "sources": [
+            "src/pager.c#L6533-L6552",
+            "doc/pager-invariants.txt"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "WAL readers snapshot through `sqlite3WalBeginReadTransaction` → `walTryBeginRead` → `walIndexReadHdr`, which reads the shared-memory wal-index header; the shm region itself is created by `unixOpenSharedMemory`/`unixLockSharedMemory` in the unix VFS.",
+          "sources": [
+            "src/wal.c#L3575",
+            "src/wal.c#L3102",
+            "src/wal.c#L2742",
+            "src/os_unix.c#L4850-L5040",
+            "doc/wal-lock.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "In the CLI the output boundary is `shell_exec()`: it loops `sqlite3_prepare_v2` over the input buffer using `zLeftover` to advance through multi-statement text, and renders each result set through the QRF spec whose `xWrite` is `shellWriteQR`.",
+          "sources": [
+            "src/shell.c.in#L3807-L3875"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Interactive input is accumulated line-by-line in `process_input()`, which grows `zSql` by half-again increments, treats a leading `.` or `#` on a fresh buffer as a dot-command, and only executes when a semicolon is present *and* `sqlite3_complete(zSql)` agrees the statement is finished.",
+          "sources": [
+            "src/shell.c.in#L13473-L13560"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Result rows are owned by the VDBE and invalidated on the next step: `sqlite3Step` returns `SQLITE_ROW` with `p->pResultRow` set, and clears `p->pResultRow = 0` on any non-ROW outcome before running WAL callbacks or transferring errors.",
+          "sources": [
+            "src/vdbeapi.c#L930-L960"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Error state flows through two channels that must be kept consistent — the per-statement `p->rc` and the per-connection `db->errCode` — reconciled by `sqlite3VdbeTransferError()` only for statements prepared with `SQLITE_PREPARE_SAVESQL`.",
+          "sources": [
+            "src/vdbeapi.c#L946-L970",
+            "src/prepare.c#L955-L972"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "behavior_traces": {
+      "summary": "Three flows carry most of the system's weight: library startup and connection open; the prepare/step/finalize query cycle including automatic recompilation on schema change; and the CLI's REPL loop from argv parsing through dot-command dispatch to statement execution. A fourth, the durability path, is worth tracing separately because commit behavior forks sharply between rollback-journal and WAL mode. Each trace below names the actual functions in call order as read from the sources.",
+      "claims": [
+        {
+          "claim": "Connection open trace: `sqlite3_open_v2` → `openDatabase` → `sqlite3_initialize` → mutex decision → flag masking → `sqlite3MallocZero(sizeof(sqlite3))` → `sqlite3MutexAlloc(SQLITE_MUTEX_RECURSIVE)` → `sqlite3_mutex_enter` → `db->eOpenState = SQLITE_STATE_BUSY` → … → `setupLookaside` → `sqlite3_wal_autocheckpoint` → `opendb_out` label, which closes and nulls the handle on OOM or marks it `SQLITE_STATE_SICK` on other errors.",
+          "sources": [
+            "src/main.c#L3388-L3470",
+            "src/main.c#L3700-L3752"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Prepare trace: `sqlite3_prepare_v2` → `sqlite3LockAndPrepare(db, zSql, nBytes, SQLITE_PREPARE_SAVESQL, 0, …)` → `sqlite3_mutex_enter(db->mutex)` → `sqlite3BtreeEnterAll(db)` → `sqlite3Prepare` (which memsets the `Parse` header/tail, links `sParse.pOuterParse`, and runs the parser) → retry loop → `sqlite3BtreeLeaveAll` → `sqlite3ApiExit` → `db->busyHandler.nBusy = 0`.",
+          "sources": [
+            "src/prepare.c#L700-L745",
+            "src/prepare.c#L854-L900",
+            "src/prepare.c#L955-L972"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`SQLITE_PREPARE_PERSISTENT` changes allocation strategy mid-prepare: `sqlite3Prepare` increments `sParse.disableLookaside` and invokes `DisableLookaside` so long-lived statements do not pin lookaside slabs.",
+          "sources": [
+            "src/prepare.c#L734-L740"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Step trace: `sqlite3_step` → `vdbeSafetyNotNull` → `sqlite3_mutex_enter` → inner `sqlite3Step` → (READY state) reset interrupt flag, bump `db->nVdbeActive`/`nVdbeWrite`/`nVdbeRead`, set `p->pc = 0`, move to `VDBE_RUN_STATE` → `sqlite3VdbeExec` (or `sqlite3VdbeList` when explaining) → on `SQLITE_DONE` with autocommit, `doWalCallbacks(db)`.",
+          "sources": [
+            "src/vdbeapi.c#L838-L950",
+            "src/vdbeapi.c#L980-L1000"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Auto-reset trace: when `sqlite3_step` is called on a statement already in `VDBE_HALT_STATE`, `sqlite3Step` calls `sqlite3_reset()` and `goto restart_step` — behavior introduced in 3.7.0, with `SQLITE_OMIT_AUTORESET` restoring the pre-3.6.23 `SQLITE_MISUSE` return.",
+          "sources": [
+            "src/vdbeapi.c#L887-L917"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Schema-change recovery trace: `sqlite3_step` loops while `sqlite3Step` returns `SQLITE_SCHEMA` (bounded by `SQLITE_MAX_SCHEMA_RETRY`), calling `sqlite3Reprepare(v)` → `sqlite3LockAndPrepare` on the saved SQL → `sqlite3VdbeSwap` → `sqlite3TransferBindings` → `sqlite3VdbeResetStepResult` → `sqlite3VdbeFinalize` of the throwaway VM, so bound parameters survive recompilation.",
+          "sources": [
+            "src/vdbeapi.c#L980-L1000",
+            "src/prepare.c#L904-L940"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "VDBE entry trace: `sqlite3VdbeExec` asserts `VDBE_RUN_STATE`, takes B-Tree mutexes via `sqlite3VdbeEnter` when `p->lockMask` is non-zero, computes `nProgressLimit` from `db->nProgressOps`, checks `db->u1.isInterrupted` (jumping to `abort_due_to_interrupt`), then enters the opcode loop incrementing `nVmStep` per instruction.",
+          "sources": [
+            "src/vdbe.c#L902-L1000"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CLI startup trace: `main()` → `setvbuf(stderr,…,_IONBF)` → `isatty(0)`/`isatty(1)` to set `stdin_is_interactive`/`stdout_is_console` → `atexit(abnormalExit)` → optional `SQLITE_DEBUG_BREAK` debugger attach → `signal(SIGINT, interrupt_handler)`, `SIGTERM`/`SIGHUP` → `sqlite3_sourceid()` vs `SQLITE_SOURCE_ID` mismatch check that exits 1.",
+          "sources": [
+            "src/shell.c.in#L14020-L14105"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`main_init()` runs before any SQLite use and configures the library globally: `sqlite3_config(SQLITE_CONFIG_LOG, shellLog, p)`, `verify_uninitialized()`, `sqlite3_config(SQLITE_CONFIG_URI, 1)` and `sqlite3_config(SQLITE_CONFIG_MULTITHREAD)` — so the CLI runs in multithread (not serialized) mode with URI filenames enabled.",
+          "sources": [
+            "src/shell.c.in#L13874-L13900"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "REPL trace: `process_input` → `one_input_line` → whitespace/`.`/`#` classification → `do_meta_command` for dot-commands (return code 2 means exit) → otherwise append to `zSql` → `sqlite3_complete` gate → `runOneSqlLine` → `shell_exec` → `sqlite3_prepare_v2`/step loop → QRF render.",
+          "sources": [
+            "src/shell.c.in#L13473-L13565",
+            "src/shell.c.in#L13354-L13370",
+            "src/shell.c.in#L3807-L3860"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Startup also sources `~/.sqliterc` through the same `process_input` path unless `-noinit` was given, and exits 1 on error when `bail_on_error` is set — meaning the rc file is executed with full dot-command privileges before the user's first keystroke.",
+          "sources": [
+            "src/shell.c.in#L13745-L13755"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Lazy-open trace: the shell does not open a database at startup; every dot-command that needs one calls `open_db(p, 0)` first (over 25 call sites), which is what makes `sqlite3` usable with no arguments and then `.open` later.",
+          "sources": [
+            "src/shell.c.in#L5069-L5075",
+            "src/shell.c.in#L9976-L11130"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Commit trace (WAL): `sqlite3BtreeCommitPhaseOne` → `sqlite3PagerCommitPhaseOne` → `pagerFlushOnCommit` check → `sqlite3PcacheDirtyList` → `pagerWalFrames` → `sqlite3PcacheCleanAll`, then `sqlite3BtreeCommitPhaseTwo` → `sqlite3PagerCommitPhaseTwo`.",
+          "sources": [
+            "src/btree.c#L4343",
+            "src/btree.c#L4432",
+            "src/pager.c#L6551-L6580",
+            "src/pager.c#L6764"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Commit trace (rollback journal): the same `sqlite3PagerCommitPhaseOne` falls into the non-WAL branch where `syncJournal()` and `pager_write_pagelist()` do the durable work, optionally short-circuited by `SQLITE_ENABLE_BATCH_ATOMIC_WRITE` when the device reports `SQLITE_IOCAP_BATCH_ATOMIC` and no super-journal is involved.",
+          "sources": [
+            "src/pager.c#L6580-L6620",
+            "src/pager.c#L4340",
+            "src/pager.c#L4483"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "testing_signals": {
+      "summary": "Testing is TCL-first: 1,195 `.test` scripts in `test/` are executed by `testfixture`, an augmented tclsh built from `src/tclsqlite.c` plus 44 `src/test*.c` harness modules that expose internals (malloc fault injection, VFS shims, thread control, syscall interception) to TCL. `test/testrunner.tcl` parallelizes across cores and drives named suites and permutations; `permutations.test` defines 58 test_suite configurations. `make devtest` — the developers' minimum pre-check-in bar — chains `srctree-check` (generated files up to date) and `sourcetest` before running `testrunner.tcl mdevtest`. Fuzzing is a separate, substantial tier: `fuzzcheck` replays fuzzer corpora stored as SQLite databases, and `ossfuzz.c` is the OSS-Fuzz entry point. No CI configuration lives in the repo; extension suites are colocated with their extensions.",
+      "claims": [
+        {
+          "claim": "The test corpus is 1,195 `.test` TCL scripts under `test/`, run by the `testfixture` binary built from `$(TESTFIXTURE_SRC)`; `make smoketest` runs just `./testfixture test/main.test` as the fast sanity check.",
+          "sources": [
+            "test/main.test",
+            "main.mk#L1821",
+            "main.mk#L1928-L1930"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`make devtest` depends on `srctree-check` and `sourcetest`, then runs `test/testrunner.tcl mdevtest`; `test`, `quicktest` and the legacy `fulltest`/`alltest`/`soaktest` targets are aliases onto `devtest` or `releasetest`.",
+          "sources": [
+            "main.mk#L1868-L1912"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`tool/srctree-check.tcl` is a guard against stale generated artifacts: it regenerates `autoconf/Makefile.msc` via `tool/mkmsvcmin.tcl` and diffs it, and checks `VERSION` against `autoconf/tea/configure.ac`, exiting non-zero with a suggested fix command.",
+          "sources": [
+            "tool/srctree-check.tcl#L1-L45"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`test/testrunner.tcl` bootstraps its own interpreter: `find_interpreter` tries `package require sqlite3`, falls back to sourcing a local `pkgIndex.tcl`, then to re-execing under `./testfixture`, and finally offers to build the TCL extension — which is why `make tclextension-install` is recommended before testing.",
+          "sources": [
+            "test/testrunner.tcl#L26-L60",
+            "main.mk#L1719",
+            "AGENTS.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The runner estimates work per job class with weights `tcl=1`, `fuzz=22`, `bld=66`, `make=102` (optionally overridden by `test/testrunner_estwork.tcl`) so parallel scheduling packs long builds first.",
+          "sources": [
+            "test/testrunner.tcl#L11-L21"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`test/testrunner_data.tcl` is the declarative test matrix: `trd_builds`, `trd_configs`, `trd_extras`, `trd_all_configs`, `trd_fuzztest_data` and `trd_buildscript` define per-platform build configurations and which suites each one runs, mirroring the old `all.test`.",
+          "sources": [
+            "test/testrunner_data.tcl#L72-L90",
+            "test/testrunner_data.tcl#L372-L470"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`test/permutations.test` defines 58 `test_suite` permutations, letting the same `.test` files be re-run under different pragma/compile configurations (this is also what `make valgrindtest` invokes with the `valgrind` permutation).",
+          "sources": [
+            "test/permutations.test",
+            "main.mk#L1920-L1922"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "44 `src/test*.c` modules expose internals to TCL for white-box testing, including `test_malloc.c` (allocation fault injection), `test_vfs.c`/`test_devsym.c`/`test_demovfs.c` (VFS simulation), `test_journal.c`, `test_syscall.c` (syscall interception), `test_thread.c`, `test_mutex.c` and `test_pcache.c`.",
+          "sources": [
+            "src/test_malloc.c",
+            "src/test_vfs.c",
+            "src/test_syscall.c",
+            "src/test_thread.c",
+            "src/test1.c"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`test/fuzzcheck.c` replays fuzzer output stored in SQLite databases with `db(dbid, dbcontent)` and `xsql(sqlid, sqltext)` tables, looking only for crashes, assertion faults and leaks — it explicitly does not verify output; eight `fuzzdata*.db` corpora ship in-tree.",
+          "sources": [
+            "test/fuzzcheck.c#L12-L50",
+            "test/fuzzdata1.db",
+            "test/fuzzdata8.db",
+            "main.mk#L1840"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`test/ossfuzz.c` is the Google OSS-Fuzz `LLVMFuzzerTestOneInput` harness with debug flags (`FUZZ_SQL_TRACE`, `FUZZ_SHOW_MAX_DELAY`, `FUZZ_SHOW_ERRORS`) that can be driven interactively through `test/ossshell.c`.",
+          "sources": [
+            "test/ossfuzz.c#L1-L35",
+            "test/ossshell.c"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Additional specialized fuzzers exist for distinct attack surfaces: `test/dbfuzz.c` and `test/dbfuzz2.c` (database file images), `test/sessionfuzz.c` (changeset blobs), `test/optfuzz.c` (query optimizer equivalence), and `test/fuzzinvariants.c` (result invariants).",
+          "sources": [
+            "test/dbfuzz2.c",
+            "test/sessionfuzz.c",
+            "test/optfuzz.c",
+            "test/fuzzinvariants.c"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Extension test suites live beside their extensions rather than in `test/`: 149 files under `ext/fts5/test`, 44 `.test` files in `ext/session/`, 43 in `ext/rbu/`, 27 in `ext/rtree/`, 15 in `ext/recover/`, and 5 in `ext/intck/`.",
+          "sources": [
+            "ext/fts5/test",
+            "ext/session/sqlite3session.c",
+            "ext/rbu",
+            "ext/recover/recovercorrupt.test",
+            "ext/intck/intck1.test"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Multi-process concurrency is tested by a separate harness, `mptest/mptest.c` with `config01.test`, `config02.test`, `crash01.test`, `crash02.subtest` and `multiwrite01.test`, exercising cross-process locking that single-process TCL tests cannot reach.",
+          "sources": [
+            "mptest/mptest.c",
+            "mptest/crash01.test",
+            "mptest/multiwrite01.test"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Failure triage is documented and tooled: `test/testrunner.tcl errors` and `status` targets are wired into `main.mk`, and AGENTS.md instructs checking `grep '!' testrunner.log`.",
+          "sources": [
+            "main.mk#L1878-L1886",
+            "doc/testrunner.md#L1-L40",
+            "AGENTS.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "No in-repo CI exists — there is no `.github/`, `.gitlab-ci.yml`, or `.travis.yml` — so coverage of the release matrix (`releasetest`, valgrind, MSVC via `tool/build-all-msvc.bat`, `tool/omittest.tcl` for OMIT-flag combinations) depends on developers running it locally.",
+          "sources": [
+            "main.mk#L1902-L1906",
+            "tool/build-all-msvc.bat",
+            "tool/omittest.tcl",
+            ".fossil-settings/ignore-glob"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "risk_map": {
+      "summary": "The core library is one of the most heavily tested C codebases in existence, so the interesting risk is not 'is this correct' but 'where does trust boundary crossing happen'. The sharpest edges are: the CLI, which by design shells out and touches the filesystem; `sqlite3_load_extension`, which `dlopen`s attacker-suppliable paths; the schema itself, which is executable input (the `trusted-schema`/`defensive` model exists precisely because of this); and `sqlite3_rsync`, which `fork`/`execl`s a shell. Structurally, the blast radius is concentrated in a handful of enormous files — `btree.c`, `select.c`, `vdbe.c`, `pager.c`, `where.c` are each 300–400KB — and in generated-file drift, which `srctree-check` only partially guards. Note that AGENTS.md explicitly states the project does not accept agentic code, which is itself a process constraint on any change made here.",
+      "claims": [
+        {
+          "claim": "The shell has an explicit unsafe-operation surface gated only by `bSafeMode`: `failIfSafeMode()` guards `.archive`, `.cd`, `.clone`, `.import`, `.load`, `.read`, `.restore` and shell-out, and `safeModeAuth()` blocks the functions `edit`, `fts3_tokenizer`, `load_extension`, `readfile`, `realpath`, `writefile`, `zipfile`, `zipfile_cds` plus `ATTACH`.",
+          "sources": [
+            "src/shell.c.in#L2366-L2375",
+            "src/shell.c.in#L2789-L2832",
+            "src/shell.c.in#L10038-L11612"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Safe mode is implemented as an authorizer callback, so it is only active when `SQLITE_OMIT_AUTHORIZATION` is not defined — the whole `safeModeAuth`/`shellAuth` block is inside `#ifndef SQLITE_OMIT_AUTHORIZATION`, meaning a build without the authorizer silently loses these protections.",
+          "sources": [
+            "src/shell.c.in#L2785-L2875"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The CLI calls `system()` directly in at least two places (the `edit()` SQL function at `src/shell.c.in:2505` and the `.shell`/`.system` dot-command at `:6045`) and `sqlite3_popen()` in three more (`.import` from a pipe, output redirection to a pipe, and `.read` from a pipe), all constructing command strings from user input.",
+          "sources": [
+            "src/shell.c.in#L2435-L2510",
+            "src/shell.c.in#L6040-L6050",
+            "src/shell.c.in#L8367",
+            "src/shell.c.in#L9553",
+            "src/shell.c.in#L11572"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`open_db()` unconditionally calls `sqlite3_enable_load_extension(p->db, 1)` on every CLI connection, re-enabling a capability the library deliberately disables by default; the `.load` dot-command is then only stopped by safe mode.",
+          "sources": [
+            "src/shell.c.in#L5153-L5156",
+            "src/loadext.c#L592-L604",
+            "src/shell.c.in#L11119"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`sqlite3LoadExtension()` passes the caller-supplied path to `sqlite3OsDlOpen` and, on failure, retries with platform suffixes (`.so`/`.dylib`/`.dll`) appended — the only guards are the `SQLITE_LoadExtension` flag, a zero-length-name rejection (to prevent linking the running binary), and a `SQLITE_MAX_PATHLEN` cap added because some `dlopen()` implementations segfault on oversize names.",
+          "sources": [
+            "src/loadext.c#L561-L632"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The schema is an execution surface: `doc/trusted-schema.md` documents that an attacker who modifies a database's schema (swapping a table for a view, adding triggers, CHECK constraints, generated columns or index expressions) can get code to run in a high-privilege reader's process, which is why functions carry Innocuous/Normal/Direct-Only risk levels and `TRUSTED_SCHEMA` defaults to *on* for backwards compatibility.",
+          "sources": [
+            "doc/trusted-schema.md#L1-L50",
+            "src/main.c#L1013-L1022"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The CLI ties both hardening knobs to one flag: `open_db` sets `SQLITE_DBCONFIG_TRUSTED_SCHEMA` to the value of `--unsafe-testing` and `SQLITE_DBCONFIG_DEFENSIVE` to its inverse, so enabling testing mode disables defensive mode in the same breath.",
+          "sources": [
+            "src/shell.c.in#L5147-L5152"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`ext/misc/fileio.c` provides `readfile()`/`writefile()` SQL functions that do arbitrary filesystem I/O; they are registered with `SQLITE_DIRECTONLY` (blocking use from triggers/views/schema) but are plain callable functions from top-level SQL, and the shell compiles them in by default.",
+          "sources": [
+            "ext/misc/fileio.c#L264",
+            "ext/misc/fileio.c#L538",
+            "ext/misc/fileio.c#L1275-L1281",
+            "src/shell.c.in#L5173"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`tool/sqlite3_rsync.c` embeds a `popen2()` implementation copied from Fossil that `fork()`s and `execl()`s either the command directly or `/bin/sh -c zCmd`, building the command from a user-supplied `--ssh` program name and a `USER@HOST:PATH` argument — a shell-injection-shaped surface in a network-facing tool.",
+          "sources": [
+            "tool/sqlite3_rsync.c#L106-L354",
+            "tool/sqlite3_rsync.c#L2077-L2300"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Blast radius is concentrated in five files that dominate the tree: `btree.c` (408KB), `select.c` (337KB), `vdbe.c` (325KB), `pager.c` (305KB), `where.c` (298KB) — any edit in these touches the hot path for essentially every query.",
+          "sources": [
+            "src/btree.c",
+            "src/select.c",
+            "src/vdbe.c",
+            "src/pager.c",
+            "src/where.c"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Generated files are a standing hazard: `sqlite3.h`, `parse.c`/`parse.h`, `opcodes.h`/`opcodes.c`, `keywordhash.h`, `pragma.h` and `sqlite3.c` must never be hand-edited, and `tool/srctree-check.tcl` only verifies two things (Makefile.msc sync and VERSION vs tea/configure.ac) — it does not detect a hand-edited `pragma.h` or `parse.c`.",
+          "sources": [
+            "AGENTS.md",
+            "tool/srctree-check.tcl#L1-L45",
+            "tool/mkpragmatab.tcl#L1-L20"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Opcode numbering is implicitly coupled to source formatting: `tool/mkopcodeh.tcl` derives opcode numbers by scanning `src/vdbe.c` for lines beginning with `case OP_`, so a reformatting or reordering of those 190 case labels silently renumbers the bytecode.",
+          "sources": [
+            "src/vdbe.c#L1080-L1090",
+            "tool/mkopcodeh.tcl",
+            "AGENTS.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The unix VFS carries a large matrix of platform-conditional locking styles (`posixIoFinder`, `dotlockIoFinder`, `flockIoFinder`, `semIoFinder`, `afpIoFinder`, `nfsIoFinder`, `proxyIoFinder`, `vxworksIoFinder`) selected by `autolockIoFinder`; most of these paths cannot be exercised on any single developer machine.",
+          "sources": [
+            "src/os_unix.c#L5842-L5945",
+            "src/os_unix.c#L8497-L8536"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The shell reads and executes `~/.sqliterc` through `process_input` at startup unless `-noinit` is passed, so a writable home directory is a code-execution vector into any subsequent `sqlite3` invocation.",
+          "sources": [
+            "src/shell.c.in#L13745-L13755"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "There is a process risk distinct from a code risk: AGENTS.md states SQLite does not accept agentic code and does not accept pull requests without prior legal agreement, because a copyrightable contribution would break the public-domain status of the whole tree.",
+          "sources": [
+            "AGENTS.md",
+            "README.md#L44-L56",
+            "LICENSE.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`main_init()` puts the CLI in `SQLITE_CONFIG_MULTITHREAD` rather than serialized mode, so the shell's own connection is not safe to share across threads — relevant for anyone embedding or extending `shell.c.in`.",
+          "sources": [
+            "src/shell.c.in#L13878-L13884"
+          ],
+          "kind": "inference"
+        }
+      ]
+    },
+    "extension_points": {
+      "summary": "SQLite is built almost entirely out of registries, which is why it has such a large third-party ecosystem. At the C level there are seven pluggable interfaces: VFS, virtual-table modules, scalar/aggregate/window functions, collations, page cache, memory allocator, and mutex implementation — plus auto-extensions that fire on every new connection. Above that, FTS5 has its own nested registry for tokenizers and ranking functions. On the source-tree side, the extension points are code generators: adding a PRAGMA means editing `tool/mkpragmatab.tcl`, adding an opcode means adding a `case OP_` in `vdbe.c`, adding grammar means editing `parse.y`, and adding a CLI dot-command means editing the `do_meta_command` chain in `shell.c.in`.",
+      "claims": [
+        {
+          "claim": "VFS registry: `sqlite3_vfs_register()`/`sqlite3_vfs_unregister()`/`sqlite3_vfs_find()` form the OS-abstraction plug point, used in-tree by `memdb.c` (the `memdb` VFS) and `os_kv.c` (`kvvfs`), and exported to loadable extensions through the `sqlite3_api_routines` thunk in `loadext.c`.",
+          "sources": [
+            "src/loadext.c#L320",
+            "src/memdb.c#L935",
+            "src/os_kv.c#L1086-L1095"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Virtual-table registry: `sqlite3_create_module()` and `sqlite3_create_module_v2()` in `src/vtab.c:108-130` register a `sqlite3_module` vtable implementation; this is how `series`, `zipfile`, `dbstat`, `dbpage`, FTS and R-Tree all attach.",
+          "sources": [
+            "src/vtab.c#L84-L130",
+            "ext/misc/series.c",
+            "src/dbstat.c"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Function registry: built-ins are installed by `sqlite3RegisterBuiltinFunctions()` (`src/func.c:3368`) from a static `FUNCTION(...)` macro table, and the same mechanism is exposed publicly as `sqlite3_create_function*` — extensions like `decimal.c`, `base85.c` and `shathree.c` use it exclusively.",
+          "sources": [
+            "src/func.c#L3368",
+            "ext/misc/decimal.c",
+            "ext/misc/shathree.c"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Collation registry: `createCollation()` (`src/main.c:2907`) backs `sqlite3_create_collation*`; SQLite seeds four built-ins — BINARY in UTF8/UTF16BE/UTF16LE, plus NOCASE and RTRIM — at connection open.",
+          "sources": [
+            "src/main.c#L2907",
+            "src/main.c#L3579-L3587"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Auto-extension registry: `sqlite3_auto_extension()` appends to the process-global `sqlite3Autoext` list guarded by `SQLITE_MUTEX_STATIC_MAIN`, and `sqlite3AutoLoadExtensions()` replays it on every new connection.",
+          "sources": [
+            "src/loadext.c#L800-L830",
+            "src/loadext.c#L911"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Loadable-extension ABI: `sqlite3LoadExtension` looks for `sqlite3_extension_init`, and if absent derives a name of the form `sqlite3_X_init` from the filename between the last `/` and the first `.`, lowercasing alphabetic characters — this is the convention every `ext/misc/*.c` file follows.",
+          "sources": [
+            "src/loadext.c#L605-L640",
+            "ext/misc/fileio.c#L1270"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "FTS5 exposes a second-level registry through `fts5_api`: `xCreateTokenizer`, `xCreateTokenizer_v2` (for custom text segmentation) and `xCreateFunction` (for auxiliary/ranking functions receiving an `Fts5ExtensionApi`).",
+          "sources": [
+            "ext/fts5/fts5.h#L350-L360",
+            "ext/fts5/fts5.h#L696-L735"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Pluggable subsystem hooks are set through `sqlite3_config()` (`src/main.c:443`), which accepts `SQLITE_CONFIG_MALLOC`, `SQLITE_CONFIG_PAGECACHE`, `SQLITE_CONFIG_MUTEX`, `SQLITE_CONFIG_LOG`, `SQLITE_CONFIG_URI` and threading modes — the CLI itself uses the LOG, URI and MULTITHREAD forms.",
+          "sources": [
+            "src/main.c#L443",
+            "src/shell.c.in#L13878-L13884"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "PRAGMA extension point: new pragmas are declared as `NAME:`/`TYPE:`/`ARG:`/`IF:` records in the `pragma_def` block of `tool/mkpragmatab.tcl`, which regenerates `pragma.h`; the matching `case PragTyp_XXXXX:` is then added in `src/pragma.c`.",
+          "sources": [
+            "tool/mkpragmatab.tcl#L1-L50",
+            "src/pragma.c",
+            "AGENTS.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Grammar extension point: SQL syntax changes go in `src/parse.y` (2,169 lines), compiled by the in-tree Lemon generator `tool/lemon.c` against the `tool/lempar.c` template — never by editing `parse.c`.",
+          "sources": [
+            "src/parse.y",
+            "tool/lemon.c",
+            "tool/lempar.c",
+            "README.md#L252-L262"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Shell extension point: `src/shell.c.in` supports an `SQLITE_SHELL_EXTFUNCS` preprocessing hook in `open_db()` for downstream builds to register their own functions, alongside the `INCLUDE ../ext/...` mechanism processed by `tool/mkshellc.tcl`.",
+          "sources": [
+            "src/shell.c.in#L5183-L5190",
+            "src/shell.c.in#L259-L326",
+            "tool/mkshellc.tcl"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Authorizer hook: `sqlite3_set_authorizer()` (`src/auth.c:70`) installs a callback consulted by `sqlite3AuthCheck`/`sqlite3AuthRead` at code-generation time — `sqlite3Select` calls `sqlite3AuthCheck(pParse, SQLITE_SELECT, …)` before compiling any query — which is the hook the shell's `.auth` and safe mode both build on.",
+          "sources": [
+            "src/auth.c#L70-L250",
+            "src/select.c#L7710",
+            "src/shell.c.in#L2838-L2875"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Build-system extension point: `--amalgamation-extra-src` is threaded through `auto.def` into `AMALGAMATION_EXTRA_SRC`, letting downstream builds fold additional C files into the generated `sqlite3.c`.",
+          "sources": [
+            "auto.def#L46-L48",
+            "main.mk#L1145-L1150",
+            "tool/mksqlite3c.tcl#L26-L33"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "TCL binding extension point: `Sqlite3_Init` registers the `sqlite3` TCL command via `DbMain`, whose per-database object command `DbObjCmd` is the dispatch table that all 1,195 `.test` scripts drive.",
+          "sources": [
+            "src/tclsqlite.c#L2485",
+            "src/tclsqlite.c#L4310",
+            "src/tclsqlite.c#L4499-L4513"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_handoff": {
+      "summary": "The hard constraints here are unusual and worth internalizing before touching anything: this is public-domain C with no license headers ever added, it is developed in Fossil (the Git remote is a mirror with different check-in names), and AGENTS.md states outright that the project does not accept agentic code — agentic *bug reports with reproducible test cases* are welcome, and patches are accepted only as proof-of-concept documentation. Practically, that means the safe posture is: read, reproduce, write a `.test` case, and propose rather than land. When editing is in scope, the rules are C89/C99 only, `sqlite3Malloc` family for all allocation, `i64`/`u32`/`u64` for width-sensitive values, `SQLITE_OK`/`SQLITE_*` return codes, liberal `assert` with `ALWAYS`/`NEVER` for compiler-opaque invariants, and never touching a generated file. Always run at least `make devtest` after any `src/` change.",
+      "claims": [
+        {
+          "claim": "Read first, in this order: `AGENTS.md` (project constraints and generated-file table), `README.md` (source tree map and build instructions), `src/sqliteInt.h` (6,031 lines — the master internal header), and `src/sqlite.h.in` (the public API template and the source of the API docs).",
+          "sources": [
+            "AGENTS.md",
+            "README.md#L175-L215",
+            "src/sqliteInt.h",
+            "src/sqlite.h.in"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Never add a copyright or license header: every file carries the intentional 'May you do good and not evil' blessing comment instead, and adding a header would jeopardize the public-domain status the project depends on.",
+          "sources": [
+            "AGENTS.md",
+            "LICENSE.md",
+            "src/pager.c#L1-L12",
+            "test/fuzzcheck.c#L1-L10"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Do not hand-edit generated files: `sqlite3.h` (from `tool/mksqlite3h.tcl`), `parse.c`/`parse.h` (lemon on `src/parse.y`), `opcodes.h`/`opcodes.c` (`mkopcodeh.tcl`/`mkopcodec.tcl`), `keywordhash.h` (`tool/mkkeywordhash.c`), `pragma.h` (`tool/mkpragmatab.tcl`), `sqlite3.c` (`tool/mksqlite3c.tcl`).",
+          "sources": [
+            "AGENTS.md",
+            "tool/mksqlite3h.tcl",
+            "tool/mkkeywordhash.c",
+            "tool/mkpragmatab.tcl",
+            "tool/mksqlite3c.tcl"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Build for development with `./configure --dev`, which `auto.def` translates into `--all --debug`, amalgamation *off* (so each `src/*.c` compiles separately and errors point at real files), and `CFLAGS=-O0 -g`.",
+          "sources": [
+            "auto.def#L20-L35",
+            "README.md#L118-L124"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The configure script is autosetup, not GNU Autoconf, and must stay JimTCL-compatible — `autosetup/jimsh0.c` is bundled so the tree can configure without a system tclsh. Project-specific procs are prefixed `sqlite-` (in `autosetup/sqlite-config.tcl`), generic ones `proj-` (in `autosetup/proj.tcl`).",
+          "sources": [
+            "auto.def#L1-L19",
+            "autosetup/jimsh0.c",
+            "autosetup/sqlite-config.tcl",
+            "autosetup/proj.tcl"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Tests need TCL: install `tcl-dev`, run `make tclextension-install` before `make devtest`, and note that `testrunner.tcl` will try to re-exec itself under `./testfixture` if `package require sqlite3` fails.",
+          "sources": [
+            "AGENTS.md",
+            "main.mk#L1719",
+            "test/testrunner.tcl#L26-L60",
+            "README.md#L128-L136"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Minimum test bar for any `src/` change is `make devtest` (`srctree-check` + `sourcetest` + `testrunner.tcl mdevtest`); targeted runs use `./testfixture test/<file>.test` or `test/testrunner.tcl fts5%` pattern matching, and failures are found with `grep '!' testrunner.log`.",
+          "sources": [
+            "main.mk#L1860-L1876",
+            "AGENTS.md",
+            "doc/testrunner.md#L28-L60"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Coding conventions to match: C89/C99 only (no C++/VLAs), all allocation through `sqlite3Malloc`/`sqlite3MallocZero`/`sqlite3_malloc64` rather than raw `malloc`, `i64`/`u32`/`u64` instead of bare `long`/`int` for values that can exceed 2G, `SQLITE_OK`-style return codes with `db->mallocFailed` for deferred OOM detection.",
+          "sources": [
+            "AGENTS.md",
+            "src/main.c#L3448-L3450",
+            "src/prepare.c#L727-L731"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`assert()` is used as executable documentation throughout and is expected in new code; use `ALWAYS(x)`/`NEVER(x)` for conditions the compiler cannot prove — e.g. `ALWAYS(cnt<=SQLITE_MAX_PREPARE_RETRY)` in the prepare retry loop and `NEVER(pPager->errCode)` in commit.",
+          "sources": [
+            "AGENTS.md",
+            "src/prepare.c#L883-L886",
+            "src/pager.c#L6542"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Requirement-traceability comments matter: `EVIDENCE-OF: R-#####-#####` markers in the sources tie code to numbered statements in the external documentation (e.g. in `sqlite3_prepare_v2`/`_v3`), and `testcase()` markers mark branches the test suite is expected to cover — preserve both when editing.",
+          "sources": [
+            "src/prepare.c#L957-L963",
+            "src/prepare.c#L975-L982",
+            "src/vdbe.c#L952"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Match the file's existing idiom: this codebase uses two-space indentation, `if( cond ){` spacing with no space after `if`, `/* ... */` block comments only, and `**` comment continuation banners — deviating is immediately visible in diffs.",
+          "sources": [
+            "src/pager.c#L6527-L6560",
+            "src/vdbeapi.c#L838-L870"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Safe edit boundaries: `ext/misc/*.c` single-file extensions and `test/*.test` scripts are the lowest-risk places to add code; `src/btree.c`, `src/pager.c`, `src/wal.c`, `src/vdbe.c` and `src/where.c` are the highest-risk and should not be touched without a reproducing test.",
+          "sources": [
+            "ext/misc/series.c",
+            "test/main.test",
+            "src/btree.c",
+            "src/wal.c",
+            "AGENTS.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Known trap: the CLI is not built from `src/shell.c` — that file does not exist in the tree. Edit `src/shell.c.in` and let the build's `INCLUDE`-processing step produce `shell.c`.",
+          "sources": [
+            "src/shell.c.in",
+            "main.mk#L2186",
+            "tool/mkshellc.tcl"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Known trap: when reporting a check-in, use the official Fossil name from `manifest.uuid` (`c9b4695ffae5a3388a49643d6819355851a0fda362cdaf140c59fc934759dcac`), not the Git SHA — the README states these differ for all mirrors.",
+          "sources": [
+            "manifest.uuid",
+            "README.md#L16-L30"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Useful debugging levers already in-tree: `SQLITE_DEBUG_BREAK` env var (shell attaches a debugger), `PRAGMA vdbe_trace`/`vdbe_listing`/`vdbe_eqp` via `SQLITE_VdbeTrace` flags in `sqlite3VdbeExec`, `SQLITE_ParserTrace` in `sqlite3RunParser`, and the `.wheretrace`/`.iotrace` dot-commands.",
+          "sources": [
+            "src/shell.c.in#L14057-L14078",
+            "src/vdbe.c#L962-L985",
+            "src/tokenize.c#L621-L628"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_prompt": "You are working in the SQLite source tree (version 3.54.0, Fossil check-in c9b4695f…). Read AGENTS.md and README.md before anything else.\n\nWHAT THIS IS. SQLite is a serverless, in-process SQL database engine written in C, distributed primarily as a single-file amalgamation (sqlite3.c) generated from this tree. The repo also contains the `sqlite3` CLI shell, a TCL binding, JNI and WASM bindings, a dozen extensions, and ~1,200 TCL test scripts.\n\nHARD CONSTRAINTS. (1) The code is public domain — never add a copyright or license header; preserve the \"May you do good and not evil\" blessing comment at the top of every file. (2) Development happens in Fossil at https://sqlite.org/src; this Git remote is a mirror and its commit hashes are NOT the official check-in names — use manifest.uuid when referring to a version. (3) AGENTS.md states the project does not accept agentic code. It does accept agentic bug reports with reproducible test cases, and patches as proof-of-concept documentation. Default to investigate-and-report rather than land-a-change unless told otherwise. (4) Never hand-edit generated files: sqlite3.h, parse.c/parse.h, opcodes.h/opcodes.c, keywordhash.h, pragma.h, sqlite3.c. Edit the generator instead — tool/mkpragmatab.tcl for pragmas, src/parse.y for grammar, a `case OP_x:` in src/vdbe.c for opcodes (mkopcodeh.tcl scrapes those case labels to assign numbers). (5) The CLI source is src/shell.c.in, not shell.c.\n\nARCHITECTURE. SQL text → tokenize.c (sqlite3RunParser pushes tokens into the Lemon LALR(1) parser) → code generators (build.c, select.c, insert.c, update.c, delete.c, expr.c) → optimizer (where*.c, entry point sqlite3WhereBegin) → VDBE bytecode (sqlite3VdbeExec in vdbe.c, a 190-opcode dispatch loop) → btree.c → pager.c → wal.c → VFS (os_unix.c / os_win.c / os_kv.c / memdb.c). The master internal header is src/sqliteInt.h; the public API template is src/sqlite.h.in. Key call chains: sqlite3_open_v2 → openDatabase (main.c:3388); sqlite3_prepare_v2 → sqlite3LockAndPrepare → sqlite3Prepare (prepare.c); sqlite3_step → sqlite3Step → sqlite3VdbeExec, with automatic sqlite3Reprepare on SQLITE_SCHEMA; commit → sqlite3BtreeCommitPhaseOne → sqlite3PagerCommitPhaseOne, which forks between WAL frames and rollback journal.\n\nBUILD. ./configure is autosetup (JimTCL-compatible), not GNU Autoconf; auto.def and autosetup/sqlite-config.tcl drive it. Use `./configure --dev` for debugging (implies --all --debug, amalgamation off, -O0 -g). main.mk holds the real make rules. Needs gcc, make, tcl-dev.\n\nTEST. Run `make tclextension-install` once, then `make devtest` after ANY src/ change — that is the developers' own minimum bar. It runs tool/srctree-check.tcl, sourcetest, and test/testrunner.tcl mdevtest. Targeted: `./testfixture test/main.test`, or `test/testrunner.tcl fts5%`. Check failures with `grep '!' testrunner.log`. Extension suites live next to their extensions (ext/fts5/test/, ext/session/*.test, ext/rbu/, ext/recover/). Fuzzing is separate: test/fuzzcheck.c replays corpora from fuzzdata*.db, test/ossfuzz.c is the OSS-Fuzz entry point.\n\nCONVENTIONS. C89/C99 only, no C++/VLAs. All allocation through sqlite3Malloc/sqlite3MallocZero/sqlite3_malloc64. Use i64/u32/u64, not bare long/int, for width-sensitive values. Return SQLITE_OK or a SQLITE_* code; OOM is often deferred via db->mallocFailed. Assert liberally; use ALWAYS()/NEVER() for compiler-opaque invariants. Preserve EVIDENCE-OF: R-#####-##### traceability comments and testcase() markers. Match the surrounding style: two-space indent, `if( x ){`, /* */ comments only.\n\nWHERE RISK LIVES. The shell's safe mode (failIfSafeMode / safeModeAuth in shell.c.in) is the only gate on system(), popen(), readfile/writefile, .load and ATTACH — and it lives inside #ifndef SQLITE_OMIT_AUTHORIZATION. sqlite3LoadExtension dlopen()s caller-supplied paths. doc/trusted-schema.md explains why a database schema is executable input. tool/sqlite3_rsync.c forks and execl()s /bin/sh. btree.c, select.c, vdbe.c, pager.c and where.c are each 300–400KB and sit on every query's hot path — do not touch them without a reproducing test case."
+  },
+  "analysis": {
+    "agent": "claude",
+    "model": "cli:claude",
+    "runtime_ms": 542747,
+    "cost_usd": 3.320705,
+    "collected_at": "2026-09-22T08:56:27.416Z"
   }
 }

@@ -33,7 +33,56 @@ const { report } = Astro.props;
         {report.stats.maxFilesHit ? ' · scan capped' : ''}
       </p>
       {report.readmePreview && <p class="lead">{report.readmePreview}</p>}
+      {report.analysis && (
+        <p class="meta analysis">
+          Deep analysis by <code>{report.analysis.model}</code> — every claim below cites the
+          source files it was read from.
+        </p>
+      )}
     </header>
+
+    {report.sections?.overview && (
+      <section>
+        <h2>Overview</h2>
+        <p>{report.sections.overview.summary ?? report.sections.overview}</p>
+      </section>
+    )}
+
+    {report.sections &&
+      [
+        ['system_map', 'System map'],
+        ['feature_catalog', 'Feature catalog'],
+        ['data_flow', 'Data flow'],
+        ['behavior_traces', 'Behavior traces'],
+        ['testing_signals', 'Testing signals'],
+        ['risk_map', 'Risk map'],
+        ['extension_points', 'Extension points'],
+        ['agent_handoff', 'Contributor handoff'],
+      ]
+        .filter(([k]) => report.sections[k])
+        .map(([k, title]) => (
+          <section>
+            <h2>{title}</h2>
+            <p>{report.sections[k].summary}</p>
+            {report.sections[k].claims.length > 0 && (
+              <ul>
+                {report.sections[k].claims.map((c) => (
+                  <li>
+                    {c.claim}
+                    {c.kind === 'inference' && <span class="dim"> (inferred)</span>}
+                    <div class="sources">
+                      {(c.sources ?? []).map((s) => (
+                        <a href={`https://github.com/${report.repo}/blob/${report.commit.sha}/${s.split('#')[0]}`}>
+                          {s}
+                        </a>
+                      ))}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+        ))}
 
     <section>
       <h2>Languages</h2>
@@ -171,5 +220,5 @@ const { report } = Astro.props;
 </Layout>
 
 <style>
-  .report{width:min(920px,calc(100% - 40px));margin:0 auto;padding:140px 0 90px}.back{color:#8c8e94;text-decoration:none;font-size:.85rem}header{padding:54px 0 34px;border-bottom:1px solid #24262b}.eyebrow{color:#85888f;text-transform:uppercase;letter-spacing:.16em;font-size:.7rem}h1{color:#f0efeb;font-size:clamp(2.2rem,5vw,3.8rem);line-height:1.02;letter-spacing:-.05em;margin:16px 0;font-family:ui-monospace,monospace}.meta{color:#85888f;font-size:.9rem;line-height:1.6}.upstream{margin-top:10px;color:#85888f;font-size:.9rem}.upstream a{color:#d9b567}.lead{color:#92969e;line-height:1.7;margin-top:18px;font-size:1.05rem}section{margin-top:44px}h2{color:#e9e8e4;font-size:1.1rem;margin-bottom:16px}table{width:100%;border-collapse:collapse;font-size:.9rem}th{color:#85888f;text-align:left;font-weight:400;text-transform:uppercase;letter-spacing:.1em;font-size:.68rem;padding:8px 12px;border-bottom:1px solid #24262b}td{color:#c9cbd1;padding:8px 12px;border-bottom:1px solid #1c1f24}code{color:#8b8e95;font-size:.85em}p{color:#92969e;line-height:1.65}li{color:#c9cbd1;line-height:1.8;list-style:none;padding-left:0}ul{padding-left:0}.dim{color:#73767d}.deps code,.docs code{display:inline-block;margin:2px 6px 2px 0}.note{color:#73767d;font-size:.85rem;border-left:2px solid #d4a039;padding-left:14px}aside{margin-top:44px;padding:20px;border-left:2px solid #d4a039;background:#101114;color:#92959c;line-height:1.65;font-size:.9rem}aside a{color:#d9b567}
+  .report{width:min(920px,calc(100% - 40px));margin:0 auto;padding:140px 0 90px}.back{color:#8c8e94;text-decoration:none;font-size:.85rem}header{padding:54px 0 34px;border-bottom:1px solid #24262b}.eyebrow{color:#85888f;text-transform:uppercase;letter-spacing:.16em;font-size:.7rem}h1{color:#f0efeb;font-size:clamp(2.2rem,5vw,3.8rem);line-height:1.02;letter-spacing:-.05em;margin:16px 0;font-family:ui-monospace,monospace}.meta{color:#85888f;font-size:.9rem;line-height:1.6}.upstream{margin-top:10px;color:#85888f;font-size:.9rem}.upstream a{color:#d9b567}.lead{color:#92969e;line-height:1.7;margin-top:18px;font-size:1.05rem}section{margin-top:44px}h2{color:#e9e8e4;font-size:1.1rem;margin-bottom:16px}table{width:100%;border-collapse:collapse;font-size:.9rem}th{color:#85888f;text-align:left;font-weight:400;text-transform:uppercase;letter-spacing:.1em;font-size:.68rem;padding:8px 12px;border-bottom:1px solid #24262b}td{color:#c9cbd1;padding:8px 12px;border-bottom:1px solid #1c1f24}code{color:#8b8e95;font-size:.85em}p{color:#92969e;line-height:1.65}li{color:#c9cbd1;line-height:1.8;list-style:none;padding-left:0;margin-bottom:14px}.sources{margin-top:4px}.sources a{display:inline-block;margin:2px 10px 2px 0;font-family:ui-monospace,monospace;font-size:.75rem;color:#8b8e95;text-decoration:none}.sources a:hover{color:#d9b567}.analysis{color:#8f949c}ul{padding-left:0}.dim{color:#73767d}.deps code,.docs code{display:inline-block;margin:2px 6px 2px 0}.note{color:#73767d;font-size:.85rem;border-left:2px solid #d4a039;padding-left:14px}aside{margin-top:44px;padding:20px;border-left:2px solid #d4a039;background:#101114;color:#92959c;line-height:1.65;font-size:.9rem}aside a{color:#d9b567}
 </style>

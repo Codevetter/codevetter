@@ -5560,5 +5560,976 @@
         ]
       }
     ]
+  },
+  "report": {
+    "overview": "Flask is the Pallets WSGI web framework — a thin, opinion-light composition layer over Werkzeug (routing, request/response, dev server), Jinja (templating), itsdangerous (signed session cookies), Click (CLI) and Blinker (signals), distributed as the `flask` package plus a `flask` console script. This checkout is the unreleased 3.2.0.dev line on `main`, whose headline change is the merger of `RequestContext` into a single `AppContext`: one context object now carries app, `g`, request, session and URL adapter, is pushed once per request and per CLI command, and is threaded explicitly as a `ctx` first argument through `dispatch_request`, `full_dispatch_request`, `finalize_request`, `preprocess_request`, `process_response` and the teardown methods. The codebase is deliberately split into a sans-IO core (`src/flask/sansio/`) that alternative implementations such as Quart reuse, and IO-bound subclasses (`app.py`, `blueprints.py`) that add WSGI, Click groups and file serving. It targets Python 3.10+, is fully typed (`py.typed`, strict mypy + pyright), and ships its own tutorial, JavaScript and Celery example applications.",
+    "system_map": {
+      "summary": "The library entrypoints are the `flask` package namespace (`src/flask/__init__.py` re-exports the public API), the `flask` console script wired to `flask.cli:main`, and `python -m flask` via `__main__.py`. Runtime is split across a sans-IO layer (`Scaffold` → `App` → `Blueprint` in `src/flask/sansio/`) that holds registries and setup logic with no IO, and the IO layer (`Flask`, `Blueprint`, `cli`, `helpers`, `templating`) that performs WSGI dispatch, file serving and server startup. There is no database or persistence layer; the only durable state Flask owns is the signed session cookie written by `SecureCookieSessionInterface`. External integrations are all Pallets-family libraries pinned in `pyproject.toml` dependencies, plus optional `asgiref` (async views) and `python-dotenv` (env files). Build is flit_core; test/lint/type/docs orchestration is tox driven by uv, executed in GitHub Actions.",
+      "claims": [
+        {
+          "claim": "`src/flask/__init__.py` is the public API surface: 39 explicit `X as X` re-exports covering `Flask`, `Blueprint`, `Config`, the five context proxies, all 10 signals, and the `render_template`/`stream_template` family — nothing is exported implicitly.",
+          "sources": [
+            "src/flask/__init__.py#L1-L39"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The console script is declared as `flask = \"flask.cli:main\"` under `[project.scripts]`, and `src/flask/__main__.py` is a three-line shim (`from .cli import main; main()`) so `python -m flask` and `flask` share one code path.",
+          "sources": [
+            "pyproject.toml#L70-L71",
+            "src/flask/__main__.py#L1-L3"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The sans-IO boundary is documented in-tree: `src/flask/sansio/README.md` states the folder must do no IO, must not be on a likely IO path, and must not use the Flask globals — which is why `sansio/app.py` declares `default_config` and `response_class` as bare annotations and lets `Flask` in `app.py` supply them.",
+          "sources": [
+            "src/flask/sansio/README.md#L1-L6",
+            "src/flask/sansio/app.py#L276-L277",
+            "src/flask/app.py#L207-L247"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Class hierarchy is `Scaffold` (shared route/handler registration, static folder, `find_package`) → `App` (config, url_map, blueprints dict, extensions dict, template filters/tests/globals) → `Flask` (WSGI, Click group, sessions, file serving); `Blueprint` follows the same sansio → IO split.",
+          "sources": [
+            "src/flask/sansio/scaffold.py#L52-L75",
+            "src/flask/sansio/app.py#L59-L279",
+            "src/flask/app.py#L110-L311",
+            "src/flask/blueprints.py#L18-L53"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "All context state lives in one `AppContext` object holding `app`, `g`, `url_adapter`, `_request`, `_session`, `_flashes` and `_after_request_functions`, stored in the single `ContextVar` `_cv_app` declared in `globals.py`; there is no second request-level ContextVar.",
+          "sources": [
+            "src/flask/ctx.py#L300-L338",
+            "src/flask/globals.py#L40-L62"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The five public proxies (`app_ctx`, `current_app`, `g`, `request`, `session`) are all `werkzeug.local.LocalProxy` instances over the same `_cv_app`, differing only by attribute name and unbound-error message (`_no_app_msg` vs `_no_req_msg`).",
+          "sources": [
+            "src/flask/globals.py#L33-L62"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The only persistence layer is the signed cookie: `SecureCookieSessionInterface` builds a `URLSafeTimedSerializer` with salt `\"cookie-session\"`, hmac key derivation, lazily-resolved SHA-1 digest, and the `TaggedJSONSerializer` payload serializer.",
+          "sources": [
+            "src/flask/sessions.py#L284-L322",
+            "src/flask/json/tag.py#L219-L253"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Runtime dependencies are exactly six Pallets-ecosystem packages (blinker≥1.9.0, click≥8.1.3, itsdangerous≥2.2.0, jinja2≥3.1.2, markupsafe≥2.1.1, werkzeug≥3.1.0) with `async` (asgiref) and `dotenv` (python-dotenv) as optional extras.",
+          "sources": [
+            "pyproject.toml#L23-L34"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Build backend is `flit_core>=3.11,<4` with `[tool.flit.module] name = \"flask\"`, and the sdist explicitly bundles `docs/`, `examples/`, `tests/`, `CHANGES.rst` and `uv.lock` while excluding `docs/_build/`.",
+          "sources": [
+            "pyproject.toml#L73-L88"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Developer commands are tox environments: `tox run` (pytest per Python version), `-e style` (pre-commit all files), `-e typing` (mypy then pyright), `-e docs` (`sphinx-build -E -W -b dirhtml docs docs/_build/dirhtml`), plus `tests-min` and `tests-dev` which pip-install pinned-minimum and git-main dependency sets respectively.",
+          "sources": [
+            "pyproject.toml#L158-L232"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CI is four GitHub Actions workflows: `tests.yaml` (12-way matrix incl. 3.15, free-threaded 3.14t, Windows, Mac, PyPy, min and dev deps, plus a separate mypy/pyright `typing` job), `pre-commit.yaml`, `publish.yaml` (tag-triggered `uv build` → draft GH release → PyPI trusted publishing), and `zizmor.yaml` for Actions security analysis.",
+          "sources": [
+            ".github/workflows/tests.yaml#L1-L66",
+            ".github/workflows/publish.yaml#L1-L62",
+            ".github/workflows/zizmor.yaml#L1-L21"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Docs are Sphinx `dirhtml` built by Read the Docs using an asdf-installed uv and the `docs` dependency group; 34 top-level doc pages exist including `lifecycle.rst`, `appcontext.rst`, `reqcontext.rst` and `web-security.rst`.",
+          "sources": [
+            ".readthedocs.yaml#L1-L8",
+            "docs/lifecycle.rst#L1-L60"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Deployment shape for the library itself is a wheel/sdist on PyPI; the framework's own \"deployment\" surface for users is `run_simple` from Werkzeug, explicitly documented as development-only in `run_command`'s help text.",
+          "sources": [
+            "src/flask/cli.py#L935-L995",
+            ".github/workflows/publish.yaml#L46-L62"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "feature_catalog": {
+      "summary": "As a framework, Flask's user-facing features are its decorator registries, its CLI subcommands, and its request/response conveniences. Route registration spans `@route` plus seven method shortcuts including the newly added `@app.query` for HTTP QUERY; class-based views come via `View`/`MethodView`. The `flask` CLI ships `run`, `shell` and `routes` built in, discovers app-provided commands through `app.cli`/`blueprint.cli`, and loads third-party commands from the `flask.commands` entry point group. Response handling covers strings, bytes, dicts, lists, generators, tuples, WSGI callables and Response objects; JSON is routed through a swappable `JSONProvider`. Sessions, flashing, file sending, streaming, signals and blueprint nesting round out the surface.",
+      "claims": [
+        {
+          "claim": "Seven HTTP-method route shortcuts are generated through `Scaffold._method_route`: `get`, `query`, `post`, `put`, `delete`, `patch` (plus `route`); `query` is new in 3.2 for the HTTP QUERY method and is also listed in `views.http_method_funcs`.",
+          "sources": [
+            "src/flask/sansio/scaffold.py#L284-L342",
+            "src/flask/views.py#L11-L13",
+            "CHANGES.rst#L32"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`flask run` exposes `--host/-h` (default 127.0.0.1), `--port/-p` (5000), `--cert`/`--key`, `--reload/--no-reload`, `--debugger/--no-debugger`, `--with-threads/--without-threads`, `--extra-files` and `--exclude-patterns`, and inserts `--debug` as its first parameter after definition.",
+          "sources": [
+            "src/flask/cli.py#L882-L935",
+            "src/flask/cli.py#L996"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`flask shell` builds an interactive REPL banner from `current_app.import_name` and `instance_path`, honours `PYTHONSTARTUP`, wires `rlcompleter.Completer` against the shell context rather than `__main__`, then calls `code.interact`.",
+          "sources": [
+            "src/flask/cli.py#L999-L1046"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`flask routes` supports `--sort` over `endpoint|methods|domain|rule|match` and `--all-methods`, hides HEAD/OPTIONS by default, and renders a padded ASCII table computed from per-column max widths.",
+          "sources": [
+            "src/flask/cli.py#L1048-L1107"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The root CLI group is `FlaskGroup`, which registers three eager options in order (`--env-file`, `--app`, `--debug`) so dotenv loading happens before app import, and sets `auto_envvar_prefix=\"FLASK\"` so every option is also settable via `FLASK_*` env vars.",
+          "sources": [
+            "src/flask/cli.py#L563-L599"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "App discovery supports four forms: explicit `module:name`, `module:factory(args)` with `ast.literal_eval`-parsed arguments, auto-detection of `app`/`application`/`create_app`/`make_app`, and implicit `wsgi.py` then `app.py` in the CWD.",
+          "sources": [
+            "src/flask/cli.py#L41-L89",
+            "src/flask/cli.py#L120-L196",
+            "src/flask/cli.py#L333-L370"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`Flask.make_response` accepts str/bytes/bytearray, any iterator (streaming), dict and list (auto-JSON via `self.json.response`), `BaseResponse` subclasses, arbitrary WSGI callables, and 2- or 3-tuples of `(body, status)`, `(body, headers)` or `(body, status, headers)`.",
+          "sources": [
+            "src/flask/app.py#L1284-L1360"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Class-based views: `View.as_view` supports `init_every_request=False` for a shared instance, applies `cls.decorators` in order, and copies `methods`/`provide_automatic_options` onto the generated function; `MethodView.__init_subclass__` auto-derives `methods` from defined handler names and falls back from HEAD to GET.",
+          "sources": [
+            "src/flask/views.py#L85-L135",
+            "src/flask/views.py#L163-L191"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Message flashing writes `session[\"_flashes\"]` via a read-append-reassign pattern (deliberately not `setdefault`, so external session backends stay in sync) and emits the `message_flashed` signal; `get_flashed_messages` caches into `app_ctx._flashes` so repeat calls in one request are stable.",
+          "sources": [
+            "src/flask/helpers.py#L326-L400",
+            "src/flask/ctx.py#L322"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Ten Blinker signals are defined in one namespace: template-rendered, before-render-template, request-started, request-finished, request-tearing-down, got-request-exception, appcontext-tearing-down, appcontext-pushed, appcontext-popped and message-flashed.",
+          "sources": [
+            "src/flask/signals.py#L1-L17"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Async views are opt-in: `ensure_sync` returns plain functions unchanged and wraps coroutine functions via `async_to_sync`, which imports `asgiref.sync.async_to_sync` and raises \"Install Flask with the 'async' extra\" if asgiref is missing.",
+          "sources": [
+            "src/flask/app.py#L1068-L1103"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Config can be populated six ways: `from_envvar`, `from_prefixed_env` (JSON-decoded `FLASK_*` vars with `__` nesting), `from_pyfile` (exec'd as a module), `from_object` (uppercase attrs only), `from_file` (pluggable loader, text or binary) and `from_mapping`; `get_namespace` extracts prefixed subsets.",
+          "sources": [
+            "src/flask/config.py#L102-L365"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Three runnable example apps ship in-repo: `examples/tutorial` (flaskr — sqlite blog with auth blueprint, `init-db` CLI command, 4 test modules), `examples/javascript` (fetch/jQuery/XHR templates) and `examples/celery` (`celery_init_app` subclasses `Task` to push an app context around every job).",
+          "sources": [
+            "examples/tutorial/flaskr/__init__.py#L1-L47",
+            "examples/tutorial/flaskr/db.py#L1-L55",
+            "examples/celery/src/task_app/__init__.py#L28-L38",
+            "examples/celery/src/task_app/views.py#L1-L38"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`jsonify` and the module-level `flask.json.dumps/dump/loads/load` all delegate to `current_app.json` when an app context is active, falling back to stdlib `json` otherwise, so provider swaps apply globally.",
+          "sources": [
+            "src/flask/json/__init__.py#L13-L170",
+            "src/flask/json/provider.py#L128-L215"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "data_flow": {
+      "summary": "Input boundaries are the WSGI environ, the process environment (`FLASK_*`, dotenv files), config files, and the request cookie jar. A WSGI environ becomes a `Request` in `AppContext.from_environ`, which also stamps `request.json_module = app.json` so body JSON decoding uses the app's provider. The `AppContext` is the single state owner for the duration of a request: it holds `g`, the lazily opened session, the bound `MapAdapter`, collected `after_this_request` callbacks and cached flashes. Output boundaries are the `Response` returned to the WSGI server, the `Set-Cookie` session header written in `process_response`, rendered template strings, and log records emitted to `wsgi.errors` or stderr. Config flows one way: `default_config` → `Config` dict → `ConfigAttribute` descriptors (`app.testing`, `app.secret_key`, `app.permanent_session_lifetime`) and per-request property lookups on `Request`/`Response`.",
+      "claims": [
+        {
+          "claim": "The environ→Request transform happens in `AppContext.from_environ`, which constructs `app.request_class(environ)` and immediately assigns `request.json_module = app.json`, so `request.get_json()` uses the app's JSON provider rather than stdlib json.",
+          "sources": [
+            "src/flask/ctx.py#L339-L348",
+            "src/flask/wrappers.py#L31"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The URL adapter is built in `AppContext.__init__` (not at push time) via `app.create_url_adapter`, and any `HTTPException` raised there is stashed on `request.routing_exception` instead of propagating.",
+          "sources": [
+            "src/flask/ctx.py#L325-L330",
+            "src/flask/app.py#L510-L560"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`create_url_adapter` applies `TRUSTED_HOSTS` to `request.trusted_hosts` and then recomputes `request.host` through `werkzeug.wsgi.get_host` before binding — host validation happens on this path, before routing.",
+          "sources": [
+            "src/flask/app.py#L529-L545"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Session data flows cookie → `SecureCookieSessionInterface.open_session` → `URLSafeTimedSerializer.loads(val, max_age=PERMANENT_SESSION_LIFETIME)` → `SecureCookieSession`; a `BadSignature` silently yields a fresh empty session rather than an error.",
+          "sources": [
+            "src/flask/sessions.py#L323-L336"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Session writes are deferred to `process_response`, which calls `save_session` only when `is_null_session` is false, and `save_session` adds `Vary: Cookie` whenever `session.accessed` is set, deletes the cookie when an emptied session is modified, and otherwise gates on `should_set_cookie`.",
+          "sources": [
+            "src/flask/app.py#L1397-L1421",
+            "src/flask/sessions.py#L337-L385"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Session values are serialized by `TaggedJSONSerializer`, which round-trips non-JSON Python types through single-key tag dicts — ` di` (dict), ` t` (tuple), ` b` (base64 bytes), ` m` (Markup), ` u` (UUID), ` d` (http-date datetime).",
+          "sources": [
+            "src/flask/json/tag.py#L93-L217",
+            "src/flask/json/tag.py#L219-L253"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Config resolution order is `default_config` copy → `DEBUG` overwritten from `get_debug_flag()` (the `FLASK_DEBUG` env var) → `Config(root_path, defaults)`, with `root_path` swapped to `instance_path` when `instance_relative_config=True`.",
+          "sources": [
+            "src/flask/sansio/app.py#L479-L493",
+            "src/flask/helpers.py#L28-L34"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Env-file input precedence is: variables already in `os.environ` win, then `-e/--env-file`, then `.env`, then `.flaskenv` — implemented by merging dicts in that order in `load_dotenv` and skipping keys already present in `os.environ`.",
+          "sources": [
+            "src/flask/cli.py#L744-L764"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Per-request body limits read through `current_app.config` at access time rather than being copied onto the request: `max_content_length`, `max_form_memory_size` and `max_form_parts` each check a private override, then fall back to `MAX_CONTENT_LENGTH` / `MAX_FORM_MEMORY_SIZE` (500_000) / `MAX_FORM_PARTS` (1_000).",
+          "sources": [
+            "src/flask/wrappers.py#L55-L140",
+            "src/flask/app.py#L228-L230"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Template context is assembled in `update_template_context`: app-level then reversed blueprint-level context processors run, and the caller's explicit `render_template(**context)` values are re-applied last from a saved copy so they always win.",
+          "sources": [
+            "src/flask/app.py#L591-L619",
+            "src/flask/templating.py#L123-L133"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The default template context processor replaces the `request` and `g` proxies with concrete objects for speed but deliberately leaves `session` as a proxy, because touching it would set `session.accessed` and force a `Vary: Cookie` header.",
+          "sources": [
+            "src/flask/templating.py#L21-L33"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`send_file`/`send_from_directory` funnel through `_prepare_send_file_kwargs`, which injects `environ`, `USE_X_SENDFILE`, `response_class`, `_root_path` and defaults `max_age` to `app.get_send_file_max_age` before delegating to Werkzeug.",
+          "sources": [
+            "src/flask/helpers.py#L402-L415",
+            "src/flask/helpers.py#L543-L585"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Log output is routed by the `wsgi_errors_stream` LocalProxy: inside a request it writes to `request.environ[\"wsgi.errors\"]`, otherwise `sys.stderr`; `create_logger` attaches `default_handler` only when no handler in the chain already covers the effective level.",
+          "sources": [
+            "src/flask/logging.py#L15-L79"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Blueprint registration is a data-merge step, not a live delegation: `_merge_blueprint_funcs` copies the blueprint's error handler spec, view functions, before/after/teardown lists, url defaults, url value preprocessors and template context processors into the app's dicts under the dotted name.",
+          "sources": [
+            "src/flask/sansio/blueprints.py#L379-L411"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "behavior_traces": {
+      "summary": "Three flows dominate: application construction, WSGI request dispatch, and CLI invocation. Construction is `Flask.__init__` → `App.__init__` → `Scaffold.__init__`, ending with an auto-registered static route that holds only a weakref to the app. Request dispatch is `__call__` → `wsgi_app` → `AppContext.push` (session open, then routing) → `full_dispatch_request` → `preprocess_request` → `dispatch_request` → `finalize_request` → `process_response` (session save) → `ctx.pop` (teardowns). CLI invocation is `main` → `FlaskGroup.make_context` (sets `FLASK_RUN_FROM_CLI`) → eager `--env-file`/`--app` callbacks → `ScriptInfo.load_app` → command body with an app context pushed via `ctx.with_resource`.",
+      "claims": [
+        {
+          "claim": "Startup: `Flask.__init__` calls `super().__init__` (App → Scaffold), creates `self.cli = cli.AppGroup()` named after the app, then — if `has_static_folder` — asserts `bool(static_host) == host_matching` and registers `f\"{static_url_path}/<path:filename>\"` with a `weakref.ref(self)` closure to avoid an app↔view reference cycle (issue #3761).",
+          "sources": [
+            "src/flask/app.py#L311-L365"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Startup: `App.__init__` resolves `instance_path` (rejecting relative paths), builds `config` via `make_config`, instantiates `aborter`, `json_provider_class(self)`, the empty `blueprints`/`extensions` dicts, `url_map_class(host_matching=...)`, and sets `_got_first_request = False`.",
+          "sources": [
+            "src/flask/sansio/app.py#L279-L409"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Request: `Flask.__call__` → `wsgi_app(environ, start_response)` creates the context with `self.request_context(environ)`, pushes it, dispatches, and in `finally` restores it for the debugger via `environ[\"werkzeug.debug.preserve_context\"]` before `ctx.pop(error)`.",
+          "sources": [
+            "src/flask/app.py#L1569-L1626"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Request: `AppContext.push` increments `_push_count`, returns early if already pushed, sets `_cv_app`, sends `appcontext_pushed`, then opens the session via `_get_session()` *before* calling `match_request()` — ordering that lets custom URL converters read the session.",
+          "sources": [
+            "src/flask/ctx.py#L416-L444"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Request: `full_dispatch_request` sets `_got_first_request = True` (freezing setup methods), sends `request_started`, runs `preprocess_request`, short-circuits to `finalize_request` if a `before_request` returned non-None, otherwise calls `dispatch_request`, catching exceptions into `handle_user_exception`.",
+          "sources": [
+            "src/flask/app.py#L995-L1022",
+            "src/flask/sansio/app.py#L410-L420"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Request: `preprocess_request` runs `url_value_preprocessors` for `(None, *reversed(req.blueprints))` first, then `before_request_funcs` in the same order — app-level before blueprint-level, outermost blueprint first.",
+          "sources": [
+            "src/flask/app.py#L1369-L1395"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Request: `dispatch_request` raises any stored `routing_exception` through `raise_routing_exception`, returns `make_default_options_response` for automatic OPTIONS, and otherwise calls `ensure_sync(self.view_functions[rule.endpoint])(**view_args)`.",
+          "sources": [
+            "src/flask/app.py#L969-L993"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Request: `process_response` runs `ctx._after_request_functions` (from `after_this_request`) first, then app+blueprint `after_request_funcs` in reverse registration order over `chain(request.blueprints, (None,))`, then saves the session.",
+          "sources": [
+            "src/flask/app.py#L1397-L1421",
+            "src/flask/ctx.py#L118-L148"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Teardown: `AppContext.pop` decrements `_push_count`, returns while still nested, then under `_CollectErrors` runs `do_teardown_request`, `request.close()`, `do_teardown_appcontext`, resets the ContextVar, sends `appcontext_popped`, and finally re-raises collected errors as a `BaseExceptionGroup` on Python 3.11+.",
+          "sources": [
+            "src/flask/ctx.py#L446-L504",
+            "src/flask/helpers.py#L654-L682"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Error path: `handle_exception` sends `got_request_exception`, re-raises when `PROPAGATE_EXCEPTIONS` (defaulting to `testing or debug`) is truthy, otherwise logs, wraps in `InternalServerError(original_exception=e)`, looks up a 500 handler, and finalizes with `from_error_handler=True` so response-processing failures are logged rather than raised.",
+          "sources": [
+            "src/flask/app.py#L900-L967",
+            "src/flask/app.py#L1024-L1054"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Error handler lookup in `_find_error_handler` tries (specific code, then None) × (each blueprint name, then None), walking `exc_class.__mro__` at each step — so a blueprint handler for a specific code beats an app handler for that code, which beats class-based handlers.",
+          "sources": [
+            "src/flask/sansio/app.py#L868-L891"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CLI: `FlaskGroup.make_context` sets `os.environ[\"FLASK_RUN_FROM_CLI\"] = \"true\"` so a stray module-level `app.run()` becomes a no-op that prints a red warning instead of blocking the command.",
+          "sources": [
+            "src/flask/cli.py#L657-L676",
+            "src/flask/app.py#L696-L707"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CLI: `FlaskGroup.get_command` loads `flask.commands` entry points, prefers built-ins, then calls `ScriptInfo.load_app()` and pushes an app context with `ctx.with_resource(app.app_context())` before delegating to `app.cli.get_command` — which is why `@with_appcontext` is unnecessary for app-registered commands.",
+          "sources": [
+            "src/flask/cli.py#L600-L635",
+            "src/flask/cli.py#L380-L403"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CLI: `ScriptInfo.load_app` splits the import path on `r\":(?![\\\\/])\"` (so Windows drive letters survive), calls `prepare_import` to insert the package root into `sys.path[0]`, then `locate_app`, and finally sets `app.debug = get_debug_flag()` when `set_debug_flag` is on.",
+          "sources": [
+            "src/flask/cli.py#L333-L370",
+            "src/flask/cli.py#L200-L228"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Streaming: `stream_with_context` builds a generator, advances it once with `next()` to capture and push the current `AppContext` (which bumps `_push_count`), yields the user's chunks inside `with ctx:`, and closes a wrapped WSGI iterator in `finally`.",
+          "sources": [
+            "src/flask/helpers.py#L115-L150",
+            "src/flask/ctx.py#L416-L432"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "testing_signals": {
+      "summary": "Testing is pytest-only, rooted at `tests/` with `testpaths = [\"tests\"]` and `filterwarnings = [\"error\"]` so any unexpected warning fails the suite — a notable constraint given 3.2's new deprecation warnings. 22 test modules totalling ~7.6k lines cover the framework, with `test_basic.py` (1974 lines, 95 tests), `test_blueprints.py` (1115) and `test_cli.py` (703) dominating. Fixtures in `conftest.py` provide `app`, `client`, `app_ctx`, `req_ctx`, plus two autouse guards: `_standard_os_environ` clears FLASK_* env vars, and `leak_detector` asserts no app context is left pushed at test end. Static typing is treated as a test surface of its own: `tests/type_check/` holds three assertion-free modules checked by strict mypy and pyright in a dedicated CI job. Coverage is configured with branch mode over `flask` and `tests`, but no coverage gate is enforced in any workflow.",
+      "claims": [
+        {
+          "claim": "pytest config is minimal and strict: `testpaths = [\"tests\"]` with `filterwarnings = [\"error\"]`, so every warning — including the new `RequestContext`/`should_ignore_error` DeprecationWarnings — must be explicitly expected by a test.",
+          "sources": [
+            "pyproject.toml#L90-L94",
+            "src/flask/ctx.py#L528-L538",
+            "src/flask/app.py#L1001-L1012"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`tests/conftest.py` defines an autouse `leak_detector` that pops every still-pushed `app_ctx` after each test and asserts the leak list is empty — a hard guard against context-management regressions.",
+          "sources": [
+            "tests/conftest.py#L67-L79"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The autouse `_standard_os_environ` fixture monkeypatch-deletes `FLASK_ENV_FILE`, `FLASK_APP`, `FLASK_DEBUG`, `FLASK_RUN_FROM_CLI` and `WERKZEUG_RUN_MAIN` so CLI tests can't leak environment state into each other.",
+          "sources": [
+            "tests/conftest.py#L10-L24"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The shared `app` fixture builds `Flask(\"flask_test\", root_path=os.path.dirname(__file__))` with `TESTING=True` and `SECRET_KEY=\"test key\"`, which is why `tests/templates/` and `tests/static/` resolve as the app's template and static folders.",
+          "sources": [
+            "tests/conftest.py#L27-L34",
+            "tests/templates/simple_template.html",
+            "tests/static/index.html"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Test weight is concentrated: `test_basic.py` 1974 lines / 95 test functions, `test_blueprints.py` 1115, `test_cli.py` 703 / 34 tests, `test_templating.py` 532 — versus 28 lines for `test_session_interface.py` and 21 for `test_subclassing.py`.",
+          "sources": [
+            "tests/test_basic.py",
+            "tests/test_blueprints.py",
+            "tests/test_cli.py",
+            "tests/test_session_interface.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CLI tests are backed by fixture apps under `tests/test_apps/`, including `cliapp/factory.py`, `cliapp/multiapp.py`, `cliapp/importerrorapp.py`, a nested `inner1/inner2/flask.py` shadowing case, and `helloworld/wsgi.py` for implicit discovery — plus checked-in `.env` and `.flaskenv` files.",
+          "sources": [
+            "tests/test_apps/cliapp/factory.py",
+            "tests/test_apps/cliapp/multiapp.py",
+            "tests/test_apps/helloworld/wsgi.py",
+            "tests/test_apps/.flaskenv"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Async coverage is gated on the optional extra: `tests/test_async.py` begins with `pytest.importorskip(\"asgiref\")` and exercises async views, async `View.dispatch_request`, async `MethodView` handlers and async error handlers across app and blueprint.",
+          "sources": [
+            "tests/test_async.py#L1-L40",
+            "pyproject.toml#L31-L32"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Type checking is a first-class test target: `tests/type_check/` contains `typing_route.py`, `typing_app_decorators.py` and `typing_error_handler.py`, and both mypy (`strict = true`, `files = [\"src\", \"tests/type_check\"]`) and pyright run over them in the `typing` tox env and a dedicated CI job.",
+          "sources": [
+            "tests/type_check/typing_route.py#L1-L25",
+            "pyproject.toml#L114-L131",
+            ".github/workflows/tests.yaml#L44-L66"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The test matrix is unusually broad: CPython 3.10–3.15 including free-threaded `3.14t`, Windows and macOS runners, PyPy 3.11, a minimum-dependency env pinning exact lower bounds, and a dev env installing six Pallets libraries from git main tarballs.",
+          "sources": [
+            ".github/workflows/tests.yaml#L14-L32",
+            "pyproject.toml#L176-L210"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Coverage is configured (branch mode, `source = [\"flask\", \"tests\"]`, `exclude_also` for TYPE_CHECKING blocks and `raise NotImplementedError`) but no workflow runs coverage or enforces a threshold — the tox commands invoke plain `pytest -v --tb=short`.",
+          "sources": [
+            "pyproject.toml#L96-L112",
+            "pyproject.toml#L166-L174",
+            ".github/workflows/tests.yaml#L41-L43"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Example apps carry their own tests: `examples/tutorial/tests/` has four modules (auth, blog, db, factory) plus `data.sql` seed data, and `examples/javascript/tests/test_js_example.py` exists — but neither is in `testpaths`, so CI never runs them.",
+          "sources": [
+            "examples/tutorial/tests/test_auth.py",
+            "examples/tutorial/tests/data.sql",
+            "examples/javascript/tests/test_js_example.py",
+            "pyproject.toml#L90-L91"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Session security behaviour has direct tests — SameSite attribute variants and `SECRET_KEY_FALLBACKS` key rotation are asserted in `test_basic.py` around lines 342–420.",
+          "sources": [
+            "tests/test_basic.py#L342-L420",
+            "src/flask/sessions.py#L303-L322"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Test harness code being tested is itself shipped: `FlaskClient.session_transaction` opens a real request context, mutates the session, saves it and re-injects `Set-Cookie` into the client jar, and `FlaskCliRunner.invoke` defaults `obj` to `ScriptInfo(create_app=lambda: self.app)`.",
+          "sources": [
+            "src/flask/testing.py#L135-L183",
+            "src/flask/testing.py#L262-L298"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Style enforcement runs via pre-commit (ruff check + ruff format, uv-lock, codespell, merge-conflict/debug-statement/whitespace hooks) with all revs pinned to frozen SHAs, executed both as the `style` tox env and the `pre-commit.yaml` workflow.",
+          "sources": [
+            ".pre-commit-config.yaml#L1-L26",
+            "pyproject.toml#L211-L216"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "risk_map": {
+      "summary": "Flask's security-sensitive surface is narrow but load-bearing: signed session cookies, host validation, file serving, template autoescaping, and code that executes user-supplied Python. The largest structural risk in this checkout is the 3.2 context merge and the `ctx`-first-parameter signature change, which is backstopped only by a signature-sniffing `__init_subclass__` shim that mutates the base `Flask` class at subclass-definition time. Config loading (`from_pyfile`), the shell command (`PYTHONSTARTUP`), and CLI app discovery (`--cert` import strings, factory `ast.literal_eval`) all evaluate code or import arbitrary modules by design. Several defaults are permissive by intent and must be set by deployers: `SESSION_COOKIE_SECURE=False`, `SESSION_COOKIE_SAMESITE=None`, `SECRET_KEY=None`, `TRUSTED_HOSTS=None`.",
+      "claims": [
+        {
+          "claim": "`Flask.__init_subclass__` mutates global class state: when it detects an old-signature override it calls `setattr(Flask, method.__name__, add_ctx(base_method))` on the *base* class, so one legacy subclass anywhere in the process rewraps `Flask`'s methods for every app in that process.",
+          "sources": [
+            "src/flask/app.py#L255-L310",
+            "src/flask/app.py#L86-L107"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`Config.from_pyfile` compiles and `exec`s the target file into a synthetic module namespace — arbitrary code execution by design, so config paths must never come from untrusted input.",
+          "sources": [
+            "src/flask/config.py#L187-L217"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`flask shell` executes `PYTHONSTARTUP` via `eval(compile(f.read(), startup, \"exec\"), ctx)` before the REPL starts, inheriting whatever that env var points at.",
+          "sources": [
+            "src/flask/cli.py#L1017-L1024"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`CertParamType.convert` falls back to `werkzeug.utils.import_string(value, silent=True)` for `--cert`, so a non-path `--cert` value imports an arbitrary dotted module attribute looking for an `ssl.SSLContext`.",
+          "sources": [
+            "src/flask/cli.py#L780-L826"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`find_app_by_string` parses `module:factory(args)` with `ast.parse` and `ast.literal_eval` — literal-only, so it resists arbitrary expression injection — but `locate_app` still `__import__`s the module, executing it fully.",
+          "sources": [
+            "src/flask/cli.py#L120-L196",
+            "src/flask/cli.py#L241-L265"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`open_resource` and `open_instance_resource` join user-supplied `resource` onto `root_path`/`instance_path` with plain `os.path.join` and no `safe_join`, so an absolute or `..` path escapes the directory — safe for the intended developer-controlled use, unsafe if fed request data.",
+          "sources": [
+            "src/flask/app.py#L415-L468",
+            "src/flask/blueprints.py#L104-L127"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "By contrast `send_from_directory` explicitly documents and delegates to Werkzeug's `safe_join`, and the docstring warns that the `directory` argument itself must never come from the client.",
+          "sources": [
+            "src/flask/helpers.py#L543-L585"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Security-relevant defaults ship permissive: `SECRET_KEY=None`, `SECRET_KEY_FALLBACKS=None`, `SESSION_COOKIE_SECURE=False`, `SESSION_COOKIE_SAMESITE=None`, `TRUSTED_HOSTS=None`, `MAX_CONTENT_LENGTH=None` — with no secret key, `get_signing_serializer` returns None and sessions silently degrade to `NullSession`.",
+          "sources": [
+            "src/flask/app.py#L207-L239",
+            "src/flask/sessions.py#L303-L312",
+            "src/flask/ctx.py#L381-L393"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Session cookie signing defaults to SHA-1 HMAC via `_lazy_sha1`, deferred to runtime specifically so FIPS builds without SHA-1 can fail at configure time rather than import time.",
+          "sources": [
+            "src/flask/sessions.py#L276-L300"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`open_session` swallows `BadSignature` and returns an empty session, so tampered or key-rotated-out cookies are indistinguishable from no cookie at the application layer — no signal is emitted.",
+          "sources": [
+            "src/flask/sessions.py#L323-L336"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Teardown error handling changed to collect-then-raise: `_CollectErrors.raise_any` raises a `BaseExceptionGroup` on Python 3.11+ but only `self.errors[0]` on 3.10, so identical failures surface as different exception types across supported versions.",
+          "sources": [
+            "src/flask/helpers.py#L654-L682",
+            "pyproject.toml#L22"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Dead/stale developer config: `.devcontainer/on-create-command.sh` runs `pip install -r requirements/dev.txt`, but no `requirements/` directory exists — the repo moved to uv dependency groups in `pyproject.toml`, so devcontainer creation fails.",
+          "sources": [
+            ".devcontainer/on-create-command.sh#L1-L7",
+            ".devcontainer/devcontainer.json#L1-L16",
+            "pyproject.toml#L36-L68"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Deprecated-but-live code paths that must be kept working through 4.0: module-level `__getattr__` shims for `flask.ctx.RequestContext` and `flask.globals.request_ctx`, and the `should_ignore_error` hook checked on every first request in `full_dispatch_request` and again in `wsgi_app`'s finally block.",
+          "sources": [
+            "src/flask/ctx.py#L528-L540",
+            "src/flask/globals.py#L65-L77",
+            "src/flask/app.py#L995-L1014",
+            "src/flask/sansio/app.py#L928-L938"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Blast-radius hotspot: `src/flask/app.py` (1628 lines) and `src/flask/sansio/app.py` (1013 lines) together hold dispatch, error handling, URL building, response coercion and every registration method — nearly every behavioural change lands in one of these two files.",
+          "sources": [
+            "src/flask/app.py",
+            "src/flask/sansio/app.py"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Fragile coupling to Werkzeug internals: `create_url_adapter` comments that it must call `get_host` itself \"until bind_to_environ does\", and forces `subdomain` to the default because \"Werkzeug doesn't implement subdomain matching yet\" — both break silently if Werkzeug changes.",
+          "sources": [
+            "src/flask/app.py#L529-L552"
+          ],
+          "kind": "inference"
+        },
+        {
+          "claim": "`Blueprint.get_send_file_max_age` and `send_static_file` are acknowledged duplicates of the `Flask` methods (\"Note this is a duplicate of the same method in the Flask class\"), so fixes must be applied in two places.",
+          "sources": [
+            "src/flask/blueprints.py#L55-L102",
+            "src/flask/app.py#L366-L414"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "extension_points": {
+      "summary": "Flask is built almost entirely out of swap points. Class-level attributes on `App`/`Flask` (`request_class`, `response_class`, `json_provider_class`, `config_class`, `app_ctx_globals_class`, `url_rule_class`, `jinja_environment`, `aborter_class`, `session_interface`, `test_client_class`) let subclasses replace nearly every collaborator. Registration flows through `@setupmethod`-guarded decorators that append into dicts keyed by blueprint name or `None`. Third-party CLI commands load from the `flask.commands` entry point group; extensions stash state in `app.extensions[name]`. The JSON layer has two independent extension seams: `JSONProvider` for request/response JSON and `JSONTag`/`TaggedJSONSerializer.register` for session payload types.",
+      "claims": [
+        {
+          "claim": "Swappable classes are declared as plain class attributes and instantiated lazily: `aborter_class`, `jinja_environment`, `app_ctx_globals_class`, `config_class`, `json_provider_class`, `url_rule_class`, `url_map_class`, `test_client_class`, `test_cli_runner_class`.",
+          "sources": [
+            "src/flask/sansio/app.py#L98-L275",
+            "src/flask/app.py#L240-L253"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Hook factories are explicitly designed for override: `make_config`, `make_aborter`, `create_jinja_environment`, `create_global_jinja_loader`, `create_url_adapter`, `auto_find_instance_path`, `select_jinja_autoescape`, `make_shell_context`, `ensure_sync`, `async_to_sync`.",
+          "sources": [
+            "src/flask/sansio/app.py#L476-L548",
+            "src/flask/app.py#L470-L560",
+            "src/flask/app.py#L1068-L1103"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Third-party CLI commands plug in through the `flask.commands` entry point group, loaded once by `FlaskGroup._load_plugin_commands` before any built-in or app command lookup.",
+          "sources": [
+            "src/flask/cli.py#L600-L612"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Extensions store per-app state in `app.extensions`, keyed by the extension module's short name — the celery example demonstrates the convention with `app.extensions[\"celery\"] = celery_app`.",
+          "sources": [
+            "src/flask/sansio/app.py#L380-L389",
+            "examples/celery/src/task_app/__init__.py#L28-L38",
+            "examples/celery/make_celery.py#L1-L4"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "JSON behaviour is swapped by subclassing `JSONProvider` (implement `dumps`/`loads`; `dump`, `load` and `response` have defaults) and setting `json_provider_class` or assigning `app.json` directly.",
+          "sources": [
+            "src/flask/json/provider.py#L19-L104",
+            "src/flask/sansio/app.py#L169-L180"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Session payload types extend via `JSONTag` subclasses registered with `TaggedJSONSerializer.register(tag, force=..., index=...)`; the module docstring walks through adding an `OrderedDict` tag at index 0.",
+          "sources": [
+            "src/flask/json/tag.py#L1-L41",
+            "src/flask/json/tag.py#L256-L280"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Session storage backends plug in by subclassing `SessionInterface` (implementing `open_session`/`save_session`, which raise `NotImplementedError` in the base) and assigning `app.session_interface`; `null_session_class` and `should_set_cookie` are also override points.",
+          "sources": [
+            "src/flask/sessions.py#L100-L275",
+            "src/flask/app.py#L249-L253"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The registries new handlers append into are all name-keyed dicts on `Scaffold`/`App`: `view_functions`, `error_handler_spec`, `before_request_funcs`, `after_request_funcs`, `teardown_request_funcs`, `url_value_preprocessors`, `url_default_functions`, `template_context_processors`, with `None` meaning app-level.",
+          "sources": [
+            "src/flask/sansio/scaffold.py#L75-L216",
+            "src/flask/sansio/blueprints.py#L379-L411"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`@setupmethod` wraps every registration decorator with `_check_setup_finished`, which raises an `AssertionError` once `_got_first_request` is true — so extensions must complete registration before the first request.",
+          "sources": [
+            "src/flask/sansio/scaffold.py#L42-L50",
+            "src/flask/sansio/app.py#L410-L420"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Custom CLI groups are supported end-to-end: `AppGroup.command` auto-wraps callbacks in `with_appcontext` (disable with `with_appcontext=False`) and `AppGroup.group` defaults nested groups to `AppGroup`; `FlaskGroup(create_app=...)` builds a bespoke script entrypoint.",
+          "sources": [
+            "src/flask/cli.py#L405-L438",
+            "src/flask/cli.py#L563-L599"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Blueprint CLI grouping is a three-way switch in `Blueprint.register`: `cli_group=None` merges commands into `app.cli` flat, the `_sentinel` default nests them under the blueprint name, and an explicit string nests them under that name.",
+          "sources": [
+            "src/flask/sansio/blueprints.py#L337-L346",
+            "src/flask/blueprints.py#L30-L43"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Template extension points: `template_filter`, `template_test`, `template_global` (usable with or without parentheses as of 3.2) on the app, mirrored by `app_template_filter`/`app_template_test`/`app_template_global` on blueprints, plus `DispatchingJinjaLoader._iter_loaders` for custom template discovery.",
+          "sources": [
+            "src/flask/sansio/app.py#L663-L825",
+            "src/flask/sansio/blueprints.py#L443-L612",
+            "src/flask/templating.py#L98-L120"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "URL building failures are extensible through `app.url_build_error_handlers`, a list consulted by `handle_url_build_error`; functions returning None or re-raising `BuildError` are skipped.",
+          "sources": [
+            "src/flask/sansio/app.py#L344-L352",
+            "src/flask/sansio/app.py#L981-L1013",
+            "src/flask/app.py#L1216-L1225"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Blueprints can be nested arbitrarily via `Blueprint.register_blueprint`, with `register` composing parent and child `url_prefix` and `subdomain` and threading `name_prefix` to produce dotted names.",
+          "sources": [
+            "src/flask/sansio/blueprints.py#L255-L378"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Deferred setup is available for extensions that need the app object later: `Blueprint.record` / `record_once` append callbacks that receive a `BlueprintSetupState` at registration time.",
+          "sources": [
+            "src/flask/sansio/blueprints.py#L34-L118",
+            "src/flask/sansio/blueprints.py#L223-L254"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_handoff": {
+      "summary": "Read the sans-IO README first — it defines the hardest rule in this repo: nothing in `src/flask/sansio/` may do IO or touch the Flask globals, so context-dependent code belongs in `app.py`/`blueprints.py`. This is the 3.2 development line, so the second thing to internalise is that `RequestContext` no longer exists as a distinct class and that dispatch-related `Flask` methods take `ctx: AppContext` as their first parameter. Every user-visible change needs a `CHANGES.rst` entry with a `:pr:`/`:issue:` reference and a `.. versionadded:: 3.2` / `.. versionchanged:: 3.2` directive in the docstring — this is followed consistently throughout the codebase. Verify with `tox run -e py3.13` (or plain `pytest`), `tox run -e typing`, and `tox run -e style`; `filterwarnings = error` means a new warning without a matching test will break the suite.",
+      "claims": [
+        {
+          "claim": "Read first, in order: `src/flask/sansio/README.md` (the IO boundary rule), `src/flask/ctx.py` (the merged `AppContext`), `src/flask/app.py` `wsgi_app`/`full_dispatch_request` (the dispatch spine), and `docs/lifecycle.rst` (the maintainers' own narrative of setup → serving → request).",
+          "sources": [
+            "src/flask/sansio/README.md#L1-L6",
+            "src/flask/ctx.py#L260-L298",
+            "src/flask/app.py#L1569-L1626",
+            "docs/lifecycle.rst#L1-L60"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Safe edit boundary: code in `src/flask/sansio/` must not import `flask.globals` or perform IO; if a change needs `current_app`, `request` or the filesystem, it belongs in the IO subclass in `src/flask/app.py` or `src/flask/blueprints.py`.",
+          "sources": [
+            "src/flask/sansio/README.md#L1-L6",
+            "src/flask/sansio/app.py#L1-L58",
+            "src/flask/app.py#L32-L55"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Trap: if you add or change a `Flask` dispatch method, it must take `ctx: AppContext` as the first parameter after `self`, or `__init_subclass__`'s signature sniffing will treat subclass overrides as legacy and silently rewrap base-class methods.",
+          "sources": [
+            "src/flask/app.py#L255-L310",
+            "CHANGES.rst#L11-L16"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Trap: `filterwarnings = [\"error\"]` turns every warning into a test failure — any new `DeprecationWarning` must be paired with a test that expects it.",
+          "sources": [
+            "pyproject.toml#L90-L94"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Convention: every public change gets a `CHANGES.rst` bullet under the unreleased version with a `:pr:` or `:issue:` role, as the 3.2.0 section demonstrates for all 13 current entries.",
+          "sources": [
+            "CHANGES.rst#L1-L33"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Convention: docstrings carry Sphinx `.. versionadded::` / `.. versionchanged::` directives naming the exact release — e.g. `select_jinja_autoescape` documents the 3.2 case-insensitivity change and `do_teardown_request` documents the 3.2 all-callbacks change.",
+          "sources": [
+            "src/flask/sansio/app.py#L533-L548",
+            "src/flask/app.py#L1423-L1455"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Tests to run: `pytest` (or `tox run` for a specific Python), `tox run -e typing` for mypy+pyright, and `tox run -e style` for the full pre-commit set; docs changes need `tox run -e docs`, which builds with `-W` so any Sphinx warning fails.",
+          "sources": [
+            "pyproject.toml#L158-L232",
+            ".github/workflows/tests.yaml#L41-L66"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Style is enforced by ruff with `select = [\"B\", \"E\", \"F\", \"I\", \"UP\", \"W\"]` and isort configured `force-single-line = true`, `order-by-type = false` — every import is on its own line throughout `src/`, matching that setting.",
+          "sources": [
+            "pyproject.toml#L133-L149",
+            "src/flask/app.py#L1-L55"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Typing is strict and non-optional: `[tool.mypy] strict = true` over `src` and `tests/type_check`, plus pyright in basic mode; the package ships `src/flask/py.typed`, so any missing annotation is a public-API regression.",
+          "sources": [
+            "pyproject.toml#L114-L131",
+            "src/flask/py.typed"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Shared return/callback types live in `src/flask/typing.py` (`ResponseReturnValue`, `ResponseValue`, `HeadersValue`, `AppOrBlueprintKey`); extend these rather than inlining unions, and note `ResponseValue` deliberately includes `AsyncIterable` for Quart's benefit.",
+          "sources": [
+            "src/flask/typing.py#L11-L48"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Trap: `Blueprint.get_send_file_max_age` and `Blueprint.send_static_file` duplicate the `Flask` versions by design — a fix in one must be mirrored in the other.",
+          "sources": [
+            "src/flask/blueprints.py#L55-L102",
+            "src/flask/app.py#L366-L414"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Trap: registration methods are frozen after the first request by `@setupmethod`/`_check_setup_finished`, so any new registration API must be decorated with `@setupmethod` to stay consistent.",
+          "sources": [
+            "src/flask/sansio/scaffold.py#L42-L50",
+            "src/flask/sansio/app.py#L569-L604"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Trap: `conftest.py`'s autouse `leak_detector` fails any test that leaves a context pushed — when adding context manipulation, make sure pushes and pops balance even on the error path.",
+          "sources": [
+            "tests/conftest.py#L67-L79",
+            "src/flask/ctx.py#L446-L504"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Dependency changes require regenerating `uv.lock` — the `uv-lock` pre-commit hook and the `update-requirements` tox env (`uv lock -U`) both enforce it, and the lock file is bundled into the sdist.",
+          "sources": [
+            ".pre-commit-config.yaml#L6-L10",
+            "pyproject.toml#L226-L232",
+            "pyproject.toml#L80-L88"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Don't add new runtime dependencies casually: the six pinned runtime deps are all Pallets-maintained, and optional features (async, dotenv) are gated behind extras with graceful `ImportError` handling at the call site.",
+          "sources": [
+            "pyproject.toml#L23-L34",
+            "src/flask/app.py#L1088-L1103",
+            "src/flask/cli.py#L732-L744"
+          ],
+          "kind": "inference"
+        }
+      ]
+    },
+    "agent_prompt": "You are working on **Flask** (pallets/flask), the Python WSGI web framework, at the unreleased **3.2.0.dev** line on `main`. It is a library, not an application: the deliverable is the `flask` package plus a `flask` console script (`[project.scripts] flask = \"flask.cli:main\"`).\n\n**Architecture.** All source lives in `src/flask/` (~9.5k lines across 20 modules). The defining structural decision is a sans-IO split. `src/flask/sansio/` holds `Scaffold` → `App` → `Blueprint`: registries, setup logic, config handling, template filter/test/global registration — and, per `src/flask/sansio/README.md`, this code **must not do IO and must not use the Flask globals**, because Quart and other alternative implementations reuse it. The IO layer is `src/flask/app.py` (`Flask(App)`, 1628 lines), `src/flask/blueprints.py`, `cli.py`, `helpers.py`, `templating.py`, `testing.py`, `wrappers.py`, `sessions.py`, `json/`.\n\n**The 3.2 change you must internalise.** `RequestContext` has been merged into `AppContext` (`src/flask/ctx.py`). A single `AppContext` now owns `app`, `g`, `url_adapter`, `_request`, `_session`, `_flashes` and `_after_request_functions`, lives in one ContextVar `_cv_app` (`src/flask/globals.py`), and is pushed once per request and per CLI command. All five public proxies (`current_app`, `g`, `request`, `session`, `app_ctx`) are `LocalProxy` views over that one var. `flask.ctx.RequestContext` and `flask.globals.request_ctx` survive only as module-level `__getattr__` deprecation shims removed in 4.0. Correspondingly, `Flask.dispatch_request`, `full_dispatch_request`, `finalize_request`, `preprocess_request`, `process_response`, `handle_*_exception`, `log_exception`, `make_default_options_response`, `do_teardown_request` and `do_teardown_appcontext` now take **`ctx: AppContext` as the first parameter after `self`**. `Flask.__init_subclass__` sniffs subclass signatures and wraps old-style overrides with a DeprecationWarning — if you add or rename one of these methods, keep the `ctx` parameter or you will silently trip that shim.\n\n**Request trace.** `__call__` → `wsgi_app` → `request_context(environ)` (`AppContext.from_environ` builds the `Request` and sets `request.json_module = app.json`) → `ctx.push()` (sets ContextVar, sends `appcontext_pushed`, opens the session, *then* routes via `match_request`) → `full_dispatch_request` (sets `_got_first_request`, sends `request_started`, `preprocess_request`, `dispatch_request`) → `finalize_request` → `make_response` → `process_response` (after_request funcs in reverse, then `session_interface.save_session`) → `ctx.pop(error)` (teardowns under `_CollectErrors`, which raises a `BaseExceptionGroup` on 3.11+ but only the first error on 3.10).\n\n**CLI trace.** `FlaskGroup` (`cli.py`) registers eager `--env-file`, `--app`, `--debug` options in that order, sets `auto_envvar_prefix=\"FLASK\"`, and sets `FLASK_RUN_FROM_CLI=true` in `make_context` so a stray `app.run()` no-ops. `ScriptInfo.load_app` resolves `module:name`, `module:factory(args)` (literal args only, via `ast.literal_eval`), auto-detected `app`/`application`/`create_app`/`make_app`, or `wsgi.py`/`app.py`. Built-ins are `run`, `shell`, `routes`; plugins load from the `flask.commands` entry point group.\n\n**Conventions.** Every public change needs a `CHANGES.rst` bullet under the unreleased version with `:pr:`/`:issue:`, and a `.. versionadded:: 3.2` / `.. versionchanged:: 3.2` in the docstring. Imports are one-per-line (ruff isort `force-single-line = true`). Typing is strict mypy + pyright over `src` and `tests/type_check`; the package ships `py.typed`.\n\n**Verify with** `pytest` (or `tox run`), `tox run -e typing`, `tox run -e style`, `tox run -e docs`. Two traps: `filterwarnings = [\"error\"]` fails the suite on any unexpected warning, and the autouse `leak_detector` fixture in `tests/conftest.py` fails any test that leaves an app context pushed.\n\n**Known rough edges.** `Blueprint.get_send_file_max_age`/`send_static_file` are acknowledged duplicates of the `Flask` versions. `create_url_adapter` contains two comments about compensating for Werkzeug gaps (`get_host`, subdomain matching). `.devcontainer/on-create-command.sh` still references a deleted `requirements/dev.txt`. `open_resource`/`open_instance_resource` use plain `os.path.join` (no `safe_join`) and are only safe for developer-controlled paths."
+  },
+  "analysis": {
+    "agent": "claude",
+    "model": "cli:claude",
+    "runtime_ms": 395908,
+    "cost_usd": 3.6256890000000004,
+    "collected_at": "2026-09-22T08:36:59.279Z"
   }
 }

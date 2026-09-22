@@ -12498,5 +12498,1009 @@
         ]
       }
     ]
+  },
+  "report": {
+    "overview": "axios is the promise-based HTTP client library for browsers and Node.js, shipped as ESM source in `lib/` and Rollup-built UMD/ESM/CJS bundles in `dist/`. Its distinguishing shape is a single request pipeline (`Axios._request` → interceptors → `dispatchRequest` → adapter) that fans out to three interchangeable adapters — XHR, Node HTTP/HTTP2, and Fetch — selected by capability probe rather than environment name. This particular fork/branch (v1.x at 1.20.0) is unusually security-hardened: config reads go through own-property guards (`utils.getSafeProp`, `utils.toSafeFlatObject`), merges produce null-prototype objects, and there is a 94KB `THREATMODEL.md` plus a 1600-line prototype-pollution test suite. It is consumed by application developers as a dependency, and its contributor surface is governed by `AGENTS.md` plus a pre-release changelog/docs staging workflow.",
+    "system_map": {
+      "summary": "The public ESM entry is `index.js`, which unwraps the default instance built by `lib/axios.js` and re-exports its statics as named exports; CJS consumers get the Rollup-built `dist/node/axios.cjs`. Domain logic lives in `lib/core/` (Axios class, dispatch, merge, headers, errors, interceptors), I/O in `lib/adapters/`, environment selection in `lib/platform/` (Node by default, browser via package.json `browser` aliasing), and generic utilities in `lib/helpers/`. There is no storage layer — the only persistent state is browser cookies read for XSRF (`lib/helpers/cookies.js`) and pooled HTTP/2 sessions (`lib/helpers/Http2Sessions.js`). Build is `gulp clear && rollup -c` producing five bundles; tests are Vitest with three projects (unit/browser/browser-headless) plus packed-tarball smoke and module suites. Deployment shape is an npm package published on `v1.*.*` tags with provenance.",
+      "claims": [
+        {
+          "claim": "`index.js` is the ESM public entry: it imports the default instance from `lib/axios.js` and destructures 18 statics (`Axios`, `AxiosError`, `CanceledError`, `CancelToken`, `VERSION`, `toFormData`, `AxiosHeaders`, `HttpStatusCode`, `formToJSON`, `getAdapter`, `mergeConfig`, `create`, …) so ESM and CJS named-import shapes stay identical.",
+          "sources": [
+            "index.js#L1-L43",
+            "lib/axios.js#L44-L89"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`createInstance(defaultConfig)` in `lib/axios.js` binds `Axios.prototype.request` to a fresh `Axios` context via `helpers/bind.js`, then copies both prototype and context onto the callable with `utils.extend(..., {allOwnKeys: true})`, which is why `axios(...)` is callable *and* carries `.get`/`.interceptors`/`.defaults`.",
+          "sources": [
+            "lib/axios.js#L20-L42",
+            "lib/helpers/bind.js"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Runtime boundary between Node and browser is resolved by package.json `browser`/`react-native` maps that swap `lib/adapters/http.js` → `lib/helpers/null.js`, `lib/platform/node/index.js` → `lib/platform/browser/index.js`, and Node `Buffer`/`FormData` classes to null — `lib/platform/index.js` itself always imports the Node platform.",
+          "sources": [
+            "package.json#L52-L66",
+            "lib/platform/index.js",
+            "lib/platform/node/index.js",
+            "lib/platform/browser/index.js"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Adapter registry `knownAdapters` maps `http` → Node adapter, `xhr` → XHR adapter, and `fetch` → an object with a `get(config)` factory (`fetchAdapter.getFetch`), so fetch is resolved lazily per-`config.env` while the other two are plain functions or `false`.",
+          "sources": [
+            "lib/adapters/adapters.js#L16-L36",
+            "lib/adapters/fetch.js#L680-L715"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Default adapter preference is the ordered list `['xhr', 'http', 'fetch']` set in `lib/defaults/index.js`; `getAdapter` walks it, treating `false` as 'not supported by the environment' and `undefined` as 'not available in the build' when composing the `ERR_NOT_SUPPORT` message.",
+          "sources": [
+            "lib/defaults/index.js#L42",
+            "lib/adapters/adapters.js#L65-L115"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The Node adapter is the heaviest module (1490 lines) and pulls in `http`, `https`, `http2`, `zlib`, `stream`, `path`, plus the four runtime deps `follow-redirects`, `form-data` (indirectly), `https-proxy-agent`, and `proxy-from-env`.",
+          "sources": [
+            "lib/adapters/http.js#L1-L37",
+            "package.json#L149-L154"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Build emits five artifacts from two inputs: `dist/esm/axios.js` (ESM, from `index.js`), `dist/axios.js` (UMD, Babel-transpiled to ES5, from `lib/axios.js`), `dist/browser/axios.cjs`, and `dist/node/axios.cjs` (Babel-targeted at Node 12, with `proxy-from-env` deliberately inlined by `nodeCjsExternal`).",
+          "sources": [
+            "rollup.config.js#L66-L145"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`gulp version` (run via the `preversion` npm script) regenerates `lib/env/data.js` from package.json and rewrites the `contributors` array by calling the GitHub API through an axios instance built in `scripts/axios-build-instance.js` using `GITHUB_TOKEN`.",
+          "sources": [
+            "gulpfile.js#L36-L82",
+            "scripts/axios-build-instance.js",
+            "package.json#L100-L102"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Test commands are Vitest-project-scoped: `npm run test:vitest:unit` (node env, `tests/unit/**/*.test.js`), `test:vitest:browser` (chromium headed), and `test:vitest:browser:headless` (chromium+firefox+webkit via Playwright), all declared in `vitest.config.js` with a 10s default `testTimeout`.",
+          "sources": [
+            "vitest.config.js#L1-L46",
+            "package.json#L103-L108"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CI order in `run-ci.yml` is: checkout → `npm ci --ignore-scripts` → lint → build → `npx playwright install --with-deps` → unit → browser headless → `npm pack` → dependency-review → upload tarball; every downstream job (`cjs-smoke`, `esm-smoke`, `cjs-module`, `esm-module`, `bun-smoke`, `deno-smoke`) `needs` that job and installs the packed tarball rather than the source tree.",
+          "sources": [
+            ".github/workflows/run-ci.yml#L14-L60",
+            ".github/workflows/run-ci.yml#L62-L110"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Publishing is tag-triggered (`v1.*.*`) into the `npm-publish` GitHub environment with `id-token: write` and `npm stage publish --provenance --access public`; release branches are cut by a manual `workflow_dispatch` in `release-branch.yml` with patch/minor/major + prerelease inputs.",
+          "sources": [
+            ".github/workflows/publish.yml#L1-L37",
+            ".github/workflows/release-branch.yml#L1-L18"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Supply-chain guards are separate workflows: `lockfile-lint.yml` validates HTTPS registry URLs and integrity hashes on any package.json/package-lock.json change (pinned by name, deliberately not a devDependency), `zizmor.yml` scans the Actions themselves with `permissions: {}`, and `verify-build-reproducibility.yml` does a two-pass build diff (currently `continue-on-error: true`).",
+          "sources": [
+            ".github/workflows/lockfile-lint.yml#L1-L40",
+            ".github/workflows/zizmor.yml#L1-L22",
+            ".github/workflows/verify-build-reproducibility.yml#L1-L28"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The documentation site is a separate VitePress+Vue workspace under `docs/` with its own package.json (`docs:dev`, `docs:build`, `docs:update:sponsors`, `test:search`) and 155 markdown files across localized `docs/<lang>/pages/` trees — it is not part of the library build.",
+          "sources": [
+            "docs/package.json#L1-L30",
+            "package.json#L110"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Two local dev servers exist for manual exercise: `npm start` runs `sandbox/server.js` (serves `sandbox/client.html` and an `/api` echo endpoint) and `npm run examples` runs `examples/server.js`.",
+          "sources": [
+            "package.json#L111-L112",
+            "sandbox/server.js#L1-L30"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "feature_catalog": {
+      "summary": "The user-facing surface is the axios instance API: a callable default export, per-method aliases generated onto `Axios.prototype`, interceptor managers, cancellation via both `CancelToken` and `AbortSignal`, and a large `AxiosRequestConfig` surface typed in `index.d.ts`/`index.d.cts`. Beyond the classic v1 surface this branch carries newer options: `httpVersion: 2`, `allowedSocketPaths`, `sensitiveHeaders`, `redact`, `formDataHeaderPolicy`, `parseReviver`, and `query` as a first-class HTTP method. Transport features include transparent gzip/deflate/br/zstd decompression, upload/download progress with rate throttling (`maxRate`), proxy handling with CIDR-aware `NO_PROXY` bypass, and `maxContentLength`/`maxBodyLength` enforcement on buffered *and* streamed bodies in all three adapters. Form-data handling is bidirectional: `toFormData`/`formToJSON` plus `formDataToStream` for Node uploads.",
+      "claims": [
+        {
+          "claim": "Method aliases are generated in two loops on `Axios.prototype`: `delete/get/head/options` (no body, but forward `config.data` via an own-property check) and `post/put/patch/query` (with body); each of the latter except `query` also gets a `<method>Form` variant that forces `Content-Type: multipart/form-data`.",
+          "sources": [
+            "lib/core/Axios.js#L252-L296"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`query` is a supported HTTP method throughout: it appears in the frozen `methodList` alongside `purge`/`link`/`unlink`, gets a default header bucket, and is deliberately excluded from the `Form` shorthand generation because multipart bodies don't fit its safe/idempotent semantics.",
+          "sources": [
+            "lib/core/methodList.js#L3-L16",
+            "lib/core/Axios.js#L288-L294",
+            "tests/unit/query.test.js"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Interceptors are registered through `InterceptorManager.use(fulfilled, rejected, {synchronous, runWhen})` and support `eject(id)` and `clear()`; ejection writes a `null` tombstone and trims trailing tombstones once no `forEach` iteration is in flight, so repeated register/eject cycles don't grow `handlers`.",
+          "sources": [
+            "lib/core/InterceptorManager.js#L67-L136",
+            "lib/core/InterceptorManager.js#L148-L168",
+            "PRE_RELEASE_CHANGELOG.md#L24"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Cancellation is dual-path: legacy `CancelToken` (with `CancelToken.source()`, `throwIfRequested()`, and a `toAbortSignal()` bridge that exposes `signal.unsubscribe`) and modern `config.signal`; `composeSignals` merges any number of signals plus a timeout into one `AbortController`.",
+          "sources": [
+            "lib/cancel/CancelToken.js#L105-L132",
+            "lib/helpers/composeSignals.js#L1-L66",
+            "lib/core/dispatchRequest.js#L18-L26"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Node transparent decompression covers gzip/x-gzip/compress/x-compress, deflate (through `ZlibHeaderTransformStream`), brotli, and zstd, each gated on runtime support and each deleting `content-encoding` after piping so downstream consumers aren't confused; `decompress: false` disables the whole path.",
+          "sources": [
+            "lib/adapters/http.js#L1180-L1220",
+            "lib/helpers/ZlibHeaderTransformStream.js"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`Accept-Encoding` advertising is transitional-gated: `zstd` is only appended when `transitional.advertiseZstdAcceptEncoding === true` (default `false`), so servers aren't offered an encoding by default.",
+          "sources": [
+            "lib/adapters/http.js#L938-L945",
+            "lib/defaults/transitional.js#L3-L10"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "HTTP/2 is opt-in via `httpVersion: 2` with `http2Options`; sessions are pooled per-authority by `Http2Sessions.getSession()` using `util.isDeepStrictEqual` on options, and combining HTTP/2 with an applied proxy rejects with `ERR_NOT_SUPPORT`.",
+          "sources": [
+            "lib/adapters/http.js#L1026-L1042",
+            "lib/helpers/Http2Sessions.js#L11-L50",
+            "tests/unit/helpers/Http2Sessions.test.js"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Progress reporting is available on both directions (`onUploadProgress`/`onDownloadProgress`) and is rate-limited plus decorated with `loaded/total/rate/estimated` by `progressEventReducer`/`progressEventDecorator`; `config.maxRate` (scalar or `[up, down]` tuple) throttles bytes via `AxiosTransformStream`.",
+          "sources": [
+            "lib/adapters/http.js#L860-L903",
+            "lib/helpers/progressEventReducer.js",
+            "lib/helpers/AxiosTransformStream.js"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`data:` URLs are a supported protocol in both Node and fetch adapters: Node returns a synthetic 200 (or 405 for non-GET) built from `fromDataURI`, and both adapters pre-check the decoded size with `estimateDataURLDecodedBytes` against `maxContentLength` before materializing the payload.",
+          "sources": [
+            "lib/adapters/http.js#L720-L768",
+            "lib/adapters/fetch.js#L314-L327",
+            "lib/helpers/estimateDataURLDecodedBytes.js"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "XSRF support reads a cookie (`xsrfCookieName`, default `XSRF-TOKEN`) and sets `xsrfHeaderName` (default `X-XSRF-TOKEN`) only in a standard browser env; `withXSRFToken` may be a boolean or a `(config) => boolean` function, and only strict `=== true` forces attachment cross-origin.",
+          "sources": [
+            "lib/helpers/resolveConfig.js#L84-L102",
+            "lib/defaults/index.js#L151-L152",
+            "tests/browser/xsrf.browser.test.js"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`AxiosError.toJSON()` supports opt-in redaction: when `config.redact` is a non-empty array, `redactConfig` walks the config (including arrays and `AxiosHeaders`, short-circuiting cycles) and replaces matching keys case-insensitively with `'[REDACTED ****]'`.",
+          "sources": [
+            "lib/core/AxiosError.js#L28-L72",
+            "lib/core/AxiosError.js#L170-L198"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`sensitiveHeaders: string[]` lets callers name headers that must be stripped on cross-origin redirects; it is validated to be an array of strings (else `ERR_BAD_OPTION_VALUE`) and installed as `options.beforeRedirects.sensitiveHeaders`, layered on top of follow-redirects' own stripping.",
+          "sources": [
+            "lib/adapters/http.js#L1073-L1108",
+            "lib/adapters/http.js#L223-L247"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`formDataHeaderPolicy: 'content-only'` narrows which headers a Node FormData implementation may inject to `content-type`/`content-length`; the default `'legacy'` merges everything `getHeaders()` returns.",
+          "sources": [
+            "lib/core/setFormDataHeaders.js#L1-L28",
+            "lib/helpers/resolveConfig.js#L65-L78",
+            "index.d.ts#L485"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`config.parseReviver` is threaded into the default `transformResponse` as the second argument to `JSON.parse`, giving callers a hook to rewrite parsed response values.",
+          "sources": [
+            "lib/defaults/index.js#L128-L138",
+            "index.d.ts#L479"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Six `transitional` flags gate behavior changes without a major bump: `silentJSONParsing`, `forcedJSONParsing`, `clarifyTimeoutError`, `legacyInterceptorReqResOrdering`, `advertiseZstdAcceptEncoding`, and `validateStatusUndefinedResolves`; each is asserted boolean via `validator.assertOptions` in `Axios._request`.",
+          "sources": [
+            "lib/defaults/transitional.js#L3-L10",
+            "lib/core/Axios.js#L96-L110"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "data_flow": {
+      "summary": "Input boundaries are the user config object (or URL string), instance defaults, and environment state (env proxy vars, `document.cookie`, platform globals). `mergeConfig` is the single state-materialization point: it emits a **null-prototype** object with `hasOwnProperty` restored as a non-enumerable own slot, skipping `__proto__`/`constructor`/`prototype` keys entirely. `dispatchRequest` re-flattens whatever interceptors handed back via `utils.toSafeFlatObject`, normalizes headers into `AxiosHeaders`, runs `transformRequest`, then hands off to the adapter. Adapters own the outbound byte boundary (header sanitization to byte strings, body size accounting, stream piping) and produce a raw `{data, status, statusText, headers, config, request}`, which flows back through `transformResponse`, `AxiosHeaders.from`, `settle`, and finally the response interceptor chain.",
+      "claims": [
+        {
+          "claim": "`mergeConfig` builds its result on `Object.create(null)` and re-attaches `hasOwnProperty` as a non-enumerable own data property with a `__proto__: null` descriptor, so `config.baseURL`/`config.auth` reads can never inherit from a polluted `Object.prototype` while user code calling `config.hasOwnProperty(...)` still works.",
+          "sources": [
+            "lib/core/mergeConfig.js#L33-L46"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Per-key merge strategy is table-driven: `url`/`method`/`data` take config2 only, ~25 keys (`baseURL`, `timeout`, `httpAgent`, `socketPath`, `allowedSocketPaths`, …) use `defaultToConfig2`, `validateStatus` uses `mergeDirectKeys`, `headers` deep-merges caselessly after `headersToObject`, and everything unlisted falls through to `mergeDeepProperties`.",
+          "sources": [
+            "lib/core/mergeConfig.js#L118-L159"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The merge loop explicitly `return`s on `__proto__`, `constructor`, and `prototype` before dispatching to a merge function, so those keys can never be materialized onto the merged config.",
+          "sources": [
+            "lib/core/mergeConfig.js#L152-L159"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Headers enter via three-way flattening in `Axios._request`: `headers.common` merged with `headers[config.method]`, the per-method buckets then deleted from the raw object, and the remainder concatenated through `AxiosHeaders.concat(contextHeaders, headers)`.",
+          "sources": [
+            "lib/core/Axios.js#L143-L154",
+            "lib/core/AxiosHeaders.js#L418-L425"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`dispatchRequest` calls `utils.toSafeFlatObject(_config)` first, which flattens the config and its application-defined prototype chain into a null-prototype copy while stopping at the realm's `Object.prototype` boundary — this is the defense against an interceptor returning an ordinary (pollutable) object.",
+          "sources": [
+            "lib/core/dispatchRequest.js#L35-L43",
+            "lib/utils.js#L118-L160"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`transformData` is invoked with `config` as `this`, wraps `context.headers` in `AxiosHeaders`, calls each fn as `fn.call(config, data, headers.normalize(), status)`, and normalizes headers again afterwards — which is how `transformRequest` can mutate content-type in place.",
+          "sources": [
+            "lib/core/transformData.js#L15-L27",
+            "lib/core/dispatchRequest.js#L46"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Default `transformRequest` is a type-dispatch ladder: HTMLForm→FormData, FormData→(JSON if JSON content-type else passthrough), ArrayBuffer/Buffer/Stream/File/Blob/ReadableStream passthrough, ArrayBufferView→`.buffer`, URLSearchParams→string with urlencoded content-type, FileList→`toFormData({'files[]': …})`, plain object→`stringifySafely` with `application/json`.",
+          "sources": [
+            "lib/defaults/index.js#L44-L108"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Outbound header values are sanitized twice: `AxiosHeaders.normalizeValue` strips C0/DEL via `sanitizeHeaderValue`, and both the Node and XHR adapters additionally pass the whole header set through `toByteStringHeaderObject`, which rewrites into a null-prototype object with non-byte-string chars removed.",
+          "sources": [
+            "lib/helpers/sanitizeHeaderValue.js#L33-L62",
+            "lib/core/AxiosHeaders.js#L13-L18",
+            "lib/adapters/http.js#L953-L971"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "URL construction is a two-stage pipeline: `buildFullPath(baseURL, url, allowAbsoluteUrls, config)` combines/validates (rejecting `http:foo` style missing-`//` URLs with `ERR_INVALID_URL`), then `buildURL(fullPath, params, paramsSerializer)` appends serialized params using a custom encoder that un-escapes `:`/`$`/`,` and maps space to `+`.",
+          "sources": [
+            "lib/core/buildFullPath.js#L45-L76",
+            "lib/helpers/buildURL.js#L14-L30",
+            "lib/helpers/resolveConfig.js#L44-L48"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "URLs embedded in `ERR_INVALID_URL` messages are redacted before stringification — userinfo, query-parameter values, and fragment contents are replaced with `[REDACTED ****]` while scheme/host/path/param names survive — because `AxiosError.toJSON()` serializes `message` verbatim and `config.redact` cannot reach it.",
+          "sources": [
+            "lib/core/buildFullPath.js#L10-L43",
+            "lib/core/AxiosError.js#L6"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Basic-auth credentials flow from either `config.auth` (read with `utils.getSafeProp`) or URL userinfo; in the Node adapter they become the `auth` option and any pre-existing `authorization` header is deleted, while in fetch/XHR they're base64-encoded into an `Authorization: Basic` header after UTF-8→Latin-1 transcoding.",
+          "sources": [
+            "lib/adapters/http.js#L905-L920",
+            "lib/adapters/fetch.js#L274-L312",
+            "lib/helpers/resolveConfig.js#L50-L63"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Response data flows back through `settle(resolve, reject, response)`, which resolves when `validateStatus` is absent/passing and otherwise rejects with `ERR_BAD_REQUEST` for 4xx and `ERR_BAD_RESPONSE` for everything else, carrying `config`, `request`, and `response`.",
+          "sources": [
+            "lib/core/settle.js#L14-L27"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`dispatchRequest` temporarily assigns `config.response` before running `transformResponse` (in both the resolve and reject paths) and deletes it in a `finally`, so a JSON-parse failure inside `transformResponse` can attach the response to the thrown `AxiosError` without permanently polluting the config.",
+          "sources": [
+            "lib/core/dispatchRequest.js#L56-L90",
+            "lib/defaults/index.js#L129-L138"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The fetch adapter never trusts a caller-declared `Content-Length` for `maxBodyLength`: it computes real size with `getBodyLength` (blob size, materialized `Request.arrayBuffer().byteLength` for spec forms, `TextEncoder` bytes for strings) and counts unknown-size streams chunk-by-chunk through `trackStream`.",
+          "sources": [
+            "lib/adapters/fetch.js#L176-L218",
+            "lib/adapters/fetch.js#L329-L362",
+            "lib/helpers/trackStream.js"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "behavior_traces": {
+      "summary": "Three flows dominate: module load/instance creation, a Node GET through the HTTP adapter, and a browser POST through XHR with XSRF. A fourth worth tracing is cancellation, which has to unwind listeners at every stage. Interceptor ordering is the subtle part — request interceptors currently default to LIFO via the `legacyInterceptorReqResOrdering: true` transitional flag, and the whole chain has a synchronous fast path that bypasses Promise wrapping when every request interceptor declares `synchronous: true`.",
+      "claims": [
+        {
+          "claim": "Startup trace: `index.js` → `lib/axios.js` module body → `createInstance(defaults)` → `new Axios(defaults)` (constructs two `InterceptorManager`s) → `bind(Axios.prototype.request, context)` → `utils.extend` twice → statics (`Axios`, `AxiosError`, `CancelToken`, `all`, `spread`, `mergeConfig`, `AxiosHeaders`, `formToJSON`, `getAdapter`, `HttpStatusCode`) attached, `axios.default = axios`.",
+          "sources": [
+            "lib/axios.js#L20-L89",
+            "lib/core/Axios.js#L24-L31"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Request entry trace: `Axios.request` is an `async` wrapper that awaits `_request` and, on error, decorates `err.stack` with a freshly captured stack (via `Error.captureStackTrace` into a dummy, slicing off the `Error:` line) — all inside a nested try/catch so a throwing custom stack hook can never replace the original failure.",
+          "sources": [
+            "lib/core/Axios.js#L40-L79",
+            "PRE_RELEASE_CHANGELOG.md#L22"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`_request` order is: normalize string URL → `mergeConfig(this.defaults, config)` → assert `transitional` options → normalize function `paramsSerializer` into `{serialize}` → resolve `allowAbsoluteUrls` (config → instance default → `true`) → spelling checks (`baseUrl`→`baseURL`, `withXsrfToken`→`withXSRFToken`) → lowercase method via `utils.getSafeProp` → flatten headers.",
+          "sources": [
+            "lib/core/Axios.js#L81-L154"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Interceptor chain assembly: request interceptors with a `runWhen(config) === false` are skipped; `synchronousRequestInterceptors` is AND-ed across the remainder; with `transitional.legacyInterceptorReqResOrdering` truthy (the default) each handler pair is `unshift`ed producing LIFO, otherwise `push`ed producing FIFO. Response interceptors are always pushed (FIFO).",
+          "sources": [
+            "lib/core/Axios.js#L157-L184",
+            "lib/defaults/transitional.js#L7"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Async path builds `[...requestChain, dispatchRequest.bind(this), undefined, ...responseChain]` and folds it with `promise.then(chain[i++], chain[i++])`; the synchronous path instead calls each `onFulfilled` inline, and if an `onRejected` returns a thenable it resumes with `dispatchRequest.call(this, newConfig)` after it settles.",
+          "sources": [
+            "lib/core/Axios.js#L186-L240"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Node GET trace: `dispatchRequest` → `adapters.getAdapter(['xhr','http','fetch'])` picks `httpAdapter` (xhr is `false` in Node) → `wrapAsync(dispatchHttpRequest)` → `own()` reads ~20 config keys → `buildFullPath` → `new URL(fullPath, urlBase)` → protocol allow-list check against `platform.protocols` → `AxiosHeaders.from(...).normalize()` → default `User-Agent: axios/<VERSION>` → body encoding → `options` assembled on `Object.create(null)`.",
+          "sources": [
+            "lib/adapters/http.js#L566-L620",
+            "lib/adapters/http.js#L708-L790",
+            "lib/adapters/http.js#L947-L971"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Transport selection inside the Node adapter is a four-way branch: `httpVersion === 2` → `http2Transport`; else `config.transport` if set; else `maxRedirects === 0` → native `http`/`https` (`isNativeTransport = true`); else `follow-redirects`' `httpFollow`/`httpsFollow` (the only transport that enforces `options.maxBodyLength` itself).",
+          "sources": [
+            "lib/adapters/http.js#L1024-L1120"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Response handling trace in Node: `handleResponse(res)` → optional `AxiosTransformStream` for download progress/rate → decompression stream pushed per `content-encoding` → `stream.pipeline(streams)` → for `responseType: 'stream'` an async generator enforces `maxContentLength` lazily; otherwise chunks buffer with a running byte count, `end` concatenates + `stripBOM`, then `settle`.",
+          "sources": [
+            "lib/adapters/http.js#L1140-L1316"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Timeout trace in Node: `createTimeoutError()` picks `ETIMEDOUT` when `transitional.clarifyTimeoutError` is true and `ECONNABORTED` otherwise; for the native-transport path an extra wall-clock `connectPhaseTimer` is armed because `ClientRequest#setTimeout` may not fire during TCP connect.",
+          "sources": [
+            "lib/adapters/http.js#L648-L662",
+            "lib/adapters/http.js#L1379-L1414"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Cancellation trace: `dispatchRequest` pre-checks `cancelToken.throwIfRequested()` and `signal.aborted`; the Node adapter then subscribes `abort` to both, emits on an internal `EventEmitter`, and `onFinished()` unsubscribes the token, removes the `abort` listener, clears the connect timer, and calls `abortEmitter.removeAllListeners()` — deferred until a streamed response body finishes via `stream.finished`.",
+          "sources": [
+            "lib/core/dispatchRequest.js#L18-L26",
+            "lib/adapters/http.js#L628-L706"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Browser POST trace: `xhrAdapter` → `resolveConfig(config)` (merge, build URL, basic auth, FormData content-type handling, XSRF cookie read) → `new XMLHttpRequest()` → `request.open(method, url, true)` → header set from `toByteStringHeaderObject` → `onloadend` builds the response and calls `settle` with `done()` wrappers that flush progress and unsubscribe cancellation.",
+          "sources": [
+            "lib/adapters/xhr.js#L16-L119",
+            "lib/helpers/resolveConfig.js#L25-L104"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "XHR `onloadend` has a status-0 guard added for Firefox 152: if status is 0 and the scheme is not `file:` (checked against the request URL, the page origin, and `responseURL`), it rejects with `ECONNABORTED` instead of letting `settle` resolve an empty success.",
+          "sources": [
+            "lib/adapters/xhr.js#L43-L68",
+            "PRE_RELEASE_CHANGELOG.md#L21"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Fetch error-classification trace runs a strict precedence in the catch block: composed-signal AxiosError reason (preserving timeout vs cancel) → `pendingBodyError` → `pendingResponseError` → re-throw an already-`AxiosError` → `TypeError` matching /Load failed|fetch/ becomes `ERR_NETWORK` with non-enumerable `cause` → otherwise `AxiosError.from`.",
+          "sources": [
+            "lib/adapters/fetch.js#L612-L680"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Proxy resolution trace: `setProxy` uses `config.proxy` if set, else `getProxyForUrl(location)` from `proxy-from-env` — but skips env lookup entirely when the selected agent already has Node's native `proxyEnv` (Node ≥22.21 / ≥24.5 / >24), then either installs a cached CONNECT-tunneling `HttpsProxyAgent` for HTTPS targets or rewrites `options.hostname`/`host`/`path` for forward-proxy plaintext HTTP.",
+          "sources": [
+            "lib/adapters/http.js#L258-L440",
+            "lib/adapters/http.js#L90-L170"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "testing_signals": {
+      "summary": "Vitest is the only runner for source tests, split into three projects; unit tests run in node, browser tests run under Playwright against chromium/firefox/webkit. Coverage of security behavior is unusually deep — `tests/unit/prototypePollution.test.js` is 1619 lines and `tests/unit/adapters/http.test.js` is 7252 lines, together ~39% of the 22.8k unit-test lines. Beyond the source tree there are four packed-tarball suites (CJS/ESM smoke via mocha/vitest, Bun via `bun test`, Deno via `deno task`) plus two TypeScript declaration suites pinned to different TS versions. The gaps are mostly at the edges: no coverage numbers or coverage gate is configured, the reproducibility workflow is explicitly non-blocking, and `sandbox/`, `examples/`, and `gulpfile.js` have no tests at all.",
+      "claims": [
+        {
+          "claim": "Vitest defines three projects — `unit` (node env, `tests/unit/**/*.test.js`, no setup files), `browser` (chromium, headed), and `browser-headless` (chromium+firefox+webkit) — the latter two both using `tests/setup/browser.setup.js`.",
+          "sources": [
+            "vitest.config.js#L5-L45"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Unit tests are organised by module under `tests/unit/{adapters,cancel,core,helpers,utils}` plus 15 top-level files; `tests/unit/core/` mirrors `lib/core/` almost 1:1 (Axios, AxiosError, buildFullPath, dispatchRequest, InterceptorManager, mergeConfig, settle, transformData).",
+          "sources": [
+            "tests/unit/core/Axios.test.js",
+            "tests/unit/core/mergeConfig.test.js",
+            "tests/unit/helpers/resolveConfig.test.js"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`tests/unit/prototypePollution.test.js` (1619 lines) is a dedicated security suite that imports `utils`, `mergeConfig`, `defaults`, `AxiosError`, `AxiosHeaders`, `resolveConfig`, and the public `index.js`, uses `node:vm` for cross-realm cases, and cleans up ~25 `Object.prototype` keys in `afterEach`.",
+          "sources": [
+            "tests/unit/prototypePollution.test.js#L1-L40"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`tests/setup/server.js` is the shared HTTP(S)/HTTP2 fixture: it generates a self-signed cert once with `selfsigned`, tracks live servers in a `Set` for cleanup, defaults to port 0 (OS-assigned) to avoid TIME_WAIT races in CI, and supports buffering, throttling (`stream-throttle`), and `formidable` parsing.",
+          "sources": [
+            "tests/setup/server.js#L1-L60"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Browser suite (21 files) covers adapter selection, basic auth, both cancellation APIs, cookies, fetch cache and fetch response errors, formdata, headers, interceptors, same-origin detection, progress, settle, transforms, and XSRF.",
+          "sources": [
+            "tests/browser/xsrf.browser.test.js",
+            "tests/browser/fetchCache.browser.test.js",
+            "tests/browser/isURLSameOrigin.browser.test.js"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Smoke suites test the *packed tarball*, not the source: CI runs `npm pack`, uploads the tgz as an artifact, and each downstream job installs it with `npm install --no-save ../../../artifacts/axios-*.tgz` before running that runtime's suite.",
+          "sources": [
+            ".github/workflows/run-ci.yml#L62-L108",
+            "AGENTS.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Runtime matrix is explicit: CJS smoke/module on Node 12/14/16/18, ESM smoke/module on Node 20/22/24/26, plus one Bun job and one Deno job — the Node-12 floor matches the `@babel/preset-env` target used for `dist/node/axios.cjs`.",
+          "sources": [
+            ".github/workflows/run-ci.yml#L62-L200",
+            "rollup.config.js#L136-L142"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CJS and ESM smoke suites are kept in lockstep — both have the same 16 test names (auth, basic, cancel, error, fetch, files, formData, headers, http2, import, instance, interceptors, progress, rateLimit, timeout, urlencode) with `.cjs`/`.js` extensions.",
+          "sources": [
+            "tests/smoke/cjs/tests/http2.smoke.test.cjs",
+            "tests/smoke/esm/tests/http2.smoke.test.js"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Bun and Deno smoke coverage is deliberately narrower — Deno tests only cancel/error/fetch/headers/import, Bun adds formData/http/interceptors/progress/timeout — so runtime-specific regressions outside those areas would not be caught.",
+          "sources": [
+            "tests/smoke/deno/tests/import.smoke.test.ts",
+            "tests/smoke/bun/tests/http.smoke.test.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Type declarations are exercised by two separate workspaces: `tests/module/cjs` (`ts-require.module.test.cjs`, `ts-require-default.module.test.cjs`, `typings.module.test.cjs`) and `tests/module/esm` (`ts.module.test.js`, `typings.module.test.js`), each with its own lockfile and, per AGENTS.md, pinned to TypeScript 4.9 vs 5.x.",
+          "sources": [
+            "tests/module/cjs/package.json",
+            "tests/module/esm/package.json",
+            "AGENTS.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Lint scope is source-only (`eslint lib/**/*.js`); tests, `gulpfile.js`, `rollup.config.js`, and `scripts/` are not linted, and `lib/adapters/http.js` / `lib/adapters/xhr.js` get environment-specific globals blocks rather than the shared browser+node block.",
+          "sources": [
+            "package.json#L113-L114",
+            "eslint.config.js#L28-L64"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "There is no coverage provider, threshold, or reporter configured in `vitest.config.js`, and no coverage step in `run-ci.yml` — so coverage is unmeasured and ungated despite the large suite.",
+          "sources": [
+            "vitest.config.js#L1-L46",
+            ".github/workflows/run-ci.yml#L14-L60"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The build-reproducibility check is a two-pass build-and-diff that is explicitly `continue-on-error: true` with a comment saying to remove that line once the build is byte-identical — so bundle nondeterminism is observed but not enforced.",
+          "sources": [
+            ".github/workflows/verify-build-reproducibility.yml#L18-L26"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`tests/unit/helpers/shouldBypassProxy.test.js` is 567 lines against a 505-line implementation, indicating the CIDR/`NO_PROXY` matching logic added in this cycle is one of the most heavily specified helpers.",
+          "sources": [
+            "tests/unit/helpers/shouldBypassProxy.test.js",
+            "lib/helpers/shouldBypassProxy.js",
+            "PRE_RELEASE_CHANGELOG.md#L7"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "risk_map": {
+      "summary": "This is a library whose entire job is attacker-adjacent I/O, and the code reflects that: nearly every security control is a hand-rolled invariant with a comment explaining the CVE or issue behind it, which means the blast radius of an innocuous-looking refactor is large. The highest-risk surfaces are `lib/adapters/http.js` (proxy/redirect/socketPath/decompression, 1490 lines, one function), `lib/core/mergeConfig.js` + `utils.toSafeFlatObject` (the prototype-pollution boundary), and `lib/helpers/resolveConfig.js` (XSRF cross-origin decision). Fragile coupling exists between the package.json `browser` alias map and any new Node-only import; adding one to a browser-reachable module silently ships `http2`/`zlib` into browser bundles. Legacy surface (`CancelToken`, `axios.Cancel`, `legacyInterceptorReqResOrdering`, `tslint.json`, `webpack.config.js`) is retained for compatibility and is easy to break inadvertently.",
+      "claims": [
+        {
+          "claim": "The prototype-pollution boundary is enforced in at least five independent places — `mergeConfig`'s null-proto result and key filter, `dispatchRequest`'s `toSafeFlatObject`, `own()`/`getSafeProp` reads in the http and fetch adapters, `resolveConfig`'s `own()`, and `AxiosHeaders` rejecting `__proto__`/`constructor`/`prototype` parameter names — so a regression in any one of them reopens the class.",
+          "sources": [
+            "lib/core/mergeConfig.js#L33-L46",
+            "lib/core/dispatchRequest.js#L35-L43",
+            "lib/adapters/http.js#L566-L576",
+            "lib/helpers/resolveConfig.js#L28-L30",
+            "lib/core/AxiosHeaders.js#L113-L124"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Even `Object.defineProperty` calls use `__proto__: null` descriptors (in `AxiosError`, `mergeConfig`, `adapters.js`, `AxiosHeaders` accessors, and the fetch/http `cause` assignments) specifically so a polluted `Object.prototype.get` cannot convert a data descriptor into an accessor on the way in — an easy detail to drop when copying this pattern.",
+          "sources": [
+            "lib/core/AxiosError.js#L146-L157",
+            "lib/adapters/adapters.js#L28-L35",
+            "lib/core/mergeConfig.js#L38-L46"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Credential-leak-on-redirect is guarded by hand: HTTP Basic `auth` is restored after a redirect only when `new URL(redirectOptions.href).origin === parsed.origin`, with a malformed-URL catch that leaves auth stripped (fail-safe). Removing the origin comparison would leak credentials cross-origin.",
+          "sources": [
+            "lib/adapters/http.js#L1058-L1072",
+            "THREATMODEL.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`Proxy-Authorization` is deleted from headers on every redirect hop (skipped only on the initial request) so a target change that drops or swaps the proxy doesn't carry proxy credentials forward.",
+          "sources": [
+            "lib/adapters/http.js#L276-L294"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Proxy fields are read with `utils.hasOwnProp` unless the proxy is a real `URL` instance, explicitly to stop a prototype-polluted `proxy.host` from redirecting traffic to an attacker-controlled host.",
+          "sources": [
+            "lib/adapters/http.js#L295-L330"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`socketPath` is an SSRF/local-IPC surface mitigated by `allowedSocketPaths`: when set, the requested path must `path.resolve()`-equal an allow-list entry or the request rejects with `ERR_BAD_OPTION_VALUE`. When `allowedSocketPaths` is unset (the default) any socket path is permitted.",
+          "sources": [
+            "lib/adapters/http.js#L969-L1000",
+            "index.d.ts#L432-L433"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`options.insecureHTTPParser` is always written as an explicit own boolean (`Boolean(own('insecureHTTPParser'))`) rather than left absent, precisely so a polluted `Object.prototype.insecureHTTPParser` cannot enable Node's lenient parser through its internal options copy — a request-smuggling vector.",
+          "sources": [
+            "lib/adapters/http.js#L1128-L1133"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`maxContentLength`/`maxBodyLength` enforcement is duplicated across five code paths (Node buffered, Node streamed via async generator, Node streamed upload Transform, fetch chunk counting, fetch non-ReadableStream fallback) — decompression bombs are only bounded where the check exists, and `-1` (the default) means unlimited everywhere.",
+          "sources": [
+            "lib/adapters/http.js#L1231-L1280",
+            "lib/adapters/http.js#L1440-L1480",
+            "lib/adapters/fetch.js#L545-L601",
+            "lib/defaults/index.js#L154-L155"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Cookie reading avoids building a `RegExp` from the cookie name — it splits on `;` and compares the literal name — because interpolating an attacker-influenced name would allow ReDoS or wrong-cookie matching.",
+          "sources": [
+            "lib/helpers/cookies.js#L30-L51"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The XSRF cross-origin decision hinges on a strict `withXSRFToken === true` comparison; any loosening (e.g. truthiness) would let a polluted `Object.prototype.withXSRFToken = 1` or a string `\"false\"` leak the token to third-party origins.",
+          "sources": [
+            "lib/helpers/resolveConfig.js#L89-L101"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Memory-retention hazards are handled with symbols and bookkeeping that are easy to break: a module-scoped `handleSocketError` plus `kAxiosSocketListener`/`kAxiosCurrentReq` symbols and a `boundSockets` Set exist because per-request socket listeners leaked adapter context across keep-alive reuse and triggered MaxListenersExceededWarning at ≥11 redirects.",
+          "sources": [
+            "lib/adapters/http.js#L64-L82",
+            "lib/adapters/http.js#L1337-L1378"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`tunnelingAgentCache` is a module-level unbounded `Map` keyed by proxy config; the code comments argue the keyspace is bounded in practice, which is an assumption rather than an enforced limit.",
+          "sources": [
+            "lib/adapters/http.js#L84-L136"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Browser-safety depends entirely on the package.json alias map, not on code: `lib/helpers/Http2Sessions.js` carries an explicit comment that it must never be imported from a browser-reachable path because only `lib/adapters/http.js` is aliased to `lib/helpers/null.js`.",
+          "sources": [
+            "lib/helpers/Http2Sessions.js#L1-L8",
+            "package.json#L52-L58"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The `./unsafe/*` export map exposes `lib/*` wholesale to consumers (plus named `unsafe/core/settle.js`, `unsafe/helpers/buildURL.js`, `unsafe/utils.js`, etc.), so any internal helper is effectively public API and refactors there can break downstream users despite the `unsafe` prefix.",
+          "sources": [
+            "package.json#L34-L44"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Legacy/compat surface that is easy to break silently: `axios.Cancel` aliases `CanceledError`, `CancelToken.promise.then` is monkey-patched to return a cancellable promise, `transitional.legacyInterceptorReqResOrdering` defaults to `true`, and stale configs `tslint.json` and `webpack.config.js` remain at repo root with no referencing script.",
+          "sources": [
+            "lib/axios.js#L59-L60",
+            "lib/cancel/CancelToken.js#L38-L52",
+            "lib/defaults/transitional.js#L7",
+            "tslint.json",
+            "webpack.config.js"
+          ],
+          "kind": "inference"
+        },
+        {
+          "claim": "The `moderator.yml` workflow grants `issues: write`, `pull-requests: write`, and `models: read` to a third-party AI moderation action on every issue and comment event — the broadest write permission set of any workflow in the repo.",
+          "sources": [
+            ".github/workflows/moderator.yml#L1-L30"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "extension_points": {
+      "summary": "The intended extension seams are well-marked. Adapters plug in through `knownAdapters` or by passing a function/array to `config.adapter`; `config.transport` overrides the Node transport wholesale; `config.env.{fetch,Request,Response,FormData,Blob}` lets a runtime inject its own primitives. Data shaping extends through `transformRequest`/`transformResponse` arrays, `paramsSerializer`, `formSerializer`, and `parseReviver`. Cross-cutting behavior extends through interceptors (with `synchronous` and `runWhen` modifiers) and through `AxiosHeaders.accessor()` for new header shorthands. New error codes are added as UPPER_SNAKE constants on `AxiosError`, new behavior flags as `transitional` keys validated in `Axios._request`.",
+      "claims": [
+        {
+          "claim": "`config.adapter` accepts a name, a function, or an array of either; `getAdapter` resolves names against `knownAdapters` and accepts any function unchanged — that is the supported way to ship a custom adapter without touching the registry.",
+          "sources": [
+            "lib/adapters/adapters.js#L52-L93",
+            "lib/axios.js#L85"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Adding an adapter to `knownAdapters` either as a function or as a `{get(config)}` capability-probe object is the registry-level seam; the `utils.forEach` loop then stamps `name`/`adapterName` onto it automatically for diagnostics.",
+          "sources": [
+            "lib/adapters/adapters.js#L16-L36"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`config.transport` short-circuits the Node transport selection before the `maxRedirects`/follow-redirects branches, letting callers supply any object with a `.request(options, cb)` — but such transports must enforce `maxBodyLength` themselves, since `transportEnforcesMaxBodyLength` stays false.",
+          "sources": [
+            "lib/adapters/http.js#L1043-L1049",
+            "lib/adapters/http.js#L1440-L1452"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`config.env` is a first-class injection point: `getFetch(config)` memoizes a fetch adapter per `(Request, Response, fetch)` triple in a nested `Map` seed cache, and `defaults.env` carries `FormData`/`Blob` from the platform for `transformRequest` and `fromDataURI`.",
+          "sources": [
+            "lib/adapters/fetch.js#L680-L712",
+            "lib/defaults/index.js#L157-L160",
+            "lib/adapters/http.js#L750-L755"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`AxiosHeaders.accessor(header)` defines camel-cased `get*/set*/has*` shorthand methods on the prototype (with `__proto__: null` descriptors), and is how header conveniences like `getContentType`/`setContentLength` are added.",
+          "sources": [
+            "lib/core/AxiosHeaders.js#L183-L196",
+            "lib/core/AxiosHeaders.js#L426-L440"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`methodList` is a frozen array that drives both the per-method default header buckets in `lib/defaults/index.js` and the header-bucket cleanup in `Axios._request` — adding a method means editing this one list.",
+          "sources": [
+            "lib/core/methodList.js#L3-L16",
+            "lib/defaults/index.js#L174-L176",
+            "lib/core/Axios.js#L146-L154"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New behavior flags plug into `lib/defaults/transitional.js` and must be added to the `validator.assertOptions(transitional, {...})` map in `Axios._request` — otherwise the option silently bypasses type validation.",
+          "sources": [
+            "lib/defaults/transitional.js#L3-L10",
+            "lib/core/Axios.js#L96-L110"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`validator.validators` provides composable validators (`object`/`boolean`/`number`/`function`/`string`/`symbol`, plus `transitional(validator, version, message)` for deprecation warnings that print once and `spelling(correctSpelling)` used for `baseUrl`→`baseURL`), and is the sanctioned place to add config validation.",
+          "sources": [
+            "lib/helpers/validator.js#L6-L60",
+            "lib/core/Axios.js#L131-L138"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New error codes are added as UPPER_SNAKE static assignments at the bottom of `lib/core/AxiosError.js` (14 currently, from `ERR_BAD_OPTION_VALUE` to `ERR_FORM_DATA_DEPTH_EXCEEDED`); `AxiosError.from(error, code, config, request, response, customProps)` is the wrapper for third-party errors.",
+          "sources": [
+            "lib/core/AxiosError.js#L201-L216",
+            "lib/core/AxiosError.js#L76-L131"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Serialization extends at three levels: `paramsSerializer` (function or `{encode, serialize}`), `config.formSerializer` (passed to `toFormData` with `visitor`/`dots`/`metaTokens`/`indexes`/`maxDepth`), and `parseReviver` on the response side.",
+          "sources": [
+            "lib/core/Axios.js#L112-L129",
+            "lib/defaults/index.js#L80-L99",
+            "index.d.ts#L333-L338"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The Node adapter exports three internals for testing/extension — `__setProxy`, `__isNodeEnvProxyEnabled`, `__isSameOriginRedirect` — a deliberate seam for unit-testing proxy and redirect logic without a live socket.",
+          "sources": [
+            "lib/adapters/http.js#L1488-L1490",
+            "tests/unit/adapters/http.test.js"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Platform swap points are `lib/platform/{node,browser}/classes/` (URLSearchParams, FormData, Blob, Buffer) and the `protocols` array — Node allows `['http','https','file','data']` while browser allows `['http','https','file','blob','url','data']`, and the Node adapter checks `supportedProtocols` derived from it.",
+          "sources": [
+            "lib/platform/node/index.js",
+            "lib/platform/browser/index.js",
+            "lib/adapters/http.js#L172-L178"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Instance creation is itself an extension point: `instance.create(instanceConfig)` recursively calls `createInstance(mergeConfig(defaultConfig, instanceConfig))`, so scoped instances compose defaults rather than replacing them.",
+          "sources": [
+            "lib/axios.js#L35-L40"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Docs are extensible per-locale under `docs/<lang>/pages/advanced/*.md` (adapters, api-reference, cancellation, fetch-adapter, config-defaults, …) driven by the VitePress site, with a `test:search` node:test check on the search tokenizer.",
+          "sources": [
+            "docs/package.json#L9-L15",
+            "docs/es/pages/advanced/adapters.md",
+            "docs/es/pages/advanced/fetch-adapter.md"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_handoff": {
+      "summary": "Read `AGENTS.md` first — it is the canonical contributor contract and encodes rules that are not derivable from the code (pre-release changelog/docs staging, `ignore-scripts` safety, dependency policy, error-handling conventions). Then read `lib/core/Axios.js`, `lib/core/dispatchRequest.js`, `lib/core/mergeConfig.js`, and whichever adapter you're touching. The cheapest verification loop is `npm run test:vitest:unit -- tests/unit/<file>.test.js` plus `npx eslint lib/<file>.js`; a full build is only needed for packaging/type changes. The two traps that catch most newcomers are (1) editing `README.md`/`CHANGELOG.md` instead of `PRE_RELEASE_DOCS.md`/`PRE_RELEASE_CHANGELOG.md`, and (2) using ordinary property reads on config where the file uses `own()`/`getSafeProp`, which silently reopens a prototype-pollution hole with no test failure unless you add one.",
+      "claims": [
+        {
+          "claim": "Read-first order: `AGENTS.md` (canonical rules, mirrored by the `.github/copilot-instructions.md` stub and `CLAUDE.md`'s one-line `@AGENTS.md` include) → `lib/axios.js` → `lib/core/Axios.js` → `lib/core/dispatchRequest.js` → `lib/core/mergeConfig.js` → the target adapter.",
+          "sources": [
+            "AGENTS.md",
+            "CLAUDE.md",
+            "lib/axios.js",
+            "lib/core/dispatchRequest.js"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Unreleased user-visible changes go in `PRE_RELEASE_CHANGELOG.md` under `## Unreleased`, and deferred README/docs-site/migration-guide work goes in `PRE_RELEASE_DOCS.md`; `CHANGELOG.md` (141KB) is release-owned and must not be touched during feature work.",
+          "sources": [
+            "AGENTS.md",
+            "PRE_RELEASE_CHANGELOG.md#L1-L12",
+            "PRE_RELEASE_DOCS.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Install safety: `.npmrc` sets `ignore-scripts=true` and CI uses `npm ci --ignore-scripts`; if husky hooks are needed after a fresh install, run `npm rebuild husky && npx husky` once rather than removing the setting.",
+          "sources": [
+            ".npmrc",
+            "AGENTS.md",
+            ".github/workflows/run-ci.yml#L30-L32"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Focused verification commands: `npm run test:vitest:unit -- tests/unit/path.test.js` for one unit file, `npx eslint lib/path/to/file.js` for one source file, `npm run test:vitest:browser:headless` for CI-parity browser runs (requires `npx playwright install` first).",
+          "sources": [
+            "package.json#L103-L114",
+            "AGENTS.md",
+            "vitest.config.js#L18-L45"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Never hand-edit `dist/` (generated by Rollup and wiped by `gulp clear`) or `lib/env/data.js` (generated by `gulp version` from package.json) — both are regenerated by the build.",
+          "sources": [
+            "gulpfile.js#L14-L17",
+            "gulpfile.js#L62-L82",
+            "package.json#L100-L101"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Any API change must be mirrored in three places: the runtime export list in `lib/axios.js`/`index.js`, `index.d.ts` (ESM types), and `index.d.cts` (CJS `export =` types) — and then exercised by `tests/module/esm` (TS 5.x) and `tests/module/cjs` (TS 4.9).",
+          "sources": [
+            "index.js#L20-L43",
+            "index.d.ts#L391-L487",
+            "index.d.cts",
+            "tests/module/esm/tests/typings.module.test.js"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Convention trap: config reads that affect behavior must use own-property guards. `lib/adapters/http.js` defines a local `own = (key) => utils.getSafeProp(config, key)` and routes ~20 reads through it; `resolveConfig` and `lib/defaults/index.js` each define their own `own()` helper for the same reason.",
+          "sources": [
+            "lib/adapters/http.js#L566-L590",
+            "lib/helpers/resolveConfig.js#L28-L30",
+            "lib/defaults/index.js#L12"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Convention trap: do not use `Function.prototype.bind` directly — the library relies on `lib/helpers/bind.js`, which forwards `arguments` via `apply`, and `createInstance` depends on that behavior for the callable-instance trick.",
+          "sources": [
+            "lib/helpers/bind.js",
+            "lib/axios.js#L31",
+            "AGENTS.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Convention trap: never throw raw `Error` from library code — throw `AxiosError(message, code, config, request, response)` or wrap with `AxiosError.from(...)` using a code from the list at the bottom of `lib/core/AxiosError.js`.",
+          "sources": [
+            "lib/core/AxiosError.js#L76-L168",
+            "AGENTS.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Test-hygiene trap: HTTP fixtures come from `tests/setup/server.js` and must be cleaned up in `try/finally`; leaking a server hangs Vitest. Browser tests replace globals such as XHR and must restore them in cleanup hooks.",
+          "sources": [
+            "tests/setup/server.js#L14-L20",
+            "AGENTS.md",
+            "tests/setup/browser.setup.js"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Changes touching URL building, redirects, proxy/env handling, XSRF, socket paths, decompression limits, or adapters require consulting `THREATMODEL.md` (94KB, sections: scope/methodology, runtime threat model, supply-chain threat model) and adding a focused regression test.",
+          "sources": [
+            "THREATMODEL.md#L1-L24",
+            "AGENTS.md",
+            "tests/unit/prototypePollution.test.js"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Style boundary for new `lib/**/*.js` files: ESM imports with explicit `.js` extensions, `'use strict';` where neighboring files have it, `Symbol`-keyed internal slots (e.g. `const $internals = Symbol('internals')` in `AxiosHeaders` and `InterceptorManager`) rather than underscore-prefixed properties.",
+          "sources": [
+            "lib/core/InterceptorManager.js#L1-L5",
+            "lib/core/AxiosHeaders.js#L1-L18",
+            "AGENTS.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Dependency changes are effectively out of scope for routine work: runtime deps are four packages and must not grow without discussion, and package/lockfile/Actions update PRs are maintainer/bot-only with a 7-day Dependabot delay enforced by policy plus `lockfile-lint.yml`.",
+          "sources": [
+            "package.json#L149-L154",
+            "AGENTS.md",
+            ".github/workflows/lockfile-lint.yml#L1-L40"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Commit hygiene is enforced: husky runs a `commit-msg` hook, commitlint uses `@commitlint/config-conventional` with `header-max-length` raised to 130, and lint-staged runs Prettier over `*.{js,cjs,mjs,ts,json,md,yml,yaml}`.",
+          "sources": [
+            ".husky/commit-msg",
+            "package.json#L189-L205",
+            ".prettierrc"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Default branch is `v1.x` (not `main`): CI triggers on PRs, `lockfile-lint`/`zizmor`/`verify-build-reproducibility` also run on pushes to `v1.x`, and the publish workflow fires on `v1.*.*` tags.",
+          "sources": [
+            ".github/workflows/lockfile-lint.yml#L10-L14",
+            ".github/workflows/publish.yml#L3-L6",
+            ".github/workflows/zizmor.yml#L3-L6"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_prompt": "You are working in the axios repository (branch `v1.x`, version 1.20.0) — the promise-based HTTP client for browsers and Node.js. Read `AGENTS.md` before anything else; it is the canonical contributor contract for both humans and agents, and `CLAUDE.md` is just a one-line include of it.\n\nARCHITECTURE. Source is ESM under `lib/`, published as Rollup bundles under `dist/` (never hand-edit `dist/` or the generated `lib/env/data.js`). The public ESM entry `index.js` unwraps the default instance built by `lib/axios.js`; CJS consumers get `dist/node/axios.cjs`. Four layers: `lib/core/` is domain logic (`Axios` request dispatch and interceptor chains, `dispatchRequest`, `mergeConfig`, `AxiosHeaders`, `AxiosError`, `InterceptorManager`, `settle`, `transformData`); `lib/adapters/` performs I/O (`http.js` for Node incl. HTTP/2, `xhr.js`, `fetch.js`) with capability-based selection in `adapters.js` and a default preference of `['xhr','http','fetch']`; `lib/platform/` selects Node by default with browser builds swapped in via the package.json `browser`/`react-native` alias maps; `lib/helpers/` holds generic reusable utilities — keep axios-specific request-lifecycle logic out of it.\n\nREQUEST LIFECYCLE. `axios()` or a method alias → `mergeConfig(defaults, config)` → request interceptors (LIFO by default, controlled by `transitional.legacyInterceptorReqResOrdering`) → `dispatchRequest` (which re-flattens the config through `utils.toSafeFlatObject`) → adapter resolution → `transformRequest` → adapter I/O → `transformResponse` → response interceptors (FIFO) → `settle` resolves an `AxiosResponse` or rejects an `AxiosError`. Interceptors support `synchronous: true` (skips Promise wrapping when the whole chain is sync) and `runWhen: (config) => boolean`.\n\nHARD RULES.\n1. Never throw raw `Error` from library code. Throw `new AxiosError(message, code, config, request, response)` or wrap third-party failures with `AxiosError.from(...)`. Codes live at the bottom of `lib/core/AxiosError.js`.\n2. Never read behavior-affecting config with a bare `config.foo`, `in`, or destructuring. Use the file's local `own()` helper, `utils.getSafeProp`, or `utils.hasOwnProp`. Merge/materialization code must keep filtering `__proto__`, `constructor`, and `prototype`. Regressions here are security bugs; `tests/unit/prototypePollution.test.js` (1619 lines) is the guard.\n3. Do not use `Function.prototype.bind` directly — use `lib/helpers/bind.js`.\n4. Do not mutate config objects in place; return new objects from merges and transforms.\n5. Do not weaken `beforeRedirect`, proxy, `socketPath`/`allowedSocketPaths`, `maxContentLength`/`maxBodyLength`, or `withXSRFToken` cross-origin behavior without tests covering credential leakage or SSRF. Consult `THREATMODEL.md` for anything touching URLs, redirects, proxies, XSRF, sockets, or decompression.\n6. Write unreleased user-visible changes to `PRE_RELEASE_CHANGELOG.md` and deferred docs work to `PRE_RELEASE_DOCS.md`. Do not edit `CHANGELOG.md` or `README.md` unless the task is explicitly release preparation.\n7. Do not add runtime dependencies (there are four) and do not touch `package-lock.json` outside maintainer-led updates — `lockfile-lint` gates it.\n\nVERIFY. Focused: `npm run test:vitest:unit -- tests/unit/<path>.test.js` and `npx eslint lib/<path>.js`. Browser parity: `npx playwright install` then `npm run test:vitest:browser:headless`. Full CI order is install → lint → build → playwright → unit → browser → `npm pack` → CJS/ESM module + smoke → Bun/Deno smoke; smoke and module suites install the packed tarball, not the source tree. API/type changes must stay in sync across runtime exports, `index.d.ts`, and `index.d.cts`, and be exercised by `tests/module/esm` (TS 5.x) and `tests/module/cjs` (TS 4.9). Prefer small, focused diffs; avoid full builds when a targeted test proves the change."
+  },
+  "analysis": {
+    "agent": "claude",
+    "model": "cli:claude",
+    "runtime_ms": 380480,
+    "cost_usd": 2.7744590000000002,
+    "collected_at": "2026-09-22T08:36:43.850Z"
   }
 }
