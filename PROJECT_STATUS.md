@@ -1,6 +1,6 @@
 # Project Status
 
-Last updated: 2026-09-22
+Last updated: 2026-09-23
 
 ## Why / What
 
@@ -38,7 +38,7 @@ separately approved safety design justify renewed investment.
 
 ## Current shipped state
 
-- **v1.14.2 is the current published desktop release.** The protected release
+- **v1.14.3 is the current published desktop release.** The protected release
   workflow published the arm64 DMG, ZIP, and Sparkle appcast on 2026-09-22.
   Usage coherence (#296), Review/Explore (#285), and unavailable-performance
   classification (#276) are closed. See
@@ -48,9 +48,9 @@ separately approved safety design justify renewed investment.
   TypeScript semantic definitions/references, and source-linked Unpack and
   evidence. VoiceOver expansion remains intentionally deferred and is not a
   release blocker.
-- The post-release `main` branch adds code-health and native qualification
-  repairs. These maintenance changes do not imply a newer desktop release;
-  desktop release truth remains the published `v1.14.2` tag.
+- v1.14.3 includes the post-v1.14.2 code-health and native qualification
+  repairs. Subsequent documentation-only bookkeeping does not imply a newer
+  desktop release; release truth remains the published `v1.14.3` tag.
 - Maintenance is limited to core verification reliability, regressions,
   security, dependency hygiene, and evidence requested by real users. New
   product surfaces require an explicit change in the investment decision.
