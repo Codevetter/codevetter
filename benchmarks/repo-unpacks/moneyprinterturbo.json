@@ -1,0 +1,3527 @@
+{
+  "schema_version": "codevetter.repo-unpack-corpus/v1",
+  "repo": "harry0703/MoneyPrinterTurbo",
+  "slug": "moneyprinterturbo",
+  "codevetter_version": "codevetter 1.12.0",
+  "collected_at": "2026-09-22T11:46:37.466Z",
+  "last_commit": {
+    "sha": "3d5f4e421927d61f3eac729cf4b711ac0b69d688",
+    "date": "2026-09-21",
+    "subject": "fix(webui): cache video cache stats as plain dict to stay pickle-safe"
+  },
+  "scan": {
+    "schema_version": "codevetter.unpack-scan/v1",
+    "report_id": "69c1d5ed-002d-46e0-a789-81caf6fe2138",
+    "status": "scan_only",
+    "created_at": "2026-09-22T11:46:37.462093+00:00",
+    "inventory": {
+      "repo_path": "/private/var/folders/9_/1109_2dd1qz6zyvmxb5zp8pc0000gn/T/unpack-pilot-IuOqIG/moneyprinterturbo",
+      "repo_name": "moneyprinterturbo",
+      "commit_sha": "3d5f4e421927d61f3eac729cf4b711ac0b69d688",
+      "branch": "main",
+      "remote_url": "https://github.com/harry0703/MoneyPrinterTurbo.git",
+      "files_scanned": 177,
+      "files_skipped": 57,
+      "bytes_scanned": 3371957,
+      "max_files_hit": false,
+      "estimated_total_files": null,
+      "languages": [
+        {
+          "language": "Python",
+          "files": 121,
+          "bytes": 2527111
+        },
+        {
+          "language": "JSON",
+          "files": 17,
+          "bytes": 587545
+        },
+        {
+          "language": "Markdown",
+          "files": 6,
+          "bytes": 126586
+        },
+        {
+          "language": "TOML",
+          "files": 3,
+          "bytes": 32128
+        },
+        {
+          "language": "CSS",
+          "files": 1,
+          "bytes": 15224
+        },
+        {
+          "language": "YAML",
+          "files": 9,
+          "bytes": 13447
+        },
+        {
+          "language": "Shell",
+          "files": 1,
+          "bytes": 2898
+        },
+        {
+          "language": "HTML",
+          "files": 1,
+          "bytes": 689
+        }
+      ],
+      "manifests": [
+        {
+          "path": "pyproject.toml",
+          "kind": "pyproject.toml",
+          "name": "moneyprinterturbo",
+          "version": "1.3.7",
+          "dependencies": [
+            "#",
+            "#",
+            "#",
+            "twelvelabs",
+            "twelvelabs>=1.2.8\"",
+            "]"
+          ],
+          "scripts": []
+        }
+      ],
+      "entrypoints": [
+        {
+          "path": "README.md",
+          "kind": "docs",
+          "reason": "Repository readme"
+        },
+        {
+          "path": "main.py",
+          "kind": "script",
+          "reason": "Python entrypoint"
+        },
+        {
+          "path": ".github/workflows/docker-ghcr.yml",
+          "kind": "config",
+          "reason": "GitHub Actions workflow"
+        },
+        {
+          "path": ".github/workflows/ci.yml",
+          "kind": "config",
+          "reason": "GitHub Actions workflow"
+        }
+      ],
+      "top_level_dirs": [
+        {
+          "path": "test",
+          "file_count": 72,
+          "bytes": 1272803
+        },
+        {
+          "path": "app",
+          "file_count": 47,
+          "bytes": 822653
+        },
+        {
+          "path": "webui",
+          "file_count": 17,
+          "bytes": 931508
+        },
+        {
+          "path": "docs",
+          "file_count": 12,
+          "bytes": 97038
+        },
+        {
+          "path": ".github",
+          "file_count": 6,
+          "bytes": 10198
+        },
+        {
+          "path": "resource",
+          "file_count": 1,
+          "bytes": 689
+        }
+      ],
+      "docs": [
+        {
+          "path": "README.md",
+          "bytes": 36657,
+          "preview": "<div align=\"center\">\n\n# MoneyPrinterTurbo 💸\n\n### 一站式 AI 短视频生成工具\n\n只需提供视频<b>主题</b>或<b>关键词</b>，即可自动生成视频脚本、匹配素材、生成字幕和背景音乐，并合成高清短视频。\n\n[![Version](https://img.shields.io/github/v/release/harry0703/MoneyPrinterTurbo?color=blue&label=version)](https://github.com/harry0703/MoneyPrinterTurbo/releases)\n[![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)](https://github.com/harry0703/MoneyPrinterTurbo/releases/latest)\n[![Python](https://img.shields.io/badge/python-3.11%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)\n[![Downloads](https://img.shields.io/github/downloads/harry0703/MoneyPrinterTurbo/total)](https://github.com/harry0703/MoneyPrinterTurbo/releases/latest)\n\n<a href=\"https://trendshift.io/repositories/8731\" target=\"_blank\"><img src=\"https://trendshift.io/api/badge/repositories/8731\" alt=\"harry0703%2FMoneyPrinterTurbo | Trendshift\" style=\"width: 250px; height: 55px;\" width=\"250\" height=\"55\"/></a>\n<a href=\"https://www.star-history.com/harry0703/moneyprinterturbo\"><img src=\"https://api.star-history.com/badge?repo=harry0703/MoneyPrinterTurbo\" alt=\"Star History Rank\" style=\"height: 55px;\" height=\"55\"/></a>\n\n简体中文 | [English](README-en.md) | [日本語](README-ja.md) | [版本发布](https://github.com/harry0703/MoneyPrinterTurbo/releases) | [问题反馈](https://github.com/harry0703/MoneyPrinterTurbo/issues)\n\n</div>\n\n## 界面预览 🖥️\n\n<h4 align=\"center\">WebUI</h4>\n\n![](docs/webui.jpg)\n\n<h4 align=\"center\">API</h4>\n\n![](docs/api.jpg)\n\n---\n\n## 特别感谢 ❤️\n\n<div align=\"center\">\n  <a href=\"https://platform.kimi.com?track_id=track-2f5441d6ffd84c509dd079d78e9db5dc&aff=moneyprinterturbo\" target=\"_blank\"><img src=\"https://gcdn.moonshot.cn/growth-cdn/sponsor/kimi-zh.png\" alt=\"Kimi 赞助 MoneyPrinterTurbo\" width=\"100%\"></a>\n</div>\n\n感谢 [Kimi](https://platform.kimi.com?track_id=track-2f5441d6ffd84c509dd079d78e9db5dc&aff=moneyprinterturbo) 赞助本项目！[Kimi K3](https://www.kimi.com/blog/kimi-k3?aff=moneyprinterturbo) 是 Moonshot AI 迄今能力最强的模型，也是全球首个开源 3T 级模型，拥有原生视觉能力与 100 万 Token 上下文，在知识工作、推理和长周期任务中展现前沿性能。在 MoneyPrinterTurbo 中，K3 能直接驱动视频创作，不仅撰写视频文案，还会提炼素材搜索关键词、决定成片画面；对内容理解越准确，匹配到的素材就越贴题。\n\n**MoneyPrinterTurbo 用户专属优惠：新用户通过专属链接注册，首次成功充值可获充值金额 10% 的 API 额度，最高赠送 ¥1000。活动截至 2026 年 9 月 30 日。前往 Kimi 开放平台（[中文站](https://platform.kimi.com?track_id=track-2f5441d6ffd84c509dd079d78e9db5dc&aff=moneyprinterturbo)｜[Global](https://platform.kimi.ai?track_id=track-f6b0a640d35c41deb03b247242a1058c&aff=moneyprinterturbo)）体验 API。**\n<br>\n\n<table align=\"center\">\n  <tr>\n    <td align=\"center\" width=\"120\">\n      <a href=\"https://www.volcengine.com/activity/ai618?utm_campaign=hw&utm_content=hw&utm_medium=devrel_tool_web&utm_source=OWO&utm_term=MoneyPrinterTurbo\"><img src=\"docs/sponsors/volcengine-logo.svg\" alt=\"火山引擎\" height=\"32\"></a><br>\n      <a href=\"https://www.volcengine.com/activity/ai618?utm_campaign=hw&utm_content=hw&utm_medium=devrel_tool_web&utm_source=OWO&utm_term=MoneyPrinterTurbo\"><strong>火山引擎</strong></a>\n    </td>\n    <td align=\"left\">\n      感谢字节火山引擎赞助本项目！火山方舟 Agent/Coding Plan 国模套餐<strong>首购 9.9</strong>，支持 GLM-5.3、Kimi-K3、DeepSeek、MiniMax、Doubao 等，注册免费领 <strong>2500w Token</strong>，统一 API，适配编码与智能体开发。<a href=\"https://www.volcengine.com/activity/ai618?utm_campaign=hw&utm_content=hw&utm_medium=devrel_tool_web&utm_source=OWO&utm_term=MoneyPrinterTurbo\">立即前往</a>\n    </td>\n  </tr>\n  <tr>\n    <td align=\"center\" width=\"120\">\n      <a href=\"https://go.apimart.ai/gh-moneyprinterturbo\"><img src=\"docs/sponsors/apimart-logo.png\" alt=\"APIMart\" width=\"100\"></a>\n    </td>\n    <td align=\"left\">\n      感谢 <a href=\"https://go.apimart.ai/gh-moneyprinterturbo\">APIMart</a> 赞助了本项目！APIMart 是专注 AI 图片/视频生成的低价 API 平台，<strong>GPT-Image-2 低至 &#36;0.006/张，1 美元可出图 160+ 张</strong>。<strong>图片、视频一套异步 API 通吃，换模型不改代码</strong>；提交任务拿 ID，通过轮询或回调获取结果，支持万张级批量生成。按量付费、无月费，通过<a href=\"https://go.apimart.ai/gh-moneyprinterturbo\">此注册链接</a>注册即可开用。\n    </td>\n  </tr>\n  <tr>\n    <td align=\"center\" width=\"120\">\n      <a href=\"https://metaso.cn/minimax-h3/?s=MPT\"><img src=\"docs/sponsors/metaso-logo.png\" alt=\"秘塔科技\" width=\"100\"></a><br>\n      <a href=\"https://metaso.cn/minimax-h3/?s=MPT\"><strong>秘塔科技</strong></a>\n    </td>\n    <td align=\"left\">\n      <strong>MiniMax H3 视频生成 API｜秘塔科技</strong><br>\n      秘塔科技提供高性价比的 MiniMax H3 视频生成服务：<strong>768P 仅 0.09 元/秒，2K 仅 0.15 元/秒</strong>。支持原生 2K、音画同步，API 兼容 <strong>OpenAI 协议</strong>，同时支持 <strong>ComfyUI</strong>，无需自行部署 GPU。<br>\n      🎁 通过 <a href=\"https://metaso.cn/minimax-h3/?s=MPT\">MoneyPrinterTurbo专属链接注册</a>，即可领取赠送额度及专属优惠。\n    </td>\n  </tr>\n  <tr>\n    <td align=\"center\" width=\"120\">\n      <a href=\"https://infistar.cc/register?aff=6T4EYXP2&amp;ref_source=link\"><img src=\"docs/sponsors/infistar-logo.svg\" alt=\"Infistar.cc 无限星河\" height=\"56\"></a><br>\n      <a href=\"https://infistar.cc/register?aff=6T4EYXP2&amp;ref_source=link\"><strong>Infistar.cc 无限星河</strong></a>\n    </td>\n    <td align=\"left\">\n      感谢 <a href=\"https://infistar.cc/register?aff=6T4EYXP2&amp;ref_source=link\">Infistar.cc 无限星河</a> 赞助本项目！Infistar.cc 提供高性价比的大模型 API 服务：大模型低至<strong>官方 0.1 折</strong>，AI 生图低至 <strong>¥0.06/张</strong>。<br>\n      <strong>一个 API Key，覆盖文案、图片与视频创作</strong>，支持 GPT、Claude、Gemini、DeepSeek、通义千问、可灵等主流模型，无需分组。<br>\n      <strong>全模型支持验真</strong>，价格透明，正规备案，人民币实时计费，<strong>支持对公发票</strong>。<br>\n      🎁 MPT 专属福利：通过<a href=\"https://infistar.cc/register?aff=6T4EYXP2&amp;ref_source=link\">专属链接注册</a>即送 <strong>&#36;5 体验额度</strong>，并享首充特惠。\n    </td>\n  </tr>\n  <tr>\n    <td align=\"center\" width=\"120\">\n      <a href=\"https://ofox.ai/?utm_source=github&amp;utm_medium=sponsorship&amp;utm_content=moneyprinterturbo\"><img src=\"docs/sponsors/ofox-logo.svg\" alt=\"OfoxAI\" width=\"120\"></a>\n    </td>\n    <td align=\"left\">\n      感谢 <a href=\"https://ofox.ai/?utm_source=github&amp;utm_medium=sponsorship&amp;utm_content=moneyprinterturbo\">OfoxAI</a> 赞助本项目！MoneyPrinterTurbo 已集成 Ofox 多模型文生视频，配置 API Key 即可使用。Seedance、MiniMax H3、Wan 生成视频素材，GPT Image 2.5、Seedream 制作封面配图，GPT、Claude、Gemini、DeepSeek 打磨脚本、辅助开发。<strong>一个 Key，文本、图像、视频共用余额</strong>；提供 OpenAI 兼容接口及 Anthropic、Gemini 原生接口。<strong>按量付费、价格公开、官方渠道接入，稳定高速不限量</strong>，前往 <a href=\"https://ofox.ai/?utm_source=github&amp;utm_medium=sponsorship&amp;utm_content=moneyprinterturbo\">OfoxAI 查看模型与价格</a>。\n    </td>\n  </tr>\n  <tr>\n    <td align=\"center\" width=\"120\">\n      <a href=\"https://www.shengsuanyun.com/?from=CH_XUQ4OTSK\"><img src=\"docs/sponsors/shengsuanyun-logo.jpg\" alt=\"胜算云\" height=\"56\"></a><br>\n      <a href=\"https://www.shengsuanyun.com/?from=CH_XUQ4OTSK\"><strong>胜算云</strong></a>\n    </td>\n    <td align=\"left\">\n      感谢<a href=\"https://www.sheng"
+        },
+        {
+          "path": "docs/skill/SKILL.md",
+          "bytes": 8324,
+          "preview": "---\nname: moneyprinterturbo-video\ndescription: Use this skill whenever the user wants to create a finished video from a topic, title, idea, prompt, or script with MoneyPrinterTurbo. This includes short-form, voice-over, educational, marketing, social-media, and stock-footage videos. Also use it when the user mentions MoneyPrinterTurbo, provides this Skill URL, asks an AI agent to install or configure MoneyPrinterTurbo, needs missing API keys identified, wants a failed generation repaired, or wants a generated MP4 located and delivered. Use this skill when the expected outcome is a final video file, not setup instructions.\ncompatibility: Requires an AI agent with terminal, network, filesystem, and long-running command support. Supports macOS and Windows and uses uv exclusively.\nmetadata:\n  author: \"harry0703@hotmail.com\"\n  version: \"1.3.2\"\n  upstream: \"https://github.com/harry0703/MoneyPrinterTurbo\"\n---\n\n# MoneyPrinterTurbo Video Generation\n\nThe user only needs to provide a video topic or script. Complete installation, configuration reuse, generation, waiting, and final MP4 delivery automatically. Do not stop after giving instructions or commands.\n\n## Required Behavior\n\n1. Ask the user only for required API credentials that are missing, rejected, or unusable. Combine all required credentials into one request.\n2. Do not ask for confirmation before installing, generating, waiting, using defaults, or returning the result.\n3. Do not create or repeatedly update a detailed plan for a standard generation request. Send one short progress update and execute.\n4. Run the helper as one foreground command with a timeout of at least 20 minutes.\n5. Never poll with `sleep`, `echo`, `ps`, repeated `ls`, or repeated `tail`. If the terminal returns a resumable session ID, continue waiting on that same session.\n6. Do not read the full log after success. Read only the short reported error or the relevant log tail after failure.\n7. Never print API keys, tokens, the full `config.toml`, or credential-bearing configuration fragments.\n\n## Defaults\n\nUnless the user requests otherwise, generate one Chinese `9:16` portrait video with Pexels footage, the default Chinese Edge TTS voice, subtitles, and background music. Install MoneyPrinterTurbo under the user's home directory.\n\n## Execution\n\n### 1. Locate the helper\n\nResolve `SKILL_DIR` from this `SKILL.md` file. The helper is the adjacent `mpt_agent.py`. Set the terminal tool's working directory to `SKILL_DIR` and invoke the helper by its relative filename. Do not put the absolute helper path in the command, and do not run an extra `ls` or `dir` check.\n\nThis is required on Windows because some agent terminal validators remove backslashes from absolute paths embedded in commands. Using `mpt_agent.py` with `workdir=SKILL_DIR` avoids that failure and works on both macOS and Windows.\n\nIf the client loaded only the remote `SKILL.md`, download the helper from the official repository to a temporary directory, then use that temporary directory as the command working directory:\n\n```text\nhttps://raw.githubusercontent.com/harry0703/MoneyPrinterTurbo/main/docs/skill/mpt_agent.py\n```\n\n### 2. Run the helper\n\nDo not run a separate `uv --version` preflight. Run the helper directly. If the shell explicitly reports that uv is missing, install uv and retry the same helper command once.\n\nmacOS uv installation:\n\n```bash\ncurl -LsSf https://astral.sh/uv/install.sh | sh\n```\n\nWindows PowerShell uv installation:\n\n```powershell\npowershell -ExecutionPolicy ByPass -c \"irm https://astral.sh/uv/install.ps1 | iex\"\n```\n\nUse this foreground command with `workdir=SKILL_DIR` and a timeout of at least 20 minutes:\n\n```bash\nuv run --no-project --python 3.11 python mpt_agent.py --subject \"<video topic>\"\n```\n\nOn Windows, do not try absolute backslash paths, absolute forward-slash paths, or copies in the workspace before this relative command. If a terminal tool reports `referenced_script_path_missing`, verify that its working directory is exactly `SKILL_DIR` and retry the relative command once. Do not cycle through path variants.\n\nDo not use Docker, Conda, system pip, or a manually managed virtual environment.\n\n## Exit Handling\n\n### Exit code 0: deliver the result\n\nSuccessful output has this form:\n\n```text\nMPT_RESULT\nVIDEO_FILE=<absolute path>/final-1.mp4\nTASK_DIR=<absolute path>/storage/tasks/<task_id>\nLOG_FILE=<absolute path>/run-<task_id>.log\nRESULT_FILE=<absolute path>/latest-result.json\n```\n\n`mpt_agent.py` emits `VIDEO_FILE` only after confirming that the file exists and is non-empty. Do not run another `ls`, `stat`, or file validation command.\n\nIf the terminal reports `exitCode=0` but truncates the output or returns a history-file reference without `MPT_RESULT`, do not infer failure and do not inspect old logs. Read this file once:\n\n```text\n~/MoneyPrinterTurbo/.agent-logs/moneyprinterturbo-video/latest-result.json\n```\n\nTreat `status=completed` as success. Return only the absolute video path and a concise description, for example:\n\n```text\nThe video is ready.\nTopic: ...\nVideo file: /absolute/path/to/final-1.mp4\nSummary: Chinese portrait video with voice-over, subtitles, and background music.\n```\n\n### Exit code 10: request credentials once\n\n`MPT_NEEDS_INPUT` includes only the required fields, recommended LLM providers and signup links, custom OpenAI-compatible requirements, and material-provider signup links. Ask only for the listed values and do not request credentials already found in `config.toml`.\n\nAfter the user responds, rerun the same foreground command with only the required environment variables:\n\n```text\nMPT_LLM_PROVIDER\nMPT_LLM_API_KEY\nMPT_LLM_BASE_URL\nMPT_LLM_MODEL_NAME\nMPT_PEXELS_API_KEY\nMPT_VOLCENGINE_ARK_API_KEY\nMPT_OFOX_API_KEY\nMPT_METASO_MINIMAX_API_KEY\nMPT_MUAPI_API_KEY\n```\n\nWhen `SEEDANCE_CHARGE_CONFIRMATION_REQUIRED` is present, explain that every\ngenerated Seedance clip creates a paid Ark task. Only after the user explicitly\nconfirms, rerun with `--confirm-seedance-charge`; never add this flag silently.\n\nWhen `WAVESPEED_CHARGE_CONFIRMATION_REQUIRED` is present, explain that every\ngenerated WaveSpeed clip is billed per request by WaveSpeed. Only after the user\nexplicitly confirms, rerun with `--confirm-wavespeed-charge`; never add this\nflag silently.\n\nWhen `OFOX_CHARGE_CONFIRMATION_REQUIRED` is present, explain that every\ngenerated OFox clip creates a paid task. Only after the user explicitly\nconfirms, rerun with `--confirm-ofox-charge`; never add this flag silently.\n\nWhen `METASO_MINIMAX_CHARGE_CONFIRMATION_REQUIRED` is present, explain that\nevery generated MiniMax H3 clip creates a paid Metaso task. Only after the user\nexplicitly confirms, rerun with `--confirm-metaso-minimax-charge`; never add\nthis flag silently.\n\nWhen `MUAPI_CHARGE_CONFIRMATION_REQUIRED` is present, explain that every\ngenerated MuAPI clip creates a paid task. Only after the user explicitly\nconfirms, rerun with `--confirm-muapi-charge`; never add this flag silently.\n\n### Exit code 1: repair or report\n\nUse `MPT_ERROR` and `LOG_FILE` to repair a recoverable problem and retry once. Ask the user only if the repair requires a new API key. If the retry fails, report the failed stage, a short error, and the log path.\n\nA terminal-tool path validation error is not a video-generation failure because the helper did not start. Correct the working directory and retry the relative command once. Never ask the user to copy `mpt_agent.py`, run commands manually, or confirm whether the agent should continue.\n\n## Configuration and Background Fallback\n\nThe helper may read the complete local `config.toml` to reuse existing settings, but it must never print its contents. It reuses a working LLM provider automatically and validates configured Pexels keys through the authenticated My Collections endpoint before generation.\n\nUse background mode only if the agent platform cannot wait for a foreground process. Wait for the platform's process-completion notification without polling, then read `latest-result.json` once.\n\n## Scope\n\n- Support macOS and Windows only.\n- Use uv and the MoneyPrinterTurbo CLI only.\n- Do not start Docker, WebUI, or API services.\n- Do not run multiple video jobs concu"
+        }
+      ],
+      "config_files": [
+        "Dockerfile",
+        "docker-compose.yml"
+      ],
+      "stack_tags": [
+        "Docker",
+        "GitHub Actions",
+        "Python"
+      ],
+      "workspace_units": [
+        {
+          "path": ".",
+          "name": "moneyprinterturbo",
+          "kind": "workspace",
+          "manifest_path": "pyproject.toml",
+          "build_system": "pyproject.toml",
+          "file_count": 177,
+          "languages": [
+            {
+              "language": "Python",
+              "files": 121,
+              "bytes": 2527111
+            },
+            {
+              "language": "JSON",
+              "files": 17,
+              "bytes": 587545
+            },
+            {
+              "language": "YAML",
+              "files": 9,
+              "bytes": 13447
+            },
+            {
+              "language": "Markdown",
+              "files": 6,
+              "bytes": 126586
+            },
+            {
+              "language": "TOML",
+              "files": 3,
+              "bytes": 32128
+            }
+          ],
+          "scripts": [],
+          "entrypoints": [
+            ".github/workflows/ci.yml",
+            ".github/workflows/docker-ghcr.yml",
+            "README.md",
+            "main.py"
+          ],
+          "test_files": [],
+          "tags": [
+            "JSON",
+            "Python",
+            "YAML"
+          ]
+        }
+      ],
+      "qa_readiness": {
+        "score": 0,
+        "status": "missing",
+        "summary": "Repo does not expose enough local browser QA structure for a reliable Synthetic QA workflow yet.",
+        "signals": [
+          {
+            "id": "browser_runner",
+            "label": "Browser runner",
+            "status": "missing",
+            "detail": "No Playwright, Cypress, or browser runner config was found.",
+            "sources": []
+          },
+          {
+            "id": "user_flow_specs",
+            "label": "User-flow specs",
+            "status": "missing",
+            "detail": "No e2e/playwright/cypress spec files were found.",
+            "sources": []
+          },
+          {
+            "id": "local_app_command",
+            "label": "Local app command",
+            "status": "missing",
+            "detail": "No obvious package script for starting the app locally was found.",
+            "sources": []
+          },
+          {
+            "id": "qa_script",
+            "label": "QA script",
+            "status": "missing",
+            "detail": "No explicit QA/e2e/browser test script was found.",
+            "sources": []
+          },
+          {
+            "id": "artifact_trail",
+            "label": "Artifact trail",
+            "status": "missing",
+            "detail": "No browser QA artifacts or artifact-capable runner were found.",
+            "sources": []
+          },
+          {
+            "id": "targetable_routes",
+            "label": "Targetable surfaces",
+            "status": "missing",
+            "detail": "No obvious web entrypoint or route file was found.",
+            "sources": []
+          }
+        ],
+        "suggested_flows": []
+      },
+      "repo_graph": {
+        "schema_version": 2,
+        "nodes": [
+          {
+            "id": "file:github-security-md",
+            "kind": "file",
+            "label": ".github/SECURITY.md",
+            "path": ".github/SECURITY.md",
+            "detail": "source marker candidate",
+            "sources": [
+              ".github/SECURITY.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:github-workflows-ci-yml",
+            "kind": "file",
+            "label": ".github/workflows/ci.yml",
+            "path": ".github/workflows/ci.yml",
+            "detail": "workspace entrypoint",
+            "sources": [
+              ".github/workflows/ci.yml"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:github-workflows-docker-ghcr-yml",
+            "kind": "file",
+            "label": ".github/workflows/docker-ghcr.yml",
+            "path": ".github/workflows/docker-ghcr.yml",
+            "detail": "workspace entrypoint",
+            "sources": [
+              ".github/workflows/docker-ghcr.yml"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:readme-en-md",
+            "kind": "file",
+            "label": "README-en.md",
+            "path": "README-en.md",
+            "detail": "source marker candidate",
+            "sources": [
+              "README-en.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:readme-ja-md",
+            "kind": "file",
+            "label": "README-ja.md",
+            "path": "README-ja.md",
+            "detail": "source marker candidate",
+            "sources": [
+              "README-ja.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:readme-md",
+            "kind": "file",
+            "label": "README.md",
+            "path": "README.md",
+            "detail": "workspace entrypoint",
+            "sources": [
+              "README.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:docs-skill-skill-md",
+            "kind": "file",
+            "label": "docs/skill/SKILL.md",
+            "path": "docs/skill/SKILL.md",
+            "detail": "source marker candidate",
+            "sources": [
+              "docs/skill/SKILL.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:main-py",
+            "kind": "file",
+            "label": "main.py",
+            "path": "main.py",
+            "detail": "workspace entrypoint",
+            "sources": [
+              "main.py"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:test-readme-md",
+            "kind": "file",
+            "label": "test/README.md",
+            "path": "test/README.md",
+            "detail": "source marker candidate",
+            "sources": [
+              "test/README.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "package:pyproject-toml",
+            "kind": "package",
+            "label": "moneyprinterturbo",
+            "path": "pyproject.toml",
+            "detail": "pyproject.toml manifest",
+            "sources": [
+              "pyproject.toml"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "workspace:",
+            "kind": "workspace_unit",
+            "label": "moneyprinterturbo",
+            "path": null,
+            "detail": "workspace | 177 files | 121 Python, 17 JSON, 9 YAML",
+            "sources": [
+              ".github/workflows/ci.yml",
+              ".github/workflows/docker-ghcr.yml",
+              "pyproject.toml"
+            ],
+            "source_location": null,
+            "community": null
+          }
+        ],
+        "edges": [
+          {
+            "from": "workspace:",
+            "to": "package:pyproject-toml",
+            "kind": "defines",
+            "evidence": "workspace unit owns this manifest",
+            "sources": [
+              "pyproject.toml"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "file:github-workflows-ci-yml",
+            "kind": "entrypoint",
+            "evidence": "entrypoint belongs to this workspace unit",
+            "sources": [
+              ".github/workflows/ci.yml"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "file:github-workflows-docker-ghcr-yml",
+            "kind": "entrypoint",
+            "evidence": "entrypoint belongs to this workspace unit",
+            "sources": [
+              ".github/workflows/docker-ghcr.yml"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "file:main-py",
+            "kind": "entrypoint",
+            "evidence": "entrypoint belongs to this workspace unit",
+            "sources": [
+              "main.py"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "file:readme-md",
+            "kind": "entrypoint",
+            "evidence": "entrypoint belongs to this workspace unit",
+            "sources": [
+              "README.md"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          }
+        ],
+        "truncated": false
+      },
+      "history_brief": {
+        "schema_version": 2,
+        "summary": "Local history brief captured 12 recent commits, 0 decision markers, 0 test hints, and 8 co-change clusters for Repo Unpacked. Treat commit subjects as leads and rely on cited files for durable constraints.",
+        "recent_commits": [
+          {
+            "sha": "3d5f4e421927",
+            "date": "2026-09-21",
+            "subject": "fix(webui): cache video cache stats as plain dict to stay pickle-safe",
+            "files": []
+          },
+          {
+            "sha": "919170b05831",
+            "date": "2026-09-20",
+            "subject": "fix(api): parse subtitle enabled as boolean",
+            "files": []
+          },
+          {
+            "sha": "e0c9cb77ffd0",
+            "date": "2026-09-18",
+            "subject": "fix(asgi): normalize CORS origins (#1392)",
+            "files": []
+          },
+          {
+            "sha": "fdcf249298dc",
+            "date": "2026-09-18",
+            "subject": "feat(i18n): add Catalan WebUI support",
+            "files": [
+              "webui/i18n/ca.json"
+            ]
+          },
+          {
+            "sha": "26edbbd9d9f2",
+            "date": "2026-09-17",
+            "subject": "fix(llm): replace the retired Groq default model with openai/gpt-oss-120b",
+            "files": []
+          },
+          {
+            "sha": "d9e3ef281e1d",
+            "date": "2026-09-18",
+            "subject": "chore: update project resources",
+            "files": [
+              "README-en.md",
+              "README-ja.md",
+              "README.md"
+            ]
+          },
+          {
+            "sha": "633dbb0cf686",
+            "date": "2026-09-17",
+            "subject": "fix(queue): skip unusable queued tasks (#1383)",
+            "files": []
+          },
+          {
+            "sha": "a76b61da5969",
+            "date": "2026-09-16",
+            "subject": "fix(subtitle): preserve timestamps inside SRT cue text",
+            "files": []
+          },
+          {
+            "sha": "4d8e2afc2102",
+            "date": "2026-09-16",
+            "subject": "feat(tts): add VoxCPM voice cloning (#1390)",
+            "files": [
+              "README-en.md",
+              "README.md",
+              "webui/i18n/en.json",
+              "webui/i18n/zh.json"
+            ]
+          },
+          {
+            "sha": "3c9873014c77",
+            "date": "2026-09-16",
+            "subject": "fix(queue): coerce the configured task limits before scheduling",
+            "files": []
+          },
+          {
+            "sha": "552e0ee9fbfb",
+            "date": "2026-09-16",
+            "subject": "fix(loomloom): coerce and bound the configured duration settings",
+            "files": []
+          },
+          {
+            "sha": "74da93996ad3",
+            "date": "2026-09-16",
+            "subject": "ci: lint and compile the agent skill helper",
+            "files": [
+              ".github/workflows/ci.yml"
+            ]
+          }
+        ],
+        "decisions": [],
+        "test_hints": [],
+        "temporal_couplings": [
+          {
+            "files": [
+              "README-en.md",
+              "README.md"
+            ],
+            "commit_count": 7,
+            "last_commit": "d9e3ef281e1d",
+            "reason": "These files changed together in 7 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              "webui/i18n/en.json",
+              "webui/i18n/zh.json"
+            ],
+            "commit_count": 7,
+            "last_commit": "4d8e2afc2102",
+            "reason": "These files changed together in 7 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              "README-en.md",
+              "README-ja.md"
+            ],
+            "commit_count": 6,
+            "last_commit": "d9e3ef281e1d",
+            "reason": "These files changed together in 6 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              "README-ja.md",
+              "README.md"
+            ],
+            "commit_count": 6,
+            "last_commit": "d9e3ef281e1d",
+            "reason": "These files changed together in 6 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              "config.example.toml",
+              "webui/i18n/en.json"
+            ],
+            "commit_count": 4,
+            "last_commit": "5ddb15d7e7cc",
+            "reason": "These files changed together in 4 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              "config.example.toml",
+              "webui/i18n/zh.json"
+            ],
+            "commit_count": 4,
+            "last_commit": "5ddb15d7e7cc",
+            "reason": "These files changed together in 4 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              "README-en.md",
+              "webui/i18n/en.json"
+            ],
+            "commit_count": 3,
+            "last_commit": "4d8e2afc2102",
+            "reason": "These files changed together in 3 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              "README-en.md",
+              "webui/i18n/zh.json"
+            ],
+            "commit_count": 3,
+            "last_commit": "4d8e2afc2102",
+            "reason": "These files changed together in 3 recent commits; inspect both when either side moves."
+          }
+        ],
+        "graph": {
+          "schema_version": 2,
+          "nodes": [
+            {
+              "id": "commit:26edbbd9d9f2",
+              "kind": "commit",
+              "label": "fix(llm): replace the retired Groq default model with openai/gpt-oss-120b",
+              "path": null,
+              "detail": "2026-09-17",
+              "citations": [
+                "git:26edbbd9d9f2"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:3c9873014c77",
+              "kind": "commit",
+              "label": "fix(queue): coerce the configured task limits before scheduling",
+              "path": null,
+              "detail": "2026-09-16",
+              "citations": [
+                "git:3c9873014c77"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:3d5f4e421927",
+              "kind": "commit",
+              "label": "fix(webui): cache video cache stats as plain dict to stay pickle-safe",
+              "path": null,
+              "detail": "2026-09-21",
+              "citations": [
+                "git:3d5f4e421927"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:4d8e2afc2102",
+              "kind": "commit",
+              "label": "feat(tts): add VoxCPM voice cloning (#1390)",
+              "path": null,
+              "detail": "2026-09-16",
+              "citations": [
+                "git:4d8e2afc2102"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:552e0ee9fbfb",
+              "kind": "commit",
+              "label": "fix(loomloom): coerce and bound the configured duration settings",
+              "path": null,
+              "detail": "2026-09-16",
+              "citations": [
+                "git:552e0ee9fbfb"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:633dbb0cf686",
+              "kind": "commit",
+              "label": "fix(queue): skip unusable queued tasks (#1383)",
+              "path": null,
+              "detail": "2026-09-17",
+              "citations": [
+                "git:633dbb0cf686"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:74da93996ad3",
+              "kind": "commit",
+              "label": "ci: lint and compile the agent skill helper",
+              "path": null,
+              "detail": "2026-09-16",
+              "citations": [
+                "git:74da93996ad3"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:919170b05831",
+              "kind": "commit",
+              "label": "fix(api): parse subtitle enabled as boolean",
+              "path": null,
+              "detail": "2026-09-20",
+              "citations": [
+                "git:919170b05831"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:a76b61da5969",
+              "kind": "commit",
+              "label": "fix(subtitle): preserve timestamps inside SRT cue text",
+              "path": null,
+              "detail": "2026-09-16",
+              "citations": [
+                "git:a76b61da5969"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:d9e3ef281e1d",
+              "kind": "commit",
+              "label": "chore: update project resources",
+              "path": null,
+              "detail": "2026-09-18",
+              "citations": [
+                "git:d9e3ef281e1d"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:e0c9cb77ffd0",
+              "kind": "commit",
+              "label": "fix(asgi): normalize CORS origins (#1392)",
+              "path": null,
+              "detail": "2026-09-18",
+              "citations": [
+                "git:e0c9cb77ffd0"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:fdcf249298dc",
+              "kind": "commit",
+              "label": "feat(i18n): add Catalan WebUI support",
+              "path": null,
+              "detail": "2026-09-18",
+              "citations": [
+                "git:fdcf249298dc"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:-github-workflows-ci-yml",
+              "kind": "file",
+              "label": ".github/workflows/ci.yml",
+              "path": ".github/workflows/ci.yml",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                ".github/workflows/ci.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:config-example-toml",
+              "kind": "file",
+              "label": "config.example.toml",
+              "path": "config.example.toml",
+              "detail": "Recent co-change lead",
+              "citations": [
+                "config.example.toml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:readme-en-md",
+              "kind": "file",
+              "label": "README-en.md",
+              "path": "README-en.md",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "README-en.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:readme-ja-md",
+              "kind": "file",
+              "label": "README-ja.md",
+              "path": "README-ja.md",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "README-ja.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:readme-md",
+              "kind": "file",
+              "label": "README.md",
+              "path": "README.md",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "README.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:webui-i18n-ca-json",
+              "kind": "file",
+              "label": "webui/i18n/ca.json",
+              "path": "webui/i18n/ca.json",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "webui/i18n/ca.json"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:webui-i18n-en-json",
+              "kind": "file",
+              "label": "webui/i18n/en.json",
+              "path": "webui/i18n/en.json",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "webui/i18n/en.json"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:webui-i18n-zh-json",
+              "kind": "file",
+              "label": "webui/i18n/zh.json",
+              "path": "webui/i18n/zh.json",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "webui/i18n/zh.json"
+              ],
+              "trust": "git_observed"
+            }
+          ],
+          "edges": [
+            {
+              "from": "commit:4d8e2afc2102",
+              "to": "file:readme-en-md",
+              "kind": "changed",
+              "evidence": "4d8e2afc2102 changed this file",
+              "citations": [
+                "git:4d8e2afc2102",
+                "README-en.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:4d8e2afc2102",
+              "to": "file:readme-md",
+              "kind": "changed",
+              "evidence": "4d8e2afc2102 changed this file",
+              "citations": [
+                "git:4d8e2afc2102",
+                "README.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:4d8e2afc2102",
+              "to": "file:webui-i18n-en-json",
+              "kind": "changed",
+              "evidence": "4d8e2afc2102 changed this file",
+              "citations": [
+                "git:4d8e2afc2102",
+                "webui/i18n/en.json"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:4d8e2afc2102",
+              "to": "file:webui-i18n-zh-json",
+              "kind": "changed",
+              "evidence": "4d8e2afc2102 changed this file",
+              "citations": [
+                "git:4d8e2afc2102",
+                "webui/i18n/zh.json"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:74da93996ad3",
+              "to": "file:-github-workflows-ci-yml",
+              "kind": "changed",
+              "evidence": "74da93996ad3 changed this file",
+              "citations": [
+                "git:74da93996ad3",
+                ".github/workflows/ci.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:d9e3ef281e1d",
+              "to": "file:readme-en-md",
+              "kind": "changed",
+              "evidence": "d9e3ef281e1d changed this file",
+              "citations": [
+                "git:d9e3ef281e1d",
+                "README-en.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:d9e3ef281e1d",
+              "to": "file:readme-ja-md",
+              "kind": "changed",
+              "evidence": "d9e3ef281e1d changed this file",
+              "citations": [
+                "git:d9e3ef281e1d",
+                "README-ja.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:d9e3ef281e1d",
+              "to": "file:readme-md",
+              "kind": "changed",
+              "evidence": "d9e3ef281e1d changed this file",
+              "citations": [
+                "git:d9e3ef281e1d",
+                "README.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:fdcf249298dc",
+              "to": "file:webui-i18n-ca-json",
+              "kind": "changed",
+              "evidence": "fdcf249298dc changed this file",
+              "citations": [
+                "git:fdcf249298dc",
+                "webui/i18n/ca.json"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "file:config-example-toml",
+              "to": "file:webui-i18n-en-json",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 4 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:5ddb15d7e7cc"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:config-example-toml",
+              "to": "file:webui-i18n-zh-json",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 4 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:5ddb15d7e7cc"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:readme-en-md",
+              "to": "file:readme-ja-md",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 6 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:d9e3ef281e1d"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:readme-en-md",
+              "to": "file:readme-md",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 7 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:d9e3ef281e1d"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:readme-en-md",
+              "to": "file:webui-i18n-en-json",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 3 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:4d8e2afc2102"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:readme-en-md",
+              "to": "file:webui-i18n-zh-json",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 3 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:4d8e2afc2102"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:readme-ja-md",
+              "to": "file:readme-md",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 6 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:d9e3ef281e1d"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:webui-i18n-en-json",
+              "to": "file:webui-i18n-zh-json",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 7 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:4d8e2afc2102"
+              ],
+              "trust": "navigation_lead"
+            }
+          ],
+          "truncated": false
+        },
+        "sources": [
+          "README-en.md",
+          "README.md",
+          "webui/i18n/en.json",
+          "webui/i18n/zh.json",
+          "README-ja.md",
+          "config.example.toml",
+          "pyproject.toml"
+        ],
+        "truncated": false
+      },
+      "repo_health": {
+        "schema_version": 1,
+        "summary": "Deterministic scan scored 96 source files across simple size, churn, structural, test-adjacency, and performance-risk signals. 45 hotspots surfaced; average score is 6.4/10. Treat these as review leads, not proof of a bug.",
+        "average_score": 6.4,
+        "hotspot_count": 45,
+        "files_analyzed": 96,
+        "files_with_test_signal": 0,
+        "top_files": [
+          {
+            "path": "app/services/video.py",
+            "score": 4.7,
+            "bucket": "hotspot",
+            "lines": 1191,
+            "bytes": 69780,
+            "churn": 3696,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "high",
+                "detail": "1191 lines in one source file; inspect whether the module hides multiple responsibilities.",
+                "sources": [
+                  "app/services/video.py"
+                ]
+              },
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 12; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "app/services/video.py"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 3696 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "app/services/video.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "app/services/video.py"
+                ]
+              },
+              {
+                "id": "io_in_loop",
+                "label": "I/O inside loop",
+                "dimension": "performance",
+                "severity": "medium",
+                "detail": "Loop-shaped code appears near filesystem, subprocess, database, or network I/O; inspect for N+1 or repeated setup work.",
+                "sources": [
+                  "app/services/video.py"
+                ]
+              },
+              {
+                "id": "io_boundary",
+                "label": "I/O or process boundary",
+                "dimension": "defect",
+                "severity": "low",
+                "detail": "File touches filesystem, network, database, or subprocess boundaries; changes need concrete runtime proof.",
+                "sources": [
+                  "app/services/video.py"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow.",
+              "Flatten guard-heavy branches before adding behavior.",
+              "Hoist repeated I/O or batch loop work where behavior allows."
+            ]
+          },
+          {
+            "path": "app/services/loomloom.py",
+            "score": 4.7,
+            "bucket": "hotspot",
+            "lines": 979,
+            "bytes": 39505,
+            "churn": 1946,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "high",
+                "detail": "979 lines in one source file; inspect whether the module hides multiple responsibilities.",
+                "sources": [
+                  "app/services/loomloom.py"
+                ]
+              },
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 14; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "app/services/loomloom.py"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 1946 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "app/services/loomloom.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "app/services/loomloom.py"
+                ]
+              },
+              {
+                "id": "io_in_loop",
+                "label": "I/O inside loop",
+                "dimension": "performance",
+                "severity": "medium",
+                "detail": "Loop-shaped code appears near filesystem, subprocess, database, or network I/O; inspect for N+1 or repeated setup work.",
+                "sources": [
+                  "app/services/loomloom.py"
+                ]
+              },
+              {
+                "id": "io_boundary",
+                "label": "I/O or process boundary",
+                "dimension": "defect",
+                "severity": "low",
+                "detail": "File touches filesystem, network, database, or subprocess boundaries; changes need concrete runtime proof.",
+                "sources": [
+                  "app/services/loomloom.py"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow.",
+              "Flatten guard-heavy branches before adding behavior.",
+              "Hoist repeated I/O or batch loop work where behavior allows."
+            ]
+          },
+          {
+            "path": "test/services/test_material_openai_image.py",
+            "score": 5.2,
+            "bucket": "hotspot",
+            "lines": 810,
+            "bytes": 32707,
+            "churn": 1620,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "810 lines in one source file; changes here may be harder to review.",
+                "sources": [
+                  "test/services/test_material_openai_image.py"
+                ]
+              },
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 14; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "test/services/test_material_openai_image.py"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 1620 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "test/services/test_material_openai_image.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "test/services/test_material_openai_image.py"
+                ]
+              },
+              {
+                "id": "io_in_loop",
+                "label": "I/O inside loop",
+                "dimension": "performance",
+                "severity": "medium",
+                "detail": "Loop-shaped code appears near filesystem, subprocess, database, or network I/O; inspect for N+1 or repeated setup work.",
+                "sources": [
+                  "test/services/test_material_openai_image.py"
+                ]
+              },
+              {
+                "id": "io_boundary",
+                "label": "I/O or process boundary",
+                "dimension": "defect",
+                "severity": "low",
+                "detail": "File touches filesystem, network, database, or subprocess boundaries; changes need concrete runtime proof.",
+                "sources": [
+                  "test/services/test_material_openai_image.py"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Flatten guard-heavy branches before adding behavior.",
+              "Hoist repeated I/O or batch loop work where behavior allows."
+            ]
+          },
+          {
+            "path": "test/services/test_elevenlabs_music.py",
+            "score": 5.2,
+            "bucket": "hotspot",
+            "lines": 654,
+            "bytes": 24284,
+            "churn": 1238,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "654 lines in one source file; changes here may be harder to review.",
+                "sources": [
+                  "test/services/test_elevenlabs_music.py"
+                ]
+              },
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 18; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "test/services/test_elevenlabs_music.py"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 1238 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "test/services/test_elevenlabs_music.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "test/services/test_elevenlabs_music.py"
+                ]
+              },
+              {
+                "id": "io_in_loop",
+                "label": "I/O inside loop",
+                "dimension": "performance",
+                "severity": "medium",
+                "detail": "Loop-shaped code appears near filesystem, subprocess, database, or network I/O; inspect for N+1 or repeated setup work.",
+                "sources": [
+                  "test/services/test_elevenlabs_music.py"
+                ]
+              },
+              {
+                "id": "io_boundary",
+                "label": "I/O or process boundary",
+                "dimension": "defect",
+                "severity": "low",
+                "detail": "File touches filesystem, network, database, or subprocess boundaries; changes need concrete runtime proof.",
+                "sources": [
+                  "test/services/test_elevenlabs_music.py"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Flatten guard-heavy branches before adding behavior.",
+              "Hoist repeated I/O or batch loop work where behavior allows."
+            ]
+          },
+          {
+            "path": "test/services/test_controller_video.py",
+            "score": 5.2,
+            "bucket": "hotspot",
+            "lines": 608,
+            "bytes": 24286,
+            "churn": 1216,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "608 lines in one source file; changes here may be harder to review.",
+                "sources": [
+                  "test/services/test_controller_video.py"
+                ]
+              },
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 14; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "test/services/test_controller_video.py"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 1216 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "test/services/test_controller_video.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "test/services/test_controller_video.py"
+                ]
+              },
+              {
+                "id": "io_in_loop",
+                "label": "I/O inside loop",
+                "dimension": "performance",
+                "severity": "medium",
+                "detail": "Loop-shaped code appears near filesystem, subprocess, database, or network I/O; inspect for N+1 or repeated setup work.",
+                "sources": [
+                  "test/services/test_controller_video.py"
+                ]
+              },
+              {
+                "id": "io_boundary",
+                "label": "I/O or process boundary",
+                "dimension": "defect",
+                "severity": "low",
+                "detail": "File touches filesystem, network, database, or subprocess boundaries; changes need concrete runtime proof.",
+                "sources": [
+                  "test/services/test_controller_video.py"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Flatten guard-heavy branches before adding behavior.",
+              "Hoist repeated I/O or batch loop work where behavior allows."
+            ]
+          },
+          {
+            "path": "test/services/test_sonilo.py",
+            "score": 5.2,
+            "bucket": "hotspot",
+            "lines": 635,
+            "bytes": 25942,
+            "churn": 1168,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "635 lines in one source file; changes here may be harder to review.",
+                "sources": [
+                  "test/services/test_sonilo.py"
+                ]
+              },
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 18; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "test/services/test_sonilo.py"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 1168 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "test/services/test_sonilo.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "test/services/test_sonilo.py"
+                ]
+              },
+              {
+                "id": "io_in_loop",
+                "label": "I/O inside loop",
+                "dimension": "performance",
+                "severity": "medium",
+                "detail": "Loop-shaped code appears near filesystem, subprocess, database, or network I/O; inspect for N+1 or repeated setup work.",
+                "sources": [
+                  "test/services/test_sonilo.py"
+                ]
+              },
+              {
+                "id": "io_boundary",
+                "label": "I/O or process boundary",
+                "dimension": "defect",
+                "severity": "low",
+                "detail": "File touches filesystem, network, database, or subprocess boundaries; changes need concrete runtime proof.",
+                "sources": [
+                  "test/services/test_sonilo.py"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Flatten guard-heavy branches before adding behavior.",
+              "Hoist repeated I/O or batch loop work where behavior allows."
+            ]
+          },
+          {
+            "path": "app/services/voice.py",
+            "score": 5.4,
+            "bucket": "hotspot",
+            "lines": 1288,
+            "bytes": 127282,
+            "churn": 7423,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "high",
+                "detail": "1288 lines in one source file; inspect whether the module hides multiple responsibilities.",
+                "sources": [
+                  "app/services/voice.py"
+                ]
+              },
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 14; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "app/services/voice.py"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 7423 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "app/services/voice.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "app/services/voice.py"
+                ]
+              },
+              {
+                "id": "io_boundary",
+                "label": "I/O or process boundary",
+                "dimension": "defect",
+                "severity": "low",
+                "detail": "File touches filesystem, network, database, or subprocess boundaries; changes need concrete runtime proof.",
+                "sources": [
+                  "app/services/voice.py"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow.",
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "test/services/test_llm.py",
+            "score": 5.4,
+            "bucket": "hotspot",
+            "lines": 1231,
+            "bytes": 95068,
+            "churn": 4667,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "high",
+                "detail": "1231 lines in one source file; inspect whether the module hides multiple responsibilities.",
+                "sources": [
+                  "test/services/test_llm.py"
+                ]
+              },
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 14; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "test/services/test_llm.py"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 4667 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "test/services/test_llm.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "test/services/test_llm.py"
+                ]
+              },
+              {
+                "id": "io_boundary",
+                "label": "I/O or process boundary",
+                "dimension": "defect",
+                "severity": "low",
+                "detail": "File touches filesystem, network, database, or subprocess boundaries; changes need concrete runtime proof.",
+                "sources": [
+                  "test/services/test_llm.py"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow.",
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "test/services/test_task.py",
+            "score": 5.4,
+            "bucket": "hotspot",
+            "lines": 1197,
+            "bytes": 93395,
+            "churn": 4527,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "high",
+                "detail": "1197 lines in one source file; inspect whether the module hides multiple responsibilities.",
+                "sources": [
+                  "test/services/test_task.py"
+                ]
+              },
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 14; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "test/services/test_task.py"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 4527 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "test/services/test_task.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "test/services/test_task.py"
+                ]
+              },
+              {
+                "id": "io_boundary",
+                "label": "I/O or process boundary",
+                "dimension": "defect",
+                "severity": "low",
+                "detail": "File touches filesystem, network, database, or subprocess boundaries; changes need concrete runtime proof.",
+                "sources": [
+                  "test/services/test_task.py"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow.",
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "app/services/task.py",
+            "score": 5.4,
+            "bucket": "hotspot",
+            "lines": 1254,
+            "bytes": 67503,
+            "churn": 3731,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "high",
+                "detail": "1254 lines in one source file; inspect whether the module hides multiple responsibilities.",
+                "sources": [
+                  "app/services/task.py"
+                ]
+              },
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 10; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "app/services/task.py"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 3731 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "app/services/task.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "app/services/task.py"
+                ]
+              },
+              {
+                "id": "io_boundary",
+                "label": "I/O or process boundary",
+                "dimension": "defect",
+                "severity": "low",
+                "detail": "File touches filesystem, network, database, or subprocess boundaries; changes need concrete runtime proof.",
+                "sources": [
+                  "app/services/task.py"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow.",
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "app/services/llm.py",
+            "score": 5.4,
+            "bucket": "hotspot",
+            "lines": 1194,
+            "bytes": 49826,
+            "churn": 2833,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "high",
+                "detail": "1194 lines in one source file; inspect whether the module hides multiple responsibilities.",
+                "sources": [
+                  "app/services/llm.py"
+                ]
+              },
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 14; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "app/services/llm.py"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 2833 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "app/services/llm.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "app/services/llm.py"
+                ]
+              },
+              {
+                "id": "io_boundary",
+                "label": "I/O or process boundary",
+                "dimension": "defect",
+                "severity": "low",
+                "detail": "File touches filesystem, network, database, or subprocess boundaries; changes need concrete runtime proof.",
+                "sources": [
+                  "app/services/llm.py"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow.",
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "webui/Main.py",
+            "score": 5.7,
+            "bucket": "hotspot",
+            "lines": 1242,
+            "bytes": 356579,
+            "churn": 16747,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "high",
+                "detail": "1242 lines in one source file; inspect whether the module hides multiple responsibilities.",
+                "sources": [
+                  "webui/Main.py"
+                ]
+              },
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 14; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "webui/Main.py"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 16747 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "webui/Main.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "webui/Main.py"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow.",
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          }
+        ],
+        "truncated": true
+      },
+      "all_files": [],
+      "ignored_dirs": [
+        ".git"
+      ],
+      "coverage": {
+        "schema_version": 1,
+        "strategy": "full_walk",
+        "sampled_files": 177,
+        "total_files": null,
+        "sample_percent": null,
+        "languages": [
+          {
+            "language": "Python",
+            "files": 121,
+            "bytes": 2527111
+          },
+          {
+            "language": "JSON",
+            "files": 17,
+            "bytes": 587545
+          },
+          {
+            "language": "YAML",
+            "files": 9,
+            "bytes": 13447
+          },
+          {
+            "language": "Markdown",
+            "files": 6,
+            "bytes": 126586
+          },
+          {
+            "language": "TOML",
+            "files": 3,
+            "bytes": 32128
+          },
+          {
+            "language": "CSS",
+            "files": 1,
+            "bytes": 15224
+          },
+          {
+            "language": "HTML",
+            "files": 1,
+            "bytes": 689
+          },
+          {
+            "language": "Shell",
+            "files": 1,
+            "bytes": 2898
+          }
+        ],
+        "top_level_dirs": [
+          {
+            "path": "test",
+            "file_count": 72,
+            "bytes": 1272803
+          },
+          {
+            "path": "app",
+            "file_count": 47,
+            "bytes": 822653
+          },
+          {
+            "path": "webui",
+            "file_count": 17,
+            "bytes": 931508
+          },
+          {
+            "path": "docs",
+            "file_count": 12,
+            "bytes": 97038
+          },
+          {
+            "path": ".github",
+            "file_count": 6,
+            "bytes": 10198
+          },
+          {
+            "path": "resource",
+            "file_count": 1,
+            "bytes": 689
+          }
+        ],
+        "notes": [
+          "Full local walk covered the repo within the scan cap."
+        ]
+      },
+      "all_files_capped": false,
+      "dir_tree_preview": {
+        "name": "",
+        "path": "",
+        "is_dir": true,
+        "file_count": 177,
+        "children": [
+          {
+            "name": ".github",
+            "path": ".github",
+            "is_dir": true,
+            "file_count": 6,
+            "children": [
+              {
+                "name": "ISSUE_TEMPLATE",
+                "path": ".github/ISSUE_TEMPLATE",
+                "is_dir": true,
+                "file_count": 3,
+                "children": [
+                  {
+                    "name": "bug_report.yml",
+                    "path": ".github/ISSUE_TEMPLATE/bug_report.yml",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "config.yml",
+                    "path": ".github/ISSUE_TEMPLATE/config.yml",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "feature_request.yml",
+                    "path": ".github/ISSUE_TEMPLATE/feature_request.yml",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "workflows",
+                "path": ".github/workflows",
+                "is_dir": true,
+                "file_count": 2,
+                "children": [
+                  {
+                    "name": "ci.yml",
+                    "path": ".github/workflows/ci.yml",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "docker-ghcr.yml",
+                    "path": ".github/workflows/docker-ghcr.yml",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "SECURITY.md",
+                "path": ".github/SECURITY.md",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "app",
+            "path": "app",
+            "is_dir": true,
+            "file_count": 47,
+            "children": [
+              {
+                "name": "config",
+                "path": "app/config",
+                "is_dir": true,
+                "file_count": 2,
+                "children": [
+                  {
+                    "name": "__init__.py",
+                    "path": "app/config/__init__.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "config.py",
+                    "path": "app/config/config.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "controllers",
+                "path": "app/controllers",
+                "is_dir": true,
+                "file_count": 8,
+                "children": [
+                  {
+                    "name": "manager",
+                    "path": "app/controllers/manager",
+                    "is_dir": true,
+                    "file_count": 3,
+                    "children": [
+                      {
+                        "name": "base_manager.py",
+                        "path": "app/controllers/manager/base_manager.py",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "memory_manager.py",
+                        "path": "app/controllers/manager/memory_manager.py",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "redis_manager.py",
+                        "path": "app/controllers/manager/redis_manager.py",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": "v1",
+                    "path": "app/controllers/v1",
+                    "is_dir": true,
+                    "file_count": 3,
+                    "children": [
+                      {
+                        "name": "base.py",
+                        "path": "app/controllers/v1/base.py",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "llm.py",
+                        "path": "app/controllers/v1/llm.py",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "video.py",
+                        "path": "app/controllers/v1/video.py",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": "base.py",
+                    "path": "app/controllers/base.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "ping.py",
+                    "path": "app/controllers/ping.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "models",
+                "path": "app/models",
+                "is_dir": true,
+                "file_count": 5,
+                "children": [
+                  {
+                    "name": "__init__.py",
+                    "path": "app/models/__init__.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "const.py",
+                    "path": "app/models/const.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "exception.py",
+                    "path": "app/models/exception.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "llm_provider.py",
+                    "path": "app/models/llm_provider.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "schema.py",
+                    "path": "app/models/schema.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "services",
+                "path": "app/services",
+                "is_dir": true,
+                "file_count": 26,
+                "children": [
+                  {
+                    "name": "data",
+                    "path": "app/services/data",
+                    "is_dir": true,
+                    "file_count": 1,
+                    "children": [
+                      {
+                        "name": "azure_voices.json",
+                        "path": "app/services/data/azure_voices.json",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": "utils",
+                    "path": "app/services/utils",
+                    "is_dir": true,
+                    "file_count": 1,
+                    "children": [
+                      {
+                        "name": "video_effects.py",
+                        "path": "app/services/utils/video_effects.py",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": "__init__.py",
+                    "path": "app/services/__init__.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "bgm.py",
+                    "path": "app/services/bgm.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "cache_manager.py",
+                    "path": "app/services/cache_manager.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "elevenlabs_music.py",
+                    "path": "app/services/elevenlabs_music.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "llm.py",
+                    "path": "app/services/llm.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "loomloom.py",
+                    "path": "app/services/loomloom.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "material.py",
+                    "path": "app/services/material.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "material_cache.py",
+                    "path": "app/services/material_cache.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "material_upload.py",
+                    "path": "app/services/material_upload.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "metaso_minimax.py",
+                    "path": "app/services/metaso_minimax.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "muapi.py",
+                    "path": "app/services/muapi.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "ofox.py",
+                    "path": "app/services/ofox.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "sonilo.py",
+                    "path": "app/services/sonilo.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "state.py",
+                    "path": "app/services/state.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "subtitle.py",
+                    "path": "app/services/subtitle.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "task.py",
+                    "path": "app/services/task.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "task_artifacts.py",
+                    "path": "app/services/task_artifacts.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "twelvelabs.py",
+                    "path": "app/services/twelvelabs.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "upload_post.py",
+                    "path": "app/services/upload_post.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "version_checker.py",
+                    "path": "app/services/version_checker.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "video.py",
+                    "path": "app/services/video.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "voice.py",
+                    "path": "app/services/voice.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "volcengine_seedance.py",
+                    "path": "app/services/volcengine_seedance.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "webui_task.py",
+                    "path": "app/services/webui_task.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "utils",
+                "path": "app/utils",
+                "is_dir": true,
+                "file_count": 3,
+                "children": [
+                  {
+                    "name": "file_security.py",
+                    "path": "app/utils/file_security.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "logging_utils.py",
+                    "path": "app/utils/logging_utils.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "utils.py",
+                    "path": "app/utils/utils.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "__init__.py",
+                "path": "app/__init__.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "asgi.py",
+                "path": "app/asgi.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "router.py",
+                "path": "app/router.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "docs",
+            "path": "docs",
+            "is_dir": true,
+            "file_count": 12,
+            "children": [
+              {
+                "name": "loomloom",
+                "path": "docs/loomloom",
+                "is_dir": true,
+                "file_count": 2,
+                "children": [
+                  {
+                    "name": "moneyprinterturbo-ai-video-materials.template.json",
+                    "path": "docs/loomloom/moneyprinterturbo-ai-video-materials.template.json",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "moneyprinterturbo-script-candidates.template.json",
+                    "path": "docs/loomloom/moneyprinterturbo-script-candidates.template.json",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "skill",
+                "path": "docs/skill",
+                "is_dir": true,
+                "file_count": 2,
+                "children": [
+                  {
+                    "name": "SKILL.md",
+                    "path": "docs/skill/SKILL.md",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "mpt_agent.py",
+                    "path": "docs/skill/mpt_agent.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "sponsors",
+                "path": "docs/sponsors",
+                "is_dir": true,
+                "file_count": 6,
+                "children": [
+                  {
+                    "name": "byteplus-logo.svg",
+                    "path": "docs/sponsors/byteplus-logo.svg",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "infistar-logo.svg",
+                    "path": "docs/sponsors/infistar-logo.svg",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "ofox-logo.svg",
+                    "path": "docs/sponsors/ofox-logo.svg",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "picwish-logo.svg",
+                    "path": "docs/sponsors/picwish-logo.svg",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "reccloud-logo.svg",
+                    "path": "docs/sponsors/reccloud-logo.svg",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "volcengine-logo.svg",
+                    "path": "docs/sponsors/volcengine-logo.svg",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "MoneyPrinterTurbo.ipynb",
+                "path": "docs/MoneyPrinterTurbo.ipynb",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "voice-list.txt",
+                "path": "docs/voice-list.txt",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "resource",
+            "path": "resource",
+            "is_dir": true,
+            "file_count": 1,
+            "children": [
+              {
+                "name": "public",
+                "path": "resource/public",
+                "is_dir": true,
+                "file_count": 1,
+                "children": [
+                  {
+                    "name": "index.html",
+                    "path": "resource/public/index.html",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "test",
+            "path": "test",
+            "is_dir": true,
+            "file_count": 72,
+            "children": [
+              {
+                "name": "services",
+                "path": "test/services",
+                "is_dir": true,
+                "file_count": 69,
+                "children": [
+                  {
+                    "name": "__init__.py",
+                    "path": "test/services/__init__.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "test_api_authentication.py",
+                    "path": "test/services/test_api_authentication.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "test_asgi_cors.py",
+                    "path": "test/services/test_asgi_cors.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "test_asgi_static_files.py",
+                    "path": "test/services/test_asgi_static_files.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "test_batch_material_allocation.py",
+                    "path": "test/services/test_batch_material_allocation.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "test_bgm.py",
+                    "path": "test/services/test_bgm.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "test_cache_manager.py",
+                    "path": "test/services/test_cache_manager.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "test_cli.py",
+                    "path": "test/services/test_cli.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "test_clip_speed.py",
+                    "path": "test/services/test_clip_speed.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "test_config.py",
+                    "path": "test/services/test_config.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "test_controller_base.py",
+                    "path": "test/services/test_controller_base.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "test_controller_llm.py",
+                    "path": "test/services/test_controller_llm.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "test_controller_ping.py",
+                    "path": "test/services/test_controller_ping.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "test_controller_video.py",
+                    "path": "test/services/test_controller_video.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "test_elevenlabs_music.py",
+                    "path": "test/services/test_elevenlabs_music.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "test_fish_audio.py",
+                    "path": "test/services/test_fish_audio.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "test_fluxionai_llm.py",
+                    "path": "test/services/test_fluxionai_llm.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "test_kokoro.py",
+                    "path": "test/services/test_kokoro.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "test_kokoro_integration.py",
+                    "path": "test/services/test_kokoro_integration.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "test_llm.py",
+                    "path": "test/services/test_llm.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "test_loomloom.py",
+                    "path": "test/services/test_loomloom.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "test_material.py",
+                    "path": "test/services/test_material.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "test_material_cache.py",
+                    "path": "test/services/test_material_cache.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "test_material_openai_image.py",
+                    "path": "test/services/test_material_openai_image.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "test_material_upload.py",
+                    "path": "test/services/test_material_upload.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "test_metaso_minimax.py",
+                    "path": "test/services/test_metaso_minimax.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "test_mpt_agent_skill.py",
+                    "path": "test/services/test_mpt_agent_skill.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "test_muapi.py",
+                    "path": "test/services/test_muapi.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "test_ofox.py",
+                    "path": "test/services/test_ofox.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "test_schema.py",
+                    "path": "test/services/test_schema.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "test_sonilo.py",
+                    "path": "test/services/test_sonilo.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "test_state.py",
+                    "path": "test/services/test_state.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "test_subtitle.py",
+                    "path": "test/services/test_subtitle.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "test_subtitle_background_settings.py",
+                    "path": "test/services/test_subtitle_background_settings.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "test_task.py",
+                    "path": "test/services/test_task.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "test_task_artifacts.py",
+                    "path": "test/services/test_task_artifacts.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "test_task_manager.py",
+                    "path": "test/services/test_task_manager.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "test_twelvelabs.py",
+                    "path": "test/services/test_twelvelabs.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "test_upload_post.py",
+                    "path": "test/services/test_upload_post.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "test_utils_ffmpeg_check.py",
+                    "path": "test/services/test_utils_ffmpeg_check.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "test_version_checker.py",
+                    "path": "test/services/test_version_checker.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "test_video.py",
+                    "path": "test/services/test_video.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "test_video_effects.py",
+                    "path": "test/services/test_video_effects.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "test_voice.py",
+                    "path": "test/services/test_voice.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "test_volcengine_seedance.py",
+                    "path": "test/services/test_volcengine_seedance.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "test_voxcpm.py",
+                    "path": "test/services/test_voxcpm.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "test_webui_bgm.py",
+                    "path": "test/services/test_webui_bgm.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "test_webui_catalan.py",
+                    "path": "test/services/test_webui_catalan.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "test_webui_generation_defaults.py",
+                    "path": "test/services/test_webui_generation_defaults.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "test_webui_grouped_select.py",
+                    "path": "test/services/test_webui_grouped_select.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "test_webui_headless_task_actions.py",
+                    "path": "test/services/test_webui_headless_task_actions.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "test_webui_i18n.py",
+                    "path": "test/services/test_webui_i18n.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "test_webui_kokoro.py",
+                    "path": "test/services/test_webui_kokoro.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "test_webui_llm_settings.py",
+                    "path": "test/services/test_webui_llm_settings.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "test_webui_loomloom.py",
+                    "path": "test/services/test_webui_loomloom.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "test_webui_loomloom_regressions.py",
+                    "path": "test/services/test_webui_loomloom_regressions.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "test_webui_metaso_minimax.py",
+                    "path": "test/services/test_webui_metaso_minimax.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "test_webui_muapi.py",
+                    "path": "test/services/test_webui_muapi.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "test_webui_ofox.py",
+                    "path": "test/services/test_webui_ofox.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "test_webui_ofox_placement.py",
+                    "path": "test/services/test_webui_ofox_placement.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "test_webui_seedance.py",
+                    "path": "test/services/test_webui_seedance.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "test_webui_settings_transfer.py",
+                    "path": "test/services/test_webui_settings_transfer.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "test_webui_startup.py",
+                    "path": "test/services/test_webui_startup.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "test_webui_task.py",
+                    "path": "test/services/test_webui_task.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "test_webui_task_history.py",
+                    "path": "test/services/test_webui_task_history.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "test_webui_tts_settings.py",
+                    "path": "test/services/test_webui_tts_settings.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "test_webui_upload_post_settings.py",
+                    "path": "test/services/test_webui_upload_post_settings.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "test_webui_voice_preview.py",
+                    "path": "test/services/test_webui_voice_preview.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "test_youtube_audience.py",
+                    "path": "test/services/test_youtube_audience.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "README.md",
+                "path": "test/README.md",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "__init__.py",
+                "path": "test/__init__.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "test_main.py",
+                "path": "test/test_main.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "webui",
+            "path": "webui",
+            "is_dir": true,
+            "file_count": 17,
+            "children": [
+              {
+                "name": ".streamlit",
+                "path": "webui/.streamlit",
+                "is_dir": true,
+                "file_count": 1,
+                "children": [
+                  {
+                    "name": "config.toml",
+                    "path": "webui/.streamlit/config.toml",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "i18n",
+                "path": "webui/i18n",
+                "is_dir": true,
+                "file_count": 14,
+                "children": [
+                  {
+                    "name": "az.json",
+                    "path": "webui/i18n/az.json",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "ca.json",
+                    "path": "webui/i18n/ca.json",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "de.json",
+                    "path": "webui/i18n/de.json",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "en.json",
+                    "path": "webui/i18n/en.json",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "es.json",
+                    "path": "webui/i18n/es.json",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "fr.json",
+                    "path": "webui/i18n/fr.json",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "id.json",
+                    "path": "webui/i18n/id.json",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "it.json",
+                    "path": "webui/i18n/it.json",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "ko.json",
+                    "path": "webui/i18n/ko.json",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "pt.json",
+                    "path": "webui/i18n/pt.json",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "ru.json",
+                    "path": "webui/i18n/ru.json",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "tr.json",
+                    "path": "webui/i18n/tr.json",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "vi.json",
+                    "path": "webui/i18n/vi.json",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "zh.json",
+                    "path": "webui/i18n/zh.json",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "Main.py",
+                "path": "webui/Main.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "styles.css",
+                "path": "webui/styles.css",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": ".dockerignore",
+            "path": ".dockerignore",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": ".gitattributes",
+            "path": ".gitattributes",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": ".gitignore",
+            "path": ".gitignore",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": ".python-version",
+            "path": ".python-version",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "Dockerfile",
+            "path": "Dockerfile",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "Dockerfile.claude",
+            "path": "Dockerfile.claude",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "Dockerfile.gpu",
+            "path": "Dockerfile.gpu",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "LICENSE",
+            "path": "LICENSE",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "README-en.md",
+            "path": "README-en.md",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "README-ja.md",
+            "path": "README-ja.md",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "README.md",
+            "path": "README.md",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "cli.py",
+            "path": "cli.py",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "config.example.toml",
+            "path": "config.example.toml",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "docker-compose.claude.yml",
+            "path": "docker-compose.claude.yml",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "docker-compose.gpu.yml",
+            "path": "docker-compose.gpu.yml",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "docker-compose.release.yml",
+            "path": "docker-compose.release.yml",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "docker-compose.yml",
+            "path": "docker-compose.yml",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "main.py",
+            "path": "main.py",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "pyproject.toml",
+            "path": "pyproject.toml",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "requirements.txt",
+            "path": "requirements.txt",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "webui.bat",
+            "path": "webui.bat",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "webui.sh",
+            "path": "webui.sh",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          }
+        ]
+      }
+    },
+    "profiles": [
+      {
+        "stage": "full_scan",
+        "total_ms": 75,
+        "peak_rss_bytes": 30457856,
+        "steps": [
+          {
+            "id": "git_metadata",
+            "label": "Git metadata",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "file_walk",
+            "label": "Parallel file walk",
+            "ms": 7,
+            "pct": 9.333333333333334
+          },
+          {
+            "id": "languages",
+            "label": "Language breakdown",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "manifests",
+            "label": "Manifest parsing",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "docs",
+            "label": "Doc previews",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "aggregates",
+            "label": "Dirs, configs, stack tags",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "entrypoints",
+            "label": "Entrypoints, workspace units & QA readiness",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "source_previews",
+            "label": "Source preview cache",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "repo_graph",
+            "label": "Deterministic graph scan",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "history",
+            "label": "Git history & decision scan",
+            "ms": 16,
+            "pct": 21.333333333333336
+          },
+          {
+            "id": "repo_health",
+            "label": "Deterministic health scoring",
+            "ms": 48,
+            "pct": 64
+          },
+          {
+            "id": "dir_tree",
+            "label": "Directory tree preview",
+            "ms": 0,
+            "pct": 0
+          }
+        ]
+      },
+      {
+        "stage": "local_scan_persist",
+        "total_ms": 1,
+        "peak_rss_bytes": 30900224,
+        "steps": [
+          {
+            "id": "serialize",
+            "label": "JSON serialize (inventory → SQLite)",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "db_insert",
+            "label": "SQLite insert",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "touch_project",
+            "label": "Update repo project metadata",
+            "ms": 0,
+            "pct": 0
+          }
+        ]
+      }
+    ]
+  }
+}

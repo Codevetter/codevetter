@@ -25049,5 +25049,639 @@
         ]
       }
     ]
+  },
+  "report": {
+    "overview": "Biome is a Rust toolchain (formatter, linter, and language services) for JavaScript, TypeScript, JSON, CSS, GraphQL, HTML, and related languages, shipped as a CLI, an LSP, and npm packages. The workspace at commit 82f9b0e6 is versioned 0.7.0 in the root Cargo manifest and published primarily as @biomejs/biome. Distinctive pieces are the shared CST/parser stack, rule and assist registries, a daemon, and generated configuration and bindings.",
+    "system_map": {
+      "summary": "The Rust workspace lives under crates/ with the biome binary in crates/biome_cli. Language crates (parser, formatter, analyzer, semantic model) sit beside shared infrastructure (biome_service, biome_configuration, biome_lsp, biome_fs, biome_rowan). Node consumers are in packages/@biomejs/biome, @biomejs/js-api, and @biomejs/backend-jsonrpc. Build and test entry points are Cargo, justfile recipes, pnpm workspace scripts, and GitHub Actions on main. Persistence is mostly the filesystem (biome.json, file system trait, daemon socket) rather than a database.",
+      "claims": [
+        {
+          "claim": "Root Cargo.toml names the workspace biome at version 0.7.0, uses resolver 2, and excludes fuzz and benchmark packages from the default members.",
+          "sources": [
+            "Cargo.toml#L1-L40"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The published CLI crate is crates/biome_cli (package name biome, version 0.0.0 in-tree). Its binary entry is src/main.rs, which calls biome_cli::run_server unless BIOME_LOG_PATH is set, in which case it initializes env_logger from that directory.",
+          "sources": [
+            "crates/biome_cli/Cargo.toml#L1-L30",
+            "crates/biome_cli/src/main.rs#L1-L40"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Supported document languages are enumerated as JavaScript, Json, Jsonc, Css, Graphql, Html, Grit, Tailwind, Yaml, Svelte, and Vue in DocumentFileSource.",
+          "sources": [
+            "crates/biome_service/src/file_handlers/mod.rs#L1-L80"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Configuration is modeled in biome_configuration (package version 0.0.1 in-tree, described as biome_json in the scan inventory). Schema and partial types are generated; users typically commit biome.json or biome.jsonc.",
+          "sources": [
+            "crates/biome_configuration/Cargo.toml#L1-L40",
+            "crates/biome_configuration/src/lib.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The Node package @biomejs/biome is a platform-specific binary wrapper. The monorepo root package.json is private, named @biomejs/monorepo, and delegates test/lint/format to just and cargo.",
+          "sources": [
+            "package.json#L1-L80",
+            "packages/@biomejs/biome/package.json"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "pnpm-workspace.yaml includes packages/* and packages/@biomejs/*. npm publishing and WASM/JSON-RPC backends are separate packages from the Rust CLI.",
+          "sources": [
+            "pnpm-workspace.yaml",
+            "packages/@biomejs/js-api/package.json"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CI on push/PR is .github/workflows/main.yml. It runs Rust tests, lint, format checks, and related jobs. Autofix for generated artifacts is a separate workflow.",
+          "sources": [
+            ".github/workflows/main.yml#L1-L80",
+            ".github/workflows/autofix.yml#L1-L40"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "There is no application database. File IO goes through biome_fs (OsFileSystem, MemoryFileSystem) and configuration files on disk. The daemon uses a local socket via biome_lsp_factory / biome_service daemon modules.",
+          "sources": [
+            "crates/biome_fs/src/lib.rs",
+            "crates/biome_cli/src/commands/daemon.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Fuzz targets live in fuzz/ (cargo package names still carry historical rome_* names such as the typescript formatter fuzzer) and are excluded from the main workspace members.",
+          "sources": [
+            "fuzz/Cargo.toml#L1-L40",
+            "Cargo.toml#L1-L40"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "feature_catalog": {
+      "summary": "User-facing surfaces are the biome CLI, the LSP used by editors, the migrate/eslint path, the daemon, and the npm/WASM JS API. Analysis features are lint rules, assists, and syntax rules registered per language. Format, check, lint, ci, and search are the everyday commands. Plugins (Grit) and HTML/Vue/Svelte/Tailwind are first-class language frontends.",
+      "claims": [
+        {
+          "claim": "biome init writes a starter configuration. biome migrate rewrites Biome, ESLint, Prettier, and related configs. biome explain prints rule documentation. biome search runs structured search (GritQL-backed).",
+          "sources": [
+            "crates/biome_cli/src/commands/init.rs",
+            "crates/biome_cli/src/commands/migrate.rs",
+            "crates/biome_cli/src/commands/explain.rs",
+            "crates/biome_cli/src/commands/search.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "JavaScript and TypeScript lint rules are split into groups (a11y, complexity, correctness, nursery, performance, security, style, suspicious, and others) under crates/biome_js_analyze/src/lint.",
+          "sources": [
+            "crates/biome_js_analyze/src/lib.rs",
+            "crates/biome_js_analyze/src/lint.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CSS, JSON, GraphQL, HTML, and GraphQL-adjacent analyzers have their own crates (biome_css_analyze, biome_json_analyze, biome_graphql_analyze, biome_html_analyze) registered through the service feature set.",
+          "sources": [
+            "crates/biome_css_analyze/src/lib.rs",
+            "crates/biome_json_analyze/src/lib.rs",
+            "crates/biome_service/src/workspace.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Formatters exist per language: biome_js_formatter, biome_json_formatter, biome_css_formatter, biome_graphql_formatter, biome_html_formatter, plus embedded Tailwind and YAML handling.",
+          "sources": [
+            "crates/biome_js_formatter/src/lib.rs",
+            "crates/biome_css_formatter/src/lib.rs",
+            "crates/biome_html_formatter/src/lib.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "ESLint migration preserves selected rule options through source-option models, not only severity. The eslint-migrate skill and migrate command implement that path.",
+          "sources": [
+            "crates/biome_cli/src/commands/migrate.rs",
+            ".claude/skills/eslint-migrate-options/SKILL.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The JS API package exposes WASM and a JSON-RPC backend that talks to the daemon. @biomejs/backend-jsonrpc is the client for that socket.",
+          "sources": [
+            "packages/@biomejs/js-api/package.json",
+            "packages/@biomejs/backend-jsonrpc/package.json"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "data_flow": {
+      "summary": "Input is a filesystem path plus biome.json. The CLI or LSP opens a Workspace, scans projects, classifies each file by extension and embedded language, then parses to a Rowan CST. Settings (formatter, linter, assist, overrides, plugins) are merged from configuration and VCS ignore data. Analyzers and the formatter consume the CST and optional semantic or type information. Diagnostics and code actions return to the CLI printer, the LSP, or the JSON-RPC/WASM boundary. Fixes can be written back through the FileSystem trait.",
+      "claims": [
+        {
+          "claim": "File classification starts in file_handlers: extension and language directives choose DocumentFileSource, then a language-specific parser builds the CST.",
+          "sources": [
+            "crates/biome_service/src/file_handlers/mod.rs#L1-L120",
+            "crates/biome_js_parser/src/lib.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "biome_parser and biome_rowan own the green-tree representation shared by every language. Syntax nodes are cheap handles into an immutable tree; text is recovered from tokens.",
+          "sources": [
+            "crates/biome_rowan/src/lib.rs",
+            "crates/biome_parser/src/lib.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Configuration load path: locate biome.json or biome.jsonc, deserialize into biome_configuration types, merge extends and overrides, then push Settings into the workspace. VCS (Git) ignore rules further filter the file set.",
+          "sources": [
+            "crates/biome_service/src/configuration.rs",
+            "crates/biome_configuration/src/lib.rs",
+            "crates/biome_fs/src/lib.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Lint execution goes through biome_analyze: a RuleRegistry matches query types against the syntax tree (and semantic events). Each rule emits RuleDiagnostic or a code action.",
+          "sources": [
+            "crates/biome_analyze/src/lib.rs",
+            "crates/biome_analyze/src/registry.rs",
+            "crates/biome_js_analyze/src/lib.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The formatter lowers CST to a format IR (biome_formatter) and prints with options from configuration (indent, line width, quote style). Language crates implement FormatNode rules.",
+          "sources": [
+            "crates/biome_formatter/src/lib.rs",
+            "crates/biome_js_formatter/src/lib.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Type-aware rules use Salsa-backed inference in biome_js_type_info and biome_module_graph rather than only syntactic matching. The workspace requests inferred types for a module.",
+          "sources": [
+            "crates/biome_js_type_info/src/lib.rs",
+            "crates/biome_module_graph/src/lib.rs",
+            ".claude/skills/type-inference/SKILL.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Stdin mode treats unnamed input as a virtual document. The CLI still routes it through the same parse, lint, and format pipeline and prints the result instead of writing a path.",
+          "sources": [
+            "crates/biome_cli/src/commands/format.rs",
+            "crates/biome_cli/src/commands/lint.rs",
+            "crates/biome_service/src/workspace.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Fixes and assists mutate the CST via biome_rowan batches or text edits, then the workspace writes the new source through FileSystem. Unsafe fixes are gated by CLI flags and rule fix kind.",
+          "sources": [
+            "crates/biome_analyze/src/lib.rs",
+            "crates/biome_service/src/workspace.rs",
+            "crates/biome_cli/src/commands/check.rs"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "behavior_traces": {
+      "summary": "Three load-bearing flows are process startup into the CLI dispatcher, a check/lint pass over a project, and configuration plus fix persistence. A fourth adjacent flow is LSP or daemon startup, which reuses WorkspaceServer instead of one-shot CLI traversal. Function names below are the ones present in the crates read for this brief.",
+      "claims": [
+        {
+          "claim": "Startup: main in crates/biome_cli/src/main.rs reads BIOME_LOG_PATH, optionally initializes a log file, then calls biome_cli::run_server (or the pavilion entry used by the binary). Panic hook is installed before argument parsing.",
+          "sources": [
+            "crates/biome_cli/src/main.rs#L1-L80",
+            "crates/biome_cli/src/lib.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Parse step inside a language handler: the file handler calls the language parser (for JS, parse_module or parse_script in biome_js_parser), producing a Parse result that carries both the CST and parse diagnostics.",
+          "sources": [
+            "crates/biome_service/src/file_handlers/javascript.rs",
+            "crates/biome_js_parser/src/parse.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Lint step: the analyzer pulls rules from the language registry (for example biome_js_analyze::rules), filters by configuration severity and nursery or recommended sets, then visits the tree. Matching rules call diagnose.",
+          "sources": [
+            "crates/biome_analyze/src/registry.rs",
+            "crates/biome_js_analyze/src/lib.rs",
+            "crates/biome_service/src/file_handlers/javascript.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Format step: the language formatter builds a FormatElement IR from the CST and prints it with biome_formatter::Printed. If the printed text differs, a format diagnostic or write-back is produced.",
+          "sources": [
+            "crates/biome_formatter/src/lib.rs",
+            "crates/biome_js_formatter/src/lib.rs",
+            "crates/biome_cli/src/commands/format.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Persistence of fixes: when --write or --fix is set, the workspace applies text edits and calls FileSystem::open or write. Without those flags the process only reports. Configuration itself is not rewritten except by biome init and biome migrate.",
+          "sources": [
+            "crates/biome_cli/src/commands/check.rs",
+            "crates/biome_fs/src/lib.rs",
+            "crates/biome_cli/src/commands/migrate.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Init flow: biome init detects an existing config, prompts or writes biome.json with default formatter and linter sections, and can import from Prettier or ESLint when migrate is used instead.",
+          "sources": [
+            "crates/biome_cli/src/commands/init.rs",
+            "crates/biome_configuration/src/lib.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Migrate flow: read the foreign config (eslint.config or .eslintrc, prettier), map rules through generated and hand-written converters, emit a Biome configuration and a report of unmapped rules.",
+          "sources": [
+            "crates/biome_cli/src/commands/migrate.rs",
+            "crates/biome_cli/src/execute/migrate"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "testing_signals": {
+      "summary": "Rust tests use the built-in harness plus insta snapshots and codegen-driven spec tests. Language crates keep tests/specs directories with input files and expectation comments. The JS API uses Vitest. GitHub Actions runs the Rust suite, parser conformance, and autofix. Coverage is dense on parsers, formatters, and lint rules, and thinner on daemon lifecycle and editor integration.",
+      "claims": [
+        {
+          "claim": "Crate tests are invoked with cargo test or just test. A single crate is just test-crate <name>. Doctests are just test-doc. CONTRIBUTING.md documents these commands.",
+          "sources": [
+            "CONTRIBUTING.md",
+            "justfile"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Snapshot testing uses insta. Failing snapshots are reviewed with cargo insta accept, reject, or review. Formatter and lint tests often commit .snap files next to specs.",
+          "sources": [
+            "CONTRIBUTING.md",
+            "crates/biome_js_formatter/tests"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Lint and assist fixtures follow a spec layout: a source file with biome-ignore or expect comments, generated by macros in biome_analyze and exercised by the language test harness. The testing-codegen skill documents quick_test and orphan checks.",
+          "sources": [
+            ".claude/skills/testing-codegen/SKILL.md",
+            "crates/biome_js_analyze/tests"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Parser tests compare against Test262, Babel, TypeScript, and Prettier corpora. The parser_conformance workflow fails the build when those suites regress.",
+          "sources": [
+            ".github/workflows/parser_conformance.yml#L1-L80",
+            "crates/biome_js_parser/tests"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Fuzzing is a separate Cargo workspace under fuzz/ with cargo-fuzz targets for parsers and the formatter. It is not part of the default cargo test run.",
+          "sources": [
+            "fuzz/Cargo.toml#L1-L50",
+            ".github/workflows"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "packages/@biomejs/js-api tests run under Vitest (the repo's stack tags and package scripts). They require a prior WASM or JSON-RPC build, so they do not run from cargo test alone.",
+          "sources": [
+            "packages/@biomejs/js-api/package.json",
+            "CONTRIBUTING.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CLI behavior is tested in crates/biome_cli/tests with fixture projects (configuration, lint, format, migrate). These spawn the library entry rather than only unit-testing parsers.",
+          "sources": [
+            "crates/biome_cli/tests",
+            "crates/biome_cli/Cargo.toml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "main.yml is the merge gate for Rust fmt, clippy, and test. autofix.yml regenerates bindings and schema when codegen drifts. lint_rule_docs.yml checks rule documentation.",
+          "sources": [
+            ".github/workflows/main.yml#L1-L100",
+            ".github/workflows/autofix.yml",
+            ".github/workflows/lint_rule_docs.yml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Formatter idempotency and Prettier comparison tests live beside biome_js_formatter and related crates. A format change is expected to update snapshots, not only assertions.",
+          "sources": [
+            "crates/biome_js_formatter/tests",
+            "crates/biome_formatter/src/lib.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Type-inference tests cover Salsa invalidation and module cycles in biome_js_type_info and biome_module_graph. Many syntax-only rules do not enable the type engine in their fixtures.",
+          "sources": [
+            "crates/biome_js_type_info/src/lib.rs",
+            ".claude/skills/type-inference/SKILL.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Agents.md requires just f and just l before commit, plus the current crate's tests. User-facing changes also need a changeset under .changeset.",
+          "sources": [
+            "AGENTS.md",
+            ".changeset"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "risk_map": {
+      "summary": "The highest-risk surfaces are the daemon socket, arbitrary filesystem reads during project scan, shell-free but powerful code actions that rewrite user trees, and the migrate command that ingests third-party configs. Generated registries mean a hand edit can be overwritten. Type inference and the service layer are blast-radius hotspots: a small change can break every language. Secrets are not a primary domain; the tool still reads every file the user points it at.",
+      "claims": [
+        {
+          "claim": "The daemon listens on a local socket and executes workspace operations for connecting clients. A local process that can connect can request lint, format, and file reads of the project the daemon was started in.",
+          "sources": [
+            "crates/biome_cli/src/commands/daemon.rs",
+            "crates/biome_lsp/src/lib.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "biome rage prints configuration, environment, and paths to help bug reports. It can leak local paths and config contents if users paste the output.",
+          "sources": [
+            "crates/biome_cli/src/commands/rage.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Code actions and --write mutate source files in place. Unsafe fixes are distinguished from safe ones in the analyzer, but a wrong fix kind still rewrites user code when the flag is passed.",
+          "sources": [
+            "crates/biome_analyze/src/lib.rs",
+            "crates/biome_cli/src/commands/check.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Migrate parses ESLint and Prettier configs from the target project. It does not evaluate arbitrary JavaScript plugins the way ESLint does, but it does read and rewrite configuration files.",
+          "sources": [
+            "crates/biome_cli/src/commands/migrate.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "biome_service and biome_analyze are blast-radius hubs. Registry, settings, and file-handler changes affect every language CLI command and the LSP.",
+          "sources": [
+            "crates/biome_service/src/workspace.rs",
+            "crates/biome_analyze/src/registry.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Historical Rome names remain in fuzz package metadata and some comments. Treating those crates as the current product name will point agents at the wrong APIs.",
+          "sources": [
+            "fuzz/Cargo.toml#L1-L30",
+            "README.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Salsa type queries cache aggressively. A query that captures the wrong revision or ignores file invalidation will make type-aware rules report stale results. The type-inference skill calls this out as a dedicated test surface.",
+          "sources": [
+            ".claude/skills/type-inference/SKILL.md",
+            "crates/biome_js_type_info/src/lib.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Logging via BIOME_LOG_PATH writes logs under a user-controlled directory. The CLI creates that directory from the environment variable at startup.",
+          "sources": [
+            "crates/biome_cli/src/main.rs#L1-L50"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CI and release workflows can publish npm binaries and crates. A mistaken change to package metadata or the release workflow has distribution blast radius beyond the compiler.",
+          "sources": [
+            ".github/workflows/main.yml",
+            ".github/workflows/beta.yml",
+            "packages/@biomejs/biome/package.json"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "extension_points": {
+      "summary": "New behavior is expected to plug in through language crates, declare_lint_rule and declare_assist macros, the analyzer registry, file handlers, configuration partials, CLI command enums, and Grit plugins. Codegen must be re-run when names or grammar change. The JS API is a consumer of the workspace, not the place to add languages.",
+      "claims": [
+        {
+          "claim": "Lint rules are added with declare_lint_rule! in the language analyze crate, then listed in the group module (a11y, style, nursery, and so on) so the registry macro exports them.",
+          "sources": [
+            "crates/biome_analyze/src/lib.rs",
+            "crates/biome_js_analyze/src/lint.rs",
+            "crates/biome_analyze_macros/src/lib.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Assists use declare_assist_rule! and a parallel registry. Renaming a rule or assist requires just gen-rules and just gen-configuration.",
+          "sources": [
+            "AGENTS.md",
+            "crates/biome_analyze_macros/src/lib.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New syntax starts in an .ungram grammar, then just gen-grammar <lang> and just gen-formatter. Parser rules and formatter IR must be updated together.",
+          "sources": [
+            "AGENTS.md",
+            ".claude/skills/parser-development/SKILL.md",
+            ".claude/skills/formatter-development/SKILL.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "A new language frontend needs a parser crate, a formatter, an analyzer, a file handler arm in biome_service, and a DocumentFileSource variant. Registration is centralized, not discovered by directory scan.",
+          "sources": [
+            "crates/biome_service/src/file_handlers/mod.rs#L1-L100",
+            "crates/biome_service/src/workspace.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Rule options flow from JSON configuration through generated partial structs in biome_configuration into the rule's options type. New options require the configuration macros and schema codegen.",
+          "sources": [
+            "crates/biome_configuration_macros/src/lib.rs",
+            "crates/biome_configuration/src/lib.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "ESLint option migration is an extension table: each supported rule has a source-option model and a converter. Unsupported rules are reported rather than guessed.",
+          "sources": [
+            ".claude/skills/eslint-migrate-options/SKILL.md",
+            "crates/biome_cli/src/commands/migrate.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Diagnostics are an extension surface. Categories, severity, markup, and advices are built with biome_diagnostics and biome_console, not ad-hoc strings.",
+          "sources": [
+            "crates/biome_diagnostics/src/lib.rs",
+            "crates/biome_console/src/lib.rs",
+            ".claude/skills/diagnostics-development/SKILL.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "npm distribution adds a platform package under packages/@biomejs rather than changing the Rust entry. WASM exports are generated with wasm-bindgen.",
+          "sources": [
+            "packages/@biomejs/biome/package.json",
+            "CONTRIBUTING.md"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_handoff": {
+      "summary": "Read AGENTS.md and the relevant skill under .claude/skills before editing. Keep diffs small, add a failing test for bug fixes, and do not hand-edit generated registries. Run the crate's tests, then just f and just l before commit. User-facing changes need a changeset; PR prose is written by the human, not the agent. Internal dev-dependencies must use path dependencies.",
+      "claims": [
+        {
+          "claim": "First files for any task: AGENTS.md, CONTRIBUTING.md, and the skill that matches the surface (lint-rule-development, parser-development, formatter-development, testing-codegen, changeset, doc-comments).",
+          "sources": [
+            "AGENTS.md",
+            ".claude/skills/README.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Safe edit boundary: change the language crate that owns the behavior and its tests. Do not drive a formatter fix only through snapshots, and do not change biome_rowan unless the CST model itself is wrong.",
+          "sources": [
+            "AGENTS.md",
+            ".claude/skills/formatter-development/SKILL.md",
+            "crates/biome_rowan/src/lib.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Bug fixes need a spec or unit test that fails without the fix. Lint fixtures use expectation comments. Formatter changes update insta snapshots only after the behavior is reviewed.",
+          "sources": [
+            "AGENTS.md",
+            ".claude/skills/testing-codegen/SKILL.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "After a rule or assist rename, run just gen-rules and just gen-configuration. After an .ungram edit, run just gen-grammar <lang> and just gen-formatter. Bindings can be left to CI autofix unless local verification needs them.",
+          "sources": [
+            "AGENTS.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Verification commands: cargo test -p <crate> or just test-crate <crate>, then just f and just l. Full just ready is codegen for the whole repo and is slow.",
+          "sources": [
+            "AGENTS.md",
+            "CONTRIBUTING.md",
+            "justfile"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Comments and rustdoc must follow doc-comments. Lint rustdoc inside declare_lint_rule! is end-user documentation and also follows the lint-rule guide. Do not narrate the PR in comments.",
+          "sources": [
+            "AGENTS.md",
+            ".claude/skills/doc-comments/SKILL.md",
+            ".claude/skills/lint-rule-development/SKILL.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "User-facing behavior needs a changeset created with just new-changeset, targeting @biomejs/biome. Patch goes to main; minor or major features and nursery promotions that affect users target next. Internal refactors do not get a changeset.",
+          "sources": [
+            "AGENTS.md",
+            "CONTRIBUTING.md",
+            ".claude/skills/changeset/SKILL.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Do not write PR descriptions. Preserve .github/PULL_REQUEST_TEMPLATE.md. If a PR is opened, disclose AI assistance. Conventional commit titles are required.",
+          "sources": [
+            "AGENTS.md",
+            "CONTRIBUTING.md",
+            ".github/PULL_REQUEST_TEMPLATE.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Dev-dependencies on internal crates use path = \"../biome_*\", never workspace = true. Regular dependencies keep workspace = true.",
+          "sources": [
+            "AGENTS.md",
+            "CONTRIBUTING.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Trap: nursery rules use version metadata \"next\" until release. Promoting a rule is a branch and versioning decision, not only a group move.",
+          "sources": [
+            "CONTRIBUTING.md",
+            "crates/biome_js_analyze/src/lint.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Trap: syntax text must not assume token text is contiguous UTF-8 without the syntax-text-handling rules. TokenText and range APIs exist because trivia and embedded languages break naive slices.",
+          "sources": [
+            ".claude/skills/syntax-text-handling/SKILL.md",
+            "crates/biome_rowan/src/lib.rs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Review gate: after implementation, a fresh subagent runs biome-code-review with only the scope and requirements, not suspected bugs. Actionable findings are fixed and verification is repeated.",
+          "sources": [
+            "AGENTS.md",
+            ".claude/skills/biome-code-review/SKILL.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The binary version baked into release builds uses BIOME_VERSION. A value other than 0.0.0 disables recommended nursery rules in production builds. Local cargo build --bin biome does not set that variable.",
+          "sources": [
+            "CONTRIBUTING.md"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_prompt": "You are working in the Biome monorepo (https://github.com/biomejs/biome), a Rust formatter, linter, and language server for JS, TS, JSON, CSS, GraphQL, HTML, Grit, Tailwind, YAML, Svelte, and Vue. The CLI crate is crates/biome_cli (package name biome). Process entry is crates/biome_cli/src/main.rs, which honors BIOME_LOG_PATH and calls into biome_cli. Subcommands are built in crates/biome_cli/src/commands.rs with bpaf: check, lint, format, ci, init, migrate, lsp-proxy, start, stop, explain, search, rage, clean, dag, version. Shared state lives in biome_service::WorkspaceServer (filesystem, projects, settings, plugin cache, per-language features). Parsing produces a Rowan CST (biome_rowan, biome_parser). Analysis uses biome_analyze registries. Formatting uses biome_formatter IR. Configuration types live in biome_configuration and are generated. Node consumers are packages/@biomejs/biome, @biomejs/js-api (WASM and JSON-RPC), and @biomejs/backend-jsonrpc.\n\nBefore editing, read AGENTS.md and only the skill that matches the change: lint-rule-development, parser-development, formatter-development, diagnostics-development, testing-codegen, type-inference, syntax-text-handling, eslint-migrate-options, changeset, doc-comments, biome-code-review. Skills live in .claude/skills.\n\nConventions: smallest change that satisfies the request; add a test that fails without a bugfix; do not hand-edit generated registries. If you rename a rule or assist, run just gen-rules and just gen-configuration. If you edit an .ungram file, run just gen-grammar <lang> and just gen-formatter. Bindings may be left to the CI autofix job. Internal dev-dependencies use path = \"../biome_*\", not workspace = true. Comments follow the doc-comments skill: contracts in rustdoc, no change narration. Lint rustdoc is user-facing. Do not write PR descriptions. User-facing changes need a changeset via just new-changeset for @biomejs/biome. Bugfixes and non-user-facing work target main; user-facing features and rule promotions target next. Disclose AI assistance if a PR is opened. Do not use emojis in source, tests, or diagnostics.\n\nVerification: from the crate, cargo test -p <crate> or the named test; then just f and just l. Review snapshots as behavior. For formatter work, check idempotency. For type-aware rules, read the type-inference skill and test Salsa invalidation. For CLI changes, use crates/biome_cli/tests fixtures.\n\nHotspots and traps: biome_service and biome_analyze affect every language. The daemon socket and OsFileSystem read whatever path the user passes. Plugins are Grit patterns trusted via config. --write applies fixes in place; respect safe vs unsafe fix kinds. Do not slice token text naively. Nursery rule version metadata and BIOME_VERSION (non-0.0.0 disables recommended nursery rules in release builds) are easy to get wrong. Historical Rome names remain in fuzz/. After the change, run biome-code-review in a fresh subagent with only the intended requirements, then fix actionable findings and re-run affected tests.\n\nPrimary flow to keep in mind: CLI parse -> CliSession -> WorkspaceServer loads biome.json -> file handler classifies DocumentFileSource -> language parser builds CST -> analyzer registry and formatter run -> reporter prints diagnostics or FileSystem writes edits. LSP and the daemon call the same workspace instead of a one-shot traversal."
+  },
+  "analysis": {
+    "agent": "grok",
+    "model": "cli:grok",
+    "runtime_ms": 136972,
+    "cost_usd": null,
+    "collected_at": "2026-09-22T11:41:43.412Z"
   }
 }

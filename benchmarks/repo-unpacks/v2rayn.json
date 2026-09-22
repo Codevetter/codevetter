@@ -1,0 +1,4441 @@
+{
+  "schema_version": "codevetter.repo-unpack-corpus/v1",
+  "repo": "2dust/v2rayN",
+  "slug": "v2rayn",
+  "codevetter_version": "codevetter 1.12.0",
+  "collected_at": "2026-09-22T11:41:01.325Z",
+  "last_commit": {
+    "sha": "28139853a8087d81e1ac7ffaf7013b937958f5d2",
+    "date": "2026-09-20",
+    "subject": "up 7.25.2"
+  },
+  "scan": {
+    "schema_version": "codevetter.unpack-scan/v1",
+    "report_id": "dea305f2-43d1-4282-b746-c2061507071f",
+    "status": "scan_only",
+    "created_at": "2026-09-22T11:41:01.323104+00:00",
+    "inventory": {
+      "repo_path": "/private/var/folders/9_/1109_2dd1qz6zyvmxb5zp8pc0000gn/T/unpack-pilot-35Fd2X/v2rayn",
+      "repo_name": "v2rayn",
+      "commit_sha": "28139853a8087d81e1ac7ffaf7013b937958f5d2",
+      "branch": "master",
+      "remote_url": "https://github.com/2dust/v2rayN.git",
+      "files_scanned": 418,
+      "files_skipped": 13,
+      "bytes_scanned": 4111644,
+      "max_files_hit": false,
+      "estimated_total_files": null,
+      "languages": [
+        {
+          "language": "C#",
+          "files": 283,
+          "bytes": 1826814
+        },
+        {
+          "language": "Shell",
+          "files": 7,
+          "bytes": 121507
+        },
+        {
+          "language": "YAML",
+          "files": 16,
+          "bytes": 54871
+        },
+        {
+          "language": "Markdown",
+          "files": 1,
+          "bytes": 2924
+        },
+        {
+          "language": "JSON",
+          "files": 1,
+          "bytes": 63
+        }
+      ],
+      "manifests": [],
+      "entrypoints": [
+        {
+          "path": "README.md",
+          "kind": "docs",
+          "reason": "Repository readme"
+        },
+        {
+          "path": ".github/workflows/build-linux.yml",
+          "kind": "config",
+          "reason": "GitHub Actions workflow"
+        },
+        {
+          "path": ".github/workflows/winget-publish.yml",
+          "kind": "config",
+          "reason": "GitHub Actions workflow"
+        },
+        {
+          "path": ".github/workflows/pub-key.yml",
+          "kind": "config",
+          "reason": "GitHub Actions workflow"
+        },
+        {
+          "path": ".github/workflows/package-zip.yml",
+          "kind": "config",
+          "reason": "GitHub Actions workflow"
+        },
+        {
+          "path": ".github/workflows/test.yml",
+          "kind": "config",
+          "reason": "GitHub Actions workflow"
+        },
+        {
+          "path": ".github/workflows/build-osx.yml",
+          "kind": "config",
+          "reason": "GitHub Actions workflow"
+        },
+        {
+          "path": ".github/workflows/upload-sign.yml",
+          "kind": "config",
+          "reason": "GitHub Actions workflow"
+        },
+        {
+          "path": ".github/workflows/build-windows-x86.yml",
+          "kind": "config",
+          "reason": "GitHub Actions workflow"
+        },
+        {
+          "path": ".github/workflows/build-windows-desktop.yml",
+          "kind": "config",
+          "reason": "GitHub Actions workflow"
+        },
+        {
+          "path": ".github/workflows/build-windows.yml",
+          "kind": "config",
+          "reason": "GitHub Actions workflow"
+        },
+        {
+          "path": ".github/workflows/build-all.yml",
+          "kind": "config",
+          "reason": "GitHub Actions workflow"
+        },
+        {
+          "path": ".github/workflows/build.yml",
+          "kind": "config",
+          "reason": "GitHub Actions workflow"
+        }
+      ],
+      "top_level_dirs": [
+        {
+          "path": "v2rayN",
+          "file_count": 387,
+          "bytes": 3874791
+        },
+        {
+          "path": ".github",
+          "file_count": 17,
+          "bytes": 58661
+        }
+      ],
+      "docs": [
+        {
+          "path": "README.md",
+          "bytes": 2924,
+          "preview": "# v2rayN\n\n### A GUI client for Windows, Linux and macOS. Support [Xray](https://github.com/XTLS/Xray-core) and [sing-box](https://github.com/SagerNet/sing-box) and [others](https://github.com/2dust/v2rayN/wiki/List-of-supported-cores)\n\n[![CodeFactor](https://www.codefactor.io/repository/github/2dust/v2rayn/badge)](https://www.codefactor.io/repository/github/2dust/v2rayn)\n[![Release](https://img.shields.io/github/v/release/2dust/v2rayN?logo=github&label=Release)](https://github.com/2dust/v2rayN/releases)\n[![Downloads](https://img.shields.io/github/downloads/2dust/v2rayN/latest/total?logo=github&label=Downloads)](https://github.com/2dust/v2rayN/releases)\n[![Telegram](https://img.shields.io/badge/Telegram-Chat-26A5E4?logo=telegram)](https://t.me/v2rayn)\n \n[![Windows](https://img.shields.io/badge/Windows-supported-0078D6?logo=windows)](https://github.com/2dust/v2rayN) \n[![Linux](https://img.shields.io/badge/Linux-supported-FCC624?logo=linux&logoColor=000)](https://github.com/2dust/v2rayN) \n[![macOS](https://img.shields.io/badge/macOS-supported-000000?logo=apple)](https://github.com/2dust/v2rayN) \n[![GPG Signed](https://img.shields.io/badge/GPG-signed-4B32C3?logo=gnuprivacyguard)](https://github.com/2dust/v2rayN)\n\n\n---\n\n## Download / 下载\n\nDownload the latest release here:\n\n在这里下载最新版本：\n\n[https://github.com/2dust/v2rayN/releases](https://github.com/2dust/v2rayN/releases)\n\n\n> [!TIP]\n> v2rayN is the desktop version. For the mobile version, please visit the v2rayNG \\\n> v2rayN 是电脑版，手机版请访问 v2rayNG\n>\n> https://github.com/2dust/v2rayNG\n\n---\n\n## Documentation / 使用文档\n\nRead the Wiki for usage guides and configuration details.\n\n请阅读 Wiki 获取使用说明和配置教程。\n\n[https://github.com/2dust/v2rayN/wiki](https://github.com/2dust/v2rayN/wiki)\n\n---\n\n## Supported Platforms / 支持平台\n\n| Platform / 平台 | x64 | x86 | arm64 | riscv64 | loong64 |\n| --- | --- | --- | --- | --- | --- |\n| Windows | ✅ | ✅ | ✅ | - | - |\n| Linux | ✅ | - | ✅ | ✅ | ✅ |\n| macOS | ✅ | - | ✅ | - | - |\n\nMinimum OS requirements: [Release files introduction](https://github.com/2dust/v2rayN/wiki/Release-files-introduction) / 最低系统要求：[发布文件介绍](https://github.com/2dust/v2rayN/wiki/Release-files-introduction)\n\n---\n\n## GPG Verification / GPG 签名校验\n\nRelease files are signed with GPG to verify authenticity and integrity, helping prevent mirror, ISP, or CDN hijacking.\n\n发布文件已使用 GPG 签名，可用于校验文件真实性与完整性，预防镜像站、运营商或 CDN 劫持。\n\n### Fingerprint / 公钥指纹\n\n```text\n7694 5E9F 3E9A 168F 8070 F195 805D 661C\n134D FAF6 8903 C199 463C 31E5 AE90 3AE0\n```\n\n---\n\n## Community / 社区\n\nTelegram Group / Telegram 群组：\n\n[https://t.me/v2rayN](https://t.me/v2rayN)\n\nTelegram Channel / Telegram 频道：\n\n[https://t.me/github_2dust](https://t.me/github_2dust)\n"
+        }
+      ],
+      "config_files": [],
+      "stack_tags": [
+        "GitHub Actions"
+      ],
+      "workspace_units": [
+        {
+          "path": "v2rayN",
+          "name": "v2rayN",
+          "kind": "subsystem",
+          "manifest_path": null,
+          "build_system": null,
+          "file_count": 387,
+          "languages": [
+            {
+              "language": "C#",
+              "files": 282,
+              "bytes": 1823024
+            }
+          ],
+          "scripts": [],
+          "entrypoints": [],
+          "test_files": [],
+          "tags": [
+            "C#"
+          ]
+        }
+      ],
+      "qa_readiness": {
+        "score": 0,
+        "status": "missing",
+        "summary": "Repo does not expose enough local browser QA structure for a reliable Synthetic QA workflow yet.",
+        "signals": [
+          {
+            "id": "browser_runner",
+            "label": "Browser runner",
+            "status": "missing",
+            "detail": "No Playwright, Cypress, or browser runner config was found.",
+            "sources": []
+          },
+          {
+            "id": "user_flow_specs",
+            "label": "User-flow specs",
+            "status": "missing",
+            "detail": "No e2e/playwright/cypress spec files were found.",
+            "sources": []
+          },
+          {
+            "id": "local_app_command",
+            "label": "Local app command",
+            "status": "missing",
+            "detail": "No obvious package script for starting the app locally was found.",
+            "sources": []
+          },
+          {
+            "id": "qa_script",
+            "label": "QA script",
+            "status": "missing",
+            "detail": "No explicit QA/e2e/browser test script was found.",
+            "sources": []
+          },
+          {
+            "id": "artifact_trail",
+            "label": "Artifact trail",
+            "status": "missing",
+            "detail": "No browser QA artifacts or artifact-capable runner were found.",
+            "sources": []
+          },
+          {
+            "id": "targetable_routes",
+            "label": "Targetable surfaces",
+            "status": "missing",
+            "detail": "No obvious web entrypoint or route file was found.",
+            "sources": []
+          }
+        ],
+        "suggested_flows": []
+      },
+      "repo_graph": {
+        "schema_version": 2,
+        "nodes": [
+          {
+            "id": "file:github-workflows-build-all-yml",
+            "kind": "file",
+            "label": ".github/workflows/build-all.yml",
+            "path": ".github/workflows/build-all.yml",
+            "detail": "GitHub Actions workflow",
+            "sources": [
+              ".github/workflows/build-all.yml"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:github-workflows-build-linux-yml",
+            "kind": "file",
+            "label": ".github/workflows/build-linux.yml",
+            "path": ".github/workflows/build-linux.yml",
+            "detail": "GitHub Actions workflow",
+            "sources": [
+              ".github/workflows/build-linux.yml"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:github-workflows-build-osx-yml",
+            "kind": "file",
+            "label": ".github/workflows/build-osx.yml",
+            "path": ".github/workflows/build-osx.yml",
+            "detail": "GitHub Actions workflow",
+            "sources": [
+              ".github/workflows/build-osx.yml"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:github-workflows-build-windows-desktop-yml",
+            "kind": "file",
+            "label": ".github/workflows/build-windows-desktop.yml",
+            "path": ".github/workflows/build-windows-desktop.yml",
+            "detail": "GitHub Actions workflow",
+            "sources": [
+              ".github/workflows/build-windows-desktop.yml"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:github-workflows-build-windows-x86-yml",
+            "kind": "file",
+            "label": ".github/workflows/build-windows-x86.yml",
+            "path": ".github/workflows/build-windows-x86.yml",
+            "detail": "GitHub Actions workflow",
+            "sources": [
+              ".github/workflows/build-windows-x86.yml"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:github-workflows-build-windows-yml",
+            "kind": "file",
+            "label": ".github/workflows/build-windows.yml",
+            "path": ".github/workflows/build-windows.yml",
+            "detail": "GitHub Actions workflow",
+            "sources": [
+              ".github/workflows/build-windows.yml"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:github-workflows-build-yml",
+            "kind": "file",
+            "label": ".github/workflows/build.yml",
+            "path": ".github/workflows/build.yml",
+            "detail": "GitHub Actions workflow",
+            "sources": [
+              ".github/workflows/build.yml"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:github-workflows-package-zip-yml",
+            "kind": "file",
+            "label": ".github/workflows/package-zip.yml",
+            "path": ".github/workflows/package-zip.yml",
+            "detail": "GitHub Actions workflow",
+            "sources": [
+              ".github/workflows/package-zip.yml"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:github-workflows-pub-key-yml",
+            "kind": "file",
+            "label": ".github/workflows/pub-key.yml",
+            "path": ".github/workflows/pub-key.yml",
+            "detail": "GitHub Actions workflow",
+            "sources": [
+              ".github/workflows/pub-key.yml"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:github-workflows-test-yml",
+            "kind": "file",
+            "label": ".github/workflows/test.yml",
+            "path": ".github/workflows/test.yml",
+            "detail": "GitHub Actions workflow",
+            "sources": [
+              ".github/workflows/test.yml"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:github-workflows-upload-sign-yml",
+            "kind": "file",
+            "label": ".github/workflows/upload-sign.yml",
+            "path": ".github/workflows/upload-sign.yml",
+            "detail": "GitHub Actions workflow",
+            "sources": [
+              ".github/workflows/upload-sign.yml"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:github-workflows-winget-publish-yml",
+            "kind": "file",
+            "label": ".github/workflows/winget-publish.yml",
+            "path": ".github/workflows/winget-publish.yml",
+            "detail": "GitHub Actions workflow",
+            "sources": [
+              ".github/workflows/winget-publish.yml"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:readme-md",
+            "kind": "file",
+            "label": "README.md",
+            "path": "README.md",
+            "detail": "Repository readme",
+            "sources": [
+              "README.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "workspace:v2rayn",
+            "kind": "subsystem",
+            "label": "v2rayN",
+            "path": "v2rayN",
+            "detail": "subsystem | 387 files | 282 C#",
+            "sources": [
+              "v2rayN"
+            ],
+            "source_location": null,
+            "community": null
+          }
+        ],
+        "edges": [],
+        "truncated": false
+      },
+      "history_brief": {
+        "schema_version": 2,
+        "summary": "Local history brief captured 12 recent commits, 0 decision markers, 0 test hints, and 0 co-change clusters for Repo Unpacked. Treat commit subjects as leads and rely on cited files for durable constraints.",
+        "recent_commits": [
+          {
+            "sha": "28139853a808",
+            "date": "2026-09-20",
+            "subject": "up 7.25.2",
+            "files": []
+          },
+          {
+            "sha": "5d9718a0bb93",
+            "date": "2026-09-20",
+            "subject": "Fix (#10203)",
+            "files": []
+          },
+          {
+            "sha": "740729c8473f",
+            "date": "2026-09-20",
+            "subject": "Raise speed test concurrency minimum",
+            "files": []
+          },
+          {
+            "sha": "13cd2ef80d69",
+            "date": "2026-09-20",
+            "subject": "Update Directory.Packages.props",
+            "files": []
+          },
+          {
+            "sha": "be3566df2f71",
+            "date": "2026-09-19",
+            "subject": "Add finalMask parsing to Wireguard configuration handling (#10201)",
+            "files": []
+          },
+          {
+            "sha": "6e9ec6cbeebc",
+            "date": "2026-09-19",
+            "subject": "Fix (#10200)",
+            "files": []
+          },
+          {
+            "sha": "e6e95e00d7e6",
+            "date": "2026-09-19",
+            "subject": "Fix udptest (#10199)",
+            "files": []
+          },
+          {
+            "sha": "2fbe81041b08",
+            "date": "2026-09-19",
+            "subject": "Bump TUnit from 1.66.27 to 1.68.4 (#10187)",
+            "files": []
+          },
+          {
+            "sha": "05901b5673e6",
+            "date": "2026-09-19",
+            "subject": "fix(security): guard subscription/message regex filters against ReDoS (#10185)",
+            "files": []
+          },
+          {
+            "sha": "bdd0ee16201f",
+            "date": "2026-09-19",
+            "subject": "Resx: fix English typo (#10164)",
+            "files": []
+          },
+          {
+            "sha": "00d1001def2a",
+            "date": "2026-09-19",
+            "subject": "i18n(ru): translate new strings for Mux, request headers and updates (#10160)",
+            "files": []
+          },
+          {
+            "sha": "21bafe52e0b8",
+            "date": "2026-09-19",
+            "subject": "Optimize download and speedtest (#10147)",
+            "files": []
+          }
+        ],
+        "decisions": [],
+        "test_hints": [],
+        "temporal_couplings": [],
+        "graph": {
+          "schema_version": 2,
+          "nodes": [
+            {
+              "id": "commit:00d1001def2a",
+              "kind": "commit",
+              "label": "i18n(ru): translate new strings for Mux, request headers and updates (#10160)",
+              "path": null,
+              "detail": "2026-09-19",
+              "citations": [
+                "git:00d1001def2a"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:05901b5673e6",
+              "kind": "commit",
+              "label": "fix(security): guard subscription/message regex filters against ReDoS (#10185)",
+              "path": null,
+              "detail": "2026-09-19",
+              "citations": [
+                "git:05901b5673e6"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:13cd2ef80d69",
+              "kind": "commit",
+              "label": "Update Directory.Packages.props",
+              "path": null,
+              "detail": "2026-09-20",
+              "citations": [
+                "git:13cd2ef80d69"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:21bafe52e0b8",
+              "kind": "commit",
+              "label": "Optimize download and speedtest (#10147)",
+              "path": null,
+              "detail": "2026-09-19",
+              "citations": [
+                "git:21bafe52e0b8"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:28139853a808",
+              "kind": "commit",
+              "label": "up 7.25.2",
+              "path": null,
+              "detail": "2026-09-20",
+              "citations": [
+                "git:28139853a808"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:2fbe81041b08",
+              "kind": "commit",
+              "label": "Bump TUnit from 1.66.27 to 1.68.4 (#10187)",
+              "path": null,
+              "detail": "2026-09-19",
+              "citations": [
+                "git:2fbe81041b08"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:5d9718a0bb93",
+              "kind": "commit",
+              "label": "Fix (#10203)",
+              "path": null,
+              "detail": "2026-09-20",
+              "citations": [
+                "git:5d9718a0bb93"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:6e9ec6cbeebc",
+              "kind": "commit",
+              "label": "Fix (#10200)",
+              "path": null,
+              "detail": "2026-09-19",
+              "citations": [
+                "git:6e9ec6cbeebc"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:740729c8473f",
+              "kind": "commit",
+              "label": "Raise speed test concurrency minimum",
+              "path": null,
+              "detail": "2026-09-20",
+              "citations": [
+                "git:740729c8473f"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:bdd0ee16201f",
+              "kind": "commit",
+              "label": "Resx: fix English typo (#10164)",
+              "path": null,
+              "detail": "2026-09-19",
+              "citations": [
+                "git:bdd0ee16201f"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:be3566df2f71",
+              "kind": "commit",
+              "label": "Add finalMask parsing to Wireguard configuration handling (#10201)",
+              "path": null,
+              "detail": "2026-09-19",
+              "citations": [
+                "git:be3566df2f71"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:e6e95e00d7e6",
+              "kind": "commit",
+              "label": "Fix udptest (#10199)",
+              "path": null,
+              "detail": "2026-09-19",
+              "citations": [
+                "git:e6e95e00d7e6"
+              ],
+              "trust": "git_observed"
+            }
+          ],
+          "edges": [],
+          "truncated": false
+        },
+        "sources": [],
+        "truncated": false
+      },
+      "repo_health": {
+        "schema_version": 1,
+        "summary": "Deterministic scan scored 96 source files across simple size, churn, structural, test-adjacency, and performance-risk signals. 65 hotspots surfaced; average score is 6.4/10. Treat these as review leads, not proof of a bug.",
+        "average_score": 6.4,
+        "hotspot_count": 65,
+        "files_analyzed": 96,
+        "files_with_test_signal": 0,
+        "top_files": [
+          {
+            "path": "v2rayN/ServiceLib/Common/Utils.cs",
+            "score": 5,
+            "bucket": "hotspot",
+            "lines": 1445,
+            "bytes": 39695,
+            "churn": 1453,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "high",
+                "detail": "1445 lines in one source file; inspect whether the module hides multiple responsibilities.",
+                "sources": [
+                  "v2rayN/ServiceLib/Common/Utils.cs"
+                ]
+              },
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 14; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "v2rayN/ServiceLib/Common/Utils.cs"
+                ]
+              },
+              {
+                "id": "long_block",
+                "label": "Long function/block",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "A brace-delimited block spans roughly 1438 lines; consider extracting a helper when touching it.",
+                "sources": [
+                  "v2rayN/ServiceLib/Common/Utils.cs"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 1453 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "v2rayN/ServiceLib/Common/Utils.cs"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "v2rayN/ServiceLib/Common/Utils.cs"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow.",
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "v2rayN/ServiceLib/ViewModels/ProfilesViewModel.cs",
+            "score": 5,
+            "bucket": "hotspot",
+            "lines": 904,
+            "bytes": 29142,
+            "churn": 998,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "high",
+                "detail": "904 lines in one source file; inspect whether the module hides multiple responsibilities.",
+                "sources": [
+                  "v2rayN/ServiceLib/ViewModels/ProfilesViewModel.cs"
+                ]
+              },
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 12; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "v2rayN/ServiceLib/ViewModels/ProfilesViewModel.cs"
+                ]
+              },
+              {
+                "id": "long_block",
+                "label": "Long function/block",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "A brace-delimited block spans roughly 901 lines; consider extracting a helper when touching it.",
+                "sources": [
+                  "v2rayN/ServiceLib/ViewModels/ProfilesViewModel.cs"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 998 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "v2rayN/ServiceLib/ViewModels/ProfilesViewModel.cs"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "v2rayN/ServiceLib/ViewModels/ProfilesViewModel.cs"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow.",
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "v2rayN/ServiceLib/Services/UpdateService.cs",
+            "score": 5.2,
+            "bucket": "hotspot",
+            "lines": 597,
+            "bytes": 21491,
+            "churn": 745,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "597 lines in one source file; changes here may be harder to review.",
+                "sources": [
+                  "v2rayN/ServiceLib/Services/UpdateService.cs"
+                ]
+              },
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 14; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "v2rayN/ServiceLib/Services/UpdateService.cs"
+                ]
+              },
+              {
+                "id": "long_block",
+                "label": "Long function/block",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "A brace-delimited block spans roughly 594 lines; consider extracting a helper when touching it.",
+                "sources": [
+                  "v2rayN/ServiceLib/Services/UpdateService.cs"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 745 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "v2rayN/ServiceLib/Services/UpdateService.cs"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "v2rayN/ServiceLib/Services/UpdateService.cs"
+                ]
+              },
+              {
+                "id": "io_boundary",
+                "label": "I/O or process boundary",
+                "dimension": "defect",
+                "severity": "low",
+                "detail": "File touches filesystem, network, database, or subprocess boundaries; changes need concrete runtime proof.",
+                "sources": [
+                  "v2rayN/ServiceLib/Services/UpdateService.cs"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow.",
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "v2rayN/ServiceLib/Services/CoreConfig/V2ray/V2rayOutboundService.cs",
+            "score": 5.5,
+            "bucket": "hotspot",
+            "lines": 881,
+            "bytes": 36899,
+            "churn": 1161,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "881 lines in one source file; changes here may be harder to review.",
+                "sources": [
+                  "v2rayN/ServiceLib/Services/CoreConfig/V2ray/V2rayOutboundService.cs"
+                ]
+              },
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 22; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "v2rayN/ServiceLib/Services/CoreConfig/V2ray/V2rayOutboundService.cs"
+                ]
+              },
+              {
+                "id": "long_block",
+                "label": "Long function/block",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "A brace-delimited block spans roughly 878 lines; consider extracting a helper when touching it.",
+                "sources": [
+                  "v2rayN/ServiceLib/Services/CoreConfig/V2ray/V2rayOutboundService.cs"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 1161 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "v2rayN/ServiceLib/Services/CoreConfig/V2ray/V2rayOutboundService.cs"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "v2rayN/ServiceLib/Services/CoreConfig/V2ray/V2rayOutboundService.cs"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow.",
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "v2rayN/ServiceLib/Services/SpeedtestService.cs",
+            "score": 5.5,
+            "bucket": "hotspot",
+            "lines": 603,
+            "bytes": 20384,
+            "churn": 1003,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "603 lines in one source file; changes here may be harder to review.",
+                "sources": [
+                  "v2rayN/ServiceLib/Services/SpeedtestService.cs"
+                ]
+              },
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 12; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "v2rayN/ServiceLib/Services/SpeedtestService.cs"
+                ]
+              },
+              {
+                "id": "long_block",
+                "label": "Long function/block",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "A brace-delimited block spans roughly 598 lines; consider extracting a helper when touching it.",
+                "sources": [
+                  "v2rayN/ServiceLib/Services/SpeedtestService.cs"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 1003 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "v2rayN/ServiceLib/Services/SpeedtestService.cs"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "v2rayN/ServiceLib/Services/SpeedtestService.cs"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow.",
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "v2rayN/ServiceLib/Services/CoreConfig/Singbox/SingboxDnsService.cs",
+            "score": 5.5,
+            "bucket": "hotspot",
+            "lines": 704,
+            "bytes": 24527,
+            "churn": 858,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "704 lines in one source file; changes here may be harder to review.",
+                "sources": [
+                  "v2rayN/ServiceLib/Services/CoreConfig/Singbox/SingboxDnsService.cs"
+                ]
+              },
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 18; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "v2rayN/ServiceLib/Services/CoreConfig/Singbox/SingboxDnsService.cs"
+                ]
+              },
+              {
+                "id": "long_block",
+                "label": "Long function/block",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "A brace-delimited block spans roughly 701 lines; consider extracting a helper when touching it.",
+                "sources": [
+                  "v2rayN/ServiceLib/Services/CoreConfig/Singbox/SingboxDnsService.cs"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 858 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "v2rayN/ServiceLib/Services/CoreConfig/Singbox/SingboxDnsService.cs"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "v2rayN/ServiceLib/Services/CoreConfig/Singbox/SingboxDnsService.cs"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow.",
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "v2rayN/ServiceLib.Tests/CoreConfig/Singbox/CoreConfigSingboxServiceTests.cs",
+            "score": 5.5,
+            "bucket": "hotspot",
+            "lines": 755,
+            "bytes": 36075,
+            "churn": 857,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "755 lines in one source file; changes here may be harder to review.",
+                "sources": [
+                  "v2rayN/ServiceLib.Tests/CoreConfig/Singbox/CoreConfigSingboxServiceTests.cs"
+                ]
+              },
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 17; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "v2rayN/ServiceLib.Tests/CoreConfig/Singbox/CoreConfigSingboxServiceTests.cs"
+                ]
+              },
+              {
+                "id": "long_block",
+                "label": "Long function/block",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "A brace-delimited block spans roughly 752 lines; consider extracting a helper when touching it.",
+                "sources": [
+                  "v2rayN/ServiceLib.Tests/CoreConfig/Singbox/CoreConfigSingboxServiceTests.cs"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 857 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "v2rayN/ServiceLib.Tests/CoreConfig/Singbox/CoreConfigSingboxServiceTests.cs"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "v2rayN/ServiceLib.Tests/CoreConfig/Singbox/CoreConfigSingboxServiceTests.cs"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow.",
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "v2rayN/ServiceLib/Services/CoreConfig/Singbox/SingboxOutboundService.cs",
+            "score": 5.5,
+            "bucket": "hotspot",
+            "lines": 827,
+            "bytes": 33685,
+            "churn": 827,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "827 lines in one source file; changes here may be harder to review.",
+                "sources": [
+                  "v2rayN/ServiceLib/Services/CoreConfig/Singbox/SingboxOutboundService.cs"
+                ]
+              },
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 18; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "v2rayN/ServiceLib/Services/CoreConfig/Singbox/SingboxOutboundService.cs"
+                ]
+              },
+              {
+                "id": "long_block",
+                "label": "Long function/block",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "A brace-delimited block spans roughly 824 lines; consider extracting a helper when touching it.",
+                "sources": [
+                  "v2rayN/ServiceLib/Services/CoreConfig/Singbox/SingboxOutboundService.cs"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 827 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "v2rayN/ServiceLib/Services/CoreConfig/Singbox/SingboxOutboundService.cs"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "v2rayN/ServiceLib/Services/CoreConfig/Singbox/SingboxOutboundService.cs"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow.",
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "v2rayN/ServiceLib/ViewModels/MainWindowViewModel.cs",
+            "score": 5.5,
+            "bucket": "hotspot",
+            "lines": 795,
+            "bytes": 26685,
+            "churn": 827,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "795 lines in one source file; changes here may be harder to review.",
+                "sources": [
+                  "v2rayN/ServiceLib/ViewModels/MainWindowViewModel.cs"
+                ]
+              },
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 12; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "v2rayN/ServiceLib/ViewModels/MainWindowViewModel.cs"
+                ]
+              },
+              {
+                "id": "long_block",
+                "label": "Long function/block",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "A brace-delimited block spans roughly 792 lines; consider extracting a helper when touching it.",
+                "sources": [
+                  "v2rayN/ServiceLib/ViewModels/MainWindowViewModel.cs"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 827 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "v2rayN/ServiceLib/ViewModels/MainWindowViewModel.cs"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "v2rayN/ServiceLib/ViewModels/MainWindowViewModel.cs"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow.",
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "v2rayN/ServiceLib.Tests/CoreConfig/V2ray/CoreConfigV2rayServiceTests.cs",
+            "score": 5.5,
+            "bucket": "hotspot",
+            "lines": 716,
+            "bytes": 33334,
+            "churn": 722,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "716 lines in one source file; changes here may be harder to review.",
+                "sources": [
+                  "v2rayN/ServiceLib.Tests/CoreConfig/V2ray/CoreConfigV2rayServiceTests.cs"
+                ]
+              },
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 12; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "v2rayN/ServiceLib.Tests/CoreConfig/V2ray/CoreConfigV2rayServiceTests.cs"
+                ]
+              },
+              {
+                "id": "long_block",
+                "label": "Long function/block",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "A brace-delimited block spans roughly 713 lines; consider extracting a helper when touching it.",
+                "sources": [
+                  "v2rayN/ServiceLib.Tests/CoreConfig/V2ray/CoreConfigV2rayServiceTests.cs"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 722 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "v2rayN/ServiceLib.Tests/CoreConfig/V2ray/CoreConfigV2rayServiceTests.cs"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "v2rayN/ServiceLib.Tests/CoreConfig/V2ray/CoreConfigV2rayServiceTests.cs"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow.",
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "v2rayN/ServiceLib/Manager/AppManager.cs",
+            "score": 5.5,
+            "bucket": "hotspot",
+            "lines": 678,
+            "bytes": 22617,
+            "churn": 678,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "678 lines in one source file; changes here may be harder to review.",
+                "sources": [
+                  "v2rayN/ServiceLib/Manager/AppManager.cs"
+                ]
+              },
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 16; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "v2rayN/ServiceLib/Manager/AppManager.cs"
+                ]
+              },
+              {
+                "id": "long_block",
+                "label": "Long function/block",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "A brace-delimited block spans roughly 675 lines; consider extracting a helper when touching it.",
+                "sources": [
+                  "v2rayN/ServiceLib/Manager/AppManager.cs"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 678 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "v2rayN/ServiceLib/Manager/AppManager.cs"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "v2rayN/ServiceLib/Manager/AppManager.cs"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow.",
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "v2rayN/ServiceLib/ViewModels/StatusBarViewModel.cs",
+            "score": 5.5,
+            "bucket": "hotspot",
+            "lines": 536,
+            "bytes": 17149,
+            "churn": 620,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "536 lines in one source file; changes here may be harder to review.",
+                "sources": [
+                  "v2rayN/ServiceLib/ViewModels/StatusBarViewModel.cs"
+                ]
+              },
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 10; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "v2rayN/ServiceLib/ViewModels/StatusBarViewModel.cs"
+                ]
+              },
+              {
+                "id": "long_block",
+                "label": "Long function/block",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "A brace-delimited block spans roughly 533 lines; consider extracting a helper when touching it.",
+                "sources": [
+                  "v2rayN/ServiceLib/ViewModels/StatusBarViewModel.cs"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 620 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "v2rayN/ServiceLib/ViewModels/StatusBarViewModel.cs"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "v2rayN/ServiceLib/ViewModels/StatusBarViewModel.cs"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow.",
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          }
+        ],
+        "truncated": true
+      },
+      "all_files": [],
+      "ignored_dirs": [
+        ".git"
+      ],
+      "coverage": {
+        "schema_version": 1,
+        "strategy": "full_walk",
+        "sampled_files": 418,
+        "total_files": null,
+        "sample_percent": null,
+        "languages": [
+          {
+            "language": "C#",
+            "files": 283,
+            "bytes": 1826814
+          },
+          {
+            "language": "YAML",
+            "files": 16,
+            "bytes": 54871
+          },
+          {
+            "language": "Shell",
+            "files": 7,
+            "bytes": 121507
+          },
+          {
+            "language": "JSON",
+            "files": 1,
+            "bytes": 63
+          },
+          {
+            "language": "Markdown",
+            "files": 1,
+            "bytes": 2924
+          }
+        ],
+        "top_level_dirs": [
+          {
+            "path": "v2rayN",
+            "file_count": 387,
+            "bytes": 3874791
+          },
+          {
+            "path": ".github",
+            "file_count": 17,
+            "bytes": 58661
+          }
+        ],
+        "notes": [
+          "Full local walk covered the repo within the scan cap."
+        ]
+      },
+      "all_files_capped": false,
+      "dir_tree_preview": {
+        "name": "",
+        "path": "",
+        "is_dir": true,
+        "file_count": 418,
+        "children": [
+          {
+            "name": "v2rayN",
+            "path": "v2rayN",
+            "is_dir": true,
+            "file_count": 349,
+            "children": [
+              {
+                "name": "ServiceLib",
+                "path": "v2rayN/ServiceLib",
+                "is_dir": true,
+                "file_count": 179,
+                "children": [
+                  {
+                    "name": "Base",
+                    "path": "v2rayN/ServiceLib/Base",
+                    "is_dir": true,
+                    "file_count": 0,
+                    "children": []
+                  },
+                  {
+                    "name": "Common",
+                    "path": "v2rayN/ServiceLib/Common",
+                    "is_dir": true,
+                    "file_count": 11,
+                    "children": [
+                      {
+                        "name": "CountryExtension.cs",
+                        "path": "v2rayN/ServiceLib/Common/CountryExtension.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "EmbedUtils.cs",
+                        "path": "v2rayN/ServiceLib/Common/EmbedUtils.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "Extension.cs",
+                        "path": "v2rayN/ServiceLib/Common/Extension.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "FileUtils.cs",
+                        "path": "v2rayN/ServiceLib/Common/FileUtils.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "JsonUtils.cs",
+                        "path": "v2rayN/ServiceLib/Common/JsonUtils.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "Logging.cs",
+                        "path": "v2rayN/ServiceLib/Common/Logging.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "ProcUtils.cs",
+                        "path": "v2rayN/ServiceLib/Common/ProcUtils.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "QRCodeUtils.cs",
+                        "path": "v2rayN/ServiceLib/Common/QRCodeUtils.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "Utils.cs",
+                        "path": "v2rayN/ServiceLib/Common/Utils.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "WindowsUtils.cs",
+                        "path": "v2rayN/ServiceLib/Common/WindowsUtils.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "YamlUtils.cs",
+                        "path": "v2rayN/ServiceLib/Common/YamlUtils.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Enums",
+                    "path": "v2rayN/ServiceLib/Enums",
+                    "is_dir": true,
+                    "file_count": 15,
+                    "children": [
+                      {
+                        "name": "EConfigType.cs",
+                        "path": "v2rayN/ServiceLib/Enums/EConfigType.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "ECoreType.cs",
+                        "path": "v2rayN/ServiceLib/Enums/ECoreType.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "EGirdOrientation.cs",
+                        "path": "v2rayN/ServiceLib/Enums/EGirdOrientation.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "EGlobalHotkey.cs",
+                        "path": "v2rayN/ServiceLib/Enums/EGlobalHotkey.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "EInboundProtocol.cs",
+                        "path": "v2rayN/ServiceLib/Enums/EInboundProtocol.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "EMove.cs",
+                        "path": "v2rayN/ServiceLib/Enums/EMove.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "EMultipleLoad.cs",
+                        "path": "v2rayN/ServiceLib/Enums/EMultipleLoad.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "EPresetType.cs",
+                        "path": "v2rayN/ServiceLib/Enums/EPresetType.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "ERuleMode.cs",
+                        "path": "v2rayN/ServiceLib/Enums/ERuleMode.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "ERuleType.cs",
+                        "path": "v2rayN/ServiceLib/Enums/ERuleType.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "EServerColName.cs",
+                        "path": "v2rayN/ServiceLib/Enums/EServerColName.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "ESpeedActionType.cs",
+                        "path": "v2rayN/ServiceLib/Enums/ESpeedActionType.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "ESysProxyType.cs",
+                        "path": "v2rayN/ServiceLib/Enums/ESysProxyType.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "ETheme.cs",
+                        "path": "v2rayN/ServiceLib/Enums/ETheme.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "ETransport.cs",
+                        "path": "v2rayN/ServiceLib/Enums/ETransport.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Events",
+                    "path": "v2rayN/ServiceLib/Events",
+                    "is_dir": true,
+                    "file_count": 2,
+                    "children": [
+                      {
+                        "name": "AppEvents.cs",
+                        "path": "v2rayN/ServiceLib/Events/AppEvents.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "EventChannel.cs",
+                        "path": "v2rayN/ServiceLib/Events/EventChannel.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Handler",
+                    "path": "v2rayN/ServiceLib/Handler",
+                    "is_dir": true,
+                    "file_count": 28,
+                    "children": [
+                      {
+                        "name": "Builder",
+                        "path": "v2rayN/ServiceLib/Handler/Builder",
+                        "is_dir": true,
+                        "file_count": 2,
+                        "children": [
+                          {
+                            "name": "CoreConfigContextBuilder.cs",
+                            "path": "v2rayN/ServiceLib/Handler/Builder/CoreConfigContextBuilder.cs",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          },
+                          {
+                            "name": "NodeValidator.cs",
+                            "path": "v2rayN/ServiceLib/Handler/Builder/NodeValidator.cs",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Fmt",
+                        "path": "v2rayN/ServiceLib/Handler/Fmt",
+                        "is_dir": true,
+                        "file_count": 17,
+                        "children": [
+                          {
+                            "name": "AnytlsFmt.cs",
+                            "path": "v2rayN/ServiceLib/Handler/Fmt/AnytlsFmt.cs",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          },
+                          {
+                            "name": "BaseFmt.cs",
+                            "path": "v2rayN/ServiceLib/Handler/Fmt/BaseFmt.cs",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          },
+                          {
+                            "name": "ClashFmt.cs",
+                            "path": "v2rayN/ServiceLib/Handler/Fmt/ClashFmt.cs",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          },
+                          {
+                            "name": "FmtHandler.cs",
+                            "path": "v2rayN/ServiceLib/Handler/Fmt/FmtHandler.cs",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          },
+                          {
+                            "name": "HtmlPageFmt.cs",
+                            "path": "v2rayN/ServiceLib/Handler/Fmt/HtmlPageFmt.cs",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          },
+                          {
+                            "name": "Hysteria2Fmt.cs",
+                            "path": "v2rayN/ServiceLib/Handler/Fmt/Hysteria2Fmt.cs",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          },
+                          {
+                            "name": "InnerFmt.cs",
+                            "path": "v2rayN/ServiceLib/Handler/Fmt/InnerFmt.cs",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          },
+                          {
+                            "name": "NaiveFmt.cs",
+                            "path": "v2rayN/ServiceLib/Handler/Fmt/NaiveFmt.cs",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          },
+                          {
+                            "name": "ShadowsocksFmt.cs",
+                            "path": "v2rayN/ServiceLib/Handler/Fmt/ShadowsocksFmt.cs",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          },
+                          {
+                            "name": "SingboxFmt.cs",
+                            "path": "v2rayN/ServiceLib/Handler/Fmt/SingboxFmt.cs",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          },
+                          {
+                            "name": "SocksFmt.cs",
+                            "path": "v2rayN/ServiceLib/Handler/Fmt/SocksFmt.cs",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          },
+                          {
+                            "name": "TrojanFmt.cs",
+                            "path": "v2rayN/ServiceLib/Handler/Fmt/TrojanFmt.cs",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          },
+                          {
+                            "name": "TuicFmt.cs",
+                            "path": "v2rayN/ServiceLib/Handler/Fmt/TuicFmt.cs",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          },
+                          {
+                            "name": "V2rayFmt.cs",
+                            "path": "v2rayN/ServiceLib/Handler/Fmt/V2rayFmt.cs",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          },
+                          {
+                            "name": "VLESSFmt.cs",
+                            "path": "v2rayN/ServiceLib/Handler/Fmt/VLESSFmt.cs",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          },
+                          {
+                            "name": "VmessFmt.cs",
+                            "path": "v2rayN/ServiceLib/Handler/Fmt/VmessFmt.cs",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          },
+                          {
+                            "name": "WireguardFmt.cs",
+                            "path": "v2rayN/ServiceLib/Handler/Fmt/WireguardFmt.cs",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          }
+                        ]
+                      },
+                      {
+                        "name": "SysProxy",
+                        "path": "v2rayN/ServiceLib/Handler/SysProxy",
+                        "is_dir": true,
+                        "file_count": 4,
+                        "children": [
+                          {
+                            "name": "ProxySettingLinux.cs",
+                            "path": "v2rayN/ServiceLib/Handler/SysProxy/ProxySettingLinux.cs",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          },
+                          {
+                            "name": "ProxySettingOSX.cs",
+                            "path": "v2rayN/ServiceLib/Handler/SysProxy/ProxySettingOSX.cs",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          },
+                          {
+                            "name": "ProxySettingWindows.cs",
+                            "path": "v2rayN/ServiceLib/Handler/SysProxy/ProxySettingWindows.cs",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          },
+                          {
+                            "name": "SysProxyHandler.cs",
+                            "path": "v2rayN/ServiceLib/Handler/SysProxy/SysProxyHandler.cs",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          }
+                        ]
+                      },
+                      {
+                        "name": "AutoStartupHandler.cs",
+                        "path": "v2rayN/ServiceLib/Handler/AutoStartupHandler.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "ConfigHandler.cs",
+                        "path": "v2rayN/ServiceLib/Handler/ConfigHandler.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "ConnectionHandler.cs",
+                        "path": "v2rayN/ServiceLib/Handler/ConnectionHandler.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "CoreConfigHandler.cs",
+                        "path": "v2rayN/ServiceLib/Handler/CoreConfigHandler.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "SubscriptionHandler.cs",
+                        "path": "v2rayN/ServiceLib/Handler/SubscriptionHandler.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Helper",
+                    "path": "v2rayN/ServiceLib/Helper",
+                    "is_dir": true,
+                    "file_count": 4,
+                    "children": [
+                      {
+                        "name": "DownloaderHelper.cs",
+                        "path": "v2rayN/ServiceLib/Helper/DownloaderHelper.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "HttpClientHelper.cs",
+                        "path": "v2rayN/ServiceLib/Helper/HttpClientHelper.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "HttpRequestHeadersHelper.cs",
+                        "path": "v2rayN/ServiceLib/Helper/HttpRequestHeadersHelper.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "SqliteHelper.cs",
+                        "path": "v2rayN/ServiceLib/Helper/SqliteHelper.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Manager",
+                    "path": "v2rayN/ServiceLib/Manager",
+                    "is_dir": true,
+                    "file_count": 13,
+                    "children": [
+                      {
+                        "name": "AppManager.cs",
+                        "path": "v2rayN/ServiceLib/Manager/AppManager.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "CertPemManager.cs",
+                        "path": "v2rayN/ServiceLib/Manager/CertPemManager.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "ClashApiManager.cs",
+                        "path": "v2rayN/ServiceLib/Manager/ClashApiManager.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "CoreAdminManager.cs",
+                        "path": "v2rayN/ServiceLib/Manager/CoreAdminManager.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "CoreInfoManager.cs",
+                        "path": "v2rayN/ServiceLib/Manager/CoreInfoManager.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "CoreManager.cs",
+                        "path": "v2rayN/ServiceLib/Manager/CoreManager.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "GroupProfileManager.cs",
+                        "path": "v2rayN/ServiceLib/Manager/GroupProfileManager.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "NoticeManager.cs",
+                        "path": "v2rayN/ServiceLib/Manager/NoticeManager.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "PacManager.cs",
+                        "path": "v2rayN/ServiceLib/Manager/PacManager.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "ProfileExManager.cs",
+                        "path": "v2rayN/ServiceLib/Manager/ProfileExManager.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "StatisticsManager.cs",
+                        "path": "v2rayN/ServiceLib/Manager/StatisticsManager.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "TaskManager.cs",
+                        "path": "v2rayN/ServiceLib/Manager/TaskManager.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "WebDavManager.cs",
+                        "path": "v2rayN/ServiceLib/Manager/WebDavManager.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Models",
+                    "path": "v2rayN/ServiceLib/Models",
+                    "is_dir": true,
+                    "file_count": 44,
+                    "children": [
+                      {
+                        "name": "Configs",
+                        "path": "v2rayN/ServiceLib/Models/Configs",
+                        "is_dir": true,
+                        "file_count": 2,
+                        "children": [
+                          {
+                            "name": "Config.cs",
+                            "path": "v2rayN/ServiceLib/Models/Configs/Config.cs",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          },
+                          {
+                            "name": "ConfigItems.cs",
+                            "path": "v2rayN/ServiceLib/Models/Configs/ConfigItems.cs",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          }
+                        ]
+                      },
+                      {
+                        "name": "CoreConfigs",
+                        "path": "v2rayN/ServiceLib/Models/CoreConfigs",
+                        "is_dir": true,
+                        "file_count": 6,
+                        "children": [
+                          {
+                            "name": "CoreConfigContext.cs",
+                            "path": "v2rayN/ServiceLib/Models/CoreConfigs/CoreConfigContext.cs",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          },
+                          {
+                            "name": "CoreInfo.cs",
+                            "path": "v2rayN/ServiceLib/Models/CoreConfigs/CoreInfo.cs",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          },
+                          {
+                            "name": "SingboxConfig.cs",
+                            "path": "v2rayN/ServiceLib/Models/CoreConfigs/SingboxConfig.cs",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          },
+                          {
+                            "name": "V2rayConfig.cs",
+                            "path": "v2rayN/ServiceLib/Models/CoreConfigs/V2rayConfig.cs",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          },
+                          {
+                            "name": "V2rayMetricsVars.cs",
+                            "path": "v2rayN/ServiceLib/Models/CoreConfigs/V2rayMetricsVars.cs",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          },
+                          {
+                            "name": "V2rayTcpRequest.cs",
+                            "path": "v2rayN/ServiceLib/Models/CoreConfigs/V2rayTcpRequest.cs",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Dto",
+                        "path": "v2rayN/ServiceLib/Models/Dto",
+                        "is_dir": true,
+                        "file_count": 25,
+                        "children": [
+                          {
+                            "name": "AvailabilityCheckResult.cs",
+                            "path": "v2rayN/ServiceLib/Models/Dto/AvailabilityCheckResult.cs",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          },
+                          {
+                            "name": "CheckUpdateModel.cs",
+                            "path": "v2rayN/ServiceLib/Models/Dto/CheckUpdateModel.cs",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          },
+                          {
+                            "name": "ClashConnectionModel.cs",
+                            "path": "v2rayN/ServiceLib/Models/Dto/ClashConnectionModel.cs",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          },
+                          {
+                            "name": "ClashConnections.cs",
+                            "path": "v2rayN/ServiceLib/Models/Dto/ClashConnections.cs",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          },
+                          {
+                            "name": "ClashItem.cs",
+                            "path": "v2rayN/ServiceLib/Models/Dto/ClashItem.cs",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          },
+                          {
+                            "name": "ClashProxyModel.cs",
+                            "path": "v2rayN/ServiceLib/Models/Dto/ClashProxyModel.cs",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          },
+                          {
+                            "name": "CmdItem.cs",
+                            "path": "v2rayN/ServiceLib/Models/Dto/CmdItem.cs",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          },
+                          {
+                            "name": "ComboItem.cs",
+                            "path": "v2rayN/ServiceLib/Models/Dto/ComboItem.cs",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          },
+                          {
+                            "name": "FileDownloadState.cs",
+                            "path": "v2rayN/ServiceLib/Models/Dto/FileDownloadState.cs",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          },
+                          {
+                            "name": "GitHubRelease.cs",
+                            "path": "v2rayN/ServiceLib/Models/Dto/GitHubRelease.cs",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          },
+                          {
+                            "name": "HyRealm.cs",
+                            "path": "v2rayN/ServiceLib/Models/Dto/HyRealm.cs",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          },
+                          {
+                            "name": "IPAPIInfo.cs",
+                            "path": "v2rayN/ServiceLib/Models/Dto/IPAPIInfo.cs",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          },
+                          {
+                            "name": "LanguageOption.cs",
+                            "path": "v2rayN/ServiceLib/Models/Dto/LanguageOption.cs",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          },
+                          {
+                            "name": "ProfileItemModel.cs",
+                            "path": "v2rayN/ServiceLib/Models/Dto/ProfileItemModel.cs",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          },
+                          {
+                            "name": "RetResult.cs",
+                            "path": "v2rayN/ServiceLib/Models/Dto/RetResult.cs",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          },
+                          {
+                            "name": "RoutingItemModel.cs",
+                            "path": "v2rayN/ServiceLib/Models/Dto/RoutingItemModel.cs",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          },
+                          {
+                            "name": "RoutingTemplate.cs",
+                            "path": "v2rayN/ServiceLib/Models/Dto/RoutingTemplate.cs",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          },
+                          {
+                            "name": "RulesItemModel.cs",
+                            "path": "v2rayN/ServiceLib/Models/Dto/RulesItemModel.cs",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          },
+                          {
+                            "name": "SemanticVersion.cs",
+                            "path": "v2rayN/ServiceLib/Models/Dto/SemanticVersion.cs",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          },
+                          {
+                            "name": "ServerSpeedItem.cs",
+                            "path": "v2rayN/ServiceLib/Models/Dto/ServerSpeedItem.cs",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          },
+                          {
+                            "name": "ServerTestItem.cs",
+                            "path": "v2rayN/ServiceLib/Models/Dto/ServerTestItem.cs",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          },
+                          {
+                            "name": "SpeedTestResult.cs",
+                            "path": "v2rayN/ServiceLib/Models/Dto/SpeedTestResult.cs",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          },
+                          {
+                            "name": "SsSIP008.cs",
+                            "path": "v2rayN/ServiceLib/Models/Dto/SsSIP008.cs",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          },
+                          {
+                            "name": "UpdateResult.cs",
+                            "path": "v2rayN/ServiceLib/Models/Dto/UpdateResult.cs",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          },
+                          {
+                            "name": "VmessQRCode.cs",
+                            "path": "v2rayN/ServiceLib/Models/Dto/VmessQRCode.cs",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Entities",
+                        "path": "v2rayN/ServiceLib/Models/Entities",
+                        "is_dir": true,
+                        "file_count": 11,
+                        "children": [
+                          {
+                            "name": "DNSItem.cs",
+                            "path": "v2rayN/ServiceLib/Models/Entities/DNSItem.cs",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          },
+                          {
+                            "name": "FullConfigTemplateItem.cs",
+                            "path": "v2rayN/ServiceLib/Models/Entities/FullConfigTemplateItem.cs",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          },
+                          {
+                            "name": "ProfileExItem.cs",
+                            "path": "v2rayN/ServiceLib/Models/Entities/ProfileExItem.cs",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          },
+                          {
+                            "name": "ProfileGroupItem.cs",
+                            "path": "v2rayN/ServiceLib/Models/Entities/ProfileGroupItem.cs",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          },
+                          {
+                            "name": "ProfileItem.cs",
+                            "path": "v2rayN/ServiceLib/Models/Entities/ProfileItem.cs",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          },
+                          {
+                            "name": "ProtocolExtraItem.cs",
+                            "path": "v2rayN/ServiceLib/Models/Entities/ProtocolExtraItem.cs",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          },
+                          {
+                            "name": "RoutingItem.cs",
+                            "path": "v2rayN/ServiceLib/Models/Entities/RoutingItem.cs",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          },
+                          {
+                            "name": "RulesItem.cs",
+                            "path": "v2rayN/ServiceLib/Models/Entities/RulesItem.cs",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          },
+                          {
+                            "name": "ServerStatItem.cs",
+                            "path": "v2rayN/ServiceLib/Models/Entities/ServerStatItem.cs",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          },
+                          {
+                            "name": "SubItem.cs",
+                            "path": "v2rayN/ServiceLib/Models/Entities/SubItem.cs",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          },
+                          {
+                            "name": "TransportExtraItem.cs",
+                            "path": "v2rayN/ServiceLib/Models/Entities/TransportExtraItem.cs",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Resx",
+                    "path": "v2rayN/ServiceLib/Resx",
+                    "is_dir": true,
+                    "file_count": 10,
+                    "children": [
+                      {
+                        "name": "ResUI.Designer.cs",
+                        "path": "v2rayN/ServiceLib/Resx/ResUI.Designer.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "ResUI.az.resx",
+                        "path": "v2rayN/ServiceLib/Resx/ResUI.az.resx",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "ResUI.fa.resx",
+                        "path": "v2rayN/ServiceLib/Resx/ResUI.fa.resx",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "ResUI.fr.resx",
+                        "path": "v2rayN/ServiceLib/Resx/ResUI.fr.resx",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "ResUI.hu.resx",
+                        "path": "v2rayN/ServiceLib/Resx/ResUI.hu.resx",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "ResUI.id.resx",
+                        "path": "v2rayN/ServiceLib/Resx/ResUI.id.resx",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "ResUI.resx",
+                        "path": "v2rayN/ServiceLib/Resx/ResUI.resx",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "ResUI.ru.resx",
+                        "path": "v2rayN/ServiceLib/Resx/ResUI.ru.resx",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "ResUI.zh-Hans.resx",
+                        "path": "v2rayN/ServiceLib/Resx/ResUI.zh-Hans.resx",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "ResUI.zh-Hant.resx",
+                        "path": "v2rayN/ServiceLib/Resx/ResUI.zh-Hant.resx",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Sample",
+                    "path": "v2rayN/ServiceLib/Sample",
+                    "is_dir": true,
+                    "file_count": 28,
+                    "children": [
+                      {
+                        "name": "SampleClientConfig",
+                        "path": "v2rayN/ServiceLib/Sample/SampleClientConfig",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "SampleHttpRequest",
+                        "path": "v2rayN/ServiceLib/Sample/SampleHttpRequest",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "SampleHttpResponse",
+                        "path": "v2rayN/ServiceLib/Sample/SampleHttpResponse",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "SampleInbound",
+                        "path": "v2rayN/ServiceLib/Sample/SampleInbound",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "SampleOutbound",
+                        "path": "v2rayN/ServiceLib/Sample/SampleOutbound",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "SampleTunInbound",
+                        "path": "v2rayN/ServiceLib/Sample/SampleTunInbound",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "SampleTunRules",
+                        "path": "v2rayN/ServiceLib/Sample/SampleTunRules",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "SingboxSampleClientConfig",
+                        "path": "v2rayN/ServiceLib/Sample/SingboxSampleClientConfig",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "SingboxSampleOutbound",
+                        "path": "v2rayN/ServiceLib/Sample/SingboxSampleOutbound",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "chrome_roots_pem",
+                        "path": "v2rayN/ServiceLib/Sample/chrome_roots_pem",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "clash_mixin_yaml",
+                        "path": "v2rayN/ServiceLib/Sample/clash_mixin_yaml",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "clash_tun_yaml",
+                        "path": "v2rayN/ServiceLib/Sample/clash_tun_yaml",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "custom_routing_black",
+                        "path": "v2rayN/ServiceLib/Sample/custom_routing_black",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "custom_routing_global",
+                        "path": "v2rayN/ServiceLib/Sample/custom_routing_global",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "custom_routing_white",
+                        "path": "v2rayN/ServiceLib/Sample/custom_routing_white",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "dns_singbox_normal",
+                        "path": "v2rayN/ServiceLib/Sample/dns_singbox_normal",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "dns_v2ray_normal",
+                        "path": "v2rayN/ServiceLib/Sample/dns_v2ray_normal",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "kill_as_sudo_linux_sh",
+                        "path": "v2rayN/ServiceLib/Sample/kill_as_sudo_linux_sh",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "kill_as_sudo_osx_sh",
+                        "path": "v2rayN/ServiceLib/Sample/kill_as_sudo_osx_sh",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "linux_autostart_config",
+                        "path": "v2rayN/ServiceLib/Sample/linux_autostart_config",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "mozilla_roots_pem",
+                        "path": "v2rayN/ServiceLib/Sample/mozilla_roots_pem",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "pac",
+                        "path": "v2rayN/ServiceLib/Sample/pac",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "proxy_set_linux_sh",
+                        "path": "v2rayN/ServiceLib/Sample/proxy_set_linux_sh",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "proxy_set_osx_sh",
+                        "path": "v2rayN/ServiceLib/Sample/proxy_set_osx_sh",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "singbox_fakeip_filter",
+                        "path": "v2rayN/ServiceLib/Sample/singbox_fakeip_filter",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "tun_singbox_dns",
+                        "path": "v2rayN/ServiceLib/Sample/tun_singbox_dns",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "tun_singbox_inbound",
+                        "path": "v2rayN/ServiceLib/Sample/tun_singbox_inbound",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "tun_singbox_rules",
+                        "path": "v2rayN/ServiceLib/Sample/tun_singbox_rules",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": "ViewModels",
+                    "path": "v2rayN/ServiceLib/ViewModels",
+                    "is_dir": true,
+                    "file_count": 21,
+                    "children": [
+                      {
+                        "name": "AddGroupServerViewModel.cs",
+                        "path": "v2rayN/ServiceLib/ViewModels/AddGroupServerViewModel.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "AddServer2ViewModel.cs",
+                        "path": "v2rayN/ServiceLib/ViewModels/AddServer2ViewModel.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "AddServerViewModel.cs",
+                        "path": "v2rayN/ServiceLib/ViewModels/AddServerViewModel.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "BackupAndRestoreViewModel.cs",
+                        "path": "v2rayN/ServiceLib/ViewModels/BackupAndRestoreViewModel.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "CheckUpdateViewModel.cs",
+                        "path": "v2rayN/ServiceLib/ViewModels/CheckUpdateViewModel.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "ClashConnectionsViewModel.cs",
+                        "path": "v2rayN/ServiceLib/ViewModels/ClashConnectionsViewModel.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "ClashProxiesViewModel.cs",
+                        "path": "v2rayN/ServiceLib/ViewModels/ClashProxiesViewModel.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "DNSSettingViewModel.cs",
+                        "path": "v2rayN/ServiceLib/ViewModels/DNSSettingViewModel.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "FullConfigTemplateViewModel.cs",
+                        "path": "v2rayN/ServiceLib/ViewModels/FullConfigTemplateViewModel.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "GlobalHotkeySettingViewModel.cs",
+                        "path": "v2rayN/ServiceLib/ViewModels/GlobalHotkeySettingViewModel.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "MainWindowViewModel.cs",
+                        "path": "v2rayN/ServiceLib/ViewModels/MainWindowViewModel.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "MsgViewModel.cs",
+                        "path": "v2rayN/ServiceLib/ViewModels/MsgViewModel.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "OptionSettingViewModel.cs",
+                        "path": "v2rayN/ServiceLib/ViewModels/OptionSettingViewModel.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "ProfilesSelectViewModel.cs",
+                        "path": "v2rayN/ServiceLib/ViewModels/ProfilesSelectViewModel.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "ProfilesViewModel.cs",
+                        "path": "v2rayN/ServiceLib/ViewModels/ProfilesViewModel.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "RoutingRuleDetailsViewModel.cs",
+                        "path": "v2rayN/ServiceLib/ViewModels/RoutingRuleDetailsViewModel.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "RoutingRuleSettingViewModel.cs",
+                        "path": "v2rayN/ServiceLib/ViewModels/RoutingRuleSettingViewModel.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "RoutingSettingViewModel.cs",
+                        "path": "v2rayN/ServiceLib/ViewModels/RoutingSettingViewModel.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "StatusBarViewModel.cs",
+                        "path": "v2rayN/ServiceLib/ViewModels/StatusBarViewModel.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "SubEditViewModel.cs",
+                        "path": "v2rayN/ServiceLib/ViewModels/SubEditViewModel.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "SubSettingViewModel.cs",
+                        "path": "v2rayN/ServiceLib/ViewModels/SubSettingViewModel.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Global.cs",
+                    "path": "v2rayN/ServiceLib/Global.cs",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "GlobalUsings.cs",
+                    "path": "v2rayN/ServiceLib/GlobalUsings.cs",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "ServiceLib.csproj",
+                    "path": "v2rayN/ServiceLib/ServiceLib.csproj",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "ServiceLib.Tests",
+                "path": "v2rayN/ServiceLib.Tests",
+                "is_dir": true,
+                "file_count": 16,
+                "children": [
+                  {
+                    "name": "CoreConfig",
+                    "path": "v2rayN/ServiceLib.Tests/CoreConfig",
+                    "is_dir": true,
+                    "file_count": 4,
+                    "children": [
+                      {
+                        "name": "Context",
+                        "path": "v2rayN/ServiceLib.Tests/CoreConfig/Context",
+                        "is_dir": true,
+                        "file_count": 1,
+                        "children": [
+                          {
+                            "name": "CoreConfigContextBuilderTests.cs",
+                            "path": "v2rayN/ServiceLib.Tests/CoreConfig/Context/CoreConfigContextBuilderTests.cs",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Singbox",
+                        "path": "v2rayN/ServiceLib.Tests/CoreConfig/Singbox",
+                        "is_dir": true,
+                        "file_count": 1,
+                        "children": [
+                          {
+                            "name": "CoreConfigSingboxServiceTests.cs",
+                            "path": "v2rayN/ServiceLib.Tests/CoreConfig/Singbox/CoreConfigSingboxServiceTests.cs",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          }
+                        ]
+                      },
+                      {
+                        "name": "V2ray",
+                        "path": "v2rayN/ServiceLib.Tests/CoreConfig/V2ray",
+                        "is_dir": true,
+                        "file_count": 1,
+                        "children": [
+                          {
+                            "name": "CoreConfigV2rayServiceTests.cs",
+                            "path": "v2rayN/ServiceLib.Tests/CoreConfig/V2ray/CoreConfigV2rayServiceTests.cs",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          }
+                        ]
+                      },
+                      {
+                        "name": "CoreConfigTestFactory.cs",
+                        "path": "v2rayN/ServiceLib.Tests/CoreConfig/CoreConfigTestFactory.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Fmt",
+                    "path": "v2rayN/ServiceLib.Tests/Fmt",
+                    "is_dir": true,
+                    "file_count": 6,
+                    "children": [
+                      {
+                        "name": "FmtHandlerTests.cs",
+                        "path": "v2rayN/ServiceLib.Tests/Fmt/FmtHandlerTests.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "HyRealmTests.cs",
+                        "path": "v2rayN/ServiceLib.Tests/Fmt/HyRealmTests.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "Hysteria2FmtTests.cs",
+                        "path": "v2rayN/ServiceLib.Tests/Fmt/Hysteria2FmtTests.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "InnerFmtTests.cs",
+                        "path": "v2rayN/ServiceLib.Tests/Fmt/InnerFmtTests.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "ShareUriQueryTests.cs",
+                        "path": "v2rayN/ServiceLib.Tests/Fmt/ShareUriQueryTests.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "WireguardFmtTests.cs",
+                        "path": "v2rayN/ServiceLib.Tests/Fmt/WireguardFmtTests.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Helper",
+                    "path": "v2rayN/ServiceLib.Tests/Helper",
+                    "is_dir": true,
+                    "file_count": 2,
+                    "children": [
+                      {
+                        "name": "HttpRequestHeadersHelperTests.cs",
+                        "path": "v2rayN/ServiceLib.Tests/Helper/HttpRequestHeadersHelperTests.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "RegexGuardTests.cs",
+                        "path": "v2rayN/ServiceLib.Tests/Helper/RegexGuardTests.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Manager",
+                    "path": "v2rayN/ServiceLib.Tests/Manager",
+                    "is_dir": true,
+                    "file_count": 1,
+                    "children": [
+                      {
+                        "name": "CoreManagerTests.cs",
+                        "path": "v2rayN/ServiceLib.Tests/Manager/CoreManagerTests.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Services",
+                    "path": "v2rayN/ServiceLib.Tests/Services",
+                    "is_dir": true,
+                    "file_count": 1,
+                    "children": [
+                      {
+                        "name": "DownloadServiceHeadersTests.cs",
+                        "path": "v2rayN/ServiceLib.Tests/Services/DownloadServiceHeadersTests.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": "GlobalUsings.cs",
+                    "path": "v2rayN/ServiceLib.Tests/GlobalUsings.cs",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "ServiceLib.Tests.csproj",
+                    "path": "v2rayN/ServiceLib.Tests/ServiceLib.Tests.csproj",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "ServiceLib.UdpTest",
+                "path": "v2rayN/ServiceLib.UdpTest",
+                "is_dir": true,
+                "file_count": 9,
+                "children": [
+                  {
+                    "name": "Tester",
+                    "path": "v2rayN/ServiceLib.UdpTest/Tester",
+                    "is_dir": true,
+                    "file_count": 5,
+                    "children": [
+                      {
+                        "name": "DnsService.cs",
+                        "path": "v2rayN/ServiceLib.UdpTest/Tester/DnsService.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "IUdpTest.cs",
+                        "path": "v2rayN/ServiceLib.UdpTest/Tester/IUdpTest.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "McBeService.cs",
+                        "path": "v2rayN/ServiceLib.UdpTest/Tester/McBeService.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "NtpService.cs",
+                        "path": "v2rayN/ServiceLib.UdpTest/Tester/NtpService.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "StunService.cs",
+                        "path": "v2rayN/ServiceLib.UdpTest/Tester/StunService.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": "GlobalUsings.cs",
+                    "path": "v2rayN/ServiceLib.UdpTest/GlobalUsings.cs",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "ServiceLib.UdpTest.csproj",
+                    "path": "v2rayN/ServiceLib.UdpTest/ServiceLib.UdpTest.csproj",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "Socks5UdpChannel.cs",
+                    "path": "v2rayN/ServiceLib.UdpTest/Socks5UdpChannel.cs",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "UdpTestService.cs",
+                    "path": "v2rayN/ServiceLib.UdpTest/UdpTestService.cs",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "v2rayN",
+                "path": "v2rayN/v2rayN",
+                "is_dir": true,
+                "file_count": 68,
+                "children": [
+                  {
+                    "name": "Base",
+                    "path": "v2rayN/v2rayN/Base",
+                    "is_dir": true,
+                    "file_count": 3,
+                    "children": [
+                      {
+                        "name": "MyDGTextColumn.cs",
+                        "path": "v2rayN/v2rayN/Base/MyDGTextColumn.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "ViewHost.cs",
+                        "path": "v2rayN/v2rayN/Base/ViewHost.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "WindowBase.cs",
+                        "path": "v2rayN/v2rayN/Base/WindowBase.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Common",
+                    "path": "v2rayN/v2rayN/Common",
+                    "is_dir": true,
+                    "file_count": 4,
+                    "children": [
+                      {
+                        "name": "QRCodeWindowsUtils.cs",
+                        "path": "v2rayN/v2rayN/Common/QRCodeWindowsUtils.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "SimpleViewLocator.cs",
+                        "path": "v2rayN/v2rayN/Common/SimpleViewLocator.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "UI.cs",
+                        "path": "v2rayN/v2rayN/Common/UI.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "WindowsUtils.cs",
+                        "path": "v2rayN/v2rayN/Common/WindowsUtils.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Converters",
+                    "path": "v2rayN/v2rayN/Converters",
+                    "is_dir": true,
+                    "file_count": 3,
+                    "children": [
+                      {
+                        "name": "DelayColorConverter.cs",
+                        "path": "v2rayN/v2rayN/Converters/DelayColorConverter.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "InverseBooleanConverter.cs",
+                        "path": "v2rayN/v2rayN/Converters/InverseBooleanConverter.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "MaterialDesignFonts.cs",
+                        "path": "v2rayN/v2rayN/Converters/MaterialDesignFonts.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Manager",
+                    "path": "v2rayN/v2rayN/Manager",
+                    "is_dir": true,
+                    "file_count": 3,
+                    "children": [
+                      {
+                        "name": "HotkeyManager.cs",
+                        "path": "v2rayN/v2rayN/Manager/HotkeyManager.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "WindowDialog.cs",
+                        "path": "v2rayN/v2rayN/Manager/WindowDialog.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "WindowsManager.cs",
+                        "path": "v2rayN/v2rayN/Manager/WindowsManager.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Properties",
+                    "path": "v2rayN/v2rayN/Properties",
+                    "is_dir": true,
+                    "file_count": 2,
+                    "children": [
+                      {
+                        "name": "Resources.Designer.cs",
+                        "path": "v2rayN/v2rayN/Properties/Resources.Designer.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "Resources.resx",
+                        "path": "v2rayN/v2rayN/Properties/Resources.resx",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": "ViewModels",
+                    "path": "v2rayN/v2rayN/ViewModels",
+                    "is_dir": true,
+                    "file_count": 1,
+                    "children": [
+                      {
+                        "name": "ThemeSettingViewModel.cs",
+                        "path": "v2rayN/v2rayN/ViewModels/ThemeSettingViewModel.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Views",
+                    "path": "v2rayN/v2rayN/Views",
+                    "is_dir": true,
+                    "file_count": 46,
+                    "children": [
+                      {
+                        "name": "AddGroupServerWindow.xaml",
+                        "path": "v2rayN/v2rayN/Views/AddGroupServerWindow.xaml",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "AddGroupServerWindow.xaml.cs",
+                        "path": "v2rayN/v2rayN/Views/AddGroupServerWindow.xaml.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "AddServer2Window.xaml",
+                        "path": "v2rayN/v2rayN/Views/AddServer2Window.xaml",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "AddServer2Window.xaml.cs",
+                        "path": "v2rayN/v2rayN/Views/AddServer2Window.xaml.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "AddServerWindow.xaml",
+                        "path": "v2rayN/v2rayN/Views/AddServerWindow.xaml",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "AddServerWindow.xaml.cs",
+                        "path": "v2rayN/v2rayN/Views/AddServerWindow.xaml.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "BackupAndRestoreView.xaml",
+                        "path": "v2rayN/v2rayN/Views/BackupAndRestoreView.xaml",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "BackupAndRestoreView.xaml.cs",
+                        "path": "v2rayN/v2rayN/Views/BackupAndRestoreView.xaml.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "CheckUpdateView.xaml",
+                        "path": "v2rayN/v2rayN/Views/CheckUpdateView.xaml",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "CheckUpdateView.xaml.cs",
+                        "path": "v2rayN/v2rayN/Views/CheckUpdateView.xaml.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "ClashConnectionsView.xaml",
+                        "path": "v2rayN/v2rayN/Views/ClashConnectionsView.xaml",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "ClashConnectionsView.xaml.cs",
+                        "path": "v2rayN/v2rayN/Views/ClashConnectionsView.xaml.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "ClashProxiesView.xaml",
+                        "path": "v2rayN/v2rayN/Views/ClashProxiesView.xaml",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "ClashProxiesView.xaml.cs",
+                        "path": "v2rayN/v2rayN/Views/ClashProxiesView.xaml.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "DNSSettingWindow.xaml",
+                        "path": "v2rayN/v2rayN/Views/DNSSettingWindow.xaml",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "DNSSettingWindow.xaml.cs",
+                        "path": "v2rayN/v2rayN/Views/DNSSettingWindow.xaml.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "FullConfigTemplateWindow.xaml",
+                        "path": "v2rayN/v2rayN/Views/FullConfigTemplateWindow.xaml",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "FullConfigTemplateWindow.xaml.cs",
+                        "path": "v2rayN/v2rayN/Views/FullConfigTemplateWindow.xaml.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "GlobalHotkeySettingWindow.xaml",
+                        "path": "v2rayN/v2rayN/Views/GlobalHotkeySettingWindow.xaml",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "GlobalHotkeySettingWindow.xaml.cs",
+                        "path": "v2rayN/v2rayN/Views/GlobalHotkeySettingWindow.xaml.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "MainWindow.xaml",
+                        "path": "v2rayN/v2rayN/Views/MainWindow.xaml",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "MainWindow.xaml.cs",
+                        "path": "v2rayN/v2rayN/Views/MainWindow.xaml.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "MsgView.xaml",
+                        "path": "v2rayN/v2rayN/Views/MsgView.xaml",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "MsgView.xaml.cs",
+                        "path": "v2rayN/v2rayN/Views/MsgView.xaml.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "OptionSettingWindow.xaml",
+                        "path": "v2rayN/v2rayN/Views/OptionSettingWindow.xaml",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "OptionSettingWindow.xaml.cs",
+                        "path": "v2rayN/v2rayN/Views/OptionSettingWindow.xaml.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "ProfilesSelectWindow.xaml",
+                        "path": "v2rayN/v2rayN/Views/ProfilesSelectWindow.xaml",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "ProfilesSelectWindow.xaml.cs",
+                        "path": "v2rayN/v2rayN/Views/ProfilesSelectWindow.xaml.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "ProfilesView.xaml",
+                        "path": "v2rayN/v2rayN/Views/ProfilesView.xaml",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "ProfilesView.xaml.cs",
+                        "path": "v2rayN/v2rayN/Views/ProfilesView.xaml.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "QrcodeView.xaml",
+                        "path": "v2rayN/v2rayN/Views/QrcodeView.xaml",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "QrcodeView.xaml.cs",
+                        "path": "v2rayN/v2rayN/Views/QrcodeView.xaml.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "RoutingRuleDetailsWindow.xaml",
+                        "path": "v2rayN/v2rayN/Views/RoutingRuleDetailsWindow.xaml",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "RoutingRuleDetailsWindow.xaml.cs",
+                        "path": "v2rayN/v2rayN/Views/RoutingRuleDetailsWindow.xaml.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "RoutingRuleSettingWindow.xaml",
+                        "path": "v2rayN/v2rayN/Views/RoutingRuleSettingWindow.xaml",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "RoutingRuleSettingWindow.xaml.cs",
+                        "path": "v2rayN/v2rayN/Views/RoutingRuleSettingWindow.xaml.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "RoutingSettingWindow.xaml",
+                        "path": "v2rayN/v2rayN/Views/RoutingSettingWindow.xaml",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "RoutingSettingWindow.xaml.cs",
+                        "path": "v2rayN/v2rayN/Views/RoutingSettingWindow.xaml.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "StatusBarView.xaml",
+                        "path": "v2rayN/v2rayN/Views/StatusBarView.xaml",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "StatusBarView.xaml.cs",
+                        "path": "v2rayN/v2rayN/Views/StatusBarView.xaml.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "SubEditWindow.xaml",
+                        "path": "v2rayN/v2rayN/Views/SubEditWindow.xaml",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "SubEditWindow.xaml.cs",
+                        "path": "v2rayN/v2rayN/Views/SubEditWindow.xaml.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "SubSettingWindow.xaml",
+                        "path": "v2rayN/v2rayN/Views/SubSettingWindow.xaml",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "SubSettingWindow.xaml.cs",
+                        "path": "v2rayN/v2rayN/Views/SubSettingWindow.xaml.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "ThemeSettingView.xaml",
+                        "path": "v2rayN/v2rayN/Views/ThemeSettingView.xaml",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "ThemeSettingView.xaml.cs",
+                        "path": "v2rayN/v2rayN/Views/ThemeSettingView.xaml.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": "App.xaml",
+                    "path": "v2rayN/v2rayN/App.xaml",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "App.xaml.cs",
+                    "path": "v2rayN/v2rayN/App.xaml.cs",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "AssemblyInfo.cs",
+                    "path": "v2rayN/v2rayN/AssemblyInfo.cs",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "GlobalUsings.cs",
+                    "path": "v2rayN/v2rayN/GlobalUsings.cs",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "app.manifest",
+                    "path": "v2rayN/v2rayN/app.manifest",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "v2rayN.csproj",
+                    "path": "v2rayN/v2rayN/v2rayN.csproj",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "v2rayN.Desktop",
+                "path": "v2rayN/v2rayN.Desktop",
+                "is_dir": true,
+                "file_count": 73,
+                "children": [
+                  {
+                    "name": "Assets",
+                    "path": "v2rayN/v2rayN.Desktop/Assets",
+                    "is_dir": true,
+                    "file_count": 2,
+                    "children": [
+                      {
+                        "name": "GlobalResources.axaml",
+                        "path": "v2rayN/v2rayN.Desktop/Assets/GlobalResources.axaml",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "GlobalStyles.axaml",
+                        "path": "v2rayN/v2rayN.Desktop/Assets/GlobalStyles.axaml",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Base",
+                    "path": "v2rayN/v2rayN.Desktop/Base",
+                    "is_dir": true,
+                    "file_count": 1,
+                    "children": [
+                      {
+                        "name": "WindowBase.cs",
+                        "path": "v2rayN/v2rayN.Desktop/Base/WindowBase.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Common",
+                    "path": "v2rayN/v2rayN.Desktop/Common",
+                    "is_dir": true,
+                    "file_count": 8,
+                    "children": [
+                      {
+                        "name": "AppBuilderExtension.cs",
+                        "path": "v2rayN/v2rayN.Desktop/Common/AppBuilderExtension.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "AvaUtils.cs",
+                        "path": "v2rayN/v2rayN.Desktop/Common/AvaUtils.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "ButtonResult.cs",
+                        "path": "v2rayN/v2rayN.Desktop/Common/ButtonResult.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "MacAppUtils.cs",
+                        "path": "v2rayN/v2rayN.Desktop/Common/MacAppUtils.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "QRCodeAvaloniaUtils.cs",
+                        "path": "v2rayN/v2rayN.Desktop/Common/QRCodeAvaloniaUtils.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "SimpleViewLocator.cs",
+                        "path": "v2rayN/v2rayN.Desktop/Common/SimpleViewLocator.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "TextEditorKeywordHighlighter.cs",
+                        "path": "v2rayN/v2rayN.Desktop/Common/TextEditorKeywordHighlighter.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "UI.cs",
+                        "path": "v2rayN/v2rayN.Desktop/Common/UI.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Converters",
+                    "path": "v2rayN/v2rayN.Desktop/Converters",
+                    "is_dir": true,
+                    "file_count": 1,
+                    "children": [
+                      {
+                        "name": "DelayColorConverter.cs",
+                        "path": "v2rayN/v2rayN.Desktop/Converters/DelayColorConverter.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": "DesignData",
+                    "path": "v2rayN/v2rayN.Desktop/DesignData",
+                    "is_dir": true,
+                    "file_count": 1,
+                    "children": [
+                      {
+                        "name": "DesignData.cs",
+                        "path": "v2rayN/v2rayN.Desktop/DesignData/DesignData.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Manager",
+                    "path": "v2rayN/v2rayN.Desktop/Manager",
+                    "is_dir": true,
+                    "file_count": 2,
+                    "children": [
+                      {
+                        "name": "HotkeyManager.cs",
+                        "path": "v2rayN/v2rayN.Desktop/Manager/HotkeyManager.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "WindowDialog.cs",
+                        "path": "v2rayN/v2rayN.Desktop/Manager/WindowDialog.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": "ViewModels",
+                    "path": "v2rayN/v2rayN.Desktop/ViewModels",
+                    "is_dir": true,
+                    "file_count": 1,
+                    "children": [
+                      {
+                        "name": "ThemeSettingViewModel.cs",
+                        "path": "v2rayN/v2rayN.Desktop/ViewModels/ThemeSettingViewModel.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Views",
+                    "path": "v2rayN/v2rayN.Desktop/Views",
+                    "is_dir": true,
+                    "file_count": 52,
+                    "children": [
+                      {
+                        "name": "AddGroupServerWindow.axaml",
+                        "path": "v2rayN/v2rayN.Desktop/Views/AddGroupServerWindow.axaml",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "AddGroupServerWindow.axaml.cs",
+                        "path": "v2rayN/v2rayN.Desktop/Views/AddGroupServerWindow.axaml.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "AddServer2Window.axaml",
+                        "path": "v2rayN/v2rayN.Desktop/Views/AddServer2Window.axaml",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "AddServer2Window.axaml.cs",
+                        "path": "v2rayN/v2rayN.Desktop/Views/AddServer2Window.axaml.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "AddServerWindow.axaml",
+                        "path": "v2rayN/v2rayN.Desktop/Views/AddServerWindow.axaml",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "AddServerWindow.axaml.cs",
+                        "path": "v2rayN/v2rayN.Desktop/Views/AddServerWindow.axaml.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "BackupAndRestoreView.axaml",
+                        "path": "v2rayN/v2rayN.Desktop/Views/BackupAndRestoreView.axaml",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "BackupAndRestoreView.axaml.cs",
+                        "path": "v2rayN/v2rayN.Desktop/Views/BackupAndRestoreView.axaml.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "CheckUpdateView.axaml",
+                        "path": "v2rayN/v2rayN.Desktop/Views/CheckUpdateView.axaml",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "CheckUpdateView.axaml.cs",
+                        "path": "v2rayN/v2rayN.Desktop/Views/CheckUpdateView.axaml.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "ClashConnectionsView.axaml",
+                        "path": "v2rayN/v2rayN.Desktop/Views/ClashConnectionsView.axaml",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "ClashConnectionsView.axaml.cs",
+                        "path": "v2rayN/v2rayN.Desktop/Views/ClashConnectionsView.axaml.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "ClashProxiesView.axaml",
+                        "path": "v2rayN/v2rayN.Desktop/Views/ClashProxiesView.axaml",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "ClashProxiesView.axaml.cs",
+                        "path": "v2rayN/v2rayN.Desktop/Views/ClashProxiesView.axaml.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "DNSSettingWindow.axaml",
+                        "path": "v2rayN/v2rayN.Desktop/Views/DNSSettingWindow.axaml",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "DNSSettingWindow.axaml.cs",
+                        "path": "v2rayN/v2rayN.Desktop/Views/DNSSettingWindow.axaml.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "FullConfigTemplateWindow.axaml",
+                        "path": "v2rayN/v2rayN.Desktop/Views/FullConfigTemplateWindow.axaml",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "FullConfigTemplateWindow.axaml.cs",
+                        "path": "v2rayN/v2rayN.Desktop/Views/FullConfigTemplateWindow.axaml.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "GlobalHotkeySettingWindow.axaml",
+                        "path": "v2rayN/v2rayN.Desktop/Views/GlobalHotkeySettingWindow.axaml",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "GlobalHotkeySettingWindow.axaml.cs",
+                        "path": "v2rayN/v2rayN.Desktop/Views/GlobalHotkeySettingWindow.axaml.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "JsonEditor.axaml",
+                        "path": "v2rayN/v2rayN.Desktop/Views/JsonEditor.axaml",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "JsonEditor.axaml.cs",
+                        "path": "v2rayN/v2rayN.Desktop/Views/JsonEditor.axaml.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "MainWindow.axaml",
+                        "path": "v2rayN/v2rayN.Desktop/Views/MainWindow.axaml",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "MainWindow.axaml.cs",
+                        "path": "v2rayN/v2rayN.Desktop/Views/MainWindow.axaml.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "MessageBoxDialog.axaml",
+                        "path": "v2rayN/v2rayN.Desktop/Views/MessageBoxDialog.axaml",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "MessageBoxDialog.axaml.cs",
+                        "path": "v2rayN/v2rayN.Desktop/Views/MessageBoxDialog.axaml.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "MsgView.axaml",
+                        "path": "v2rayN/v2rayN.Desktop/Views/MsgView.axaml",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "MsgView.axaml.cs",
+                        "path": "v2rayN/v2rayN.Desktop/Views/MsgView.axaml.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "OptionSettingWindow.axaml",
+                        "path": "v2rayN/v2rayN.Desktop/Views/OptionSettingWindow.axaml",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "OptionSettingWindow.axaml.cs",
+                        "path": "v2rayN/v2rayN.Desktop/Views/OptionSettingWindow.axaml.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "ProfilesSelectWindow.axaml",
+                        "path": "v2rayN/v2rayN.Desktop/Views/ProfilesSelectWindow.axaml",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "ProfilesSelectWindow.axaml.cs",
+                        "path": "v2rayN/v2rayN.Desktop/Views/ProfilesSelectWindow.axaml.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "ProfilesView.axaml",
+                        "path": "v2rayN/v2rayN.Desktop/Views/ProfilesView.axaml",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "ProfilesView.axaml.cs",
+                        "path": "v2rayN/v2rayN.Desktop/Views/ProfilesView.axaml.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "QrcodeView.axaml",
+                        "path": "v2rayN/v2rayN.Desktop/Views/QrcodeView.axaml",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "QrcodeView.axaml.cs",
+                        "path": "v2rayN/v2rayN.Desktop/Views/QrcodeView.axaml.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "RoutingRuleDetailsWindow.axaml",
+                        "path": "v2rayN/v2rayN.Desktop/Views/RoutingRuleDetailsWindow.axaml",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "RoutingRuleDetailsWindow.axaml.cs",
+                        "path": "v2rayN/v2rayN.Desktop/Views/RoutingRuleDetailsWindow.axaml.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "RoutingRuleSettingWindow.axaml",
+                        "path": "v2rayN/v2rayN.Desktop/Views/RoutingRuleSettingWindow.axaml",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "RoutingRuleSettingWindow.axaml.cs",
+                        "path": "v2rayN/v2rayN.Desktop/Views/RoutingRuleSettingWindow.axaml.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "RoutingSettingWindow.axaml",
+                        "path": "v2rayN/v2rayN.Desktop/Views/RoutingSettingWindow.axaml",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "RoutingSettingWindow.axaml.cs",
+                        "path": "v2rayN/v2rayN.Desktop/Views/RoutingSettingWindow.axaml.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "StatusBarView.axaml",
+                        "path": "v2rayN/v2rayN.Desktop/Views/StatusBarView.axaml",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "StatusBarView.axaml.cs",
+                        "path": "v2rayN/v2rayN.Desktop/Views/StatusBarView.axaml.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "SubEditWindow.axaml",
+                        "path": "v2rayN/v2rayN.Desktop/Views/SubEditWindow.axaml",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "SubEditWindow.axaml.cs",
+                        "path": "v2rayN/v2rayN.Desktop/Views/SubEditWindow.axaml.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "SubSettingWindow.axaml",
+                        "path": "v2rayN/v2rayN.Desktop/Views/SubSettingWindow.axaml",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "SubSettingWindow.axaml.cs",
+                        "path": "v2rayN/v2rayN.Desktop/Views/SubSettingWindow.axaml.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "SudoPasswordInputView.axaml",
+                        "path": "v2rayN/v2rayN.Desktop/Views/SudoPasswordInputView.axaml",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "SudoPasswordInputView.axaml.cs",
+                        "path": "v2rayN/v2rayN.Desktop/Views/SudoPasswordInputView.axaml.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "ThemeSettingView.axaml",
+                        "path": "v2rayN/v2rayN.Desktop/Views/ThemeSettingView.axaml",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "ThemeSettingView.axaml.cs",
+                        "path": "v2rayN/v2rayN.Desktop/Views/ThemeSettingView.axaml.cs",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": "App.axaml",
+                    "path": "v2rayN/v2rayN.Desktop/App.axaml",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "App.axaml.cs",
+                    "path": "v2rayN/v2rayN.Desktop/App.axaml.cs",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "GlobalUsings.cs",
+                    "path": "v2rayN/v2rayN.Desktop/GlobalUsings.cs",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "Program.cs",
+                    "path": "v2rayN/v2rayN.Desktop/Program.cs",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "v2rayN.Desktop.csproj",
+                    "path": "v2rayN/v2rayN.Desktop/v2rayN.Desktop.csproj",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "Directory.Build.props",
+                "path": "v2rayN/Directory.Build.props",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "Directory.Packages.props",
+                "path": "v2rayN/Directory.Packages.props",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "v2rayN.sln",
+                "path": "v2rayN/v2rayN.sln",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "v2rayN.slnx",
+                "path": "v2rayN/v2rayN.slnx",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "LICENSE",
+            "path": "LICENSE",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "package-debian-loong.sh",
+            "path": "package-debian-loong.sh",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "package-rhel-loong.sh",
+            "path": "package-rhel-loong.sh",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "package-rhel.sh",
+            "path": "package-rhel.sh",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          }
+        ]
+      }
+    },
+    "profiles": [
+      {
+        "stage": "full_scan",
+        "total_ms": 84,
+        "peak_rss_bytes": 30507008,
+        "steps": [
+          {
+            "id": "git_metadata",
+            "label": "Git metadata",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "file_walk",
+            "label": "Parallel file walk",
+            "ms": 10,
+            "pct": 11.904761904761903
+          },
+          {
+            "id": "languages",
+            "label": "Language breakdown",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "manifests",
+            "label": "Manifest parsing",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "docs",
+            "label": "Doc previews",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "aggregates",
+            "label": "Dirs, configs, stack tags",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "entrypoints",
+            "label": "Entrypoints, workspace units & QA readiness",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "source_previews",
+            "label": "Source preview cache",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "repo_graph",
+            "label": "Deterministic graph scan",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "history",
+            "label": "Git history & decision scan",
+            "ms": 15,
+            "pct": 17.857142857142858
+          },
+          {
+            "id": "repo_health",
+            "label": "Deterministic health scoring",
+            "ms": 57,
+            "pct": 67.85714285714286
+          },
+          {
+            "id": "dir_tree",
+            "label": "Directory tree preview",
+            "ms": 0,
+            "pct": 0
+          }
+        ]
+      },
+      {
+        "stage": "local_scan_persist",
+        "total_ms": 0,
+        "peak_rss_bytes": 31080448,
+        "steps": [
+          {
+            "id": "serialize",
+            "label": "JSON serialize (inventory → SQLite)",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "db_insert",
+            "label": "SQLite insert",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "touch_project",
+            "label": "Update repo project metadata",
+            "ms": 0,
+            "pct": 0
+          }
+        ]
+      }
+    ]
+  }
+}

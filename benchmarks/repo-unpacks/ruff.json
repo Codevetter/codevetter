@@ -18065,5 +18065,835 @@
         ]
       }
     ]
+  },
+  "report": {
+    "overview": "Ruff 0.16.8 is Astral's Rust monorepo for a Python linter/formatter and the ty type checker. The user-facing `ruff` binary lints and formats Python (and notebooks) from the CLI, a stdio language server, or WASM; `ty` type-checks projects with a Salsa database and an optional uv integration. The PyPI package is a thin launcher around the native binary, not a Python implementation of the linter.",
+    "system_map": {
+      "summary": "The Cargo workspace (edition 2024, rust-version 1.96, toolchain channel 1.98.0) builds two binaries, `ruff` and `ty`, plus libraries they share: the Python parser and AST, diagnostics, and workspace settings. Ruff's check and format paths are parallel file walks over hierarchical TOML config with an on-disk `.ruff_cache`. ty is a separate CLI and language server on a Salsa 0.28 `ProjectDatabase`, with typeshed vendored under `crates/ty_vendored`. Release artifacts are a scratch Docker image, cargo-dist installers, PyPI (maturin bin binding), WASM playgrounds, and crate publishes, all driven from GitHub Actions.",
+      "claims": [
+        {
+          "claim": "The workspace members are `crates/*`, package version 0.16.8, Rust edition 2024, minimum rust-version 1.96, license MIT, and the shared dependency set includes both `ruff_*` crates and `ty_*` crates plus salsa 0.28.2.",
+          "sources": [
+            "Cargo.toml#L1-L62",
+            "Cargo.toml#L186-L193"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The developer toolchain pin is Rust 1.98.0 in rust-toolchain.toml, which the Dockerfile copies before `rustup target add` and `cargo zigbuild --bin ruff --release`.",
+          "sources": [
+            "rust-toolchain.toml",
+            "Dockerfile#L19-L38"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`ruff` starts at `crates/ruff/src/main.rs`: it expands `@file` args with `argfile`, parses `Args` with clap, and calls `ruff::run`. Windows uses mimalloc; other supported arches use jemalloc. Broken-pipe errors exit 0; other failures print `ruff failed` and return `ExitStatus::Error` (code 2).",
+          "sources": [
+            "crates/ruff/src/main.rs#L30-L77",
+            "crates/ruff/src/lib.rs#L37-L54"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`ty` starts at `crates/ty/src/main.rs` and calls `ty::run`. `ty::run` sets up Rayon, expands `@file` arguments, and dispatches `Cli` to check, server, version, shell completion, or explain. Exit statuses are Success 0, Failure 1, Error 2, InternalError 101, and Interrupted 130.",
+          "sources": [
+            "crates/ty/src/main.rs#L21-L50",
+            "crates/ty/src/lib.rs#L45-L77",
+            "crates/ty/src/lib.rs#L249-L277"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "PyPI packaging uses maturin with `bindings = \"bin\"`, `manifest-path = \"crates/ruff/Cargo.toml\"`, and `python-source = \"python\"`. `python/ruff/__main__.py` execs (or on Windows `subprocess.run`s) the native binary located by `find_ruff_bin`, which searches sysconfig script directories rather than embedding the linter in Python.",
+          "sources": [
+            "pyproject.toml#L1-L55",
+            "python/ruff/__main__.py#L9-L27",
+            "python/ruff/_find_ruff.py#L11-L55"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Shared front-end: `ruff_python_parser::parse` builds a `Parsed<Mod>` via `Parser::new`, and both the linter (`lint_only`) and the formatter (`format_module_source`) consume that parse. The linter crate documents its public API as completely unstable.",
+          "sources": [
+            "crates/ruff_python_parser/src/lib.rs#L281-L290",
+            "crates/ruff_linter/src/linter.rs#L447-L509",
+            "crates/ruff_python_formatter/src/lib.rs#L136-L145",
+            "crates/ruff_linter/src/lib.rs#L1-L6"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Ruff settings come from `ruff_workspace`. `project_files_in_path` normalizes paths, walks ancestors for `pyproject.toml` when hierarchical discovery is on, and walks the tree with the `ignore` crate's `WalkBuilder` (gitignore on, hidden files included, at most 12 threads).",
+          "sources": [
+            "crates/ruff_workspace/src/resolver.rs#L442-L556"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Lint/format caches live in `.ruff_cache` (`ruff_cache::CACHE_DIR_NAME`). `Cache::open` stores one rkyv file per package at `cache_dir/VERSION/<settings key>` and drops entries if the package root does not match.",
+          "sources": [
+            "crates/ruff_cache/src/lib.rs#L9-L14",
+            "crates/ruff/src/cache.rs#L85-L132",
+            "crates/ruff_workspace/src/options.rs#L54-L67"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "ty's persistent state is a Salsa `ProjectDatabase` created by `ProjectDatabase::fallible`. `check` and `check_with_reporter` delegate to `Project::check`. One-shot CLI checks call `disable_lru` and may `freeze` inputs; `run_check` then `mem::forget`s the database after optional `TY_MEMORY_REPORT` dumps.",
+          "sources": [
+            "crates/ty/src/lib.rs#L166-L236",
+            "crates/ty_project/src/db.rs#L211-L241"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Language servers are separate crates speaking stdio LSP: `ruff server` calls `ruff_server::run` (worker threads capped at 4); `ty server` calls `ty_server::run_server` with an `OsSystem` fallback and the same thread cap.",
+          "sources": [
+            "crates/ruff/src/commands/server.rs#L1-L6",
+            "crates/ruff_server/src/lib.rs#L43-L55",
+            "crates/ty_server/src/lib.rs#L29-L55"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Release shape is cargo-dist 0.31.0 (`dist = false` on the workspace, local artifact jobs `./build-binaries`, `./build-docker`, `./build-wasm`; publish jobs PyPI, wasm, and crates). Installers are shell and PowerShell for a long target list, hosted at `https://releases.astral.sh/github/ruff/releases/download/{tag}`. The Docker image is `FROM scratch` with `ENTRYPOINT [\"/ruff\"]` and `WORKDIR /io`.",
+          "sources": [
+            "dist-workspace.toml#L1-L74",
+            "Dockerfile#L35-L38"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "In-browser entry points are `ruff_wasm` (`Workspace::new` deserializes `Options` into `Settings`) and the npm workspaces `ruff`, `ty`, and `shared` under `playground/`, built with Vite, React, Tailwind, and wasm-pack. Sharing uses a Cloudflare Worker in `playground/api`.",
+          "sources": [
+            "crates/ruff_wasm/src/lib.rs#L268-L294",
+            "playground/package.json#L1-L38",
+            "playground/README.md#L1-L31"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "feature_catalog": {
+      "summary": "Ruff's clap `Command` enum is the product surface: lint, format, an LSP server, rule and config help, cache cleaning, shell completions, and an import graph. The linter reimplements a large set of Flake8-family plugins as native rules under `ruff_linter::rules`, selected by code or category. ty exposes check (with fix and ignore insertion), a language server, and `explain rule`. Both tools have WASM playgrounds; Ruff also formats notebooks and can watch the filesystem.",
+      "claims": [
+        {
+          "claim": "`ruff check` (`CheckCommand`) accepts paths or `-` for stdin, `--fix` / `--fix-only` / `--diff` / `--unsafe-fixes`, `--watch`, `--ignore-noqa`, `--add-noqa` and `--add-ignore`, `--select` / rule selectors, `--target-version`, `--preview`, and `--output-format` from `RUFF_OUTPUT_FORMAT` plus `--output-file` from `RUFF_OUTPUT_FILE`. `--show-settings` and `--show-files` short-circuit before linting.",
+          "sources": [
+            "crates/ruff/src/args.rs#L133-L186",
+            "crates/ruff/src/args.rs#L231-L279",
+            "crates/ruff/src/lib.rs#L237-L277"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Default fix behavior generates fixes but does not write them. `--diff` selects `FixMode::Diff`; `--fix` or `--fix-only` selects `FixMode::Apply`; otherwise `FixMode::Generate`. Applicability stays automatic unless `--unsafe-fixes` is set. `--add-noqa` / `--add-ignore` refuse newlines in the reason and are incompatible with `--fix`.",
+          "sources": [
+            "crates/ruff/src/lib.rs#L279-L364"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`ruff format` (`FormatCommand`) writes files by default. `--diff` selects `FormatMode::Diff` and `--check` selects `FormatMode::Check`. `--range` is rejected when the resolved path set contains more than one file. Stdin is handled by `commands::format_stdin::format_stdin` instead of `commands::format::format`.",
+          "sources": [
+            "crates/ruff/src/lib.rs#L214-L221",
+            "crates/ruff/src/commands/format.rs#L48-L92"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Formatting itself is `format_module_source`: parse with `ParseOptions` from the source type, build `TriviaRanges`, `format_module_ast`, then `print`. Parse, format, and print failures become `FormatModuleError` and map to `DiagnosticId::InternalError`.",
+          "sources": [
+            "crates/ruff_python_formatter/src/lib.rs#L99-L155"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`ruff server` is the editor integration. Request handlers registered in `ruff_server` are code action, code-action resolve, document diagnostic, execute command, format, format range, hover, and shutdown. Notifications include didOpen/didChange/didClose for text documents and notebooks, configuration, watched files, and workspace changes. Code-action kinds include `source.fixAll.ruff` and `source.organizeImports.ruff` (plus notebook variants).",
+          "sources": [
+            "crates/ruff_server/src/lib.rs#L24-L33",
+            "crates/ruff_server/src/server/api/requests.rs#L1-L24",
+            "crates/ruff_server/src/server/api/notifications.rs#L1-L23",
+            "crates/ruff_server/src/server/api/diagnostics.rs#L8-L39"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Other Ruff subcommands: `rule` (one rule or `--all`), `config` (one option or the catalog), `linter` (upstream linter list), `clean`, hidden `generate-shell-completion`, `version`, and `analyze graph` (`AnalyzeGraphCommand`: direction, string-import detection, `--python` venv, type-checking imports, preview, target version).",
+          "sources": [
+            "crates/ruff/src/args.rs#L133-L228",
+            "crates/ruff/src/lib.rs#L170-L210"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Native lint plugins are the `Linter` enum in `registry.rs` (prefixes such as AIR, E/W via pycodestyle, F, S, B, I, UP, PL, RUF) and matching modules under `crates/ruff_linter/src/rules/` (`airflow` through `tryceratops`, including `pyflakes`, `pylint`, `pyupgrade`, `isort`, `flake8_bugbear`, `ruff`). `code_to_rule` is the `#[ruff_macros::map_codes]` table that maps `(Linter, code)` to a rule struct.",
+          "sources": [
+            "crates/ruff_linter/src/registry.rs#L34-L150",
+            "crates/ruff_linter/src/rules/mod.rs#L1-L59",
+            "crates/ruff_linter/src/codes.rs#L237-L249"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`ty` subcommands are `check`, `server`, `version`, hidden `generate-shell-completion`, and `explain rule`. `ty check` takes paths, `--project`, `--config-file`, `--fix`, `--add-ignore`, `--watch`, `--exit-zero`, color, verbosity, and progress flags. Fix mode is `FixMode::ApplyFixes` or `FixMode::AddIgnore`; plain runs are `MainLoopMode::Check`.",
+          "sources": [
+            "crates/ty/src/args.rs#L33-L73",
+            "crates/ty/src/lib.rs#L54-L77",
+            "crates/ty/src/lib.rs#L133-L139"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "ty diagnostics come from `ty_python_semantic::check_file`: I/O errors, parse errors, unsupported-syntax errors (with an inferred-version hint), then `check_types`. Lints are `LintMetadata` values created with `declare_lint!` (kebab-case name, summary, docs, default `Level` of ignore/warn/error, status) and stored in `default_lint_registry`.",
+          "sources": [
+            "crates/ty_python_semantic/src/lib.rs#L79-L97",
+            "crates/ty_python_semantic/src/lib.rs#L204-L244",
+            "crates/ty_python_semantic/src/lint.rs#L10-L55",
+            "crates/ty_python_semantic/src/lint.rs#L256-L281"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The Ruff WASM API exposes `Workspace` with `version`, a constructor from JS `Options`, and `defaultSettings`. The playground README describes two SPAs (Ruff at play.ruff.rs and a ty playground) using Monaco, Vite, and localStorage, plus a Worker KV share store.",
+          "sources": [
+            "crates/ruff_wasm/src/lib.rs#L268-L318",
+            "playground/README.md#L1-L34",
+            "playground/package.json#L9-L21"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Notebooks are first-class inputs: watch mode treats `.py`, `.pyi`, `.pyw`, and `.ipynb` as source and `.toml` as configuration, and `lint_path` lints `pyproject.toml` / `ruff.toml` when a TOML rule is enabled via `lint_fix_toml` / `lint_toml`.",
+          "sources": [
+            "crates/ruff/src/lib.rs#L63-L92",
+            "crates/ruff/src/diagnostics.rs#L215-L270"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`cargo dev` (`crates/ruff_dev`) is the maintainer CLI: `generate-all`, JSON schemas, rules tables, options docs, ty CLI/env/schema docs, `print-ast` / `print-cst` / `print-tokens`, formatter stability (`format-dev`), and `repeat` for profiling `ruff check`.",
+          "sources": [
+            "crates/ruff_dev/src/main.rs#L1-L90"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "data_flow": {
+      "summary": "Ruff and ty both start from OS arguments and project files, never from a network service in the CLI. Ruff turns paths into per-file source text, a parse, noqa/suppression directives, and diagnostics, then either prints them, writes fixes, or stores a negative cache entry. ty loads project metadata into a Salsa database, type-checks files in parallel, and optionally rewrites source. The only intentional subprocess is uv, and only when `TY_UV` enables it. The playground is the network boundary: the browser runs WASM locally and optionally POSTs source to Workers KV.",
+      "claims": [
+        {
+          "claim": "Input boundary for both CLIs is `wild::args_os` expanded by `argfile::expand_args_from` (prefix `@`) before clap parsing. Ruff also honors `FORCE_COLOR` via `colored_override` and `RUFF_OUTPUT_FORMAT` / `RUFF_OUTPUT_FILE`.",
+          "sources": [
+            "crates/ruff/src/main.rs#L35-L43",
+            "crates/ruff/src/lib.rs#L135-L139",
+            "crates/ruff/src/args.rs#L271-L279",
+            "crates/ty/src/lib.rs#L49-L52"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`ruff check` calls `resolve::resolve` for the root config, then `project_files_in_path`. Enabled rules decide whether `.py` and pyproject/ruff TOML files stay in the set. Package roots come from `resolver.package_roots`, and per-file `LinterSettings` come from `resolver.resolve(path)`.",
+          "sources": [
+            "crates/ruff/src/lib.rs#L237-L242",
+            "crates/ruff/src/commands/check.rs#L43-L92",
+            "crates/ruff_workspace/src/resolver.rs#L477-L516"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Per-file lint transform in `diagnostics::lint_path`: cache lookup by relative path plus `FileCacheKey` (mtime and permission mode); on miss, `SourceKind::from_path`; then `lint_fix` (apply or diff) or `lint_only`. `lint_only` parses, builds `Locator`, `Stylist`, and `Indexer`, extracts noqa directives and `Suppressions`, and calls `check_path`.",
+          "sources": [
+            "crates/ruff/src/diagnostics.rs#L181-L346",
+            "crates/ruff/src/cache.rs#L31-L56",
+            "crates/ruff_linter/src/linter.rs#L447-L509"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`check_path` is phased: token rules, filesystem rules, logical-line rules, then (only if the parse is valid) `check_ast` plus import sorting and docstring line collection, then physical-line rules. AST checking is `checkers::ast::check_ast`. Diagnostics are sorted with `Diagnostic::ruff_start_ordering` before return.",
+          "sources": [
+            "crates/ruff_linter/src/linter.rs#L122-L256",
+            "crates/ruff_linter/src/checkers/ast/mod.rs#L3490",
+            "crates/ruff/src/commands/check.rs#L166-L190"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Output boundary for a check: `Printer` writes violations to stdout, or to `RUFF_OUTPUT_FILE` (parent directories created, color forced off) unless `--watch`. `--fix` writes transformed source with `File::create`; `--diff` writes a unified diff to stdout. Watch mode uses `notify::recommended_watcher` and re-resolves config when a `.toml` changes.",
+          "sources": [
+            "crates/ruff/src/lib.rs#L244-L254",
+            "crates/ruff/src/lib.rs#L380-L408",
+            "crates/ruff/src/diagnostics.rs#L228-L314"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Cache write path: after the parallel fold, `caches.persist()` runs `Cache::persist`, which rkyv-serializes `PackageCache` to a temp file in the cache directory and renames it into place. Windows `PermissionDenied` on that rename is warned, not failed. A cache hit with noqa enabled returns empty diagnostics and skips re-lint.",
+          "sources": [
+            "crates/ruff/src/commands/check.rs#L75-L80",
+            "crates/ruff/src/commands/check.rs#L184-L185",
+            "crates/ruff/src/cache.rs#L157-L197",
+            "crates/ruff/src/diagnostics.rs#L191-L210"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "ty input flow: cwd from `current_directory`, optional `--project` directory, absolute check paths, `OsSystem`, and `UseUv::from_system`. Metadata is `ProjectMetadata::from_config_file` or `discover_with_uv`, then `apply_configuration_files` and `set_override_options`. A single PEP 723 script file forces `UseUv::Scripts` even when uv is otherwise on.",
+          "sources": [
+            "crates/ty/src/lib.rs#L109-L176",
+            "crates/ty_project/src/uv.rs#L33-L63"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "ty check execution: `MainLoop::main_loop` synchronizes script environments, then on `CheckWorkspace` clones the database and Rayon-spawns `db.check_with_reporter`. `Project::check` reports settings and file-set diagnostics, then `into_par_iter` calls salsa `check_file_impl`, which calls `ty_python_semantic::check_file` unless script settings are invalid. Results are discarded if the revision moved.",
+          "sources": [
+            "crates/ty/src/lib.rs#L347-L412",
+            "crates/ty_project/src/lib.rs#L489-L525",
+            "crates/ty_project/src/lib.rs#L960-L975"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "ty fix output: `FixMode::ApplyFixes` calls `fix_all_diagnostics` with `Applicability::Safe` only; `FixMode::AddIgnore` calls `suppress_all_diagnostics`. `--exit-zero` forces `ExitStatus::Success` after a non-internal result. `TY_MEMORY_REPORT=short|full|json` dumps Salsa memory on the summary stream.",
+          "sources": [
+            "crates/ty/src/lib.rs#L216-L246",
+            "crates/ty/src/lib.rs#L419-L476"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "When uv is enabled, `Uv::execute` runs `Command::new(executable)` with args `workspace metadata --quiet`. Workspace targets add `--active`; script targets add `--sync --script <path>` and optional `--python`. The executable is `UV` if set, otherwise `system.which(\"uv\")`.",
+          "sources": [
+            "crates/ty_project/src/uv/command.rs#L15-L75",
+            "crates/ty_project/src/uv.rs#L47-L54"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Playground data flow: the SPA keeps editor state in localStorage and runs Ruff or ty as WASM. Share URLs hit the Worker: GET `/{id}` reads Workers KV namespace `PLAYGROUND`; POST reads the raw body, stores it under `crypto.randomUUID()`, and returns the id. Production CORS allows `https://play.ruff.rs` plus `playknot.ruff.rs`, `types.ruff.rs`, and `play.ty.dev`.",
+          "sources": [
+            "playground/README.md#L22-L31",
+            "playground/api/src/index.ts#L5-L38",
+            "playground/api/src/index.ts#L57-L93"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "behavior_traces": {
+      "summary": "Three user-visible pipelines dominate: process startup for each binary, `ruff check` from arguments to printed diagnostics and cache, and `ty check` from project discovery through a cancellable Salsa main loop. Format and the Ruff language server are the same file pipeline entered from different adapters. Watch modes re-enter those pipelines on filesystem events instead of exiting.",
+      "claims": [
+        {
+          "claim": "Ruff startup order: `main` enables Windows virtual terminal, expands args, `Args::parse_from`, `run`. `run` applies color, `ruff_db::set_program_version`, installs a panic hook that points at the GitHub issue URL, skips logging for `Command::Server`, then matches `Command` to `check`, `format`, `server`, `analyze_graph`, or the help commands.",
+          "sources": [
+            "crates/ruff/src/main.rs#L30-L48",
+            "crates/ruff/src/lib.rs#L128-L211"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`ruff check` order: `CheckCommand::partition` -> `resolve::resolve` -> optional `show_settings` / `show_files` -> compute `FixMode` -> if suppression flags, `commands::add_noqa::add_noqa` and return -> else build `Printer` -> if `--watch`, `recommended_watcher` and an initial `commands::check::check` -> otherwise the same `check` once.",
+          "sources": [
+            "crates/ruff/src/lib.rs#L237-L403"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`commands::check::check` order: `project_files_in_path` -> retain Python and ruff/pyproject TOML -> `package_roots` -> `PackageCacheMap::init` if cache enabled -> `paths.par_iter` calling `lint_path` -> `catch_unwind` around `diagnostics::lint_path` -> fold/reduce diagnostics -> `sort_by(Diagnostic::ruff_start_ordering)` -> `caches.persist`. A panic becomes `create_panic_diagnostic` instead of aborting the process.",
+          "sources": [
+            "crates/ruff/src/commands/check.rs#L34-L214"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`diagnostics::lint_path` order for Python: `FileCacheKey::from_path` and `cache.get` -> `settings.extension.get_source_type` -> `SourceKind::from_path` -> `lint_fix` or `lint_only` -> on `FixMode::Apply`, `transformed.write` to `File::create(path)`; on `Diff`, write `source_kind.diff` to stdout. TOML files branch earlier into `lint_fix_toml` / `lint_toml`.",
+          "sources": [
+            "crates/ruff/src/diagnostics.rs#L191-L346"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`lint_only` order: `settings.resolve_target_version` -> `ParseSource::into_parsed` -> `Locator::new` -> `Stylist::from_tokens` -> `Indexer::from_tokens` -> `directives::extract_directives` -> `Suppressions::from_tokens` -> `check_path`. `lint_fix` repeats that loop up to 100 iterations, tracking `FixTable`.",
+          "sources": [
+            "crates/ruff_linter/src/linter.rs#L447-L570"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`ruff format` order: `FormatCommand::partition` -> `resolve::resolve` -> `resolve_default_files` -> `project_files_in_path` -> `package_roots` -> optional `PackageCacheMap::init` -> parallel per-path format. Each file reaches `format_module_source` -> `parse` -> `format_module_ast` -> `Printed`.",
+          "sources": [
+            "crates/ruff/src/lib.rs#L214-L221",
+            "crates/ruff/src/commands/format.rs#L70-L114",
+            "crates/ruff_python_formatter/src/lib.rs#L136-L154"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "ty startup and check order: `main` -> `run` -> `setup_rayon` -> `Cli::parse_from` -> `run_check` -> `setup_tracing` -> resolve cwd/project/paths -> `UseUv::from_system` -> `ProjectMetadata::{from_config_file|discover_with_uv}` -> `ProjectDatabase::fallible` -> `MainLoop::new` -> `ctrlc::set_handler` -> `watch` or `run`.",
+          "sources": [
+            "crates/ty/src/main.rs#L21-L23",
+            "crates/ty/src/lib.rs#L45-L77",
+            "crates/ty/src/lib.rs#L95-L220"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "ty main-loop order: `synchronize_scripts` -> `request_check` -> biased select on uv sync wakeups, watcher messages, and check requests. `CheckWorkspace` defers while `has_pending_synchronizations`, else spawns `check_with_reporter` + `into_sorted_diagnostics`. `CheckCompleted` either `write_diagnostics` or `fix_all_diagnostics` / `suppress_all_diagnostics`. Ctrl+C calls `CancellationTokenSource::stop`.",
+          "sources": [
+            "crates/ty/src/lib.rs#L304-L336",
+            "crates/ty/src/lib.rs#L347-L476"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Per-file ty order inside `check_file_impl`: if the file is a script without valid settings, return script settings diagnostics; else `ty_python_semantic::check_file`; then append script settings diagnostics and a dependency-metadata diagnostic. `check_file` itself loads `source_text`, returns `IOErrorDiagnostic` on read error, extends parse and unsupported-syntax diagnostics, extends `check_types`, and sorts by `rendering_sort_key`.",
+          "sources": [
+            "crates/ty_project/src/lib.rs#L960-L996",
+            "crates/ty_python_semantic/src/lib.rs#L204-L244"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Ruff LSP diagnostic order: `publish_diagnostics_for_document` calls `generate_diagnostics`, which no-ops unless `client_settings().lint()`, otherwise `crate::lint::check` on the document snapshot, then `Client::send_notification` of `PublishDiagnosticsNotification` per URI with the document version. Server boot is `ConnectionInitializer::stdio` then `Server::new(...).run` and `io_threads.join`.",
+          "sources": [
+            "crates/ruff_server/src/server/api/diagnostics.rs#L8-L39",
+            "crates/ruff_server/src/lib.rs#L43-L63"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Cache persistence order on a dirty cache: `Cache::persist` -> `save` merges changes -> `tempfile_in(parent)` -> `rkyv::to_bytes` of `PackageCache` -> `write_all` -> `NamedTempFile::persist`. No-change caches return before opening a temp file.",
+          "sources": [
+            "crates/ruff/src/cache.rs#L156-L197"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "testing_signals": {
+      "summary": "Tests are Rust-native: cargo-nextest in CI, insta snapshots, and ty Markdown fixtures executed by `datatest-stable`. Parser, linter, and formatter crates carry large snapshot and fixture trees; the Ruff CLI has integration tests under `crates/ruff/tests`. CI path-filters which jobs run, and additionally dogfoods `ty check` on in-repo Python. Fuzz targets cover parse, fix, and format idempotency. Playground Worker code and file-watching tests are the obvious gaps.",
+      "claims": [
+        {
+          "claim": "Linux CI job `cargo test (linux)` runs `uv run --locked --only-dev cargo insta test --all-features --unreferenced reject --test-runner nextest --disable-nextest-doctest`, then `cargo test --doc --all-features`. It is skipped when the PR has label `no-test` or `determine_changes` says no code changed (except on main).",
+          "sources": [
+            ".github/workflows/ci.yaml#L379-L417"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The same job dogfoods ty: `cargo run -p ty check` on `python/py-fuzzer`, `scripts/ty_benchmark`, and `scripts/*.py` (the last with `TY_UV=scripts` and `UV_LOCKED=true`). A prior step runs `cargo test -p ty_python_semantic --test mdtest` with `MDTEST_GITHUB_ANNOTATIONS_FORMAT=1` and ignores its exit code so annotations cannot fail the job.",
+          "sources": [
+            ".github/workflows/ci.yaml#L406-L427"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CI also runs `cargo fmt`, `shellcheck`, `cargo clippy` (including a wasm clippy job), `cargo hawk` at HAWK_VERSION 0.1.13, and a `cargo publish` dry-run. `determine_changes` sets outputs `parser`, `linter`, `formatter`, `ty`, `playground`, `fuzz`, `py-fuzzer`, `benchmarks`, and `release` from path filters. Workflow permissions are `contents: read`.",
+          "sources": [
+            ".github/workflows/ci.yaml#L1-L64",
+            ".github/workflows/ci.yaml#L279-L375"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "ty semantic tests are Markdown files. `crates/ty_python_semantic/tests/mdtest.rs` registers `mdtest` and `lint_doc` via datatest-stable; each fixture runs on a one-thread Rayon pool. `lint_doc` looks the filename stem up in `default_lint_registry` and passes it as `default_error_rule`. Fixtures live under `./resources/mdtest` and `./resources/lint_docs`.",
+          "sources": [
+            "crates/ty_python_semantic/tests/mdtest.rs#L1-L40"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Ruff CLI coverage includes `crates/ruff/tests` (integration and CLI snapshot tests) and a unit test `unreadable_files` in `commands/check.rs` that creates mode-0o000 files and snapshots E902 / invalid-pyproject diagnostics with insta. Rule crates keep insta snapshots beside rules (for example `rules/pyflakes` and `rules/pylint`).",
+          "sources": [
+            "crates/ruff/src/commands/check.rs#L217-L302"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Parser tests are fixture-driven: `crates/ruff_python_parser/resources` holds hundreds of `.py` fixtures and `crates/ruff_python_parser/tests` holds matching snapshots. Formatter tests similarly pair `resources/test` fixtures with `tests` snapshots. The parser fuzz target `ruff_parse_simple` and idempotency target `ruff_parse_idempotency` sit outside the workspace.",
+          "sources": [
+            "fuzz/Cargo.toml#L47-L69"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Fuzz package `ruff-fuzz` (separate `[workspace]`, cargo-fuzz, libfuzzer-sys) builds bins `ty_check_invalid_syntax`, `ruff_parse_simple`, `ruff_fix_validity`, `ruff_formatter_validity`, `ruff_parse_idempotency`, and `ruff_formatter_idempotency`. It depends on the linter, parser, formatter, and ty semantic crates with the semantic `testing` feature.",
+          "sources": [
+            "fuzz/Cargo.toml#L1-L69"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "AGENTS.md requires `INSTA_FORCE_PASS=1 INSTA_UPDATE=always MDTEST_UPDATE_SNAPSHOTS=1 cargo nextest run` (or `cargo test` if nextest is missing), forbids hand-editing snapshot bodies, and says file-watcher tests do not work in the sandbox. Clippy gate is `cargo clippy --workspace --all-targets --all-features -- -D warnings`.",
+          "sources": [
+            "AGENTS.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`pyproject.toml` defines a `ruff-lsp-test` dependency group (pytest, pygls 1.x, lsprotocol) separate from the Rust LSP crates, and a `ty-ecosystem` group on `ecosystem-analyzer`. Those are integration/ecosystem harnesses, not the in-crate nextest suites.",
+          "sources": [
+            "pyproject.toml#L80-L93",
+            "pyproject.toml#L151-L158"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The playground Worker (`playground/api/src/index.ts`) has no test module beside it, and `playground/package.json` scripts are `dev:wasm`, oxlint, `tsc`, and prettier rather than a behavioral test runner. WASM API tests exist as `crates/ruff_wasm/tests/api.rs` and `crates/ty_wasm/tests/api.rs`, which is a different layer.",
+          "sources": [
+            "playground/package.json#L9-L16",
+            "playground/api/src/index.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "An ignored `linter_quick_test` in `ruff_linter` is an ad-hoc debug entry point (`#[ignore]`) that runs one rule through `test_contents`. It is not part of normal CI coverage.",
+          "sources": [
+            "crates/ruff_linter/src/lib.rs#L59-L95"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "risk_map": {
+      "summary": "The repository's own threat model treats project source and config as attacker-controlled and forbids analysis from executing that code. The sharp edges that do cross a process or network boundary are ty's uv subprocess, fix/format writes, cache files, stdio LSP, and the unauthenticated playground share API. Internally, the rule table in `codes.rs`, Salsa cancellation, and the unstable linter API are the maintenance blast radii.",
+      "claims": [
+        {
+          "claim": "The CLI threat model states analysis must not execute user-supplied code; `--isolated` must ignore config files; reading files reached via imports, config extensions, or symlinks is expected; fixes, format, ignore insertion, and cache cleanup may change only the operation's selected targets; `ruff format --check` must not write source.",
+          "sources": [
+            "agents/references/cli-threat-model.md#L15-L39",
+            "agents/references/threat-models.md#L1-L13"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "ty's uv integration is off unless `TY_UV` is `1`, `true` (`UseUv::On`), or `scripts` (`UseUv::Scripts`). When on, `Uv::execute` runs the `UV` env var or `PATH`'s `uv`. Script metadata uses `workspace metadata --sync --script`, which the threat model says may install dependencies.",
+          "sources": [
+            "crates/ty_project/src/uv.rs#L33-L63",
+            "crates/ty_project/src/uv/command.rs#L43-L66",
+            "agents/references/cli-threat-model.md#L31-L34"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`--fix` and format `Write` mode replace file contents via `File::create` and a full write of the transformed source. A failed fix falls back to `lint_only` on the original. `--add-noqa` also rewrites files. These are the intentional mutation paths.",
+          "sources": [
+            "crates/ruff/src/diagnostics.rs#L228-L336",
+            "crates/ruff/src/lib.rs#L345-L351",
+            "crates/ruff/src/commands/format.rs#L48-L67"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Cache files are written outside the source tree only in the sense that `.ruff_cache` (or `cache-dir`) sits in the project and is excluded from linting by default. Persistence is atomic rename, but a mismatched package root silently clears `package.files`, and unreadable cache files are replaced with an empty cache after a warning.",
+          "sources": [
+            "crates/ruff/src/cache.rs#L100-L131",
+            "crates/ruff/src/cache.rs#L157-L194",
+            "crates/ruff_workspace/src/settings.rs#L132"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The playground share Worker stores the entire POST body in KV with a random UUID and no authentication, size check, or content-type check in `fetch`. GET returns the stored text to any caller who has the id. Production CORS is an allowlist, not an auth scheme. Dev mode sets `Access-Control-Allow-Origin: *`.",
+          "sources": [
+            "playground/api/src/index.ts#L23-L38",
+            "playground/api/src/index.ts#L57-L102"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Both language servers read editor documents over stdio and trust the client connection. Ruff publishes diagnostics from in-memory snapshots (`snapshot.query()`), so a hostile document is linted with the server's filesystem rights. ty's server additionally requires a Unicode cwd and keeps an `OsSystem` fallback for files not in the index.",
+          "sources": [
+            "crates/ruff_server/src/lib.rs#L51-L55",
+            "crates/ruff_server/src/server/api/diagnostics.rs#L8-L21",
+            "crates/ty_server/src/lib.rs#L29-L54"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Python launcher risk is local binary lookup: `find_ruff_bin` returns the first `ruff` executable on a fixed list of script directories and `__main__` `execvp`s it. A planted binary earlier in that search list would run with the user's privileges. On Windows the launcher uses `subprocess.run` and maps `KeyboardInterrupt` to exit 2.",
+          "sources": [
+            "python/ruff/_find_ruff.py#L11-L55",
+            "python/ruff/__main__.py#L9-L23"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Lint panics are isolated per file with `catch_unwind` and reported as diagnostics, but `Cache::open` and the Windows color setup still use `unwrap`/`assert` on paths that are not panic-isolated (`SystemTime::UNIX_EPOCH.elapsed().unwrap()`, `set_virtual_terminal` assert). ty's check thread uses `salsa::Cancelled::catch` and drops stale revisions.",
+          "sources": [
+            "crates/ruff/src/commands/check.rs#L193-L213",
+            "crates/ruff/src/cache.rs#L144-L152",
+            "crates/ruff/src/main.rs#L31-L33",
+            "crates/ty/src/lib.rs#L383-L412"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`codes.rs` `code_to_rule` is a single macro-expanded match from every rule code to a rule type. A new rule that is not added there is unreachable from `--select` and noqa codes. `Rule::from_code` searches `Linter::all_rules` by noqa suffix.",
+          "sources": [
+            "crates/ruff_linter/src/codes.rs#L1-L7",
+            "crates/ruff_linter/src/codes.rs#L237-L249",
+            "crates/ruff_linter/src/registry.rs#L16-L25"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "ty one-shot checks `freeze` the database and then `std::mem::forget(db)` so destructors do not run. `system_mut` documents that it cancels other handles and can deadlock if the refcount is not 1. Watch mode, fix modes, and memory reports must not freeze.",
+          "sources": [
+            "crates/ty/src/lib.rs#L187-L236",
+            "crates/ty_project/src/db.rs#L252-L260"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The linter library is explicitly unstable. WASM, the CLI, and the language server all call into `check_path` / settings types, so a signature change in `ruff_linter` fans out across `crates/ruff`, `ruff_server`, and `ruff_wasm`.",
+          "sources": [
+            "crates/ruff_linter/src/lib.rs#L1-L6",
+            "crates/ruff_wasm/src/lib.rs#L15-L16",
+            "crates/ruff/src/diagnostics.rs#L288-L301"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Docker build fetches rustup with `curl | sh` and compiles a musl binary. That is a release-supply-chain path, not a runtime path for users of the scratch image. cargo-dist comments that CI customizes cargo-dist install specifically to avoid `curl | sh` for the dist tool itself.",
+          "sources": [
+            "Dockerfile#L19-L31",
+            "dist-workspace.toml#L6-L10"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Debug Ruff builds warn when the cache is left on, because `--no-cache` is what developers expect while iterating. Shipping a debug binary to users would both warn and serve potentially stale-looking cache behavior relative to source edits.",
+          "sources": [
+            "crates/ruff/src/lib.rs#L316-L321",
+            "crates/ruff/src/commands/format.rs#L105-L113"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "extension_points": {
+      "summary": "New Ruff rules plug into a plugin module, the `Linter` enum, and the `code_to_rule` table, usually scaffolded by `scripts/add_rule.py`. New ty lints plug into `declare_lint!` plus `LintRegistryBuilder::register_lint`. User-facing commands, LSP methods, TOML options, and WASM settings are each a closed table that must be updated and then regenerated into docs and JSON schema. Checker phases and `FormatNodeRule` are the extension points inside an existing rule or syntax node.",
+      "claims": [
+        {
+          "claim": "`scripts/add_rule.py` scaffolds a rule (`--name`, `--prefix`, `--code`, `--linter`, `--category`). The implementation then lives under `crates/ruff_linter/src/rules/<plugin>/` and must be referenced from `code_to_rule` in `codes.rs`. Plugin modules are declared in `rules/mod.rs`.",
+          "sources": [
+            "scripts/add_rule.py#L27-L36",
+            "crates/ruff_linter/src/rules/mod.rs#L1-L59",
+            "crates/ruff_linter/src/codes.rs#L237-L249"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "`Linter` is a `RuleNamespace` enum. `#[derive(RuleNamespace)]` in `ruff_macros` generates the prefix and rule-iteration impls. `Rule::from_code` parses a code into that namespace and matches the noqa suffix.",
+          "sources": [
+            "crates/ruff_linter/src/registry.rs#L34-L45",
+            "crates/ruff_linter/src/registry.rs#L16-L25",
+            "crates/ruff_macros/src/lib.rs#L94-L101"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Rule structs use `#[derive(ViolationMetadata)]` (`ruff_macros::derive_violation_metadata`). `Violation` and `AlwaysFixableViolation` are the public traits re-exported from `ruff_linter`. Test-only rules are compiled in under `feature = \"test-rules\"` inside `check_path`.",
+          "sources": [
+            "crates/ruff_macros/src/lib.rs#L85-L91",
+            "crates/ruff_linter/src/lib.rs#L17-L18",
+            "crates/ruff_linter/src/linter.rs#L259-L270"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "ty lints are not in the Ruff `Rule` enum. `declare_lint!` builds a `LintMetadata` static; `register_lints` in `ty_python_semantic` calls `types::register_lints` and then registers ignore-comment lints. `LintRegistryBuilder::register_lint` panics on a duplicate name. Aliases go through `register_alias`.",
+          "sources": [
+            "crates/ty_python_semantic/src/lib.rs#L79-L97",
+            "crates/ty_python_semantic/src/lint.rs#L256-L281",
+            "crates/ty_python_semantic/src/lint.rs#L370-L398"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CLI extension is the clap `Command` enum in `crates/ruff/src/args.rs` and the match in `ruff::run`. ty's parallel table is `crates/ty/src/args.rs` `Command` and the match in `ty::run`. Hidden shell-completion variants call `clap_complete_command`.",
+          "sources": [
+            "crates/ruff/src/args.rs#L131-L186",
+            "crates/ruff/src/lib.rs#L170-L210",
+            "crates/ty/src/args.rs#L33-L60",
+            "crates/ty/src/lib.rs#L54-L63"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Ruff LSP methods are one module per request under `server/api/requests/` and one per notification under `server/api/notifications/`, re-exported from `requests.rs` and `notifications.rs`. Adding a method means a new handler type plus registration in those modules, not a dynamic plugin loader.",
+          "sources": [
+            "crates/ruff_server/src/server/api/requests.rs#L1-L24",
+            "crates/ruff_server/src/server/api/notifications.rs#L1-L23"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Configuration options use `#[derive(OptionsMetadata)]` and `CombineOptions` from `ruff_macros`. `ruff config` prints that metadata. `cargo dev generate-all` / `generate-json-schema` / `generate-options` / `generate-ty-schema` regenerate `ruff.schema.json`, `ty.schema.json`, and docs. CLI overrides arrive as `ConfigurationTransformer` implementations passed into `resolve_root_settings`.",
+          "sources": [
+            "crates/ruff_macros/src/lib.rs#L23-L48",
+            "crates/ruff_dev/src/main.rs#L45-L65",
+            "crates/ruff_workspace/src/resolver.rs#L442-L450"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Lint passes are selected by `rule.lint_source()` inside `check_path`: tokens, filesystem, logical lines, AST, imports, physical lines, and TOML. A rule that needs a new pass has to extend that match of sources, not only the rule body. AST work enters through `check_ast`.",
+          "sources": [
+            "crates/ruff_linter/src/linter.rs#L154-L256",
+            "crates/ruff_linter/src/checkers/mod.rs#L1-L7"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Formatter node coverage is the `FormatNodeRule<N>` trait (`fmt` handles comments and source-map positions; `fmt_fields` is implemented per node). `format_module_ast` is the stable entry for callers that already have a `Parsed<Mod>`.",
+          "sources": [
+            "crates/ruff_python_formatter/src/lib.rs#L52-L96",
+            "crates/ruff_python_formatter/src/lib.rs#L148-L155"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "WASM settings are whatever `Options` / `Configuration::from_options` accepts. `Workspace::new` is the JS constructor; `defaultSettings` re-serializes defaults including `DEFAULT_SELECTORS`. There is no runtime plugin registry in the WASM crate.",
+          "sources": [
+            "crates/ruff_wasm/src/lib.rs#L268-L318"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "File discovery can be customized per invocation by implementing `ConfigurationTransformer` and passing it to `project_files_in_path` / `resolve_scoped_settings`. The CLI's `ConfigArguments` is that transformer for `--config` key/value overrides and `--isolated`.",
+          "sources": [
+            "crates/ruff_workspace/src/resolver.rs#L477-L507",
+            "crates/ruff/src/args.rs#L38-L71"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_handoff": {
+      "summary": "Read the CLI dispatch and the crate you are changing before editing; Ruff and ty share a parser but not a rule registry. Semantic changes need a focused test, snapshot updates via the environment variables rather than hand edits, and `cargo dev generate-all` when options, rules, or CLI help change. ty code must keep `db` in the Salsa parameter position and must not touch another file's AST from an untracked query. Do not drop Python repros inside this checkout, and do not expect file-watcher tests to pass in a sandbox.",
+      "claims": [
+        {
+          "claim": "Start with `AGENTS.md` (test commands, mdtest style, Salsa rules, `db` parameter order, prek) and `crates/ruff/src/lib.rs` plus `args.rs` for Ruff CLI work, or `crates/ty/src/lib.rs` for ty CLI work. Rule work starts at `codes.rs` `code_to_rule` and the plugin module; ty lint work starts at `declare_lint!` and `register_lints`.",
+          "sources": [
+            "AGENTS.md",
+            "crates/ruff/src/lib.rs#L128-L211",
+            "crates/ty/src/lib.rs#L45-L77",
+            "crates/ty_python_semantic/src/lib.rs#L89-L97"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Safe Ruff lint edit: add or change a rule under `crates/ruff_linter/src/rules/<plugin>/`, register it in `code_to_rule`, add a fixture and insta snapshot, and leave unrelated plugins alone. The public `ruff_linter` API is documented as unstable, so do not churn signatures to make a single rule compile.",
+          "sources": [
+            "crates/ruff_linter/src/lib.rs#L1-L6",
+            "crates/ruff_linter/src/codes.rs#L237-L249",
+            "scripts/add_rule.py#L27-L36"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Tests to run for a linter change: `cargo nextest run -p ruff_linter` (or the narrower test binary) with `INSTA_FORCE_PASS=1 INSTA_UPDATE=always MDTEST_UPDATE_SNAPSHOTS=1`, then review snapshot diffs. For ty semantic changes, run `cargo nextest run -p ty_python_semantic --test mdtest`. Full CI uses `cargo insta test --all-features --unreferenced reject --test-runner nextest`.",
+          "sources": [
+            "AGENTS.md",
+            ".github/workflows/ci.yaml#L414-L417",
+            "crates/ty_python_semantic/tests/mdtest.rs#L14-L22"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Never edit `.snap` files or inline snapshot bodies by hand. After option, CLI, rule, or environment-variable definition changes, run `cargo dev generate-all` so `ruff.schema.json`, `ty.schema.json`, and generated docs stay aligned. Finish with `uv run --only-dev --locked prek run --files <each changed path>`.",
+          "sources": [
+            "AGENTS.md",
+            "crates/ruff_dev/src/main.rs#L45-L65"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "ty parameter convention: `db` is the first argument of free functions and comes immediately after `self` on methods. Methods that read `.node()` should be `#[salsa::tracked]`. `check_file_impl` is already a tracked query; do not call raw AST helpers from module A while checking module B.",
+          "sources": [
+            "AGENTS.md",
+            "crates/ty_project/src/lib.rs#L959-L975",
+            "crates/ty_python_semantic/src/lib.rs#L168-L172"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Ad-hoc Python repros must be created outside the checkout. The root `pyproject.toml` sets `requires-python = \">=3.7\"` and `tool.ruff.target-version = \"py38\"`, so ty discovered from this tree infers an old Python version. ty preview for 3.15 is still warned unless preview is enabled.",
+          "sources": [
+            "pyproject.toml#L11-L12",
+            "pyproject.toml#L160-L161",
+            "AGENTS.md",
+            "crates/ruff_linter/src/linter.rs#L458-L464"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Do not use `panic!`, `unreachable!`, `unwrap`, or `expect` for conditions the type system can encode. Existing exceptions include the Windows VT assert in `main` and cache timestamp truncation; do not add more. Lint-path failures should become diagnostics the way `catch_unwind` already does.",
+          "sources": [
+            "AGENTS.md",
+            "crates/ruff/src/main.rs#L31-L33",
+            "crates/ruff/src/commands/check.rs#L193-L213"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "ty PR titles should start with `[ty]`. LSP-only changes use the `server` label when you can set labels. Avoid competing with an open PR; `CONTRIBUTING.md` is the duplicate-work check.",
+          "sources": [
+            "AGENTS.md",
+            "CONTRIBUTING.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "File-watcher tests do not work in the sandbox. Ruff watch mode is `recommended_watcher` in `ruff::check`; ty watch mode is `watch::directory_watcher` plus `ProjectWatcher`. Skip those locally unless the change is specifically about watching.",
+          "sources": [
+            "AGENTS.md",
+            "crates/ruff/src/lib.rs#L380-L389",
+            "crates/ty/src/lib.rs#L328-L336"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Cache keys include the crate version string, so behavior changes that should invalidate user caches need a version bump or an explicit settings-key change. Do not hand-delete logic that compares `package.package_root` or the atomic rename; both exist because of real corruption bugs.",
+          "sources": [
+            "crates/ruff/src/cache.rs#L94-L131",
+            "crates/ruff/src/cache.rs#L164-L166"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Formatter and parser changes have their own fixture trees and fuzz targets (`ruff_formatter_idempotency`, `ruff_parse_idempotency`). A parser change that still snap-passes can fail idempotency fuzz; run the crate tests, not only a single rule snapshot.",
+          "sources": [
+            "fuzz/Cargo.toml#L60-L69",
+            "crates/ruff_python_parser/src/lib.rs#L281-L290",
+            "crates/ruff_python_formatter/src/lib.rs#L136-L145"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Security-sensitive edits (subprocess, LSP trust, playground KV, cache paths, fix application) should be checked against `agents/references/cli-threat-model.md`, `language-server-threat-model.md`, `playground-threat-model.md`, or `repository-threat-model.md` as appropriate. uv must stay default-off.",
+          "sources": [
+            "agents/references/threat-models.md#L1-L13",
+            "agents/references/cli-threat-model.md#L23-L34",
+            "crates/ty_project/src/uv.rs#L33-L36"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_prompt": "You are working in the Astral Ruff monorepo (version 0.16.8). It ships two Rust programs: Ruff, a Python linter and formatter, and ty, a Python type checker. They share the hand-written parser (`ruff_python_parser::parse` / `Parser::new`), the AST crate `ruff_python_ast`, diagnostics in `ruff_db`, and workspace crates. The PyPI package is not the implementation. `pyproject.toml` uses maturin with `bindings = \"bin\"` and `manifest-path = \"crates/ruff/Cargo.toml\"`. `python/ruff/__main__.py` finds a native `ruff` binary via `find_ruff_bin` and `execvp`s it (Windows uses `subprocess.run`). Do not implement lint behavior in `python/`.\n\nRuff's process entry is `crates/ruff/src/main.rs`. It expands `@file` arguments, parses clap `Args`, and calls `ruff::run` in `crates/ruff/src/lib.rs`. Subcommands in `crates/ruff/src/args.rs` are `check`, `format`, `server`, `rule`, `config`, `linter`, `clean`, `analyze graph`, `version`, and hidden shell completion. Exit codes are 0 success, 1 diagnostics, 2 hard failure. `ruff check` resolves config, walks files with `ruff_workspace::resolver::project_files_in_path` (ignore crate, hierarchical pyproject/ruff.toml), and lints in parallel from `commands/check.rs`. Per file, `diagnostics::lint_path` consults `.ruff_cache` (rkyv, path `cache_dir/VERSION/<settings key>`, atomic rename in `Cache::persist`) then `ruff_linter::linter::lint_only` or `lint_fix`. `lint_only` parses, builds a locator, stylist, and indexer, extracts noqa directives and suppressions, and calls `check_path`, which runs token, filesystem, logical-line, AST (`checkers::ast::check_ast`), import, and physical-line passes. Fixes are not written unless `--fix` or `--fix-only`; `--diff` prints a diff; unsafe fixes need `--unsafe-fixes`. `--add-noqa` and `--add-ignore` rewrite files and reject newlines. `ruff format` defaults to writing files (`FormatMode::Write`); `--check` and `--diff` do not. Formatting is `format_module_source` then `format_module_ast`. `ruff server` calls `ruff_server::run` on stdio (at most 4 worker threads) with handlers for diagnostics, format, range format, hover, code actions, and notebooks.\n\nty's entry is `crates/ty/src/main.rs` calling `ty::run`. Subcommands are `check`, `server`, `version`, `explain rule`, and shell completion. `ty check` builds `ProjectMetadata` (config file or `discover_with_uv`), then a Salsa `ProjectDatabase`. `UseUv` defaults to Off. `TY_UV=1` or `true` enables workspace discovery and script environments; `TY_UV=scripts` enables only scripts. A single PEP 723 script forces script mode. The executable is the `UV` env var or `which uv`. `Uv::execute` runs `uv workspace metadata`, and script targets pass `--sync`, which may install dependencies. The main loop Rayon-spawns `ProjectDatabase::check_with_reporter` -> `Project::check` -> tracked `check_file_impl` -> `ty_python_semantic::check_file` (I/O, parse, `check_types`). `--fix` applies only `Applicability::Safe` via `fix_all_diagnostics`. `--add-ignore` uses `suppress_all_diagnostics`. One-shot checks may freeze the database and then `mem::forget` it. Extra exit codes are 101 internal and 130 interrupted. `TY_MEMORY_REPORT` prints a Salsa dump. `ty server` is `ty_server::run_server`.\n\nRuff rules live under `crates/ruff_linter/src/rules/<plugin>`, are listed on the `Linter` enum (`registry.rs`), and are wired in the `#[ruff_macros::map_codes]` function `code_to_rule` in `codes.rs`. Scaffold with `scripts/add_rule.py`. The `ruff_linter` public API is documented as completely unstable. ty lints are separate: `declare_lint!` creates `LintMetadata`, and `register_lints` must call `registry.register_lint`. Duplicate names panic. After option, CLI, rule, or env-var changes, run `cargo dev generate-all` so schemas and docs stay in sync.\n\nTests: nextest plus insta. Do not hand-edit snapshots. Regenerate with `INSTA_FORCE_PASS=1 INSTA_UPDATE=always MDTEST_UPDATE_SNAPSHOTS=1`. ty behavior tests are Markdown under `crates/ty_python_semantic/resources/mdtest`, run with `cargo nextest run -p ty_python_semantic --test mdtest`. CI's linux job runs `cargo insta test --all-features --unreferenced reject --test-runner nextest` and also dogfoods `ty check` on `scripts/*.py`. Clippy is `cargo clippy --workspace --all-targets --all-features -- -D warnings`. End edits with `uv run --only-dev --locked prek run --files <changed paths>`. File-watcher tests do not work in a sandbox. Put temporary Python repros outside the checkout: root `requires-python` is `>=3.7`, and ty will infer 3.7 if it discovers this `pyproject.toml`.\n\nFor ty, `db` is the first parameter of free functions and comes right after `self` on methods. Prefer `#[salsa::tracked]` over reading another module's AST via `.node()`. Avoid new `unwrap`, `expect`, and `panic`. ty PR titles start with `[ty]`. Security invariants: analysis must not execute user Python; `--isolated` ignores config files; fixes and format may change only selected targets; uv stays off unless `TY_UV` is set. The playground share Worker (`playground/api/src/index.ts`) is an unauthenticated KV put of the POST body. Treat that, LSP stdio, cache writes, and the uv subprocess as trust boundaries, and read `agents/references/threat-models.md` before changing them."
+  },
+  "analysis": {
+    "agent": "grok",
+    "model": "cli:grok",
+    "runtime_ms": 434039,
+    "cost_usd": null,
+    "collected_at": "2026-09-22T11:46:40.479Z"
   }
 }

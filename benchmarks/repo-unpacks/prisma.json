@@ -31714,5 +31714,815 @@
         ]
       }
     ]
+  },
+  "report": {
+    "overview": "Prisma 8 (root package @internal/monorepo at 8.0.0-rc.11) is a contract-first TypeScript data layer for application developers and coding agents. A schema is emitted as contract.json plus contract.d.ts; queries are a composable DSL compiled at runtime, not a generated client of findMany methods. The same contract gates migrations (control plane) and execution (runtime plane). Postgres and MongoDB are first-class targets, SQLite is a proof of concept, and dialect behavior is added as extension packs rather than branches in the core.",
+    "system_map": {
+      "summary": "The repo is a pnpm/Turbo workspace that requires Node >=24. Framework code lives under packages/1-framework, SQL and Mongo families under packages/2-*, concrete adapters under packages/3-targets and packages/3-mongo-target, and user-facing facades under packages/3-extensions with publishable shells in packages/9-public/@prisma. architecture.config.json assigns every glob a domain, layer, and plane; dependency-cruiser enforces those edges. The in-repo prisma binary is a stand-in that mounts the ORM command family; the published host is the separate prisma-cli repo. Local Postgres is docker-compose on port 5433; CI and npm publish run from GitHub Actions.",
+      "claims": [
+        {
+          "claim": "The workspace root is the private package @internal/monorepo version 8.0.0-rc.11, with packageManager pnpm@10.27.0 and engines.node >=24. pnpm build delegates to turbo run build; pnpm test:all chains test:packages, test:examples, test:integration, and test:e2e.",
+          "sources": [
+            "package.json#L1-L20",
+            "package.json#L101-L103"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "pnpm-workspace.yaml includes packages/**, examples/*, apps/*, and test/**, excludes **/dist-*, and pins a catalog (typescript 5.9.3, vitest 5.0.0-rc.2, arktype ^2.2.2, pg 8.22.0, vite 8.1.4). minimumReleaseAge is 1440 minutes, with explicit exclusions for @prisma/dev and prisma@7.10.0; trustPolicy is no-downgrade.",
+          "sources": [
+            "pnpm-workspace.yaml#L1-L15",
+            "pnpm-workspace.yaml#L17-L48"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "architecture.config.json maps globs to domain, layer, and plane. Framework-components splits shared, migration (src/control, exports/control.ts, exports/emission.ts), and runtime (src/execution, exports/runtime.ts). pnpm lint:deps runs dependency-cruiser plus lint-framework-target-imports, lint-app-space-id, and lint-single-import-root.",
+          "sources": [
+            "architecture.config.json#L1-L86",
+            "package.json#L34",
+            "docs/onboarding/Repo-Map-and-Layering.md#L5-L23"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Cross-plane rule: migration must not import runtime; runtime may import migration only for artifacts; shared may be imported from either plane. Overlapping globs resolve most-specific-wins so src/core/migrations/** is migration even when src/core/** is shared.",
+          "sources": [
+            "docs/onboarding/Repo-Map-and-Layering.md#L5-L23",
+            "ARCHITECTURE.md#L176-L179"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Documented domains are Framework (packages/framework in the overview; on disk packages/1-framework), SQL family, Targets, and Extensions. Named internal packages include @internal/contract, @internal/emitter, @internal/cli, @internal/sql-runtime, @internal/adapter-postgres, @internal/driver-postgres, and @internal/postgres.",
+          "sources": [
+            "ARCHITECTURE.md#L39-L113"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Two planes share contract.json: the control plane authors, plans, and applies contract changes; the execution plane compiles DSL/ORM/raw/TypedSQL plans. Both check storageHash and profileHash against a database marker and an append-only ledger.",
+          "sources": [
+            "docs/Architecture Overview.md#L16-L60",
+            "docs/Architecture Overview.md#L123-L167"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The in-repo binary is @internal/cli's bin prisma -> ./dist/bin.mjs. bin.ts calls runOrmCli(process) and then unrefs stdin so the lsp stdio session cannot keep the process alive after settlement.",
+          "sources": [
+            "packages/1-framework/3-tooling/cli/package.json#L8-L10",
+            "packages/1-framework/3-tooling/cli/src/bin.ts#L1-L11",
+            "packages/1-framework/3-tooling/cli/src/orm/cli.ts#L223-L229"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "createOrmCli mounts ormCommandFamily under the binary name prisma. The file comment states this bin is a stand-in for the unified CLI whose real host lives in the prisma-cli repo and consumes ormCommandFamily. runtimeFromProcess sets managementApi.baseUrl to https://api.prisma.io and loadConfig to loadOrmConfig.",
+          "sources": [
+            "packages/1-framework/3-tooling/cli/src/orm/cli.ts#L36-L54",
+            "packages/1-framework/3-tooling/cli/src/orm/cli.ts#L126-L134",
+            "packages/1-framework/3-tooling/cli/src/orm/cli.ts#L197-L204"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The user-facing Postgres install is @prisma/orm-postgres, described as the one package a Postgres application installs. It depends on @prisma/orm-family-sql, @prisma/orm-framework, @prisma/orm-target-postgres, @prisma/orm-toolchain, and pg, and re-exports adapter, builder, contract, control, and driver subpaths. @prisma/orm-toolchain packages the CLI family, emitter, config loader, language server, telemetry, and Vite plugin.",
+          "sources": [
+            "packages/9-public/@prisma/orm-postgres/package.json#L2-L79",
+            "packages/9-public/@prisma/orm-toolchain/package.json#L2-L6"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Turbo build depends on ^build and emits dist/**. typecheck depends on both ^build and build so packages that import their own published subpaths (for example @internal/extension-pgvector/pack) do not typecheck against a missing or stale dist.",
+          "sources": [
+            "turbo.json#L4-L15",
+            "turbo.json#L35-L43"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "docker-compose.yaml runs postgres:15-alpine, publishes host port 5433 to container 5432, sets POSTGRES_PASSWORD=postgres, and stores data on tmpfs. CI service containers separately use postgres:15 on port 5432 with user/password/db postgres.",
+          "sources": [
+            "docker-compose.yaml#L1-L9",
+            ".github/workflows/ci.yml#L178-L191"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Publish-to-npm triggers on push to main (tags excluded) and workflow_dispatch. An unchanged root version publishes a <base>-dev.N under the dev dist-tag; a version bump publishes latest and a GitHub Release (pre-release for 8.0.0-rc.N). docs/oss/versioning.md says publishing uses npm OIDC trusted publishing and that no long-lived NPM_TOKEN is stored.",
+          "sources": [
+            ".github/workflows/publish.yml#L1-L33",
+            "docs/oss/versioning.md#L30-L56"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "feature_catalog": {
+      "summary": "User-facing surface is the prisma CLI command family plus three database facades (postgres, mongo, sqlite) and extension packs. Contract commands are offline; db commands need a live connection; migration commands manage on-disk contract-to-contract edges and named refs. The language server speaks LSP over stdio. A Vite plugin re-emits the contract during dev. The Postgres client exposes sql, orm, raw, enums, transactions, and prepared statements, with a separate serverless entry that returns a connectable runtime.",
+      "claims": [
+        {
+          "claim": "ormCommandFamily registers these command keys: contract emit, contract format, contract infer, db init, db migrate, db schema, db sign, db update, db verify, lsp, migration check, migration graph, migration list, migration log, migration new, migration plan, migration ref delete, migration ref list, migration ref set, migration show, migration status, and orm init.",
+          "sources": [
+            "packages/1-framework/3-tooling/cli/src/orm/family.ts#L34-L57"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Retired invocations redirect rather than fuzzy-match: migration apply becomes {bin} db migrate --to <contract>; migration status --graph becomes migration graph; migration status --all and --limit become migration log --db <url>; migration status --ref becomes migration status --to <contract>.",
+          "sources": [
+            "packages/1-framework/3-tooling/cli/src/orm/family.ts#L67-L96"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "BIN_GROUPS documents four user groups: orm (only init), contract (offline emit/sign/verify artifacts), db (live database; every command needs a connection), and migration plus migration ref (on-disk packages and named pointers such as staging/production under migrations/app/refs/). The telemetry group from @prisma/cli-engine is spread in beside them.",
+          "sources": [
+            "packages/1-framework/3-tooling/cli/src/orm/cli.ts#L56-L90"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "contract emit reads TypeScript or Prisma schema via the config source provider and writes contract.json and contract.d.ts. It is documented as offline (no database). Flags include --output-path. The human presentation prints storageHash, optional executionHash, and profileHash.",
+          "sources": [
+            "packages/1-framework/3-tooling/cli/src/orm/contract/emit.ts#L67-L129"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "db update compares the live database to the emitted contract and applies additive, widening, and destructive operations. Destructive work requires typing the database name, or --no-interactive --confirm <database> when there is no TTY. --dry-run previews; --to accepts a hash, prefix, ref, migration directory, or path; --advance-ref moves a named ref.",
+          "sources": [
+            "packages/1-framework/3-tooling/cli/src/orm/db/update.ts#L119-L150",
+            "packages/1-framework/3-tooling/cli/src/control-api/operations/db-update.ts#L17-L19"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "lsp is a server command. It lazy-imports startServer from @internal/language-server, speaks stdio, accepts --clientProcessId from vscode-languageclient, and maps SIGTERM to exit 143 and other aborts to 130. The server publishes PSL diagnostics and whole-document formatting for contract.source.inputs.",
+          "sources": [
+            "packages/1-framework/3-tooling/cli/src/orm/lsp.ts#L17-L58",
+            "packages/1-framework/3-tooling/language-server/src/server.ts#L54-L75"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "README documents the product entrypoints npm create prisma (scaffolds Next.js, Hono, Nuxt, Astro, NestJS, SvelteKit, TanStack Start, or Elysia against PostgreSQL or MongoDB) and npx prisma orm init, which writes prisma.config.ts, a starter contract, and db.ts under src/prisma/. npx prisma skills sync installs per-workflow SKILL.md files.",
+          "sources": [
+            "README.md#L32-L74"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Shipped extensions named in the README are @prisma/orm-extension-pgvector, @prisma/orm-extension-postgis, @prisma/orm-extension-paradedb (experimental BM25), @prisma/orm-extension-supabase (experimental), and @prisma/orm-extension-arktype-json. Postgres is the primary target, MongoDB is first-class, SQLite is a proof of concept, and MySQL is explicitly later.",
+          "sources": [
+            "README.md#L86-L102"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The default postgres() factory returns a PostgresClient with sql, orm, enums, nativeEnums, raw, context, contract, stack, connect, runtime, transaction, prepare, close, and Symbol.asyncDispose. Passing contract keeps a no-emit TypeScript authoring path; passing contractJson requires an explicit Contract type parameter.",
+          "sources": [
+            "packages/3-extensions/postgres/src/runtime/postgres.ts#L56-L78",
+            "packages/3-extensions/postgres/src/runtime/postgres.ts#L155-L170"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "postgres/serverless exports a PostgresServerlessClient whose connect({ url }) returns a Runtime that is also AsyncDisposable. It still takes extensions, middleware, verifyMarker, and cursor options, and builds the same postgres target, adapter, and driver stack.",
+          "sources": [
+            "packages/3-extensions/postgres/src/exports/serverless.ts#L1-L9",
+            "packages/3-extensions/postgres/src/runtime/postgres-serverless.ts#L31-L44"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Mongo and SQLite each expose defineConfig that returns PrismaNextConfig<'mongo','mongo'> or PrismaNextConfig<'sql','sqlite'> and threads an extensions array into the core config. Mongo defineConfig accepts a .ts contract path or a PSL path with enum inference codecs.",
+          "sources": [
+            "packages/3-extensions/mongo/src/config/define-config.ts#L34-L48",
+            "packages/3-extensions/sqlite/src/config/define-config.ts#L35",
+            "packages/3-extensions/postgres/src/config/define-config.ts#L65-L78"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "prismaVitePlugin (default config prisma.config.ts, debounce 150ms) watches the contract source and calls the same executeContractEmit path as the CLI, serializing overlapping emits and ignoring writes to the emitted artifacts themselves.",
+          "sources": [
+            "packages/1-framework/3-tooling/vite-plugin-contract-emit/src/plugin.ts#L9-L70",
+            "packages/1-framework/3-tooling/cli/src/control-api/operations/contract-emit.ts#L221-L227"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "data_flow": {
+      "summary": "Authoring starts in prisma.config.ts, where defineConfig binds a family, target, adapter, driver, and extensions to a contract source. Emit loads that source, enriches it with component descriptors, round-trips it through the target serializer, and writes a canonical JSON document plus a generated contract.d.ts. At runtime the Postgres client revalidates that JSON into a typed contract, and the SQL runtime lowers a query plan to SQL, encodes parameters, checks the marker, and decodes rows. Schema changes are a separate pipeline: introspect the database, plan a contract-space aggregate, and apply operations under a class policy. CLI telemetry is a side channel that forks a sender after the command settles.",
+      "claims": [
+        {
+          "claim": "Postgres defineConfig calls core defineConfig with family sql, target postgres, adapter postgresAdapter, driver postgresDriver, the caller extensions array, and a normalized contract config. Output defaults beside the first contract input when the caller omits it.",
+          "sources": [
+            "packages/3-extensions/postgres/src/config/define-config.ts#L65-L78",
+            "packages/1-framework/1-core/config/src/config-types.ts#L116-L140"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "executeContractEmit is the single publication path for the CLI and the Vite plugin. It requires config.contract, a source.load function, and an output path; builds a control stack; calls source.load with composed extension ids, authoring contributions, codec lookup, and capabilities; then enrichContract, target serializeContract, and family deserializeContract before emit.",
+          "sources": [
+            "packages/1-framework/3-tooling/cli/src/control-api/operations/contract-emit.ts#L221-L376"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "@internal/emitter emit rejects the call unless to-one relations declare nullability, canonicalizes with schemaVersion \"1\" via the target serializeContract hook, stamps a _generated warning, and returns contractJson, prettier-formatted contract.d.ts, storageHash, optional executionHash, and profileHash.",
+          "sources": [
+            "packages/1-framework/3-tooling/emitter/src/emit.ts#L11-L85"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The emit JSDoc says publication is serialized per output JSON path by queueEmitByOutput (last submission wins) and that publishContractArtifactPair stages temp files, renames contract.d.ts before contract.json, and tries to restore the previous pair if a rename fails.",
+          "sources": [
+            "packages/1-framework/3-tooling/cli/src/control-api/operations/contract-emit.ts#L221-L240"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "postgres() either serializes an in-memory contract or accepts contractJson, then always deserializes through PostgresContractSerializer so the runtime object is the validated form. A url binding becomes a pg Pool (connectionTimeoutMillis default 20000, idleTimeoutMillis default 30000) wrapped in suppressIdleConnectionErrors.",
+          "sources": [
+            "packages/3-extensions/postgres/src/runtime/postgres.ts#L121-L153",
+            "packages/3-extensions/postgres/src/runtime/postgres.ts#L162-L186"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "sql() builds a BuilderContext from contract capabilities, query operation types, target, storageHash, and mutation defaults, then returns a Proxy: the first key is a storage namespace id, the second is a table resolved by resolveTableInNamespace and wrapped in TableProxyImpl.",
+          "sources": [
+            "packages/2-sql/4-lanes/sql-builder/src/runtime/sql.ts#L16-L64"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "queryAgainstQueryable validates the codec registry once, calls prepareQueryExecution, buildDecodeContext, and streamRows. prepareOperation, for a not-yet-lowered plan, runs compilePlan, lowerToDraft, a SqlParamRefMutator before-hook, and encodeParams. streamRows then setupDriverExecution, runQueryWithMiddleware, and decodeRow.",
+          "sources": [
+            "packages/2-sql/5-runtime/src/sql-runtime.ts#L475-L509",
+            "packages/2-sql/5-runtime/src/sql-runtime.ts#L513-L534",
+            "packages/2-sql/5-runtime/src/sql-runtime.ts#L384-L429"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "verifyMarker reads the family marker. If the marker is absent it logs CONTRACT.MARKER_MISSING and returns. If storageHash or profileHash differs it logs CONTRACT.MARKER_MISMATCH and returns. It does not throw, so execution continues. The first call is single-flighted on verifyMarkerPromise unless verifyMarker was set to false.",
+          "sources": [
+            "packages/2-sql/5-runtime/src/sql-runtime.ts#L371-L377",
+            "packages/2-sql/5-runtime/src/sql-runtime.ts#L913-L944"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "executeDbUpdate uses policy classes additive, widening, and destructive and delegates to executeRun. db-run.ts documents the strategy as introspect then planMigration, and imports buildContractSpaceAggregate, planMigration, and runMigration. In apply mode without acceptDataLoss or consent, guardDestructiveChanges pre-plans and returns DESTRUCTIVE_CHANGES with databaseName and planHash.",
+          "sources": [
+            "packages/1-framework/3-tooling/cli/src/control-api/operations/db-update.ts#L17-L92",
+            "packages/1-framework/3-tooling/cli/src/control-api/operations/db-update.ts#L102-L130",
+            "packages/1-framework/3-tooling/cli/src/control-api/operations/db-run.ts#L1-L52"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "createControlClient builds a ControlStack from family, target, adapter, driver, and extensions, creates the family instance, and asserts framework-component compatibility before any connect. connect refuses a second connection until close and errors with CONFIG.DB_CONNECTION_REQUIRED when no connection was supplied.",
+          "sources": [
+            "packages/1-framework/3-tooling/cli/src/control-api/client.ts#L76-L150"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "On non-CI processes with telemetry enabled, resolveTelemetryHooks prints a first-run notice, then onSettled fires runTelemetry with the command path, CLI version, exit code, and cwd. The sender forks detached. The POST URL is TELEMETRY_ENDPOINT_PATH /events on https://cmpbfbsdp09hr3jf7pojjs5qs.ewr.prisma.build, overridable only by PRISMA_TELEMETRY_ENDPOINT.",
+          "sources": [
+            "packages/1-framework/3-tooling/cli/src/orm/telemetry/reporting.ts#L71-L114",
+            "packages/1-framework/3-tooling/cli-telemetry/src/endpoint.ts#L1-L31",
+            "packages/1-framework/3-tooling/cli-telemetry/src/spawn.ts#L64-L78"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "loadContractFromTs bundles a user TypeScript contract with esbuild (platform node, target es2022) into a file under os.tmpdir named prisma-8-contract-*.mjs. The default import allowlist is @internal/*, @prisma/orm-*, and node:crypto. Imports from the entry that fail the allowlist become CONTRACT.SOURCE_IMPORT_DISALLOWED. Relative and absolute imports are not filtered.",
+          "sources": [
+            "packages/1-framework/3-tooling/cli/src/load-ts-contract.ts#L39-L60",
+            "packages/1-framework/3-tooling/cli/src/load-ts-contract.ts#L130-L166",
+            "packages/1-framework/3-tooling/cli/src/load-ts-contract.ts#L184-L247"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "behavior_traces": {
+      "summary": "Three flows dominate. Process startup wires telemetry, a CLI engine, and a host runtime, then dispatches one mounted command. Contract emit is offline: config, source provider, enrichment, canonical JSON, and a dts pair. A Postgres query stays lazy until first use, then compiles middleware, lowers SQL, encodes codecs, checks the marker, and streams decoded rows. db update is the persistence path: prepare a control client, pre-plan destructive work, and only then introspect, plan, and apply.",
+      "claims": [
+        {
+          "claim": "Startup order is bin.ts calling runOrmCli(process); runOrmCli calling resolveTelemetryHooks then createOrmCli().run(argv.slice(2), runtimeFromProcess(proc), hooks). A throw before a command exists is caught by reportStartupFailure, which writes a single stderr line and returns exit code 1.",
+          "sources": [
+            "packages/1-framework/3-tooling/cli/src/bin.ts#L1-L5",
+            "packages/1-framework/3-tooling/cli/src/orm/cli.ts#L207-L229"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "createOrmCli builds the engine with name prisma, version from the CLI package.json, commandFamilies [ormCommandFamily], groups BIN_GROUPS, and commands BIN_COMMANDS. BIN_COMMANDS is createBinCommands(createControlClient), so db and migration commands close over the real control client while tests can inject a double.",
+          "sources": [
+            "packages/1-framework/3-tooling/cli/src/orm/cli.ts#L96-L134"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "runtimeFromProcess copies stdout, stderr, stdin, cwd, env, TTY flags, Node version, platform, and arch; registers SIGINT and SIGTERM; sets loadConfig to loadOrmConfig; sets managementApi.baseUrl to https://api.prisma.io; and installs runPackageManager as the package-manager capability. The engine, not the bin, owns signal policy.",
+          "sources": [
+            "packages/1-framework/3-tooling/cli/src/orm/cli.ts#L154-L204"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "contract emit handler order: resolve optional --output-path against ctx.cwd; call executeContractEmit with config, cwd, controlProgressReporter, and AbortSignal; surface validationWarning; build an EmitDocument with hashes and files; return ok(ctx.present(...)). The command factory injects executeContractEmitOperation as the dependency.",
+          "sources": [
+            "packages/1-framework/3-tooling/cli/src/orm/contract/emit.ts#L63-L130"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Inside executeContractEmit the ordered steps are: require config.contract and source.load; getEmittedArtifactPaths; queueEmitByOutput; createControlStack(config); source.load(sourceContext); validateProviderResult; family.create plus assertFrameworkComponentsCompatible; enrichContract; serializeContract; deserializeContract; emitter emit with the project import-specifier resolver.",
+          "sources": [
+            "packages/1-framework/3-tooling/cli/src/control-api/operations/contract-emit.ts#L241-L376"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Emitter emit order is requireToOneRelationNullability, canonicalizeContractToObject (schemaVersion 1 plus the target serializer), JSON.stringify of the canonical object with a _generated banner, generateContractDts, and prettier format (typescript parser, singleQuote, semi, printWidth 100).",
+          "sources": [
+            "packages/1-framework/3-tooling/emitter/src/emit.ts#L13-L75"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "postgres() query startup order: resolveContract; resolveOptionalPostgresBinding; createSqlExecutionStack({ target: postgresTarget, adapter: postgresAdapter, driver: postgresDriver, extensions }); createExecutionContext; buildPostgresStaticContext for the sql Proxy, raw tag, enums, and native enums. ormBuilder delegates query, execute, and connection to getRuntime().",
+          "sources": [
+            "packages/3-extensions/postgres/src/runtime/postgres.ts#L162-L284"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "getRuntime order on first use: instantiateExecutionStack; driverDescriptor.create({ cursor: { disabled: true } }); if a binding exists, connectDriver in the background; construct PostgresRuntimeImpl with context, adapter, driver, verifyMarker, and middleware. A later call after close() throws DRIVER.NOT_CONNECTED. connectDriver turns a url into a Pool and connects the driver once.",
+          "sources": [
+            "packages/3-extensions/postgres/src/runtime/postgres.ts#L201-L269"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Row execution order on SqlRuntimeBase: query calls queryAgainstQueryable; that calls ensureCodecRegistryValidated, prepareQueryExecution, buildDecodeContext, and streamRows. prepareQueryExecution ends in prepareOperation. For a query plan, prepareOperation calls compilePlan (runBeforeCompileChain), lowerToDraft (lowerSqlPlan), the before-hook mutator, and encodeDraftParams. streamRows calls setupDriverExecution (verifyMarker), runQueryWithMiddleware, queryable.query({ sql, params }), and decodeRow, checking the abort signal between rows.",
+          "sources": [
+            "packages/2-sql/5-runtime/src/sql-runtime.ts#L260-L327",
+            "packages/2-sql/5-runtime/src/sql-runtime.ts#L384-L429",
+            "packages/2-sql/5-runtime/src/sql-runtime.ts#L459-L534"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "withTransaction order: runtime.connection(), connection.transaction(), invoke the callback with a guarded query/execute surface, set invalidated in a finally, then transaction.commit(). A callback throw triggers rollback; if rollback throws, the connection is destroy()ed and the error is RUNTIME.TRANSACTION_ROLLBACK_FAILED with the original as cause. A failed commit attempts rollback and destroys the connection if that also fails. The connection is release()d when it was not destroyed.",
+          "sources": [
+            "packages/2-sql/5-runtime/src/sql-runtime.ts#L976-L1101"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "db update handler starts with prepareMigrationRun({ config, cwd, db, commandName: 'db update', createClient }). The operation layer then either returns the destructive-change refusal from a plan-mode executeRun or calls executeRun in the requested mode with the consented plan hash.",
+          "sources": [
+            "packages/1-framework/3-tooling/cli/src/orm/db/update.ts#L152-L160",
+            "packages/1-framework/3-tooling/cli/src/control-api/operations/db-update.ts#L66-L92"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Non-CI telemetry order: resolveGating against env and the user config file; if no installationId, write the first-run notice that names DO_NOT_TRACK, PRISMA_DISABLE_TELEMETRY, and enableTelemetry; return an onSettled hook. The hook calls ensureInstallationId if needed and runTelemetry, which returns immediately with spawned true, gated-off, ci, or fork-failed. Failures are swallowed.",
+          "sources": [
+            "packages/1-framework/3-tooling/cli/src/orm/telemetry/reporting.ts#L22-L114",
+            "packages/1-framework/3-tooling/cli-telemetry/src/spawn.ts#L64-L78"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "testing_signals": {
+      "summary": "Vitest is the package, integration, and e2e runner. The root config discovers every package vitest.config.ts, forces telemetry off, and on CI caps workers at 50% because PGlite plus Postgres oversubscribes the runner. Package tests are sharded four ways with v8 coverage; integration tests are also sharded but, until about 2026-08-21, do not run in merge queue. A large scorecard separates features proven by a database integration test from features that are only unit-tested. Fixture drift is a git diff of emitted contract files, not an ad-hoc snapshot.",
+      "claims": [
+        {
+          "claim": "Root vitest.config.ts sets test.projects to packages/**/vitest.config.ts, env.PRISMA_DISABLE_TELEMETRY=1, and maxWorkers 50% when CI is set. Coverage uses @vitest/coverage-v8 via provider v8, reportOnFailure, and composeCoverageConfig. A VITEST_COVERAGE_SHARD env var suppresses text/json reporters and thresholds so shards can emit blobs.",
+          "sources": [
+            "vitest.config.ts#L1-L36",
+            "package.json#L84-L99"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "pnpm test:packages builds everything except examples and test workspaces, then runs vitest run. pnpm test:e2e is pnpm --filter e2e-tests test. pnpm test:integration is pnpm --filter integration-tests test. pnpm test:journeys and pnpm test:vite-plugin are separate integration-tests scripts.",
+          "sources": [
+            "package.json#L14-L23",
+            "test/integration/package.json#L2-L15",
+            "test/e2e/framework/package.json#L2-L12"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "integration-tests pretest builds integration-tests and the postgres, mongo, and pgvector public packages. Its test script is vitest run. test:journeys uses vitest.journeys.config.ts. The tree includes cli-journeys e2e files, authoring parity fixtures, sql-orm-client suites, mongo runtime tests, and vite-plugin.hmr.e2e.test.ts.",
+          "sources": [
+            "test/integration/package.json#L6-L15"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "e2e-tests emit runs prisma contract emit against test/fixtures/prisma.config.ts and the sqlite fixture config. The Testing Guide says e2e loads committed fixtures under test/fixtures/generated/contract.json instead of emitting on every test, with one emission check.",
+          "sources": [
+            "test/e2e/framework/package.json#L12-L13",
+            "docs/Testing Guide.md#L64-L79"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CI workflow CI (PR) triggers on pull_request and merge_group with permissions contents: read and cancel-in-progress concurrency. An inert-diff job lets docs-only PRs skip expensive steps. The build job runs pnpm install --frozen-lockfile, pnpm build, and pnpm check:clean-tree.",
+          "sources": [
+            ".github/workflows/ci.yml#L1-L49"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The lint job runs lint:deps, lint:code, lint:packages, lint:examples, lint:rules, lint:rules:symlinks, lint:skills, lint:rules:footprint, lint:docs, lint:manifests, lint:workflows, test:scripts, lint:casts, lint:throws, lint:framework-vocabulary, lint:consumer-internal-imports, lint:legacy-name, lint:vitest-timeouts, lint:publishability, check:upgrade-coverage, check:error-reference, and check:release-notes.",
+          "sources": [
+            ".github/workflows/ci.yml#L71-L143",
+            "package.json#L34-L50"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Package tests run as a 4-way matrix on ubuntu with a postgres:15 service, TEST_TIMEOUT_MULTIPLIER=2, and pnpm coverage:packages --shard=i/4 writing blob reports. Coverage merges the four blobs with pnpm coverage:packages:merge and pnpm coverage:report. Examples tests start the cloudflare-worker compose Postgres on 5433 and fetch the Prisma 7 schema engine for prisma7-adoption.",
+          "sources": [
+            ".github/workflows/ci.yml#L167-L270",
+            ".github/workflows/ci.yml#L273-L305"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Integration tests are sharded 1/4 through 4/4 via pnpm test:integration --shard. The job comment says that until about 2026-08-21 they do not run on merge_group, still run on every PR, and also run nightly from integration-nightly.yml. E2E runs pnpm test:e2e against postgres:15 unless the diff is inert.",
+          "sources": [
+            ".github/workflows/ci.yml#L318-L388"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "A supabase-acceptance job (timeout 25 minutes) installs a pinned Supabase CLI 2.95.4 by checksummed tarball and starts a local stack from examples/supabase so role, grant, and JWT behavior is tested against real Supabase defaults, not only a hermetic shim.",
+          "sources": [
+            ".github/workflows/ci.yml#L390-L435"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "pnpm fixtures:check runs fixtures:emit (examples, selected apps, sql-builder, sql-orm-client, postgres, extension-supabase, e2e-tests, integration-tests, plus extension contract spaces and migration regen) and then git diff --exit-code on **/contract.* and **/expected.contract.json.",
+          "sources": [
+            "package.json#L57-L60"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "pnpm test:scripts runs node --test on dozens of scripts/*.test.mjs and scripts/*.test.ts files (coverage, workflow triggers, publish deps, casts, skills, package manifests). That is the Node test runner, not Vitest.",
+          "sources": [
+            "package.json#L50"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "scorecard.md defines ✅ as proven by a Prisma 8 integration test that hits Postgres (PGlite), SQLite, or MongoDB (mongodb-memory-server) and asserts a runtime result. Unit tests of SQL, AST, plans, or types do not qualify. 🟡 means the public surface is reachable but no such integration test exists. Categories include 123 migration rows and 32 CLI-command rows.",
+          "sources": [
+            "scorecard.md#L1-L39"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "risk_map": {
+      "summary": "The sharp edges are warn-only marker checks, a contract loader that bundles and imports user TypeScript from the temp directory, package-manager and telemetry child processes, and a destructive migration consent flow that can be satisfied non-interactively. Supply-chain controls exist (frozen lockfile, release-age cooldown, OIDC publish, least-privilege CI tokens) but several trust exclusions are intentional. SQLite is not at parity, integration tests do not block the merge queue during the launch window, and the in-repo CLI can drift from the external prisma-cli host.",
+      "claims": [
+        {
+          "claim": "verifyMarker never throws. CONTRACT.MARKER_MISSING and CONTRACT.MARKER_MISMATCH are log.warn events, after which setupDriverExecution continues into runQueryWithMiddleware. A database whose marker does not match the contract still serves queries unless a caller set verifyMarker to a stricter mode outside this default path.",
+          "sources": [
+            "packages/2-sql/5-runtime/src/sql-runtime.ts#L371-L377",
+            "packages/2-sql/5-runtime/src/sql-runtime.ts#L913-L944"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "loadContractFromTs writes an esbuild bundle to os.tmpdir and, on the lines read, is about to import that module. The allowlist plugin ignores relative and absolute specifiers (args.path starting with . or /). Only bare imports from the entry are checked against @internal/*, @prisma/orm-*, and node:crypto. A contract file can therefore pull arbitrary relative modules into the bundle.",
+          "sources": [
+            "packages/1-framework/3-tooling/cli/src/load-ts-contract.ts#L39-L60",
+            "packages/1-framework/3-tooling/cli/src/load-ts-contract.ts#L148-L166",
+            "packages/1-framework/3-tooling/cli/src/load-ts-contract.ts#L196-L247"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "runPackageManager spawns request.file with request.args, cwd, and signal, piping stdout to the engine and keeping only the last 64 KiB of stderr. The bin comment says the CLI engine chooses the manager and the argv and never imports child_process itself, so a bug in argv composition becomes a shell-out.",
+          "sources": [
+            "packages/1-framework/3-tooling/cli/src/orm/package-manager-runner.ts#L10-L49",
+            "packages/1-framework/3-tooling/cli/src/orm/cli.ts#L200-L204"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "redactSecrets only strips URL userinfo and _authToken/_auth/_password assignments from package-manager stderr during init. It does not scrub database URLs in general command output.",
+          "sources": [
+            "packages/1-framework/3-tooling/cli/src/commands/init/redact-secrets.ts#L1-L16"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Telemetry is on by default outside CI. resolveTelemetryHooks returns undefined when isCI() is true or resolveGating says disabled. Otherwise a detached fork POSTs to a compile-time backend URL. A malformed PRISMA_TELEMETRY_ENDPOINT falls back to production rather than failing closed. The root vitest config sets PRISMA_DISABLE_TELEMETRY=1 so tests do not fork the sender.",
+          "sources": [
+            "packages/1-framework/3-tooling/cli/src/orm/telemetry/reporting.ts#L22-L81",
+            "packages/1-framework/3-tooling/cli-telemetry/src/endpoint.ts#L1-L31",
+            "vitest.config.ts#L19-L27"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The private app telemetry-backend (bun >=1.3 or node >=24) is the storage side of that channel: scripts include deploy, prisma contract emit, and start via bun run src/server.ts, and it depends on @prisma/orm-postgres. The sender URL is a Prisma Compute host, not this app's source path.",
+          "sources": [
+            "apps/telemetry-backend/package.json#L1-L28",
+            "packages/1-framework/3-tooling/cli-telemetry/src/endpoint.ts#L1-L10"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "db update's destructive gate is skippable. executeDbUpdate only calls guardDestructiveChanges when mode is apply and both acceptDataLoss and consent are unset. The CLI help says a CI or --no-interactive run takes the database name from --confirm. Consent is bound to a planHash and a mismatch returns CONSENT_PLAN_MISMATCH, but a matching hash or acceptDataLoss applies destructive ops.",
+          "sources": [
+            "packages/1-framework/3-tooling/cli/src/control-api/operations/db-update.ts#L21-L92",
+            "packages/1-framework/3-tooling/cli/src/orm/db/update.ts#L119-L134"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CI integration tests are explicitly not merge-blocking during the launch window: the test-integration job is skipped when github.event_name == merge_group. Package tests, e2e, and fixtures still run unless the diff is inert. A green merge queue therefore does not include the integration shard.",
+          "sources": [
+            ".github/workflows/ci.yml#L356-L364"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "scorecard.md records large areas that are implemented but only unit-tested (🟡) or absent (❌). SQLite is described in the README as a proof of concept, and MySQL is not a target yet. A passing package suite is not evidence that every scorecard row is ✅.",
+          "sources": [
+            "scorecard.md#L1-L16",
+            "README.md#L96-L102"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Root pnpm.overrides force hono 4.11.4, js-yaml 3.14.2, lodash 4.17.23, minimatch patches, and rollup 4.59.0. That is a supply-chain pin, not a removal of those libraries. CI installs with --frozen-lockfile.",
+          "sources": [
+            "package.json#L104-L112",
+            ".github/workflows/ci.yml#L43-L46"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The in-repo prisma bin and the published CLI are different repositories. cli.ts says this process mounts ormCommandFamily the same way the prisma-cli host does, but nothing in this repo compiles that host. Behavioral drift between the two is possible if one side changes command paths or config loading.",
+          "sources": [
+            "packages/1-framework/3-tooling/cli/src/orm/cli.ts#L36-L44"
+          ],
+          "kind": "inference"
+        },
+        {
+          "claim": "runtimeFromProcess always sets managementApi.baseUrl to https://api.prisma.io. Combined with the telemetry sender and the package-manager spawn, a normal CLI invocation can perform network and process side effects even for commands whose own handler is offline, unless telemetry gating suppresses the fork.",
+          "sources": [
+            "packages/1-framework/3-tooling/cli/src/orm/cli.ts#L197-L204",
+            "packages/1-framework/3-tooling/cli/src/orm/telemetry/reporting.ts#L71-L81"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "extension_points": {
+      "summary": "New behavior is supposed to arrive as a composed descriptor, not a core branch. The control stack orders extension packs and merges authoring contributions, codecs, aggregates, and capabilities. The same extensions array is accepted by defineConfig and by the postgres() runtime options. CLI commands are a record passed to defineCommandFamily, with a factory injection point for the control client. Public npm names are thin shells over internal packages. pgvector is the concrete pattern: a pack meta id, authoring types, a codec registry, and SQL lowering templates.",
+      "claims": [
+        {
+          "claim": "createControlStack takes family, target, adapter, driver, and extensions. It orders extensions with buildExtensionLoadOrder, then assembleAuthoringContributions over family, target, optional adapter, and those extensions. The returned stack carries codecLookup, codecDescriptors, aggregateDescriptors, authoringContributions, scalarTypes, controlMutationDefaults, and a merged capability matrix.",
+          "sources": [
+            "packages/1-framework/1-core/framework-components/src/control/control-stack.ts#L178-L180",
+            "packages/1-framework/1-core/framework-components/src/control/control-stack.ts#L645-L678"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "assembleAuthoringContributions walks each descriptor's authoring.entityTypes and claims paths so two packs cannot occupy the same entity slot. The architecture overview names AuthoringContributions.entityTypes as the way a target adds entity kinds without the framework branching on target identity.",
+          "sources": [
+            "packages/1-framework/1-core/framework-components/src/control/control-stack.ts#L241-L245",
+            "docs/Architecture Overview.md#L26-L27"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Postgres, Mongo, and SQLite defineConfig all default extensions to [] and pass that array into the core config. Adding a pack is a config edit, not an edit to the family runtime.",
+          "sources": [
+            "packages/3-extensions/postgres/src/config/define-config.ts#L65-L78",
+            "packages/3-extensions/mongo/src/config/define-config.ts#L34-L35"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "postgres() accepts extensions?: readonly SqlRuntimeExtensionDescriptor<'postgres'>[] and middleware?: readonly SqlMiddleware[], and forwards extensions into createSqlExecutionStack and middleware into PostgresRuntimeImpl. SqlRuntimeBase checks each middleware with checkMiddlewareCompatibility(mw, 'sql', target) in the constructor.",
+          "sources": [
+            "packages/3-extensions/postgres/src/runtime/postgres.ts#L80-L88",
+            "packages/3-extensions/postgres/src/runtime/postgres.ts#L174-L179",
+            "packages/2-sql/5-runtime/src/sql-runtime.ts#L182-L189"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "pgvector's pack meta is kind extension, id pgvector, familyId sql, targetId postgres, and declares capability postgres['pgvector.cosine']. Its authoring.type is pgvectorAuthoringTypes and its codec descriptors come from pgvectorCodecRegistry. The default export of exports/pack.ts is pgvectorPackMeta.",
+          "sources": [
+            "packages/3-extensions/pgvector/src/core/descriptor-meta.ts#L60-L78",
+            "packages/3-extensions/pgvector/src/exports/pack.ts#L1"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "pgvectorQueryOperations registers cosineDistance and cosineSimilarity on codec pg/vector@1. cosineDistance lowers with template {{self}} <=> {{arg0}} to codec pg/float8@1. That is the extension operation registry the SQL builder consults via queryOperationTypes.",
+          "sources": [
+            "packages/3-extensions/pgvector/src/core/descriptor-meta.ts#L17-L36",
+            "packages/2-sql/4-lanes/sql-builder/src/runtime/sql.ts#L20-L28"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CLI commands plug in as a Readonly<Record<string, AnyCommand>> passed to defineCommandFamily, plus a redirects array for retired spellings. defineOrmCommand wraps @prisma/cli-engine defineCommand with the ORM error boundary so new commands should not call defineCommand directly.",
+          "sources": [
+            "packages/1-framework/3-tooling/cli/src/orm/family.ts#L34-L109",
+            "packages/1-framework/3-tooling/cli/src/orm/define-command.ts#L15-L21"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "createBinCommands(createClient) is the test seam: swapping CreateControlClient remounts db init, db migrate, db schema, db sign, db update, db verify, migration new, and migration plan without mocking modules. Offline commands stay the real implementations.",
+          "sources": [
+            "packages/1-framework/3-tooling/cli/src/orm/cli.ts#L92-L124"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Target packages are expected to export three planes: src/exports/control.ts (migration), src/exports/runtime.ts (runtime), and src/exports/pack.ts (shared). New targets must register those globs, including src/core/migrations/** even before the directory exists, or later files inherit the shared plane and hide violations.",
+          "sources": [
+            "docs/onboarding/Repo-Map-and-Layering.md#L11-L30"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Emitter options are the family SPI: serializeContract, deserializeContract, shouldPreserveEmpty, sortStorage, supportsNamespaces, and resolveImportSpecifier. The framework does not walk the in-memory contract with Object.entries; the target serializer owns the JSON shape.",
+          "sources": [
+            "packages/1-framework/3-tooling/cli/src/control-api/operations/contract-emit.ts#L350-L375",
+            "packages/1-framework/3-tooling/emitter/src/emit.ts#L31-L70"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The Vite plugin and the CLI are two front doors onto executeContractEmit. A third authoring path is no-emit: pass a TypeScript contract object straight to postgres({ contract }) and skip the files. Both still deserialize through PostgresContractSerializer.",
+          "sources": [
+            "packages/1-framework/3-tooling/vite-plugin-contract-emit/src/plugin.ts#L1-L4",
+            "packages/3-extensions/postgres/src/runtime/postgres.ts#L121-L133",
+            "packages/3-extensions/postgres/src/runtime/postgres.ts#L155-L160"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Skills are an extension surface for agents. Canonical files live in skills-contrib/; the prepare script runs skills add ./skills-contrib and sync-agent-rules. Published facades copy skills in prepack (orm-postgres prepack runs scripts/sync-package-skills.ts). README says each installed Prisma package ships the SKILL.md files that match that version.",
+          "sources": [
+            "package.json#L69",
+            "packages/9-public/@prisma/orm-postgres/package.json#L13-L14",
+            "README.md#L59-L67"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_handoff": {
+      "summary": "Agents should treat this as a layered contract compiler plus a runtime, not as a Next.js app. Start from Agents.md, the architecture overview, and architecture.config.json. Use pnpm on Node 24, rebuild before typecheck, and do not bypass lint:deps. Tests are written first and run with Vitest; name the Contract type at every JSON boundary; never use any, zod, or a bare cast. Skills and rules have one canonical directory each. The traps that waste a session are stale dist types, plane violations, fixture drift, warn-only marker checks, and editing a gitignored symlink tree.",
+      "claims": [
+        {
+          "claim": "Agents.md requires Node from the shell (engines.node in the root package.json; do not run nvm/fnm), pnpm instead of npm, and never npx. Build with pnpm build. Use the repo scripts pnpm typecheck and pnpm test rather than hand-rolled tsc or vitest. Use arktype, not zod. Never add extensions to TypeScript imports.",
+          "sources": [
+            "Agents.md",
+            "package.json#L6-L62",
+            "package.json#L101-L103"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Type rules from Agents.md: never any; never @ts-expect-error outside negative type tests; never @ts-nocheck; never suppress biome lints; no bare as in production code. Use blindCast or castAs from @internal/utils/casts. as const and test files are exempt. pnpm lint:casts is the ratchet.",
+          "sources": [
+            "Agents.md",
+            "package.json#L36"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Write tests before changing implementation. Omit the word should in test names. In sql-orm-client tests, assert the whole result shape with toEqual or a snapshot and an explicit select. Do not reexport from one file to another except under exports/ folders. Do not add backwards-compat exports unless asked. Do not branch on target; add an adapter.",
+          "sources": [
+            "Agents.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Where JSON enters the runtime, name the contract.d.ts type: postgres<Contract>({ contractJson, url }) or validateSqlContractFully<Contract>(contractJson). Do not use a wide generic such as SqlContract<SqlStorage>. The postgres() overloads encode that split between a live contract object and contractJson.",
+          "sources": [
+            "Agents.md",
+            "packages/3-extensions/postgres/src/runtime/postgres.ts#L155-L170"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "After changing exported types in a package other packages consume, rebuild that package so dist/*.d.mts updates before downstream typecheck. Turbo already makes typecheck depend on build and ^build because self-imports of published subpaths read dist.",
+          "sources": [
+            "Agents.md",
+            "turbo.json#L35-L43"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Safe command set for a small change: pnpm build for the touched package, pnpm test:packages or that package's vitest, pnpm typecheck:packages, and pnpm lint:deps if imports moved. Contract artifact edits need pnpm fixtures:check rather than a hand-rolled emit-and-diff. Integration behavior needs pnpm test:integration; CLI journeys need pnpm test:journeys.",
+          "sources": [
+            "package.json#L14-L23",
+            "package.json#L34",
+            "package.json#L57-L60",
+            "Agents.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Edit skills at skills-contrib/<name>/SKILL.md and rules at .agents/rules/<name>.mdc. .claude, .cursor, and .agents skill/rule trees are presentation symlinks materialized by prepare (skills add and scripts/sync-agent-rules.mjs). A rule added only under .cursor/rules is gitignored and lost. pnpm rules:sync and pnpm lint:rules:symlinks check the trees.",
+          "sources": [
+            "Agents.md",
+            "package.json#L42-L69"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New packages must be registered in architecture.config.json with plane-specific globs, broad to specific, including a migration glob for src/core/migrations/** even if the directory is empty. pnpm lint:deps fails the PR if a migration file imports a runtime package.",
+          "sources": [
+            "docs/onboarding/Repo-Map-and-Layering.md#L21-L30",
+            "architecture.config.json#L1-L40",
+            "package.json#L34"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Every workspace package, including examples and the private root, carries the same version. docs/oss/versioning.md says internal packages are not published, extension authors must pin framework internals to an exact minor, and RC releases may break. Do not bump a single package.json by hand; pnpm bump-version is the maintainer path.",
+          "sources": [
+            "docs/oss/versioning.md#L5-L38",
+            ".github/workflows/publish.yml#L3-L7"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Files to read before editing a query path: packages/3-extensions/postgres/src/runtime/postgres.ts, packages/2-sql/4-lanes/sql-builder/src/runtime/sql.ts, and packages/2-sql/5-runtime/src/sql-runtime.ts. Before editing emit or migrations: packages/1-framework/3-tooling/cli/src/control-api/operations/contract-emit.ts, emitter/src/emit.ts, and db-update.ts. Subsystem index pages live under docs/architecture docs/subsystems/.",
+          "sources": [
+            "docs/Architecture Overview.md#L106-L121",
+            "packages/3-extensions/postgres/src/runtime/postgres.ts#L162-L170",
+            "packages/2-sql/5-runtime/src/sql-runtime.ts#L513-L534"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Known traps: verifyMarker logs and continues; loadContractFromTs allows relative imports; the CLI bin here is not the published prisma host; integration tests do not run in merge_group during the launch window; PGlite-heavy suites need the CI worker cap or they drop Postgres sockets; typecheck against a dirty dist lies.",
+          "sources": [
+            "packages/2-sql/5-runtime/src/sql-runtime.ts#L913-L944",
+            "packages/1-framework/3-tooling/cli/src/load-ts-contract.ts#L148-L160",
+            "packages/1-framework/3-tooling/cli/src/orm/cli.ts#L36-L44",
+            ".github/workflows/ci.yml#L356-L364",
+            "vitest.config.ts#L10-L18"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Do not start a dev server or a migration against a caller-supplied production URL from this repo without an explicit ask. docker-compose.yaml is a disposable local Postgres on 5433. db update can destroy data once consent or --confirm is provided. Telemetry posts to a production Compute URL unless disabled.",
+          "sources": [
+            "docker-compose.yaml#L1-L9",
+            "packages/1-framework/3-tooling/cli/src/orm/db/update.ts#L121-L134",
+            "packages/1-framework/3-tooling/cli-telemetry/src/endpoint.ts#L1-L10"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_prompt": "You are working in the Prisma 8 monorepo (root package @internal/monorepo, version 8.0.0-rc.11). It is a contract-first TypeScript data layer for application developers and coding agents. The Prisma 7 Rust engine is not in this tree; that line lives on the v7 branch. The artifact that gates migrations and queries is contract.json plus contract.d.ts, produced by prisma contract emit. Queries are a composable DSL — sql(), orm(), and raw — compiled at runtime to one statement. Nothing here generates a client of findMany methods.\n\nLayout. packages/1-framework is target-agnostic: contract types, the emitter, the CLI, the language server, migration tools, and framework-components. packages/2-sql and packages/2-mongo-family are family code. packages/3-targets and packages/3-mongo-target are adapters and drivers. packages/3-extensions holds the postgres, sqlite, and mongo facades plus pgvector, postgis, paradedb, supabase, arktype-json, and sql-orm-client. packages/9-public/@prisma/* are the publishable shells (@prisma/orm-postgres and siblings, @prisma/orm-toolchain, extension packs). architecture.config.json assigns every glob a domain, a layer, and a plane (shared, migration, or runtime). pnpm lint:deps enforces that map with dependency-cruiser. Migration code must not import runtime packages. The longest matching glob wins, so register src/core/migrations/** as migration even before the directory exists.\n\nCommands. Use the shell Node. package.json engines.node is >=24; do not run nvm or fnm. Use pnpm, never npm or npx. pnpm build is Turbo. typecheck depends on that build because packages import their own dist subpaths. pnpm test:packages is the cheap signal: root vitest.config.ts loads packages/**/vitest.config.ts and sets PRISMA_DISABLE_TELEMETRY=1. pnpm test:integration runs the integration-tests workspace. pnpm test:e2e runs e2e-tests. pnpm fixtures:check re-emits contracts and git-diffs the artifacts. Also run pnpm lint:deps and pnpm lint:casts when imports or casts change.\n\nCLI. packages/1-framework/3-tooling/cli/src/bin.ts calls runOrmCli. Command keys live in orm/family.ts: contract emit, contract format, contract infer, db init, db migrate, db schema, db sign, db update, db verify, migration check/graph/list/log/new/plan/show/status, migration ref set/list/delete, orm init, and lsp. This bin is a stand-in. The published prisma host is the separate prisma-cli repo and consumes ormCommandFamily. createControlClient is the programmatic control API. Emit has one path, executeContractEmit: load prisma.config.ts, call contract.source.load, enrichContract, round-trip through the target contractSerializer, then @internal/emitter emit, which canonicalizes JSON at schemaVersion 1 and prettier-formats contract.d.ts. db update calls executeDbUpdate. Its policy allows additive, widening, and destructive operations. Without consent it pre-plans and returns DESTRUCTIVE_CHANGES plus a planHash the retry must echo.\n\nRuntime. Call postgres({ contract }) or postgres with an explicit Contract type parameter and contractJson plus url. resolveContract validates through PostgresContractSerializer. createSqlExecutionStack and createExecutionContext build the stack. getRuntime lazily constructs PostgresRuntimeImpl, a SqlRuntimeBase, and opens a pg Pool from a url binding. sql() is a Proxy from namespace name to TableProxyImpl. A read calls query, queryAgainstQueryable, prepareQueryExecution, and prepareOperation. For a query plan, prepareOperation runs compilePlan (runBeforeCompileChain), lowerToDraft (lowerSqlPlan), a SqlParamRefMutator before-hook, and encodeParams. streamRows then calls setupDriverExecution, which single-flights verifyMarker. A missing or mismatched marker only logs CONTRACT.MARKER_MISSING or CONTRACT.MARKER_MISMATCH and does not throw. Rows continue through runQueryWithMiddleware, the driver, and decodeRow. Writes use execute and runExecuteWithMiddleware. withTransaction rolls back when the callback throws and destroys the connection if that rollback fails. Always name the Contract type from contract.d.ts where JSON enters.\n\nStyle. Never use any, a bare as, zod, or @ts-expect-error outside negative type tests. Use blindCast or castAs from @internal/utils/casts. Write the test first. sql-orm-client tests assert the whole row with an explicit select. Do not add file extensions to imports. Do not reexport across files except under exports/. Do not branch on target identity. Register packs on defineConfig extensions. createControlStack calls assembleAuthoringContributions to merge entityTypes, codecs, and capabilities. Copy packages/3-extensions/pgvector: id pgvector, capability pgvector.cosine, cosineDistance lowered with the <=> operator.\n\nHygiene. Edit skills only under skills-contrib/ and rules only under .agents/rules/. prepare and pnpm rules:sync rebuild the symlink trees; a file added only under .cursor/rules is gitignored. Keep every workspace package on the root version. Do not publish @internal packages. Rebuild a package after changing its exported types. Read Agents.md, docs/Architecture Overview.md, and architecture.config.json before editing. Sensitive paths: loadContractFromTs esbuild-bundles a user contract into os.tmpdir (allowlist @internal/*, @prisma/orm-*, node:crypto; relative imports pass through); runPackageManager spawns the engine package-manager argv; telemetry forks a sender that POSTs /events to the pinned Compute host unless the process is CI or DO_NOT_TRACK=1 or PRISMA_DISABLE_TELEMETRY=1. SQLite is a proof of concept. MySQL is not in this tree."
+  },
+  "analysis": {
+    "agent": "grok",
+    "model": "cli:grok",
+    "runtime_ms": 476648,
+    "cost_usd": null,
+    "collected_at": "2026-09-22T11:47:23.089Z"
   }
 }

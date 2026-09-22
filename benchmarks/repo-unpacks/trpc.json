@@ -28557,5 +28557,888 @@
         ]
       }
     ]
+  },
+  "report": {
+    "overview": "tRPC 11.19.0 (this checkout of github.com/trpc/trpc) is a TypeScript monorepo for end-to-end typesafe RPCs without schemas or code generation. Application authors define procedures once with initTRPC; clients call them through a typed Proxy that never imports server runtime code, only its types. @trpc/server is transport-agnostic and ships adapters for Fetch, Node, Express, Fastify, Next.js, AWS Lambda, a standalone HTTP server, and WebSockets, while @trpc/client, @trpc/react-query, and @trpc/tanstack-react-query consume the same router type. The repo also contains runnable examples (Next/Prisma, a Drizzle SSE chat, Cloudflare Workers, Nuxt, Lambdas), an alpha OpenAPI generator, a jscodeshift upgrade CLI, and the Docusaurus docs site in www/.",
+    "system_map": {
+      "summary": "The publishable libraries live under packages/ and are wired as a pnpm workspace (packages/*, examples/*, www) driven by Turborepo. @trpc/server is the runtime and type core; adapters are thin wrappers around resolveResponse or, for WebSockets, applyWSSHandler. The client is a link chain terminated by HTTP or WS. There is no database inside the library — persistence shows up only in examples (Prisma, Drizzle). Release is Lerna at 11.19.0, with @trpc/openapi published separately as 11.19.0-alpha. Docs are a Docusaurus app deployed with a large Vercel redirect map.",
+      "claims": [
+        {
+          "claim": "Root package.json names the workspace root, requires Node ^24.0.0 and pnpm ^12 (packageManager pnpm@12.4.1), and exposes build (turbo --filter=./packages/* build), dev, test (vitest), typecheck-packages, lint, and Lerna canary/prerelease scripts.",
+          "sources": [
+            "package.json#L1-L37",
+            "pnpm-workspace.yaml#L1-L20"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "pnpm-workspace.yaml includes packages/*, examples/*, examples/.* /*, examples/minimal*, and www plus www/og-image. The default catalog pins vitest ^5, vite ^8, turbo ^2.10, next ^15.5, fastify ^5, and typescript ^7.0.2, while catalog ts-api pins typescript ^6.0.3 and the root package depends on catalog:ts-api.",
+          "sources": [
+            "pnpm-workspace.yaml#L1-L76",
+            "package.json#L71-L72"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Published library versions in this tree are @trpc/server, @trpc/client, @trpc/react-query, @trpc/next, and @trpc/tanstack-react-query at 11.19.0. lerna.json version is 11.19.0 with npmClient pnpm. @trpc/openapi is 11.19.0-alpha and is not on the same stable version line.",
+          "sources": [
+            "packages/server/package.json#L2-L5",
+            "packages/client/package.json#L2-L5",
+            "packages/react-query/package.json#L2-L5",
+            "packages/next/package.json#L3-L5",
+            "packages/openapi/package.json#L2-L5",
+            "lerna.json#L1-L6"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Server public API is packages/server/src/@trpc/server/index.ts, re-exported by packages/server/src/index.ts. It exports initTRPC, TRPCError, lazy, tracked, callProcedure as callTRPCProcedure, and inference helpers. Implementation lives under packages/server/src/unstable-core-do-not-import/, which is also a package export named ./unstable-core-do-not-import.",
+          "sources": [
+            "packages/server/src/@trpc/server/index.ts#L1-L86",
+            "packages/server/src/index.ts#L1",
+            "packages/server/package.json#L167-L176"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "initTRPC is a single TRPCBuilder instance. context() and meta() only change generics; create() builds RootConfig (transformer, isDev from NODE_ENV, allowOutsideOfServer, errorFormatter, isServer) and returns procedure, middleware, router, mergeRouters, and createCallerFactory. It throws if isServer is false unless allowOutsideOfServer is true.",
+          "sources": [
+            "packages/server/src/unstable-core-do-not-import/initTRPC.ts#L117-L221",
+            "packages/server/src/unstable-core-do-not-import/rootConfig.ts#L20-L66"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "HTTP handling is resolveResponse in unstable-core-do-not-import/http/resolveResponse.ts. Official adapters that call it or nodeHTTPRequestHandler include fetchRequestHandler, createNextApiHandler, createExpressMiddleware, fastifyTRPCPlugin, awsLambdaRequestHandler, and createHTTPServer/createHTTPHandler. WebSockets use applyWSSHandler instead.",
+          "sources": [
+            "packages/server/src/unstable-core-do-not-import/http/resolveResponse.ts#L213-L215",
+            "packages/server/src/adapters/fetch/fetchRequestHandler.ts#L24-L47",
+            "packages/server/src/adapters/next.ts#L33-L59",
+            "packages/server/src/adapters/express.ts#L25-L38",
+            "packages/server/src/adapters/fastify/fastifyTRPCPlugin.ts#L36-L39",
+            "packages/server/src/adapters/standalone.ts#L94-L100",
+            "CONTRIBUTING.md#L71-L87"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "@trpc/client exports createTRPCClient plus subpath links httpBatchLink, httpLink, loggerLink, splitLink, and wsLink, and an ./unstable-internals export. Peer dependency is @trpc/server 11.19.0. Each library package builds with tsdown (build / dev --watch) rather than tsc emit.",
+          "sources": [
+            "packages/client/package.json#L25-L119",
+            "packages/client/src/createTRPCClient.ts#L160-L166",
+            "packages/server/package.json#L18-L20"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "turbo.json caches build outputs dist, .next, and build, makes dev persistent and uncached, and declares global env CI, NODE_ENV, DATABASE_URL, NEXTAUTH_SECRET, AUTH_GITHUB_ID, and AUTH_GITHUB_SECRET. Lint and typecheck depend on ^build.",
+          "sources": [
+            "turbo.json#L1-L55"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CI workflow .github/workflows/main.yml runs on pull_request and on push to main, next, and canary. PR jobs build, typecheck packages, typecheck www, unit tests with coverage, and an examples e2e matrix that includes Postgres. Release is .github/workflows/release-manual.yml (workflow_dispatch patch/minor with dist-tag latest or canary, plus push to main touching packages). NPM_CONFIG_PROVENANCE is true.",
+          "sources": [
+            ".github/workflows/main.yml#L1-L159",
+            ".github/workflows/release-manual.yml#L1-L39"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "www/package.json is a private Docusaurus 3 site (docusaurus start/build) that depends on the workspace tRPC packages. www/vercel.json is a large permanent-redirect table from old /docs paths onto the current docs IA, plus /discord, /sponsor, and /drift.",
+          "sources": [
+            "www/package.json#L1-L28",
+            "www/vercel.json#L1-L20"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The library has no storage layer. examples/next-prisma-starter persists posts with Prisma. examples/next-sse-chat persists Channel and Post with Drizzle (pgTableCreator prefix sse-chat_) and Postgres. examples/cloudflare-workers is a WorkerEntrypoint whose fetch() calls fetchRequestHandler with an empty context and no database.",
+          "sources": [
+            "examples/next-prisma-starter/src/server/routers/post.ts#L1-L10",
+            "examples/next-sse-chat/src/server/db/schema.ts#L1-L58",
+            "examples/cloudflare-workers/src/index.ts#L11-L23"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Vitest resolves @trpc/<pkg> imports to each package src/ via aliases built by reading package.json exports, so unit tests execute TypeScript source rather than dist. Root vitest.config.ts merges that shared config and sets test.projects to ./packages/*.",
+          "sources": [
+            "vitest.shared.ts#L9-L70",
+            "vitest.config.ts#L1-L10"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "feature_catalog": {
+      "summary": "User-facing surface area is the procedure builder (query, mutation, subscription), a middleware pipeline with pluggable validators, several HTTP and WebSocket client links, React Query hook and options-object integrations, Next.js SSR helpers, and framework adapters. Examples demonstrate the same API on Next pages, the Next app router, Cloudflare Workers, Express, Fastify, AWS Lambda, Bun, Deno, and Nuxt. Ancillary products are an OpenAPI generator CLI, a codemod upgrade CLI, and TanStack Intent skills shipped inside the packages.",
+      "claims": [
+        {
+          "claim": "ProcedureBuilder.input(), .output(), .use(), .query(), .mutation(), and .subscription() are the authoring API. createResolver appends a final middleware that awaits the user resolver. experimental_caller can wrap invoke. Calling the resulting procedure without a getRawInput option throws and points at server-side calls.",
+          "sources": [
+            "packages/server/src/unstable-core-do-not-import/procedureBuilder.ts#L505-L610",
+            "packages/server/src/unstable-core-do-not-import/procedureBuilder.ts#L674-L703"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "getParseFn accepts Standard Schema (~standard), Zod parseAsync/parse, Valibot functions, Yup validateSync, Superstruct create, ArkType assert, and custom functions. Input and output parsers are installed as middlewares by createInputMiddleware and createOutputMiddleware.",
+          "sources": [
+            "packages/server/src/unstable-core-do-not-import/parser.ts#L84-L120",
+            "packages/server/src/unstable-core-do-not-import/procedureBuilder.ts#L507-L519"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Routers are plain records. createRouterFactory flattens nested routers into _def.procedures keyed by dotted path, supports lazy() dynamic imports, and rejects duplicate keys and the reserved names then, call, and apply. mergeRouters concatenates records.",
+          "sources": [
+            "packages/server/src/unstable-core-do-not-import/router.ts#L105-L135",
+            "packages/server/src/unstable-core-do-not-import/router.ts#L208-L221",
+            "packages/server/src/unstable-core-do-not-import/router.ts#L249-L356",
+            "packages/server/src/unstable-core-do-not-import/router.ts#L509-L511"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "createCallerFactory returns a proxy caller that resolves ctx (value or function), looks up the procedure with getProcedureAtPath, and invokes it in-process. This is the server-side call path and is re-exported on the router as createCaller.",
+          "sources": [
+            "packages/server/src/unstable-core-do-not-import/router.ts#L440-L494",
+            "packages/server/src/unstable-core-do-not-import/initTRPC.ts#L110-L114"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Client links implemented in packages/client include httpLink, httpBatchLink (default batching link), httpBatchStreamLink, httpSubscriptionLink, wsLink plus createWSClient, splitLink, loggerLink, retryLink, and unstable_localLink, which calls callProcedure in-process and never hits HTTP.",
+          "sources": [
+            "packages/client/src/links/httpBatchLink.ts#L21-L28",
+            "packages/client/src/links/httpLink.ts#L76",
+            "packages/client/src/links/httpBatchStreamLink.ts#L35",
+            "packages/client/src/links/httpSubscriptionLink.ts#L65",
+            "packages/client/src/links/wsLink/wsLink.ts#L20",
+            "packages/client/src/links/localLink.ts#L35-L42",
+            "packages/client/package.json#L43-L92"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "@trpc/react-query exports createTRPCReact, getQueryKey, getMutationKey, and createTRPCQueryUtils, and re-exports @trpc/client. It also ships ./rsc and ./server (ssgProxy) entry points for RSC and static helpers.",
+          "sources": [
+            "packages/react-query/src/index.ts#L1-L10",
+            "packages/react-query/package.json#L35-L64"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "@trpc/tanstack-react-query exports createTRPCContext, createTRPCOptionsProxy, and useSubscription. The upgrade CLI's first transform is 'Migrate Hooks to xxxOptions API' and the second is 'Migrate context provider setup', optionally installing this package unless --skipTanstackQuery.",
+          "sources": [
+            "packages/tanstack-react-query/src/index.ts#L1-L26",
+            "packages/upgrade/src/bin/index.ts#L10-L62"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "@trpc/next's package entry re-exports withTRPC and createTRPCNext for the Pages Router. App Router helpers are experimental and live in packages/server/src/adapters/next-app-dir.ts as experimental_nextAppDirCaller, experimental_redirect, and experimental_notFound.",
+          "sources": [
+            "packages/next/src/index.ts#L1-L2",
+            "packages/server/src/adapters/next-app-dir.ts#L1-L7",
+            "CONTRIBUTING.md#L105-L113"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Subscriptions over HTTP are async iterables served as SSE. RootConfig.sse defaults enabled to true and accepts ping, maxDurationMs, emitAndEndImmediately, and client reconnect options. jsonl options configure httpBatchStreamLink. tracked() marks resumable events. The legacy sse() helper is deprecated in favor of tracked.",
+          "sources": [
+            "packages/server/src/unstable-core-do-not-import/rootConfig.ts#L69-L88",
+            "packages/server/src/@trpc/server/index.ts#L62-L68",
+            "packages/server/src/unstable-core-do-not-import/http/resolveResponse.ts#L300-L368"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Non-JSON bodies are first-class for octet streams: octetInputParser accepts Blob, Uint8Array, or File-like values and requires the parsed value to already be a ReadableStream. Batch JSON uses content-type application/json and a batch=1 query flag.",
+          "sources": [
+            "packages/server/src/unstable-core-do-not-import/http/contentTypeParsers.ts#L10-L38",
+            "packages/server/src/unstable-core-do-not-import/http/contentType.ts#L78-L86"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "@trpc/openapi exports generateOpenAPIDocument(GenerateOptions) where exportName defaults to AppRouter, and paths such as /user.create are relative to an optional servers URL. The package bin is trpc-openapi. It also ships an intent bin, as do server, client, and next.",
+          "sources": [
+            "packages/openapi/src/index.ts#L1-L3",
+            "packages/openapi/src/generate.ts#L33-L50",
+            "packages/openapi/package.json#L8-L12"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "examples/next-prisma-starter exposes healthcheck plus post.list, post.byId, and post.add through pages/api/trpc/[trpc].ts via createNextApiHandler. The React client entry used by the minimal example is examples/minimal-react/client/src/main.tsx, and Playwright asserts the text 'tRPC user'.",
+          "sources": [
+            "examples/next-prisma-starter/src/server/routers/_app.ts#L7-L15",
+            "examples/next-prisma-starter/src/server/routers/post.ts#L24-L103",
+            "examples/next-prisma-starter/src/pages/api/trpc/[trpc].ts#L8-L22",
+            "examples/minimal-react/client/src/main.tsx#L1-L9",
+            "examples/minimal-react/test/smoke.test.ts#L1-L8"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "examples/next-sse-chat is an app-router chat: GET and POST /api/trpc/[trpc] use fetchRequestHandler, NextAuth (GitHub or a mocked Credentials provider), Drizzle posts, and procedures post.add (authed), post.infinite, and post.onAdd (SSE subscription with tracked event ids).",
+          "sources": [
+            "examples/next-sse-chat/src/app/api/trpc/[trpc]/route.ts#L8-L29",
+            "examples/next-sse-chat/src/server/auth.tsx#L8-L69",
+            "examples/next-sse-chat/src/server/routers/post.ts#L8-L141",
+            "examples/next-sse-chat/src/server/trpc.ts#L81-L96"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "README documents the product promise (typesafe APIs, no codegen, batching, subscriptions, React/Next/Express/Fastify adapters) and tells AI agents to install skills with npx @tanstack/intent@latest install. Package keywords include tanstack-intent and files lists include a skills directory.",
+          "sources": [
+            "README.md#L41-L88",
+            "packages/server/package.json#L191-L193",
+            "packages/server/package.json#L235-L239"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "data_flow": {
+      "summary": "A call is a typed operation that becomes an observable, passes through a link chain, and is encoded as JSON (or JSONL/SSE/WebSocket frames). On the server, getRequestInfo splits batch paths, deserializes inputs with the configured transformer, and resolveResponse invokes procedures with one shared context. Middleware, including validators, runs before the resolver. Outputs are serialized by transformTRPCResponse. Errors are a fixed shape keyed by JSON-RPC-style codes. Persistence, when present, is inside user resolvers, not the framework.",
+      "claims": [
+        {
+          "claim": "createTRPCClient constructs a TRPCUntypedClient and wraps it in createTRPCClientProxy. The proxy pops the last path segment, maps query/mutate/subscribe through clientCallTypeMap, joins the rest with dots, and calls client.query, client.mutation, or client.subscription.",
+          "sources": [
+            "packages/client/src/createTRPCClient.ts#L122-L166"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "TRPCUntypedClient.$request increments requestId and calls createChain with the operation. createChain walks links[index].next until a link terminates the observable. requestAsPromise converts the observable with observableToPromise and returns envelope.result.data, wrapping failures in TRPCClientError.from.",
+          "sources": [
+            "packages/client/src/internals/TRPCUntypedClient.ts#L47-L96",
+            "packages/client/src/links/internals/createChain.ts#L10-L39"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "httpBatchLink builds separate dataLoaders for query and mutation. A batch is valid only when length <= maxItems (default Infinity) and the joined URL length <= maxURLLength (default Infinity). fetch() joins paths with commas, combines abort signals, and calls jsonHttpRequester. Subscriptions throw and must use httpSubscriptionLink or wsLink.",
+          "sources": [
+            "packages/client/src/links/httpBatchLink.ts#L21-L100"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "jsonContentTypeHandler treats batch=1 as a batch, splits opts.path on commas, enforces maxBatchSize, and reads inputs from the input query param on GET or from req.json() otherwise. Each input is passed through router._def._config.transformer.input.deserialize before the procedure sees it.",
+          "sources": [
+            "packages/server/src/unstable-core-do-not-import/http/contentType.ts#L78-L149",
+            "packages/server/src/unstable-core-do-not-import/transformer.ts#L70-L85"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "resolveResponse creates context exactly once via ctxManager.create. Each call in info.calls loads the procedure, checks TYPE_ACCEPTED_METHOD_MAP, and invokes proc with path, getRawInput, ctx, type, signal, and batchIndex. Non-batch JSON responses set content-type application/json and JSON.stringify(transformTRPCResponse(config, res)).",
+          "sources": [
+            "packages/server/src/unstable-core-do-not-import/http/resolveResponse.ts#L213-L251",
+            "packages/server/src/unstable-core-do-not-import/http/resolveResponse.ts#L328-L377",
+            "packages/server/src/unstable-core-do-not-import/http/resolveResponse.ts#L405-L449"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "createProcedureCaller refuses direct calls, then callRecursive runs _def.middlewares[index] and threads ctx, input, and getRawInput overrides into next(). A missing result throws INTERNAL_SERVER_ERROR ('did you forget to return next()'). A failed middleware rethrows its TRPCError. The resolver middleware is appended last by createResolver.",
+          "sources": [
+            "packages/server/src/unstable-core-do-not-import/procedureBuilder.ts#L568-L703"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "defaultTransformer is an identity serialize/deserialize pair. getDataTransformer splits a single DataTransformer into {input, output}. transformTRPCResponse serializes error payloads and result.data with config.transformer.output.serialize and leaves other envelopes unchanged.",
+          "sources": [
+            "packages/server/src/unstable-core-do-not-import/transformer.ts#L70-L119"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "getErrorShape builds {message, code: TRPC_ERROR_CODES_BY_KEY[code], data:{code, httpStatus}} and, only when config.isDev and error.stack is a string, copies the stack onto data.stack. The user errorFormatter then receives that shape. isDev defaults to NODE_ENV !== production.",
+          "sources": [
+            "packages/server/src/unstable-core-do-not-import/error/getErrorShape.ts#L11-L35",
+            "packages/server/src/unstable-core-do-not-import/initTRPC.ts#L156-L159",
+            "packages/server/src/unstable-core-do-not-import/rpc/codes.ts#L11-L44"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Mutations accept only POST. Queries and subscriptions accept GET, or GET and POST when allowMethodOverride is true and the request method is POST. allowMethodOverride defaults false. allowBatching defaults to batching.enabled or true. A batch call when batching is disabled throws BAD_REQUEST.",
+          "sources": [
+            "packages/server/src/unstable-core-do-not-import/http/resolveResponse.ts#L49-L62",
+            "packages/server/src/unstable-core-do-not-import/http/resolveResponse.ts#L229-L313"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "fetchRequestHandler trims slashes, slices the endpoint off the pathname, and delegates to resolveResponse with error: null. createNextApiHandler reads req.query.trpc (string or array joined by /) and delegates to nodeHTTPRequestHandler. The Cloudflare example mounts endpoint /trpc on the Worker fetch handler.",
+          "sources": [
+            "packages/server/src/adapters/fetch/fetchRequestHandler.ts#L17-L47",
+            "packages/server/src/adapters/next.ts#L33-L59",
+            "examples/cloudflare-workers/src/index.ts#L15-L23"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "In next-sse-chat, createContext calls NextAuth auth() and returns {session}. authedProcedure throws UNAUTHORIZED unless ctx.session.user.name is set, then overrides ctx.user. post.add inserts a Drizzle Post row, emits on an in-memory emitter, and post.onAdd yields tracked(post.id, post) from both a DB replay and that emitter.",
+          "sources": [
+            "examples/next-sse-chat/src/server/context.ts#L8-L18",
+            "examples/next-sse-chat/src/server/trpc.ts#L81-L96",
+            "examples/next-sse-chat/src/server/routers/post.ts#L9-L140"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "In next-prisma-starter, post.list/byId/add call prisma.post with an explicit defaultPostSelect (id, title, text, createdAt, updatedAt). byId throws TRPCError NOT_FOUND when missing. Context is an empty object; createContextInner exists so tests can skip the Next req/res.",
+          "sources": [
+            "examples/next-prisma-starter/src/server/routers/post.ts#L16-L103",
+            "examples/next-prisma-starter/src/server/context.ts#L13-L29"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "behavior_traces": {
+      "summary": "Startup is initTRPC.create once per backend, then router({...}) which flattens procedures. An HTTP query or mutation enters through an adapter, resolveResponse, getRequestInfo, one context factory, the procedure middleware stack, and transformTRPCResponse. A chat send is a mutation that writes Drizzle and an SSE subscription that replays and tails an emitter. In-process calls skip HTTP via createCaller or unstable_localLink.",
+      "claims": [
+        {
+          "claim": "Server startup in the Prisma starter: initTRPC.context<Context>().create({transformer, errorFormatter}) returns router and publicProcedure; appRouter = router({healthcheck, post: postRouter}); pages/api/trpc/[trpc].ts default-exports createNextApiHandler({router: appRouter, createContext, onError}). No listen() call exists in that file because Next invokes the handler.",
+          "sources": [
+            "examples/next-prisma-starter/src/server/trpc.ts#L15-L50",
+            "examples/next-prisma-starter/src/server/routers/_app.ts#L7-L15",
+            "examples/next-prisma-starter/src/pages/api/trpc/[trpc].ts#L1-L22"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "HTTP query order: adapter (fetchRequestHandler or createNextApiHandler to nodeHTTPRequestHandler) calls resolveResponse; HEAD returns 204; getRequestInfo parses path and inputs; ctxManager.create(info) runs createContext once; the procedure function from createProcedureCaller runs callRecursive from middleware index 0 through input parsers to the resolver; non-stream results go through getErrorShape or {result:{data}}, initResponse, transformTRPCResponse, and new Response.",
+          "sources": [
+            "packages/server/src/adapters/fetch/fetchRequestHandler.ts#L24-L47",
+            "packages/server/src/unstable-core-do-not-import/http/resolveResponse.ts#L213-L377",
+            "packages/server/src/unstable-core-do-not-import/procedureBuilder.ts#L634-L695"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Client query order: user calls proxy path ending in .query; createTRPCClientProxy maps it to TRPCUntypedClient.query; $request builds an Operation and createChain walks links; httpBatchLink's query dataLoader.load joins the batch and jsonHttpRequester fetches; transformResult applies transformer.output; requestAsPromise returns result.data.",
+          "sources": [
+            "packages/client/src/createTRPCClient.ts#L141-L166",
+            "packages/client/src/internals/TRPCUntypedClient.ts#L61-L104",
+            "packages/client/src/links/httpBatchLink.ts#L89-L119",
+            "packages/client/src/links/internals/createChain.ts#L18-L38"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Prisma post.add trace: publicProcedure.input(zod).mutation receives {ctx, input}; prisma.post.create({data: input, select: defaultPostSelect}) runs; the row is returned as result.data. list uses cursor pagination (take limit+1, pop the extra row into nextCursor) and returns {items, nextCursor}.",
+          "sources": [
+            "examples/next-prisma-starter/src/server/routers/post.ts#L24-L103",
+            "examples/next-prisma-starter/src/server/trpc.ts#L15-L38"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "SSE chat send trace: POST /api/trpc hits the route handler, fetchRequestHandler, resolveResponse. createContext loads the NextAuth session. authedProcedure checks user.name. post.add inserts into Drizzle Post, clears currentlyTyping, ee.emit('add', channelId, post). Subscribers in post.onAdd already hold ee.toIterable('add') and yield tracked(post.id, post) after filtering by channelId.",
+          "sources": [
+            "examples/next-sse-chat/src/app/api/trpc/[trpc]/route.ts#L8-L29",
+            "examples/next-sse-chat/src/server/context.ts#L8-L15",
+            "examples/next-sse-chat/src/server/trpc.ts#L81-L96",
+            "examples/next-sse-chat/src/server/routers/post.ts#L9-L140"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "SSE reconnect trace inside post.onAdd: input.lastEventId selects that Post's createdAt, a findMany loads newer rows for the channel, they are yielded first, then the function for-awaits the emitter. Root config sets sse.maxDurationMs to 5 minutes, ping every 3s, and client.reconnectAfterInactivityMs of 5s. resolveResponse arms a timer that aborts the combined signal when maxDurationMs elapses.",
+          "sources": [
+            "examples/next-sse-chat/src/server/routers/post.ts#L78-L140",
+            "examples/next-sse-chat/src/server/trpc.ts#L26-L35",
+            "packages/server/src/unstable-core-do-not-import/http/resolveResponse.ts#L350-L368"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "In-process caller trace: createCallerFactory(appRouter) then caller(ctx).procedure(input) hits createRecursiveProxy, getProcedureAtPath, and procedure({getRawInput: async () => args[0], ctx, type, signal, batchIndex: 0}). onError receives the TRPCError and the original cause is rethrown. unstable_localLink is the client-side equivalent and calls callProcedure without a socket.",
+          "sources": [
+            "packages/server/src/unstable-core-do-not-import/router.ts#L449-L490",
+            "examples/next-prisma-starter/src/server/routers/_app.ts#L13",
+            "packages/client/src/links/localLink.ts#L9-L42"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Lazy router trace: lazy(importRouter) marks the function with lazyMarker. createRouterFactory records a LazyLoader instead of walking the record. getProcedureAtPath, if the path is missing, finds a lazy key that is a prefix, awaits loader.load(), which imports the module (must be a router or a module with exactly one router export) and splices it into the aggregate record.",
+          "sources": [
+            "packages/server/src/unstable-core-do-not-import/router.ts#L105-L139",
+            "packages/server/src/unstable-core-do-not-import/router.ts#L268-L310",
+            "packages/server/src/unstable-core-do-not-import/router.ts#L370-L394"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "WebSocket server trace starts at applyWSSHandler(opts) in adapters/ws.ts. It uses parseTRPCMessage from @trpc/server/rpc, callTRPCProcedure, getErrorShape, and transformTRPCResponse. keepAlive defaults to a ping every 30_000ms and pong wait 5_000ms when enabled. fastifyTRPCPlugin can attach the same WS handler when useWSS is set.",
+          "sources": [
+            "packages/server/src/adapters/ws.ts#L1-L100",
+            "packages/server/src/adapters/fastify/fastifyTRPCPlugin.ts#L16-L29"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Dev loop from CONTRIBUTING: pnpm install && pnpm build, then pnpm dev watches packages/* via turbo. A second terminal runs an example such as examples/next-prisma-starter pnpm dev against the workspace packages. pnpm test filters by substring, including GitHub issue numbers.",
+          "sources": [
+            "CONTRIBUTING.md#L5-L51",
+            "package.json#L10-L18"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "testing_signals": {
+      "summary": "Unit and integration tests are Vitest projects rooted at every packages/* package, with jsdom, globals, Istanbul coverage, and two CI retries. The heaviest behavioral coverage is packages/tests/server (adapters, batching, streaming, websockets, regressions) plus colocated tests in server, client, and react-query. Playwright smoke tests live in selected examples and run in a GitHub Actions matrix that is allowed to fail. OpenAPI fixture drift fails the unit job. App-dir, upgrade, vendor, www, and examples are excluded from coverage.",
+      "claims": [
+        {
+          "claim": "Root test script is vitest. vitest.shared.ts sets environment jsdom, globals, setupFiles packages/tests/suppressActWarnings.ts, coverage provider istanbul including **/src/**, restoreMocks, execArgv --expose-gc, and retry 2 when CI is set.",
+          "sources": [
+            "package.json#L18",
+            "vitest.shared.ts#L39-L67",
+            "vitest.config.ts#L4-L9"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Coverage excludes www, examples, packages/next/src/app-dir, packages/server/src/adapters/next-app-dir, packages/upgrade/src, and vendor. codecov.yml sets project target auto with a 1% threshold, turns patch status off, ignores deprecated, form-data, app-dir, openapi cli.ts, and openapi test routers, and disables PR comments.",
+          "sources": [
+            "vitest.shared.ts#L48-L62",
+            "codecov.yml#L1-L21"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "packages/tests is the integration package described in CONTRIBUTING. Its server suite includes batching.test.ts, streaming.test.ts, websockets.test.ts, middlewares.test.ts, caller.test.ts, adapters/, and a regression/ directory. React act warnings are muted in CI via MUTE_REACT_ACT_WARNINGS=1.",
+          "sources": [
+            "CONTRIBUTING.md#L31-L51",
+            ".github/workflows/main.yml#L66-L81"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "@trpc/react-query colocates dozens of hook tests under packages/react-query/test, including useQuery, useMutation, useInfiniteQuery, useSubscription, suspense variants, ssr/ssg, formData, and a regression/ folder. @trpc/tanstack-react-query tests options proxies under packages/tanstack-react-query/test.",
+          "sources": [
+            "packages/react-query/package.json#L1-L5",
+            "packages/tanstack-react-query/package.json#L2-L6"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The unit-test CI job runs pnpm test --coverage and then fails if git status shows changes under packages/openapi/test/routers, telling contributors to run pnpm -C packages/openapi codegen. Codecov upload uses codecov-action@v6 and only passes CODECOV_TOKEN for non-fork PRs.",
+          "sources": [
+            ".github/workflows/main.yml#L81-L99"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Playwright is the e2e runner for examples that have playwright.config.ts. examples/minimal-react/test/smoke.test.ts loads / and waits for text=tRPC user with a 35s timeout. The e2e job runs, per example, test-dev, build, typecheck, and test-start via turbo, after copying .env.example to .env.",
+          "sources": [
+            "examples/minimal-react/test/smoke.test.ts#L1-L8",
+            ".github/workflows/main.yml#L101-L158"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The e2e matrix covers .experimental/next-app-dir, diagnostics-big-router, internal-types-export, ssg, cloudflare-workers, express-minimal, express-server, fastify-server, minimal-react, next-formdata, next-minimal-starter, next-prisma-starter, next-prisma-todomvc, next-prisma-websockets-starter, openapi-codegen, soa, standalone-server, vercel-edge-runtime, and nuxt. next-sse-chat is commented out. The job sets continue-on-error true.",
+          "sources": [
+            ".github/workflows/main.yml#L101-L158"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "E2E Postgres is a GitHub service container with POSTGRES_HOST_AUTH_METHOD trust and user postgres. NEXTAUTH_SECRET is set to the literal supersecret in that job's env. Separate jobs e2e-deno (deno-deploy) and e2e-bun exist; both are also PR-only.",
+          "sources": [
+            ".github/workflows/main.yml#L106-L118",
+            ".github/workflows/main.yml#L160-L199"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Build and typecheck jobs run only on pull_request, not on push. The test job runs on both. Concurrency cancels in-progress runs for the same ref. Turbo remote cache uses secrets TURBO_TOKEN and vars TURBO_TEAM.",
+          "sources": [
+            ".github/workflows/main.yml#L1-L47",
+            ".github/workflows/main.yml#L66-L71"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "examples/next-prisma-starter has both a Vitest test at src/server/routers/post.test.ts and Playwright at playwright/smoke.test.ts. Its CI path is included in the e2e matrix, so the example is part of the PR gate even though example sources are excluded from Istanbul coverage.",
+          "sources": [
+            ".github/workflows/main.yml#L136-L137",
+            "vitest.shared.ts#L52-L54"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Server package colocates tests such as procedureBuilder.test.ts, router.test.ts, initTRPC.test.ts, sse.test.ts, and adapters/node-http/incomingMessageToRequest.test.ts, including a case titled POST with body and maxBodySize. Client colocates createChain.test.ts, dedupeLink.test.ts, splitLink.test.ts, and localLink.test.ts.",
+          "sources": [
+            "packages/server/src/adapters/node-http/incomingMessageToRequest.test.ts#L130-L131",
+            "packages/client/src/links/splitLink.test.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "@trpc/upgrade tests live in packages/upgrade/test with fixture TSX files and transforms.test.ts, but upgrade/src is excluded from coverage, so the CLI's git and package-manager side effects are not in the Codecov gate.",
+          "sources": [
+            "packages/upgrade/package.json#L1-L8",
+            "vitest.shared.ts#L57-L60"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "risk_map": {
+      "summary": "The framework does not authenticate requests; authorization is a user middleware. The risky defaults are unlimited Node request bodies, batching on with no max batch, stack traces in any non-production NODE_ENV, and transformer.deserialize running on attacker-controlled JSON. Several high-churn areas (Next app dir, the upgrade CLI, the SSE chat example) are outside the coverage gate or marked continue-on-error. WebSocket and HTTP stacks duplicate procedure invocation, so adapter bugs do not all flow through resolveResponse.",
+      "claims": [
+        {
+          "claim": "getErrorShape copies error.stack into the client-visible error when config.isDev is true. isDev defaults to process.env.NODE_ENV !== production, so any deployment that forgets NODE_ENV=production leaks stacks. The Prisma and SSE examples' errorFormatters return the shape unchanged.",
+          "sources": [
+            "packages/server/src/unstable-core-do-not-import/error/getErrorShape.ts#L29-L35",
+            "packages/server/src/unstable-core-do-not-import/initTRPC.ts#L156-L159",
+            "examples/next-sse-chat/src/server/trpc.ts#L22-L25"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "nodeHTTPRequestHandler passes maxBodySize: opts.maxBodySize ?? null. incomingMessageToRequest only rejects PAYLOAD_TOO_LARGE when maxBodySize is truthy and size exceeds it, so the default null means no body cap. The check also treats 0 as unlimited because it uses !opts.maxBodySize.",
+          "sources": [
+            "packages/server/src/adapters/node-http/nodeHTTPRequestHandler.ts#L87",
+            "packages/server/src/adapters/node-http/incomingMessageToRequest.ts#L6-L49"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Batching is on unless the adapter sets allowBatching or batching.enabled to false. maxBatchSize is optional; jsonContentTypeHandler checks it only when it is a number. httpBatchLink defaults maxURLLength and maxItems to Infinity, so a client can build arbitrarily large batched URLs or bodies unless the app opts in.",
+          "sources": [
+            "packages/server/src/unstable-core-do-not-import/http/resolveResponse.ts#L229-L313",
+            "packages/server/src/unstable-core-do-not-import/http/contentType.ts#L84-L97",
+            "packages/client/src/links/httpBatchLink.ts#L25-L26"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "GET query inputs are a raw JSON string in the input search param, then JSON.parse, then transformer.input.deserialize. Mutations cannot use GET: TYPE_ACCEPTED_METHOD_MAP and the method-override map both list mutation as POST only, with an explicit comment that GET must never perform a mutation.",
+          "sources": [
+            "packages/server/src/unstable-core-do-not-import/http/contentType.ts#L100-L118",
+            "packages/server/src/unstable-core-do-not-import/http/resolveResponse.ts#L49-L61"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "resolveResponse returns 204 for every HEAD with no router or auth check, documented as a Lambda warmup. Subscriptions cannot be batched. A single-call JSON response that is an async iterable or contains promises/async iterables throws UNSUPPORTED_MEDIA_TYPE and tells the client to use httpBatchStreamLink.",
+          "sources": [
+            "packages/server/src/unstable-core-do-not-import/http/resolveResponse.ts#L222-L227",
+            "packages/server/src/unstable-core-do-not-import/http/resolveResponse.ts#L350-L357",
+            "packages/server/src/unstable-core-do-not-import/http/resolveResponse.ts#L417-L423"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "There is no auth inside @trpc/server. The SSE example's authedProcedure only checks that session.user.name is non-empty. post.onAdd and post.infinite are publicProcedure, so channel messages are readable without that check. When GitHub credentials are absent outside production, auth.tsx installs a Credentials provider that authorizes any name.",
+          "sources": [
+            "examples/next-sse-chat/src/server/trpc.ts#L79-L96",
+            "examples/next-sse-chat/src/server/routers/post.ts#L43-L88",
+            "examples/next-sse-chat/src/server/auth.tsx#L12-L48"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CI e2e sets NEXTAUTH_SECRET to the literal supersecret and starts Postgres with trust auth. That is test-only, but the workflow file is the template people copy. SECURITY.md supports versions greater than 9.x and says to report vulnerabilities by Twitter DM to alexdotjs or email alex@kattcorp.com.",
+          "sources": [
+            ".github/workflows/main.yml#L106-L117",
+            "SECURITY.md#L1-L12"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "eval() appears only in tests that round-trip a devalue/uneval transformer (packages/tests/server/transformer.test.ts, httpSubscriptionLink.test.ts, and packages/next/test/issue-4130-ssr-different-transformers.test.tsx). It is not on the request path. The production risk is user-supplied transformers: deserialize runs on request JSON, and next-sse-chat uses superjson.",
+          "sources": [
+            "packages/tests/server/transformer.test.ts#L100-L101",
+            "packages/server/src/unstable-core-do-not-import/http/contentType.ts#L115-L133",
+            "examples/next-sse-chat/src/server/trpc.ts#L12-L19"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "@trpc/upgrade shells out: src/lib/execa.ts imports node:child_process exec, the CLI calls assertCleanGitTree unless --force, and it can installPackage/uninstallPackage. OpenAPI tests call execFileSync. Standalone HTTP/2 tests import child_process. These are maintainer and test tools, not the RPC runtime.",
+          "sources": [
+            "packages/upgrade/src/lib/execa.ts#L1",
+            "packages/upgrade/src/bin/index.ts#L7-L49",
+            "packages/openapi/test/cli.test.ts#L1",
+            "packages/tests/server/adapters/standalone.http2.test.ts#L1"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The e2e job is continue-on-error: true, and next-sse-chat (the Drizzle plus auth plus SSE example) is commented out of the matrix. App-dir sources are excluded from coverage and from codecov ignore paths. A green unit job does not prove the example apps or the experimental Next app-dir caller.",
+          "sources": [
+            ".github/workflows/main.yml#L121-L140",
+            "vitest.shared.ts#L55-L58",
+            "codecov.yml#L4-L8"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Client and server both depend on the unstable-core-do-not-import export for proxies, callProcedure, and transformResult. A breaking change there breaks @trpc/client even if the public index stays stable. Several v12 removals are already marked: inferRouterClient, header objects that are not Headers, experimental_lazy, and the sse() alias.",
+          "sources": [
+            "packages/client/src/createTRPCClient.ts#L13-L16",
+            "packages/client/src/createTRPCClient.ts#L24-L33",
+            "packages/server/src/@trpc/server/index.ts#L62-L75",
+            "packages/server/src/unstable-core-do-not-import/http/resolveResponse.ts#L123-L126"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Adapter duplication is a blast-radius hotspot. Express and Next pages share nodeHTTPRequestHandler, but WebSockets call callTRPCProcedure directly and Fastify has its own fastifyRequestHandler. A procedure-lookup bug fixed only in resolveResponse will not automatically apply to applyWSSHandler.",
+          "sources": [
+            "packages/server/src/adapters/express.ts#L25-L38",
+            "packages/server/src/adapters/next.ts#L54-L59",
+            "packages/server/src/adapters/ws.ts#L9-L17",
+            "packages/server/src/adapters/fastify/fastifyTRPCPlugin.ts#L22-L23"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "extension_points": {
+      "summary": "New behavior is meant to plug in at initTRPC factories, the middleware and parser pipeline, client links, and HTTP adapters. Cross-cutting hooks are errorFormatter, transformer, responseMeta, createContext, and onError. Routers can be merged or lazy-loaded. Standard Schema is the validator seam. OpenAPI generation, the upgrade codemods, and the skills directories are the extension points outside the RPC runtime.",
+      "claims": [
+        {
+          "claim": "initTRPC.create() is the composition root. It returns five extension factories: procedure (createBuilder), middleware (createMiddlewareFactory), router (createRouterFactory), mergeRouters, and createCallerFactory. Docs and CONTRIBUTING tell app authors to call initTRPC once per backend.",
+          "sources": [
+            "packages/server/src/unstable-core-do-not-import/initTRPC.ts#L180-L214",
+            "CONTRIBUTING.md#L75-L77",
+            "examples/next-prisma-starter/src/server/trpc.ts#L15-L38"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Middleware is a list, not a class hierarchy. MiddlewareBuilder.unstable_pipe and ProcedureBuilder.use() append functions. next() may override ctx, input, or getRawInput. The marker field on MiddlewareResult is what forces middleware to return next()'s output.",
+          "sources": [
+            "packages/server/src/unstable-core-do-not-import/middleware.ts#L13-L18",
+            "packages/server/src/unstable-core-do-not-import/middleware.ts#L128-L145",
+            "packages/server/src/unstable-core-do-not-import/procedureBuilder.ts#L526-L536",
+            "packages/server/src/unstable-core-do-not-import/procedureBuilder.ts#L645-L661"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "A client link is a function from TRPCClientRuntime to an OperationLink. createChain is the registry: links run in array order and the last must be a terminating link or it throws 'did you forget to add an ending link?'. splitLink, retryLink, and loggerLink are non-terminating; http*, wsLink, and unstable_localLink terminate.",
+          "sources": [
+            "packages/client/src/links/internals/createChain.ts#L10-L24",
+            "packages/client/src/internals/TRPCUntypedClient.ts#L42-L58",
+            "packages/client/src/links/httpBatchLink.ts#L93-L100",
+            "packages/client/src/links/localLink.ts#L40-L42"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New HTTP adapters are expected to import AnyTRPCRouter from @trpc/server and HTTPBaseHandlerOptions from @trpc/server/http, then call resolveResponse. That comment is copied at the top of fetch, express, next, fastify, and standalone adapter files.",
+          "sources": [
+            "packages/server/src/adapters/fetch/fetchRequestHandler.ts#L1-L14",
+            "packages/server/src/adapters/express.ts#L1-L8",
+            "packages/server/src/adapters/standalone.ts#L1-L8",
+            "CONTRIBUTING.md#L85-L87"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Per-request extension hooks on the HTTP handler are createContext, onError, responseMeta, allowBatching, allowMethodOverride, and maxBatchSize. responseMeta can set status and headers; passing a plain object of headers is deprecated in favor of Headers and scheduled for deletion in v12.",
+          "sources": [
+            "packages/server/src/unstable-core-do-not-import/http/resolveResponse.ts#L64-L74",
+            "packages/server/src/unstable-core-do-not-import/http/resolveResponse.ts#L105-L140",
+            "packages/server/src/adapters/fetch/fetchRequestHandler.ts#L47-L78"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "RootConfig is the place for cross-cutting server plugins that are not procedures: transformer, errorFormatter, sse, jsonl, defaultMeta, isDev, isServer, and allowOutsideOfServer. experimental is an empty object type reserved on the config.",
+          "sources": [
+            "packages/server/src/unstable-core-do-not-import/rootConfig.ts#L32-L89",
+            "packages/server/src/unstable-core-do-not-import/initTRPC.ts#L153-L168"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Validator plugins hook getParseFn. Adding a library means detecting a discriminant (parseAsync, ~standard, validateSync, create, assert) without breaking the function-schema case used by Effect. ProcedureBuilder.input() stores both the raw parser (for types) and the middleware (for runtime).",
+          "sources": [
+            "packages/server/src/unstable-core-do-not-import/parser.ts#L84-L120",
+            "packages/server/src/unstable-core-do-not-import/procedureBuilder.ts#L507-L512"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Content types plug in as ContentTypeHandler objects with isMatch and parse. The JSON handler is jsonContentTypeHandler. Octet streams plug in via octetInputParser. Batch calls share one parsed input record indexed by batch position.",
+          "sources": [
+            "packages/server/src/unstable-core-do-not-import/http/contentType.ts#L78-L149",
+            "packages/server/src/unstable-core-do-not-import/http/contentTypeParsers.ts#L26-L38"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Router extension without editing the root object is mergeRouters(...) or lazy(() => import(...)). lazy() requires the module to be the router itself or a module with exactly one router export, otherwise it throws a fixed error string that shows the expected import pattern.",
+          "sources": [
+            "packages/server/src/unstable-core-do-not-import/router.ts#L105-L129",
+            "packages/server/src/unstable-core-do-not-import/router.ts#L509-L511",
+            "packages/server/src/unstable-core-do-not-import/initTRPC.ts#L106-L108"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "experimental_caller on the procedure builder replaces the exported function while keeping _def and the original invoke. That is the seam for custom server-side call conventions. createCallerFactory is the supported in-process API and is what app routers re-export.",
+          "sources": [
+            "packages/server/src/unstable-core-do-not-import/procedureBuilder.ts#L558-L609",
+            "packages/server/src/unstable-core-do-not-import/router.ts#L440-L449"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "WebSocket extension options on applyWSSHandler include prefix, keepAlive.enabled, keepAlive.pingMs, and keepAlive.pongWaitMs. An encoder seam exists as adapters/wsEncoder.ts with jsonEncoder imported by ws.ts. Fastify opts into it with useWSS on fastifyTRPCPlugin.",
+          "sources": [
+            "packages/server/src/adapters/ws.ts#L42-L96",
+            "packages/server/src/adapters/fastify/fastifyTRPCPlugin.ts#L16-L29"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "OpenAPI extension is GenerateOptions (exportName, title, version, servers) passed to generateOpenAPIDocument, which walks TypeScript types rather than executing procedures. Upgrade extension is a new jscodeshift transform registered in the multiselect in packages/upgrade/src/bin/index.ts and exported from package exports ./transforms/*.",
+          "sources": [
+            "packages/openapi/src/generate.ts#L33-L50",
+            "packages/upgrade/src/bin/index.ts#L51-L62",
+            "packages/upgrade/package.json#L15-L22"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_handoff": {
+      "summary": "Read the procedure and HTTP core before editing. Tests run against source via Vitest aliases, but typecheck and consumers need pnpm build because packages ship dist built by tsdown. Keep adapters thin, put behavior changes in unstable-core-do-not-import, and add a regression under packages/tests. Do not treat examples or www as the library. OpenAPI fixtures are generated and checked in CI. Public types are the product, so signature changes are breaking even when runtime behavior is not.",
+      "claims": [
+        {
+          "claim": "Files to read first: CONTRIBUTING.md (package map and the resolveResponse walkthrough), initTRPC.ts, procedureBuilder.ts, router.ts, http/resolveResponse.ts, http/contentType.ts, createTRPCClient.ts, and the adapter you are changing. The CONTRIBUTING page names those as the mental model for server, client, react-query, and next.",
+          "sources": [
+            "CONTRIBUTING.md#L67-L113",
+            "packages/server/src/unstable-core-do-not-import/initTRPC.ts#L217-L221"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Safe command set is pnpm install, pnpm build, pnpm dev, pnpm test <filter>, pnpm lint, and pnpm typecheck-packages. pnpm test 3085-style filters are the documented way to run one regression. Do not run publish-canary, publish-prerelease, or the release workflow unless asked.",
+          "sources": [
+            "CONTRIBUTING.md#L9-L57",
+            "package.json#L10-L37"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Each of @trpc/server, @trpc/client, @trpc/react-query, @trpc/next, and @trpc/openapi sets eslint no-restricted-imports on its own package name. Inside a package, import sibling files relatively. Cross-package imports must use the public export, and client code reaches internals only through @trpc/server/unstable-core-do-not-import.",
+          "sources": [
+            "packages/client/package.json#L17-L24",
+            "packages/server/src/adapters/express.ts#L11-L13",
+            "packages/client/src/createTRPCClient.ts#L3-L16"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Vitest aliases point at src, so a unit test does not require dist. turbo typecheck and lint depend on ^build, and the e2e job runs pnpm build first. After a type-only change, run pnpm typecheck-packages; after a runtime change, run pnpm test with a filename filter before the full suite.",
+          "sources": [
+            "vitest.shared.ts#L28-L36",
+            "turbo.json#L38-L51",
+            ".github/workflows/main.yml#L29-L47",
+            ".github/workflows/main.yml#L152"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Put new behavioral regressions in packages/tests/server, matching existing names (regression issue tests, batching, streaming, websockets). Colocate type-level tests next to the module when that is the local pattern (procedureBuilder.test.ts, router.test.ts). React hook tests belong in packages/react-query/test.",
+          "sources": [
+            "CONTRIBUTING.md#L49-L51",
+            "packages/server/src/unstable-core-do-not-import/procedureBuilder.test.ts",
+            "packages/react-query/src/index.ts#L1-L8"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Do not hand-edit packages/openapi/test/routers. CI fails the unit job if that tree is dirty and prints the exact command pnpm -C packages/openapi codegen. @trpc/openapi is version 11.19.0-alpha, so treat its API as unstable relative to the 11.19.0 libraries.",
+          "sources": [
+            ".github/workflows/main.yml#L83-L93",
+            "packages/openapi/package.json#L2-L5"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Router keys then, call, and apply throw at createRouterFactory. Procedures are functions; isProcedure uses typeof === 'function', which is also why lazy loaders are stored separately. Do not add callable properties that would be mis-detected as procedures.",
+          "sources": [
+            "packages/server/src/unstable-core-do-not-import/router.ts#L208-L221",
+            "packages/server/src/unstable-core-do-not-import/router.ts#L361-L365"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Never invoke a procedure as a normal function from application code. createProcedureCaller throws a fixed message unless opts contains getRawInput. Server-side calls go through createCallerFactory. Client calls go through the proxy.",
+          "sources": [
+            "packages/server/src/unstable-core-do-not-import/procedureBuilder.ts#L628-L679",
+            "packages/server/src/unstable-core-do-not-import/router.ts#L449-L480"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "isDev and isServer are environment gates. isServerDefault is true when window is undefined, Deno is present, or NODE_ENV is test, or JEST_WORKER_ID or VITEST_WORKER_ID is set. Forcing the server build into a browser bundle requires allowOutsideOfServer and will throw otherwise.",
+          "sources": [
+            "packages/server/src/unstable-core-do-not-import/rootConfig.ts#L20-L26",
+            "packages/server/src/unstable-core-do-not-import/initTRPC.ts#L170-L178"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Examples and www are not safe refactor targets when changing the library. Examples pin workspace packages and demonstrate patterns (some insecure on purpose, such as the mock GitHub provider and empty Prisma context). www/vercel.json redirects are easy to break by renaming a docs slug.",
+          "sources": [
+            "examples/next-sse-chat/src/server/auth.tsx#L12-L23",
+            "examples/next-prisma-starter/src/server/context.ts#L13-L28",
+            "www/vercel.json#L1-L8"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Peer dependencies are exact: @trpc/client requires @trpc/server 11.19.0. Shipping a server change without bumping the peer, or testing with mismatched workspace versions, will not match what npm users install. prepack and version run tsx scripts/version.ts.",
+          "sources": [
+            "packages/client/package.json#L117-L120",
+            "package.json#L28-L30",
+            "lerna.json#L2"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The widest blast radius is the procedure and router generics (ProcedureBuilder, DecorateCreateRouterOptions, DecoratedProcedureRecord). They are copied into every client package. A type-only break will fail pnpm typecheck-packages and the example typecheck step even when Vitest is green.",
+          "sources": [
+            "packages/server/src/unstable-core-do-not-import/procedureBuilder.ts#L187-L196",
+            "packages/server/src/unstable-core-do-not-import/router.ts#L230-L244",
+            "packages/client/src/createTRPCClient.ts#L98-L120"
+          ],
+          "kind": "inference"
+        }
+      ]
+    },
+    "agent_prompt": "You are working in the tRPC monorepo (https://github.com/trpc/trpc). Library packages in this tree are version 11.19.0, except @trpc/openapi which is 11.19.0-alpha. tRPC lets app authors define server procedures once and call them from clients with full static types and no code generation or schema compiler. Types flow from a Router generic into @trpc/client, @trpc/react-query, and @trpc/tanstack-react-query. The client never imports server runtime values, only types.\n\nLayout. packages/server is the core. The public entry packages/server/src/@trpc/server/index.ts re-exports initTRPC, TRPCError, lazy, tracked, and inference helpers. Implementation lives under packages/server/src/unstable-core-do-not-import/. Do not add public API by importing that folder from new places; go through the stable entry or an existing package export such as ./http, ./rpc, ./observable, or ./adapters/*. packages/client is the vanilla client. packages/react-query is the classic hook wrapper (createTRPCReact) and also ships ./rsc and ./server. packages/tanstack-react-query is the newer options proxy (createTRPCOptionsProxy, createTRPCContext) and the migration target of @trpc/upgrade. packages/next is Pages Router SSR (withTRPC, createTRPCNext). Next app-dir helpers are experimental (experimental_nextAppDirCaller, experimental_redirect, experimental_notFound) and are excluded from coverage. packages/openapi generates OpenAPI 3.1 by walking TypeScript types (generateOpenAPIDocument, bin trpc-openapi). packages/upgrade is a jscodeshift CLI that shells out to git and the package manager. packages/tests is the integration suite. examples/ are runnable apps, not library code. www/ is the Docusaurus site; www/vercel.json holds a large redirect map.\n\nHow a call works. createTRPCClient builds a recursive Proxy. The last path segment is query, mutate, or subscribe and maps to a procedure type; the rest is joined with dots. TRPCUntypedClient.$request assigns an id and createChain walks the links. The last link must terminate or it throws. httpBatchLink is the usual terminator: a dataLoader groups operations, joins paths with commas, and fetches via jsonHttpRequester. Limits maxURLLength and maxItems default to Infinity. On the server an adapter (fetchRequestHandler, createNextApiHandler, createExpressMiddleware, fastifyTRPCPlugin, awsLambdaRequestHandler, createHTTPServer) normalizes the host request and calls resolveResponse. WebSockets do not: applyWSSHandler calls callTRPCProcedure itself. resolveResponse returns 204 for HEAD, parses the URL with getRequestInfo, enforces batching and methods, creates context once, and invokes each procedure. Mutations are POST-only, even when allowMethodOverride is on. allowBatching defaults on. createProcedureCaller runs callRecursive over the middleware list. Input and output parsers are middlewares from getParseFn (Standard Schema, Zod parseAsync, Yup, Superstruct, ArkType, plain functions). The user resolver is the final middleware. Results pass through transformTRPCResponse. Errors use TRPC_ERROR_CODES_BY_KEY via getErrorShape. When isDev is true (default NODE_ENV !== production) the stack is attached to the payload.\n\nSubscriptions. An async iterable returned from a subscription is SSE when config.sse.enabled is not false. Clients use httpSubscriptionLink. tracked(id, data) is the resumable envelope; sse() is deprecated. WebSockets are wsLink plus applyWSSHandler and parseTRPCMessage. The next-sse-chat example is the full pattern: NextAuth session in createContext, authedProcedure, a Drizzle insert, an in-memory emitter, and a subscription that replays rows after lastEventId. That example is commented out of CI e2e.\n\nCommands. Node 24 and pnpm 12. pnpm install, then pnpm build (turbo over packages/*, each package built by tsdown). pnpm dev watches packages. pnpm test runs Vitest with projects packages/*, jsdom, and Istanbul. Aliases map @trpc/* to source, so unit tests do not need dist, but typecheck and lint depend on ^build. Filter with pnpm test followed by a substring or issue number. CI is .github/workflows/main.yml: on PRs, build, typecheck, unit tests with coverage, an openapi fixture freshness check, then an examples e2e matrix that is continue-on-error and includes Postgres. Release is Lerna via release-manual.yml. Do not publish unless asked.\n\nEdit rules. Change behavior in unstable-core-do-not-import and add a regression under packages/tests/server. Keep adapters thin. Do not use router keys then, call, or apply. Do not call a procedure function directly; it throws unless getRawInput is present — use createCallerFactory. Packages forbid importing their own package name; use relative imports. Do not hand-edit packages/openapi/test/routers; run pnpm -C packages/openapi codegen. Node body size is unlimited unless maxBodySize is set (null disables the check). Batching defaults on. Stack traces in error payloads are intentional outside production. Peer dependency of the client is exactly @trpc/server 11.19.0. The procedure and router generics are the widest blast radius; a type-only break fails typecheck and example typechecks even when Vitest is green.\n\nRead first: CONTRIBUTING.md, packages/server/src/unstable-core-do-not-import/initTRPC.ts, procedureBuilder.ts, router.ts, http/resolveResponse.ts, http/contentType.ts, packages/client/src/createTRPCClient.ts, packages/client/src/links/httpBatchLink.ts, and the adapter under packages/server/src/adapters/ that you are changing."
+  },
+  "analysis": {
+    "agent": "grok",
+    "model": "cli:grok",
+    "runtime_ms": 403494,
+    "cost_usd": null,
+    "collected_at": "2026-09-22T11:46:09.934Z"
   }
 }

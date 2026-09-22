@@ -1,0 +1,4529 @@
+{
+  "schema_version": "codevetter.repo-unpack-corpus/v1",
+  "repo": "ytdl-org/youtube-dl",
+  "slug": "youtube-dl",
+  "codevetter_version": "codevetter 1.12.0",
+  "collected_at": "2026-09-22T11:40:38.736Z",
+  "last_commit": {
+    "sha": "956b8c585591b401a543e409accb163eeaaa1193",
+    "date": "2025-11-26",
+    "subject": "[YouTube] Bug-fix for `c1f5c3274a`"
+  },
+  "scan": {
+    "schema_version": "codevetter.unpack-scan/v1",
+    "report_id": "faf1bc5f-ac3b-42dc-856e-0f3ad462cda4",
+    "status": "scan_only",
+    "created_at": "2026-09-22T11:40:38.734020+00:00",
+    "inventory": {
+      "repo_path": "/private/var/folders/9_/1109_2dd1qz6zyvmxb5zp8pc0000gn/T/unpack-pilot-LIAMGK/youtube-dl",
+      "repo_name": "youtube-dl",
+      "commit_sha": "956b8c585591b401a543e409accb163eeaaa1193",
+      "branch": "master",
+      "remote_url": "https://github.com/ytdl-org/youtube-dl.git",
+      "files_scanned": 980,
+      "files_skipped": 1,
+      "bytes_scanned": 6944980,
+      "max_files_hit": false,
+      "estimated_total_files": null,
+      "languages": [
+        {
+          "language": "Python",
+          "files": 902,
+          "bytes": 6434390
+        },
+        {
+          "language": "Markdown",
+          "files": 15,
+          "bytes": 178802
+        },
+        {
+          "language": "YAML",
+          "files": 2,
+          "bytes": 20860
+        },
+        {
+          "language": "Shell",
+          "files": 5,
+          "bytes": 8791
+        },
+        {
+          "language": "JSON",
+          "files": 2,
+          "bytes": 2660
+        }
+      ],
+      "manifests": [],
+      "entrypoints": [
+        {
+          "path": "README.md",
+          "kind": "docs",
+          "reason": "Repository readme"
+        },
+        {
+          "path": ".github/workflows/ci.yml",
+          "kind": "config",
+          "reason": "GitHub Actions workflow"
+        }
+      ],
+      "top_level_dirs": [
+        {
+          "path": "youtube_dl",
+          "file_count": 844,
+          "bytes": 5970459
+        },
+        {
+          "path": "test",
+          "file_count": 70,
+          "bytes": 473711
+        },
+        {
+          "path": "devscripts",
+          "file_count": 34,
+          "bytes": 57239
+        },
+        {
+          "path": ".github",
+          "file_count": 14,
+          "bytes": 44928
+        },
+        {
+          "path": "docs",
+          "file_count": 6,
+          "bytes": 42476
+        }
+      ],
+      "docs": [
+        {
+          "path": "CONTRIBUTING.md",
+          "bytes": 22864,
+          "preview": "**Please include the full output of youtube-dl when run with `-v`**, i.e. **add** `-v` flag to **your command line**, copy the **whole** output and post it in the issue body wrapped in \\`\\`\\` for better formatting. It should look similar to this:\n```\n$ youtube-dl -v <your command line>\n[debug] System config: []\n[debug] User config: []\n[debug] Command-line args: [u'-v', u'https://www.youtube.com/watch?v=BaW_jenozKcj']\n[debug] Encodings: locale cp1251, fs mbcs, out cp866, pref cp1251\n[debug] youtube-dl version 2015.12.06\n[debug] Git HEAD: 135392e\n[debug] Python version 2.6.6 - Windows-2003Server-5.2.3790-SP2\n[debug] exe versions: ffmpeg N-75573-g1d0487f, ffprobe N-75573-g1d0487f, rtmpdump 2.4\n[debug] Proxy map: {}\n...\n```\n**Do not post screenshots of verbose logs; only plain text is acceptable.**\n\nThe output (including the first lines) contains important debugging information. Issues without the full output are often not reproducible and therefore do not get solved in short order, if ever.\n\nPlease re-read your issue once again to avoid a couple of common mistakes (you can and should use this as a checklist):\n\n### Is the description of the issue itself sufficient?\n\nWe often get issue reports that we cannot really decipher. While in most cases we eventually get the required information after asking back multiple times, this poses an unnecessary drain on our resources. Many contributors, including myself, are also not native speakers, so we may misread some parts.\n\nSo please elaborate on what feature you are requesting, or what bug you want to be fixed. Make sure that it's obvious\n\n- What the problem is\n- How it could be fixed\n- How your proposed solution would look like\n\nIf your report is shorter than two lines, it is almost certainly missing some of these, which makes it hard for us to respond to it. We're often too polite to close the issue outright, but the missing info makes misinterpretation likely. As a committer myself, I often get frustrated by these issues, since the only possible way for me to move forward on them is to ask for clarification over and over.\n\nFor bug reports, this means that your report should contain the *complete* output of youtube-dl when called with the `-v` flag. The error message you get for (most) bugs even says so, but you would not believe how many of our bug reports do not contain this information.\n\nIf your server has multiple IPs or you suspect censorship, adding `--call-home` may be a good idea to get more diagnostics. If the error is `ERROR: Unable to extract ...` and you cannot reproduce it from multiple countries, add `--dump-pages` (warning: this will yield a rather large output, redirect it to the file `log.txt` by adding `>log.txt 2>&1` to your command-line) or upload the `.dump` files you get when you add `--write-pages` [somewhere](https://gist.github.com/).\n\n**Site support requests must contain an example URL**. An example URL is a URL you might want to download, like `https://www.youtube.com/watch?v=BaW_jenozKc`. There should be an obvious video present. Except under very special circumstances, the main page of a video service (e.g. `https://www.youtube.com/`) is *not* an example URL.\n\n###  Are you using the latest version?\n\nBefore reporting any issue, type `youtube-dl -U`. This should report that you're up-to-date. About 20% of the reports we receive are already fixed, but people are using outdated versions. This goes for feature requests as well.\n\n###  Is the issue already documented?\n\nMake sure that someone has not already opened the issue you're trying to open. Search at the top of the window or browse the [GitHub Issues](https://github.com/ytdl-org/youtube-dl/search?type=Issues) of this repository. If there is an issue, feel free to write something along the lines of \"This affects me as well, with version 2015.01.01. Here is some more information on the issue: ...\". While some issues may be old, a new post into them often spurs rapid activity.\n\n###  Why are existing options not enough?\n\nBefore requesting a new feature, please have a quick peek at [the list of supported options](https://github.com/ytdl-org/youtube-dl/blob/master/README.md#options). Many feature requests are for features that actually exist already! Please, absolutely do show off your work in the issue report and detail how the existing similar options do *not* solve your problem.\n\n###  Is there enough context in your bug report?\n\nPeople want to solve problems, and often think they do us a favor by breaking down their larger problems (e.g. wanting to skip already downloaded files) to a specific request (e.g. requesting us to look whether the file exists before downloading the info page). However, what often happens is that they break down the problem into two steps: One simple, and one impossible (or extremely complicated one).\n\nWe are then presented with a very complicated request when the original problem could be solved far easier, e.g. by recording the downloaded video IDs in a separate file. To avoid this, you must include the greater context where it is non-obvious. In particular, every feature request that does not consist of adding support for a new site should contain a use case scenario that explains in what situation the missing feature would be useful.\n\n###  Does the issue involve one problem, and one problem only?\n\nSome of our users seem to think there is a limit of issues they can or should open. There is no limit of issues they can or should open. While it may seem appealing to be able to dump all your issues into one ticket, that means that someone who solves one of your issues cannot mark the issue as closed. Typically, reporting a bunch of issues leads to the ticket lingering since nobody wants to attack that behemoth, until someone mercifully splits the issue into multiple ones.\n\nIn particular, every site support request issue should only pertain to services at one site (generally under a common domain, but always using the same backend technology). Do not request support for vimeo user videos, White house podcasts, and Google Plus pages in the same issue. Also, make sure that you don't post bug reports alongside feature requests. As a rule of thumb, a feature request does not include outputs of youtube-dl that are not immediately related to the feature at hand. Do not post reports of a network error alongside the request for a new video service.\n\n###  Is anyone going to need the feature?\n\nOnly post features that you (or an incapacitated friend you can personally talk to) require. Do not post features because they seem like a good idea. If they are really useful, they will be requested by someone who requires them.\n\n###  Is your question about youtube-dl?\n\nIt may sound strange, but some bug reports we receive are completely unrelated to youtube-dl and relate to a different, or even the reporter's own, application. Please make sure that you are actually using youtube-dl. If you are using a UI for youtube-dl, report the bug to the maintainer of the actual application providing the UI. On the other hand, if your UI for youtube-dl fails in some way you believe is related to youtube-dl, by all means, go ahead and report the bug.\n\n# DEVELOPER INSTRUCTIONS\n\nMost users do not need to build youtube-dl and can [download the builds](https://ytdl-org.github.io/youtube-dl/download.html) or get them from their distribution.\n\nTo run youtube-dl as a developer, you don't need to build anything either. Simply execute\n\n    python -m youtube_dl\n\nTo run the test, simply invoke your favorite test runner, or execute a test file directly; any of the following work:\n\n    python -m unittest discover\n    python test/test_download.py\n    nosetests\n\nSee item 6 of [new extractor tutorial](#adding-support-for-a-new-site) for how to run extractor specific test cases.\n\nIf you want to create a build of youtube-dl yourself, you'll need\n\n* python\n* make (only GNU make is supported)\n* pandoc\n* zip\n* nosetests\n\n### Adding support for a new site\n\nIf you want to add support for a new site, first of all **make sure** this site is **not dedicated to [copyright infringement](README.md#can-you-add-support-for-this-anime-video-site-or-site-which-show"
+        },
+        {
+          "path": "README.md",
+          "bytes": 101042,
+          "preview": "[![Build Status](https://github.com/ytdl-org/youtube-dl/workflows/CI/badge.svg)](https://github.com/ytdl-org/youtube-dl/actions?query=workflow%3ACI)\n\n\nyoutube-dl - download videos from youtube.com or other video platforms\n\n- [INSTALLATION](#installation)\n- [DESCRIPTION](#description)\n- [OPTIONS](#options)\n- [CONFIGURATION](#configuration)\n- [OUTPUT TEMPLATE](#output-template)\n- [FORMAT SELECTION](#format-selection)\n- [VIDEO SELECTION](#video-selection)\n- [FAQ](#faq)\n- [DEVELOPER INSTRUCTIONS](#developer-instructions)\n- [EMBEDDING YOUTUBE-DL](#embedding-youtube-dl)\n- [BUGS](#bugs)\n- [COPYRIGHT](#copyright)\n\n# INSTALLATION\n\nTo install it right away for all UNIX users (Linux, macOS, etc.), type:\n\n    sudo curl -L https://yt-dl.org/downloads/latest/youtube-dl -o /usr/local/bin/youtube-dl\n    sudo chmod a+rx /usr/local/bin/youtube-dl\n\nIf you do not have curl, you can alternatively use a recent wget:\n\n    sudo wget https://yt-dl.org/downloads/latest/youtube-dl -O /usr/local/bin/youtube-dl\n    sudo chmod a+rx /usr/local/bin/youtube-dl\n\nWindows users can [download an .exe file](https://yt-dl.org/latest/youtube-dl.exe) and place it in any location on their [PATH](https://en.wikipedia.org/wiki/PATH_%28variable%29) except for `%SYSTEMROOT%\\System32` (e.g. **do not** put in `C:\\Windows\\System32`).\n\nYou can also use pip:\n\n    sudo -H pip install --upgrade youtube-dl\n\nThis command will update youtube-dl if you have already installed it. See the [pypi page](https://pypi.python.org/pypi/youtube_dl) for more information.\n\nmacOS users can install youtube-dl with [Homebrew](https://brew.sh/):\n\n    brew install youtube-dl\n\nOr with [MacPorts](https://www.macports.org/):\n\n    sudo port install youtube-dl\n\nAlternatively, refer to the [developer instructions](#developer-instructions) for how to check out and work with the git repository. For further options, including PGP signatures, see the [youtube-dl Download Page](https://ytdl-org.github.io/youtube-dl/download.html).\n\n# DESCRIPTION\n**youtube-dl** is a command-line program to download videos from YouTube.com and a few more sites. It requires the Python interpreter, version 2.6, 2.7, or 3.2+, and it is not platform specific. It should work on your Unix box, on Windows or on macOS. It is released to the public domain, which means you can modify it, redistribute it or use it however you like.\n\n    youtube-dl [OPTIONS] URL [URL...]\n\n# OPTIONS\n    -h, --help                           Print this help text and exit\n    --version                            Print program version and exit\n    -U, --update                         Update this program to latest version.\n                                         Make sure that you have sufficient\n                                         permissions (run with sudo if needed)\n    -i, --ignore-errors                  Continue on download errors, for\n                                         example to skip unavailable videos in a\n                                         playlist\n    --abort-on-error                     Abort downloading of further videos (in\n                                         the playlist or the command line) if an\n                                         error occurs\n    --dump-user-agent                    Display the current browser\n                                         identification\n    --list-extractors                    List all supported extractors\n    --extractor-descriptions             Output descriptions of all supported\n                                         extractors\n    --force-generic-extractor            Force extraction to use the generic\n                                         extractor\n    --default-search PREFIX              Use this prefix for unqualified URLs.\n                                         For example \"gvsearch2:\" downloads two\n                                         videos from google videos for youtube-\n                                         dl \"large apple\". Use the value \"auto\"\n                                         to let youtube-dl guess (\"auto_warning\"\n                                         to emit a warning when guessing).\n                                         \"error\" just throws an error. The\n                                         default value \"fixup_error\" repairs\n                                         broken URLs, but emits an error if this\n                                         is not possible instead of searching.\n    --ignore-config                      Do not read configuration files. When\n                                         given in the global configuration file\n                                         /etc/youtube-dl.conf: Do not read the\n                                         user configuration in\n                                         ~/.config/youtube-dl/config\n                                         (%APPDATA%/youtube-dl/config.txt on\n                                         Windows)\n    --config-location PATH               Location of the configuration file;\n                                         either the path to the config or its\n                                         containing directory.\n    --flat-playlist                      Do not extract the videos of a\n                                         playlist, only list them.\n    --mark-watched                       Mark videos watched (YouTube only)\n    --no-mark-watched                    Do not mark videos watched (YouTube\n                                         only)\n    --no-color                           Do not emit color codes in output\n\n## Network Options:\n    --proxy URL                          Use the specified HTTP/HTTPS/SOCKS\n                                         proxy. To enable SOCKS proxy, specify a\n                                         proper scheme. For example\n                                         socks5://127.0.0.1:1080/. Pass in an\n                                         empty string (--proxy \"\") for direct\n                                         connection\n    --socket-timeout SECONDS             Time to wait before giving up, in\n                                         seconds\n    --source-address IP                  Client-side IP address to bind to\n    -4, --force-ipv4                     Make all connections via IPv4\n    -6, --force-ipv6                     Make all connections via IPv6\n\n## Geo Restriction:\n    --geo-verification-proxy URL         Use this proxy to verify the IP address\n                                         for some geo-restricted sites. The\n                                         default proxy specified by --proxy (or\n                                         none, if the option is not present) is\n                                         used for the actual downloading.\n    --geo-bypass                         Bypass geographic restriction via\n                                         faking X-Forwarded-For HTTP header\n    --no-geo-bypass                      Do not bypass geographic restriction\n                                         via faking X-Forwarded-For HTTP header\n    --geo-bypass-country CODE            Force bypass geographic restriction\n                                         with explicitly provided two-letter ISO\n                                         3166-2 country code\n    --geo-bypass-ip-block IP_BLOCK       Force bypass geographic restriction\n                                         with explicitly provided IP block in\n                                         CIDR notation\n\n## Video Selection:\n    --playlist-start NUMBER              Playlist video to start at (default is\n                                         1)\n    --playlist-end NUMBER                Playlist video to end at (default is\n                                         last)\n    --playlist-items ITEM_SPEC           Playlist video items to download.\n                                         Specify indices of the videos in the\n                                         playlist separated by commas like: \"--\n                                         playlist-items 1,2,5,8\" if you want to\n                                         download videos indexed 1, 2, 5, 8 in\n     "
+        },
+        {
+          "path": "docs/supportedsites.md",
+          "bytes": 30828,
+          "preview": "# Supported sites\n - **1tv**: Первый канал\n - **20min**\n - **220.ro**\n - **23video**\n - **247sports**\n - **24video**\n - **3qsdn**: 3Q SDN\n - **3sat**\n - **4tube**\n - **56.com**\n - **5min**\n - **6play**\n - **7plus**\n - **8tracks**\n - **91porn**\n - **9c9media**\n - **9gag**\n - **9now.com.au**\n - **abc.net.au**\n - **abc.net.au:iview**\n - **abcnews**\n - **abcnews:video**\n - **abcotvs**: ABC Owned Television Stations\n - **abcotvs:clips**\n - **AcademicEarth:Course**\n - **acast**\n - **acast:channel**\n - **ADN**: Anime Digital Network\n - **AdobeConnect**\n - **adobetv**\n - **adobetv:channel**\n - **adobetv:embed**\n - **adobetv:show**\n - **adobetv:video**\n - **AdultSwim**\n - **aenetworks**: A+E Networks: A&E, Lifetime, History.com, FYI Network and History Vault\n - **aenetworks:collection**\n - **aenetworks:show**\n - **afreecatv**: afreecatv.com\n - **AirMozilla**\n - **AliExpressLive**\n - **AlJazeera**\n - **Allocine**\n - **AlphaPorno**\n - **Amara**\n - **AMCNetworks**\n - **AmericasTestKitchen**\n - **AmericasTestKitchenSeason**\n - **anderetijden**: npo.nl, ntr.nl, omroepwnl.nl, zapp.nl and npo3.nl\n - **AnimeOnDemand**\n - **Anvato**\n - **aol.com**: Yahoo screen and movies\n - **APA**\n - **Aparat**\n - **AppleConnect**\n - **AppleDaily**: 臺灣蘋果日報\n - **ApplePodcasts**\n - **appletrailers**\n - **appletrailers:section**\n - **archive.org**: archive.org videos\n - **ArcPublishing**\n - **ARD**\n - **ARD:mediathek**\n - **ARDBetaMediathek**\n - **Arkena**\n - **arte.sky.it**\n - **ArteTV**\n - **ArteTVEmbed**\n - **ArteTVPlaylist**\n - **AsianCrush**\n - **AsianCrushPlaylist**\n - **AtresPlayer**\n - **ATTTechChannel**\n - **ATVAt**\n - **AudiMedia**\n - **AudioBoom**\n - **audiomack**\n - **audiomack:album**\n - **AWAAN**\n - **awaan:live**\n - **awaan:season**\n - **awaan:video**\n - **AZMedien**: AZ Medien videos\n - **BaiduVideo**: 百度视频\n - **bandaichannel**\n - **Bandcamp**\n - **Bandcamp:album**\n - **Bandcamp:weekly**\n - **bangumi.bilibili.com**: BiliBili番剧\n - **bbc**: BBC\n - **bbc.co.uk**: BBC iPlayer\n - **bbc.co.uk:article**: BBC articles\n - **bbc.co.uk:iplayer:episodes**\n - **bbc.co.uk:iplayer:group**\n - **bbc.co.uk:playlist**\n - **BBVTV**\n - **Beatport**\n - **Beeg**\n - **BehindKink**\n - **Bellator**\n - **BellMedia**\n - **Bet**\n - **bfi:player**\n - **bfmtv**\n - **bfmtv:article**\n - **bfmtv:live**\n - **BibelTV**\n - **Bigflix**\n - **Bild**: Bild.de\n - **BiliBili**\n - **BilibiliAudio**\n - **BilibiliAudioAlbum**\n - **BiliBiliPlayer**\n - **BioBioChileTV**\n - **Biography**\n - **BIQLE**\n - **BitChute**\n - **BitChuteChannel**\n - **BleacherReport**\n - **BleacherReportCMS**\n - **Bloomberg**\n - **BokeCC**\n - **BongaCams**\n - **BostonGlobe**\n - **Box**\n - **Bpb**: Bundeszentrale für politische Bildung\n - **BR**: Bayerischer Rundfunk\n - **BravoTV**\n - **Break**\n - **brightcove:legacy**\n - **brightcove:new**\n - **BRMediathek**: Bayerischer Rundfunk Mediathek\n - **bt:article**: Bergens Tidende Articles\n - **bt:vestlendingen**: Bergens Tidende - Vestlendingen\n - **BusinessInsider**\n - **BuzzFeed**\n - **BYUtv**\n - **Camdemy**\n - **CamdemyFolder**\n - **CamModels**\n - **CamTube**\n - **CamWithHer**\n - **canalc2.tv**\n - **Canalplus**: mycanal.fr and piwiplus.fr\n - **Canvas**\n - **CanvasEen**: canvas.be and een.be\n - **CarambaTV**\n - **CarambaTVPage**\n - **CartoonNetwork**\n - **cbc.ca**\n - **cbc.ca:olympics**\n - **cbc.ca:player**\n - **cbc.ca:watch**\n - **cbc.ca:watch:video**\n - **CBS**\n - **CBSInteractive**\n - **CBSLocal**\n - **CBSLocalArticle**\n - **cbsnews**: CBS News\n - **cbsnews:embed**\n - **cbsnews:livevideo**: CBS News Live Videos\n - **cbssports**\n - **cbssports:embed**\n - **CCMA**\n - **CCTV**: 央视网\n - **CDA**\n - **CeskaTelevize**\n - **CeskaTelevizePorady**\n - **channel9**: Channel 9\n - **CharlieRose**\n - **Chaturbate**\n - **Chilloutzone**\n - **chirbit**\n - **chirbit:profile**\n - **cielotv.it**\n - **Cinchcast**\n - **Cinemax**\n - **CiscoLiveSearch**\n - **CiscoLiveSession**\n - **CJSW**\n - **cliphunter**\n - **Clippit**\n - **ClipRs**\n - **Clipsyndicate**\n - **CloserToTruth**\n - **CloudflareStream**\n - **Cloudy**\n - **Clubic**\n - **Clyp**\n - **cmt.com**\n - **CNBC**\n - **CNBCVideo**\n - **CNN**\n - **CNNArticle**\n - **CNNBlogs**\n - **ComedyCentral**\n - **ComedyCentralTV**\n - **CondeNast**: Condé Nast media group: Allure, Architectural Digest, Ars Technica, Bon Appétit, Brides, Condé Nast, Condé Nast Traveler, Details, Epicurious, GQ, Glamour, Golf Digest, SELF, Teen Vogue, The New Yorker, Vanity Fair, Vogue, W Magazine, WIRED\n - **CONtv**\n - **Corus**\n - **Coub**\n - **Cracked**\n - **Crackle**\n - **CrooksAndLiars**\n - **crunchyroll**\n - **crunchyroll:playlist**\n - **CSpan**: C-SPAN\n - **CtsNews**: 華視新聞\n - **CTV**\n - **CTVNews**\n - **cu.ntv.co.jp**: Nippon Television Network\n - **Culturebox**\n - **CultureUnplugged**\n - **curiositystream**\n - **curiositystream:collection**\n - **CWTV**\n - **DagelijkseKost**: dagelijksekost.een.be\n - **DailyMail**\n - **dailymotion**\n - **dailymotion:playlist**\n - **dailymotion:user**\n - **daum.net**\n - **daum.net:clip**\n - **daum.net:playlist**\n - **daum.net:user**\n - **DBTV**\n - **DctpTv**\n - **DeezerPlaylist**\n - **defense.gouv.fr**\n - **democracynow**\n - **DHM**: Filmarchiv - Deutsches Historisches Museum\n - **Digg**\n - **DigitallySpeaking**\n - **Digiteka**\n - **Discovery**\n - **DiscoveryGo**\n - **DiscoveryGoPlaylist**\n - **DiscoveryNetworksDe**\n - **DiscoveryPlus**\n - **DiscoveryVR**\n - **Disney**\n - **dlive:stream**\n - **dlive:vod**\n - **Dotsub**\n - **DouyuShow**\n - **DouyuTV**: 斗鱼\n - **DPlay**\n - **DRBonanza**\n - **Dropbox**\n - **DrTuber**\n - **drtv**\n - **drtv:live**\n - **DTube**\n - **Dumpert**\n - **dvtv**: http://video.aktualne.cz/\n - **dw**\n - **dw:article**\n - **EaglePlatform**\n - **EbaumsWorld**\n - **EchoMsk**\n - **egghead:course**: egghead.io course\n - **egghead:lesson**: egghead.io lesson\n - **ehftv**\n - **eHow**\n - **EinsUndEinsTV**\n - **Einthusan**\n - **eitb.tv**\n - **EllenTube**\n - **EllenTubePlaylist**\n - **EllenTubeVideo**\n - **ElPais**: El País\n - **Embedly**\n - **EMPFlix**\n - **Engadget**\n - **Eporner**\n - **EroProfile**\n - **Escapist**\n - **ESPN**\n - **ESPNArticle**\n - **EsriVideo**\n - **Europa**\n - **EWETV**\n - **ExpoTV**\n - **Expressen**\n - **ExtremeTube**\n - **EyedoTV**\n - **facebook**\n - **FacebookPluginsVideo**\n - **faz.net**\n - **fc2**\n - **fc2:embed**\n - **Fczenit**\n - **filmon**\n - **filmon:channel**\n - **Filmweb**\n - **FiveThirtyEight**\n - **FiveTV**\n - **Flickr**\n - **Folketinget**: Folketinget (ft.dk; Danish parliament)\n - **FootyRoom**\n - **Formula1**\n - **FOX**\n - **FOX9**\n - **FOX9News**\n - **Foxgay**\n - **foxnews**: Fox News and Fox Business Video\n - **foxnews:article**\n - **FoxSports**\n - **france2.fr:generation-what**\n - **FranceCulture**\n - **FranceInter**\n - **FranceTV**\n - **FranceTVEmbed**\n - **francetvinfo.fr**\n - **FranceTVJeunesse**\n - **FranceTVSite**\n - **Freesound**\n - **freespeech.org**\n - **FreshLive**\n - **FrontendMasters**\n - **FrontendMastersCourse**\n - **FrontendMastersLesson**\n - **FujiTVFODPlus7**\n - **Funimation**\n - **Funk**\n - **Fusion**\n - **Fux**\n - **Gaia**\n - **GameInformer**\n - **GameSpot**\n - **GameStar**\n - **Gaskrank**\n - **Gazeta**\n - **GDCVault**\n - **GediDigital**\n - **generic**: Generic downloader that works on some sites\n - **Gfycat**\n - **GiantBomb**\n - **Giga**\n - **GlattvisionTV**\n - **Glide**: Glide mobile video messages (glide.me)\n - **Globo**\n - **GloboArticle**\n - **Go**\n - **GodTube**\n - **Golem**\n - **google:podcasts**\n - **google:podcasts:feed**\n - **GoogleDrive**\n - **Goshgay**\n - **GPUTechConf**\n - **Groupon**\n - **hbo**\n - **HearThisAt**\n - **Heise**\n - **HellPorno**\n - **Helsinki**: helsinki.fi\n - **HentaiStigma**\n - **hetklokhuis**\n - **hgtv.com:show**\n - **HGTVDe**\n - **HiDive**\n - **HistoricFilms**\n - **history:player**\n - **history:topic**: History.com Topic\n - **hitbox**\n - **hitbox:live**\n - **HitRecord**\n - **hketv**: 香港教育局教育電視 (HKETV) Educational Television, Hong Kong Educational Bureau\n - **HornBunny**\n - **HotNewHipHop**\n - **hotstar**\n - **hotstar:playlist**\n - **Howcast**\n - **HowStuffWorks**\n - **HRTi**\n - **HRTiPlaylist**\n - **Huajiao**: 花椒直播\n - **HuffPost**: Huffington Post\n - **Hungama**\n - **Hun"
+        }
+      ],
+      "config_files": [],
+      "stack_tags": [
+        "GitHub Actions"
+      ],
+      "workspace_units": [
+        {
+          "path": "youtube_dl",
+          "name": "youtube_dl",
+          "kind": "subsystem",
+          "manifest_path": null,
+          "build_system": null,
+          "file_count": 844,
+          "languages": [
+            {
+              "language": "Python",
+              "files": 844,
+              "bytes": 5970459
+            }
+          ],
+          "scripts": [],
+          "entrypoints": [],
+          "test_files": [],
+          "tags": [
+            "Python"
+          ]
+        },
+        {
+          "path": "test",
+          "name": "test",
+          "kind": "subsystem",
+          "manifest_path": null,
+          "build_system": null,
+          "file_count": 70,
+          "languages": [
+            {
+              "language": "Python",
+              "files": 32,
+              "bytes": 410251
+            },
+            {
+              "language": "JSON",
+              "files": 2,
+              "bytes": 2660
+            }
+          ],
+          "scripts": [],
+          "entrypoints": [],
+          "test_files": [],
+          "tags": [
+            "JSON",
+            "Python"
+          ]
+        },
+        {
+          "path": "devscripts",
+          "name": "devscripts",
+          "kind": "subsystem",
+          "manifest_path": null,
+          "build_system": null,
+          "file_count": 34,
+          "languages": [
+            {
+              "language": "Python",
+              "files": 24,
+              "bytes": 46783
+            },
+            {
+              "language": "Shell",
+              "files": 4,
+              "bytes": 7777
+            }
+          ],
+          "scripts": [],
+          "entrypoints": [],
+          "test_files": [],
+          "tags": [
+            "Python",
+            "Shell"
+          ]
+        }
+      ],
+      "qa_readiness": {
+        "score": 0,
+        "status": "missing",
+        "summary": "Repo does not expose enough local browser QA structure for a reliable Synthetic QA workflow yet.",
+        "signals": [
+          {
+            "id": "browser_runner",
+            "label": "Browser runner",
+            "status": "missing",
+            "detail": "No Playwright, Cypress, or browser runner config was found.",
+            "sources": []
+          },
+          {
+            "id": "user_flow_specs",
+            "label": "User-flow specs",
+            "status": "missing",
+            "detail": "No e2e/playwright/cypress spec files were found.",
+            "sources": []
+          },
+          {
+            "id": "local_app_command",
+            "label": "Local app command",
+            "status": "missing",
+            "detail": "No obvious package script for starting the app locally was found.",
+            "sources": []
+          },
+          {
+            "id": "qa_script",
+            "label": "QA script",
+            "status": "missing",
+            "detail": "No explicit QA/e2e/browser test script was found.",
+            "sources": []
+          },
+          {
+            "id": "artifact_trail",
+            "label": "Artifact trail",
+            "status": "missing",
+            "detail": "No browser QA artifacts or artifact-capable runner were found.",
+            "sources": []
+          },
+          {
+            "id": "targetable_routes",
+            "label": "Targetable surfaces",
+            "status": "missing",
+            "detail": "No obvious web entrypoint or route file was found.",
+            "sources": []
+          }
+        ],
+        "suggested_flows": []
+      },
+      "repo_graph": {
+        "schema_version": 2,
+        "nodes": [
+          {
+            "id": "file:github-issue-template-1-broken-site-md",
+            "kind": "file",
+            "label": ".github/ISSUE_TEMPLATE/1_broken_site.md",
+            "path": ".github/ISSUE_TEMPLATE/1_broken_site.md",
+            "detail": "source marker candidate",
+            "sources": [
+              ".github/ISSUE_TEMPLATE/1_broken_site.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:github-issue-template-2-site-support-request-md",
+            "kind": "file",
+            "label": ".github/ISSUE_TEMPLATE/2_site_support_request.md",
+            "path": ".github/ISSUE_TEMPLATE/2_site_support_request.md",
+            "detail": "source marker candidate",
+            "sources": [
+              ".github/ISSUE_TEMPLATE/2_site_support_request.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:github-issue-template-3-site-feature-request-md",
+            "kind": "file",
+            "label": ".github/ISSUE_TEMPLATE/3_site_feature_request.md",
+            "path": ".github/ISSUE_TEMPLATE/3_site_feature_request.md",
+            "detail": "source marker candidate",
+            "sources": [
+              ".github/ISSUE_TEMPLATE/3_site_feature_request.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:github-issue-template-4-bug-report-md",
+            "kind": "file",
+            "label": ".github/ISSUE_TEMPLATE/4_bug_report.md",
+            "path": ".github/ISSUE_TEMPLATE/4_bug_report.md",
+            "detail": "source marker candidate",
+            "sources": [
+              ".github/ISSUE_TEMPLATE/4_bug_report.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:github-issue-template-5-feature-request-md",
+            "kind": "file",
+            "label": ".github/ISSUE_TEMPLATE/5_feature_request.md",
+            "path": ".github/ISSUE_TEMPLATE/5_feature_request.md",
+            "detail": "source marker candidate",
+            "sources": [
+              ".github/ISSUE_TEMPLATE/5_feature_request.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:github-issue-template-6-question-md",
+            "kind": "file",
+            "label": ".github/ISSUE_TEMPLATE/6_question.md",
+            "path": ".github/ISSUE_TEMPLATE/6_question.md",
+            "detail": "source marker candidate",
+            "sources": [
+              ".github/ISSUE_TEMPLATE/6_question.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:github-issue-template-tmpl-1-broken-site-md",
+            "kind": "file",
+            "label": ".github/ISSUE_TEMPLATE_tmpl/1_broken_site.md",
+            "path": ".github/ISSUE_TEMPLATE_tmpl/1_broken_site.md",
+            "detail": "source marker candidate",
+            "sources": [
+              ".github/ISSUE_TEMPLATE_tmpl/1_broken_site.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:github-issue-template-tmpl-2-site-support-request-md",
+            "kind": "file",
+            "label": ".github/ISSUE_TEMPLATE_tmpl/2_site_support_request.md",
+            "path": ".github/ISSUE_TEMPLATE_tmpl/2_site_support_request.md",
+            "detail": "source marker candidate",
+            "sources": [
+              ".github/ISSUE_TEMPLATE_tmpl/2_site_support_request.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:github-issue-template-tmpl-3-site-feature-request-md",
+            "kind": "file",
+            "label": ".github/ISSUE_TEMPLATE_tmpl/3_site_feature_request.md",
+            "path": ".github/ISSUE_TEMPLATE_tmpl/3_site_feature_request.md",
+            "detail": "source marker candidate",
+            "sources": [
+              ".github/ISSUE_TEMPLATE_tmpl/3_site_feature_request.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:github-issue-template-tmpl-4-bug-report-md",
+            "kind": "file",
+            "label": ".github/ISSUE_TEMPLATE_tmpl/4_bug_report.md",
+            "path": ".github/ISSUE_TEMPLATE_tmpl/4_bug_report.md",
+            "detail": "source marker candidate",
+            "sources": [
+              ".github/ISSUE_TEMPLATE_tmpl/4_bug_report.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:github-issue-template-tmpl-5-feature-request-md",
+            "kind": "file",
+            "label": ".github/ISSUE_TEMPLATE_tmpl/5_feature_request.md",
+            "path": ".github/ISSUE_TEMPLATE_tmpl/5_feature_request.md",
+            "detail": "source marker candidate",
+            "sources": [
+              ".github/ISSUE_TEMPLATE_tmpl/5_feature_request.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:github-pull-request-template-md",
+            "kind": "file",
+            "label": ".github/PULL_REQUEST_TEMPLATE.md",
+            "path": ".github/PULL_REQUEST_TEMPLATE.md",
+            "detail": "source marker candidate",
+            "sources": [
+              ".github/PULL_REQUEST_TEMPLATE.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:github-workflows-ci-yml",
+            "kind": "file",
+            "label": ".github/workflows/ci.yml",
+            "path": ".github/workflows/ci.yml",
+            "detail": "GitHub Actions workflow",
+            "sources": [
+              ".github/workflows/ci.yml"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:contributing-md",
+            "kind": "file",
+            "label": "CONTRIBUTING.md",
+            "path": "CONTRIBUTING.md",
+            "detail": "source marker candidate",
+            "sources": [
+              "CONTRIBUTING.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:makefile",
+            "kind": "file",
+            "label": "Makefile",
+            "path": "Makefile",
+            "detail": "source marker candidate",
+            "sources": [
+              "Makefile"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:readme-md",
+            "kind": "file",
+            "label": "README.md",
+            "path": "README.md",
+            "detail": "Repository readme",
+            "sources": [
+              "README.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:docs-makefile",
+            "kind": "file",
+            "label": "docs/Makefile",
+            "path": "docs/Makefile",
+            "detail": "source marker candidate",
+            "sources": [
+              "docs/Makefile"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:docs-supportedsites-md",
+            "kind": "file",
+            "label": "docs/supportedsites.md",
+            "path": "docs/supportedsites.md",
+            "detail": "source marker candidate",
+            "sources": [
+              "docs/supportedsites.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "workspace:devscripts",
+            "kind": "subsystem",
+            "label": "devscripts",
+            "path": "devscripts",
+            "detail": "subsystem | 34 files | 24 Python, 4 Shell",
+            "sources": [
+              "devscripts"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "workspace:test",
+            "kind": "subsystem",
+            "label": "test",
+            "path": "test",
+            "detail": "subsystem | 70 files | 32 Python, 2 JSON",
+            "sources": [
+              "test"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "workspace:youtube-dl",
+            "kind": "subsystem",
+            "label": "youtube_dl",
+            "path": "youtube_dl",
+            "detail": "subsystem | 844 files | 844 Python",
+            "sources": [
+              "youtube_dl"
+            ],
+            "source_location": null,
+            "community": null
+          }
+        ],
+        "edges": [],
+        "truncated": false
+      },
+      "history_brief": {
+        "schema_version": 2,
+        "summary": "Local history brief captured 12 recent commits, 0 decision markers, 0 test hints, and 0 co-change clusters for Repo Unpacked. Treat commit subjects as leads and rely on cited files for durable constraints.",
+        "recent_commits": [
+          {
+            "sha": "956b8c585591",
+            "date": "2025-11-26",
+            "subject": "[YouTube] Bug-fix for `c1f5c3274a`",
+            "files": []
+          },
+          {
+            "sha": "d5f561166b9d",
+            "date": "2025-11-26",
+            "subject": "[core] Re-work format_note display in format list with abbreviated codec name",
+            "files": []
+          },
+          {
+            "sha": "d0283f5385ac",
+            "date": "2025-11-20",
+            "subject": "[YouTube] Revert forcing player JS by default",
+            "files": []
+          },
+          {
+            "sha": "6315f4b1dfaa",
+            "date": "2025-11-19",
+            "subject": "[utils] Support additional codecs and dynamic_range",
+            "files": []
+          },
+          {
+            "sha": "aeb1254fcf89",
+            "date": "2025-11-04",
+            "subject": "[YouTube] Fix playlist thumbnail extraction",
+            "files": []
+          },
+          {
+            "sha": "25890f2ad102",
+            "date": "2025-11-04",
+            "subject": "[YouTube] Improve detection of geo-restriction",
+            "files": []
+          },
+          {
+            "sha": "d65882a0220b",
+            "date": "2025-11-04",
+            "subject": "[YouTube] Improve mark_watched()",
+            "files": []
+          },
+          {
+            "sha": "39378f7b5cdd",
+            "date": "2025-11-04",
+            "subject": "[YouTube] Fix incorrect chapter extraction",
+            "files": []
+          },
+          {
+            "sha": "6f5d4c328970",
+            "date": "2025-11-04",
+            "subject": "[YouTube] Improve targeting of pre-roll wait",
+            "files": []
+          },
+          {
+            "sha": "5d445f8c5fff",
+            "date": "2025-11-04",
+            "subject": "[YouTube] Re-work client selection",
+            "files": []
+          },
+          {
+            "sha": "a1e2c7d90b2a",
+            "date": "2025-11-04",
+            "subject": "[YouTube] Add further InnerTube clients",
+            "files": []
+          },
+          {
+            "sha": "c55ace3c503c",
+            "date": "2025-11-04",
+            "subject": "[YouTube] Use insertion-order-preserving dict for InnerTube client data",
+            "files": []
+          }
+        ],
+        "decisions": [],
+        "test_hints": [],
+        "temporal_couplings": [],
+        "graph": {
+          "schema_version": 2,
+          "nodes": [
+            {
+              "id": "commit:25890f2ad102",
+              "kind": "commit",
+              "label": "[YouTube] Improve detection of geo-restriction",
+              "path": null,
+              "detail": "2025-11-04",
+              "citations": [
+                "git:25890f2ad102"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:39378f7b5cdd",
+              "kind": "commit",
+              "label": "[YouTube] Fix incorrect chapter extraction",
+              "path": null,
+              "detail": "2025-11-04",
+              "citations": [
+                "git:39378f7b5cdd"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:5d445f8c5fff",
+              "kind": "commit",
+              "label": "[YouTube] Re-work client selection",
+              "path": null,
+              "detail": "2025-11-04",
+              "citations": [
+                "git:5d445f8c5fff"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:6315f4b1dfaa",
+              "kind": "commit",
+              "label": "[utils] Support additional codecs and dynamic_range",
+              "path": null,
+              "detail": "2025-11-19",
+              "citations": [
+                "git:6315f4b1dfaa"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:6f5d4c328970",
+              "kind": "commit",
+              "label": "[YouTube] Improve targeting of pre-roll wait",
+              "path": null,
+              "detail": "2025-11-04",
+              "citations": [
+                "git:6f5d4c328970"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:956b8c585591",
+              "kind": "commit",
+              "label": "[YouTube] Bug-fix for `c1f5c3274a`",
+              "path": null,
+              "detail": "2025-11-26",
+              "citations": [
+                "git:956b8c585591"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:a1e2c7d90b2a",
+              "kind": "commit",
+              "label": "[YouTube] Add further InnerTube clients",
+              "path": null,
+              "detail": "2025-11-04",
+              "citations": [
+                "git:a1e2c7d90b2a"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:aeb1254fcf89",
+              "kind": "commit",
+              "label": "[YouTube] Fix playlist thumbnail extraction",
+              "path": null,
+              "detail": "2025-11-04",
+              "citations": [
+                "git:aeb1254fcf89"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:c55ace3c503c",
+              "kind": "commit",
+              "label": "[YouTube] Use insertion-order-preserving dict for InnerTube client data",
+              "path": null,
+              "detail": "2025-11-04",
+              "citations": [
+                "git:c55ace3c503c"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:d0283f5385ac",
+              "kind": "commit",
+              "label": "[YouTube] Revert forcing player JS by default",
+              "path": null,
+              "detail": "2025-11-20",
+              "citations": [
+                "git:d0283f5385ac"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:d5f561166b9d",
+              "kind": "commit",
+              "label": "[core] Re-work format_note display in format list with abbreviated codec name",
+              "path": null,
+              "detail": "2025-11-26",
+              "citations": [
+                "git:d5f561166b9d"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:d65882a0220b",
+              "kind": "commit",
+              "label": "[YouTube] Improve mark_watched()",
+              "path": null,
+              "detail": "2025-11-04",
+              "citations": [
+                "git:d65882a0220b"
+              ],
+              "trust": "git_observed"
+            }
+          ],
+          "edges": [],
+          "truncated": false
+        },
+        "sources": [],
+        "truncated": false
+      },
+      "repo_health": {
+        "schema_version": 1,
+        "summary": "Deterministic scan scored 96 source files across simple size, churn, structural, test-adjacency, and performance-risk signals. 55 hotspots surfaced; average score is 6.3/10. Treat these as review leads, not proof of a bug.",
+        "average_score": 6.3,
+        "hotspot_count": 55,
+        "files_analyzed": 96,
+        "files_with_test_signal": 0,
+        "top_files": [
+          {
+            "path": "youtube_dl/extractor/adobepass.py",
+            "score": 5,
+            "bucket": "hotspot",
+            "lines": 1572,
+            "bytes": 41407,
+            "churn": 1572,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "high",
+                "detail": "1572 lines in one source file; inspect whether the module hides multiple responsibilities.",
+                "sources": [
+                  "youtube_dl/extractor/adobepass.py"
+                ]
+              },
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 16; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "youtube_dl/extractor/adobepass.py"
+                ]
+              },
+              {
+                "id": "long_block",
+                "label": "Long function/block",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "A brace-delimited block spans roughly 1301 lines; consider extracting a helper when touching it.",
+                "sources": [
+                  "youtube_dl/extractor/adobepass.py"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 1572 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "youtube_dl/extractor/adobepass.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "youtube_dl/extractor/adobepass.py"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow.",
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "youtube_dl/extractor/facebook.py",
+            "score": 5.2,
+            "bucket": "hotspot",
+            "lines": 709,
+            "bytes": 30183,
+            "churn": 709,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "709 lines in one source file; changes here may be harder to review.",
+                "sources": [
+                  "youtube_dl/extractor/facebook.py"
+                ]
+              },
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 26; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "youtube_dl/extractor/facebook.py"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 709 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "youtube_dl/extractor/facebook.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "youtube_dl/extractor/facebook.py"
+                ]
+              },
+              {
+                "id": "io_in_loop",
+                "label": "I/O inside loop",
+                "dimension": "performance",
+                "severity": "medium",
+                "detail": "Loop-shaped code appears near filesystem, subprocess, database, or network I/O; inspect for N+1 or repeated setup work.",
+                "sources": [
+                  "youtube_dl/extractor/facebook.py"
+                ]
+              },
+              {
+                "id": "io_boundary",
+                "label": "I/O or process boundary",
+                "dimension": "defect",
+                "severity": "low",
+                "detail": "File touches filesystem, network, database, or subprocess boundaries; changes need concrete runtime proof.",
+                "sources": [
+                  "youtube_dl/extractor/facebook.py"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Flatten guard-heavy branches before adding behavior.",
+              "Hoist repeated I/O or batch loop work where behavior allows."
+            ]
+          },
+          {
+            "path": "youtube_dl/postprocessor/ffmpeg.py",
+            "score": 5.2,
+            "bucket": "hotspot",
+            "lines": 653,
+            "bytes": 26025,
+            "churn": 653,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "653 lines in one source file; changes here may be harder to review.",
+                "sources": [
+                  "youtube_dl/postprocessor/ffmpeg.py"
+                ]
+              },
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 14; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "youtube_dl/postprocessor/ffmpeg.py"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 653 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "youtube_dl/postprocessor/ffmpeg.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "youtube_dl/postprocessor/ffmpeg.py"
+                ]
+              },
+              {
+                "id": "io_in_loop",
+                "label": "I/O inside loop",
+                "dimension": "performance",
+                "severity": "medium",
+                "detail": "Loop-shaped code appears near filesystem, subprocess, database, or network I/O; inspect for N+1 or repeated setup work.",
+                "sources": [
+                  "youtube_dl/postprocessor/ffmpeg.py"
+                ]
+              },
+              {
+                "id": "io_boundary",
+                "label": "I/O or process boundary",
+                "dimension": "defect",
+                "severity": "low",
+                "detail": "File touches filesystem, network, database, or subprocess boundaries; changes need concrete runtime proof.",
+                "sources": [
+                  "youtube_dl/postprocessor/ffmpeg.py"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Flatten guard-heavy branches before adding behavior.",
+              "Hoist repeated I/O or batch loop work where behavior allows."
+            ]
+          },
+          {
+            "path": "test/test_http.py",
+            "score": 5.2,
+            "bucket": "hotspot",
+            "lines": 604,
+            "bytes": 23920,
+            "churn": 604,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "604 lines in one source file; changes here may be harder to review.",
+                "sources": [
+                  "test/test_http.py"
+                ]
+              },
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 10; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "test/test_http.py"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 604 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "test/test_http.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "test/test_http.py"
+                ]
+              },
+              {
+                "id": "io_in_loop",
+                "label": "I/O inside loop",
+                "dimension": "performance",
+                "severity": "medium",
+                "detail": "Loop-shaped code appears near filesystem, subprocess, database, or network I/O; inspect for N+1 or repeated setup work.",
+                "sources": [
+                  "test/test_http.py"
+                ]
+              },
+              {
+                "id": "io_boundary",
+                "label": "I/O or process boundary",
+                "dimension": "defect",
+                "severity": "low",
+                "detail": "File touches filesystem, network, database, or subprocess boundaries; changes need concrete runtime proof.",
+                "sources": [
+                  "test/test_http.py"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Flatten guard-heavy branches before adding behavior.",
+              "Hoist repeated I/O or batch loop work where behavior allows."
+            ]
+          },
+          {
+            "path": "youtube_dl/extractor/udemy.py",
+            "score": 5.2,
+            "bucket": "hotspot",
+            "lines": 481,
+            "bytes": 19413,
+            "churn": 481,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "481 lines in one source file; changes here may be harder to review.",
+                "sources": [
+                  "youtube_dl/extractor/udemy.py"
+                ]
+              },
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 16; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "youtube_dl/extractor/udemy.py"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 481 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "youtube_dl/extractor/udemy.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "youtube_dl/extractor/udemy.py"
+                ]
+              },
+              {
+                "id": "io_in_loop",
+                "label": "I/O inside loop",
+                "dimension": "performance",
+                "severity": "medium",
+                "detail": "Loop-shaped code appears near filesystem, subprocess, database, or network I/O; inspect for N+1 or repeated setup work.",
+                "sources": [
+                  "youtube_dl/extractor/udemy.py"
+                ]
+              },
+              {
+                "id": "io_boundary",
+                "label": "I/O or process boundary",
+                "dimension": "defect",
+                "severity": "low",
+                "detail": "File touches filesystem, network, database, or subprocess boundaries; changes need concrete runtime proof.",
+                "sources": [
+                  "youtube_dl/extractor/udemy.py"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Flatten guard-heavy branches before adding behavior.",
+              "Hoist repeated I/O or batch loop work where behavior allows."
+            ]
+          },
+          {
+            "path": "youtube_dl/compat.py",
+            "score": 5.4,
+            "bucket": "hotspot",
+            "lines": 1657,
+            "bytes": 120558,
+            "churn": 3903,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "high",
+                "detail": "1657 lines in one source file; inspect whether the module hides multiple responsibilities.",
+                "sources": [
+                  "youtube_dl/compat.py"
+                ]
+              },
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 14; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "youtube_dl/compat.py"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 3903 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "youtube_dl/compat.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "youtube_dl/compat.py"
+                ]
+              },
+              {
+                "id": "io_boundary",
+                "label": "I/O or process boundary",
+                "dimension": "defect",
+                "severity": "low",
+                "detail": "File touches filesystem, network, database, or subprocess boundaries; changes need concrete runtime proof.",
+                "sources": [
+                  "youtube_dl/compat.py"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow.",
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "youtube_dl/extractor/common.py",
+            "score": 5.4,
+            "bucket": "hotspot",
+            "lines": 1094,
+            "bytes": 159827,
+            "churn": 3406,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "high",
+                "detail": "1094 lines in one source file; inspect whether the module hides multiple responsibilities.",
+                "sources": [
+                  "youtube_dl/extractor/common.py"
+                ]
+              },
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 22; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "youtube_dl/extractor/common.py"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 3406 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "youtube_dl/extractor/common.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "youtube_dl/extractor/common.py"
+                ]
+              },
+              {
+                "id": "io_boundary",
+                "label": "I/O or process boundary",
+                "dimension": "defect",
+                "severity": "low",
+                "detail": "File touches filesystem, network, database, or subprocess boundaries; changes need concrete runtime proof.",
+                "sources": [
+                  "youtube_dl/extractor/common.py"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow.",
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "youtube_dl/YoutubeDL.py",
+            "score": 5.4,
+            "bucket": "hotspot",
+            "lines": 1087,
+            "bytes": 124279,
+            "churn": 2814,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "high",
+                "detail": "1087 lines in one source file; inspect whether the module hides multiple responsibilities.",
+                "sources": [
+                  "youtube_dl/YoutubeDL.py"
+                ]
+              },
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 23; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "youtube_dl/YoutubeDL.py"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 2814 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "youtube_dl/YoutubeDL.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "youtube_dl/YoutubeDL.py"
+                ]
+              },
+              {
+                "id": "io_boundary",
+                "label": "I/O or process boundary",
+                "dimension": "defect",
+                "severity": "low",
+                "detail": "File touches filesystem, network, database, or subprocess boundaries; changes need concrete runtime proof.",
+                "sources": [
+                  "youtube_dl/YoutubeDL.py"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow.",
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "test/test_utils.py",
+            "score": 5.4,
+            "bucket": "hotspot",
+            "lines": 1075,
+            "bytes": 80951,
+            "churn": 1778,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "high",
+                "detail": "1075 lines in one source file; inspect whether the module hides multiple responsibilities.",
+                "sources": [
+                  "test/test_utils.py"
+                ]
+              },
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 12; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "test/test_utils.py"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 1778 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "test/test_utils.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "test/test_utils.py"
+                ]
+              },
+              {
+                "id": "io_boundary",
+                "label": "I/O or process boundary",
+                "dimension": "defect",
+                "severity": "low",
+                "detail": "File touches filesystem, network, database, or subprocess boundaries; changes need concrete runtime proof.",
+                "sources": [
+                  "test/test_utils.py"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow.",
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "youtube_dl/utils.py",
+            "score": 5.7,
+            "bucket": "hotspot",
+            "lines": 1998,
+            "bytes": 212572,
+            "churn": 6949,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "high",
+                "detail": "1998 lines in one source file; inspect whether the module hides multiple responsibilities.",
+                "sources": [
+                  "youtube_dl/utils.py"
+                ]
+              },
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 20; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "youtube_dl/utils.py"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 6949 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "youtube_dl/utils.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "youtube_dl/utils.py"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow.",
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "youtube_dl/extractor/youtube.py",
+            "score": 5.7,
+            "bucket": "hotspot",
+            "lines": 1139,
+            "bytes": 200949,
+            "churn": 5117,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "high",
+                "detail": "1139 lines in one source file; inspect whether the module hides multiple responsibilities.",
+                "sources": [
+                  "youtube_dl/extractor/youtube.py"
+                ]
+              },
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 18; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "youtube_dl/extractor/youtube.py"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 5117 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "youtube_dl/extractor/youtube.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "youtube_dl/extractor/youtube.py"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow.",
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "youtube_dl/extractor/generic.py",
+            "score": 5.7,
+            "bucket": "hotspot",
+            "lines": 1255,
+            "bytes": 156668,
+            "churn": 3781,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "high",
+                "detail": "1255 lines in one source file; inspect whether the module hides multiple responsibilities.",
+                "sources": [
+                  "youtube_dl/extractor/generic.py"
+                ]
+              },
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 10; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "youtube_dl/extractor/generic.py"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 3781 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "youtube_dl/extractor/generic.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "youtube_dl/extractor/generic.py"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow.",
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          }
+        ],
+        "truncated": true
+      },
+      "all_files": [],
+      "ignored_dirs": [
+        ".git"
+      ],
+      "coverage": {
+        "schema_version": 1,
+        "strategy": "full_walk",
+        "sampled_files": 980,
+        "total_files": null,
+        "sample_percent": null,
+        "languages": [
+          {
+            "language": "Python",
+            "files": 902,
+            "bytes": 6434390
+          },
+          {
+            "language": "Markdown",
+            "files": 15,
+            "bytes": 178802
+          },
+          {
+            "language": "Shell",
+            "files": 5,
+            "bytes": 8791
+          },
+          {
+            "language": "JSON",
+            "files": 2,
+            "bytes": 2660
+          },
+          {
+            "language": "YAML",
+            "files": 2,
+            "bytes": 20860
+          }
+        ],
+        "top_level_dirs": [
+          {
+            "path": "youtube_dl",
+            "file_count": 844,
+            "bytes": 5970459
+          },
+          {
+            "path": "test",
+            "file_count": 70,
+            "bytes": 473711
+          },
+          {
+            "path": "devscripts",
+            "file_count": 34,
+            "bytes": 57239
+          },
+          {
+            "path": ".github",
+            "file_count": 14,
+            "bytes": 44928
+          },
+          {
+            "path": "docs",
+            "file_count": 6,
+            "bytes": 42476
+          }
+        ],
+        "notes": [
+          "Full local walk covered the repo within the scan cap."
+        ]
+      },
+      "all_files_capped": true,
+      "dir_tree_preview": {
+        "name": "",
+        "path": "",
+        "is_dir": true,
+        "file_count": 980,
+        "children": [
+          {
+            "name": "test",
+            "path": "test",
+            "is_dir": true,
+            "file_count": 70,
+            "children": [
+              {
+                "name": "swftests",
+                "path": "test/swftests",
+                "is_dir": true,
+                "file_count": 18,
+                "children": [
+                  {
+                    "name": ".gitignore",
+                    "path": "test/swftests/.gitignore",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "ArrayAccess.as",
+                    "path": "test/swftests/ArrayAccess.as",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "ClassCall.as",
+                    "path": "test/swftests/ClassCall.as",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "ClassConstruction.as",
+                    "path": "test/swftests/ClassConstruction.as",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "ConstArrayAccess.as",
+                    "path": "test/swftests/ConstArrayAccess.as",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "ConstantInt.as",
+                    "path": "test/swftests/ConstantInt.as",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "DictCall.as",
+                    "path": "test/swftests/DictCall.as",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "EqualsOperator.as",
+                    "path": "test/swftests/EqualsOperator.as",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "LocalVars.as",
+                    "path": "test/swftests/LocalVars.as",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "MemberAssignment.as",
+                    "path": "test/swftests/MemberAssignment.as",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "NeOperator.as",
+                    "path": "test/swftests/NeOperator.as",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "PrivateCall.as",
+                    "path": "test/swftests/PrivateCall.as",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "PrivateVoidCall.as",
+                    "path": "test/swftests/PrivateVoidCall.as",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "StaticAssignment.as",
+                    "path": "test/swftests/StaticAssignment.as",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "StaticRetrieval.as",
+                    "path": "test/swftests/StaticRetrieval.as",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "StringBasics.as",
+                    "path": "test/swftests/StringBasics.as",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "StringCharCodeAt.as",
+                    "path": "test/swftests/StringCharCodeAt.as",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "StringConversion.as",
+                    "path": "test/swftests/StringConversion.as",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "testdata",
+                "path": "test/testdata",
+                "is_dir": true,
+                "file_count": 17,
+                "children": [
+                  {
+                    "name": "cookies",
+                    "path": "test/testdata/cookies",
+                    "is_dir": true,
+                    "file_count": 3,
+                    "children": [
+                      {
+                        "name": "httponly_cookies.txt",
+                        "path": "test/testdata/cookies/httponly_cookies.txt",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "malformed_cookies.txt",
+                        "path": "test/testdata/cookies/malformed_cookies.txt",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "session_cookies.txt",
+                        "path": "test/testdata/cookies/session_cookies.txt",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": "f4m",
+                    "path": "test/testdata/f4m",
+                    "is_dir": true,
+                    "file_count": 1,
+                    "children": [
+                      {
+                        "name": "custom_base_url.f4m",
+                        "path": "test/testdata/f4m/custom_base_url.f4m",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": "m3u8",
+                    "path": "test/testdata/m3u8",
+                    "is_dir": true,
+                    "file_count": 6,
+                    "children": [
+                      {
+                        "name": "pluzz_francetv_11507.m3u8",
+                        "path": "test/testdata/m3u8/pluzz_francetv_11507.m3u8",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "teamcoco_11995.m3u8",
+                        "path": "test/testdata/m3u8/teamcoco_11995.m3u8",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "ted_18923.m3u8",
+                        "path": "test/testdata/m3u8/ted_18923.m3u8",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "toggle_mobile_12211.m3u8",
+                        "path": "test/testdata/m3u8/toggle_mobile_12211.m3u8",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "twitch_vod.m3u8",
+                        "path": "test/testdata/m3u8/twitch_vod.m3u8",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "vidio.m3u8",
+                        "path": "test/testdata/m3u8/vidio.m3u8",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": "mpd",
+                    "path": "test/testdata/mpd",
+                    "is_dir": true,
+                    "file_count": 6,
+                    "children": [
+                      {
+                        "name": "float_duration.mpd",
+                        "path": "test/testdata/mpd/float_duration.mpd",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "range_only.mpd",
+                        "path": "test/testdata/mpd/range_only.mpd",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "subtitles.mpd",
+                        "path": "test/testdata/mpd/subtitles.mpd",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "unfragmented.mpd",
+                        "path": "test/testdata/mpd/unfragmented.mpd",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "url_and_range.mpd",
+                        "path": "test/testdata/mpd/url_and_range.mpd",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "urls_only.mpd",
+                        "path": "test/testdata/mpd/urls_only.mpd",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": "xspf",
+                    "path": "test/testdata/xspf",
+                    "is_dir": true,
+                    "file_count": 1,
+                    "children": [
+                      {
+                        "name": "foo_xspf.xspf",
+                        "path": "test/testdata/xspf/foo_xspf.xspf",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "name": "__init__.py",
+                "path": "test/__init__.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "helper.py",
+                "path": "test/helper.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "parameters.json",
+                "path": "test/parameters.json",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "test_InfoExtractor.py",
+                "path": "test/test_InfoExtractor.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "test_YoutubeDL.py",
+                "path": "test/test_YoutubeDL.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "test_YoutubeDLCookieJar.py",
+                "path": "test/test_YoutubeDLCookieJar.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "test_aes.py",
+                "path": "test/test_aes.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "test_age_restriction.py",
+                "path": "test/test_age_restriction.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "test_all_urls.py",
+                "path": "test/test_all_urls.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "test_cache.py",
+                "path": "test/test_cache.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "test_compat.py",
+                "path": "test/test_compat.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "test_download.py",
+                "path": "test/test_download.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "test_downloader_external.py",
+                "path": "test/test_downloader_external.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "test_downloader_http.py",
+                "path": "test/test_downloader_http.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "test_execution.py",
+                "path": "test/test_execution.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "test_http.py",
+                "path": "test/test_http.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "test_iqiyi_sdk_interpreter.py",
+                "path": "test/test_iqiyi_sdk_interpreter.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "test_jsinterp.py",
+                "path": "test/test_jsinterp.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "test_netrc.py",
+                "path": "test/test_netrc.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "test_options.py",
+                "path": "test/test_options.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "test_postprocessors.py",
+                "path": "test/test_postprocessors.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "test_socks.py",
+                "path": "test/test_socks.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "test_subtitles.py",
+                "path": "test/test_subtitles.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "test_swfinterp.py",
+                "path": "test/test_swfinterp.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "test_traversal.py",
+                "path": "test/test_traversal.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "test_unicode_literals.py",
+                "path": "test/test_unicode_literals.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "test_update.py",
+                "path": "test/test_update.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "test_utils.py",
+                "path": "test/test_utils.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "test_verbose_output.py",
+                "path": "test/test_verbose_output.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "test_write_annotations.py",
+                "path": "test/test_write_annotations.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "test_youtube_lists.py",
+                "path": "test/test_youtube_lists.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "test_youtube_misc.py",
+                "path": "test/test_youtube_misc.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "test_youtube_signature.py",
+                "path": "test/test_youtube_signature.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "testcert.pem",
+                "path": "test/testcert.pem",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "versions.json",
+                "path": "test/versions.json",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "youtube_dl",
+            "path": "youtube_dl",
+            "is_dir": true,
+            "file_count": 318,
+            "children": [
+              {
+                "name": "downloader",
+                "path": "youtube_dl/downloader",
+                "is_dir": true,
+                "file_count": 12,
+                "children": [
+                  {
+                    "name": "__init__.py",
+                    "path": "youtube_dl/downloader/__init__.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "common.py",
+                    "path": "youtube_dl/downloader/common.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "dash.py",
+                    "path": "youtube_dl/downloader/dash.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "external.py",
+                    "path": "youtube_dl/downloader/external.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "f4m.py",
+                    "path": "youtube_dl/downloader/f4m.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "fragment.py",
+                    "path": "youtube_dl/downloader/fragment.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "hls.py",
+                    "path": "youtube_dl/downloader/hls.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "http.py",
+                    "path": "youtube_dl/downloader/http.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "ism.py",
+                    "path": "youtube_dl/downloader/ism.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "niconico.py",
+                    "path": "youtube_dl/downloader/niconico.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "rtmp.py",
+                    "path": "youtube_dl/downloader/rtmp.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "rtsp.py",
+                    "path": "youtube_dl/downloader/rtsp.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "extractor",
+                "path": "youtube_dl/extractor",
+                "is_dir": true,
+                "file_count": 291,
+                "children": [
+                  {
+                    "name": "abcnews.py",
+                    "path": "youtube_dl/extractor/abcnews.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "adobeconnect.py",
+                    "path": "youtube_dl/extractor/adobeconnect.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "adobepass.py",
+                    "path": "youtube_dl/extractor/adobepass.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "adobetv.py",
+                    "path": "youtube_dl/extractor/adobetv.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "adultswim.py",
+                    "path": "youtube_dl/extractor/adultswim.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "aenetworks.py",
+                    "path": "youtube_dl/extractor/aenetworks.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "afreecatv.py",
+                    "path": "youtube_dl/extractor/afreecatv.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "allocine.py",
+                    "path": "youtube_dl/extractor/allocine.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "alphaporno.py",
+                    "path": "youtube_dl/extractor/alphaporno.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "alsace20tv.py",
+                    "path": "youtube_dl/extractor/alsace20tv.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "amcnetworks.py",
+                    "path": "youtube_dl/extractor/amcnetworks.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "animeondemand.py",
+                    "path": "youtube_dl/extractor/animeondemand.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "apa.py",
+                    "path": "youtube_dl/extractor/apa.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "applepodcasts.py",
+                    "path": "youtube_dl/extractor/applepodcasts.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "archiveorg.py",
+                    "path": "youtube_dl/extractor/archiveorg.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "arcpublishing.py",
+                    "path": "youtube_dl/extractor/arcpublishing.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "ard.py",
+                    "path": "youtube_dl/extractor/ard.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "arnes.py",
+                    "path": "youtube_dl/extractor/arnes.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "asiancrush.py",
+                    "path": "youtube_dl/extractor/asiancrush.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "audimedia.py",
+                    "path": "youtube_dl/extractor/audimedia.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "azmedien.py",
+                    "path": "youtube_dl/extractor/azmedien.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "bandcamp.py",
+                    "path": "youtube_dl/extractor/bandcamp.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "bbc.py",
+                    "path": "youtube_dl/extractor/bbc.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "bellmedia.py",
+                    "path": "youtube_dl/extractor/bellmedia.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "bet.py",
+                    "path": "youtube_dl/extractor/bet.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "bigflix.py",
+                    "path": "youtube_dl/extractor/bigflix.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "bigo.py",
+                    "path": "youtube_dl/extractor/bigo.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "biobiochiletv.py",
+                    "path": "youtube_dl/extractor/biobiochiletv.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "bitchute.py",
+                    "path": "youtube_dl/extractor/bitchute.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "bleacherreport.py",
+                    "path": "youtube_dl/extractor/bleacherreport.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "blerp.py",
+                    "path": "youtube_dl/extractor/blerp.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "bloomberg.py",
+                    "path": "youtube_dl/extractor/bloomberg.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "bokecc.py",
+                    "path": "youtube_dl/extractor/bokecc.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "bongacams.py",
+                    "path": "youtube_dl/extractor/bongacams.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "box.py",
+                    "path": "youtube_dl/extractor/box.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "bpb.py",
+                    "path": "youtube_dl/extractor/bpb.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "brightcove.py",
+                    "path": "youtube_dl/extractor/brightcove.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "caffeine.py",
+                    "path": "youtube_dl/extractor/caffeine.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "cammodels.py",
+                    "path": "youtube_dl/extractor/cammodels.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "camtube.py",
+                    "path": "youtube_dl/extractor/camtube.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "camwithher.py",
+                    "path": "youtube_dl/extractor/camwithher.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "canalc2.py",
+                    "path": "youtube_dl/extractor/canalc2.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "canalplus.py",
+                    "path": "youtube_dl/extractor/canalplus.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "cbc.py",
+                    "path": "youtube_dl/extractor/cbc.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "cbsinteractive.py",
+                    "path": "youtube_dl/extractor/cbsinteractive.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "ccc.py",
+                    "path": "youtube_dl/extractor/ccc.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "cctv.py",
+                    "path": "youtube_dl/extractor/cctv.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "chaturbate.py",
+                    "path": "youtube_dl/extractor/chaturbate.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "cinemax.py",
+                    "path": "youtube_dl/extractor/cinemax.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "ciscolive.py",
+                    "path": "youtube_dl/extractor/ciscolive.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "clippit.py",
+                    "path": "youtube_dl/extractor/clippit.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "clubic.py",
+                    "path": "youtube_dl/extractor/clubic.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "comedycentral.py",
+                    "path": "youtube_dl/extractor/comedycentral.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "condenast.py",
+                    "path": "youtube_dl/extractor/condenast.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "contv.py",
+                    "path": "youtube_dl/extractor/contv.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "crooksandliars.py",
+                    "path": "youtube_dl/extractor/crooksandliars.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "cspan.py",
+                    "path": "youtube_dl/extractor/cspan.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "ctvnews.py",
+                    "path": "youtube_dl/extractor/ctvnews.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "cwtv.py",
+                    "path": "youtube_dl/extractor/cwtv.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "defense.py",
+                    "path": "youtube_dl/extractor/defense.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "dfb.py",
+                    "path": "youtube_dl/extractor/dfb.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "discovery.py",
+                    "path": "youtube_dl/extractor/discovery.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "discoverygo.py",
+                    "path": "youtube_dl/extractor/discoverygo.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "discoverynetworks.py",
+                    "path": "youtube_dl/extractor/discoverynetworks.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "discoveryvr.py",
+                    "path": "youtube_dl/extractor/discoveryvr.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "dotsub.py",
+                    "path": "youtube_dl/extractor/dotsub.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "dplay.py",
+                    "path": "youtube_dl/extractor/dplay.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "drbonanza.py",
+                    "path": "youtube_dl/extractor/drbonanza.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "dreisat.py",
+                    "path": "youtube_dl/extractor/dreisat.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "dumpert.py",
+                    "path": "youtube_dl/extractor/dumpert.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "dvtv.py",
+                    "path": "youtube_dl/extractor/dvtv.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "eagleplatform.py",
+                    "path": "youtube_dl/extractor/eagleplatform.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "ebaumsworld.py",
+                    "path": "youtube_dl/extractor/ebaumsworld.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "egghead.py",
+                    "path": "youtube_dl/extractor/egghead.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "einthusan.py",
+                    "path": "youtube_dl/extractor/einthusan.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "europa.py",
+                    "path": "youtube_dl/extractor/europa.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "extractors.py",
+                    "path": "youtube_dl/extractor/extractors.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "fc2.py",
+                    "path": "youtube_dl/extractor/fc2.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "fczenit.py",
+                    "path": "youtube_dl/extractor/fczenit.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "fifa.py",
+                    "path": "youtube_dl/extractor/fifa.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "filmweb.py",
+                    "path": "youtube_dl/extractor/filmweb.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "firsttv.py",
+                    "path": "youtube_dl/extractor/firsttv.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "fivemin.py",
+                    "path": "youtube_dl/extractor/fivemin.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "fivetv.py",
+                    "path": "youtube_dl/extractor/fivetv.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "flickr.py",
+                    "path": "youtube_dl/extractor/flickr.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "folketinget.py",
+                    "path": "youtube_dl/extractor/folketinget.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "fourtube.py",
+                    "path": "youtube_dl/extractor/fourtube.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "foxgay.py",
+                    "path": "youtube_dl/extractor/foxgay.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "foxnews.py",
+                    "path": "youtube_dl/extractor/foxnews.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "franceinter.py",
+                    "path": "youtube_dl/extractor/franceinter.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "freespeech.py",
+                    "path": "youtube_dl/extractor/freespeech.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "fujitv.py",
+                    "path": "youtube_dl/extractor/fujitv.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "funimation.py",
+                    "path": "youtube_dl/extractor/funimation.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "gameinformer.py",
+                    "path": "youtube_dl/extractor/gameinformer.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "gamespot.py",
+                    "path": "youtube_dl/extractor/gamespot.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "gaskrank.py",
+                    "path": "youtube_dl/extractor/gaskrank.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "generic.py",
+                    "path": "youtube_dl/extractor/generic.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "giantbomb.py",
+                    "path": "youtube_dl/extractor/giantbomb.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "giga.py",
+                    "path": "youtube_dl/extractor/giga.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "gigya.py",
+                    "path": "youtube_dl/extractor/gigya.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "glide.py",
+                    "path": "youtube_dl/extractor/glide.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "globo.py",
+                    "path": "youtube_dl/extractor/globo.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "golem.py",
+                    "path": "youtube_dl/extractor/golem.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "googledrive.py",
+                    "path": "youtube_dl/extractor/googledrive.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "goshgay.py",
+                    "path": "youtube_dl/extractor/goshgay.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "gputechconf.py",
+                    "path": "youtube_dl/extractor/gputechconf.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "heise.py",
+                    "path": "youtube_dl/extractor/heise.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "helsinki.py",
+                    "path": "youtube_dl/extractor/helsinki.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "hgtv.py",
+                    "path": "youtube_dl/extractor/hgtv.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "hidive.py",
+                    "path": "youtube_dl/extractor/hidive.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "historicfilms.py",
+                    "path": "youtube_dl/extractor/historicfilms.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "hitbox.py",
+                    "path": "youtube_dl/extractor/hitbox.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "hornbunny.py",
+                    "path": "youtube_dl/extractor/hornbunny.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "howstuffworks.py",
+                    "path": "youtube_dl/extractor/howstuffworks.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "hrfernsehen.py",
+                    "path": "youtube_dl/extractor/hrfernsehen.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "imggaming.py",
+                    "path": "youtube_dl/extractor/imggaming.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "ina.py",
+                    "path": "youtube_dl/extractor/ina.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "internazionale.py",
+                    "path": "youtube_dl/extractor/internazionale.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "iqiyi.py",
+                    "path": "youtube_dl/extractor/iqiyi.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "ir90tv.py",
+                    "path": "youtube_dl/extractor/ir90tv.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "ivi.py",
+                    "path": "youtube_dl/extractor/ivi.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "jwplatform.py",
+                    "path": "youtube_dl/extractor/jwplatform.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "kakao.py",
+                    "path": "youtube_dl/extractor/kakao.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "kaltura.py",
+                    "path": "youtube_dl/extractor/kaltura.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "ketnet.py",
+                    "path": "youtube_dl/extractor/ketnet.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "kickstarter.py",
+                    "path": "youtube_dl/extractor/kickstarter.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "kuwo.py",
+                    "path": "youtube_dl/extractor/kuwo.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "la7.py",
+                    "path": "youtube_dl/extractor/la7.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "leeco.py",
+                    "path": "youtube_dl/extractor/leeco.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "lenta.py",
+                    "path": "youtube_dl/extractor/lenta.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "line.py",
+                    "path": "youtube_dl/extractor/line.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "lnkgo.py",
+                    "path": "youtube_dl/extractor/lnkgo.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "lovehomeporn.py",
+                    "path": "youtube_dl/extractor/lovehomeporn.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "lynda.py",
+                    "path": "youtube_dl/extractor/lynda.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "m6.py",
+                    "path": "youtube_dl/extractor/m6.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "mailru.py",
+                    "path": "youtube_dl/extractor/mailru.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "manyvids.py",
+                    "path": "youtube_dl/extractor/manyvids.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "maoritv.py",
+                    "path": "youtube_dl/extractor/maoritv.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "markiza.py",
+                    "path": "youtube_dl/extractor/markiza.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "matchtv.py",
+                    "path": "youtube_dl/extractor/matchtv.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "medaltv.py",
+                    "path": "youtube_dl/extractor/medaltv.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "mediaset.py",
+                    "path": "youtube_dl/extractor/mediaset.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "mediasite.py",
+                    "path": "youtube_dl/extractor/mediasite.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "medici.py",
+                    "path": "youtube_dl/extractor/medici.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "melonvod.py",
+                    "path": "youtube_dl/extractor/melonvod.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "metacritic.py",
+                    "path": "youtube_dl/extractor/metacritic.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "mgoon.py",
+                    "path": "youtube_dl/extractor/mgoon.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "mgtv.py",
+                    "path": "youtube_dl/extractor/mgtv.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "minds.py",
+                    "path": "youtube_dl/extractor/minds.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "ministrygrid.py",
+                    "path": "youtube_dl/extractor/ministrygrid.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "minoto.py",
+                    "path": "youtube_dl/extractor/minoto.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "miomio.py",
+                    "path": "youtube_dl/extractor/miomio.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "mit.py",
+                    "path": "youtube_dl/extractor/mit.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "mlb.py",
+                    "path": "youtube_dl/extractor/mlb.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "mnet.py",
+                    "path": "youtube_dl/extractor/mnet.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "moevideo.py",
+                    "path": "youtube_dl/extractor/moevideo.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "movingimage.py",
+                    "path": "youtube_dl/extractor/movingimage.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "mtv.py",
+                    "path": "youtube_dl/extractor/mtv.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "mychannels.py",
+                    "path": "youtube_dl/extractor/mychannels.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "myspace.py",
+                    "path": "youtube_dl/extractor/myspace.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "nbc.py",
+                    "path": "youtube_dl/extractor/nbc.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "newgrounds.py",
+                    "path": "youtube_dl/extractor/newgrounds.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "newstube.py",
+                    "path": "youtube_dl/extractor/newstube.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "nextmedia.py",
+                    "path": "youtube_dl/extractor/nextmedia.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "nfl.py",
+                    "path": "youtube_dl/extractor/nfl.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "nhk.py",
+                    "path": "youtube_dl/extractor/nhk.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "ninenow.py",
+                    "path": "youtube_dl/extractor/ninenow.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "njpwworld.py",
+                    "path": "youtube_dl/extractor/njpwworld.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "normalboots.py",
+                    "path": "youtube_dl/extractor/normalboots.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "nowness.py",
+                    "path": "youtube_dl/extractor/nowness.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "nrl.py",
+                    "path": "youtube_dl/extractor/nrl.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "nytimes.py",
+                    "path": "youtube_dl/extractor/nytimes.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "onet.py",
+                    "path": "youtube_dl/extractor/onet.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "onionstudios.py",
+                    "path": "youtube_dl/extractor/onionstudios.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "orf.py",
+                    "path": "youtube_dl/extractor/orf.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "outsidetv.py",
+                    "path": "youtube_dl/extractor/outsidetv.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "pandoratv.py",
+                    "path": "youtube_dl/extractor/pandoratv.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "pearvideo.py",
+                    "path": "youtube_dl/extractor/pearvideo.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "peekvids.py",
+                    "path": "youtube_dl/extractor/peekvids.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "photobucket.py",
+                    "path": "youtube_dl/extractor/photobucket.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "piksel.py",
+                    "path": "youtube_dl/extractor/piksel.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "pinkbike.py",
+                    "path": "youtube_dl/extractor/pinkbike.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "playwire.py",
+                    "path": "youtube_dl/extractor/playwire.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "pluralsight.py",
+                    "path": "youtube_dl/extractor/pluralsight.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "polskieradio.py",
+                    "path": "youtube_dl/extractor/polskieradio.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "pornotube.py",
+                    "path": "youtube_dl/extractor/pornotube.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "pornoxo.py",
+                    "path": "youtube_dl/extractor/pornoxo.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "prosiebensat1.py",
+                    "path": "youtube_dl/extractor/prosiebensat1.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "rbgtum.py",
+                    "path": "youtube_dl/extractor/rbgtum.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "rds.py",
+                    "path": "youtube_dl/extractor/rds.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "rentv.py",
+                    "path": "youtube_dl/extractor/rentv.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "restudy.py",
+                    "path": "youtube_dl/extractor/restudy.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "ro220.py",
+                    "path": "youtube_dl/extractor/ro220.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "rockstargames.py",
+                    "path": "youtube_dl/extractor/rockstargames.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "roxwel.py",
+                    "path": "youtube_dl/extractor/roxwel.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "rtlnl.py",
+                    "path": "youtube_dl/extractor/rtlnl.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "rts.py",
+                    "path": "youtube_dl/extractor/rts.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "rtve.py",
+                    "path": "youtube_dl/extractor/rtve.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "rtvs.py",
+                    "path": "youtube_dl/extractor/rtvs.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "rutv.py",
+                    "path": "youtube_dl/extractor/rutv.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "ruv.py",
+                    "path": "youtube_dl/extractor/ruv.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "sbs.py",
+                    "path": "youtube_dl/extractor/sbs.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "screencast.py",
+                    "path": "youtube_dl/extractor/screencast.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "scrippsnetworks.py",
+                    "path": "youtube_dl/extractor/scrippsnetworks.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "seeker.py",
+                    "path": "youtube_dl/extractor/seeker.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "senateisvp.py",
+                    "path": "youtube_dl/extractor/senateisvp.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "servus.py",
+                    "path": "youtube_dl/extractor/servus.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "sixplay.py",
+                    "path": "youtube_dl/extractor/sixplay.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "skynewsarabia.py",
+                    "path": "youtube_dl/extractor/skynewsarabia.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "slutload.py",
+                    "path": "youtube_dl/extractor/slutload.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "snotr.py",
+                    "path": "youtube_dl/extractor/snotr.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "soundgasm.py",
+                    "path": "youtube_dl/extractor/soundgasm.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "spankbang.py",
+                    "path": "youtube_dl/extractor/spankbang.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "spankwire.py",
+                    "path": "youtube_dl/extractor/spankwire.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "spiegel.py",
+                    "path": "youtube_dl/extractor/spiegel.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "springboardplatform.py",
+                    "path": "youtube_dl/extractor/springboardplatform.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "streamable.py",
+                    "path": "youtube_dl/extractor/streamable.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "streamcloud.py",
+                    "path": "youtube_dl/extractor/streamcloud.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "stretchinternet.py",
+                    "path": "youtube_dl/extractor/stretchinternet.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "stv.py",
+                    "path": "youtube_dl/extractor/stv.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "sverigesradio.py",
+                    "path": "youtube_dl/extractor/sverigesradio.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "swrmediathek.py",
+                    "path": "youtube_dl/extractor/swrmediathek.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "syfy.py",
+                    "path": "youtube_dl/extractor/syfy.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "tass.py",
+                    "path": "youtube_dl/extractor/tass.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "teachable.py",
+                    "path": "youtube_dl/extractor/teachable.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "teachertube.py",
+                    "path": "youtube_dl/extractor/teachertube.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "teamtreehouse.py",
+                    "path": "youtube_dl/extractor/teamtreehouse.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "techtalks.py",
+                    "path": "youtube_dl/extractor/techtalks.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "ted.py",
+                    "path": "youtube_dl/extractor/ted.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "tele5.py",
+                    "path": "youtube_dl/extractor/tele5.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "telecinco.py",
+                    "path": "youtube_dl/extractor/telecinco.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "telegraaf.py",
+                    "path": "youtube_dl/extractor/telegraaf.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "telequebec.py",
+                    "path": "youtube_dl/extractor/telequebec.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "teletask.py",
+                    "path": "youtube_dl/extractor/teletask.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "tfo.py",
+                    "path": "youtube_dl/extractor/tfo.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "tinypic.py",
+                    "path": "youtube_dl/extractor/tinypic.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "tmz.py",
+                    "path": "youtube_dl/extractor/tmz.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "tnaflix.py",
+                    "path": "youtube_dl/extractor/tnaflix.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "toggle.py",
+                    "path": "youtube_dl/extractor/toggle.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "toongoggles.py",
+                    "path": "youtube_dl/extractor/toongoggles.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "trutv.py",
+                    "path": "youtube_dl/extractor/trutv.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "tubitv.py",
+                    "path": "youtube_dl/extractor/tubitv.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "tumblr.py",
+                    "path": "youtube_dl/extractor/tumblr.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "tunein.py",
+                    "path": "youtube_dl/extractor/tunein.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "tv2.py",
+                    "path": "youtube_dl/extractor/tv2.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "tv5mondeplus.py",
+                    "path": "youtube_dl/extractor/tv5mondeplus.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "tva.py",
+                    "path": "youtube_dl/extractor/tva.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "tvn24.py",
+                    "path": "youtube_dl/extractor/tvn24.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "tvnet.py",
+                    "path": "youtube_dl/extractor/tvnet.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "tvnoe.py",
+                    "path": "youtube_dl/extractor/tvnoe.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "udemy.py",
+                    "path": "youtube_dl/extractor/udemy.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "udn.py",
+                    "path": "youtube_dl/extractor/udn.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "umg.py",
+                    "path": "youtube_dl/extractor/umg.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "uol.py",
+                    "path": "youtube_dl/extractor/uol.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "uplynk.py",
+                    "path": "youtube_dl/extractor/uplynk.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "usanetwork.py",
+                    "path": "youtube_dl/extractor/usanetwork.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "usatoday.py",
+                    "path": "youtube_dl/extractor/usatoday.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "vesti.py",
+                    "path": "youtube_dl/extractor/vesti.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "vgtv.py",
+                    "path": "youtube_dl/extractor/vgtv.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "vidbit.py",
+                    "path": "youtube_dl/extractor/vidbit.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "videodetective.py",
+                    "path": "youtube_dl/extractor/videodetective.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "videofyme.py",
+                    "path": "youtube_dl/extractor/videofyme.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "videopress.py",
+                    "path": "youtube_dl/extractor/videopress.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "vidio.py",
+                    "path": "youtube_dl/extractor/vidio.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "vimeo.py",
+                    "path": "youtube_dl/extractor/vimeo.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "vimple.py",
+                    "path": "youtube_dl/extractor/vimple.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "vine.py",
+                    "path": "youtube_dl/extractor/vine.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "vodpl.py",
+                    "path": "youtube_dl/extractor/vodpl.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "vodplatform.py",
+                    "path": "youtube_dl/extractor/vodplatform.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "voicerepublic.py",
+                    "path": "youtube_dl/extractor/voicerepublic.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "voxmedia.py",
+                    "path": "youtube_dl/extractor/voxmedia.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "vshare.py",
+                    "path": "youtube_dl/extractor/vshare.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "vube.py",
+                    "path": "youtube_dl/extractor/vube.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "vyborymos.py",
+                    "path": "youtube_dl/extractor/vyborymos.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "wakanim.py",
+                    "path": "youtube_dl/extractor/wakanim.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "webcaster.py",
+                    "path": "youtube_dl/extractor/webcaster.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "webofstories.py",
+                    "path": "youtube_dl/extractor/webofstories.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "worldstarhiphop.py",
+                    "path": "youtube_dl/extractor/worldstarhiphop.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "xboxclips.py",
+                    "path": "youtube_dl/extractor/xboxclips.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "xminus.py",
+                    "path": "youtube_dl/extractor/xminus.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "xtube.py",
+                    "path": "youtube_dl/extractor/xtube.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "xvideos.py",
+                    "path": "youtube_dl/extractor/xvideos.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "xxxymovies.py",
+                    "path": "youtube_dl/extractor/xxxymovies.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "yahoo.py",
+                    "path": "youtube_dl/extractor/yahoo.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "yandexmusic.py",
+                    "path": "youtube_dl/extractor/yandexmusic.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "yandexvideo.py",
+                    "path": "youtube_dl/extractor/yandexvideo.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "yapfiles.py",
+                    "path": "youtube_dl/extractor/yapfiles.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "yinyuetai.py",
+                    "path": "youtube_dl/extractor/yinyuetai.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "youtube.py",
+                    "path": "youtube_dl/extractor/youtube.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "zdf.py",
+                    "path": "youtube_dl/extractor/zdf.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "zoom.py",
+                    "path": "youtube_dl/extractor/zoom.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "postprocessor",
+                "path": "youtube_dl/postprocessor",
+                "is_dir": true,
+                "file_count": 7,
+                "children": [
+                  {
+                    "name": "__init__.py",
+                    "path": "youtube_dl/postprocessor/__init__.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "common.py",
+                    "path": "youtube_dl/postprocessor/common.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "embedthumbnail.py",
+                    "path": "youtube_dl/postprocessor/embedthumbnail.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "execafterdownload.py",
+                    "path": "youtube_dl/postprocessor/execafterdownload.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "ffmpeg.py",
+                    "path": "youtube_dl/postprocessor/ffmpeg.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "metadatafromtitle.py",
+                    "path": "youtube_dl/postprocessor/metadatafromtitle.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "xattrpp.py",
+                    "path": "youtube_dl/postprocessor/xattrpp.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "__init__.py",
+                "path": "youtube_dl/__init__.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "aes.py",
+                "path": "youtube_dl/aes.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "cache.py",
+                "path": "youtube_dl/cache.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "compat.py",
+                "path": "youtube_dl/compat.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "options.py",
+                "path": "youtube_dl/options.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "traversal.py",
+                "path": "youtube_dl/traversal.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "update.py",
+                "path": "youtube_dl/update.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "version.py",
+                "path": "youtube_dl/version.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "LICENSE",
+            "path": "LICENSE",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          }
+        ]
+      }
+    },
+    "profiles": [
+      {
+        "stage": "full_scan",
+        "total_ms": 74,
+        "peak_rss_bytes": 31375360,
+        "steps": [
+          {
+            "id": "git_metadata",
+            "label": "Git metadata",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "file_walk",
+            "label": "Parallel file walk",
+            "ms": 9,
+            "pct": 12.162162162162163
+          },
+          {
+            "id": "languages",
+            "label": "Language breakdown",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "manifests",
+            "label": "Manifest parsing",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "docs",
+            "label": "Doc previews",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "aggregates",
+            "label": "Dirs, configs, stack tags",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "entrypoints",
+            "label": "Entrypoints, workspace units & QA readiness",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "source_previews",
+            "label": "Source preview cache",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "repo_graph",
+            "label": "Deterministic graph scan",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "history",
+            "label": "Git history & decision scan",
+            "ms": 14,
+            "pct": 18.91891891891892
+          },
+          {
+            "id": "repo_health",
+            "label": "Deterministic health scoring",
+            "ms": 48,
+            "pct": 64.86486486486487
+          },
+          {
+            "id": "dir_tree",
+            "label": "Directory tree preview",
+            "ms": 0,
+            "pct": 0
+          }
+        ]
+      },
+      {
+        "stage": "local_scan_persist",
+        "total_ms": 0,
+        "peak_rss_bytes": 31834112,
+        "steps": [
+          {
+            "id": "serialize",
+            "label": "JSON serialize (inventory → SQLite)",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "db_insert",
+            "label": "SQLite insert",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "touch_project",
+            "label": "Update repo project metadata",
+            "ms": 0,
+            "pct": 0
+          }
+        ]
+      }
+    ]
+  }
+}
