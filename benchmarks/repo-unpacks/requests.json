@@ -149,7 +149,7 @@
         {
           "path": "README.md",
           "bytes": 2906,
-          "preview": "# Requests\n\n[![Version](https://img.shields.io/pypi/v/requests.svg?maxAge=86400)](https://pypi.org/project/requests/)\n[![Supported Versions](https://img.shields.io/pypi/pyversions/requests.svg)](https://pypi.org/project/requests)\n[![Downloads](https://static.pepy.tech/badge/requests/month)](https://pepy.tech/project/requests)\n[![Contributors](https://img.shields.io/github/contributors/psf/requests.svg)](https://github.com/psf/requests/graphs/contributors)\n[![Documentation](https://readthedocs.org/projects/requests/badge/?version=latest)](https://requests.readthedocs.io)\n\n**Requests** is a simple, yet elegant, HTTP library.\n\n```python\n>>> import requests\n>>> r = requests.get('https://httpbin.org/basic-auth/user/pass', auth=('user', 'pass'))\n>>> r.status_code\n200\n>>> r.headers['content-type']\n'application/json; charset=utf8'\n>>> r.encoding\n'utf-8'\n>>> r.text\n'{\"authenticated\": true, ...'\n>>> r.json()\n{'authenticated': True, ...}\n```\n\nRequests allows you to send HTTP/1.1 requests extremely easily. There’s no need to manually add query strings to your URLs, or to form-encode your `PUT` & `POST` data — but nowadays, just use the `json` method!\n\nRequests is one of the most downloaded Python packages today, pulling in around `300M downloads / week` — according to GitHub, Requests is currently [depended upon](https://github.com/psf/requests/network/dependents?package_id=UGFja2FnZS01NzA4OTExNg%3D%3D) by `4,000,000+` repositories.\n\n## Installing Requests and Supported Versions\n\nRequests is available on PyPI:\n\n```console\n$ python -m pip install requests\n```\n\nRequests officially supports Python 3.10+.\n\n## Supported Features & Best–Practices\n\nRequests is ready for the demands of building robust and reliable HTTP–speaking applications, for the needs of today.\n\n- Keep-Alive & Connection Pooling\n- International Domains and URLs\n- Sessions with Cookie Persistence\n- Browser-style TLS/SSL Verification\n- Basic & Digest Authentication\n- Familiar `dict`–like Cookies\n- Automatic Content Decompression and Decoding\n- Multi-part File Uploads\n- SOCKS Proxy Support\n- Connection Timeouts\n- Streaming Downloads\n- Automatic honoring of `.netrc`\n- Chunked HTTP Requests\n\n## Cloning the repository\n\nWhen cloning the Requests repository, you may need to add the `-c\nfetch.fsck.badTimezone=ignore` flag to avoid an error about a bad commit timestamp (see\n[this issue](https://github.com/psf/requests/issues/2690) for more background):\n\n```shell\ngit clone -c fetch.fsck.badTimezone=ignore https://github.com/psf/requests.git\n```\n\nYou can also apply this setting to your global Git config:\n\n```shell\ngit config --global fetch.fsck.badTimezone ignore\n```\n\n---\n\n[![Kenneth Reitz](https://raw.githubusercontent.com/psf/requests/main/ext/kr.png)](https://kennethreitz.org) [![Python Software Foundation](https://raw.githubusercontent.com/psf/requests/main/ext/psf.png)](https://www.python.org/psf)\n"
+          "preview": "# Requests\n\n[![Version](https://img.shields.io/pypi/v/requests.svg?maxAge=86400)](https://pypi.org/project/requests/)\n[![Supported Versions](https://img.shields.io/pypi/pyversions/requests.svg)](https://pypi.org/project/requests)\n[![Downloads](https://static.pepy.tech/badge/requests/month)](https://pepy.tech/project/requests)\n[![Contributors](https://img.shields.io/github/contributors/psf/requests.svg)](https://github.com/psf/requests/graphs/contributors)\n[![Documentation](https://readthedocs.org/projects/requests/badge/?version=latest)](https://requests.readthedocs.io)\n\n**Requests** is a simple, yet elegant, HTTP library.\n\n```python\n>>> import requests\n>>> r = requests.get('https://httpbin.org/basic-auth/user/pass', auth=('user', 'pass'))\n>>> r.status_code\n200\n>>> r.headers['content-type']\n'application/json; charset=utf8'\n>>> r.encoding\n'utf-8'\n>>> r.text\n'{\"authenticated\": true, ...'\n>>> r.json()\n{'authenticated': True, ...}\n```\n\nRequests allows you to send HTTP/1.1 requests extremely easily. There\u2019s no need to manually add query strings to your URLs, or to form-encode your `PUT` & `POST` data \u2014 but nowadays, just use the `json` method!\n\nRequests is one of the most downloaded Python packages today, pulling in around `300M downloads / week` \u2014 according to GitHub, Requests is currently [depended upon](https://github.com/psf/requests/network/dependents?package_id=UGFja2FnZS01NzA4OTExNg%3D%3D) by `4,000,000+` repositories.\n\n## Installing Requests and Supported Versions\n\nRequests is available on PyPI:\n\n```console\n$ python -m pip install requests\n```\n\nRequests officially supports Python 3.10+.\n\n## Supported Features & Best\u2013Practices\n\nRequests is ready for the demands of building robust and reliable HTTP\u2013speaking applications, for the needs of today.\n\n- Keep-Alive & Connection Pooling\n- International Domains and URLs\n- Sessions with Cookie Persistence\n- Browser-style TLS/SSL Verification\n- Basic & Digest Authentication\n- Familiar `dict`\u2013like Cookies\n- Automatic Content Decompression and Decoding\n- Multi-part File Uploads\n- SOCKS Proxy Support\n- Connection Timeouts\n- Streaming Downloads\n- Automatic honoring of `.netrc`\n- Chunked HTTP Requests\n\n## Cloning the repository\n\nWhen cloning the Requests repository, you may need to add the `-c\nfetch.fsck.badTimezone=ignore` flag to avoid an error about a bad commit timestamp (see\n[this issue](https://github.com/psf/requests/issues/2690) for more background):\n\n```shell\ngit clone -c fetch.fsck.badTimezone=ignore https://github.com/psf/requests.git\n```\n\nYou can also apply this setting to your global Git config:\n\n```shell\ngit config --global fetch.fsck.badTimezone ignore\n```\n\n---\n\n[![Kenneth Reitz](https://raw.githubusercontent.com/psf/requests/main/ext/kr.png)](https://kennethreitz.org) [![Python Software Foundation](https://raw.githubusercontent.com/psf/requests/main/ext/psf.png)](https://www.python.org/psf)\n"
         }
       ],
       "config_files": [],
@@ -4205,7 +4205,7 @@
         "steps": [
           {
             "id": "serialize",
-            "label": "JSON serialize (inventory → SQLite)",
+            "label": "JSON serialize (inventory \u2192 SQLite)",
             "ms": 0,
             "pct": 0
           },
@@ -4226,19 +4226,19 @@
     ]
   },
   "report": {
-    "overview": "Requests is the PSF-maintained Python HTTP client library (`v2.34.2`, `src/requests/__version__.py`) that wraps urllib3 in a human-friendly API: `requests.get(...)` returns a `Response` with `.text`, `.json()`, `.cookies`, and `.raise_for_status()`. It is a pure-library distribution — no CLI, no server, no database — whose entire user surface is the seven module-level verb functions in `api.py` plus the `Session` object that persists cookies, auth, proxies, and a urllib3 connection pool across calls. What is distinctive in this commit is how much of the codebase is now type-machinery and hardening rather than new features: a private `_types.py` with `TypedDict` kwargs unpacking, pyright in `strict` mode over `src/requests/`, a pinned/hash-locked GitHub Actions setup audited by zizmor, and an explicit anti-LLM contribution policy. The architecture is deliberately layered so that the transport is swappable: `Session.mount(prefix, adapter)` is the single extension seam that every custom TLS, retry, or mock-transport integration in the ecosystem hangs off.",
+    "overview": "Requests is the PSF-maintained Python HTTP client library (`v2.34.2`, `src/requests/__version__.py`) that wraps urllib3 in a human-friendly API: `requests.get(...)` returns a `Response` with `.text`, `.json()`, `.cookies`, and `.raise_for_status()`. It is a pure-library distribution \u2014 no CLI, no server, no database \u2014 whose entire user surface is the seven module-level verb functions in `api.py` plus the `Session` object that persists cookies, auth, proxies, and a urllib3 connection pool across calls. What is distinctive in this commit is how much of the codebase is now type-machinery and hardening rather than new features: a private `_types.py` with `TypedDict` kwargs unpacking, pyright in `strict` mode over `src/requests/`, a pinned/hash-locked GitHub Actions setup audited by zizmor, and an explicit anti-LLM contribution policy. The architecture is deliberately layered so that the transport is swappable: `Session.mount(prefix, adapter)` is the single extension seam that every custom TLS, retry, or mock-transport integration in the ecosystem hangs off.",
     "system_map": {
-      "summary": "There is no application entrypoint — the package root `src/requests/__init__.py` is the runtime boundary, and it does dependency-compatibility checking, optional pyOpenSSL SNI injection, and re-export of the public API before anything else runs. Beneath it sit four layers: the stateless verb wrappers (`api.py`), the stateful `Session` (`sessions.py`), the request/response value objects (`models.py`), and the urllib3-backed transport (`adapters.py`). Cross-cutting support lives in `utils.py` (proxies, netrc, header validation, length probing), `cookies.py` (a `CookieJar`/`MutableMapping` hybrid), `structures.py` (`CaseInsensitiveDict`, `LookupDict`), and `exceptions.py`. There is no storage layer: the only persistent state is the in-memory `RequestsCookieJar` on a `Session` and urllib3's connection pools. Build is setuptools via `pyproject.toml`; test/lint/typecheck/publish are four separate GitHub Actions workflows, and distribution is a Trusted-Publishing PyPI upload on `v*` tags.",
+      "summary": "There is no application entrypoint \u2014 the package root `src/requests/__init__.py` is the runtime boundary, and it does dependency-compatibility checking, optional pyOpenSSL SNI injection, and re-export of the public API before anything else runs. Beneath it sit four layers: the stateless verb wrappers (`api.py`), the stateful `Session` (`sessions.py`), the request/response value objects (`models.py`), and the urllib3-backed transport (`adapters.py`). Cross-cutting support lives in `utils.py` (proxies, netrc, header validation, length probing), `cookies.py` (a `CookieJar`/`MutableMapping` hybrid), `structures.py` (`CaseInsensitiveDict`, `LookupDict`), and `exceptions.py`. There is no storage layer: the only persistent state is the in-memory `RequestsCookieJar` on a `Session` and urllib3's connection pools. Build is setuptools via `pyproject.toml`; test/lint/typecheck/publish are four separate GitHub Actions workflows, and distribution is a Trusted-Publishing PyPI upload on `v*` tags.",
       "claims": [
         {
-          "claim": "The package root is the de-facto entrypoint: importing `requests` runs `check_compatibility()` to assert urllib3 >= 1.21.1 and chardet 3.0.2–8.0.0 / charset_normalizer 2.0.0–4.0.0, emitting `RequestsDependencyWarning` on mismatch rather than failing the import.",
+          "claim": "The package root is the de-facto entrypoint: importing `requests` runs `check_compatibility()` to assert urllib3 >= 1.21.1 and chardet 3.0.2\u20138.0.0 / charset_normalizer 2.0.0\u20134.0.0, emitting `RequestsDependencyWarning` on mismatch rather than failing the import.",
           "sources": [
             "src/requests/__init__.py#L58-L118"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "Import also attempts `pyopenssl.inject_into_urllib3()` when `ssl.HAS_SNI` is falsy and then version-checks `cryptography` via `_check_cryptography()`, warning if below 1.3.4 — a side effect that mutates urllib3 globally at import time.",
+          "claim": "Import also attempts `pyopenssl.inject_into_urllib3()` when `ssl.HAS_SNI` is falsy and then version-checks `cryptography` via `_check_cryptography()`, warning if below 1.3.4 \u2014 a side effect that mutates urllib3 globally at import time.",
           "sources": [
             "src/requests/__init__.py#L120-L143"
           ],
@@ -4253,7 +4253,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "`api.request()` is stateless by construction — it opens `sessions.Session()` in a `with` block for every call specifically to close sockets and avoid `ResourceWarning`, meaning module-level calls get zero connection reuse.",
+          "claim": "`api.request()` is stateless by construction \u2014 it opens `sessions.Session()` in a `with` block for every call specifically to close sockets and avoid `ResourceWarning`, meaning module-level calls get zero connection reuse.",
           "sources": [
             "src/requests/api.py#L64-L70"
           ],
@@ -4268,7 +4268,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "The transport boundary is `HTTPAdapter.send()`, which calls `conn.urlopen(..., redirect=False, preload_content=False, decode_content=False, retries=self.max_retries)` — requests deliberately disables urllib3's own redirect and decode handling and reimplements both.",
+          "claim": "The transport boundary is `HTTPAdapter.send()`, which calls `conn.urlopen(..., redirect=False, preload_content=False, decode_content=False, retries=self.max_retries)` \u2014 requests deliberately disables urllib3's own redirect and decode handling and reimplements both.",
           "sources": [
             "src/requests/adapters.py#L634-L748"
           ],
@@ -4314,7 +4314,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Five CI workflows gate the repo: `run-tests.yml` (matrix of Python 3.10–3.15-dev plus 3.14t free-threaded and pypy-3.11, across ubuntu/macOS/windows), `lint.yml` (pre-commit), `typecheck.yml` (pyright), `codeql-analysis.yml`, and `zizmor.yml` for Actions-security scanning.",
+          "claim": "Five CI workflows gate the repo: `run-tests.yml` (matrix of Python 3.10\u20133.15-dev plus 3.14t free-threaded and pypy-3.11, across ubuntu/macOS/windows), `lint.yml` (pre-commit), `typecheck.yml` (pyright), `codeql-analysis.yml`, and `zizmor.yml` for Actions-security scanning.",
           "sources": [
             ".github/workflows/run-tests.yml#L1-L40",
             ".github/workflows/typecheck.yml",
@@ -4353,7 +4353,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Request bodies support four distinct shapes decided in `prepare_body`: JSON via `complexjson.dumps(json, allow_nan=False)` → `application/json`; multipart via `_encode_files`; form-encoding via `_encode_params` → `application/x-www-form-urlencoded`; and streamed iterables/file objects that set `Transfer-Encoding: chunked` when length is unknown.",
+          "claim": "Request bodies support four distinct shapes decided in `prepare_body`: JSON via `complexjson.dumps(json, allow_nan=False)` \u2192 `application/json`; multipart via `_encode_files`; form-encoding via `_encode_params` \u2192 `application/x-www-form-urlencoded`; and streamed iterables/file objects that set `Transfer-Encoding: chunked` when length is unknown.",
           "sources": [
             "src/requests/models.py#L576-L651"
           ],
@@ -4368,7 +4368,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Streaming bodies and file uploads are mutually exclusive — combining them raises `NotImplementedError(\"Streamed bodies and files are mutually exclusive.\")`.",
+          "claim": "Streaming bodies and file uploads are mutually exclusive \u2014 combining them raises `NotImplementedError(\"Streamed bodies and files are mutually exclusive.\")`.",
           "sources": [
             "src/requests/models.py#L622-L626"
           ],
@@ -4415,7 +4415,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "`requests.codes` is a `LookupDict` supporting attribute and item access with multiple aliases per code — including the joke aliases `codes['\\\\o/']` and `codes['✓']` for 200 — generated by `_init()` which also appends the full table to the module docstring.",
+          "claim": "`requests.codes` is a `LookupDict` supporting attribute and item access with multiple aliases per code \u2014 including the joke aliases `codes['\\\\o/']` and `codes['\u2713']` for 200 \u2014 generated by `_init()` which also appends the full table to the module docstring.",
           "sources": [
             "src/requests/status_codes.py#L22-L31",
             "src/requests/status_codes.py#L109-L128",
@@ -4468,10 +4468,10 @@
       ]
     },
     "data_flow": {
-      "summary": "Input arrives as loosely-typed Python kwargs at `api.request()` or `Session.request()`, is funnelled into a `Request` value object, then normalised into a fully-serialised `PreparedRequest` (bytes body, `CaseInsensitiveDict` headers, percent-encoded URL string) by `Session.prepare_request()`. Session-level and environment-level settings are merged in at two distinct points — `merge_setting`/`merge_hooks` during preparation, and `merge_environment_settings` for proxies/verify/cert/stream just before send. The `PreparedRequest` crosses the adapter boundary into urllib3, and the urllib3 response crosses back through `HTTPAdapter.build_response()`, which is the sole constructor of `Response` objects. State ownership is clean: `Session` owns cookies, adapters and defaults; `PreparedRequest` owns the wire representation; `Response` owns `_content`/`_content_consumed` and lazily pulls bytes off `raw`. Output boundaries are the `Response` accessors and the environment mutations in `should_bypass_proxies` (via `set_environ`) and `extract_zipped_paths` (via `tempfile.mkstemp`).",
+      "summary": "Input arrives as loosely-typed Python kwargs at `api.request()` or `Session.request()`, is funnelled into a `Request` value object, then normalised into a fully-serialised `PreparedRequest` (bytes body, `CaseInsensitiveDict` headers, percent-encoded URL string) by `Session.prepare_request()`. Session-level and environment-level settings are merged in at two distinct points \u2014 `merge_setting`/`merge_hooks` during preparation, and `merge_environment_settings` for proxies/verify/cert/stream just before send. The `PreparedRequest` crosses the adapter boundary into urllib3, and the urllib3 response crosses back through `HTTPAdapter.build_response()`, which is the sole constructor of `Response` objects. State ownership is clean: `Session` owns cookies, adapters and defaults; `PreparedRequest` owns the wire representation; `Response` owns `_content`/`_content_consumed` and lazily pulls bytes off `raw`. Output boundaries are the `Response` accessors and the environment mutations in `should_bypass_proxies` (via `set_environ`) and `extract_zipped_paths` (via `tempfile.mkstemp`).",
       "claims": [
         {
-          "claim": "Settings precedence is implemented by `merge_setting(request_setting, session_setting)`: non-Mapping request values win outright, Mappings are merged with request keys overriding, and any key explicitly set to `None` is deleted from the merged result — that is how callers suppress a session default header.",
+          "claim": "Settings precedence is implemented by `merge_setting(request_setting, session_setting)`: non-Mapping request values win outright, Mappings are merged with request keys overriding, and any key explicitly set to `None` is deleted from the merged result \u2014 that is how callers suppress a session default header.",
           "sources": [
             "src/requests/sessions.py#L75-L104"
           ],
@@ -4493,14 +4493,14 @@
           "kind": "evidence"
         },
         {
-          "claim": "`PreparedRequest.prepare()` runs a fixed six-step pipeline — method, url, headers, cookies, body, auth — then hooks; the ordering comment states auth must be last so schemes like OAuth can sign a fully-formed request and still register hooks.",
+          "claim": "`PreparedRequest.prepare()` runs a fixed six-step pipeline \u2014 method, url, headers, cookies, body, auth \u2014 then hooks; the ordering comment states auth must be last so schemes like OAuth can sign a fully-formed request and still register hooks.",
           "sources": [
             "src/requests/models.py#L424-L452"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "`prepare_auth` mutates the prepared request by `self.__dict__.update(r.__dict__)` from whatever the auth callable returns, then recomputes Content-Length — so an auth handler can legitimately rewrite body and headers.",
+          "claim": "`prepare_auth` mutates the prepared request by `self.__dict__.update(r.__dict__)` from whatever the auth callable returns, then recomputes Content-Length \u2014 so an auth handler can legitimately rewrite body and headers.",
           "sources": [
             "src/requests/models.py#L670-L697"
           ],
@@ -4516,14 +4516,14 @@
           "kind": "evidence"
         },
         {
-          "claim": "Environment enters the flow at `merge_environment_settings`, which (only when `trust_env`) seeds proxies from `getproxies()` and overrides `verify` from `REQUESTS_CA_BUNDLE` or `CURL_CA_BUNDLE` — explicitly to be cURL-compatible.",
+          "claim": "Environment enters the flow at `merge_environment_settings`, which (only when `trust_env`) seeds proxies from `getproxies()` and overrides `verify` from `REQUESTS_CA_BUNDLE` or `CURL_CA_BUNDLE` \u2014 explicitly to be cURL-compatible.",
           "sources": [
             "src/requests/sessions.py#L831-L868"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "Proxy selection is layered: `resolve_proxies` consults `should_bypass_proxies` (NO_PROXY, CIDR matching, platform `proxy_bypass`), then `select_proxy` picks by the key precedence `scheme://host` → `scheme` → `all://host` → `all`.",
+          "claim": "Proxy selection is layered: `resolve_proxies` consults `should_bypass_proxies` (NO_PROXY, CIDR matching, platform `proxy_bypass`), then `select_proxy` picks by the key precedence `scheme://host` \u2192 `scheme` \u2192 `all://host` \u2192 `all`.",
           "sources": [
             "src/requests/utils.py#L810-L871",
             "src/requests/utils.py#L885-L940"
@@ -4539,7 +4539,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Header values are validated at the input boundary by `check_header_validity`, which regex-matches against `HEADER_VALIDATORS` to reject CR/LF and leading-whitespace — the CRLF-injection guard.",
+          "claim": "Header values are validated at the input boundary by `check_header_validity`, which regex-matches against `HEADER_VALIDATORS` to reject CR/LF and leading-whitespace \u2014 the CRLF-injection guard.",
           "sources": [
             "src/requests/models.py#L565-L574",
             "src/requests/utils.py#L1087-L1120",
@@ -4572,7 +4572,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "urllib3 exceptions are translated into the requests hierarchy at exactly one place — the `try/except` ladder in `HTTPAdapter.send` mapping `MaxRetryError` reasons to `ConnectTimeout`/`RetryError`/`ProxyError`/`SSLError` and `ProtocolError`/`OSError` to `ConnectionError`.",
+          "claim": "urllib3 exceptions are translated into the requests hierarchy at exactly one place \u2014 the `try/except` ladder in `HTTPAdapter.send` mapping `MaxRetryError` reasons to `ConnectTimeout`/`RetryError`/`ProxyError`/`SSLError` and `ProtocolError`/`OSError` to `ConnectionError`.",
           "sources": [
             "src/requests/adapters.py#L703-L747",
             "src/requests/exceptions.py#L66-L150"
@@ -4590,17 +4590,17 @@
       ]
     },
     "behavior_traces": {
-      "summary": "Three flows carry most of the library's behaviour: the one-shot `requests.get()` path, the redirect-following loop inside `Session.send`, and the digest-auth 401 retry. All three converge on `Session.send` → `HTTPAdapter.send` → `build_response`. The redirect loop is a generator (`resolve_redirects`) that is fully drained inside `send`, which is why history arrives pre-assembled on the returned `Response`. The digest flow is unusual in that it re-enters the transport from a response hook (`r.connection.send(prep)`), bypassing `Session.send` entirely.",
+      "summary": "Three flows carry most of the library's behaviour: the one-shot `requests.get()` path, the redirect-following loop inside `Session.send`, and the digest-auth 401 retry. All three converge on `Session.send` \u2192 `HTTPAdapter.send` \u2192 `build_response`. The redirect loop is a generator (`resolve_redirects`) that is fully drained inside `send`, which is why history arrives pre-assembled on the returned `Response`. The digest flow is unusual in that it re-enters the transport from a response hook (`r.connection.send(prep)`), bypassing `Session.send` entirely.",
       "claims": [
         {
-          "claim": "Import trace: `requests/__init__.py` runs `check_compatibility` → optional `pyopenssl.inject_into_urllib3` → `warnings.simplefilter('ignore', DependencyWarning)` → re-exports → `logging.getLogger(__name__).addHandler(NullHandler())` → `simplefilter('default', FileModeWarning, append=True)`.",
+          "claim": "Import trace: `requests/__init__.py` runs `check_compatibility` \u2192 optional `pyopenssl.inject_into_urllib3` \u2192 `warnings.simplefilter('ignore', DependencyWarning)` \u2192 re-exports \u2192 `logging.getLogger(__name__).addHandler(NullHandler())` \u2192 `simplefilter('default', FileModeWarning, append=True)`.",
           "sources": [
             "src/requests/__init__.py#L108-L219"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "One-shot GET trace: `api.get()` → `api.request()` opens `Session()` in a `with` → `Session.request()` → builds `Request` → `Session.prepare_request()` → `merge_environment_settings()` → `Session.send()` → returns, and `__exit__` calls `Session.close()` closing every adapter.",
+          "claim": "One-shot GET trace: `api.get()` \u2192 `api.request()` opens `Session()` in a `with` \u2192 `Session.request()` \u2192 builds `Request` \u2192 `Session.prepare_request()` \u2192 `merge_environment_settings()` \u2192 `Session.send()` \u2192 returns, and `__exit__` calls `Session.close()` closing every adapter.",
           "sources": [
             "src/requests/api.py#L64-L86",
             "src/requests/sessions.py#L557-L651",
@@ -4609,7 +4609,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Preparation trace: `prepare_request` → `PreparedRequest.prepare()` → `prepare_method` (uppercases) → `prepare_url` (IDNA + `requote_uri(urlunparse(...))`) → `prepare_headers` (`check_header_validity` per header) → `prepare_cookies` (sets `Cookie` header once) → `prepare_body` → `prepare_auth` → `prepare_hooks`.",
+          "claim": "Preparation trace: `prepare_request` \u2192 `PreparedRequest.prepare()` \u2192 `prepare_method` (uppercases) \u2192 `prepare_url` (IDNA + `requote_uri(urlunparse(...))`) \u2192 `prepare_headers` (`check_header_validity` per header) \u2192 `prepare_cookies` (sets `Cookie` header once) \u2192 `prepare_body` \u2192 `prepare_auth` \u2192 `prepare_hooks`.",
           "sources": [
             "src/requests/models.py#L424-L452",
             "src/requests/models.py#L467-L563"
@@ -4625,7 +4625,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Adapter trace: `HTTPAdapter.send` → `get_connection_with_tls_context` → `cert_verify` (sets `conn.ca_certs`/`cert_file`, raising `OSError` if any path is missing) → `request_url` (full URL for proxied HTTP, path-only otherwise) → `add_headers` (no-op hook) → `conn.urlopen(...)` → `build_response`.",
+          "claim": "Adapter trace: `HTTPAdapter.send` \u2192 `get_connection_with_tls_context` \u2192 `cert_verify` (sets `conn.ca_certs`/`cert_file`, raising `OSError` if any path is missing) \u2192 `request_url` (full URL for proxied HTTP, path-only otherwise) \u2192 `add_headers` (no-op hook) \u2192 `conn.urlopen(...)` \u2192 `build_response`.",
           "sources": [
             "src/requests/adapters.py#L634-L700",
             "src/requests/adapters.py#L307-L363"
@@ -4648,14 +4648,14 @@
           "kind": "evidence"
         },
         {
-          "claim": "Method rewriting per hop is `rebuild_method`: 303 → GET (unless HEAD), 302 → GET (unless HEAD, 'what browsers do, despite standards'), and 301 on a POST → GET.",
+          "claim": "Method rewriting per hop is `rebuild_method`: 303 \u2192 GET (unless HEAD), 302 \u2192 GET (unless HEAD, 'what browsers do, despite standards'), and 301 on a POST \u2192 GET.",
           "sources": [
             "src/requests/sessions.py#L370-L392"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "Auth rewriting per hop is `rebuild_auth` → `should_strip_auth`, which drops `Authorization` on any hostname change but deliberately preserves it for http:80 → https:443 on the same host for backwards compatibility.",
+          "claim": "Auth rewriting per hop is `rebuild_auth` \u2192 `should_strip_auth`, which drops `Authorization` on any hostname change but deliberately preserves it for http:80 \u2192 https:443 on the same host for backwards compatibility.",
           "sources": [
             "src/requests/sessions.py#L154-L184",
             "src/requests/sessions.py#L309-L332"
@@ -4696,7 +4696,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Streaming-read trace: `iter_content` builds a generator that prefers `self.raw.stream(chunk_size, decode_content=True)`, translating `ProtocolError`→`ChunkedEncodingError`, `DecodeError`→`ContentDecodingError`, `ReadTimeoutError`→`ConnectionError` and urllib3 `SSLError`→`requests.SSLError`, then sets `_content_consumed`.",
+          "claim": "Streaming-read trace: `iter_content` builds a generator that prefers `self.raw.stream(chunk_size, decode_content=True)`, translating `ProtocolError`\u2192`ChunkedEncodingError`, `DecodeError`\u2192`ContentDecodingError`, `ReadTimeoutError`\u2192`ConnectionError` and urllib3 `SSLError`\u2192`requests.SSLError`, then sets `_content_consumed`.",
           "sources": [
             "src/requests/models.py#L934-L958"
           ],
@@ -4713,7 +4713,7 @@
       ]
     },
     "testing_signals": {
-      "summary": "Testing is pytest-only, concentrated in one 108 KB file: `tests/test_requests.py` holds 237 of the ~347 test functions, with `tests/test_utils.py` (64) and `tests/test_lowlevel.py` (13) next. Integration tests run against a real local `httpbin` via the `pytest-httpbin` fixture (wrapped by `conftest.prepare_url` to guarantee a trailing slash), while wire-level behaviour uses a hand-rolled socket `Server` thread in `tests/testserver/server.py`. TLS behaviour is covered by checked-in fixture certificates (`tests/certs/{valid,expired,mtls}`) plus a `trustme`-generated no-SAN server fixture. Doctests in the library modules are executed by `--doctest-modules`. Gaps: `adapters.py` — the single most security-relevant module — has a one-test dedicated file, and there is no coverage threshold enforced anywhere.",
+      "summary": "Testing is pytest-only, concentrated in one 108 KB file: `tests/test_requests.py` holds 237 of the ~347 test functions, with `tests/test_utils.py` (64) and `tests/test_lowlevel.py` (13) next. Integration tests run against a real local `httpbin` via the `pytest-httpbin` fixture (wrapped by `conftest.prepare_url` to guarantee a trailing slash), while wire-level behaviour uses a hand-rolled socket `Server` thread in `tests/testserver/server.py`. TLS behaviour is covered by checked-in fixture certificates (`tests/certs/{valid,expired,mtls}`) plus a `trustme`-generated no-SAN server fixture. Doctests in the library modules are executed by `--doctest-modules`. Gaps: `adapters.py` \u2014 the single most security-relevant module \u2014 has a one-test dedicated file, and there is no coverage threshold enforced anywhere.",
       "claims": [
         {
           "claim": "The framework is pytest with `minversion = 6.2`, `testpaths = [\"tests\"]`, and `--doctest-modules` plus `NORMALIZE_WHITESPACE ELLIPSIS` optionflags, so module docstring examples are part of the suite.",
@@ -4764,7 +4764,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "TLS paths are tested with committed fixture certs — expired server cert, valid server cert, and an mTLS client cert — including `test_different_connection_pool_for_mtls_settings` verifying pool-key separation.",
+          "claim": "TLS paths are tested with committed fixture certs \u2014 expired server cert, valid server cert, and an mTLS client cert \u2014 including `test_different_connection_pool_for_mtls_settings` verifying pool-key separation.",
           "sources": [
             "tests/certs/README.md",
             "tests/test_requests.py#L2940-L3055"
@@ -4805,7 +4805,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "CI runs `make ci` (`pytest tests --junitxml=report.xml`) across 8 Python versions × 3 OSes, plus two special jobs: `no_chardet` uninstalls both detection libraries, and `urllib3` pins `urllib3<2`.",
+          "claim": "CI runs `make ci` (`pytest tests --junitxml=report.xml`) across 8 Python versions \u00d7 3 OSes, plus two special jobs: `no_chardet` uninstalls both detection libraries, and `urllib3` pins `urllib3<2`.",
           "sources": [
             ".github/workflows/run-tests.yml#L10-L95",
             "Makefile#L5-L8"
@@ -4813,7 +4813,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Typechecking is enforced in CI as a separate gate: pyright in `strict` mode over `include = [\"src/requests\"]`, run on Python 3.10 and 3.14 — note `tests/` is deliberately outside the typechecked surface.",
+          "claim": "Typechecking is enforced in CI as a separate gate: pyright in `strict` mode over `include = [\"src/requests\"]`, run on Python 3.10 and 3.14 \u2014 note `tests/` is deliberately outside the typechecked surface.",
           "sources": [
             "pyproject.toml#L106-L113",
             ".github/workflows/typecheck.yml#L24-L32"
@@ -4821,7 +4821,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Coverage is available locally via `make coverage` with a `.coveragerc` whose only directive omits `requests/packages/*` — a stale path given the package now lives under `src/requests/`; no minimum threshold is configured and no workflow uploads coverage.",
+          "claim": "Coverage is available locally via `make coverage` with a `.coveragerc` whose only directive omits `requests/packages/*` \u2014 a stale path given the package now lives under `src/requests/`; no minimum threshold is configured and no workflow uploads coverage.",
           "sources": [
             ".coveragerc",
             "Makefile#L13-L14",
@@ -4840,17 +4840,17 @@
       ]
     },
     "risk_map": {
-      "summary": "As a library in ~4M dependent repos, the blast radius of any change here is close to maximal, and the highest-risk surfaces are the ones that decide whether credentials cross a trust boundary: `should_strip_auth`, `rebuild_proxies`, `prepare_url`, and `cert_verify`. Several behaviours are knowingly non-ideal and preserved for backwards compatibility — the http→https auth-retention carve-out, `_basic_auth_str` accepting non-strings, and `LookupDict.__getitem__` silently returning `None`. Environment trust is on by default (`trust_env=True`), so `.netrc`, `$NETRC`, `REQUESTS_CA_BUNDLE`/`CURL_CA_BUNDLE` and `*_proxy` variables all influence behaviour implicitly. Filesystem and process-global side effects exist in `extract_zipped_paths`, `atomic_open`, `set_environ`, and the import-time `pyopenssl.inject_into_urllib3()`.",
+      "summary": "As a library in ~4M dependent repos, the blast radius of any change here is close to maximal, and the highest-risk surfaces are the ones that decide whether credentials cross a trust boundary: `should_strip_auth`, `rebuild_proxies`, `prepare_url`, and `cert_verify`. Several behaviours are knowingly non-ideal and preserved for backwards compatibility \u2014 the http\u2192https auth-retention carve-out, `_basic_auth_str` accepting non-strings, and `LookupDict.__getitem__` silently returning `None`. Environment trust is on by default (`trust_env=True`), so `.netrc`, `$NETRC`, `REQUESTS_CA_BUNDLE`/`CURL_CA_BUNDLE` and `*_proxy` variables all influence behaviour implicitly. Filesystem and process-global side effects exist in `extract_zipped_paths`, `atomic_open`, `set_environ`, and the import-time `pyopenssl.inject_into_urllib3()`.",
       "claims": [
         {
-          "claim": "`should_strip_auth` intentionally keeps the `Authorization` header across an http:80 → https:443 redirect on the same host; the comment states this is not RFC 7235 behaviour and is retained only for backwards compatibility.",
+          "claim": "`should_strip_auth` intentionally keeps the `Authorization` header across an http:80 \u2192 https:443 redirect on the same host; the comment states this is not RFC 7235 behaviour and is retained only for backwards compatibility.",
           "sources": [
             "src/requests/sessions.py#L154-L184"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "`rebuild_proxies` reconstructs `Proxy-Authorization` from proxy URL credentials but skips it when the target scheme starts with `https`, explicitly to avoid leaking the header into a TLS tunnel — a subtle invariant easy to break in a refactor.",
+          "claim": "`rebuild_proxies` reconstructs `Proxy-Authorization` from proxy URL credentials but skips it when the target scheme starts with `https`, explicitly to avoid leaking the header into a TLS tunnel \u2014 a subtle invariant easy to break in a refactor.",
           "sources": [
             "src/requests/sessions.py#L334-L368"
           ],
@@ -4880,7 +4880,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "`get_netrc_auth` reads credentials from a path taken from the `$NETRC` environment variable without restriction, and swallows `NetrcParseError`/`OSError` unless `raise_errors=True` — failures to read credentials are silent by default.",
+          "claim": "`get_netrc_auth` reads credentials from a path taken from the `$NETRC` environment variable without restriction, and swallows `NetrcParseError`/`OSError` unless `raise_errors=True` \u2014 failures to read credentials are silent by default.",
           "sources": [
             "src/requests/utils.py#L231-L280"
           ],
@@ -4908,7 +4908,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "`handle_401` re-sends the authenticated request directly through `r.connection.send(prep, **kwargs)`, bypassing `Session.send` — so session-level cookie extraction, hooks, and redirect resolution do not run for that hop.",
+          "claim": "`handle_401` re-sends the authenticated request directly through `r.connection.send(prep, **kwargs)`, bypassing `Session.send` \u2014 so session-level cookie extraction, hooks, and redirect resolution do not run for that hop.",
           "sources": [
             "src/requests/auth.py#L300-L317",
             "src/requests/sessions.py#L752-L791"
@@ -4923,7 +4923,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "`LookupDict.__getitem__` deliberately falls through to `None` for unknown keys, so a typo'd `requests.codes['okey']` silently yields `None` instead of raising — a footgun with no test-enforced guard.",
+          "claim": "`LookupDict.__getitem__` deliberately falls through to `None` for unknown keys, so a typo'd `requests.codes['okey']` silently yields `None` instead of raising \u2014 a footgun with no test-enforced guard.",
           "sources": [
             "src/requests/structures.py#L118-L122"
           ],
@@ -4946,7 +4946,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "`packages.py` mutates the global `sys.modules` table at import time to alias urllib3/idna/chardet under `requests.packages.*` — a process-wide side effect purely for pre-2.16 backwards compatibility.",
+          "claim": "`packages.py` mutates the global `sys.modules` table at import time to alias urllib3/idna/chardet under `requests.packages.*` \u2014 a process-wide side effect purely for pre-2.16 backwards compatibility.",
           "sources": [
             "src/requests/packages.py"
           ],
@@ -4970,7 +4970,7 @@
       ]
     },
     "extension_points": {
-      "summary": "There is one primary extension seam and several secondary ones. The primary is the Transport Adapter: `Session.mount(prefix, adapter)` keeps `self.adapters` sorted by descending prefix length and `get_adapter` picks the longest matching prefix, so any URL prefix can be routed to a `BaseAdapter` subclass — this is how retry policies, custom TLS contexts, and test doubles are injected. Secondary seams are the response hook system, the `AuthBase` callable protocol, the `SessionRedirectMixin` methods documented as overridable, and the packager-facing `certs.where()`. Nearly every private-looking `HTTPAdapter` method carries a docstring saying it exists specifically for subclass overrides.",
+      "summary": "There is one primary extension seam and several secondary ones. The primary is the Transport Adapter: `Session.mount(prefix, adapter)` keeps `self.adapters` sorted by descending prefix length and `get_adapter` picks the longest matching prefix, so any URL prefix can be routed to a `BaseAdapter` subclass \u2014 this is how retry policies, custom TLS contexts, and test doubles are injected. Secondary seams are the response hook system, the `AuthBase` callable protocol, the `SessionRedirectMixin` methods documented as overridable, and the packager-facing `certs.where()`. Nearly every private-looking `HTTPAdapter` method carries a docstring saying it exists specifically for subclass overrides.",
       "claims": [
         {
           "claim": "`Session.mount(prefix, adapter)` is the registry: it inserts into the `self.adapters` OrderedDict then re-pops every shorter key so adapters stay in descending prefix-length order.",
@@ -4980,7 +4980,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "`Session.get_adapter(url)` resolves by case-insensitive `startswith` over that ordered map, raising `InvalidSchema(f\"No connection adapters were found for {url!r}\")` when nothing matches — so registering a new scheme is purely a mount call.",
+          "claim": "`Session.get_adapter(url)` resolves by case-insensitive `startswith` over that ordered map, raising `InvalidSchema(f\"No connection adapters were found for {url!r}\")` when nothing matches \u2014 so registering a new scheme is purely a mount call.",
           "sources": [
             "src/requests/sessions.py#L870-L881",
             "src/requests/exceptions.py#L114-L116"
@@ -4988,7 +4988,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "`BaseAdapter` defines the minimal contract — `send(request, stream, timeout, verify, cert, proxies)` and `close()` — that any replacement transport must implement.",
+          "claim": "`BaseAdapter` defines the minimal contract \u2014 `send(request, stream, timeout, verify, cert, proxies)` and `close()` \u2014 that any replacement transport must implement.",
           "sources": [
             "src/requests/adapters.py#L122-L156"
           ],
@@ -5004,7 +5004,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "`HTTPAdapter.add_headers()` is an intentional empty hook — 'As of v2.0 this does nothing by default, but is left for overriding by users that subclass' — and is called on every send with the full kwargs.",
+          "claim": "`HTTPAdapter.add_headers()` is an intentional empty hook \u2014 'As of v2.0 this does nothing by default, but is left for overriding by users that subclass' \u2014 and is called on every send with the full kwargs.",
           "sources": [
             "src/requests/adapters.py#L599-L612",
             "src/requests/adapters.py#L648-L655"
@@ -5043,7 +5043,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "`SessionRedirectMixin` is a separately-inheritable class exposing `get_redirect_target`, `should_strip_auth`, `resolve_redirects`, `rebuild_auth`, `rebuild_proxies` and `rebuild_method` — the tests subclass it directly as `RedirectSession` to exercise redirect logic without a network.",
+          "claim": "`SessionRedirectMixin` is a separately-inheritable class exposing `get_redirect_target`, `should_strip_auth`, `resolve_redirects`, `rebuild_auth`, `rebuild_proxies` and `rebuild_method` \u2014 the tests subclass it directly as `RedirectSession` to exercise redirect logic without a network.",
           "sources": [
             "src/requests/sessions.py#L127-L392",
             "tests/test_requests.py#L2608"
@@ -5081,7 +5081,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Custom HTTP verbs need no new code — `Session.request(method, ...)` uppercases whatever string it is given, which is the documented 'Custom Verbs' capability.",
+          "claim": "Custom HTTP verbs need no new code \u2014 `Session.request(method, ...)` uppercases whatever string it is given, which is the documented 'Custom Verbs' capability.",
           "sources": [
             "src/requests/sessions.py#L618-L625",
             "docs/user/advanced.rst#L926-L944"
@@ -5099,10 +5099,10 @@
       ]
     },
     "agent_handoff": {
-      "summary": "Treat this repo as a stability-first, extremely high-blast-radius library: the maintainers protect version, changelog, workflows and pyproject behind CODEOWNERS, and the project has a written policy banning unsupervised agentic contributions. Read `sessions.py`, `models.py` and `adapters.py` before touching anything; almost every non-obvious branch in them encodes a specific GitHub issue number that you should look up before 'simplifying' it. Local loop is `make init` then `make test`; before pushing, run `pre-commit run --all-files` and `pyright src/requests/`, since lint and typecheck are separate required CI gates. The biggest trap is that `tests/` is excluded from pyright but `src/requests/` is checked in `strict` mode, so type annotations in library code must be complete and the codebase is dense with deliberate `# type: ignore` comments carrying explanatory reasons — preserve them.",
+      "summary": "Treat this repo as a stability-first, extremely high-blast-radius library: the maintainers protect version, changelog, workflows and pyproject behind CODEOWNERS, and the project has a written policy banning unsupervised agentic contributions. Read `sessions.py`, `models.py` and `adapters.py` before touching anything; almost every non-obvious branch in them encodes a specific GitHub issue number that you should look up before 'simplifying' it. Local loop is `make init` then `make test`; before pushing, run `pre-commit run --all-files` and `pyright src/requests/`, since lint and typecheck are separate required CI gates. The biggest trap is that `tests/` is excluded from pyright but `src/requests/` is checked in `strict` mode, so type annotations in library code must be complete and the codebase is dense with deliberate `# type: ignore` comments carrying explanatory reasons \u2014 preserve them.",
       "claims": [
         {
-          "claim": "`.github/AI_POLICY.md` states 'Absolutely no unsupervised agentic tools' and requires a human copyright owner per contribution with no LLM bots in `Co-authored-by:` — do not open PRs against this upstream without explicit human sponsorship.",
+          "claim": "`.github/AI_POLICY.md` states 'Absolutely no unsupervised agentic tools' and requires a human copyright owner per contribution with no LLM bots in `Co-authored-by:` \u2014 do not open PRs against this upstream without explicit human sponsorship.",
           "sources": [
             ".github/AI_POLICY.md#L1-L30"
           ],
@@ -5136,7 +5136,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Style is enforced by ruff with rule sets E/W/F/I/UP/T10 targeting py310, ignoring E203/E501/UP031, with per-file `E402,F401` exemptions for `src/requests/__init__.py` and `src/requests/compat.py` — do not 'clean up' those unused imports, they are the public re-export surface.",
+          "claim": "Style is enforced by ruff with rule sets E/W/F/I/UP/T10 targeting py310, ignoring E203/E501/UP031, with per-file `E402,F401` exemptions for `src/requests/__init__.py` and `src/requests/compat.py` \u2014 do not 'clean up' those unused imports, they are the public re-export surface.",
           "sources": [
             "pyproject.toml#L74-L92"
           ],
@@ -5151,7 +5151,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "`_types.is_prepared()` is a typing-only narrowing helper that returns `True` unconditionally at runtime; the many `assert _is_prepared(request)` lines are type assertions, not validation — do not convert them into runtime checks.",
+          "claim": "`_types.is_prepared()` is a typing-only narrowing helper that returns `True` unconditionally at runtime; the many `assert _is_prepared(request)` lines are type assertions, not validation \u2014 do not convert them into runtime checks.",
           "sources": [
             "src/requests/_types.py#L47-L53",
             "src/requests/adapters.py#L633-L636"
@@ -5167,7 +5167,7 @@
           "kind": "inference"
         },
         {
-          "claim": "Trap: `prepare_cookies` can only meaningfully run once per PreparedRequest — cookielib will not regenerate the header if `Cookie` already exists, which is why `resolve_redirects` pops the header before re-preparing.",
+          "claim": "Trap: `prepare_cookies` can only meaningfully run once per PreparedRequest \u2014 cookielib will not regenerate the header if `Cookie` already exists, which is why `resolve_redirects` pops the header before re-preparing.",
           "sources": [
             "src/requests/models.py#L699-L720",
             "src/requests/sessions.py#L262-L273"
@@ -5175,7 +5175,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Trap: branch comments cite issue numbers as the rationale (e.g. #1084 for the 307/308 carve-out, #3490 for the purged headers, #1704 for POST-301→GET, #3772 for digest-only-on-4xx, #5229 for the `fileno` AttributeError). Look these up before changing the branch.",
+          "claim": "Trap: branch comments cite issue numbers as the rationale (e.g. #1084 for the 307/308 carve-out, #3490 for the purged headers, #1704 for POST-301\u2192GET, #3772 for digest-only-on-4xx, #5229 for the `fileno` AttributeError). Look these up before changing the branch.",
           "sources": [
             "src/requests/sessions.py#L246-L253",
             "src/requests/sessions.py#L385-L387",
@@ -5208,7 +5208,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Version bumps live in `src/requests/__version__.py` (both `__version__` and the hex `__build__`), are resolved dynamically by setuptools, and are CODEOWNERS-gated — never bump as part of a feature PR.",
+          "claim": "Version bumps live in `src/requests/__version__.py` (both `__version__` and the hex `__build__`), are resolved dynamically by setuptools, and are CODEOWNERS-gated \u2014 never bump as part of a feature PR.",
           "sources": [
             "src/requests/__version__.py",
             "pyproject.toml#L97-L98",
@@ -5217,7 +5217,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Compatibility floor is Python 3.10 enforced in three places — `requires-python`, the `setup.py` guard that prints an error and exits 1, and ruff's `target-version = \"py310\"` — so no 3.11+ syntax.",
+          "claim": "Compatibility floor is Python 3.10 enforced in three places \u2014 `requires-python`, the `setup.py` guard that prints an error and exits 1, and ruff's `target-version = \"py310\"` \u2014 so no 3.11+ syntax.",
           "sources": [
             "pyproject.toml#L16",
             "setup.py#L1-L6",
@@ -5235,11 +5235,11 @@
         }
       ]
     },
-    "agent_prompt": "You are working in `psf/requests` — the Python HTTP client library, version 2.34.2, at commit 611c616 on `main`. This is a pure library: no CLI, no server, no database, no application entrypoint. It ships as `src/requests/` (20 modules, ~6000 lines) and is depended on by roughly four million repositories, so assume every behavioural change is a breaking change for someone.\n\nARCHITECTURE. Four layers, top to bottom. (1) `api.py` — the stateless verb functions `get/post/put/patch/delete/head/options/request`; each opens a throwaway `Session` in a `with` block, so module-level calls get no connection reuse. (2) `sessions.py` — `Session` owns headers, cookies (a `RequestsCookieJar`), auth, proxies, hooks, TLS defaults, `max_redirects=30`, `trust_env=True`, and the `adapters` OrderedDict; `SessionRedirectMixin` implements the entire redirect algorithm. (3) `models.py` — `Request` → `PreparedRequest` (via a fixed pipeline: prepare_method, prepare_url, prepare_headers, prepare_cookies, prepare_body, prepare_auth, prepare_hooks — auth is last on purpose) and `Response` with lazy `_content`. (4) `adapters.py` — `HTTPAdapter.send()` calls urllib3's `conn.urlopen(..., redirect=False, preload_content=False, decode_content=False)`; requests reimplements redirects and decoding itself. Support modules: `utils.py` (proxy resolution, netrc, `super_len`, header validation), `cookies.py`, `structures.py` (`CaseInsensitiveDict`, `LookupDict`), `exceptions.py`, `compat.py` (legacy shims), `_types.py` (private typing, TypedDict kwargs).\n\nTHE ONE EXTENSION SEAM. `Session.mount(prefix, adapter)` plus `get_adapter(url)` (longest-prefix match). Custom transports subclass `BaseAdapter` or `HTTPAdapter` and override the documented hooks: `init_poolmanager`, `proxy_manager_for`, `cert_verify`, `build_response`, `get_connection_with_tls_context`, `request_url`, `add_headers`, `proxy_headers`. Secondary seams: the `response` hook list in `hooks.py`, the `AuthBase.__call__` protocol, and `certs.where()` for distro packagers.\n\nCOMMANDS. `make init` (install dev deps), `make test` (`pytest tests`), `make ci` (adds junit xml), `make coverage`. Before pushing also run `pre-commit run --all-files` and `python -m pyright src/requests/` — lint and typecheck are separate required CI gates. pytest runs with `--doctest-modules`, so docstring examples are real tests.\n\nRULES AND TRAPS. Python 3.10 floor; ruff target py310. pyright runs `strict` over `src/requests/` only — annotations must be complete, and the many `# type: ignore` comments carry explanatory reasons, so preserve them. `assert _is_prepared(x)` is a typing narrowing that no-ops at runtime; do not turn it into validation. Do not remove the unused imports in `__init__.py` or `compat.py` — they are the public re-export surface and are ruff-exempted. `compat.py` shadows `str`/`bytes` and exports `basestring`; several modules depend on that. `prepare_cookies` only works once per PreparedRequest. Non-http schemes bypass URL preparation entirely. Most odd-looking branches cite a GitHub issue number (#1084, #1704, #3490, #3772, #5229) — read the issue before touching them. Security-critical paths to change only with great care: `should_strip_auth` (deliberately keeps auth on http:80→https:443 same-host), `rebuild_proxies` (deliberately withholds `Proxy-Authorization` from https tunnels), `cert_verify`, and `get_netrc_auth`. Code must pass with urllib3 1.x and 2.x and with no charset-detection library installed — CI has dedicated jobs for both. `src/requests/__version__.py`, `pyproject.toml`, `HISTORY.md` and `.github/workflows/` are CODEOWNERS-gated; never bump version in a feature change. Finally, read `.github/AI_POLICY.md`: this project bans unsupervised agentic contributions, so do not open upstream PRs without an accountable human author."
+    "agent_prompt": "You are working in `psf/requests` \u2014 the Python HTTP client library, version 2.34.2, at commit 611c616 on `main`. This is a pure library: no CLI, no server, no database, no application entrypoint. It ships as `src/requests/` (20 modules, ~6000 lines) and is depended on by roughly four million repositories, so assume every behavioural change is a breaking change for someone.\n\nARCHITECTURE. Four layers, top to bottom. (1) `api.py` \u2014 the stateless verb functions `get/post/put/patch/delete/head/options/request`; each opens a throwaway `Session` in a `with` block, so module-level calls get no connection reuse. (2) `sessions.py` \u2014 `Session` owns headers, cookies (a `RequestsCookieJar`), auth, proxies, hooks, TLS defaults, `max_redirects=30`, `trust_env=True`, and the `adapters` OrderedDict; `SessionRedirectMixin` implements the entire redirect algorithm. (3) `models.py` \u2014 `Request` \u2192 `PreparedRequest` (via a fixed pipeline: prepare_method, prepare_url, prepare_headers, prepare_cookies, prepare_body, prepare_auth, prepare_hooks \u2014 auth is last on purpose) and `Response` with lazy `_content`. (4) `adapters.py` \u2014 `HTTPAdapter.send()` calls urllib3's `conn.urlopen(..., redirect=False, preload_content=False, decode_content=False)`; requests reimplements redirects and decoding itself. Support modules: `utils.py` (proxy resolution, netrc, `super_len`, header validation), `cookies.py`, `structures.py` (`CaseInsensitiveDict`, `LookupDict`), `exceptions.py`, `compat.py` (legacy shims), `_types.py` (private typing, TypedDict kwargs).\n\nTHE ONE EXTENSION SEAM. `Session.mount(prefix, adapter)` plus `get_adapter(url)` (longest-prefix match). Custom transports subclass `BaseAdapter` or `HTTPAdapter` and override the documented hooks: `init_poolmanager`, `proxy_manager_for`, `cert_verify`, `build_response`, `get_connection_with_tls_context`, `request_url`, `add_headers`, `proxy_headers`. Secondary seams: the `response` hook list in `hooks.py`, the `AuthBase.__call__` protocol, and `certs.where()` for distro packagers.\n\nCOMMANDS. `make init` (install dev deps), `make test` (`pytest tests`), `make ci` (adds junit xml), `make coverage`. Before pushing also run `pre-commit run --all-files` and `python -m pyright src/requests/` \u2014 lint and typecheck are separate required CI gates. pytest runs with `--doctest-modules`, so docstring examples are real tests.\n\nRULES AND TRAPS. Python 3.10 floor; ruff target py310. pyright runs `strict` over `src/requests/` only \u2014 annotations must be complete, and the many `# type: ignore` comments carry explanatory reasons, so preserve them. `assert _is_prepared(x)` is a typing narrowing that no-ops at runtime; do not turn it into validation. Do not remove the unused imports in `__init__.py` or `compat.py` \u2014 they are the public re-export surface and are ruff-exempted. `compat.py` shadows `str`/`bytes` and exports `basestring`; several modules depend on that. `prepare_cookies` only works once per PreparedRequest. Non-http schemes bypass URL preparation entirely. Most odd-looking branches cite a GitHub issue number (#1084, #1704, #3490, #3772, #5229) \u2014 read the issue before touching them. Security-critical paths to change only with great care: `should_strip_auth` (deliberately keeps auth on http:80\u2192https:443 same-host), `rebuild_proxies` (deliberately withholds `Proxy-Authorization` from https tunnels), `cert_verify`, and `get_netrc_auth`. Code must pass with urllib3 1.x and 2.x and with no charset-detection library installed \u2014 CI has dedicated jobs for both. `src/requests/__version__.py`, `pyproject.toml`, `HISTORY.md` and `.github/workflows/` are CODEOWNERS-gated; never bump version in a feature change. Finally, read `.github/AI_POLICY.md`: this project bans unsupervised agentic contributions, so do not open upstream PRs without an accountable human author."
   },
   "analysis": {
     "agent": "claude",
-    "model": "cli:claude",
+    "model": "claude-opus-5",
     "runtime_ms": 338249,
     "cost_usd": 2.6370324999999997,
     "collected_at": "2026-09-22T08:36:01.620Z"

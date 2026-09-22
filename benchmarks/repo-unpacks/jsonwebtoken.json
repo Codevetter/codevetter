@@ -3723,7 +3723,7 @@
         "steps": [
           {
             "id": "serialize",
-            "label": "JSON serialize (inventory → SQLite)",
+            "label": "JSON serialize (inventory \u2192 SQLite)",
             "ms": 1,
             "pct": 33.33333333333333
           },
@@ -3744,12 +3744,12 @@
     ]
   },
   "report": {
-    "overview": "jsonwebtoken is Auth0's reference Node implementation of RFC 7519 JSON Web Tokens, published to npm as `jsonwebtoken` v9.0.3. It is a tiny, dependency-light library (three public functions — `sign`, `verify`, `decode` — plus three error classes) that wraps `jws` for the actual JWS signing/verification and layers on claim semantics (exp/nbf/aud/iss/sub/jti/nonce/maxAge), option schema validation, and a hard-won set of key-confusion defenses. What is distinctive is how much of the code is defensive rather than functional: roughly half of sign.js and verify.js is dedicated to coercing untrusted key material into `crypto.KeyObject`s, rejecting alg/key-type mismatches (the classic RS256→HS256 confusion attack), and enforcing a 2048-bit RSA modulus floor. It targets any Node service that issues or consumes JWTs, and ships both callback-async and synchronous-throwing modes of every entrypoint.",
+    "overview": "jsonwebtoken is Auth0's reference Node implementation of RFC 7519 JSON Web Tokens, published to npm as `jsonwebtoken` v9.0.3. It is a tiny, dependency-light library (three public functions \u2014 `sign`, `verify`, `decode` \u2014 plus three error classes) that wraps `jws` for the actual JWS signing/verification and layers on claim semantics (exp/nbf/aud/iss/sub/jti/nonce/maxAge), option schema validation, and a hard-won set of key-confusion defenses. What is distinctive is how much of the code is defensive rather than functional: roughly half of sign.js and verify.js is dedicated to coercing untrusted key material into `crypto.KeyObject`s, rejecting alg/key-type mismatches (the classic RS256\u2192HS256 confusion attack), and enforcing a 2048-bit RSA modulus floor. It targets any Node service that issues or consumes JWTs, and ships both callback-async and synchronous-throwing modes of every entrypoint.",
     "system_map": {
-      "summary": "This is a pure library with no server, no database, and no network I/O of its own — the only runtime boundary is the Node `crypto` module and the `jws` package. `index.js` is the whole public API surface: it re-exports `decode.js`, `verify.js`, `sign.js`, and the three error classes from `lib/`. Support modules in `lib/` are all single-purpose: feature-detection booleans gated on `process.version` via `semver`, a `ms`-backed timespan parser, and the asymmetric key/algorithm compatibility matrix. Build is nonexistent (plain CommonJS, no transpile); test is `mocha`, coverage is `nyc mocha --use_strict`, lint is `eslint .`. Deployment is npm publish driven by `semantic-release` in a two-workflow release dance on `master`.",
+      "summary": "This is a pure library with no server, no database, and no network I/O of its own \u2014 the only runtime boundary is the Node `crypto` module and the `jws` package. `index.js` is the whole public API surface: it re-exports `decode.js`, `verify.js`, `sign.js`, and the three error classes from `lib/`. Support modules in `lib/` are all single-purpose: feature-detection booleans gated on `process.version` via `semver`, a `ms`-backed timespan parser, and the asymmetric key/algorithm compatibility matrix. Build is nonexistent (plain CommonJS, no transpile); test is `mocha`, coverage is `nyc mocha --use_strict`, lint is `eslint .`. Deployment is npm publish driven by `semantic-release` in a two-workflow release dance on `master`.",
       "claims": [
         {
-          "claim": "`index.js` is the sole entrypoint and exports exactly six symbols: `decode`, `verify`, `sign`, `JsonWebTokenError`, `NotBeforeError`, `TokenExpiredError` — there is no class, no factory, no configuration object.",
+          "claim": "`index.js` is the sole entrypoint and exports exactly six symbols: `decode`, `verify`, `sign`, `JsonWebTokenError`, `NotBeforeError`, `TokenExpiredError` \u2014 there is no class, no factory, no configuration object.",
           "sources": [
             "index.js#L1-8"
           ],
@@ -3783,7 +3783,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "PS256/PS384/PS512 are spliced into the algorithm allow-lists at module load only when `PS_SUPPORTED` — into `SUPPORTED_ALGS` at index 3 in sign.js, and appended to both `PUB_KEY_ALGS` and `RSA_KEY_ALGS` in verify.js.",
+          "claim": "PS256/PS384/PS512 are spliced into the algorithm allow-lists at module load only when `PS_SUPPORTED` \u2014 into `SUPPORTED_ALGS` at index 3 in sign.js, and appended to both `PUB_KEY_ALGS` and `RSA_KEY_ALGS` in verify.js.",
           "sources": [
             "sign.js#L14-17",
             "verify.js#L11-19"
@@ -3800,7 +3800,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "`lib/validateAsymmetricKey.js` owns the key-type↔algorithm compatibility matrix (`allowedAlgorithmsForKeys` for `ec`/`rsa`/`rsa-pss`) and the ES-curve mapping (`allowedCurves`: ES256→prime256v1, ES384→secp384r1, ES512→secp521r1). It is the single shared gate called by both sign and verify.",
+          "claim": "`lib/validateAsymmetricKey.js` owns the key-type\u2194algorithm compatibility matrix (`allowedAlgorithmsForKeys` for `ec`/`rsa`/`rsa-pss`) and the ES-curve mapping (`allowedCurves`: ES256\u2192prime256v1, ES384\u2192secp384r1, ES512\u2192secp521r1). It is the single shared gate called by both sign and verify.",
           "sources": [
             "lib/validateAsymmetricKey.js#L4-30",
             "sign.js#L177-183",
@@ -3844,7 +3844,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "The published npm tarball is narrowed by the `files` allow-list to `lib`, `decode.js`, `sign.js`, `verify.js` — tests, `bin/`, and workflows never ship. `.npmignore` additionally excludes `opslevel.yml`.",
+          "claim": "The published npm tarball is narrowed by the `files` allow-list to `lib`, `decode.js`, `sign.js`, `verify.js` \u2014 tests, `bin/`, and workflows never ship. `.npmignore` additionally excludes `opslevel.yml`.",
           "sources": [
             "package.json#L72-77",
             ".npmignore"
@@ -3860,7 +3860,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "`package.json` declares `engines.node >= 12`, but the test matrix only exercises Node 16 through 24 — the 12/14 support claim is unverified by CI.",
+          "claim": "`package.json` declares `engines.node >= 12`, but the test matrix only exercises Node 16 through 24 \u2014 the 12/14 support claim is unverified by CI.",
           "sources": [
             "package.json#L68-71",
             ".github/workflows/test.yml#L16-19"
@@ -3873,7 +3873,7 @@
       "summary": "The user-facing surface is three functions, each with a dual sync/async calling convention selected by whether a trailing callback is supplied. `sign` turns a payload plus key into a compact JWS, mapping option names onto registered claim names and computing time-based claims. `verify` is the security-critical path: it re-decodes, resolves a key (possibly via an async key-lookup callback for JWKS/kid workflows), enforces an algorithm allow-list, checks key/alg compatibility, verifies the signature, then runs seven independent claim checks. `decode` is the deliberately unauthenticated escape hatch. Twelve signing algorithms plus `none` are supported, and a set of explicit backwards-compatibility escape valves (`allowInsecureKeySizes`, `allowInvalidAsymmetricKeyTypes`) let callers opt out of the newer hardening.",
       "claims": [
         {
-          "claim": "`jwt.sign(payload, secretOrPrivateKey, [options, callback])` supports thirteen options validated by `sign_options_schema`: `expiresIn`, `notBefore`, `audience`, `algorithm`, `header`, `encoding`, `issuer`, `subject`, `jwtid`, `noTimestamp`, `keyid`, `mutatePayload`, `allowInsecureKeySizes`, `allowInvalidAsymmetricKeyTypes` — and rejects any key not in that schema with `\"<key>\" is not allowed in \"options\"`.",
+          "claim": "`jwt.sign(payload, secretOrPrivateKey, [options, callback])` supports thirteen options validated by `sign_options_schema`: `expiresIn`, `notBefore`, `audience`, `algorithm`, `header`, `encoding`, `issuer`, `subject`, `jwtid`, `noTimestamp`, `keyid`, `mutatePayload`, `allowInsecureKeySizes`, `allowInvalidAsymmetricKeyTypes` \u2014 and rejects any key not in that schema with `\"<key>\" is not allowed in \"options\"`.",
           "sources": [
             "sign.js#L19-34",
             "sign.js#L42-63"
@@ -3881,7 +3881,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Four sign options are sugar that write registered claims, via the `options_to_payload` table: `audience`→`aud`, `issuer`→`iss`, `subject`→`sub`, `jwtid`→`jti`. Supplying both the option and the raw claim is an error (`Bad \"options.<x>\" option. The payload already has an \"<claim>\" property.`).",
+          "claim": "Four sign options are sugar that write registered claims, via the `options_to_payload` table: `audience`\u2192`aud`, `issuer`\u2192`iss`, `subject`\u2192`sub`, `jwtid`\u2192`jti`. Supplying both the option and the raw claim is an error (`Bad \"options.<x>\" option. The payload already has an \"<claim>\" property.`).",
           "sources": [
             "sign.js#L69-74",
             "sign.js#L217-225"
@@ -3925,7 +3925,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "`secretOrPublicKey` may be a key-lookup function `(header, cb)` — the JWKS/`kid` integration point — but only when a callback is also supplied; otherwise verify fails with `verify must be called asynchronous if secret or public key is provided as a callback`.",
+          "claim": "`secretOrPublicKey` may be a key-lookup function `(header, cb)` \u2014 the JWKS/`kid` integration point \u2014 but only when a callback is also supplied; otherwise verify fails with `verify must be called asynchronous if secret or public key is provided as a callback`.",
           "sources": [
             "verify.js#L88-99",
             "verify.js#L101-103"
@@ -3933,7 +3933,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Audience matching accepts a string, a `RegExp`, or an array of either, and matches if ANY token `aud` entry matches ANY expected audience — an any-to-any `some`/`some` cross product.",
+          "claim": "Audience matching accepts a string, a `RegExp`, or an array of either, and matches if ANY token `aud` entry matches ANY expected audience \u2014 an any-to-any `some`/`some` cross product.",
           "sources": [
             "verify.js#L194-207",
             "README.md#L151-152"
@@ -3952,7 +3952,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "`maxAge` is an independent expiry ceiling computed from `payload.iat`, requires a numeric `iat` (`iat required when maxAge is specified`), and cannot loosen `exp` — a token past `exp` still fails even with `maxAge: '1000y'`.",
+          "claim": "`maxAge` is an independent expiry ceiling computed from `payload.iat`, requires a numeric `iat` (`iat required when maxAge is specified`), and cannot loosen `exp` \u2014 a token past `exp` still fails even with `maxAge: '1000y'`.",
           "sources": [
             "verify.js#L237-249",
             "test/verify.tests.js#L251-269"
@@ -3960,7 +3960,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "`complete: true` on either `verify` or `decode` returns `{header, payload, signature}` instead of the bare payload — this is how callers reach `kid` and `alg` for key selection.",
+          "claim": "`complete: true` on either `verify` or `decode` returns `{header, payload, signature}` instead of the bare payload \u2014 this is how callers reach `kid` and `alg` for key selection.",
           "sources": [
             "verify.js#L251-259",
             "decode.js#L19-28"
@@ -3968,7 +3968,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "`jwt.decode(token, options)` performs no signature verification at all, and silently swallows a `JSON.parse` failure on the payload — returning the raw string payload rather than throwing.",
+          "claim": "`jwt.decode(token, options)` performs no signature verification at all, and silently swallows a `JSON.parse` failure on the payload \u2014 returning the raw string payload rather than throwing.",
           "sources": [
             "decode.js#L3-17"
           ],
@@ -3996,7 +3996,7 @@
       ]
     },
     "data_flow": {
-      "summary": "There are exactly two input boundaries — the caller-supplied `(payload | jwtString, key, options)` tuple — and one output boundary, either a returned/thrown value or a `(err, result)` callback invocation. No state is owned across calls: the library is entirely stateless, with the only module-level mutable structures being the algorithm allow-list arrays built at require time. The central transform on both paths is key normalization: whatever the caller passes (string, Buffer, PEM, JWK-ish object) is funnelled through `crypto.createPrivateKey`/`createPublicKey` with a `createSecretKey` fallback into a `KeyObject`, and every downstream decision reads `key.type`, `key.asymmetricKeyType`, and `key.asymmetricKeyDetails` off that normalized object. Claim data flows one way on sign (options → payload properties → JWS) and one way on verify (JWS → decoded payload → claim assertions → returned payload).",
+      "summary": "There are exactly two input boundaries \u2014 the caller-supplied `(payload | jwtString, key, options)` tuple \u2014 and one output boundary, either a returned/thrown value or a `(err, result)` callback invocation. No state is owned across calls: the library is entirely stateless, with the only module-level mutable structures being the algorithm allow-list arrays built at require time. The central transform on both paths is key normalization: whatever the caller passes (string, Buffer, PEM, JWK-ish object) is funnelled through `crypto.createPrivateKey`/`createPublicKey` with a `createSecretKey` fallback into a `KeyObject`, and every downstream decision reads `key.type`, `key.asymmetricKeyType`, and `key.asymmetricKeyDetails` off that normalized object. Claim data flows one way on sign (options \u2192 payload properties \u2192 JWS) and one way on verify (JWS \u2192 decoded payload \u2192 claim assertions \u2192 returned payload).",
       "claims": [
         {
           "claim": "On sign, key material normalization is a try/catch cascade: if not already a `KeyObject`, attempt `createPrivateKey(secretOrPrivateKey)`, fall back to `createSecretKey(Buffer.from(...))` for strings, and on double failure emit `secretOrPrivateKey is not valid key material`.",
@@ -4006,7 +4006,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Verify mirrors that cascade with `createPublicKey` then `createSecretKey`, producing `secretOrPublicKey is not valid key material` — this is what converts a hostile object with a throwing `toString` into a clean error instead of arbitrary execution.",
+          "claim": "Verify mirrors that cascade with `createPublicKey` then `createSecretKey`, producing `secretOrPublicKey is not valid key material` \u2014 this is what converts a hostile object with a throwing `toString` into a clean error instead of arbitrary execution.",
           "sources": [
             "verify.js#L120-130",
             "test/jwt.malicious.tests.js#L33-38"
@@ -4021,7 +4021,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "A single `timestamp` value — `payload.iat || Math.floor(Date.now()/1000)` — is computed once and is the base for both `nbf` and `exp`, guaranteeing the three time claims are internally consistent within one sign call.",
+          "claim": "A single `timestamp` value \u2014 `payload.iat || Math.floor(Date.now()/1000)` \u2014 is computed once and is the base for both `nbf` and `exp`, guaranteeing the three time claims are internally consistent within one sign call.",
           "sources": [
             "sign.js#L185-215"
           ],
@@ -4036,7 +4036,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "`options` is defensively shallow-cloned on entry to verify (`Object.assign({}, options)`) specifically because the function later writes `options.algorithms` when the caller omitted it — caller-supplied objects are never mutated.",
+          "claim": "`options` is defensively shallow-cloned on entry to verify (`Object.assign({}, options)`) specifically because the function later writes `options.algorithms` when the caller omitted it \u2014 caller-supplied objects are never mutated.",
           "sources": [
             "verify.js#L31-32",
             "verify.js#L132-142"
@@ -4044,7 +4044,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "When `options.algorithms` is absent, the allow-list is derived from the normalized key: `secret`→HS_ALGS, `rsa`/`rsa-pss`→RSA_KEY_ALGS, `ec`→EC_KEY_ALGS, everything else→PUB_KEY_ALGS. This binds the accepted alg set to the key material, not to the token.",
+          "claim": "When `options.algorithms` is absent, the allow-list is derived from the normalized key: `secret`\u2192HS_ALGS, `rsa`/`rsa-pss`\u2192RSA_KEY_ALGS, `ec`\u2192EC_KEY_ALGS, everything else\u2192PUB_KEY_ALGS. This binds the accepted alg set to the key material, not to the token.",
           "sources": [
             "verify.js#L132-142",
             "README.md#L146-150"
@@ -4052,14 +4052,14 @@
           "kind": "evidence"
         },
         {
-          "claim": "The token-supplied `header.alg` flows into `jws.verify(jwtString, decodedToken.header.alg, secretOrPublicKey)`, but only after passing the allow-list membership check and the key-type compatibility check — the ordering at lines 144→152→165 is the whole defense.",
+          "claim": "The token-supplied `header.alg` flows into `jws.verify(jwtString, decodedToken.header.alg, secretOrPublicKey)`, but only after passing the allow-list membership check and the key-type compatibility check \u2014 the ordering at lines 144\u2192152\u2192165 is the whole defense.",
           "sources": [
             "verify.js#L144-165"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "The verified `payload` object returned to the caller is the same object produced by `decode`, not a copy — all seven claim checks read from it without transforming it, so callers receive attacker-influenced data verbatim (the README explicitly warns to sanitize it).",
+          "claim": "The verified `payload` object returned to the caller is the same object produced by `decode`, not a copy \u2014 all seven claim checks read from it without transforming it, so callers receive attacker-influenced data verbatim (the README explicitly warns to sanitize it).",
           "sources": [
             "verify.js#L174",
             "verify.js#L251-261",
@@ -4068,7 +4068,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Both functions funnel every error through a single sink — `failure(err)` in sign and `done(err, data)` in verify — which dispatches to `callback(err)` when async or `throw err` when sync, so sync and async modes are guaranteed to produce identical errors.",
+          "claim": "Both functions funnel every error through a single sink \u2014 `failure(err)` in sign and `done(err, data)` in verify \u2014 which dispatches to `callback(err)` when async or `throw err` when sync, so sync and async modes are guaranteed to produce identical errors.",
           "sources": [
             "sign.js#L103-108",
             "verify.js#L34-43",
@@ -4077,7 +4077,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "`decode` normalizes the payload channel: `jws.decode` may return a string payload, which `decode` opportunistically `JSON.parse`s and keeps only if the result is a non-null object — otherwise the string passes through unchanged.",
+          "claim": "`decode` normalizes the payload channel: `jws.decode` may return a string payload, which `decode` opportunistically `JSON.parse`s and keeps only if the result is a non-null object \u2014 otherwise the string passes through unchanged.",
           "sources": [
             "decode.js#L7-17"
           ],
@@ -4094,7 +4094,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "The only file-system reads in the entire repo are in tests, loading PEM fixtures from `test/*.pem` — the library itself performs zero file or network I/O.",
+          "claim": "The only file-system reads in the entire repo are in tests, loading PEM fixtures from `test/*.pem` \u2014 the library itself performs zero file or network I/O.",
           "sources": [
             "test/jwt.asymmetric_signing.tests.js#L10-12",
             "test/schema.tests.js#L9-12",
@@ -4108,7 +4108,7 @@
       "summary": "Three flows matter: module load (feature detection), signing, and verification. Module load is unusual in that it bakes Node-version capability into module-scope constants, so the same code path behaves differently on Node 14 vs Node 16 without any runtime branch. Signing is a long linear gauntlet of eleven guards before any crypto happens. Verification is the inverse-ordered gauntlet, and its ordering is load-bearing: algorithm allow-listing and key-type checks must both precede `jws.verify`. Both entry functions branch at the very end into callback vs synchronous return.",
       "claims": [
         {
-          "claim": "MODULE LOAD: `require('jsonwebtoken')` → index.js requires decode/verify/sign → sign.js requires `lib/psSupported` → `semver.satisfies(process.version, '^6.12.0 || >=8.0.0')` → if true, `SUPPORTED_ALGS.splice(3, 0, 'PS256','PS384','PS512')` executes at module scope. Algorithm support is therefore frozen at first require.",
+          "claim": "MODULE LOAD: `require('jsonwebtoken')` \u2192 index.js requires decode/verify/sign \u2192 sign.js requires `lib/psSupported` \u2192 `semver.satisfies(process.version, '^6.12.0 || >=8.0.0')` \u2192 if true, `SUPPORTED_ALGS.splice(3, 0, 'PS256','PS384','PS512')` executes at module scope. Algorithm support is therefore frozen at first require.",
           "sources": [
             "index.js#L1-8",
             "sign.js#L2",
@@ -4118,28 +4118,28 @@
           "kind": "evidence"
         },
         {
-          "claim": "SIGN step 1-2: normalize arity (`typeof options === 'function'` → shift to callback), compute `isObjectPayload` as `typeof payload === 'object' && !Buffer.isBuffer(payload)`, then build `header` via `Object.assign`.",
+          "claim": "SIGN step 1-2: normalize arity (`typeof options === 'function'` \u2192 shift to callback), compute `isObjectPayload` as `typeof payload === 'object' && !Buffer.isBuffer(payload)`, then build `header` via `Object.assign`.",
           "sources": [
             "sign.js#L86-101"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "SIGN step 3-4: reject missing key unless `algorithm === 'none'`, then coerce to `KeyObject` via `createPrivateKey` → `createSecretKey` fallback.",
+          "claim": "SIGN step 3-4: reject missing key unless `algorithm === 'none'`, then coerce to `KeyObject` via `createPrivateKey` \u2192 `createSecretKey` fallback.",
           "sources": [
             "sign.js#L110-124"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "SIGN step 5: enforce symmetry — `header.alg.startsWith('HS')` requires `key.type === 'secret'`; `/^(?:RS|PS|ES)/` requires `key.type === 'private'`; and for non-ES RSA algs, `asymmetricKeyDetails.modulusLength < 2048` is rejected (guarded by an `!== undefined` check for pre-Node-15 where the field is absent).",
+          "claim": "SIGN step 5: enforce symmetry \u2014 `header.alg.startsWith('HS')` requires `key.type === 'secret'`; `/^(?:RS|PS|ES)/` requires `key.type === 'private'`; and for non-ES RSA algs, `asymmetricKeyDetails.modulusLength < 2048` is rejected (guarded by an `!== undefined` check for pre-Node-15 where the field is absent).",
           "sources": [
             "sign.js#L126-138"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "SIGN step 6-8: `validatePayload` (allowUnknown=true, checks only iat/exp/nbf are numbers) → clone payload unless `mutatePayload` → reject `exp`+`expiresIn` and `nbf`+`notBefore` double-specification → `validateOptions` (allowUnknown=false).",
+          "claim": "SIGN step 6-8: `validatePayload` (allowUnknown=true, checks only iat/exp/nbf are numbers) \u2192 clone payload unless `mutatePayload` \u2192 reject `exp`+`expiresIn` and `nbf`+`notBefore` double-specification \u2192 `validateOptions` (allowUnknown=false).",
           "sources": [
             "sign.js#L65-67",
             "sign.js#L140-175"
@@ -4147,7 +4147,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "SIGN step 9-11: `validateAsymmetricKey(header.alg, key)` unless opted out → compute `timestamp` and apply `noTimestamp`/`iat` → `timespan` for `nbf` and `exp` → copy the four `options_to_payload` claims.",
+          "claim": "SIGN step 9-11: `validateAsymmetricKey(header.alg, key)` unless opted out \u2192 compute `timestamp` and apply `noTimestamp`/`iat` \u2192 `timespan` for `nbf` and `exp` \u2192 copy the four `options_to_payload` claims.",
           "sources": [
             "sign.js#L177-225",
             "lib/validateAsymmetricKey.js#L16-30"
@@ -4169,21 +4169,21 @@
           "kind": "evidence"
         },
         {
-          "claim": "VERIFY step 1-4: arity normalization → clone options → build `done` (callback or throw-on-error closure) → validate `clockTimestamp`/`nonce`/`allowInvalidAsymmetricKeyTypes` shapes → compute `clockTimestamp` → reject falsy or non-string `jwtString` → split into exactly 3 parts.",
+          "claim": "VERIFY step 1-4: arity normalization \u2192 clone options \u2192 build `done` (callback or throw-on-error closure) \u2192 validate `clockTimestamp`/`nonce`/`allowInvalidAsymmetricKeyTypes` shapes \u2192 compute `clockTimestamp` \u2192 reject falsy or non-string `jwtString` \u2192 split into exactly 3 parts.",
           "sources": [
             "verify.js#L21-71"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "VERIFY step 5-6: `decode(jwtString, {complete: true})` inside a try/catch (returns `invalid token` if falsy), then choose `getSecret` — either the caller's key-lookup function or a trivial wrapper that immediately yields the static key. All remaining logic runs inside that callback.",
+          "claim": "VERIFY step 5-6: `decode(jwtString, {complete: true})` inside a try/catch (returns `invalid token` if falsy), then choose `getSecret` \u2014 either the caller's key-lookup function or a trivial wrapper that immediately yields the static key. All remaining logic runs inside that callback.",
           "sources": [
             "verify.js#L73-101"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "VERIFY step 7: the three-way signature/key presence matrix — signature-without-key → `secret or public key must be provided`; key-without-signature → `jwt signature is required`; neither-plus-no-algorithms → `please specify \"none\" in \"algorithms\"`.",
+          "claim": "VERIFY step 7: the three-way signature/key presence matrix \u2014 signature-without-key \u2192 `secret or public key must be provided`; key-without-signature \u2192 `jwt signature is required`; neither-plus-no-algorithms \u2192 `please specify \"none\" in \"algorithms\"`.",
           "sources": [
             "verify.js#L106-118",
             "test/undefined_secretOrPublickey.tests.js#L8-17"
@@ -4191,21 +4191,21 @@
           "kind": "evidence"
         },
         {
-          "claim": "VERIFY step 8-10 (the security core, in this exact order): coerce key → derive default `algorithms` from key type → reject `header.alg` not in the list (`invalid algorithm`) → reject HS-alg-with-non-secret-key and RS/PS/ES-alg-with-non-public-key → `validateAsymmetricKey` → only then `jws.verify`.",
+          "claim": "VERIFY step 8-10 (the security core, in this exact order): coerce key \u2192 derive default `algorithms` from key type \u2192 reject `header.alg` not in the list (`invalid algorithm`) \u2192 reject HS-alg-with-non-secret-key and RS/PS/ES-alg-with-non-public-key \u2192 `validateAsymmetricKey` \u2192 only then `jws.verify`.",
           "sources": [
             "verify.js#L120-172"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "VERIFY step 11 (claims, in order): `nbf` (type check then `> clockTimestamp + clockTolerance` → `NotBeforeError`) → `exp` (→ `TokenExpiredError`) → `audience` → `issuer` → `subject` → `jwtid` → `nonce` → `maxAge` (→ `TokenExpiredError('maxAge exceeded')`) → return payload or the `complete` triple.",
+          "claim": "VERIFY step 11 (claims, in order): `nbf` (type check then `> clockTimestamp + clockTolerance` \u2192 `NotBeforeError`) \u2192 `exp` (\u2192 `TokenExpiredError`) \u2192 `audience` \u2192 `issuer` \u2192 `subject` \u2192 `jwtid` \u2192 `nonce` \u2192 `maxAge` (\u2192 `TokenExpiredError('maxAge exceeded')`) \u2192 return payload or the `complete` triple.",
           "sources": [
             "verify.js#L176-261"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "KEY-CONFUSION TRACE: an attacker-forged `{alg: HS256, kid: rsaKeyId}` token presented with the legitimate RSA public key reaches line 148, where `header.alg.startsWith('HS') && key.type !== 'secret'` throws `secretOrPublicKey must be a symmetric key when using HS256` — before `jws.verify` is ever called. The test asserts this for both KeyObject and PEM forms.",
+          "claim": "KEY-CONFUSION TRACE: an attacker-forged `{alg: HS256, kid: rsaKeyId}` token presented with the legitimate RSA public key reaches line 148, where `header.alg.startsWith('HS') && key.type !== 'secret'` throws `secretOrPublicKey must be a symmetric key when using HS256` \u2014 before `jws.verify` is ever called. The test asserts this for both KeyObject and PEM forms.",
           "sources": [
             "verify.js#L148-152",
             "test/jwt.malicious.tests.js#L21-31"
@@ -4215,7 +4215,7 @@
       ]
     },
     "testing_signals": {
-      "summary": "Testing is the strongest part of the repo: ~258 `it()` blocks across 30 mocha files in `test/`, backed by chai assertions, sinon fake timers, and 17 checked-in PEM fixtures covering RSA, RSA-PSS, EC (three curves), DSA, and deliberately-invalid keys. The signature move is `test/test-utils.js`, which runs every sign/verify twice — once sync, once async — under a frozen clock and asserts the two produce byte-identical tokens or deep-equal errors; this is why the sync/async parity invariant actually holds. Coverage is configured with hard nyc thresholds, but the CI workflow runs bare `mocha`, so those thresholds and eslint are never enforced on PRs. Test naming is split between a per-claim convention (`claim-*.test.js`, `option-*.test.js`) and older topic/regression files (`*.tests.js`, `issue_*.tests.js`).",
+      "summary": "Testing is the strongest part of the repo: ~258 `it()` blocks across 30 mocha files in `test/`, backed by chai assertions, sinon fake timers, and 17 checked-in PEM fixtures covering RSA, RSA-PSS, EC (three curves), DSA, and deliberately-invalid keys. The signature move is `test/test-utils.js`, which runs every sign/verify twice \u2014 once sync, once async \u2014 under a frozen clock and asserts the two produce byte-identical tokens or deep-equal errors; this is why the sync/async parity invariant actually holds. Coverage is configured with hard nyc thresholds, but the CI workflow runs bare `mocha`, so those thresholds and eslint are never enforced on PRs. Test naming is split between a per-claim convention (`claim-*.test.js`, `option-*.test.js`) and older topic/regression files (`*.tests.js`, `issue_*.tests.js`).",
       "claims": [
         {
           "claim": "The framework stack is mocha 5 + chai 4 + sinon 6, with `atob` used to independently decode base64url segments in encoding tests. There is no `.mocharc`, so mocha's default `./test/*.js` glob picks up every file in `test/`.",
@@ -4241,7 +4241,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Option/claim validation is tested exhaustively by table-driven loops over ~15 bad values (`true, false, null, -1.1, Infinity, NaN, ' ', '', [], ['foo'], {}, {foo:'bar'}` …), applied per-claim in `claim-exp.test.js`, `header-kid.test.js`, and siblings.",
+          "claim": "Option/claim validation is tested exhaustively by table-driven loops over ~15 bad values (`true, false, null, -1.1, Infinity, NaN, ' ', '', [], ['foo'], {}, {foo:'bar'}` \u2026), applied per-claim in `claim-exp.test.js`, `header-kid.test.js`, and siblings.",
           "sources": [
             "test/claim-exp.test.js#L19-45",
             "test/header-kid.test.js#L18-40"
@@ -4289,7 +4289,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "nyc is configured with `check-coverage: true` and thresholds of 95% lines, 95% statements, 100% functions, 95% branches, excluding `./test/**` — a genuinely strict bar.",
+          "claim": "nyc is configured with `check-coverage: true` and thresholds of 95% lines, 95% statements, 100% functions, 95% branches, excluding `./test/**` \u2014 a genuinely strict bar.",
           "sources": [
             "package.json#L6-20"
           ],
@@ -4304,14 +4304,14 @@
           "kind": "evidence"
         },
         {
-          "claim": "A known-broken case is parked rather than fixed: `it.skip('should work with none algorithm where secret is falsy')` in async_sign, annotated with a link to node-jws issue #62 — the async `alg: none` path with a falsy secret is untested and known not to work.",
+          "claim": "A known-broken case is parked rather than fixed: `it.skip('should work with none algorithm where secret is falsy')` in async_sign, annotated with a link to node-jws issue #62 \u2014 the async `alg: none` path with a falsy secret is untested and known not to work.",
           "sources": [
             "test/async_sign.tests.js#L45-52"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "A coverage hole is deliberately carved out with `/* istanbul ignore next */` around the entire `ASYMMETRIC_KEY_DETAILS_SUPPORTED` block in validateAsymmetricKey, with a comment explaining it would otherwise sink coverage on Node < 15.7.0 — meaning EC curve matching and RSA-PSS parameter checks are excluded from the coverage numbers.",
+          "claim": "A coverage hole is deliberately carved out with `/* istanbul ignore next */` around the entire `ASYMMETRIC_KEY_DETAILS_SUPPORTED` block in validateAsymmetricKey, with a comment explaining it would otherwise sink coverage on Node < 15.7.0 \u2014 meaning EC curve matching and RSA-PSS parameter checks are excluded from the coverage numbers.",
           "sources": [
             "lib/validateAsymmetricKey.js#L32-65"
           ],
@@ -4328,10 +4328,10 @@
       ]
     },
     "risk_map": {
-      "summary": "As a library whose entire job is security, nearly every line in verify.js is a security-sensitive path, and the ordering of its checks is the load-bearing invariant — any reordering that lets `jws.verify` run before the algorithm allow-list check reintroduces the classic JWT confusion attacks. The most concrete correctness defect is in sign.js's `options_to_payload` loop, where `return failure(...)` inside a `forEach` callback does not abort the enclosing function, so in async mode the callback can fire twice. Secondary risks cluster around Node-version-conditional code that CI does not fully exercise, deliberately silent error swallowing in `decode`, a very old eslint pinned at v4, and release workflows that handle several third-party secrets. Blast radius for any change here is unusually wide: this package sits in the dependency tree of a large fraction of Node auth stacks.",
+      "summary": "As a library whose entire job is security, nearly every line in verify.js is a security-sensitive path, and the ordering of its checks is the load-bearing invariant \u2014 any reordering that lets `jws.verify` run before the algorithm allow-list check reintroduces the classic JWT confusion attacks. The most concrete correctness defect is in sign.js's `options_to_payload` loop, where `return failure(...)` inside a `forEach` callback does not abort the enclosing function, so in async mode the callback can fire twice. Secondary risks cluster around Node-version-conditional code that CI does not fully exercise, deliberately silent error swallowing in `decode`, a very old eslint pinned at v4, and release workflows that handle several third-party secrets. Blast radius for any change here is unusually wide: this package sits in the dependency tree of a large fraction of Node auth stacks.",
       "claims": [
         {
-          "claim": "CORRECTNESS BUG: in the `options_to_payload` loop, `return failure(...)` only returns from the `forEach` arrow — the outer sign function continues. In async mode `failure` invokes the raw callback with an error at line 221, and since `callback` is not yet wrapped by `once()` (that happens at line 230), signing proceeds and the callback is invoked a second time with a valid token.",
+          "claim": "CORRECTNESS BUG: in the `options_to_payload` loop, `return failure(...)` only returns from the `forEach` arrow \u2014 the outer sign function continues. In async mode `failure` invokes the raw callback with an error at line 221, and since `callback` is not yet wrapped by `once()` (that happens at line 230), signing proceeds and the callback is invoked a second time with a valid token.",
           "sources": [
             "sign.js#L217-225",
             "sign.js#L229-244"
@@ -4339,7 +4339,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "SECURITY-CRITICAL ORDERING: the allow-list check (`options.algorithms.indexOf(header.alg) === -1`), the key-type symmetry check, and `validateAsymmetricKey` all sit between `decode` and `jws.verify`. Any edit that moves `jws.verify` earlier, or that trusts `header.alg` before line 144, reopens the RS256→HS256 confusion class.",
+          "claim": "SECURITY-CRITICAL ORDERING: the allow-list check (`options.algorithms.indexOf(header.alg) === -1`), the key-type symmetry check, and `validateAsymmetricKey` all sit between `decode` and `jws.verify`. Any edit that moves `jws.verify` earlier, or that trusts `header.alg` before line 144, reopens the RS256\u2192HS256 confusion class.",
           "sources": [
             "verify.js#L144-172",
             "test/jwt.malicious.tests.js#L21-31"
@@ -4347,7 +4347,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "`options.header` is `Object.assign`ed LAST when building the sign header, so a caller passing `{header: {alg: 'none'}}` silently overrides `options.algorithm` — and the downstream key/alg checks then run against the overridden value. This is by design but is a sharp edge for callers who build headers from user input.",
+          "claim": "`options.header` is `Object.assign`ed LAST when building the sign header, so a caller passing `{header: {alg: 'none'}}` silently overrides `options.algorithm` \u2014 and the downstream key/alg checks then run against the overridden value. This is by design but is a sharp edge for callers who build headers from user input.",
           "sources": [
             "sign.js#L97-101",
             "sign.js#L126-138"
@@ -4362,7 +4362,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "The `signature.length < 256` heuristic is an acknowledged stopgap for the 2048-bit modulus rule on Node < 15, duplicated in both the sync and async branches with matching `TODO: Remove ...` comments — a two-site invariant that can drift.",
+          "claim": "The `signature.length < 256` heuristic is an acknowledged stopgap for the 2048-bit modulus rule on Node < 15, duplicated in both the sync and async branches with matching `TODO: Remove ...` comments \u2014 a two-site invariant that can drift.",
           "sources": [
             "sign.js#L239-241",
             "sign.js#L247-249"
@@ -4370,7 +4370,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "No source file uses `'use strict'`, so sloppy-mode semantics apply — e.g. `delete payload.iat` on a primitive string payload under `noTimestamp` is a silent no-op rather than a TypeError. Notably `npm run coverage` runs mocha with `--use_strict` while `npm test` does not, so the two commands exercise different semantics.",
+          "claim": "No source file uses `'use strict'`, so sloppy-mode semantics apply \u2014 e.g. `delete payload.iat` on a primitive string payload under `noTimestamp` is a silent no-op rather than a TypeError. Notably `npm run coverage` runs mocha with `--use_strict` while `npm test` does not, so the two commands exercise different semantics.",
           "sources": [
             "sign.js#L187-191",
             "package.json#L23-24"
@@ -4393,7 +4393,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "`allowInvalidAsymmetricKeyTypes: true` disables `validateAsymmetricKey` on both sign and verify, and a test asserts it lets an ES256-labelled token be processed with an RSA key — a documented footgun kept only for backwards compatibility.",
+          "claim": "`allowInvalidAsymmetricKeyTypes: true` disables `validateAsymmetricKey` on both sign and verify, and a test asserts it lets an ES256-labelled token be processed with an RSA key \u2014 a documented footgun kept only for backwards compatibility.",
           "sources": [
             "verify.js#L154-160",
             "test/verify.tests.js#L293-300",
@@ -4402,21 +4402,21 @@
           "kind": "evidence"
         },
         {
-          "claim": "`release.yml` handles six secrets (`PRODSEC_TOOLS_ARN`, `PRODSEC_TOOLS_USER`, `PRODSEC_TOOLS_TOKEN`, `RLSECURE_LICENSE`, `RLSECURE_SITE_KEY`, `SIGNAL_HANDLER_TOKEN`) and embeds credentials in a pip `--index-url`. Mitigations are in place — `persist-credentials: false`, `mask-aws-account-id: true`, SHA-pinned actions — but this job is the highest-value supply-chain target in the repo.",
+          "claim": "`release.yml` handles six secrets (`PRODSEC_TOOLS_ARN`, `PRODSEC_TOOLS_USER`, `PRODSEC_TOOLS_TOKEN`, `RLSECURE_LICENSE`, `RLSECURE_SITE_KEY`, `SIGNAL_HANDLER_TOKEN`) and embeds credentials in a pip `--index-url`. Mitigations are in place \u2014 `persist-credentials: false`, `mask-aws-account-id: true`, SHA-pinned actions \u2014 but this job is the highest-value supply-chain target in the repo.",
           "sources": [
             ".github/workflows/release.yml#L21-72"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "`prepare-release.yml` parses the next version out of semantic-release's human-readable stdout with `awk '/The next release version is/{print $NF}'` — a brittle coupling to log wording that would silently produce an empty version if the message text changes.",
+          "claim": "`prepare-release.yml` parses the next version out of semantic-release's human-readable stdout with `awk '/The next release version is/{print $NF}'` \u2014 a brittle coupling to log wording that would silently produce an empty version if the message text changes.",
           "sources": [
             ".github/workflows/prepare-release.yml#L36-52"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "DEAD CODE: `bin/changelog` is a standalone conventional-changelog script with hardcoded `releaseCount: 19` and a commented-out `preset: 'jshint'`, but nothing references it — `package.json` and `prepare-release.yml` both go through the `update-changelog` npm script instead (per commit b924272).",
+          "claim": "DEAD CODE: `bin/changelog` is a standalone conventional-changelog script with hardcoded `releaseCount: 19` and a commented-out `preset: 'jshint'`, but nothing references it \u2014 `package.json` and `prepare-release.yml` both go through the `update-changelog` npm script instead (per commit b924272).",
           "sources": [
             "bin/changelog#L1-32",
             "package.json#L26",
@@ -4425,7 +4425,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "STALE TOOLING: `eslint` is pinned at `^4.19.1` (with `ecmaVersion: 6` in the parser options, below the ES2018+ syntax the sources actually use), and `nsp@^2.6.2` — a long-deprecated security tool — remains a devDependency with no script invoking it.",
+          "claim": "STALE TOOLING: `eslint` is pinned at `^4.19.1` (with `ecmaVersion: 6` in the parser options, below the ES2018+ syntax the sources actually use), and `nsp@^2.6.2` \u2014 a long-deprecated security tool \u2014 remains a devDependency with no script invoking it.",
           "sources": [
             "package.json#L60-64",
             ".eslintrc.json#L3-5"
@@ -4433,7 +4433,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "The README still advertises Travis CI and david-dm badges even though CI has moved to GitHub Actions, and the TODO section admits `X.509 certificate chain is not checked` — a real, documented limitation for anyone using x509 PEMs as verification keys.",
+          "claim": "The README still advertises Travis CI and david-dm badges even though CI has moved to GitHub Actions, and the TODO section admits `X.509 certificate chain is not checked` \u2014 a real, documented limitation for anyone using x509 PEMs as verification keys.",
           "sources": [
             "README.md#L3-6",
             "README.md#L382-384",
@@ -4452,7 +4452,7 @@
       ]
     },
     "extension_points": {
-      "summary": "This library has no plugin system by design — a JWT implementation with third-party extension hooks would be a security liability. What it does have are a handful of declarative tables that are the intended edit sites for new capability, and one genuine runtime hook. The tables are the two option schemas and the `options_to_payload` map in sign.js, the four algorithm arrays in verify.js, and the `allowedAlgorithmsForKeys`/`allowedCurves` matrices in `lib/validateAsymmetricKey.js` — adding an algorithm means touching all three files coherently. The one caller-facing hook is verify's function-valued `secretOrPublicKey`, which is where JWKS clients plug in. Feature detection for new Node capabilities follows a one-file-per-boolean convention in `lib/`.",
+      "summary": "This library has no plugin system by design \u2014 a JWT implementation with third-party extension hooks would be a security liability. What it does have are a handful of declarative tables that are the intended edit sites for new capability, and one genuine runtime hook. The tables are the two option schemas and the `options_to_payload` map in sign.js, the four algorithm arrays in verify.js, and the `allowedAlgorithmsForKeys`/`allowedCurves` matrices in `lib/validateAsymmetricKey.js` \u2014 adding an algorithm means touching all three files coherently. The one caller-facing hook is verify's function-valued `secretOrPublicKey`, which is where JWKS clients plug in. Feature detection for new Node capabilities follows a one-file-per-boolean convention in `lib/`.",
       "claims": [
         {
           "claim": "PRIMARY RUNTIME HOOK: `secretOrPublicKey` as a `(header, secretCallback)` function is the documented integration point for JWKS/`kid`-based key resolution; internally the static-key case is normalized into the same shape so there is exactly one code path after line 101.",
@@ -4463,7 +4463,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Adding a new sign option means one entry in `sign_options_schema` with an `isValid` predicate and a `message` — the generic `validate(schema, allowUnknown, object, parameterName)` walker requires no other change, and unknown options are rejected because `validateOptions` passes `allowUnknown: false`.",
+          "claim": "Adding a new sign option means one entry in `sign_options_schema` with an `isValid` predicate and a `message` \u2014 the generic `validate(schema, allowUnknown, object, parameterName)` walker requires no other change, and unknown options are rejected because `validateOptions` passes `allowUnknown: false`.",
           "sources": [
             "sign.js#L19-34",
             "sign.js#L42-63"
@@ -4471,7 +4471,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "`registered_claims_schema` is the parallel table for payload claims and is validated with `allowUnknown: true`, so arbitrary custom claims pass through while `iat`/`exp`/`nbf` are type-enforced — this asymmetry is the extension point for application-specific claims.",
+          "claim": "`registered_claims_schema` is the parallel table for payload claims and is validated with `allowUnknown: true`, so arbitrary custom claims pass through while `iat`/`exp`/`nbf` are type-enforced \u2014 this asymmetry is the extension point for application-specific claims.",
           "sources": [
             "sign.js#L36-40",
             "sign.js#L65-67",
@@ -4505,7 +4505,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "`allowedAlgorithmsForKeys` maps `asymmetricKeyType` → permitted `alg` values and is the single authority on key/algorithm pairing; an unrecognized key type throws `Unknown key type \"<type>\"`, so new key types must be registered here or they are rejected outright.",
+          "claim": "`allowedAlgorithmsForKeys` maps `asymmetricKeyType` \u2192 permitted `alg` values and is the single authority on key/algorithm pairing; an unrecognized key type throws `Unknown key type \"<type>\"`, so new key types must be registered here or they are rejected outright.",
           "sources": [
             "lib/validateAsymmetricKey.js#L4-30",
             "test/verify.tests.js#L272-282"
@@ -4565,10 +4565,10 @@
       ]
     },
     "agent_handoff": {
-      "summary": "Treat this as a security library first and a JavaScript project second: the check ordering in verify.js and the guard cascade in sign.js are the product, and reordering them is never a safe refactor even when it looks like cleanup. Style is intentionally conservative CommonJS ES5/ES6 with no build step, no TypeScript, no async/await, and no strict mode — match it rather than modernize it. Read the four root JS files and `lib/validateAsymmetricKey.js` before touching anything; they are under 600 lines combined. Commits must be Conventional Commits because commitlint gates PRs via husky locally and a workflow in CI, and because semantic-release derives the version from them.",
+      "summary": "Treat this as a security library first and a JavaScript project second: the check ordering in verify.js and the guard cascade in sign.js are the product, and reordering them is never a safe refactor even when it looks like cleanup. Style is intentionally conservative CommonJS ES5/ES6 with no build step, no TypeScript, no async/await, and no strict mode \u2014 match it rather than modernize it. Read the four root JS files and `lib/validateAsymmetricKey.js` before touching anything; they are under 600 lines combined. Commits must be Conventional Commits because commitlint gates PRs via husky locally and a workflow in CI, and because semantic-release derives the version from them.",
       "claims": [
         {
-          "claim": "READ FIRST, in order: `index.js`, `sign.js`, `verify.js`, `decode.js`, `lib/validateAsymmetricKey.js`. That is the entire library — under 600 lines total — and everything else in `lib/` is a three-line helper.",
+          "claim": "READ FIRST, in order: `index.js`, `sign.js`, `verify.js`, `decode.js`, `lib/validateAsymmetricKey.js`. That is the entire library \u2014 under 600 lines total \u2014 and everything else in `lib/` is a three-line helper.",
           "sources": [
             "index.js",
             "sign.js",
@@ -4606,14 +4606,14 @@
           "kind": "evidence"
         },
         {
-          "claim": "TRAP — check ordering: in verify.js, lines 144 (allow-list), 148-152 (key-type symmetry), and 154-160 (key/alg matrix) must all remain before line 165 (`jws.verify`). Moving or short-circuiting any of them is a vulnerability, not a refactor.",
+          "claim": "TRAP \u2014 check ordering: in verify.js, lines 144 (allow-list), 148-152 (key-type symmetry), and 154-160 (key/alg matrix) must all remain before line 165 (`jws.verify`). Moving or short-circuiting any of them is a vulnerability, not a refactor.",
           "sources": [
             "verify.js#L144-172"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "TRAP — dual calling convention: every change to sign or verify must work identically in sync (throws) and async (callback) mode. `test/test-utils.js` asserts byte-equality of tokens and deep-equality of errors across the two, so a one-sided fix will fail loudly.",
+          "claim": "TRAP \u2014 dual calling convention: every change to sign or verify must work identically in sync (throws) and async (callback) mode. `test/test-utils.js` asserts byte-equality of tokens and deep-equality of errors across the two, so a one-sided fix will fail loudly.",
           "sources": [
             "test/test-utils.js#L59-118",
             "sign.js#L103-108",
@@ -4622,14 +4622,14 @@
           "kind": "evidence"
         },
         {
-          "claim": "TRAP — `return` inside `forEach`: the existing `options_to_payload` loop already has this bug (a `return failure(...)` that does not abort the function). Do not copy that pattern into new claim-copy logic, and be aware that fixing it changes observable async callback behavior.",
+          "claim": "TRAP \u2014 `return` inside `forEach`: the existing `options_to_payload` loop already has this bug (a `return failure(...)` that does not abort the function). Do not copy that pattern into new claim-copy logic, and be aware that fixing it changes observable async callback behavior.",
           "sources": [
             "sign.js#L217-225"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "TRAP — Node-conditional code: three `semver.satisfies` booleans are evaluated at module load. Code behind `ASYMMETRIC_KEY_DETAILS_SUPPORTED` and `RSA_PSS_KEY_DETAILS_SUPPORTED` will not execute on your local Node unless it is new enough, and is excluded from coverage — verify such changes against the CI matrix (16/18/20/22/24), not just locally.",
+          "claim": "TRAP \u2014 Node-conditional code: three `semver.satisfies` booleans are evaluated at module load. Code behind `ASYMMETRIC_KEY_DETAILS_SUPPORTED` and `RSA_PSS_KEY_DETAILS_SUPPORTED` will not execute on your local Node unless it is new enough, and is excluded from coverage \u2014 verify such changes against the CI matrix (16/18/20/22/24), not just locally.",
           "sources": [
             "lib/asymmetricKeyDetailsSupported.js",
             "lib/rsaPssKeyDetailsSupported.js",
@@ -4676,14 +4676,14 @@
           "kind": "evidence"
         },
         {
-          "claim": "Any PR touching `lib/`, `sign.js`, or `verify.js` will require review from `@auth0/project-iam-protocols-engineer-codeowner` — the CODEOWNERS glob is `*`, so every path is covered.",
+          "claim": "Any PR touching `lib/`, `sign.js`, or `verify.js` will require review from `@auth0/project-iam-protocols-engineer-codeowner` \u2014 the CODEOWNERS glob is `*`, so every path is covered.",
           "sources": [
             "CODEOWNERS"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "Do not add PEM fixtures casually: 17 already exist covering RSA, RSA-PSS (valid and invalid salt length), EC on three curves, DSA, and invalid public keys — reuse them via the `loadKey(filename)` helper convention.",
+          "claim": "Do not add PEM fixtures casually: 17 already exist covering RSA, RSA-PSS (valid and invalid salt length), EC on three curves, DSA, and invalid public keys \u2014 reuse them via the `loadKey(filename)` helper convention.",
           "sources": [
             "test/jwt.asymmetric_signing.tests.js#L10-12",
             "test/validateAsymmetricKey.tests.js#L10-14"
@@ -4691,7 +4691,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Security vulnerabilities must not be filed as GitHub issues — the README directs them to Auth0's Responsible Disclosure Program. An agent discovering one should report it to the user rather than opening a public issue.",
+          "claim": "Security vulnerabilities must not be filed as GitHub issues \u2014 the README directs them to Auth0's Responsible Disclosure Program. An agent discovering one should report it to the user rather than opening a public issue.",
           "sources": [
             "README.md#L386-388"
           ],
@@ -4699,11 +4699,11 @@
         }
       ]
     },
-    "agent_prompt": "You are working on `jsonwebtoken` (auth0/node-jsonwebtoken), the reference Node.js implementation of RFC 7519 JSON Web Tokens, currently v9.0.3 on branch `master`. This is a security library published to npm and depended on by a very large slice of the Node auth ecosystem — assume wide blast radius for every change.\n\nARCHITECTURE. It is plain CommonJS with no build step, no TypeScript, and no `'use strict'`. `index.js` exports six symbols: `sign`, `verify`, `decode`, and the error classes `JsonWebTokenError`, `NotBeforeError`, `TokenExpiredError`. The three functions live in root-level `sign.js`, `verify.js`, `decode.js`. All actual cryptography is delegated to the `jws` package; this repo contributes claim semantics, option validation, and key-confusion defenses. `lib/` holds only small helpers: three `semver.satisfies(process.version, ...)` feature-detection booleans (`psSupported`, `asymmetricKeyDetailsSupported`, `rsaPssKeyDetailsSupported`), a `ms`-backed `timespan.js`, the three error classes, and `validateAsymmetricKey.js` which owns the key-type↔algorithm matrix and the ES curve mapping.\n\nHOW IT WORKS. Both `sign` and `verify` accept an optional trailing callback; with it they are async and yield `(err, result)`, without it they are synchronous and throw. Every error routes through one sink (`failure()` in sign, `done()` in verify) so the two modes produce identical errors — `test/test-utils.js` enforces this by running both and asserting byte-equal tokens or deep-equal errors under a frozen sinon clock. Both paths normalize whatever key material the caller passes into a `crypto.KeyObject` through a `createPrivateKey`/`createPublicKey` → `createSecretKey` try/catch cascade, then make every subsequent decision from `key.type`, `key.asymmetricKeyType`, and `key.asymmetricKeyDetails`.\n\nTHE CRITICAL INVARIANT. In `verify.js`, these run in this exact order and must stay that way: derive default `algorithms` from key type (L132-142) → reject `header.alg` not in the allow-list (L144) → reject HS-alg-with-non-secret-key and RS/PS/ES-alg-with-non-public-key (L148-152) → `validateAsymmetricKey` (L154-160) → only then `jws.verify` (L165). This ordering is what blocks the RS256→HS256 key-confusion attack; `test/jwt.malicious.tests.js` pins it. Never move `jws.verify` earlier or trust `header.alg` before the allow-list check. Claim checks (nbf, exp, aud, iss, sub, jti, nonce, maxAge) follow afterward.\n\nEXTENSION POINTS. New sign options go in `sign_options_schema`; new registered-claim shortcuts go in `options_to_payload` (and `options_for_objects` if object-only). New algorithms require coordinated edits to `SUPPORTED_ALGS` (sign.js), the four arrays in verify.js, and `allowedAlgorithmsForKeys` in validateAsymmetricKey.js. The only caller-facing hook is verify's function-valued `secretOrPublicKey` for JWKS/kid lookup.\n\nKNOWN TRAPS. (1) The `options_to_payload` loop uses `return failure(...)` inside a `forEach`, which does not abort the function — in async mode this can invoke the callback twice. Do not replicate the pattern. (2) Code behind the Node-version booleans will not execute on older runtimes and is excluded from coverage via `istanbul ignore next`. (3) `decode` swallows JSON.parse errors silently. (4) `npm test` and `npm run coverage` differ — the latter adds `--use_strict`.\n\nCOMMANDS. `npm test` (mocha, ~258 tests in `test/`), `npm run coverage` (nyc, thresholds 95/95/100/95 — enforced by the command but NOT by CI), `npm run lint` (eslint v4, also not run by CI — run it yourself). Commits must be Conventional Commits; husky's `commit-msg` hook and a PR workflow both enforce this, and semantic-release derives versions from them. Do not hand-edit `CHANGELOG.md` or the `version` field — both are automated. Update `README.md` for any user-visible API change. Report security findings to the user, not to the public issue tracker."
+    "agent_prompt": "You are working on `jsonwebtoken` (auth0/node-jsonwebtoken), the reference Node.js implementation of RFC 7519 JSON Web Tokens, currently v9.0.3 on branch `master`. This is a security library published to npm and depended on by a very large slice of the Node auth ecosystem \u2014 assume wide blast radius for every change.\n\nARCHITECTURE. It is plain CommonJS with no build step, no TypeScript, and no `'use strict'`. `index.js` exports six symbols: `sign`, `verify`, `decode`, and the error classes `JsonWebTokenError`, `NotBeforeError`, `TokenExpiredError`. The three functions live in root-level `sign.js`, `verify.js`, `decode.js`. All actual cryptography is delegated to the `jws` package; this repo contributes claim semantics, option validation, and key-confusion defenses. `lib/` holds only small helpers: three `semver.satisfies(process.version, ...)` feature-detection booleans (`psSupported`, `asymmetricKeyDetailsSupported`, `rsaPssKeyDetailsSupported`), a `ms`-backed `timespan.js`, the three error classes, and `validateAsymmetricKey.js` which owns the key-type\u2194algorithm matrix and the ES curve mapping.\n\nHOW IT WORKS. Both `sign` and `verify` accept an optional trailing callback; with it they are async and yield `(err, result)`, without it they are synchronous and throw. Every error routes through one sink (`failure()` in sign, `done()` in verify) so the two modes produce identical errors \u2014 `test/test-utils.js` enforces this by running both and asserting byte-equal tokens or deep-equal errors under a frozen sinon clock. Both paths normalize whatever key material the caller passes into a `crypto.KeyObject` through a `createPrivateKey`/`createPublicKey` \u2192 `createSecretKey` try/catch cascade, then make every subsequent decision from `key.type`, `key.asymmetricKeyType`, and `key.asymmetricKeyDetails`.\n\nTHE CRITICAL INVARIANT. In `verify.js`, these run in this exact order and must stay that way: derive default `algorithms` from key type (L132-142) \u2192 reject `header.alg` not in the allow-list (L144) \u2192 reject HS-alg-with-non-secret-key and RS/PS/ES-alg-with-non-public-key (L148-152) \u2192 `validateAsymmetricKey` (L154-160) \u2192 only then `jws.verify` (L165). This ordering is what blocks the RS256\u2192HS256 key-confusion attack; `test/jwt.malicious.tests.js` pins it. Never move `jws.verify` earlier or trust `header.alg` before the allow-list check. Claim checks (nbf, exp, aud, iss, sub, jti, nonce, maxAge) follow afterward.\n\nEXTENSION POINTS. New sign options go in `sign_options_schema`; new registered-claim shortcuts go in `options_to_payload` (and `options_for_objects` if object-only). New algorithms require coordinated edits to `SUPPORTED_ALGS` (sign.js), the four arrays in verify.js, and `allowedAlgorithmsForKeys` in validateAsymmetricKey.js. The only caller-facing hook is verify's function-valued `secretOrPublicKey` for JWKS/kid lookup.\n\nKNOWN TRAPS. (1) The `options_to_payload` loop uses `return failure(...)` inside a `forEach`, which does not abort the function \u2014 in async mode this can invoke the callback twice. Do not replicate the pattern. (2) Code behind the Node-version booleans will not execute on older runtimes and is excluded from coverage via `istanbul ignore next`. (3) `decode` swallows JSON.parse errors silently. (4) `npm test` and `npm run coverage` differ \u2014 the latter adds `--use_strict`.\n\nCOMMANDS. `npm test` (mocha, ~258 tests in `test/`), `npm run coverage` (nyc, thresholds 95/95/100/95 \u2014 enforced by the command but NOT by CI), `npm run lint` (eslint v4, also not run by CI \u2014 run it yourself). Commits must be Conventional Commits; husky's `commit-msg` hook and a PR workflow both enforce this, and semantic-release derives versions from them. Do not hand-edit `CHANGELOG.md` or the `version` field \u2014 both are automated. Update `README.md` for any user-visible API change. Report security findings to the user, not to the public issue tracker."
   },
   "analysis": {
     "agent": "claude",
-    "model": "cli:claude",
+    "model": "claude-opus-5",
     "runtime_ms": 345333,
     "cost_usd": 1.7264470000000003,
     "collected_at": "2026-09-22T08:42:51.831Z"

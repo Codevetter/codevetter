@@ -226,7 +226,7 @@
         {
           "path": "docs/BINDINGS.md",
           "bytes": 6612,
-          "preview": "<!--\nCopyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.\n\nSPDX-License-Identifier: curl\n-->\n\nlibcurl bindings\n================\n\nCreative people have written bindings or interfaces for various environments\nand programming languages. Using one of these allows you to take advantage of\ncurl powers from within your favorite language or system.\n\nThis is a list of all known interfaces as of this writing.\n\nThe bindings listed below are not part of the curl/libcurl distribution\narchives, but must be downloaded and installed separately.\n\n<!-- markdown-link-check-disable -->\n\n[Ada95](https://web.archive.org/web/20070403105909/www.almroth.com/adacurl/index.html) Written by Andreas Almroth\n\n[Basic](https://scriptbasic.com/) ScriptBasic bindings written by Peter Verhas\n\nC++: [curlpp](https://github.com/jpbarrette/curlpp) Written by Jean-Philippe Barrette-LaPierre,\n[curlcpp](https://github.com/JosephP91/curlcpp) by Giuseppe Persico and\n[C++ Requests](https://github.com/libcpr/cpr) by Huu Nguyen\n\n[Ch](https://chcurl.sourceforge.net/) Written by Stephen Nestinger and Jonathan Rogado\n\nCocoa: [BBHTTP](https://github.com/biasedbit/BBHTTP) written by Bruno de Carvalho\n[curlhandle](https://github.com/karelia/curlhandle) Written by Dan Wood\n\nClojure: [clj-curl](https://github.com/lsevero/clj-curl) by Lucas Severo\n\n[D](https://dlang.org/library/std/net/curl.html) Written by Kenneth Bogert\n\n[Delphi](https://github.com/Mercury13/curl4delphi) Written by Mikhail Merkuryev\n\n[Dylan](https://dylanlibs.sourceforge.net/) Written by Chris Double\n\n[Eiffel](https://iron.eiffel.com/repository/20.11/package/ABEF6975-37AC-45FD-9C67-52D10BA0669B) Written by Eiffel Software\n\n[Euphoria](https://web.archive.org/web/20050204080544/rays-web.com/eulibcurl.htm) Written by Ray Smith\n\n[Falcon](https://web.archive.org/web/20240130001835/www.falconpl.org/project_docs/curl/)\n\n[Ferite](https://web.archive.org/web/20150102192018/ferite.org/) Written by Paul Querna\n\n[Fortran](https://github.com/interkosmos/fortran-curl) Written by Philipp Engel\n\n[Gambas](https://gambaswiki.org/website/en/main.html)\n\n[glib/GTK+](https://web.archive.org/web/20100526203452/atterer.net/glibcurl) Written by Richard Atterer\n\nGo: [go-curl](https://github.com/andelf/go-curl) by ShuYu Wang\n\n[Guile](https://github.com/spk121/guile-curl) Written by Michael L. Gran\n\n[Harbour](https://github.com/vszakats/hb/tree/main/contrib/hbcurl) Written by Viktor Szakats\n\n[Haskell](https://hackage.haskell.org/package/curl) Written by Galois, Inc\n\n[Hollywood](https://www.hollywood-mal.com/download.html) hURL by Andreas Falkenhahn\n\n[Java](https://github.com/covers1624/curl4j)\n\n[Julia](https://github.com/JuliaWeb/LibCURL.jl) Written by Amit Murthy\n\n[Katipo](https://github.com/puzza007/katipo) is an Erlang HTTP library around libcurl.\n\n[Lisp](https://common-lisp.net/project/cl-curl/) Written by Liam Healy\n\n[LibQurl](https://github.com/Qriist/LibQurl) a feature-rich AutoHotKey v2 (AHKv2) wrapper around libcurl.\n\nLua: [luacurl](https://web.archive.org/web/20201205052437/luacurl.luaforge.net/) by Alexander Marinov, [Lua-curl](https://github.com/Lua-cURL) by Jürgen Hötzel\n\n[Mono](https://web.archive.org/web/20070606064500/forge.novell.com/modules/xfmod/project/?libcurl-mono) Written by Jeffrey Phillips\n\n[.NET](https://sourceforge.net/projects/libcurl-net/) libcurl-net by Jeffrey Phillips\n\n[Nim](https://nimble.directory/pkg/libcurl) wrapper for libcurl\n\n[node.js](https://github.com/JCMais/node-libcurl) node-libcurl by Jonathan Cardoso Machado\n\n[Object-Pascal](https://web.archive.org/web/20020610214926/www.tekool.com/opcurl) Free Pascal, Delphi and Kylix binding written by Christophe Espern.\n\n[OCaml](https://opam.ocaml.org/packages/ocurl/) Written by Lars Nilsson and ygrek\n\n[Pascal](https://web.archive.org/web/20030804091414/houston.quik.com/jkp/curlpas/) Free Pascal, Delphi and Kylix binding written by Jeffrey Pohlmeyer.\n\nPerl: [WWW::Curl](https://github.com/szbalint/WWW--Curl) Maintained by Cris\nBailiff and Bálint Szilakszi,\n[perl6-net-curl](https://github.com/azawawi/perl6-net-curl) by Ahmad M. Zawawi\n[NET::Curl](https://metacpan.org/pod/Net::Curl) by Przemyslaw Iskra\n\n[PHP](https://php.net/curl) Originally written by Sterling Hughes\n\n[PostgreSQL](https://github.com/pramsey/pgsql-http) - HTTP client for PostgreSQL\n\n[PostgreSQL](https://github.com/RekGRpth/pg_curl) - curl client for PostgreSQL\n\n[PureBasic](https://web.archive.org/web/20250325015028/www.purebasic.com/documentation/http/index.html) uses libcurl in its \"native\" HTTP subsystem\n\n[Python](https://github.com/pycurl/pycurl) PycURL by Kjetil Jacobsen\n\n[Python](https://pypi.org/project/pymcurl/) mcurl by Ganesh Viswanathan\n\n[Q](https://q-lang.sourceforge.net/) The libcurl module is part of the default install\n\n[R](https://cran.r-project.org/package=curl)\n\n[Rexx](https://rexxcurl.sourceforge.net/) Written by Mark Hessling\n\n[Ring](https://ring-lang.github.io/doc1.24/libcurl.html) RingLibCurl by Mahmoud Fayed\n\nRPG, support for ILE/RPG on OS/400 is included in source distribution\n\nRuby: [curb](https://github.com/taf2/curb) written by Ross Bamford,\n[ruby-curl-multi](https://github.com/kball/curl_multi.rb) by Kristjan Petursson and Keith Rarick\n\n[Rust](https://github.com/alexcrichton/curl-rust) curl-rust - by Carl Lerche\n\n[Scheme](https://metapaper.net/lisovsky/web/curl/) Bigloo binding by Kirill Lisovsky\n\n[Scilab](https://help.scilab.org/docs/current/fr_FR/getURL.html) binding by Sylvestre Ledru\n\n[S-Lang](https://www.jedsoft.org/slang/modules/curl.html) by John E Davis\n\n[Smalltalk](https://www.squeaksource.com/CurlPlugin/) Written by Danil Osipchuk\n\n[SP-Forth](https://sourceforge.net/p/spf/spf/ci/master/tree/devel/~ac/lib/lin/curl/) Written by Andrey Cherezov\n\n[SPL](https://web.archive.org/web/20210203022158/www.clifford.at/spl/spldoc/curl.html) Written by Clifford Wolf\n\n[Tcl](https://web.archive.org/web/20160826011806/mirror.yellow5.com/tclcurl/) Tclcurl by Andrés García\n\n[Vibe](https://github.com/ttytm/vibe) HTTP requests through libcurl in V\n\n[Visual Basic](https://sourceforge.net/projects/libcurl-vb/) libcurl-vb by Jeffrey Phillips\n\n[Visual Foxpro](https://web.archive.org/web/20130730181523/www.ctl32.com.ar/libcurl.asp) by Carlos Alloatti\n\n[wxWidgets](https://wxcode.sourceforge.net/components/wxcurl/) Written by Casey O'Donnell\n\n[XBLite](https://web.archive.org/web/20060426150418/perso.wanadoo.fr/xblite/libraries.html) Written by David Szafranski\n\n[Xojo](https://github.com/charonn0/RB-libcURL) Written by Andrew Lambert\n\n[Zig](https://github.com/jiacai2050/zig-curl) Written by Jiacai Liu, both easy and multi API are supported.\n"
+          "preview": "<!--\nCopyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.\n\nSPDX-License-Identifier: curl\n-->\n\nlibcurl bindings\n================\n\nCreative people have written bindings or interfaces for various environments\nand programming languages. Using one of these allows you to take advantage of\ncurl powers from within your favorite language or system.\n\nThis is a list of all known interfaces as of this writing.\n\nThe bindings listed below are not part of the curl/libcurl distribution\narchives, but must be downloaded and installed separately.\n\n<!-- markdown-link-check-disable -->\n\n[Ada95](https://web.archive.org/web/20070403105909/www.almroth.com/adacurl/index.html) Written by Andreas Almroth\n\n[Basic](https://scriptbasic.com/) ScriptBasic bindings written by Peter Verhas\n\nC++: [curlpp](https://github.com/jpbarrette/curlpp) Written by Jean-Philippe Barrette-LaPierre,\n[curlcpp](https://github.com/JosephP91/curlcpp) by Giuseppe Persico and\n[C++ Requests](https://github.com/libcpr/cpr) by Huu Nguyen\n\n[Ch](https://chcurl.sourceforge.net/) Written by Stephen Nestinger and Jonathan Rogado\n\nCocoa: [BBHTTP](https://github.com/biasedbit/BBHTTP) written by Bruno de Carvalho\n[curlhandle](https://github.com/karelia/curlhandle) Written by Dan Wood\n\nClojure: [clj-curl](https://github.com/lsevero/clj-curl) by Lucas Severo\n\n[D](https://dlang.org/library/std/net/curl.html) Written by Kenneth Bogert\n\n[Delphi](https://github.com/Mercury13/curl4delphi) Written by Mikhail Merkuryev\n\n[Dylan](https://dylanlibs.sourceforge.net/) Written by Chris Double\n\n[Eiffel](https://iron.eiffel.com/repository/20.11/package/ABEF6975-37AC-45FD-9C67-52D10BA0669B) Written by Eiffel Software\n\n[Euphoria](https://web.archive.org/web/20050204080544/rays-web.com/eulibcurl.htm) Written by Ray Smith\n\n[Falcon](https://web.archive.org/web/20240130001835/www.falconpl.org/project_docs/curl/)\n\n[Ferite](https://web.archive.org/web/20150102192018/ferite.org/) Written by Paul Querna\n\n[Fortran](https://github.com/interkosmos/fortran-curl) Written by Philipp Engel\n\n[Gambas](https://gambaswiki.org/website/en/main.html)\n\n[glib/GTK+](https://web.archive.org/web/20100526203452/atterer.net/glibcurl) Written by Richard Atterer\n\nGo: [go-curl](https://github.com/andelf/go-curl) by ShuYu Wang\n\n[Guile](https://github.com/spk121/guile-curl) Written by Michael L. Gran\n\n[Harbour](https://github.com/vszakats/hb/tree/main/contrib/hbcurl) Written by Viktor Szakats\n\n[Haskell](https://hackage.haskell.org/package/curl) Written by Galois, Inc\n\n[Hollywood](https://www.hollywood-mal.com/download.html) hURL by Andreas Falkenhahn\n\n[Java](https://github.com/covers1624/curl4j)\n\n[Julia](https://github.com/JuliaWeb/LibCURL.jl) Written by Amit Murthy\n\n[Katipo](https://github.com/puzza007/katipo) is an Erlang HTTP library around libcurl.\n\n[Lisp](https://common-lisp.net/project/cl-curl/) Written by Liam Healy\n\n[LibQurl](https://github.com/Qriist/LibQurl) a feature-rich AutoHotKey v2 (AHKv2) wrapper around libcurl.\n\nLua: [luacurl](https://web.archive.org/web/20201205052437/luacurl.luaforge.net/) by Alexander Marinov, [Lua-curl](https://github.com/Lua-cURL) by J\u00fcrgen H\u00f6tzel\n\n[Mono](https://web.archive.org/web/20070606064500/forge.novell.com/modules/xfmod/project/?libcurl-mono) Written by Jeffrey Phillips\n\n[.NET](https://sourceforge.net/projects/libcurl-net/) libcurl-net by Jeffrey Phillips\n\n[Nim](https://nimble.directory/pkg/libcurl) wrapper for libcurl\n\n[node.js](https://github.com/JCMais/node-libcurl) node-libcurl by Jonathan Cardoso Machado\n\n[Object-Pascal](https://web.archive.org/web/20020610214926/www.tekool.com/opcurl) Free Pascal, Delphi and Kylix binding written by Christophe Espern.\n\n[OCaml](https://opam.ocaml.org/packages/ocurl/) Written by Lars Nilsson and ygrek\n\n[Pascal](https://web.archive.org/web/20030804091414/houston.quik.com/jkp/curlpas/) Free Pascal, Delphi and Kylix binding written by Jeffrey Pohlmeyer.\n\nPerl: [WWW::Curl](https://github.com/szbalint/WWW--Curl) Maintained by Cris\nBailiff and B\u00e1lint Szilakszi,\n[perl6-net-curl](https://github.com/azawawi/perl6-net-curl) by Ahmad M. Zawawi\n[NET::Curl](https://metacpan.org/pod/Net::Curl) by Przemyslaw Iskra\n\n[PHP](https://php.net/curl) Originally written by Sterling Hughes\n\n[PostgreSQL](https://github.com/pramsey/pgsql-http) - HTTP client for PostgreSQL\n\n[PostgreSQL](https://github.com/RekGRpth/pg_curl) - curl client for PostgreSQL\n\n[PureBasic](https://web.archive.org/web/20250325015028/www.purebasic.com/documentation/http/index.html) uses libcurl in its \"native\" HTTP subsystem\n\n[Python](https://github.com/pycurl/pycurl) PycURL by Kjetil Jacobsen\n\n[Python](https://pypi.org/project/pymcurl/) mcurl by Ganesh Viswanathan\n\n[Q](https://q-lang.sourceforge.net/) The libcurl module is part of the default install\n\n[R](https://cran.r-project.org/package=curl)\n\n[Rexx](https://rexxcurl.sourceforge.net/) Written by Mark Hessling\n\n[Ring](https://ring-lang.github.io/doc1.24/libcurl.html) RingLibCurl by Mahmoud Fayed\n\nRPG, support for ILE/RPG on OS/400 is included in source distribution\n\nRuby: [curb](https://github.com/taf2/curb) written by Ross Bamford,\n[ruby-curl-multi](https://github.com/kball/curl_multi.rb) by Kristjan Petursson and Keith Rarick\n\n[Rust](https://github.com/alexcrichton/curl-rust) curl-rust - by Carl Lerche\n\n[Scheme](https://metapaper.net/lisovsky/web/curl/) Bigloo binding by Kirill Lisovsky\n\n[Scilab](https://help.scilab.org/docs/current/fr_FR/getURL.html) binding by Sylvestre Ledru\n\n[S-Lang](https://www.jedsoft.org/slang/modules/curl.html) by John E Davis\n\n[Smalltalk](https://www.squeaksource.com/CurlPlugin/) Written by Danil Osipchuk\n\n[SP-Forth](https://sourceforge.net/p/spf/spf/ci/master/tree/devel/~ac/lib/lin/curl/) Written by Andrey Cherezov\n\n[SPL](https://web.archive.org/web/20210203022158/www.clifford.at/spl/spldoc/curl.html) Written by Clifford Wolf\n\n[Tcl](https://web.archive.org/web/20160826011806/mirror.yellow5.com/tclcurl/) Tclcurl by Andr\u00e9s Garc\u00eda\n\n[Vibe](https://github.com/ttytm/vibe) HTTP requests through libcurl in V\n\n[Visual Basic](https://sourceforge.net/projects/libcurl-vb/) libcurl-vb by Jeffrey Phillips\n\n[Visual Foxpro](https://web.archive.org/web/20130730181523/www.ctl32.com.ar/libcurl.asp) by Carlos Alloatti\n\n[wxWidgets](https://wxcode.sourceforge.net/components/wxcurl/) Written by Casey O'Donnell\n\n[XBLite](https://web.archive.org/web/20060426150418/perso.wanadoo.fr/xblite/libraries.html) Written by David Szafranski\n\n[Xojo](https://github.com/charonn0/RB-libcURL) Written by Andrew Lambert\n\n[Zig](https://github.com/jiacai2050/zig-curl) Written by Jiacai Liu, both easy and multi API are supported.\n"
         },
         {
           "path": "docs/BUG-BOUNTY.md",
@@ -316,7 +316,7 @@
         {
           "path": "docs/GOVERNANCE.md",
           "bytes": 8408,
-          "preview": "<!--\nCopyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.\n\nSPDX-License-Identifier: curl\n-->\n\n# Decision making in the curl project\n\nA rough guide to how we make decisions and who does what.\n\n## BDFL\n\nThis project was started by and has to some extent been pushed forward over\nthe years with Daniel Stenberg as the driving force. It matches a standard\nBDFL (Benevolent Dictator For Life) style project.\n\nThis setup has been used due to convenience and the fact that it has worked\nfine this far. It is not because someone thinks of it as a superior project\nleadership model. It also only works as long as Daniel manages to listen in to\nwhat the project and the general user population wants and expects from us.\n\n## Legal entity\n\nThere is no legal entity. The curl project is a bunch of people scattered\naround the globe with the common goal to produce source code that creates\ngreat products. We are not part of any umbrella organization and we are not\nlocated in any specific country. We are totally independent.\n\nThe copyrights in the project are owned by the individuals and organizations\nthat wrote those parts of the code.\n\n## Decisions\n\nThe curl project is not a democracy, but everyone is entitled to state their\nopinion and may argue for their sake within the community.\n\nAll and any changes that have been done or are done are eligible to bring up\nfor discussion, to object to or to praise. Ideally, we find consensus for the\nappropriate way forward in any given situation or challenge.\n\nIf there is no obvious consensus, a maintainer who's knowledgeable in the\nspecific area takes an \"executive\" decision that they think is the right for\nthe project.\n\n## Donations\n\nDonating plain money to curl is best done to curl's [Open Collective\nfund](https://opencollective.com/curl). Open Collective is a US based\nnon-profit organization that holds on to funds for us. This fund is used to\nreimburse and pay for project related expenses etc.\n\nDonations to the project can also come in the form of server hosting, providing\nservices and paying for people to work on curl related code etc. Usually, such\ndonations are services paid for directly by the sponsors.\n\nWe grade sponsors in a few different levels and if they meet the criteria,\nthey can be mentioned on the Sponsors page on the curl website.\n\n## Commercial Support\n\nThe curl project does not do or offer commercial support. It only hosts\nmailing lists, runs bug trackers etc to facilitate communication and work.\n\nDaniel works for wolfSSL, which offers commercial curl support.\n\n# Key roles\n\n## User\n\nSomeone who uses or has used curl or libcurl.\n\n## Contributor\n\nSomeone who has helped the curl project, who has contributed to bring it\nforward. Contributing could be to provide advice, debug a problem, file a bug\nreport, run test infrastructure or writing code etc.\n\n## Commit author\n\nSometimes also called 'committer'. Someone who has authored a commit in the\ncurl source code repository. Committers are recorded as `Author` in git.\n\n## Maintainers\n\nA maintainer in the curl project is an individual who has been given\npermissions to push commits to one of the git repositories.\n\nMaintainers are free to push commits to the repositories at they see fit.\nMaintainers are however expected to listen to feedback from users and any\nchange that is non-trivial in size or nature *should* be brought to the\nproject as a Pull-Request (PR) to allow others to comment/object before merge.\n\n## Former maintainers\n\nA maintainer who stops being active in the project gets their push permissions\nremoved at some point. We do this for security reasons but also to make sure\nthat we always have the list of maintainers as \"the team that push stuff to\ncurl\".\n\nGetting push permissions removed is not a punishment. Everyone who ever worked\non maintaining curl is considered a hero, for all time hereafter.\n\n## Security team members\n\nWe have a security team. That is the team of people who are subscribed to the\ncurl-security mailing list; the receivers of security reports from users and\ndevelopers. This list of people varies over time but they are all skilled\ndevelopers familiar with the curl project.\n\nThe security team works best when it consists of a small set of active\npersons. We invite new members when the team seems to need it, and we also\nexpect to retire security team members as they \"drift off\" from the project or\nfind themselves unable to perform their duties there.\n\n## Core team\n\nThere is a curl core team. It currently has the same set of members as the\nsecurity team. It can also be reached on the security email address.\n\nThe core team nominates and invites new members to the team when it sees fit.\nThere is no open member voting or formal ways to be a candidate. Active\nparticipants in the curl project who want to join the core team can ask to\njoin.\n\nThe core team is a board of advisors. It deals with project management\nsubjects that need confidentiality or for other reasons cannot be dealt with\nand discussed in the open (for example reports of code of conduct violations).\nProject matters should always as far as possible be discussed on open mailing\nlists.\n\n## Server admins\n\nWe run a web server, a mailing list and more on the curl project's primary\nserver. That physical machine is owned and run by Haxx. Daniel is the primary\nadmin of all things curl related server stuff, but Björn Stenberg and Linus\nFeltzing serve as backup admins for when Daniel is gone or unable.\n\nThe primary server is paid for by Haxx. The machine is physically located in a\nserver bunker in Stockholm Sweden, operated by the company Glesys.\n\nThe website contents are served to the web via Fastly and Daniel is the\nprimary curl contact with Fastly.\n\n## BDFL\n\nThat is Daniel.\n\n# Maintainers\n\nA curl maintainer is a project volunteer who has the authority and rights to\nmerge changes into a git repository in the curl project.\n\nAnyone can aspire to become a curl maintainer.\n\n### Duties\n\nThere are no mandatory duties. We hope and wish that maintainers consider\nreviewing patches and help merging them, especially when the changes are\nwithin the area of personal expertise and experience.\n\n### Requirements\n\n- only merge code that meets our quality and style guide requirements.\n- *never* merge code without doing a PR first, unless the change is \"trivial\"\n- if in doubt, ask for input/feedback from others\n\n### Recommendations\n\n- we require two-factor authentication enabled on your GitHub account to\n  reduce risk of malicious source code tampering\n- consider enabling signed git commits for additional verification of changes\n\n### Merge advice\n\nWhen you are merging patches/pull requests...\n\n- make sure the commit messages follow our template\n- squash patch sets into a few logical commits even if the PR did not, if\n  necessary\n- avoid the \"merge\" button on GitHub, do it \"manually\" instead to get full\n  control and full audit trail (GitHub leaves out you as \"Committer:\")\n- remember to credit the reporter and the helpers.\n\n## Who are maintainers?\n\nThe [list of maintainers](https://github.com/orgs/curl/people). Be aware that\nthe level of presence and activity in the project vary greatly between\ndifferent individuals and over time.\n\n### Become a maintainer?\n\nIf you think you can help making the project better by shouldering some\nmaintaining responsibilities, then please get in touch.\n\nYou are expected to be familiar with the curl project and its ways of working.\nYou need to have gotten a few quality patches merged as a proof of this.\n\n### Stop being a maintainer\n\nIf you (appear to) not be active in the project anymore, you may be removed as\na maintainer. Thank you for your service.\n\n# Post-Daniel BDFL\n\nAt the point in a future when Daniel steps away from the project and stops\nbeing the project lead, there is reason to reconsider how to keep driving the\nproject forward. Countries, companies and organizations have a single\npresident or CEO for a reason; having a single leader that responsibly can\ntake quick daily decisions is efficient. Without Daniel as BDFL, either\nsomeone else needs to step up and become president, or the project needs to\nadopt a council-driven process. Maybe both? Maybe vote a new project "
+          "preview": "<!--\nCopyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.\n\nSPDX-License-Identifier: curl\n-->\n\n# Decision making in the curl project\n\nA rough guide to how we make decisions and who does what.\n\n## BDFL\n\nThis project was started by and has to some extent been pushed forward over\nthe years with Daniel Stenberg as the driving force. It matches a standard\nBDFL (Benevolent Dictator For Life) style project.\n\nThis setup has been used due to convenience and the fact that it has worked\nfine this far. It is not because someone thinks of it as a superior project\nleadership model. It also only works as long as Daniel manages to listen in to\nwhat the project and the general user population wants and expects from us.\n\n## Legal entity\n\nThere is no legal entity. The curl project is a bunch of people scattered\naround the globe with the common goal to produce source code that creates\ngreat products. We are not part of any umbrella organization and we are not\nlocated in any specific country. We are totally independent.\n\nThe copyrights in the project are owned by the individuals and organizations\nthat wrote those parts of the code.\n\n## Decisions\n\nThe curl project is not a democracy, but everyone is entitled to state their\nopinion and may argue for their sake within the community.\n\nAll and any changes that have been done or are done are eligible to bring up\nfor discussion, to object to or to praise. Ideally, we find consensus for the\nappropriate way forward in any given situation or challenge.\n\nIf there is no obvious consensus, a maintainer who's knowledgeable in the\nspecific area takes an \"executive\" decision that they think is the right for\nthe project.\n\n## Donations\n\nDonating plain money to curl is best done to curl's [Open Collective\nfund](https://opencollective.com/curl). Open Collective is a US based\nnon-profit organization that holds on to funds for us. This fund is used to\nreimburse and pay for project related expenses etc.\n\nDonations to the project can also come in the form of server hosting, providing\nservices and paying for people to work on curl related code etc. Usually, such\ndonations are services paid for directly by the sponsors.\n\nWe grade sponsors in a few different levels and if they meet the criteria,\nthey can be mentioned on the Sponsors page on the curl website.\n\n## Commercial Support\n\nThe curl project does not do or offer commercial support. It only hosts\nmailing lists, runs bug trackers etc to facilitate communication and work.\n\nDaniel works for wolfSSL, which offers commercial curl support.\n\n# Key roles\n\n## User\n\nSomeone who uses or has used curl or libcurl.\n\n## Contributor\n\nSomeone who has helped the curl project, who has contributed to bring it\nforward. Contributing could be to provide advice, debug a problem, file a bug\nreport, run test infrastructure or writing code etc.\n\n## Commit author\n\nSometimes also called 'committer'. Someone who has authored a commit in the\ncurl source code repository. Committers are recorded as `Author` in git.\n\n## Maintainers\n\nA maintainer in the curl project is an individual who has been given\npermissions to push commits to one of the git repositories.\n\nMaintainers are free to push commits to the repositories at they see fit.\nMaintainers are however expected to listen to feedback from users and any\nchange that is non-trivial in size or nature *should* be brought to the\nproject as a Pull-Request (PR) to allow others to comment/object before merge.\n\n## Former maintainers\n\nA maintainer who stops being active in the project gets their push permissions\nremoved at some point. We do this for security reasons but also to make sure\nthat we always have the list of maintainers as \"the team that push stuff to\ncurl\".\n\nGetting push permissions removed is not a punishment. Everyone who ever worked\non maintaining curl is considered a hero, for all time hereafter.\n\n## Security team members\n\nWe have a security team. That is the team of people who are subscribed to the\ncurl-security mailing list; the receivers of security reports from users and\ndevelopers. This list of people varies over time but they are all skilled\ndevelopers familiar with the curl project.\n\nThe security team works best when it consists of a small set of active\npersons. We invite new members when the team seems to need it, and we also\nexpect to retire security team members as they \"drift off\" from the project or\nfind themselves unable to perform their duties there.\n\n## Core team\n\nThere is a curl core team. It currently has the same set of members as the\nsecurity team. It can also be reached on the security email address.\n\nThe core team nominates and invites new members to the team when it sees fit.\nThere is no open member voting or formal ways to be a candidate. Active\nparticipants in the curl project who want to join the core team can ask to\njoin.\n\nThe core team is a board of advisors. It deals with project management\nsubjects that need confidentiality or for other reasons cannot be dealt with\nand discussed in the open (for example reports of code of conduct violations).\nProject matters should always as far as possible be discussed on open mailing\nlists.\n\n## Server admins\n\nWe run a web server, a mailing list and more on the curl project's primary\nserver. That physical machine is owned and run by Haxx. Daniel is the primary\nadmin of all things curl related server stuff, but Bj\u00f6rn Stenberg and Linus\nFeltzing serve as backup admins for when Daniel is gone or unable.\n\nThe primary server is paid for by Haxx. The machine is physically located in a\nserver bunker in Stockholm Sweden, operated by the company Glesys.\n\nThe website contents are served to the web via Fastly and Daniel is the\nprimary curl contact with Fastly.\n\n## BDFL\n\nThat is Daniel.\n\n# Maintainers\n\nA curl maintainer is a project volunteer who has the authority and rights to\nmerge changes into a git repository in the curl project.\n\nAnyone can aspire to become a curl maintainer.\n\n### Duties\n\nThere are no mandatory duties. We hope and wish that maintainers consider\nreviewing patches and help merging them, especially when the changes are\nwithin the area of personal expertise and experience.\n\n### Requirements\n\n- only merge code that meets our quality and style guide requirements.\n- *never* merge code without doing a PR first, unless the change is \"trivial\"\n- if in doubt, ask for input/feedback from others\n\n### Recommendations\n\n- we require two-factor authentication enabled on your GitHub account to\n  reduce risk of malicious source code tampering\n- consider enabling signed git commits for additional verification of changes\n\n### Merge advice\n\nWhen you are merging patches/pull requests...\n\n- make sure the commit messages follow our template\n- squash patch sets into a few logical commits even if the PR did not, if\n  necessary\n- avoid the \"merge\" button on GitHub, do it \"manually\" instead to get full\n  control and full audit trail (GitHub leaves out you as \"Committer:\")\n- remember to credit the reporter and the helpers.\n\n## Who are maintainers?\n\nThe [list of maintainers](https://github.com/orgs/curl/people). Be aware that\nthe level of presence and activity in the project vary greatly between\ndifferent individuals and over time.\n\n### Become a maintainer?\n\nIf you think you can help making the project better by shouldering some\nmaintaining responsibilities, then please get in touch.\n\nYou are expected to be familiar with the curl project and its ways of working.\nYou need to have gotten a few quality patches merged as a proof of this.\n\n### Stop being a maintainer\n\nIf you (appear to) not be active in the project anymore, you may be removed as\na maintainer. Thank you for your service.\n\n# Post-Daniel BDFL\n\nAt the point in a future when Daniel steps away from the project and stops\nbeing the project lead, there is reason to reconsider how to keep driving the\nproject forward. Countries, companies and organizations have a single\npresident or CEO for a reason; having a single leader that responsibly can\ntake quick daily decisions is efficient. Without Daniel as BDFL, either\nsomeone else needs to step up and become president, or the project needs to\nadopt a council-driven process. Maybe both? Maybe vote a new project "
         },
         {
           "path": "docs/HELP-US.md",
@@ -9778,7 +9778,7 @@
         "steps": [
           {
             "id": "serialize",
-            "label": "JSON serialize (inventory → SQLite)",
+            "label": "JSON serialize (inventory \u2192 SQLite)",
             "ms": 0,
             "pct": 0
           },
@@ -9801,10 +9801,10 @@
   "report": {
     "overview": "This is the curl project at 8.23.0-DEV: a C89-portable transfer library (libcurl, `lib/`, ~393 files) plus the `curl` command-line tool (`src/`, ~96 files) that is a thin client of that library. libcurl speaks ~25 URI schemes (HTTP/1-2-3, FTP(S), SMTP/IMAP/POP3, SCP/SFTP, LDAP, MQTT, RTSP, TFTP, DICT, Gopher, Telnet, WS(S), file) through a scheme registry of `struct Curl_scheme` records, and layers transport concerns (happy-eyeballs, SOCKS, HTTP proxy, HAProxy, TLS, QUIC, HTTP/2) as a stackable chain of connection filters rather than protocol-specific socket code. What is distinctive is the amount of pluggability compiled in: six TLS backends, two QUIC backends, two SSH backends, three DNS resolver strategies, ~50 `CURL_DISABLE_*` build knobs, and a ~2,100-case integration test suite driven by in-tree protocol servers. The audience is everyone from distro maintainers embedding libcurl to contributors adding a protocol or a command-line option.",
     "system_map": {
-      "summary": "Two build artefacts share one repo: `lib/` builds libcurl, `src/` builds the `curl` tool on top of the public headers in `include/curl/`. The tool owns argv parsing, output files, globbing and retries; libcurl owns URL parsing, connection reuse, the multi state machine, and the filter chain that actually moves bytes. Backends live in `lib/vtls` (TLS), `lib/vquic` (QUIC/HTTP3), `lib/vssh` (SCP/SFTP), `lib/vauth` (SASL/NTLM/Kerberos), `lib/vdns` (resolvers + DoH), with `lib/curlx/` as the portability/utility layer shared by both. There is no database — persistence is flat files (cookie jar, HSTS, alt-svc, TLS session cache) plus whatever the user redirects output to. Two parallel build systems (autotools via `configure.ac`/`Makefile.am` and CMake via a 93KB `CMakeLists.txt`) are both first-class and CI-verified against each other.",
+      "summary": "Two build artefacts share one repo: `lib/` builds libcurl, `src/` builds the `curl` tool on top of the public headers in `include/curl/`. The tool owns argv parsing, output files, globbing and retries; libcurl owns URL parsing, connection reuse, the multi state machine, and the filter chain that actually moves bytes. Backends live in `lib/vtls` (TLS), `lib/vquic` (QUIC/HTTP3), `lib/vssh` (SCP/SFTP), `lib/vauth` (SASL/NTLM/Kerberos), `lib/vdns` (resolvers + DoH), with `lib/curlx/` as the portability/utility layer shared by both. There is no database \u2014 persistence is flat files (cookie jar, HSTS, alt-svc, TLS session cache) plus whatever the user redirects output to. Two parallel build systems (autotools via `configure.ac`/`Makefile.am` and CMake via a 93KB `CMakeLists.txt`) are both first-class and CI-verified against each other.",
       "claims": [
         {
-          "claim": "The CLI process entrypoint is `main()` in src/tool_main.c, which runs `tool_init_stderr()`, `main_checkfds()` (reopens fds 0/1/2 on /dev/null so sockets can never land on stdin/stdout/stderr), ignores SIGPIPE, then calls `globalconf_init()` → `operate(argc, argv)` → `globalconf_free()`.",
+          "claim": "The CLI process entrypoint is `main()` in src/tool_main.c, which runs `tool_init_stderr()`, `main_checkfds()` (reopens fds 0/1/2 on /dev/null so sockets can never land on stdin/stdout/stderr), ignores SIGPIPE, then calls `globalconf_init()` \u2192 `operate(argc, argv)` \u2192 `globalconf_free()`.",
           "sources": [
             "src/tool_main.c#L152-L213",
             "src/tool_main.c#L86-L108"
@@ -9819,7 +9819,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "The public API surface is 12 headers under include/curl/ — `curl.h` (options/CURLcode), `multi.h`, `easy.h`, `urlapi.h`, `websockets.h`, `header.h`, `options.h`, `mprintf.h`, `system.h`, `curlver.h` — and `curlver.h` pins this tree at LIBCURL_VERSION \"8.23.0-DEV\" / LIBCURL_VERSION_NUM 0x081700.",
+          "claim": "The public API surface is 12 headers under include/curl/ \u2014 `curl.h` (options/CURLcode), `multi.h`, `easy.h`, `urlapi.h`, `websockets.h`, `header.h`, `options.h`, `mprintf.h`, `system.h`, `curlver.h` \u2014 and `curlver.h` pins this tree at LIBCURL_VERSION \"8.23.0-DEV\" / LIBCURL_VERSION_NUM 0x081700.",
           "sources": [
             "include/curl/curlver.h#L35-L60",
             "include/curl/curl.h",
@@ -9836,7 +9836,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Scheme lookup avoids a linear table scan: `Curl_getn_scheme()` dispatches on name length into `two_letter_scheme()` … `seven_letter_scheme()`, each a hand-written switch on the first character, and rejects any name shorter than 2 or longer than 7 characters.",
+          "claim": "Scheme lookup avoids a linear table scan: `Curl_getn_scheme()` dispatches on name length into `two_letter_scheme()` \u2026 `seven_letter_scheme()`, each a hand-written switch on the first character, and rejects any name shorter than 2 or longer than 7 characters.",
           "sources": [
             "lib/protocol.c#L608-L628",
             "lib/protocol.c#L560-L604"
@@ -9870,7 +9870,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Each transfer is a 16-state machine (`MSTATE_INIT` … `MSTATE_MSGSENT`) declared in lib/multihandle.h and driven by `multi_runsingle()` in lib/multi.c, which is 4,262 lines and the single busiest file in the library.",
+          "claim": "Each transfer is a 16-state machine (`MSTATE_INIT` \u2026 `MSTATE_MSGSENT`) declared in lib/multihandle.h and driven by `multi_runsingle()` in lib/multi.c, which is 4,262 lines and the single busiest file in the library.",
           "sources": [
             "lib/multihandle.h#L48-L64",
             "lib/multi.c#L2714-L2890"
@@ -9914,7 +9914,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "The Dockerfile is not a deployment artefact — it is a pinned-digest debian:bookworm-slim reproducible *release* environment, used to run `autoreconf`, `configure`, `make`, and `scripts/maketgz` with a fixed `SOURCE_DATE_EPOCH`.",
+          "claim": "The Dockerfile is not a deployment artefact \u2014 it is a pinned-digest debian:bookworm-slim reproducible *release* environment, used to run `autoreconf`, `configure`, `make`, and `scripts/maketgz` with a fixed `SOURCE_DATE_EPOCH`.",
           "sources": [
             "Dockerfile#L1-L42"
           ],
@@ -9943,7 +9943,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Every command-line option has a matching curldown page — 298 files under docs/cmdline-opts/ — and the underscore-prefixed ones (`_OPTIONS.md`, `_GLOBBING.md`, `_VARIABLES.md`, `_EXITCODES.md`) are the manpage's prose sections.",
+          "claim": "Every command-line option has a matching curldown page \u2014 298 files under docs/cmdline-opts/ \u2014 and the underscore-prefixed ones (`_OPTIONS.md`, `_GLOBBING.md`, `_VARIABLES.md`, `_EXITCODES.md`) are the manpage's prose sections.",
           "sources": [
             "docs/cmdline-opts/_OPTIONS.md",
             "docs/cmdline-opts/_GLOBBING.md",
@@ -10009,7 +10009,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "HTTP/3 ships with two interchangeable QUIC backends — ngtcp2 (`lib/vquic/cf-ngtcp2.c`) and quiche (`lib/vquic/cf-quiche.c`) — each registering a `Curl_cft_http3` filter, plus an experimental HTTP/3 proxy path via `cf-ngtcp2-proxy.c` and CONNECT-UDP capsules.",
+          "claim": "HTTP/3 ships with two interchangeable QUIC backends \u2014 ngtcp2 (`lib/vquic/cf-ngtcp2.c`) and quiche (`lib/vquic/cf-quiche.c`) \u2014 each registering a `Curl_cft_http3` filter, plus an experimental HTTP/3 proxy path via `cf-ngtcp2-proxy.c` and CONNECT-UDP capsules.",
           "sources": [
             "lib/vquic/cf-ngtcp2.c#L1089",
             "lib/vquic/cf-quiche.c#L1624",
@@ -10068,10 +10068,10 @@
       ]
     },
     "data_flow": {
-      "summary": "Input boundaries are argv, `.curlrc`/`-K` config files, environment variables, `.netrc`, stdin uploads, and the network. argv is normalised into a linked list of `struct OperationConfig` (one per `--next`), which `config2setopts.c` translates wholesale into `curl_easy_setopt()` calls; from there the state owner is `struct Curl_easy` (`data->set` for user intent, `data->state`/`data->req` for per-request state). The URL becomes a `CURLU` via lib/urlapi.c, resolves to a `struct Curl_scheme`, and is matched against the connection pool before a filter chain is built. Bytes in from the network flow up through `Curl_xfer_write_resp()` → `Curl_client_write()` → an ordered writer stack → `CURLOPT_WRITEFUNCTION`; bytes out flow down through the mirror-image client reader chain. Output boundaries are the write callbacks (which the tool points at files or stdout), the header callback, the progress callback, and the file-backed caches flushed at cleanup.",
+      "summary": "Input boundaries are argv, `.curlrc`/`-K` config files, environment variables, `.netrc`, stdin uploads, and the network. argv is normalised into a linked list of `struct OperationConfig` (one per `--next`), which `config2setopts.c` translates wholesale into `curl_easy_setopt()` calls; from there the state owner is `struct Curl_easy` (`data->set` for user intent, `data->state`/`data->req` for per-request state). The URL becomes a `CURLU` via lib/urlapi.c, resolves to a `struct Curl_scheme`, and is matched against the connection pool before a filter chain is built. Bytes in from the network flow up through `Curl_xfer_write_resp()` \u2192 `Curl_client_write()` \u2192 an ordered writer stack \u2192 `CURLOPT_WRITEFUNCTION`; bytes out flow down through the mirror-image client reader chain. Output boundaries are the write callbacks (which the tool points at files or stdout), the header callback, the progress callback, and the file-backed caches flushed at cleanup.",
       "claims": [
         {
-          "claim": "argv is consumed by `parse_args()`, which loops over argv, calls `getparameter()` per flag, treats bare arguments as `--url`, and on `PARAM_NEXT_OPERATION` allocates a fresh `OperationConfig` and links it onto `global->last` — so `--next` literally forks the config list.",
+          "claim": "argv is consumed by `parse_args()`, which loops over argv, calls `getparameter()` per flag, treats bare arguments as `--url`, and on `PARAM_NEXT_OPERATION` allocates a fresh `OperationConfig` and links it onto `global->last` \u2014 so `--next` literally forks the config list.",
           "sources": [
             "src/tool_getparam.c#L3116-L3212"
           ],
@@ -10086,7 +10086,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "The config→library translation is centralised in src/config2setopts.c, split into `ssh_setopts()`, `ssl_ca_setopts()`, `ssl_setopts()`, `cookie_setopts()`, `httpsig_setopts()`, `http_setopts()` and friends, all using `my_setopt_*` wrappers so the same call sites feed both libcurl and the `--libcurl` code generator.",
+          "claim": "The config\u2192library translation is centralised in src/config2setopts.c, split into `ssh_setopts()`, `ssl_ca_setopts()`, `ssl_setopts()`, `cookie_setopts()`, `httpsig_setopts()`, `http_setopts()` and friends, all using `my_setopt_*` wrappers so the same call sites feed both libcurl and the `--libcurl` code generator.",
           "sources": [
             "src/config2setopts.c#L205-L710",
             "src/tool_setopt.h"
@@ -10112,7 +10112,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "The parsed scheme is only accepted for a connection if it passes `url_set_conn_scheme()`, which requires a non-NULL `run` vtable and membership in `data->set.allowed_protocols` (and `redir_protocols` when following a redirect) — this is the choke point that makes `--proto`/`--proto-redir` effective.",
+          "claim": "The parsed scheme is only accepted for a connection if it passes `url_set_conn_scheme()`, which requires a non-NULL `run` vtable and membership in `data->set.allowed_protocols` (and `redir_protocols` when following a redirect) \u2014 this is the choke point that makes `--proto`/`--proto-redir` effective.",
           "sources": [
             "lib/url.c#L1170-L1195"
           ],
@@ -10135,7 +10135,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Writer ordering is a fixed phase enum — RAW → TRANSFER_DECODE → PROTOCOL → BEFORE_DECODE → CONTENT_DECODE → CLIENT — so chunked decoding, size accounting, and gzip/brotli/zstd decompression always run in that order before the application callback.",
+          "claim": "Writer ordering is a fixed phase enum \u2014 RAW \u2192 TRANSFER_DECODE \u2192 PROTOCOL \u2192 BEFORE_DECODE \u2192 CONTENT_DECODE \u2192 CLIENT \u2014 so chunked decoding, size accounting, and gzip/brotli/zstd decompression always run in that order before the application callback.",
           "sources": [
             "lib/sendf.h#L100-L112",
             "lib/content_encoding.c#L635-L660",
@@ -10151,7 +10151,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Upload data flows through the mirror-image client-reader chain with phases CLIENT → CONTENT_ENCODE → PROTOCOL → TRANSFER_ENCODE → NET, entered via `Curl_client_read()`; HTTP's Expect: 100-continue is itself implemented as a reader (`cr_exp100_read`).",
+          "claim": "Upload data flows through the mirror-image client-reader chain with phases CLIENT \u2192 CONTENT_ENCODE \u2192 PROTOCOL \u2192 TRANSFER_ENCODE \u2192 NET, entered via `Curl_client_read()`; HTTP's Expect: 100-continue is itself implemented as a reader (`cr_exp100_read`).",
           "sources": [
             "lib/sendf.h#L240-L250",
             "docs/internals/CLIENT-READERS.md#L26-L45",
@@ -10192,10 +10192,10 @@
       ]
     },
     "behavior_traces": {
-      "summary": "Three flows explain most of the codebase: tool startup, a single serial transfer, and the multi state machine that both serial and parallel modes ultimately run on. The tool never calls sockets directly — it builds `per_transfer` records, sets options, and calls `curl_easy_perform()` (serial) or feeds a `CURLM` (parallel). Inside libcurl, `curl_easy_perform()` is itself a multi loop, so every transfer walks `MSTATE_INIT` → … → `MSTATE_MSGSENT` in `multi_runsingle()`. Connection establishment is a re-entrant loop inside one filter (`cf_setup_connect`) that appends the next filter and restarts the sub-chain connect until the whole stack is up.",
+      "summary": "Three flows explain most of the codebase: tool startup, a single serial transfer, and the multi state machine that both serial and parallel modes ultimately run on. The tool never calls sockets directly \u2014 it builds `per_transfer` records, sets options, and calls `curl_easy_perform()` (serial) or feeds a `CURLM` (parallel). Inside libcurl, `curl_easy_perform()` is itself a multi loop, so every transfer walks `MSTATE_INIT` \u2192 \u2026 \u2192 `MSTATE_MSGSENT` in `multi_runsingle()`. Connection establishment is a re-entrant loop inside one filter (`cf_setup_connect`) that appends the next filter and restarts the sub-chain connect until the whole stack is up.",
       "claims": [
         {
-          "claim": "STARTUP: `main()` → `tool_init_stderr()` → (Windows only) `win32_init()` → `main_checkfds()` → `signal(SIGPIPE, SIG_IGN)` → `memory_tracking_init()` (reads `CURL_MEMDEBUG`/`CURL_MEMLIMIT` on debug builds) → `globalconf_init()` → `operate()` → `globalconf_free()`.",
+          "claim": "STARTUP: `main()` \u2192 `tool_init_stderr()` \u2192 (Windows only) `win32_init()` \u2192 `main_checkfds()` \u2192 `signal(SIGPIPE, SIG_IGN)` \u2192 `memory_tracking_init()` (reads `CURL_MEMDEBUG`/`CURL_MEMLIMIT` on debug builds) \u2192 `globalconf_init()` \u2192 `operate()` \u2192 `globalconf_free()`.",
           "sources": [
             "src/tool_main.c#L152-L213",
             "src/tool_main.c#L110-L138"
@@ -10203,14 +10203,14 @@
           "kind": "evidence"
         },
         {
-          "claim": "STARTUP (cont.): inside `operate()` the order is `setlocale(LC_NUMERIC,\"C\")` → `parseconfig()` for `.curlrc` → `parse_args()` → `easysrc_init()` if `--libcurl` → `curl_share_init()` → `share_setup()` → `tool_ssls_load()` → `get_args()` per OperationConfig → `run_all_transfers()` → `curl_share_cleanup()` → `dumpeasysrc()` → `varcleanup()`.",
+          "claim": "STARTUP (cont.): inside `operate()` the order is `setlocale(LC_NUMERIC,\"C\")` \u2192 `parseconfig()` for `.curlrc` \u2192 `parse_args()` \u2192 `easysrc_init()` if `--libcurl` \u2192 `curl_share_init()` \u2192 `share_setup()` \u2192 `tool_ssls_load()` \u2192 `get_args()` per OperationConfig \u2192 `run_all_transfers()` \u2192 `curl_share_cleanup()` \u2192 `dumpeasysrc()` \u2192 `varcleanup()`.",
           "sources": [
             "src/tool_operate.c#L2431-L2556"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "PRIMARY ACTION (serial): `run_all_transfers()` → `serial_transfers()` → `create_transfer()` → `transfer_per_config()` → `cacertpaths()` → `single_transfer()` → `create_single()`, then per item `pre_transfer()` → `curl_easy_perform()` → `post_per_transfer()`; a retry sleeps `curlx_wait_ms(delay_ms)` and re-runs the same `per`.",
+          "claim": "PRIMARY ACTION (serial): `run_all_transfers()` \u2192 `serial_transfers()` \u2192 `create_transfer()` \u2192 `transfer_per_config()` \u2192 `cacertpaths()` \u2192 `single_transfer()` \u2192 `create_single()`, then per item `pre_transfer()` \u2192 `curl_easy_perform()` \u2192 `post_per_transfer()`; a retry sleeps `curlx_wait_ms(delay_ms)` and re-runs the same `per`.",
           "sources": [
             "src/tool_operate.c#L2091-L2189",
             "src/tool_operate.c#L2308-L2352"
@@ -10218,7 +10218,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "`create_single()` builds one `per_transfer` by walking `setup_input_file()` → `setup_url_pattern()` → `setup_etag_files()` → `curl_easy_init()` → `add_per_transfer()`, and only then applies output/header/option setup; failure paths must both `curl_easy_cleanup()` and close any opened etag stream.",
+          "claim": "`create_single()` builds one `per_transfer` by walking `setup_input_file()` \u2192 `setup_url_pattern()` \u2192 `setup_etag_files()` \u2192 `curl_easy_init()` \u2192 `add_per_transfer()`, and only then applies output/header/option setup; failure paths must both `curl_easy_cleanup()` and close any opened etag stream.",
           "sources": [
             "src/tool_operate.c#L1365-L1425",
             "src/tool_operate.c#L1516-L1552"
@@ -10233,7 +10233,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "PRIMARY ACTION (parallel): `parallel_transfers()` → `curl_multi_init()` → set `CURLMOPT_QUICK_EXIT`, `CURLMOPT_NOTIFYFUNCTION=mnotify`, `CURLMOPT_MAX_HOST_CONNECTIONS` → `curl_multi_notify_enable(CURLMNOTIFY_INFO_READ)` → `add_parallel_transfers()` → loop { `curl_multi_poll(…,1000,…)`; `curl_multi_perform()`; `progress_meter()` } with completions harvested in `check_finished()`.",
+          "claim": "PRIMARY ACTION (parallel): `parallel_transfers()` \u2192 `curl_multi_init()` \u2192 set `CURLMOPT_QUICK_EXIT`, `CURLMOPT_NOTIFYFUNCTION=mnotify`, `CURLMOPT_MAX_HOST_CONNECTIONS` \u2192 `curl_multi_notify_enable(CURLMNOTIFY_INFO_READ)` \u2192 `add_parallel_transfers()` \u2192 loop { `curl_multi_poll(\u2026,1000,\u2026)`; `curl_multi_perform()`; `progress_meter()` } with completions harvested in `check_finished()`.",
           "sources": [
             "src/tool_operate.c#L1991-L2089",
             "src/tool_operate.c#L1903-L1968"
@@ -10249,14 +10249,14 @@
           "kind": "evidence"
         },
         {
-          "claim": "LIBRARY ENTRY: `curl_easy_perform()` → `CURL_EAPI_ENTER` guard → `easy_perform()`, which refuses a handle already in a user multi, detaches any connect-only connection, reuses or creates `data->multi_easy` via `Curl_multi_handle(16,1,3,7,3)`, copies MAXCONNECTS/QUICK_EXIT, `Curl_multi_add_handle()`, `sigpipe_init/apply`, then `easy_transfer()`.",
+          "claim": "LIBRARY ENTRY: `curl_easy_perform()` \u2192 `CURL_EAPI_ENTER` guard \u2192 `easy_perform()`, which refuses a handle already in a user multi, detaches any connect-only connection, reuses or creates `data->multi_easy` via `Curl_multi_handle(16,1,3,7,3)`, copies MAXCONNECTS/QUICK_EXIT, `Curl_multi_add_handle()`, `sigpipe_init/apply`, then `easy_transfer()`.",
           "sources": [
             "lib/easy.c#L773-L845"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "`easy_transfer()` is the blocking pump: `curl_multi_poll()` → `curl_multi_perform()` → when `still_running` hits 0, `curl_multi_info_read()` yields the CURLcode; a CURLMcode is mapped to `CURLE_OUT_OF_MEMORY` or `CURLE_BAD_FUNCTION_ARGUMENT`.",
+          "claim": "`easy_transfer()` is the blocking pump: `curl_multi_poll()` \u2192 `curl_multi_perform()` \u2192 when `still_running` hits 0, `curl_multi_info_read()` yields the CURLcode; a CURLMcode is mapped to `CURLE_OUT_OF_MEMORY` or `CURLE_BAD_FUNCTION_ARGUMENT`.",
           "sources": [
             "lib/easy.c#L720-L754"
           ],
@@ -10270,14 +10270,14 @@
           "kind": "evidence"
         },
         {
-          "claim": "State transitions run entry hooks from a fixed `state_enter[MSTATE_LAST]` table in `mstate()` — only CONNECT, DID, DONE and COMPLETED have hooks — and every transition is traced via `CURL_TRC_M(data, \"-> [%s]\")`, which is what `--trace-config multi` surfaces.",
+          "claim": "State transitions run entry hooks from a fixed `state_enter[MSTATE_LAST]` table in `mstate()` \u2014 only CONNECT, DID, DONE and COMPLETED have hooks \u2014 and every transition is traced via `CURL_TRC_M(data, \"-> [%s]\")`, which is what `--trace-config multi` surfaces.",
           "sources": [
             "lib/multi.c#L152-L200"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "CONNECT: `cf_setup_connect()` is a re-entrant loop that connects the sub-chain, then appends filters in a fixed order — ip_happy (happy eyeballs) → SOCKS → HTTP proxy → HAProxy → origin filters (TLS/ALPN) — restarting at `connect_sub_chain` after each addition until `CF_SETUP_DONE`.",
+          "claim": "CONNECT: `cf_setup_connect()` is a re-entrant loop that connects the sub-chain, then appends filters in a fixed order \u2014 ip_happy (happy eyeballs) \u2192 SOCKS \u2192 HTTP proxy \u2192 HAProxy \u2192 origin filters (TLS/ALPN) \u2014 restarting at `connect_sub_chain` after each addition until `CF_SETUP_DONE`.",
           "sources": [
             "lib/cf-setup.c#L296-L358",
             "lib/cf-setup.c#L228-L292"
@@ -10311,10 +10311,10 @@
       ]
     },
     "testing_signals": {
-      "summary": "curl's testing is unusually broad and almost entirely in-tree. The centre of gravity is `tests/data/` — 2,119 XML-ish test-case files run by `tests/runtests.pl` against protocol servers curl itself ships (sws, socksd, tftpd, mqttd, rtspd, dnsd, plus Perl/Python FTP/TFTP/RTSP/DICT/telnet servers). Around that sit 80 C unit tests for library internals, 6 `tunit` tests for tool-only code, 273 `libtest` programs exercising the public API, and 31 pytest modules that test HTTP/2, HTTP/3, proxying, SSL and WebSockets against real nghttpx/caddy/vsftpd. Each run can be repeated in torture mode (fail every allocation in turn), under valgrind, or event-based. Coverage gaps are structural rather than accidental: platform-specific code (Windows/VMS/AmigaOS/MSDOS branches) and the rarer TLS/QUIC backend combinations can only be exercised by the matching CI job.",
+      "summary": "curl's testing is unusually broad and almost entirely in-tree. The centre of gravity is `tests/data/` \u2014 2,119 XML-ish test-case files run by `tests/runtests.pl` against protocol servers curl itself ships (sws, socksd, tftpd, mqttd, rtspd, dnsd, plus Perl/Python FTP/TFTP/RTSP/DICT/telnet servers). Around that sit 80 C unit tests for library internals, 6 `tunit` tests for tool-only code, 273 `libtest` programs exercising the public API, and 31 pytest modules that test HTTP/2, HTTP/3, proxying, SSL and WebSockets against real nghttpx/caddy/vsftpd. Each run can be repeated in torture mode (fail every allocation in turn), under valgrind, or event-based. Coverage gaps are structural rather than accidental: platform-specific code (Windows/VMS/AmigaOS/MSDOS branches) and the rarer TLS/QUIC backend combinations can only be exercised by the matching CI job.",
       "claims": [
         {
-          "claim": "The primary suite is 2,119 declarative test files in tests/data/, each an XML-like document with `<info><keywords>`, a `<reply>` server script, a `<client><command>` invocation, and a `<verify><protocol>` expectation — plus optional `<limits>` on allocation counts.",
+          "claim": "The primary suite is 2,119 declarative test files in tests/data/, each an XML-like document with `<info><keywords>`, a `<reply>` server script, a `<client><command>` invocation, and a `<verify><protocol>` expectation \u2014 plus optional `<limits>` on allocation counts.",
           "sources": [
             "tests/data/test1#L1-L54",
             "tests/data/Makefile.am#L24-L40"
@@ -10341,7 +10341,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "80 unit tests under tests/unit/ exercise library internals directly (llist, hash, splay, strparse, urlapi, cookie parsing …) using the `UNITTEST_BEGIN_SIMPLE` macro and a `test_unitNNNN(const char *arg)` entrypoint.",
+          "claim": "80 unit tests under tests/unit/ exercise library internals directly (llist, hash, splay, strparse, urlapi, cookie parsing \u2026) using the `UNITTEST_BEGIN_SIMPLE` macro and a `test_unitNNNN(const char *arg)` entrypoint.",
           "sources": [
             "tests/unit/unit1300.c#L26-L60",
             "tests/unit/Makefile.inc"
@@ -10349,7 +10349,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Tool-only code has its own unit directory, tests/tunit/, with 6 files named after the test number they back (tool1394, tool1604, tool1621, tool1622, tool1623, tool1720) — this is where `src/` helpers get direct coverage.",
+          "claim": "Tool-only code has its own unit directory, tests/tunit/, with 6 files named after the test number they back (tool1394, tool1604, tool1621, tool1622, tool1623, tool1720) \u2014 this is where `src/` helpers get direct coverage.",
           "sources": [
             "tests/tunit/README.md",
             "tests/tunit/tool1621.c"
@@ -10366,7 +10366,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "The pytest suite in tests/http/ has 31 modules numbered by area — 01 basic, 02 download, 07 upload, 09 push, 10/13 proxy and proxy auth, 17 ssl use, 19 shutdown, 20 websockets, 22 HTTPSRR, 30-32 vsftpd, 40 socks, 50/51 scp+sftp, 60 h3 proxy — driven by `conftest.py` and a `testenv` package.",
+          "claim": "The pytest suite in tests/http/ has 31 modules numbered by area \u2014 01 basic, 02 download, 07 upload, 09 push, 10/13 proxy and proxy auth, 17 ssl use, 19 shutdown, 20 websockets, 22 HTTPSRR, 30-32 vsftpd, 40 socks, 50/51 scp+sftp, 60 h3 proxy \u2014 driven by `conftest.py` and a `testenv` package.",
           "sources": [
             "tests/http/conftest.py",
             "tests/http/test_20_websockets.py",
@@ -10429,7 +10429,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "There is a coverage script (`scripts/coverage.sh`) and a CodeQL workflow, but coverage is not gated in the in-tree build targets — `make check` does not compute or threshold line coverage.",
+          "claim": "There is a coverage script (`scripts/coverage.sh`) and a CodeQL workflow, but coverage is not gated in the in-tree build targets \u2014 `make check` does not compute or threshold line coverage.",
           "sources": [
             "scripts/coverage.sh",
             ".github/workflows/codeql.yml",
@@ -10449,7 +10449,7 @@
       ]
     },
     "risk_map": {
-      "summary": "curl's risk profile is dominated by the fact that it parses hostile input (URLs, headers, server responses, redirect targets) in C, on every platform, across dozens of optional backends. The highest-attention paths are credential handling (.netrc, `-u`, redirects that must drop auth), filename derivation from server-controlled `Content-Disposition`, the redirect/protocol allowlist, and the TLS/QUIC backend glue. Structurally, the biggest fragility is combinatorial: ~50 `CURL_DISABLE_*` knobs times six TLS backends times two QUIC backends times platform `#ifdef`s means many buildable configurations that no single CI job exercises. Blast-radius hotspots are the few central files every protocol funnels through — lib/multi.c, lib/url.c, lib/sendf.c, lib/cfilters.c — where a regression is not protocol-local.",
+      "summary": "curl's risk profile is dominated by the fact that it parses hostile input (URLs, headers, server responses, redirect targets) in C, on every platform, across dozens of optional backends. The highest-attention paths are credential handling (.netrc, `-u`, redirects that must drop auth), filename derivation from server-controlled `Content-Disposition`, the redirect/protocol allowlist, and the TLS/QUIC backend glue. Structurally, the biggest fragility is combinatorial: ~50 `CURL_DISABLE_*` knobs times six TLS backends times two QUIC backends times platform `#ifdef`s means many buildable configurations that no single CI job exercises. Blast-radius hotspots are the few central files every protocol funnels through \u2014 lib/multi.c, lib/url.c, lib/sendf.c, lib/cfilters.c \u2014 where a regression is not protocol-local.",
       "claims": [
         {
           "claim": "Server-controlled filenames reach the filesystem: `parse_filename()` in tool_cb_hdr.c strips path components and CR/LF, but the reserved-name / invalid-character sanitizer `sanitize_file_name()` is compiled only `#if defined(_WIN32) || defined(MSDOS)`, so POSIX hardening rests entirely on those `strrchr('/')`/`strrchr('\\\\')` trims.",
@@ -10468,7 +10468,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "The protocol allowlist is enforced in exactly one place — `url_set_conn_scheme()` checking `data->set.allowed_protocols` and, for redirects, `data->set.redir_protocols` — making it a single point of failure for `--proto`/`--proto-redir` and for redirect-to-`file://` style attacks.",
+          "claim": "The protocol allowlist is enforced in exactly one place \u2014 `url_set_conn_scheme()` checking `data->set.allowed_protocols` and, for redirects, `data->set.redir_protocols` \u2014 making it a single point of failure for `--proto`/`--proto-redir` and for redirect-to-`file://` style attacks.",
           "sources": [
             "lib/url.c#L1170-L1195"
           ],
@@ -10485,7 +10485,7 @@
           "kind": "evidence"
         },
         {
-          "claim": ".netrc parsing is a hand-written lexer over an attacker-influenceable file with explicit hard caps — `MAX_NETRC_LINE` 16384, `MAX_NETRC_FILE` 128KB, `MAX_NETRC_TOKEN` 4096 — and a quoted-string state machine (`netrc_lexer_quoted`) that is worth re-reading before any change.",
+          "claim": ".netrc parsing is a hand-written lexer over an attacker-influenceable file with explicit hard caps \u2014 `MAX_NETRC_LINE` 16384, `MAX_NETRC_FILE` 128KB, `MAX_NETRC_TOKEN` 4096 \u2014 and a quoted-string state machine (`netrc_lexer_quoted`) that is worth re-reading before any change.",
           "sources": [
             "lib/netrc.c#L68-L100",
             "lib/netrc.c#L194-L260"
@@ -10540,7 +10540,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "`Curl_fopen()` gets the durable-write pattern right (O_EXCL temp file, 0600, `fchmod` clone only when uid/gid match, then rename), so any new cache writer that bypasses it loses those properties — a coupling that is easy to miss.",
+          "claim": "`Curl_fopen()` gets the durable-write pattern right (O_EXCL temp file, 0600, `fchmod` clone only when uid/gid match, then rename), so any new cache writer that bypasses it loses those properties \u2014 a coupling that is easy to miss.",
           "sources": [
             "lib/curl_fopen.c#L78-L150",
             "lib/hsts.c#L369-L400",
@@ -10549,7 +10549,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Parallel mode's abort path is cooperative rather than immediate: `wrapitup` only sets `per->abort`, and the transfer does not stop until its progress callback next fires — so a stalled transfer can outlive a `--fail-early` decision.",
+          "claim": "Parallel mode's abort path is cooperative rather than immediate: `wrapitup` only sets `per->abort`, and the transfer does not stop until its progress callback next fires \u2014 so a stalled transfer can outlive a `--fail-early` decision.",
           "sources": [
             "src/tool_operate.c#L2038-L2060",
             "src/tool_operate.c#L1919-L1926"
@@ -10593,7 +10593,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "PROTOPT_* flags are the declarative knobs a new scheme uses to opt into behaviour — SSL, DUAL (two connections), NEEDSPWD, NOURLQUERY, WILDCARD, CREDSPERREQUEST, PROXY_AS_HTTP, CONN_REUSE, SSL_REUSE, NO_TRANSFER, HTTP_PROXY_TUNNEL — rather than special-casing the scheme in shared code.",
+          "claim": "PROTOPT_* flags are the declarative knobs a new scheme uses to opt into behaviour \u2014 SSL, DUAL (two connections), NEEDSPWD, NOURLQUERY, WILDCARD, CREDSPERREQUEST, PROXY_AS_HTTP, CONN_REUSE, SSL_REUSE, NO_TRANSFER, HTTP_PROXY_TUNNEL \u2014 rather than special-casing the scheme in shared code.",
           "sources": [
             "lib/protocol.h#L202-L238"
           ],
@@ -10617,7 +10617,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Content and transfer decodings are two explicit registries — `general_unencoders[]` and `transfer_unencoders[]` — resolved by name in `find_unencode_writer()`, which is where a new `Content-Encoding` would be added alongside deflate/gzip/brotli/zstd/identity.",
+          "claim": "Content and transfer decodings are two explicit registries \u2014 `general_unencoders[]` and `transfer_unencoders[]` \u2014 resolved by name in `find_unencode_writer()`, which is where a new `Content-Encoding` would be added alongside deflate/gzip/brotli/zstd/identity.",
           "sources": [
             "lib/content_encoding.c#L635-L660",
             "lib/content_encoding.c#L724-L780"
@@ -10642,7 +10642,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Resolver strategies are swappable at build time behind a common `lib/vdns/asyn.h` interface with three implementations — c-ares (`asyn-ares.c`), threaded (`asyn-thrdd.c`) and the shared base (`asyn-base.c`) — plus `cf-dns.c` exposing resolution as a connection filter.",
+          "claim": "Resolver strategies are swappable at build time behind a common `lib/vdns/asyn.h` interface with three implementations \u2014 c-ares (`asyn-ares.c`), threaded (`asyn-thrdd.c`) and the shared base (`asyn-base.c`) \u2014 plus `cf-dns.c` exposing resolution as a connection filter.",
           "sources": [
             "lib/vdns/asyn.h",
             "lib/vdns/asyn-thrdd.c",
@@ -10703,7 +10703,7 @@
       ]
     },
     "agent_handoff": {
-      "summary": "Treat this repo as two coupled codebases with one very strict style contract. Read the internals docs before the code — docs/internals/ explains the four architectural ideas (connection filters, client writers, client readers, the multi state machine) that the code assumes you already know. Style is machine-enforced: `scripts/checksrc.pl` runs in CI and by default in debug builds, and a style violation fails the build before your logic is ever reviewed. Anything user-visible needs a matching curldown doc and usually a test case, and several files are generated and must not be hand-edited. The safest edits are additive table rows; the riskiest are changes to lib/multi.c, lib/url.c, lib/sendf.c, or lib/cfilters.c, which every protocol depends on.",
+      "summary": "Treat this repo as two coupled codebases with one very strict style contract. Read the internals docs before the code \u2014 docs/internals/ explains the four architectural ideas (connection filters, client writers, client readers, the multi state machine) that the code assumes you already know. Style is machine-enforced: `scripts/checksrc.pl` runs in CI and by default in debug builds, and a style violation fails the build before your logic is ever reviewed. Anything user-visible needs a matching curldown doc and usually a test case, and several files are generated and must not be hand-edited. The safest edits are additive table rows; the riskiest are changes to lib/multi.c, lib/url.c, lib/sendf.c, or lib/cfilters.c, which every protocol depends on.",
       "claims": [
         {
           "claim": "Read first, in this order: docs/internals/README.md and the four core internals docs (CONNECTION-FILTERS.md, CLIENT-WRITERS.md, CLIENT-READERS.md, MID.md), then src/tool_main.c and src/tool_operate.c for the tool, then lib/easy.c and lib/multi.c for the library.",
@@ -10753,7 +10753,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Adding a test means creating tests/data/testNNNN in the XML-like format and adding it to the numerically-ordered `TESTCASES` list in tests/data/Makefile.am — the file is not picked up automatically.",
+          "claim": "Adding a test means creating tests/data/testNNNN in the XML-like format and adding it to the numerically-ordered `TESTCASES` list in tests/data/Makefile.am \u2014 the file is not picked up automatically.",
           "sources": [
             "tests/data/Makefile.am#L24-L40",
             "tests/data/test1#L1-L54"
@@ -10761,7 +10761,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "To run tests: `make test` (quiet) from the top, or drive the harness directly with `TFLAGS` — `cd tests && ./runtests.pl 1 to 200`, keyword selection like `FTPS` or `!feat:proxy`, `-t` for torture, and `make pytest` for the HTTP/2-3 python suite.",
+          "claim": "To run tests: `make test` (quiet) from the top, or drive the harness directly with `TFLAGS` \u2014 `cd tests && ./runtests.pl 1 to 200`, keyword selection like `FTPS` or `!feat:proxy`, `-t` for torture, and `make pytest` for the HTTP/2-3 python suite.",
           "sources": [
             "Makefile.am#L126-L158",
             "tests/Makefile.am#L144-L178",
@@ -10770,7 +10770,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Public ABI is a hard boundary: include/curl/curlver.h carries the version macros, docs/libcurl/ABI.md states the compatibility promise, and docs/libcurl/symbols-in-versions records when every symbol appeared — new symbols must be added there.",
+          "claim": "Public ABI is a hard boundary: include/curl/curlver.h carries the version macros, docs/libcurl/ABI.md states the compatibility promise, and docs/libcurl/symbols-in-versions records when every symbol appeared \u2014 new symbols must be added there.",
           "sources": [
             "include/curl/curlver.h#L35-L75",
             "docs/libcurl/ABI.md",
@@ -10816,7 +10816,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Trap: the `aliases[]` table in src/tool_getparam.c must stay alphabetically sorted by long name — `findlongopt()` binary-searches it, so an out-of-order insertion silently breaks option lookup rather than failing to compile.",
+          "claim": "Trap: the `aliases[]` table in src/tool_getparam.c must stay alphabetically sorted by long name \u2014 `findlongopt()` binary-searches it, so an out-of-order insertion silently breaks option lookup rather than failing to compile.",
           "sources": [
             "src/tool_getparam.c#L75-L78",
             "src/tool_getparam.c#L1083-L1090"
@@ -10824,7 +10824,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Trap: tool code should call the `curlx_*` wrappers (`curlx_open`, `curlx_fopen`, `curlx_stat`, `curlx_strdup`, `curlx_safefree`, `curlx_dyn_*`) rather than libc directly — the wrappers carry the Windows/VMS/unicode portability that plain libc calls lose.",
+          "claim": "Trap: tool code should call the `curlx_*` wrappers (`curlx_open`, `curlx_fopen`, `curlx_stat`, `curlx_strdup`, `curlx_safefree`, `curlx_dyn_*`) rather than libc directly \u2014 the wrappers carry the Windows/VMS/unicode portability that plain libc calls lose.",
           "sources": [
             "lib/curlx/win32-fopen.h",
             "src/tool_operate.c#L1146-L1160",
@@ -10833,7 +10833,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Trap: much of the interesting test machinery only exists in debug builds (`DEBUGBUILD`) — `curl_easy_perform_ev()`, `parallel_event()`, `CURL_FORBID_REUSE`, `CURL_MEMDEBUG`, `--test-duphandle` — so a change verified only against a release build has not been exercised by the full suite.",
+          "claim": "Trap: much of the interesting test machinery only exists in debug builds (`DEBUGBUILD`) \u2014 `curl_easy_perform_ev()`, `parallel_event()`, `CURL_FORBID_REUSE`, `CURL_MEMDEBUG`, `--test-duphandle` \u2014 so a change verified only against a release build has not been exercised by the full suite.",
           "sources": [
             "lib/easy.c#L866-L880",
             "src/tool_operate.c#L1672-L1902",
@@ -10852,11 +10852,11 @@
         }
       ]
     },
-    "agent_prompt": "You are working in the curl repository (commit c362f03, branch master, version 8.23.0-DEV). It contains two coupled C codebases plus an unusually large test and documentation corpus.\n\nLayout. `lib/` (393 files) builds libcurl. `src/` (96 files) builds the `curl` command-line tool as a client of libcurl. `include/curl/` holds the 12 public headers. Backend families live in subdirectories: `lib/vtls` (OpenSSL, GnuTLS, wolfSSL, mbedTLS, Schannel, Rustls), `lib/vquic` (ngtcp2, quiche, capsule/CONNECT-UDP), `lib/vssh` (libssh2, libssh), `lib/vauth` (Basic/Digest/NTLM/Kerberos/SPNEGO/OAuth2/GSASL), `lib/vdns` (c-ares, threaded resolver, DoH, HTTPSRR), and `lib/curlx` (portability utilities both halves use). `tests/` holds ~2,100 data-driven test cases, 80 unit tests, 6 tunit tests, 273 libtest programs, 31 pytest modules and the protocol servers to run them against. `docs/internals/` is the architecture documentation — read it before the code.\n\nFour ideas explain most of the design. (1) Connection filters: `struct Curl_cftype` instances chain via `->next` so TLS, SOCKS, HTTP proxy, HAProxy, HTTP/2 and QUIC stack on top of a socket without protocol code knowing the layout. `cf_setup_connect()` in lib/cf-setup.c appends them in a fixed order — ip_happy, SOCKS, HTTP proxy, HAProxy, origin/TLS — restarting the sub-chain connect after each addition. (2) Client writers and readers: received bytes go through `Curl_client_write()` and an ordered phase stack (RAW → TRANSFER_DECODE → PROTOCOL → BEFORE_DECODE → CONTENT_DECODE → CLIENT) before reaching `CURLOPT_WRITEFUNCTION`; uploads mirror this. (3) The multi state machine: `multi_runsingle()` in lib/multi.c walks MSTATE_INIT → SETUP → CONNECT → CONNECTING → PROTOCONNECT(ING) → DO → DOING → DOING_MORE → DID → PERFORMING → DONE → COMPLETED → MSGSENT. `curl_easy_perform()` is a thin wrapper that creates a one-handle multi and pumps `curl_multi_poll()`/`curl_multi_perform()`. (4) The scheme registry: each URI scheme is a `struct Curl_scheme` in lib/protocol.c with a `struct Curl_protocol` vtable and PROTOPT_* flags; a disabled protocol keeps its record with a NULL `run` pointer.\n\nThe tool's flow is `main()` (src/tool_main.c) → `operate()` (src/tool_operate.c) → `.curlrc` parse → `parse_args()` → a `CURLSH` share → `run_all_transfers()` → `serial_transfers()` or `parallel_transfers()`. Each URL becomes a `per_transfer` built by `create_single()`, configured by `src/config2setopts.c`, then run and post-processed by `post_per_transfer()`/`retrycheck()`.\n\nConventions that will bite you. Style is machine-enforced by `scripts/checksrc.pl` (`make checksrc`, CI job `checksrc`) — violations fail before review. The `aliases[]` table in src/tool_getparam.c must stay alphabetically sorted; `findlongopt()` binary-searches it. Never hand-edit src/tool_hugehelp.c or src/tool_listhelp.c (generated). Use `curlx_*` wrappers, not raw libc. New tests need both a tests/data/testNNNN file and an entry in tests/data/Makefile.am. New CLI options need a docs/cmdline-opts page; new CURLOPTs need a docs/libcurl/opts page and a symbols-in-versions line. Both build systems (autotools Makefile.inc files and CMakeLists.txt) must be updated together. RELEASE-NOTES is generated by scripts/release-notes.pl.\n\nVerify with `make test` (or `cd tests && ./runtests.pl <numbers|keywords>`, `-t` for torture), `make pytest` for HTTP/2-3, and `make lint`. Prefer additive changes to registries; treat lib/multi.c, lib/url.c, lib/sendf.c and lib/cfilters.c as high blast radius. Suspected vulnerabilities go through the private disclosure process in SECURITY.md, never a public PR."
+    "agent_prompt": "You are working in the curl repository (commit c362f03, branch master, version 8.23.0-DEV). It contains two coupled C codebases plus an unusually large test and documentation corpus.\n\nLayout. `lib/` (393 files) builds libcurl. `src/` (96 files) builds the `curl` command-line tool as a client of libcurl. `include/curl/` holds the 12 public headers. Backend families live in subdirectories: `lib/vtls` (OpenSSL, GnuTLS, wolfSSL, mbedTLS, Schannel, Rustls), `lib/vquic` (ngtcp2, quiche, capsule/CONNECT-UDP), `lib/vssh` (libssh2, libssh), `lib/vauth` (Basic/Digest/NTLM/Kerberos/SPNEGO/OAuth2/GSASL), `lib/vdns` (c-ares, threaded resolver, DoH, HTTPSRR), and `lib/curlx` (portability utilities both halves use). `tests/` holds ~2,100 data-driven test cases, 80 unit tests, 6 tunit tests, 273 libtest programs, 31 pytest modules and the protocol servers to run them against. `docs/internals/` is the architecture documentation \u2014 read it before the code.\n\nFour ideas explain most of the design. (1) Connection filters: `struct Curl_cftype` instances chain via `->next` so TLS, SOCKS, HTTP proxy, HAProxy, HTTP/2 and QUIC stack on top of a socket without protocol code knowing the layout. `cf_setup_connect()` in lib/cf-setup.c appends them in a fixed order \u2014 ip_happy, SOCKS, HTTP proxy, HAProxy, origin/TLS \u2014 restarting the sub-chain connect after each addition. (2) Client writers and readers: received bytes go through `Curl_client_write()` and an ordered phase stack (RAW \u2192 TRANSFER_DECODE \u2192 PROTOCOL \u2192 BEFORE_DECODE \u2192 CONTENT_DECODE \u2192 CLIENT) before reaching `CURLOPT_WRITEFUNCTION`; uploads mirror this. (3) The multi state machine: `multi_runsingle()` in lib/multi.c walks MSTATE_INIT \u2192 SETUP \u2192 CONNECT \u2192 CONNECTING \u2192 PROTOCONNECT(ING) \u2192 DO \u2192 DOING \u2192 DOING_MORE \u2192 DID \u2192 PERFORMING \u2192 DONE \u2192 COMPLETED \u2192 MSGSENT. `curl_easy_perform()` is a thin wrapper that creates a one-handle multi and pumps `curl_multi_poll()`/`curl_multi_perform()`. (4) The scheme registry: each URI scheme is a `struct Curl_scheme` in lib/protocol.c with a `struct Curl_protocol` vtable and PROTOPT_* flags; a disabled protocol keeps its record with a NULL `run` pointer.\n\nThe tool's flow is `main()` (src/tool_main.c) \u2192 `operate()` (src/tool_operate.c) \u2192 `.curlrc` parse \u2192 `parse_args()` \u2192 a `CURLSH` share \u2192 `run_all_transfers()` \u2192 `serial_transfers()` or `parallel_transfers()`. Each URL becomes a `per_transfer` built by `create_single()`, configured by `src/config2setopts.c`, then run and post-processed by `post_per_transfer()`/`retrycheck()`.\n\nConventions that will bite you. Style is machine-enforced by `scripts/checksrc.pl` (`make checksrc`, CI job `checksrc`) \u2014 violations fail before review. The `aliases[]` table in src/tool_getparam.c must stay alphabetically sorted; `findlongopt()` binary-searches it. Never hand-edit src/tool_hugehelp.c or src/tool_listhelp.c (generated). Use `curlx_*` wrappers, not raw libc. New tests need both a tests/data/testNNNN file and an entry in tests/data/Makefile.am. New CLI options need a docs/cmdline-opts page; new CURLOPTs need a docs/libcurl/opts page and a symbols-in-versions line. Both build systems (autotools Makefile.inc files and CMakeLists.txt) must be updated together. RELEASE-NOTES is generated by scripts/release-notes.pl.\n\nVerify with `make test` (or `cd tests && ./runtests.pl <numbers|keywords>`, `-t` for torture), `make pytest` for HTTP/2-3, and `make lint`. Prefer additive changes to registries; treat lib/multi.c, lib/url.c, lib/sendf.c and lib/cfilters.c as high blast radius. Suspected vulnerabilities go through the private disclosure process in SECURITY.md, never a public PR."
   },
   "analysis": {
     "agent": "claude",
-    "model": "cli:claude",
+    "model": "claude-opus-5",
     "runtime_ms": 589835,
     "cost_usd": 4.186151999999999,
     "collected_at": "2026-09-22T08:57:46.719Z"

@@ -35,8 +35,10 @@ const { report } = Astro.props;
       {report.readmePreview && <p class="lead">{report.readmePreview}</p>}
       {report.analysis && (
         <p class="meta analysis">
-          Deep analysis by <code>{report.analysis.model}</code> — every claim below cites the
-          source files it was read from.
+          Deep analysis by <code>{report.analysis.model}</code> via the {report.analysis.agent} CLI
+          on {report.analysis.collected_at.slice(0, 10)} (
+          {Math.round(report.analysis.runtime_ms / 1000)}s) — every claim below cites the source
+          files it was read from.
         </p>
       )}
     </header>

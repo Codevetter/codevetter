@@ -14530,7 +14530,7 @@
         "steps": [
           {
             "id": "serialize",
-            "label": "JSON serialize (inventory → SQLite)",
+            "label": "JSON serialize (inventory \u2192 SQLite)",
             "ms": 0,
             "pct": 0
           },
@@ -14551,9 +14551,9 @@
     ]
   },
   "report": {
-    "overview": "This is the vuejs/core monorepo at v3.5.43 — the source of the `vue` npm package and its ten sibling `@vue/*` packages, split cleanly into a compiler half (compiler-core → compiler-dom → compiler-sfc/compiler-ssr) and a runtime half (reactivity → runtime-core → runtime-dom/server-renderer), glued by `@vue/shared`. The distinctive engineering shape is compile-time configurability: every package is built by a single `rollup.config.js` driven by `scripts/build.js` into up to seven output formats, with `__DEV__`/`__BROWSER__`/`__FEATURE_*`/`__COMPAT__` flags statically replaced so that dev warnings, the Options API, Suspense, and the Vue-2 compat layer all tree-shake away. It is written for framework maintainers and ecosystem tool authors rather than app developers: the public API surface is small, but the internal surface (renderer internals object, `createRenderer` for custom platforms, compiler `nodeTransforms`/`directiveTransforms`) is explicitly designed as an extension substrate. Two private packages — `sfc-playground` and `template-explorer` — are live-deployed dev tools that consume the built artifacts of the very repo that builds them.",
+    "overview": "This is the vuejs/core monorepo at v3.5.43 \u2014 the source of the `vue` npm package and its ten sibling `@vue/*` packages, split cleanly into a compiler half (compiler-core \u2192 compiler-dom \u2192 compiler-sfc/compiler-ssr) and a runtime half (reactivity \u2192 runtime-core \u2192 runtime-dom/server-renderer), glued by `@vue/shared`. The distinctive engineering shape is compile-time configurability: every package is built by a single `rollup.config.js` driven by `scripts/build.js` into up to seven output formats, with `__DEV__`/`__BROWSER__`/`__FEATURE_*`/`__COMPAT__` flags statically replaced so that dev warnings, the Options API, Suspense, and the Vue-2 compat layer all tree-shake away. It is written for framework maintainers and ecosystem tool authors rather than app developers: the public API surface is small, but the internal surface (renderer internals object, `createRenderer` for custom platforms, compiler `nodeTransforms`/`directiveTransforms`) is explicitly designed as an extension substrate. Two private packages \u2014 `sfc-playground` and `template-explorer` \u2014 are live-deployed dev tools that consume the built artifacts of the very repo that builds them.",
     "system_map": {
-      "summary": "A pnpm workspace (`packages/*` + `packages-private/*`) of eleven published-or-private packages with a strict compiler/runtime separation enforced by lint rules. There is no server, database, or persistent storage layer — the \"storage\" is the filesystem (dist bundles) plus in-memory LRU caches in the compiler. Builds go through `scripts/build.js` → `rollup.config.js`, which fans one package out into esm-bundler/esm-browser/cjs/global/runtime variants; types are stitched separately via `tsc -p tsconfig.build.json --noCheck && rollup -c rollup.dts.config.js`. Tests run under Vitest with five named projects (unit, unit-gc, unit-jsdom, e2e, e2e-browser). Deployment is npm publish from a tag-triggered GitHub Actions workflow, plus continuous pre-release publishing via pkg-pr-new on every push.",
+      "summary": "A pnpm workspace (`packages/*` + `packages-private/*`) of eleven published-or-private packages with a strict compiler/runtime separation enforced by lint rules. There is no server, database, or persistent storage layer \u2014 the \"storage\" is the filesystem (dist bundles) plus in-memory LRU caches in the compiler. Builds go through `scripts/build.js` \u2192 `rollup.config.js`, which fans one package out into esm-bundler/esm-browser/cjs/global/runtime variants; types are stitched separately via `tsc -p tsconfig.build.json --noCheck && rollup -c rollup.dts.config.js`. Tests run under Vitest with five named projects (unit, unit-gc, unit-jsdom, e2e, e2e-browser). Deployment is npm publish from a tag-triggered GitHub Actions workflow, plus continuous pre-release publishing via pkg-pr-new on every push.",
       "claims": [
         {
           "claim": "The workspace is defined by `pnpm-workspace.yaml` covering `packages/*` and `packages-private/*`, with a shared dependency `catalog:` pinning @babel/parser, entities, estree-walker, magic-string, source-map-js and vite, plus a `minimumReleaseAge: 1440` supply-chain guard and `trustPolicy: no-downgrade`.",
@@ -14563,7 +14563,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "The published package graph is compiler-sfc → {compiler-core, compiler-dom}, compiler-dom → compiler-core, runtime-dom → runtime-core → reactivity, and `vue` → {compiler-dom, runtime-dom}; the contributing guide documents this as a mermaid diagram and forbids compiler packages importing runtime code (shared logic must go to `@vue/shared`).",
+          "claim": "The published package graph is compiler-sfc \u2192 {compiler-core, compiler-dom}, compiler-dom \u2192 compiler-core, runtime-dom \u2192 runtime-core \u2192 reactivity, and `vue` \u2192 {compiler-dom, runtime-dom}; the contributing guide documents this as a mermaid diagram and forbids compiler packages importing runtime code (shared logic must go to `@vue/shared`).",
           "sources": [
             ".github/contributing.md#L283-L317",
             "packages/vue/package.json"
@@ -14601,7 +14601,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Compile-time feature flags are injected by `resolveDefine()` in rollup.config.js — `__COMPAT__`, `__FEATURE_SUSPENSE__` (always true), `__FEATURE_OPTIONS_API__` and `__FEATURE_PROD_DEVTOOLS__` (left as runtime-overridable `__VUE_*` globals only in bundler-ESM builds) — which is why dead-code paths guarded by these flags vanish from browser/global bundles.",
+          "claim": "Compile-time feature flags are injected by `resolveDefine()` in rollup.config.js \u2014 `__COMPAT__`, `__FEATURE_SUSPENSE__` (always true), `__FEATURE_OPTIONS_API__` and `__FEATURE_PROD_DEVTOOLS__` (left as runtime-overridable `__VUE_*` globals only in bundler-ESM builds) \u2014 which is why dead-code paths guarded by these flags vanish from browser/global bundles.",
           "sources": [
             "rollup.config.js#L170-L200",
             "vitest.config.ts#L5-L22"
@@ -14626,7 +14626,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "`test.yml` splits into four jobs — unit-test (ubuntu), unit-test-windows, e2e-test (installs puppeteer Chromium and `playwright install chromium`, then runs `node scripts/verify-treeshaking.js`), and lint-and-test-dts (eslint, prettier check, `tsc --noEmit`, and `pnpm run test-dts`).",
+          "claim": "`test.yml` splits into four jobs \u2014 unit-test (ubuntu), unit-test-windows, e2e-test (installs puppeteer Chromium and `playwright install chromium`, then runs `node scripts/verify-treeshaking.js`), and lint-and-test-dts (eslint, prettier check, `tsc --noEmit`, and `pnpm run test-dts`).",
           "sources": [
             ".github/workflows/test.yml#L1-L125"
           ],
@@ -14658,7 +14658,7 @@
       ]
     },
     "feature_catalog": {
-      "summary": "There are no routes or screens in the product sense — the user-facing surface is (a) the public JS API exported from `@vue/runtime-core`/`@vue/runtime-dom`, (b) the compiler APIs consumed by vite-plugin-vue/vue-loader, (c) SSR render functions, (d) the `nr <script>` developer command surface in package.json, and (e) two deployed browser tools. Built-in components (Teleport, Suspense, KeepAlive, BaseTransition, Transition, TransitionGroup) and built-in directives (v-model, v-show, v-on modifiers) are shipped as first-class features handled specially in both the compiler and the renderer. Custom elements and lazy-hydration strategies are the newer feature surfaces.",
+      "summary": "There are no routes or screens in the product sense \u2014 the user-facing surface is (a) the public JS API exported from `@vue/runtime-core`/`@vue/runtime-dom`, (b) the compiler APIs consumed by vite-plugin-vue/vue-loader, (c) SSR render functions, (d) the `nr <script>` developer command surface in package.json, and (e) two deployed browser tools. Built-in components (Teleport, Suspense, KeepAlive, BaseTransition, Transition, TransitionGroup) and built-in directives (v-model, v-show, v-on modifiers) are shipped as first-class features handled specially in both the compiler and the renderer. Custom elements and lazy-hydration strategies are the newer feature surfaces.",
       "claims": [
         {
           "claim": "`packages/runtime-core/src/index.ts` is the canonical public API list: reactivity re-exports, `computed`, the `watch` family, all `on*` lifecycle hooks, `provide`/`inject`/`hasInjectionContext`, `nextTick`, `defineComponent`, `defineAsyncComponent`, `useAttrs`/`useSlots`/`useModel`/`useTemplateRef`/`useId`, `h`, `createVNode`, and the four built-in components.",
@@ -14683,7 +14683,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Lazy hydration is a shipped feature with four strategy factories — `hydrateOnIdle`, `hydrateOnVisible`, `hydrateOnMediaQuery`, `hydrateOnInteraction` — exported from runtime-core and exercised by dedicated HTML fixtures in the e2e suite.",
+          "claim": "Lazy hydration is a shipped feature with four strategy factories \u2014 `hydrateOnIdle`, `hydrateOnVisible`, `hydrateOnMediaQuery`, `hydrateOnInteraction` \u2014 exported from runtime-core and exercised by dedicated HTML fixtures in the e2e suite.",
           "sources": [
             "packages/runtime-core/src/hydrationStrategies.ts#L29-L90",
             "packages/vue/__tests__/e2e/hydrationStrategies.spec.ts"
@@ -14706,7 +14706,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "`<script setup>` macros supported by compileScript are enumerated in a `MACROS` constant — defineProps, defineEmits, defineExpose, defineOptions, defineSlots, defineModel and withDefaults — each with its own module under `packages/compiler-sfc/src/script/`.",
+          "claim": "`<script setup>` macros supported by compileScript are enumerated in a `MACROS` constant \u2014 defineProps, defineEmits, defineExpose, defineOptions, defineSlots, defineModel and withDefaults \u2014 each with its own module under `packages/compiler-sfc/src/script/`.",
           "sources": [
             "packages/compiler-sfc/src/compileScript.ts#L153-L162",
             "packages/compiler-sfc/src/index.ts"
@@ -14765,7 +14765,7 @@
       ]
     },
     "data_flow": {
-      "summary": "Two largely independent pipelines meet at the component instance. Compile-time: template/SFC source string → tokenizer/parser → AST → transform passes (which mutate the AST and register runtime helpers) → codegen → render-function source. Runtime: props/slots enter via vnodes, reactive state is owned by `Dep` objects linked to `Subscriber`s, changes call `trigger()` which notifies effects, effects are batched into the scheduler queue, and the flush drives `patch()` which writes to the host platform through the injected `RendererOptions`. Output boundaries are exactly three: DOM mutations via `nodeOps`/`patchProp`, an SSR string/stream buffer, and generated JS source text.",
+      "summary": "Two largely independent pipelines meet at the component instance. Compile-time: template/SFC source string \u2192 tokenizer/parser \u2192 AST \u2192 transform passes (which mutate the AST and register runtime helpers) \u2192 codegen \u2192 render-function source. Runtime: props/slots enter via vnodes, reactive state is owned by `Dep` objects linked to `Subscriber`s, changes call `trigger()` which notifies effects, effects are batched into the scheduler queue, and the flush drives `patch()` which writes to the host platform through the injected `RendererOptions`. Output boundaries are exactly three: DOM mutations via `nodeOps`/`patchProp`, an SSR string/stream buffer, and generated JS source text.",
       "claims": [
         {
           "claim": "`baseCompile` is the single compile funnel: it resolves `prefixIdentifiers`, calls `baseParse(source, resolvedOptions)` when given a string, composes user `nodeTransforms`/`directiveTransforms` after the base preset, runs `transform(ast, ...)`, and returns `generate(ast, resolvedOptions)`.",
@@ -14775,7 +14775,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "The base transform preset is order-sensitive and documented as such — transformVBindShorthand, transformOnce, transformIf, transformMemo, transformFor, then (non-browser only) trackVForSlotScopes + transformExpression, then transformSlotOutlet, transformElement, trackSlotScopes, transformText — with directive transforms keyed `on`/`bind`/`model`.",
+          "claim": "The base transform preset is order-sensitive and documented as such \u2014 transformVBindShorthand, transformOnce, transformIf, transformMemo, transformFor, then (non-browser only) trackVForSlotScopes + transformExpression, then transformSlotOutlet, transformElement, trackSlotScopes, transformText \u2014 with directive transforms keyed `on`/`bind`/`model`.",
           "sources": [
             "packages/compiler-core/src/compile.ts#L32-L64"
           ],
@@ -14796,7 +14796,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "SFC parsing is memoised: `parse.ts` computes a source key and consults `parseCache`, an LRU of max 500 entries created by `createCache()` — which downgrades to a plain `Map` in `__GLOBAL__`/`__ESM_BROWSER__` builds where lru-cache is unavailable.",
+          "claim": "SFC parsing is memoised: `parse.ts` computes a source key and consults `parseCache`, an LRU of max 500 entries created by `createCache()` \u2014 which downgrades to a plain `Map` in `__GLOBAL__`/`__ESM_BROWSER__` builds where lru-cache is unavailable.",
           "sources": [
             "packages/compiler-sfc/src/parse.ts#L103-L120",
             "packages/compiler-sfc/src/cache.ts"
@@ -14827,7 +14827,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "`ReactiveEffect.run()` swaps in `activeSub`/`shouldTrack`, runs `cleanupEffect` + `prepareDeps` before the fn and `cleanupDeps` after, and dev-warns 'Active effect was not restored correctly' if `activeSub` drifted — the double-buffered dep-linking scheme that replaces Vue 3.4's Set-based deps.",
+          "claim": "`ReactiveEffect.run()` swaps in `activeSub`/`shouldTrack`, runs `cleanupEffect` + `prepareDeps` before the fn and `cleanupDeps` after, and dev-warns 'Active effect was not restored correctly' if `activeSub` drifted \u2014 the double-buffered dep-linking scheme that replaces Vue 3.4's Set-based deps.",
           "sources": [
             "packages/reactivity/src/effect.ts#L162-L200",
             "packages/reactivity/src/effect.ts#L38-L60"
@@ -14835,7 +14835,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Component update jobs are id-ordered: `queueJob` fast-paths an append when the job id is ≥ the tail's id and otherwise binary-inserts via `findInsertionIndex`, ensuring parents flush before children; `queueFlush` schedules `flushJobs` on a resolved promise microtask.",
+          "claim": "Component update jobs are id-ordered: `queueJob` fast-paths an append when the job id is \u2265 the tail's id and otherwise binary-inserts via `findInsertionIndex`, ensuring parents flush before children; `queueFlush` schedules `flushJobs` on a resolved promise microtask.",
           "sources": [
             "packages/runtime-core/src/scheduler.ts#L78-L123"
           ],
@@ -14866,7 +14866,7 @@
       ]
     },
     "behavior_traces": {
-      "summary": "Three flows carry most of the system's weight: browser app startup, a reactive state change producing a re-render, and SFC compilation as invoked by a bundler plugin. A fourth, hydration, forks off startup at `createSSRApp`. The call chains below were read in order through runtime-dom → apiCreateApp → renderer → component → scheduler.",
+      "summary": "Three flows carry most of the system's weight: browser app startup, a reactive state change producing a re-render, and SFC compilation as invoked by a bundler plugin. A fourth, hydration, forks off startup at `createSSRApp`. The call chains below were read in order through runtime-dom \u2192 apiCreateApp \u2192 renderer \u2192 component \u2192 scheduler.",
       "claims": [
         {
           "claim": "Startup step 1: `createApp(RootComponent)` in runtime-dom calls `ensureRenderer()` (memoising a single module-level renderer created from `rendererOptions`), then in dev injects `isNativeTag` and the `compilerOptions` getter warnings before wrapping `app.mount`.",
@@ -14892,14 +14892,14 @@
           "kind": "evidence"
         },
         {
-          "claim": "Startup step 4: the renderer's `render` dispatches to `patch(container._vnode || null, vnode, ...)`, records `container._vnode = vnode`, and then — guarded by an `isFlushing` latch — drains `flushPreFlushCbs` and `flushPostFlushCbs` synchronously.",
+          "claim": "Startup step 4: the renderer's `render` dispatches to `patch(container._vnode || null, vnode, ...)`, records `container._vnode = vnode`, and then \u2014 guarded by an `isFlushing` latch \u2014 drains `flushPreFlushCbs` and `flushPostFlushCbs` synchronously.",
           "sources": [
             "packages/runtime-core/src/renderer.ts#L2449-L2476"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "Startup step 5: `patch` switches on vnode type (Text/Comment/Static/Fragment) and otherwise on `shapeFlag`, routing ELEMENT → `processElement`, COMPONENT → `processComponent`, TELEPORT → `TeleportImpl.process(..., internals)` and (under `__FEATURE_SUSPENSE__`) SUSPENSE → `SuspenseImpl.process(..., internals)`.",
+          "claim": "Startup step 5: `patch` switches on vnode type (Text/Comment/Static/Fragment) and otherwise on `shapeFlag`, routing ELEMENT \u2192 `processElement`, COMPONENT \u2192 `processComponent`, TELEPORT \u2192 `TeleportImpl.process(..., internals)` and (under `__FEATURE_SUSPENSE__`) SUSPENSE \u2192 `SuspenseImpl.process(..., internals)`.",
           "sources": [
             "packages/runtime-core/src/renderer.ts#L420-L500"
           ],
@@ -14934,7 +14934,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Update trace: a reactive write calls `Dep.trigger` → subscriber `notify()` → `batch(sub)` unless the effect is already RUNNING without ALLOW_RECURSE; the component's effect scheduler calls `queueJob`, `queueFlush` schedules `flushJobs` on the microtask queue, and `flushJobs` re-enters `componentUpdateFn` on the update branch which resolves `next`, runs `bu`, re-renders and patches, then queues `u`.",
+          "claim": "Update trace: a reactive write calls `Dep.trigger` \u2192 subscriber `notify()` \u2192 `batch(sub)` unless the effect is already RUNNING without ALLOW_RECURSE; the component's effect scheduler calls `queueJob`, `queueFlush` schedules `flushJobs` on the microtask queue, and `flushJobs` re-enters `componentUpdateFn` on the update branch which resolves `next`, runs `bu`, re-renders and patches, then queues `u`.",
           "sources": [
             "packages/reactivity/src/effect.ts#L148-L162",
             "packages/runtime-core/src/scheduler.ts#L99-L123",
@@ -14943,7 +14943,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Hydration trace: `createSSRApp` → `ensureHydrationRenderer()` → `createHydrationRenderer(rendererOptions)` → `baseCreateRenderer(options, createHydrationFunctions)`, whose returned `[hydrate, hydrateNode]` pair is wired to the internals; `app.mount(container, true, ...)` then routes to `hydrate(vnode, rootContainer)` instead of `render`, and any structural divergence calls `logMismatchError()`.",
+          "claim": "Hydration trace: `createSSRApp` \u2192 `ensureHydrationRenderer()` \u2192 `createHydrationRenderer(rendererOptions)` \u2192 `baseCreateRenderer(options, createHydrationFunctions)`, whose returned `[hydrate, hydrateNode]` pair is wired to the internals; `app.mount(container, true, ...)` then routes to `hydrate(vnode, rootContainer)` instead of `render`, and any structural divergence calls `logMismatchError()`.",
           "sources": [
             "packages/runtime-dom/src/index.ts#L87-L170",
             "packages/runtime-core/src/renderer.ts#L2494-L2500",
@@ -14959,7 +14959,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "SFC trace: a bundler plugin calls `parse()` (LRU-cached) → `compileScript(descriptor, options)` for `<script setup>` → `compileTemplate` (which reuses the descriptor's template AST) → `compileStyle`/`compileStyleAsync` for scoped/module CSS; the playground's vite.config.ts wires exactly this by passing a real `fs` host into `@vitejs/plugin-vue`'s `script` option.",
+          "claim": "SFC trace: a bundler plugin calls `parse()` (LRU-cached) \u2192 `compileScript(descriptor, options)` for `<script setup>` \u2192 `compileTemplate` (which reuses the descriptor's template AST) \u2192 `compileStyle`/`compileStyleAsync` for scoped/module CSS; the playground's vite.config.ts wires exactly this by passing a real `fs` host into `@vitejs/plugin-vue`'s `script` option.",
           "sources": [
             "packages/compiler-sfc/src/index.ts#L1-L30",
             "packages-private/sfc-playground/vite.config.ts#L11-L22"
@@ -14979,14 +14979,14 @@
           "kind": "evidence"
         },
         {
-          "claim": "Coverage explicitly excludes `packages/vue-compat/**`, `vue/src/dev.ts`, `vue/src/runtime.ts`, `runtime-core/src/profiling.ts`, `featureFlags.ts`, `customFormatter.ts`, and — with a comment saying they are covered by e2e instead — `hydrationStrategies.ts` and `runtime-dom/src/components/Transition*`.",
+          "claim": "Coverage explicitly excludes `packages/vue-compat/**`, `vue/src/dev.ts`, `vue/src/runtime.ts`, `runtime-core/src/profiling.ts`, `featureFlags.ts`, `customFormatter.ts`, and \u2014 with a comment saying they are covered by e2e instead \u2014 `hydrationStrategies.ts` and `runtime-dom/src/components/Transition*`.",
           "sources": [
             "vitest.config.ts#L25-L45"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "`scripts/setup-vitest.ts` installs three custom matchers — `toHaveBeenWarned`, `toHaveBeenWarnedLast`, `toHaveBeenWarnedTimes` — built on a mocked `console.warn`, which is the house idiom for asserting dev-only warning behaviour throughout the suite.",
+          "claim": "`scripts/setup-vitest.ts` installs three custom matchers \u2014 `toHaveBeenWarned`, `toHaveBeenWarnedLast`, `toHaveBeenWarnedTimes` \u2014 built on a mocked `console.warn`, which is the house idiom for asserting dev-only warning behaviour throughout the suite.",
           "sources": [
             "scripts/setup-vitest.ts#L1-L60",
             "vitest.config.ts#L26-L30"
@@ -15044,7 +15044,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Test files get relaxed lint rules — `no-console`, `no-restricted-globals` and `no-restricted-syntax` are off under `**/__tests__/**` — but `vitest/no-disabled-tests` and `vitest/no-focused-tests` are errors, so a stray `.only` or `.skip` fails the lint job.",
+          "claim": "Test files get relaxed lint rules \u2014 `no-console`, `no-restricted-globals` and `no-restricted-syntax` are off under `**/__tests__/**` \u2014 but `vitest/no-disabled-tests` and `vitest/no-focused-tests` are errors, so a stray `.only` or `.skip` fails the lint job.",
           "sources": [
             "eslint.config.js#L80-L102"
           ],
@@ -15058,7 +15058,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "CI does not enforce a coverage threshold — `test-coverage` exists as a script but no workflow invokes it; the jobs run `test-unit`, `test-e2e`, lint, `check` and `test-dts` only.",
+          "claim": "CI does not enforce a coverage threshold \u2014 `test-coverage` exists as a script but no workflow invokes it; the jobs run `test-unit`, `test-e2e`, lint, `check` and `test-dts` only.",
           "sources": [
             "package.json#L22",
             ".github/workflows/test.yml#L1-L125"
@@ -15079,7 +15079,7 @@
       "summary": "The security surface is narrow but sharp: three code paths build render functions with `new Function`, two paths assign `innerHTML`, and the SFC compiler reads arbitrary files off disk and `require`s user-supplied preprocessors. Structurally, the biggest blast radius is `renderer.ts` (2670 lines, the single implementation behind every platform) and the `__COMPAT__` layer, which threads conditionals through core runtime code that most contributors never exercise. CI hygiene is unusually strong (pinned action SHAs, `persist-credentials: false`, org-membership gating on the ecosystem-ci trigger), so the residual risks are code-level rather than pipeline-level.",
       "claims": [
         {
-          "claim": "Runtime template compilation evaluates generated code with `new Function('Vue', code)(runtimeDom)` (or `new Function(code)()` in global builds) in both the full build and the compat build — the intended design, but it means any path that can influence a template string achieves arbitrary JS execution.",
+          "claim": "Runtime template compilation evaluates generated code with `new Function('Vue', code)(runtimeDom)` (or `new Function(code)()` in global builds) in both the full build and the compat build \u2014 the intended design, but it means any path that can influence a template string achieves arbitrary JS execution.",
           "sources": [
             "packages/vue/src/index.ts#L93-L100",
             "packages/vue-compat/src/index.ts#L93-L100"
@@ -15104,7 +15104,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "`stringifyStatic` evaluates constant expressions at compile time with `new Function(\\`return (${exp.content})\\`)()`, and `validateExpression` similarly constructs a `new Function` to syntax-check user expressions — both run inside the build process, so a malicious SFC executes code in the developer's toolchain.",
+          "claim": "`stringifyStatic` evaluates constant expressions at compile time with `new Function(\\`return (${exp.content})\\`)()`, and `validateExpression` similarly constructs a `new Function` to syntax-check user expressions \u2014 both run inside the build process, so a malicious SFC executes code in the developer's toolchain.",
           "sources": [
             "packages/compiler-dom/src/transforms/stringifyStatic.ts#L414",
             "packages/compiler-core/src/validateExpression.ts#L43"
@@ -15136,7 +15136,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "The `__COMPAT__` layer is woven through hot core paths — mountComponent's `compatMountInstance`, finishComponentSetup's `inline-template` prop lookup, setupRenderEffect's `hook:beforeMount`/`hook:mounted` emissions — yet `packages/vue-compat/**` is excluded from coverage collection, so these branches are the least-verified code in the runtime.",
+          "claim": "The `__COMPAT__` layer is woven through hot core paths \u2014 mountComponent's `compatMountInstance`, finishComponentSetup's `inline-template` prop lookup, setupRenderEffect's `hook:beforeMount`/`hook:mounted` emissions \u2014 yet `packages/vue-compat/**` is excluded from coverage collection, so these branches are the least-verified code in the runtime.",
           "sources": [
             "packages/runtime-core/src/renderer.ts#L1224-L1230",
             "packages/runtime-core/src/component.ts#L1013-L1020",
@@ -15170,7 +15170,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "The `ecosystem-ci-trigger` workflow accepts `/ecosystem-ci run` from issue comments with `issues: write`/`pull-requests: write` permissions, mitigated by a `checkMembershipForUser({ org: 'vuejs' })` gate that throws for non-members — the gate is the only thing between a comment and a triggered pipeline.",
+          "claim": "The `ecosystem-ci-trigger` workflow accepts `/ecosystem-ci run` from issue comments with `issues: write`/`pull-requests: write` permissions, mitigated by a `checkMembershipForUser({ org: 'vuejs' })` gate that throws for non-members \u2014 the gate is the only thing between a comment and a triggered pipeline.",
           "sources": [
             ".github/workflows/ecosystem-ci-trigger.yml#L1-L50"
           ],
@@ -15186,7 +15186,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Because the SFC playground's vite config `spawnSync`s git and copies built bundles out of `../../packages` at bundle time, a playground build silently fails late (throwing 'not built. Run \"nr build vue -f esm-browser\" first') rather than at config load — a fragile coupling between two build systems.",
+          "claim": "Because the SFC playground's vite config `spawnSync`s git and copies built bundles out of `../../packages` at bundle time, a playground build silently fails late (throwing 'not built. Run \"nr build vue -f esm-browser\" first') rather than at config load \u2014 a fragile coupling between two build systems.",
           "sources": [
             "packages-private/sfc-playground/vite.config.ts#L29-L60"
           ],
@@ -15195,7 +15195,7 @@
       ]
     },
     "extension_points": {
-      "summary": "Extensibility is designed in at four levels. Platform level: `createRenderer(options)` lets anyone build a custom renderer from the same core — `runtime-test` is the in-repo proof. Compile level: `nodeTransforms`/`directiveTransforms` are concatenated after the built-in presets, and compiler-dom/compiler-ssr are themselves just different preset compositions. App level: `app.use`/`app.component`/`app.directive`/`app.mixin` plus `app.config` hooks. Type level: declaration merging into `@vue/runtime-core` interfaces. Adding a package means adding a directory with a `buildOptions` block — `scripts/aliases.js` and `scripts/build.js` discover it automatically.",
+      "summary": "Extensibility is designed in at four levels. Platform level: `createRenderer(options)` lets anyone build a custom renderer from the same core \u2014 `runtime-test` is the in-repo proof. Compile level: `nodeTransforms`/`directiveTransforms` are concatenated after the built-in presets, and compiler-dom/compiler-ssr are themselves just different preset compositions. App level: `app.use`/`app.component`/`app.directive`/`app.mixin` plus `app.config` hooks. Type level: declaration merging into `@vue/runtime-core` interfaces. Adding a package means adding a directory with a `buildOptions` block \u2014 `scripts/aliases.js` and `scripts/build.js` discover it automatically.",
       "claims": [
         {
           "claim": "`createRenderer<HostNode, HostElement>(options)` is the platform extension point; `createHydrationRenderer` is a separate export specifically so hydration stays tree-shakable, and both delegate to the same `baseCreateRenderer`.",
@@ -15229,7 +15229,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "compiler-dom's `DOMNodeTransforms` and `DOMDirectiveTransforms` are exported arrays/records, explicitly so compiler-ssr can reuse them to generate vnode fallback branches — the comment on `ignoreSideEffectTags` documents why it is kept out of that list.",
+          "claim": "compiler-dom's `DOMNodeTransforms` and `DOMDirectiveTransforms` are exported arrays/records, explicitly so compiler-ssr can reuse them to generate vnode fallback branches \u2014 the comment on `ignoreSideEffectTags` documents why it is kept out of that list.",
           "sources": [
             "packages/compiler-dom/src/index.ts#L27-L55"
           ],
@@ -15260,7 +15260,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "TypeScript extension is via declaration merging into named interfaces — runtime-dom itself does this for `RefUnwrapBailTypes`, `AllowedAttrs`, `GlobalComponents` and `GlobalDirectives`, which is the same mechanism router/store libraries use.",
+          "claim": "TypeScript extension is via declaration merging into named interfaces \u2014 runtime-dom itself does this for `RefUnwrapBailTypes`, `AllowedAttrs`, `GlobalComponents` and `GlobalDirectives`, which is the same mechanism router/store libraries use.",
           "sources": [
             "packages/runtime-dom/src/index.ts#L44-L69"
           ],
@@ -15275,7 +15275,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "`registerRuntimeCompiler(_compile)` is the documented seam for swapping the runtime compiler, and `isRuntimeOnly()` is derived from whether it has been called — that single boolean drives the dev-only `compilerOptions` deprecation warnings.",
+          "claim": "`registerRuntimeCompiler(_compile)` is the documented seam for swapping the runtime compiler, and `isRuntimeOnly()` is derived from whether it has been called \u2014 that single boolean drives the dev-only `compilerOptions` deprecation warnings.",
           "sources": [
             "packages/runtime-core/src/component.ts#L979-L997",
             "packages/runtime-dom/src/index.ts#L195-L232"
@@ -15302,7 +15302,7 @@
       ]
     },
     "agent_handoff": {
-      "summary": "Read the contributing guide's Project Structure and Package Dependencies sections before touching anything — the import rules there are enforced by both eslint and the release process. Expect ES2016-target lint restrictions that will reject idiomatic modern TypeScript, and expect every dev-only behaviour to be guarded by a `__DEV__` flag that must tree-shake cleanly. The fastest verification loop is `pnpm test-unit <package>`; the slowest and most CI-relevant are `pnpm check`, `pnpm test-dts` and `node scripts/verify-treeshaking.js`. Never reach across packages with relative paths, and never add a runtime import to a compiler package.",
+      "summary": "Read the contributing guide's Project Structure and Package Dependencies sections before touching anything \u2014 the import rules there are enforced by both eslint and the release process. Expect ES2016-target lint restrictions that will reject idiomatic modern TypeScript, and expect every dev-only behaviour to be guarded by a `__DEV__` flag that must tree-shake cleanly. The fastest verification loop is `pnpm test-unit <package>`; the slowest and most CI-relevant are `pnpm check`, `pnpm test-dts` and `node scripts/verify-treeshaking.js`. Never reach across packages with relative paths, and never add a runtime import to a compiler package.",
       "claims": [
         {
           "claim": "Read first, in order: `.github/contributing.md` (scripts + project structure), `package.json` (the script surface), `vitest.config.ts` (which project your test will land in), and `scripts/aliases.js` (how `@vue/*` resolves in tests and builds).",
@@ -15338,7 +15338,7 @@
           "kind": "inference"
         },
         {
-          "claim": "Trap: any new public export must also be re-exported at the package index — direct relative imports across package boundaries are forbidden, and a non-type import from package B requires B to be listed in A's package.json dependencies because the packages are externalised in ESM/CJS builds.",
+          "claim": "Trap: any new public export must also be re-exported at the package index \u2014 direct relative imports across package boundaries are forbidden, and a non-type import from package B requires B to be listed in A's package.json dependencies because the packages are externalised in ESM/CJS builds.",
           "sources": [
             ".github/contributing.md#L307-L317",
             "packages/runtime-dom/package.json"
@@ -15346,7 +15346,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Trap: commit messages are validated by a regex in `scripts/verify-commit.js` limited to a fixed type list with a ≤50-character subject; a non-conforming message fails the commit-msg hook outright.",
+          "claim": "Trap: commit messages are validated by a regex in `scripts/verify-commit.js` limited to a fixed type list with a \u226450-character subject; a non-conforming message fails the commit-msg hook outright.",
           "sources": [
             "scripts/verify-commit.js#L9-L28",
             "package.json#L39-L42"
@@ -15354,7 +15354,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Trap: the pre-commit hook runs `pnpm lint-staged && pnpm check`, so a full `tsc --incremental --noEmit` over the whole repo runs on every commit — type errors in unrelated packages will block an otherwise-clean change.",
+          "claim": "Trap: the pre-commit hook runs `pnpm lint-staged && pnpm check`, so a full `tsc --incremental --noEmit` over the whole repo runs on every commit \u2014 type errors in unrelated packages will block an otherwise-clean change.",
           "sources": [
             "package.json#L38-L41",
             "package.json#L14"
@@ -15362,7 +15362,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Trap: `tsconfig.json` sets `isolatedDeclarations: true`, which means exported functions and consts need explicit return/value type annotations — this is why the codebase writes `export const version: string = __VERSION__` and `export function initDev(): void`.",
+          "claim": "Trap: `tsconfig.json` sets `isolatedDeclarations: true`, which means exported functions and consts need explicit return/value type annotations \u2014 this is why the codebase writes `export const version: string = __VERSION__` and `export function initDev(): void`.",
           "sources": [
             "tsconfig.json#L25-L26",
             "packages/compiler-sfc/src/index.ts#L1",
@@ -15379,7 +15379,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Convention: compile-time optional features must be wrapped in the corresponding flag — `__FEATURE_OPTIONS_API__` for `app.mixin` and `applyOptions`, `__FEATURE_SUSPENSE__` for Suspense dispatch, `__COMPAT__` for Vue-2 behaviour — or the feature will not tree-shake and `verify-treeshaking.js` may fail.",
+          "claim": "Convention: compile-time optional features must be wrapped in the corresponding flag \u2014 `__FEATURE_OPTIONS_API__` for `app.mixin` and `applyOptions`, `__FEATURE_SUSPENSE__` for Suspense dispatch, `__COMPAT__` for Vue-2 behaviour \u2014 or the feature will not tree-shake and `verify-treeshaking.js` may fail.",
           "sources": [
             "packages/runtime-core/src/apiCreateApp.ts#L310-L326",
             "packages/runtime-core/src/renderer.ts#L471-L485",
@@ -15414,7 +15414,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Versions across all packages are lockstepped at the root version (3.5.43) and rewritten by `scripts/release.js`, which reads and patches each package.json — do not bump a package version by hand.",
+          "claim": "Versions across all packages are lockstepped at the root version (3.5.43) and rewritten by `scripts/release.js`, which reads and patches each package.json \u2014 do not bump a package version by hand.",
           "sources": [
             "package.json#L3",
             "scripts/release.js#L75-L90",
@@ -15424,11 +15424,11 @@
         }
       ]
     },
-    "agent_prompt": "You are working in vuejs/core, the Vue 3 monorepo (v3.5.43, pnpm workspace, TypeScript, Node >= 20). Read this before editing.\n\nLAYOUT. `packages/*` holds the published packages; `packages-private/*` holds dev tools and type tests. The dependency graph is one-directional: `@vue/shared` sits under everything; the compiler side is compiler-core → compiler-dom → {compiler-sfc, compiler-ssr}; the runtime side is reactivity → runtime-core → {runtime-dom, server-renderer, runtime-test}; the `vue` package is the full build combining compiler-dom + runtime-dom. Compiler packages must never import runtime code or vice versa — shared logic goes to `@vue/shared`. Cross-package imports always use the package name (`import { h } from '@vue/runtime-core'`), never relative paths; resolution comes from `tsconfig.json` paths, `scripts/aliases.js` (shared by Vitest and Rollup), and pnpm links.\n\nKEY FILES. `packages/runtime-core/src/renderer.ts` (2670 lines — `baseCreateRenderer`, `patch`, `mountComponent`, `setupRenderEffect`, `patchKeyedChildren`, the `internals` object shared with Teleport/Suspense/KeepAlive). `packages/runtime-core/src/component.ts` (`setupComponent`, `setupStatefulComponent`, `finishComponentSetup`, `registerRuntimeCompiler`). `packages/runtime-core/src/scheduler.ts` (id-ordered `queueJob`, microtask `flushJobs`, post-flush queue). `packages/reactivity/src/{effect,dep,ref,reactive}.ts` (linked-list dep tracking, `activeSub`, `globalVersion`). `packages/compiler-core/src/compile.ts` (`baseCompile` = parse → transform → generate; the transform preset order matters). `packages/compiler-sfc/src/compileScript.ts` and `script/resolveType.ts` (`<script setup>` macros and type-only props resolution, which reads files from disk). `packages/runtime-dom/src/index.ts` (`createApp`, `createSSRApp`, `ensureRenderer`).\n\nFLAGS. Everything optional is a compile-time constant replaced by Rollup: `__DEV__`, `__BROWSER__`, `__TEST__`, `__SSR__`, `__GLOBAL__`, `__ESM_BUNDLER__`, `__FEATURE_OPTIONS_API__`, `__FEATURE_SUSPENSE__`, `__FEATURE_PROD_DEVTOOLS__`, `__COMPAT__`. Guard dev-only and optional code with these or it will not tree-shake; `scripts/verify-treeshaking.js` runs in CI.\n\nSTYLE CONSTRAINTS (enforced by eslint.config.js, output target ES2016). No object rest/spread — use `extend` from `@vue/shared`. No `await`, no optional chaining, no `const enum`. `no-restricted-globals` is directory-scoped: DOM globals only in vue/vue-compat/runtime-dom/shared, Node builtins only in compiler-sfc/compiler-ssr/server-renderer/scripts. `isolatedDeclarations: true` means exported values need explicit type annotations.\n\nTESTING. Vitest, tests collocated in `__tests__` per package. Projects: unit, unit-gc, unit-jsdom, e2e (jsdom), e2e-browser (Chromium). Use the custom matchers `toHaveBeenWarned`, `toHaveBeenWarnedLast`, `toHaveBeenWarnedTimes` from `scripts/setup-vitest.ts` to assert dev warnings. `.only`/`.skip` are lint errors. Type behaviour is tested separately in `packages-private/dts-test` via `pnpm test-dts`.\n\nBEFORE OPENING A PR, run: `pnpm test-unit`, `pnpm test-e2e`, `pnpm lint`, `pnpm format-check`, `pnpm check`, `pnpm test-dts` — this mirrors `.github/workflows/test.yml`. Pair every runtime fix with a regression test. Commit messages must match the conventional-commit regex in `scripts/verify-commit.js` (type list is fixed, subject ≤ 50 chars); the pre-commit hook also runs a full `tsc --noEmit`.\n\nDO NOT: edit `dist/` or generated `.d.ts`, bump package versions by hand (release.js locksteps them), add a relative cross-package import, or add a runtime import to a compiler package. For interactive debugging use `nr dev-compiler` (template explorer) or `nr dev-sfc` (playground)."
+    "agent_prompt": "You are working in vuejs/core, the Vue 3 monorepo (v3.5.43, pnpm workspace, TypeScript, Node >= 20). Read this before editing.\n\nLAYOUT. `packages/*` holds the published packages; `packages-private/*` holds dev tools and type tests. The dependency graph is one-directional: `@vue/shared` sits under everything; the compiler side is compiler-core \u2192 compiler-dom \u2192 {compiler-sfc, compiler-ssr}; the runtime side is reactivity \u2192 runtime-core \u2192 {runtime-dom, server-renderer, runtime-test}; the `vue` package is the full build combining compiler-dom + runtime-dom. Compiler packages must never import runtime code or vice versa \u2014 shared logic goes to `@vue/shared`. Cross-package imports always use the package name (`import { h } from '@vue/runtime-core'`), never relative paths; resolution comes from `tsconfig.json` paths, `scripts/aliases.js` (shared by Vitest and Rollup), and pnpm links.\n\nKEY FILES. `packages/runtime-core/src/renderer.ts` (2670 lines \u2014 `baseCreateRenderer`, `patch`, `mountComponent`, `setupRenderEffect`, `patchKeyedChildren`, the `internals` object shared with Teleport/Suspense/KeepAlive). `packages/runtime-core/src/component.ts` (`setupComponent`, `setupStatefulComponent`, `finishComponentSetup`, `registerRuntimeCompiler`). `packages/runtime-core/src/scheduler.ts` (id-ordered `queueJob`, microtask `flushJobs`, post-flush queue). `packages/reactivity/src/{effect,dep,ref,reactive}.ts` (linked-list dep tracking, `activeSub`, `globalVersion`). `packages/compiler-core/src/compile.ts` (`baseCompile` = parse \u2192 transform \u2192 generate; the transform preset order matters). `packages/compiler-sfc/src/compileScript.ts` and `script/resolveType.ts` (`<script setup>` macros and type-only props resolution, which reads files from disk). `packages/runtime-dom/src/index.ts` (`createApp`, `createSSRApp`, `ensureRenderer`).\n\nFLAGS. Everything optional is a compile-time constant replaced by Rollup: `__DEV__`, `__BROWSER__`, `__TEST__`, `__SSR__`, `__GLOBAL__`, `__ESM_BUNDLER__`, `__FEATURE_OPTIONS_API__`, `__FEATURE_SUSPENSE__`, `__FEATURE_PROD_DEVTOOLS__`, `__COMPAT__`. Guard dev-only and optional code with these or it will not tree-shake; `scripts/verify-treeshaking.js` runs in CI.\n\nSTYLE CONSTRAINTS (enforced by eslint.config.js, output target ES2016). No object rest/spread \u2014 use `extend` from `@vue/shared`. No `await`, no optional chaining, no `const enum`. `no-restricted-globals` is directory-scoped: DOM globals only in vue/vue-compat/runtime-dom/shared, Node builtins only in compiler-sfc/compiler-ssr/server-renderer/scripts. `isolatedDeclarations: true` means exported values need explicit type annotations.\n\nTESTING. Vitest, tests collocated in `__tests__` per package. Projects: unit, unit-gc, unit-jsdom, e2e (jsdom), e2e-browser (Chromium). Use the custom matchers `toHaveBeenWarned`, `toHaveBeenWarnedLast`, `toHaveBeenWarnedTimes` from `scripts/setup-vitest.ts` to assert dev warnings. `.only`/`.skip` are lint errors. Type behaviour is tested separately in `packages-private/dts-test` via `pnpm test-dts`.\n\nBEFORE OPENING A PR, run: `pnpm test-unit`, `pnpm test-e2e`, `pnpm lint`, `pnpm format-check`, `pnpm check`, `pnpm test-dts` \u2014 this mirrors `.github/workflows/test.yml`. Pair every runtime fix with a regression test. Commit messages must match the conventional-commit regex in `scripts/verify-commit.js` (type list is fixed, subject \u2264 50 chars); the pre-commit hook also runs a full `tsc --noEmit`.\n\nDO NOT: edit `dist/` or generated `.d.ts`, bump package versions by hand (release.js locksteps them), add a relative cross-package import, or add a runtime import to a compiler package. For interactive debugging use `nr dev-compiler` (template explorer) or `nr dev-sfc` (playground)."
   },
   "analysis": {
     "agent": "claude",
-    "model": "cli:claude",
+    "model": "claude-opus-5",
     "runtime_ms": 436157,
     "cost_usd": 3.0303655,
     "collected_at": "2026-09-22T09:22:21.261Z"

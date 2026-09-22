@@ -941,7 +941,7 @@
         {
           "path": "README.md",
           "bytes": 41882,
-          "preview": "# Node.js\n\nNode.js is an open-source, cross-platform JavaScript runtime environment.\n\nFor information on using Node.js, see the [Node.js website][].\n\nThe Node.js project uses an [open governance model](./GOVERNANCE.md). The\n[OpenJS Foundation][] provides support for the project.\n\nContributors are expected to act in a collaborative manner to move\nthe project forward. We encourage the constructive exchange of contrary\nopinions and compromise. The [TSC](./GOVERNANCE.md#technical-steering-committee)\nreserves the right to limit or block contributors who repeatedly act in ways\nthat discourage, exhaust, or otherwise negatively affect other participants.\n\n**This project has a [Code of Conduct][].**\n\n## Table of contents\n\n* [Support](#support)\n* [Release types](#release-types)\n  * [Download](#download)\n    * [Current and LTS releases](#current-and-lts-releases)\n    * [Nightly releases](#nightly-releases)\n    * [API documentation](#api-documentation)\n  * [Verifying binaries](#verifying-binaries)\n* [Building Node.js](#building-nodejs)\n* [Security](#security)\n* [Contributing to Node.js](#contributing-to-nodejs)\n* [Current project team members](#current-project-team-members)\n  * [TSC (Technical Steering Committee)](#tsc-technical-steering-committee)\n  * [Collaborators](#collaborators)\n  * [Triagers](#triagers)\n  * [Release keys](#release-keys)\n* [License](#license)\n\n## Support\n\nLooking for help? Check out the\n[instructions for getting support](.github/SUPPORT.md).\n\n## Release types\n\n* **Current**: Under active development. Code for the Current release is in the\n  branch for its major version number (for example,\n  [v22.x](https://github.com/nodejs/node/tree/v22.x)). Node.js releases a new\n  major version every 6 months, allowing for breaking changes. This happens in\n  April and October every year. Releases appearing each October have a support\n  life of 8 months. Releases appearing each April convert to LTS (see below)\n  each October.\n* **LTS**: Releases that receive Long Term Support, with a focus on stability\n  and security. Every even-numbered major version will become an LTS release.\n  LTS releases receive 12 months of _Active LTS_ support and a further 18 months\n  of _Maintenance_. LTS release lines have alphabetically-ordered code names,\n  beginning with v4 Argon. There are no breaking changes or feature additions,\n  except in some special circumstances.\n* **Nightly**: Code from the Current branch built every 24-hours when there are\n  changes. Use with caution.\n\nCurrent and LTS releases follow [semantic versioning](https://semver.org). A\nmember of the Release Team [signs](#release-keys) each Current and LTS release.\nFor more information, see the\n[Release README](https://github.com/nodejs/Release#readme).\n\n### Download\n\nBinaries, installers, and source tarballs are available at\n<https://nodejs.org/en/download/>.\n\n#### Current and LTS releases\n\n<https://nodejs.org/download/release/>\n\nThe [latest](https://nodejs.org/download/release/latest/) directory is an\nalias for the latest Current release. The latest-_codename_ directory is an\nalias for the latest release from an LTS line. For example, the\n[latest-hydrogen](https://nodejs.org/download/release/latest-hydrogen/)\ndirectory contains the latest Hydrogen (Node.js 18) release.\n\n#### Nightly releases\n\n<https://nodejs.org/download/nightly/>\n\nEach directory and filename includes the version (e.g., `v22.0.0`),\nfollowed by the UTC date (e.g., `20240424` for April 24, 2024),\nand the short commit SHA of the HEAD of the release (e.g., `ddd0a9e494`).\nFor instance, a full directory name might look like `v22.0.0-nightly20240424ddd0a9e494`.\n\n#### API documentation\n\nDocumentation for the latest Current release is at <https://nodejs.org/api/>.\nVersion-specific documentation is available in each release directory in the\n_docs_ subdirectory. Version-specific documentation is also at\n<https://nodejs.org/download/docs/>.\n\n### Verifying binaries\n\nDownload directories contain a `SHASUMS256.txt.asc` file with SHA checksums for the\nfiles and the releaser PGP signature.\n\nYou can get a trusted keyring from nodejs/release-keys, e.g. using `curl`:\n\n```bash\ncurl -fsLo \"/path/to/nodejs-keyring.kbx\" \"https://github.com/nodejs/release-keys/raw/HEAD/gpg/pubring.kbx\"\n```\n\nAlternatively, you can import the releaser keys in your default keyring, see\n[Release keys](#release-keys) for commands on how to do that.\n\nThen, you can verify the files you've downloaded locally\n(if you're using your default keyring, pass `--keyring=\"${GNUPGHOME:-~/.gnupg}/pubring.kbx\"`):\n\n```bash\ncurl -fsO \"https://nodejs.org/dist/${VERSION}/SHASUMS256.txt.asc\" \\\n&& gpgv --keyring=\"/path/to/nodejs-keyring.kbx\" --output SHASUMS256.txt < SHASUMS256.txt.asc \\\n&& shasum --check SHASUMS256.txt --ignore-missing\n```\n\n## Building Node.js\n\nSee [BUILDING.md](BUILDING.md) for instructions on how to build Node.js from\nsource and a list of supported platforms.\n\n## Security\n\nFor information on reporting security vulnerabilities in Node.js, see\n[SECURITY.md](./SECURITY.md).\n\n## Contributing to Node.js\n\n* [Contributing to the project][]\n* [Working Groups][]\n* [Strategic initiatives][]\n* [Technical values and prioritization][]\n\n## Current project team members\n\nFor information about the governance of the Node.js project, see\n[GOVERNANCE.md](./GOVERNANCE.md).\n\n<!-- node-core-utils and find-inactive-tsc.mjs depend on the format of the TSC\n     list. If the format changes, those utilities need to be tested and\n     updated. -->\n\n### TSC (Technical Steering Committee)\n\n#### TSC voting members\n\n<!--lint disable prohibited-strings-->\n\n* [aduh95](https://github.com/aduh95) -\n  **Antoine du Hamel** <<duhamelantoine1995@gmail.com>> (he/him)\n* [anonrig](https://github.com/anonrig) -\n  **Yagiz Nizipli** <<yagiz@nizipli.com>> (he/him)\n* [benjamingr](https://github.com/benjamingr) -\n  **Benjamin Gruenbaum** <<benjamingr@gmail.com>>\n* [BridgeAR](https://github.com/BridgeAR) -\n  **Ruben Bridgewater** <<ruben@bridgewater.de>> (he/him)\n* [gireeshpunathil](https://github.com/gireeshpunathil) -\n  **Gireesh Punathil** <<gpunathi@in.ibm.com>> (he/him)\n* [jasnell](https://github.com/jasnell) -\n  **James M Snell** <<jasnell@gmail.com>> (he/him)\n* [joyeecheung](https://github.com/joyeecheung) -\n  **Joyee Cheung** <<joyeec9h3@gmail.com>> (she/her)\n* [legendecas](https://github.com/legendecas) -\n  **Chengzhong Wu** <<legendecas@gmail.com>> (he/him)\n* [marco-ippolito](https://github.com/marco-ippolito) -\n  **Marco Ippolito** <<marcoippolito54@gmail.com>> (he/him)\n* [mcollina](https://github.com/mcollina) -\n  **Matteo Collina** <<matteo.collina@gmail.com>> (he/him)\n* [panva](https://github.com/panva) -\n  **Filip Skokan** <<panva.ip@gmail.com>> (he/him)\n* [RafaelGSS](https://github.com/RafaelGSS) -\n  **Rafael Gonzaga** <<rafael.nunu@hotmail.com>> (he/him)\n* [RaisinTen](https://github.com/RaisinTen) -\n  **Darshan Sen** <<raisinten@gmail.com>> (he/him)\n* [richardlau](https://github.com/richardlau) -\n  **Richard Lau** <<richard.lau@ibm.com>>\n* [ronag](https://github.com/ronag) -\n  **Robert Nagy** <<ronagy@icloud.com>>\n* [ruyadorno](https://github.com/ruyadorno) -\n  **Ruy Adorno** <<ruy@vlt.sh>> (he/him)\n* [ShogunPanda](https://github.com/ShogunPanda) -\n  **Paolo Insogna** <<paolo@cowtech.it>> (he/him)\n* [tniessen](https://github.com/tniessen) -\n  **Tobias Nießen** <<tniessen@tnie.de>> (he/him)\n\n#### TSC regular members\n\n* [BethGriggs](https://github.com/BethGriggs) -\n  **Beth Griggs** <<bethanyngriggs@gmail.com>> (she/her)\n* [bnoordhuis](https://github.com/bnoordhuis) -\n  **Ben Noordhuis** <<info@bnoordhuis.nl>>\n* [cjihrig](https://github.com/cjihrig) -\n  **Colin Ihrig** <<cjihrig@gmail.com>> (he/him)\n* [codebytere](https://github.com/codebytere) -\n  **Shelley Vohr** <<shelley.vohr@gmail.com>> (she/her)\n* [GeoffreyBooth](https://github.com/GeoffreyBooth) -\n  **Geoffrey Booth** <<webadmin@geoffreybooth.com>> (he/him)\n* [MoLow](https://github.com/MoLow) -\n  **Moshe Atlow** <<moshe@atlow.co.il>> (he/him)\n* [Trott](https://github.com/Trott) -\n  **Rich Trott** <<rtrott@gmail.com>> (he/him)\n\n<details>\n\n<summary>TSC emeriti members</summary>\n\n#### TSC emeriti members\n\n* [addaleax](https://github.com/addaleax) -\n  "
+          "preview": "# Node.js\n\nNode.js is an open-source, cross-platform JavaScript runtime environment.\n\nFor information on using Node.js, see the [Node.js website][].\n\nThe Node.js project uses an [open governance model](./GOVERNANCE.md). The\n[OpenJS Foundation][] provides support for the project.\n\nContributors are expected to act in a collaborative manner to move\nthe project forward. We encourage the constructive exchange of contrary\nopinions and compromise. The [TSC](./GOVERNANCE.md#technical-steering-committee)\nreserves the right to limit or block contributors who repeatedly act in ways\nthat discourage, exhaust, or otherwise negatively affect other participants.\n\n**This project has a [Code of Conduct][].**\n\n## Table of contents\n\n* [Support](#support)\n* [Release types](#release-types)\n  * [Download](#download)\n    * [Current and LTS releases](#current-and-lts-releases)\n    * [Nightly releases](#nightly-releases)\n    * [API documentation](#api-documentation)\n  * [Verifying binaries](#verifying-binaries)\n* [Building Node.js](#building-nodejs)\n* [Security](#security)\n* [Contributing to Node.js](#contributing-to-nodejs)\n* [Current project team members](#current-project-team-members)\n  * [TSC (Technical Steering Committee)](#tsc-technical-steering-committee)\n  * [Collaborators](#collaborators)\n  * [Triagers](#triagers)\n  * [Release keys](#release-keys)\n* [License](#license)\n\n## Support\n\nLooking for help? Check out the\n[instructions for getting support](.github/SUPPORT.md).\n\n## Release types\n\n* **Current**: Under active development. Code for the Current release is in the\n  branch for its major version number (for example,\n  [v22.x](https://github.com/nodejs/node/tree/v22.x)). Node.js releases a new\n  major version every 6 months, allowing for breaking changes. This happens in\n  April and October every year. Releases appearing each October have a support\n  life of 8 months. Releases appearing each April convert to LTS (see below)\n  each October.\n* **LTS**: Releases that receive Long Term Support, with a focus on stability\n  and security. Every even-numbered major version will become an LTS release.\n  LTS releases receive 12 months of _Active LTS_ support and a further 18 months\n  of _Maintenance_. LTS release lines have alphabetically-ordered code names,\n  beginning with v4 Argon. There are no breaking changes or feature additions,\n  except in some special circumstances.\n* **Nightly**: Code from the Current branch built every 24-hours when there are\n  changes. Use with caution.\n\nCurrent and LTS releases follow [semantic versioning](https://semver.org). A\nmember of the Release Team [signs](#release-keys) each Current and LTS release.\nFor more information, see the\n[Release README](https://github.com/nodejs/Release#readme).\n\n### Download\n\nBinaries, installers, and source tarballs are available at\n<https://nodejs.org/en/download/>.\n\n#### Current and LTS releases\n\n<https://nodejs.org/download/release/>\n\nThe [latest](https://nodejs.org/download/release/latest/) directory is an\nalias for the latest Current release. The latest-_codename_ directory is an\nalias for the latest release from an LTS line. For example, the\n[latest-hydrogen](https://nodejs.org/download/release/latest-hydrogen/)\ndirectory contains the latest Hydrogen (Node.js 18) release.\n\n#### Nightly releases\n\n<https://nodejs.org/download/nightly/>\n\nEach directory and filename includes the version (e.g., `v22.0.0`),\nfollowed by the UTC date (e.g., `20240424` for April 24, 2024),\nand the short commit SHA of the HEAD of the release (e.g., `ddd0a9e494`).\nFor instance, a full directory name might look like `v22.0.0-nightly20240424ddd0a9e494`.\n\n#### API documentation\n\nDocumentation for the latest Current release is at <https://nodejs.org/api/>.\nVersion-specific documentation is available in each release directory in the\n_docs_ subdirectory. Version-specific documentation is also at\n<https://nodejs.org/download/docs/>.\n\n### Verifying binaries\n\nDownload directories contain a `SHASUMS256.txt.asc` file with SHA checksums for the\nfiles and the releaser PGP signature.\n\nYou can get a trusted keyring from nodejs/release-keys, e.g. using `curl`:\n\n```bash\ncurl -fsLo \"/path/to/nodejs-keyring.kbx\" \"https://github.com/nodejs/release-keys/raw/HEAD/gpg/pubring.kbx\"\n```\n\nAlternatively, you can import the releaser keys in your default keyring, see\n[Release keys](#release-keys) for commands on how to do that.\n\nThen, you can verify the files you've downloaded locally\n(if you're using your default keyring, pass `--keyring=\"${GNUPGHOME:-~/.gnupg}/pubring.kbx\"`):\n\n```bash\ncurl -fsO \"https://nodejs.org/dist/${VERSION}/SHASUMS256.txt.asc\" \\\n&& gpgv --keyring=\"/path/to/nodejs-keyring.kbx\" --output SHASUMS256.txt < SHASUMS256.txt.asc \\\n&& shasum --check SHASUMS256.txt --ignore-missing\n```\n\n## Building Node.js\n\nSee [BUILDING.md](BUILDING.md) for instructions on how to build Node.js from\nsource and a list of supported platforms.\n\n## Security\n\nFor information on reporting security vulnerabilities in Node.js, see\n[SECURITY.md](./SECURITY.md).\n\n## Contributing to Node.js\n\n* [Contributing to the project][]\n* [Working Groups][]\n* [Strategic initiatives][]\n* [Technical values and prioritization][]\n\n## Current project team members\n\nFor information about the governance of the Node.js project, see\n[GOVERNANCE.md](./GOVERNANCE.md).\n\n<!-- node-core-utils and find-inactive-tsc.mjs depend on the format of the TSC\n     list. If the format changes, those utilities need to be tested and\n     updated. -->\n\n### TSC (Technical Steering Committee)\n\n#### TSC voting members\n\n<!--lint disable prohibited-strings-->\n\n* [aduh95](https://github.com/aduh95) -\n  **Antoine du Hamel** <<duhamelantoine1995@gmail.com>> (he/him)\n* [anonrig](https://github.com/anonrig) -\n  **Yagiz Nizipli** <<yagiz@nizipli.com>> (he/him)\n* [benjamingr](https://github.com/benjamingr) -\n  **Benjamin Gruenbaum** <<benjamingr@gmail.com>>\n* [BridgeAR](https://github.com/BridgeAR) -\n  **Ruben Bridgewater** <<ruben@bridgewater.de>> (he/him)\n* [gireeshpunathil](https://github.com/gireeshpunathil) -\n  **Gireesh Punathil** <<gpunathi@in.ibm.com>> (he/him)\n* [jasnell](https://github.com/jasnell) -\n  **James M Snell** <<jasnell@gmail.com>> (he/him)\n* [joyeecheung](https://github.com/joyeecheung) -\n  **Joyee Cheung** <<joyeec9h3@gmail.com>> (she/her)\n* [legendecas](https://github.com/legendecas) -\n  **Chengzhong Wu** <<legendecas@gmail.com>> (he/him)\n* [marco-ippolito](https://github.com/marco-ippolito) -\n  **Marco Ippolito** <<marcoippolito54@gmail.com>> (he/him)\n* [mcollina](https://github.com/mcollina) -\n  **Matteo Collina** <<matteo.collina@gmail.com>> (he/him)\n* [panva](https://github.com/panva) -\n  **Filip Skokan** <<panva.ip@gmail.com>> (he/him)\n* [RafaelGSS](https://github.com/RafaelGSS) -\n  **Rafael Gonzaga** <<rafael.nunu@hotmail.com>> (he/him)\n* [RaisinTen](https://github.com/RaisinTen) -\n  **Darshan Sen** <<raisinten@gmail.com>> (he/him)\n* [richardlau](https://github.com/richardlau) -\n  **Richard Lau** <<richard.lau@ibm.com>>\n* [ronag](https://github.com/ronag) -\n  **Robert Nagy** <<ronagy@icloud.com>>\n* [ruyadorno](https://github.com/ruyadorno) -\n  **Ruy Adorno** <<ruy@vlt.sh>> (he/him)\n* [ShogunPanda](https://github.com/ShogunPanda) -\n  **Paolo Insogna** <<paolo@cowtech.it>> (he/him)\n* [tniessen](https://github.com/tniessen) -\n  **Tobias Nie\u00dfen** <<tniessen@tnie.de>> (he/him)\n\n#### TSC regular members\n\n* [BethGriggs](https://github.com/BethGriggs) -\n  **Beth Griggs** <<bethanyngriggs@gmail.com>> (she/her)\n* [bnoordhuis](https://github.com/bnoordhuis) -\n  **Ben Noordhuis** <<info@bnoordhuis.nl>>\n* [cjihrig](https://github.com/cjihrig) -\n  **Colin Ihrig** <<cjihrig@gmail.com>> (he/him)\n* [codebytere](https://github.com/codebytere) -\n  **Shelley Vohr** <<shelley.vohr@gmail.com>> (she/her)\n* [GeoffreyBooth](https://github.com/GeoffreyBooth) -\n  **Geoffrey Booth** <<webadmin@geoffreybooth.com>> (he/him)\n* [MoLow](https://github.com/MoLow) -\n  **Moshe Atlow** <<moshe@atlow.co.il>> (he/him)\n* [Trott](https://github.com/Trott) -\n  **Rich Trott** <<rtrott@gmail.com>> (he/him)\n\n<details>\n\n<summary>TSC emeriti members</summary>\n\n#### TSC emeriti members\n\n* [addaleax](https://github.com/addaleax) -\n  "
         }
       ],
       "config_files": [
@@ -15671,7 +15671,7 @@
         "steps": [
           {
             "id": "serialize",
-            "label": "JSON serialize (inventory → SQLite)",
+            "label": "JSON serialize (inventory \u2192 SQLite)",
             "ms": 1,
             "pct": 33.33333333333333
           },
@@ -15692,9 +15692,9 @@
     ]
   },
   "report": {
-    "overview": "This is the Node.js runtime itself at v26.10.0 — a C++/V8 host (src/, ~495 files) wrapping a JavaScript standard library (lib/, ~429 files) that is compiled into a V8 startup snapshot at build time. Beyond upstream-familiar surface, this tree carries several large experimental subsystems wired through the same plumbing: a `node:vfs` virtual file system that intercepts `node:fs` and the module loaders at reserved mount points under `os.devNull/vfs/<id>`, a `node:ffi` libffi-backed foreign function interface gated by a `kFFI` permission scope, a `node:dtls` endpoint/session stack, a `node --experimental-bench` benchmark runner mirroring the test runner, and a vendored Rust crate set (`deps/crates`, temporal_rs + ICU) linked as a staticlib. The audience is Node core collaborators; the distinctive engineering property is that every new capability is a triple — a CLI option in `src/node_options.cc`, a `setupX()` in `pre_execution.js` that calls `BuiltinModule.allowRequireByUsers()`, and an internal binding registered in `src/node_binding.h`.",
+    "overview": "This is the Node.js runtime itself at v26.10.0 \u2014 a C++/V8 host (src/, ~495 files) wrapping a JavaScript standard library (lib/, ~429 files) that is compiled into a V8 startup snapshot at build time. Beyond upstream-familiar surface, this tree carries several large experimental subsystems wired through the same plumbing: a `node:vfs` virtual file system that intercepts `node:fs` and the module loaders at reserved mount points under `os.devNull/vfs/<id>`, a `node:ffi` libffi-backed foreign function interface gated by a `kFFI` permission scope, a `node:dtls` endpoint/session stack, a `node --experimental-bench` benchmark runner mirroring the test runner, and a vendored Rust crate set (`deps/crates`, temporal_rs + ICU) linked as a staticlib. The audience is Node core collaborators; the distinctive engineering property is that every new capability is a triple \u2014 a CLI option in `src/node_options.cc`, a `setupX()` in `pre_execution.js` that calls `BuiltinModule.allowRequireByUsers()`, and an internal binding registered in `src/node_binding.h`.",
     "system_map": {
-      "summary": "Execution begins in `src/node_main.cc` (`main`/`wmain`) which calls `node::Start`, which after SEA argv fixup loads the V8 startup snapshot and runs a `NodeMainInstance`. C++ then picks exactly one main script from `lib/internal/main/` via a linear dispatch in `src/node.cc`; that script calls into `lib/internal/process/pre_execution.js` to configure the realm before user code. The JS layer talks to C++ only through `internalBinding()`, whose registry is the `NODE_BUILTIN_*_BINDINGS` macro list in `src/node_binding.h`. Build is GYP/Make (`configure.py` → `node.gyp` → `Makefile`) with a secondary GN path, plus Cargo for `deps/crates`. There is no deployment target in the usual sense: the artifact is the `node` binary, optionally repackaged as a single executable application by `src/node_sea.cc`.",
+      "summary": "Execution begins in `src/node_main.cc` (`main`/`wmain`) which calls `node::Start`, which after SEA argv fixup loads the V8 startup snapshot and runs a `NodeMainInstance`. C++ then picks exactly one main script from `lib/internal/main/` via a linear dispatch in `src/node.cc`; that script calls into `lib/internal/process/pre_execution.js` to configure the realm before user code. The JS layer talks to C++ only through `internalBinding()`, whose registry is the `NODE_BUILTIN_*_BINDINGS` macro list in `src/node_binding.h`. Build is GYP/Make (`configure.py` \u2192 `node.gyp` \u2192 `Makefile`) with a secondary GN path, plus Cargo for `deps/crates`. There is no deployment target in the usual sense: the artifact is the `node` binary, optionally repackaged as a single executable application by `src/node_sea.cc`.",
       "claims": [
         {
           "claim": "The process entrypoint is `main()` (POSIX) / `wmain()` (Windows, which UTF-8-converts wide argv and refuses pre-Windows-10 unless `NODE_SKIP_PLATFORM_CHECK=1`), both delegating to `node::Start`.",
@@ -15711,7 +15711,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "C++ selects the JS main script by an ordered if-chain in `src/node.cc`: worker_thread → inspect → print_help → prof_process → eval_string → check_syntax → bench_runner → test_runner → watch_mode → run_main_module → repl → eval_stdin. Adding a new run mode means adding a branch here plus a file in `lib/internal/main/`.",
+          "claim": "C++ selects the JS main script by an ordered if-chain in `src/node.cc`: worker_thread \u2192 inspect \u2192 print_help \u2192 prof_process \u2192 eval_string \u2192 check_syntax \u2192 bench_runner \u2192 test_runner \u2192 watch_mode \u2192 run_main_module \u2192 repl \u2192 eval_stdin. Adding a new run mode means adding a branch here plus a file in `lib/internal/main/`.",
           "sources": [
             "src/node.cc#L351-413",
             "lib/internal/main"
@@ -15719,14 +15719,14 @@
           "kind": "evidence"
         },
         {
-          "claim": "The JS↔C++ boundary is the `internalBinding()` registry declared by macro lists in `src/node_binding.h`; optional subsystems are compiled in conditionally — `quic` behind `HAVE_OPENSSL && OPENSSL_NO_QUIC != 1`, `dtls` behind `HAVE_OPENSSL && HAVE_DTLS`, `sqlite`/`webstorage` behind `HAVE_SQLITE`, `ffi` behind `HAVE_FFI`.",
+          "claim": "The JS\u2194C++ boundary is the `internalBinding()` registry declared by macro lists in `src/node_binding.h`; optional subsystems are compiled in conditionally \u2014 `quic` behind `HAVE_OPENSSL && OPENSSL_NO_QUIC != 1`, `dtls` behind `HAVE_OPENSSL && HAVE_DTLS`, `sqlite`/`webstorage` behind `HAVE_SQLITE`, `ffi` behind `HAVE_FFI`.",
           "sources": [
             "src/node_binding.h#L28-81"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "`lib/internal/bootstrap/node.js` is executed by `Realm::BootstrapRealm()` and is normally *not* run at startup — its resulting V8 heap is captured into the build-time snapshot by `SnapshotBuilder::Generate()`; `--no-node-snapshot` forces real execution. It must stay synchronous and must not read argv or env at top level.",
+          "claim": "`lib/internal/bootstrap/node.js` is executed by `Realm::BootstrapRealm()` and is normally *not* run at startup \u2014 its resulting V8 heap is captured into the build-time snapshot by `SnapshotBuilder::Generate()`; `--no-node-snapshot` forces real execution. It must stay synchronous and must not read argv or env at top level.",
           "sources": [
             "lib/internal/bootstrap/node.js#L1-48",
             "src/node_snapshotable.cc"
@@ -15775,7 +15775,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "`configure.py` owns feature toggles that become gyp variables — `--shared-ffi`/`--without-ffi` set `node_use_ffi`, and `--v8-enable-temporal-support` gates the Rust temporal path; `node.gyp` defaults `node_use_ffi%` to `false` and only pulls in `deps/libffi/libffi.gyp:libffi` when it is true.",
+          "claim": "`configure.py` owns feature toggles that become gyp variables \u2014 `--shared-ffi`/`--without-ffi` set `node_use_ffi`, and `--v8-enable-temporal-support` gates the Rust temporal path; `node.gyp` defaults `node_use_ffi%` to `false` and only pulls in `deps/libffi/libffi.gyp:libffi` when it is true.",
           "sources": [
             "configure.py#L771-788",
             "configure.py#L2435-2444",
@@ -15811,7 +15811,7 @@
       ]
     },
     "feature_catalog": {
-      "summary": "User-facing surface is the CLI plus the `node:*` builtin module set. The CLI's 'subcommands' are really the run-mode branches in `src/node.cc` — `node inspect`, `node --test`, `node --experimental-bench`, `node --watch`, `node -e`, `node --check`, `node --prof-process`, `node --build-snapshot`, `node --build-sea`, and the default script/REPL/stdin paths. Module features are individually flag-gated and only become requirable when a `setupX()` in `pre_execution.js` calls `BuiltinModule.allowRequireByUsers()`. This tree's notable additions over a stock runtime are `node:vfs`, `node:ffi`, `node:dtls`, `node:bench`, `node:quic`, `node:sqlite` with virtual tables, and `stream/iter`/`zlib/iter`.",
+      "summary": "User-facing surface is the CLI plus the `node:*` builtin module set. The CLI's 'subcommands' are really the run-mode branches in `src/node.cc` \u2014 `node inspect`, `node --test`, `node --experimental-bench`, `node --watch`, `node -e`, `node --check`, `node --prof-process`, `node --build-snapshot`, `node --build-sea`, and the default script/REPL/stdin paths. Module features are individually flag-gated and only become requirable when a `setupX()` in `pre_execution.js` calls `BuiltinModule.allowRequireByUsers()`. This tree's notable additions over a stock runtime are `node:vfs`, `node:ffi`, `node:dtls`, `node:bench`, `node:quic`, `node:sqlite` with virtual tables, and `stream/iter`/`zlib/iter`.",
       "claims": [
         {
           "claim": "`node:vfs` exposes `create()`, `registerProvider()`, and the classes `VirtualFileSystem`, `VirtualProvider`, `MemoryProvider`, `RealFSProvider`, `ZipProvider`; it is `node:`-scheme-only and requires `--experimental-vfs`.",
@@ -15831,7 +15831,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "`node:ffi` provides `DynamicLibrary` plus typed pointer accessors (`getInt8`…`getFloat64`, `setInt8`…, `exportBytes`, `getRawPointer`, `kFastArguments`) and emits an experimental warning at module load.",
+          "claim": "`node:ffi` provides `DynamicLibrary` plus typed pointer accessors (`getInt8`\u2026`getFloat64`, `setInt8`\u2026, `exportBytes`, `getRawPointer`, `kFastArguments`) and emits an experimental warning at module load.",
           "sources": [
             "lib/ffi.js#L38-60",
             "doc/api/ffi.md#L44-52"
@@ -15839,7 +15839,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "`node:bench` mirrors the test runner's API shape — `bench`, `suite`/`describe`, `before`/`after`/`beforeEach`/`afterEach`, `run`, `runFile`, `createRunner` — and is reached from the CLI by `node --experimental-bench`, which routes to `internal/main/bench_runner`.",
+          "claim": "`node:bench` mirrors the test runner's API shape \u2014 `bench`, `suite`/`describe`, `before`/`after`/`beforeEach`/`afterEach`, `run`, `runFile`, `createRunner` \u2014 and is reached from the CLI by `node --experimental-bench`, which routes to `internal/main/bench_runner`.",
           "sources": [
             "lib/bench.js",
             "lib/internal/main/bench_runner.js#L17-31",
@@ -15919,7 +15919,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Documented public API pages exist for every new subsystem — `doc/api/vfs.md`, `ffi.md`, `dtls.md`, `bench.md`, `quic.md`, `stream_iter.md` — so a feature is not considered landed without its doc page.",
+          "claim": "Documented public API pages exist for every new subsystem \u2014 `doc/api/vfs.md`, `ffi.md`, `dtls.md`, `bench.md`, `quic.md`, `stream_iter.md` \u2014 so a feature is not considered landed without its doc page.",
           "sources": [
             "doc/api/vfs.md",
             "doc/api/ffi.md",
@@ -15958,7 +15958,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "`getLayerIdFromPath()` parses the layer id with a hand-rolled digit scan over char codes 47/92 (`/`, `\\`) rather than splitting — a deliberate hot-path optimisation since it runs on candidate fs calls.",
+          "claim": "`getLayerIdFromPath()` parses the layer id with a hand-rolled digit scan over char codes 47/92 (`/`, `\\`) rather than splitting \u2014 a deliberate hot-path optimisation since it runs on candidate fs calls.",
           "sources": [
             "lib/internal/vfs/router.js#L39-61"
           ],
@@ -15995,7 +15995,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Unmounting must invalidate loader state: `cleanForVfsPrefix()` walks `Module._cache`, `Module._pathCache`, `statCache`, `realpathCache`, and the package.json caches, deleting entries under a mount prefix — by value for `_pathCache`, whose keys are `request\\0parent` tokens.",
+          "claim": "Unmounting must invalidate loader state: `cleanForVfsPrefix()` walks `Module._cache`, `Module._pathCache`, `statCache`, `realpathCache`, and the package.json caches, deleting entries under a mount prefix \u2014 by value for `_pathCache`, whose keys are `request\\0parent` tokens.",
           "sources": [
             "lib/internal/modules/helpers.js#L158-200"
           ],
@@ -16016,14 +16016,14 @@
           "kind": "evidence"
         },
         {
-          "claim": "`normalizeReference()` in the JS permission layer canonicalises input across three representations — `URL` (converted with `fileURLToPath` only for `fs.*` scopes), `Uint8Array` (passed through raw so non-UTF-8 paths are not mangled), and validated strings.",
+          "claim": "`normalizeReference()` in the JS permission layer canonicalises input across three representations \u2014 `URL` (converted with `fileURLToPath` only for `fs.*` scopes), `Uint8Array` (passed through raw so non-UTF-8 paths are not mangled), and validated strings.",
           "sources": [
             "lib/internal/process/permission.js#L17-41"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "SEA data flows binary→memory: `WriteSingleExecutableBlob` serialises the asset map with a length-prefixed count, and the reader rebuilds an `unordered_map<string_view, string_view>` pointing into the still-mapped blob rather than copying.",
+          "claim": "SEA data flows binary\u2192memory: `WriteSingleExecutableBlob` serialises the asset map with a length-prefixed count, and the reader rebuilds an `unordered_map<string_view, string_view>` pointing into the still-mapped blob rather than copying.",
           "sources": [
             "src/node_sea.cc#L120-240"
           ],
@@ -16040,10 +16040,10 @@
       ]
     },
     "behavior_traces": {
-      "summary": "Three flows characterise the runtime: cold startup of a script, mounting a VFS and loading an entry point from inside it, and a permission-checked FFI `dlopen`. All three share the same spine — C++ picks a main script, that script calls `prepareExecution()`, and `prepareExecution()` decides what the realm is allowed to do. The VFS trace is the most intricate because mounting is deliberately deferred past `--import` preloads so a preload can register a custom provider. The FFI trace is the clearest example of a two-check security path, where a purely in-memory operation still demands filesystem-write permission for platform-consistency reasons.",
+      "summary": "Three flows characterise the runtime: cold startup of a script, mounting a VFS and loading an entry point from inside it, and a permission-checked FFI `dlopen`. All three share the same spine \u2014 C++ picks a main script, that script calls `prepareExecution()`, and `prepareExecution()` decides what the realm is allowed to do. The VFS trace is the most intricate because mounting is deliberately deferred past `--import` preloads so a preload can register a custom provider. The FFI trace is the clearest example of a two-check security path, where a purely in-memory operation still demands filesystem-write permission for platform-consistency reasons.",
       "claims": [
         {
-          "claim": "Cold start (script): `main()` → `node::Start` → `sea::FixupArgsForSEA` → `StartInternal` → `LoadSnapshotData` → `NodeMainInstance::Run` → C++ `StartExecution` picks `internal/main/run_main_module`.",
+          "claim": "Cold start (script): `main()` \u2192 `node::Start` \u2192 `sea::FixupArgsForSEA` \u2192 `StartInternal` \u2192 `LoadSnapshotData` \u2192 `NodeMainInstance::Run` \u2192 C++ `StartExecution` picks `internal/main/run_main_module`.",
           "sources": [
             "src/node_main.cc#L95-99",
             "src/node.cc#L1716-1735",
@@ -16052,7 +16052,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "`run_main_module.js` then calls `prepareMainThreadExecution(!isEntryURL)` → `markBootstrapComplete()` → `RegExpPrototypeExec(/^/, '')` to reset RegExp statics before user code → `Module.runMain(mainEntry)`.",
+          "claim": "`run_main_module.js` then calls `prepareMainThreadExecution(!isEntryURL)` \u2192 `markBootstrapComplete()` \u2192 `RegExpPrototypeExec(/^/, '')` to reset RegExp statics before user code \u2192 `Module.runMain(mainEntry)`.",
           "sources": [
             "lib/internal/main/run_main_module.js#L13-33"
           ],
@@ -16067,14 +16067,14 @@
           "kind": "evidence"
         },
         {
-          "claim": "Inside `prepareExecution()` the order is fixed: `refreshRuntimeOptions()` → `patchProcessObject()` → trace/inspector/navigator/warning setup → the feature `setupX()` block → `initializeReport()` → `setupDiagnosticsChannel()` → `initializePermission()` → source maps → deprecations → `setupVmModules()` → `initializeModuleLoaders()` → `finishVfsMounts()` → `setupHttpProxy()`.",
+          "claim": "Inside `prepareExecution()` the order is fixed: `refreshRuntimeOptions()` \u2192 `patchProcessObject()` \u2192 trace/inspector/navigator/warning setup \u2192 the feature `setupX()` block \u2192 `initializeReport()` \u2192 `setupDiagnosticsChannel()` \u2192 `initializePermission()` \u2192 source maps \u2192 deprecations \u2192 `setupVmModules()` \u2192 `initializeModuleLoaders()` \u2192 `finishVfsMounts()` \u2192 `setupHttpProxy()`.",
           "sources": [
             "lib/internal/process/pre_execution.js#L109-198"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "Each flag-gated builtin is unlocked by the same three lines — check `getOptionValue('--experimental-X')`, require `BuiltinModule` from `internal/bootstrap/realm`, call `allowRequireByUsers('X')` — repeated verbatim in `setupBench`, `setupFFI`, `setupSQLite`, `setupStreamIter`, `setupDTLS`, `setupQuic`, `setupVfs`.",
+          "claim": "Each flag-gated builtin is unlocked by the same three lines \u2014 check `getOptionValue('--experimental-X')`, require `BuiltinModule` from `internal/bootstrap/realm`, call `allowRequireByUsers('X')` \u2014 repeated verbatim in `setupBench`, `setupFFI`, `setupSQLite`, `setupStreamIter`, `setupDTLS`, `setupQuic`, `setupVfs`.",
           "sources": [
             "lib/internal/process/pre_execution.js#L499-569",
             "lib/internal/bootstrap/realm.js#L275-285"
@@ -16082,7 +16082,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "VFS mount trace: `finishVfsMounts()` guards on `vfsMounted` → reads `--vfs-mount` entries → `path.resolve` + `fs.statSync` each (throwing `ERR_VFS_INVALID_TARGET` on failure or on a non-file/non-dir) → `selectProvider()` → `new VirtualFileSystem(provider)` → `vfs.mount()`.",
+          "claim": "VFS mount trace: `finishVfsMounts()` guards on `vfsMounted` \u2192 reads `--vfs-mount` entries \u2192 `path.resolve` + `fs.statSync` each (throwing `ERR_VFS_INVALID_TARGET` on failure or on a non-file/non-dir) \u2192 `selectProvider()` \u2192 `new VirtualFileSystem(provider)` \u2192 `vfs.mount()`.",
           "sources": [
             "lib/internal/process/pre_execution.js#L259-296",
             "lib/internal/vfs/file_system.js#L179-196"
@@ -16090,7 +16090,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Mounting is called from two places with an idempotence guard: from `prepareExecution()` only when `--import` is empty, otherwise from `run_main` after the `--import` loop — so an `--import` preload can `registerProvider()` before any source's provider is chosen.",
+          "claim": "Mounting is called from two places with an idempotence guard: from `prepareExecution()` only when `--import` is empty, otherwise from `run_main` after the `--import` loop \u2014 so an `--import` preload can `registerProvider()` before any source's provider is chosen.",
           "sources": [
             "lib/internal/process/pre_execution.js#L186-192",
             "lib/internal/modules/run_main.js#L144-152"
@@ -16112,28 +16112,28 @@
           "kind": "evidence"
         },
         {
-          "claim": "`src/node.cc` routes to `run_main_module` when `vfs_load` is set even with no positional argument, instead of falling through to the REPL or stdin-eval — a dedicated branch added for this flag.",
+          "claim": "`src/node.cc` routes to `run_main_module` when `vfs_load` is set even with no positional argument, instead of falling through to the REPL or stdin-eval \u2014 a dedicated branch added for this flag.",
           "sources": [
             "src/node.cc#L400-407"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "FFI trace: `new ffi.DynamicLibrary(path)` → `DynamicLibrary::New` → construct-call check → `THROW_IF_INSUFFICIENT_PERMISSIONS(kFFI)` → null-byte check on the path → optional byte materialisation → `uv_dlopen` → `image.AfterOpen()`.",
+          "claim": "FFI trace: `new ffi.DynamicLibrary(path)` \u2192 `DynamicLibrary::New` \u2192 construct-call check \u2192 `THROW_IF_INSUFFICIENT_PERMISSIONS(kFFI)` \u2192 null-byte check on the path \u2192 optional byte materialisation \u2192 `uv_dlopen` \u2192 `image.AfterOpen()`.",
           "sources": [
             "src/node_ffi.cc#L493-570"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "When an FFI library is supplied as bytes (a library living inside a VFS that `dlopen` cannot reach by path), the code additionally demands `kFileSystemWrite` on `AddonImage::TempDir()` — and comments that the check is enforced even on Linux where an anonymous memfd is used, so grants do not vary by platform.",
+          "claim": "When an FFI library is supplied as bytes (a library living inside a VFS that `dlopen` cannot reach by path), the code additionally demands `kFileSystemWrite` on `AddonImage::TempDir()` \u2014 and comments that the check is enforced even on Linux where an anonymous memfd is used, so grants do not vary by platform.",
           "sources": [
             "src/node_ffi.cc#L533-556"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "`initializePermission()` hardens the realm before granting: it replaces `process.binding` with a thrower, `ObjectFreeze`s the `path` module so it cannot be monkey-patched to defeat path checks, emits `SecurityWarning` codes PERM0001–PERM0007 for each dangerous `--allow-*`, and only then defines `process.permission`.",
+          "claim": "`initializePermission()` hardens the realm before granting: it replaces `process.binding` with a thrower, `ObjectFreeze`s the `path` module so it cannot be monkey-patched to defeat path checks, emits `SecurityWarning` codes PERM0001\u2013PERM0007 for each dangerous `--allow-*`, and only then defines `process.permission`.",
           "sources": [
             "lib/internal/process/permission.js#L1-10",
             "lib/internal/process/pre_execution.js#L815-878"
@@ -16160,7 +16160,7 @@
       ]
     },
     "testing_signals": {
-      "summary": "Testing is dominated by the bespoke Python harness `tools/test.py`, which discovers suites under `test/<suite>/`, applies per-suite `.status` files for SKIP/SLOW/FLAKY expectations, and shells out to the built `node` binary per test file. There is no Vitest/Jest; the stack tag is misleading. Native code is covered by `cctest` (googletest) and the `js-native-api`/`node-api`/`addons` suites, which require a build step before they can run. Coverage is collected by nyc/c8 with `.nycrc` thresholds of 95% lines/statements and 93% branches, uploaded to Codecov from two Linux workflows. The new subsystems are well covered at the JS level — ~121 `test-vfs-*` files in `test/parallel` alone plus a dedicated `test/ffi/` suite — but SEA-specific paths are explicitly excluded from coverage.",
+      "summary": "Testing is dominated by the bespoke Python harness `tools/test.py`, which discovers suites under `test/<suite>/`, applies per-suite `.status` files for SKIP/SLOW/FLAKY expectations, and shells out to the built `node` binary per test file. There is no Vitest/Jest; the stack tag is misleading. Native code is covered by `cctest` (googletest) and the `js-native-api`/`node-api`/`addons` suites, which require a build step before they can run. Coverage is collected by nyc/c8 with `.nycrc` thresholds of 95% lines/statements and 93% branches, uploaded to Codecov from two Linux workflows. The new subsystems are well covered at the JS level \u2014 ~121 `test-vfs-*` files in `test/parallel` alone plus a dedicated `test/ffi/` suite \u2014 but SEA-specific paths are explicitly excluded from coverage.",
       "claims": [
         {
           "claim": "The harness is `tools/test.py`, a Python 3 runner invoked as `./tools/test.py --flaky-tests keep_retrying -p actions -j 4`; suites are directories under `test/` and each may carry a `<section>.status` file read by `ReadConfigurationInto`.",
@@ -16208,7 +16208,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Running the JS suites requires native build steps first: `make jstest` depends on `build-addons build-js-native-api-tests build-node-api-tests build-sqlite-tests build-ffi-tests` — running `tools/test.py` on a clean tree will fail those suites.",
+          "claim": "Running the JS suites requires native build steps first: `make jstest` depends on `build-addons build-js-native-api-tests build-node-api-tests build-sqlite-tests build-ffi-tests` \u2014 running `tools/test.py` on a clean tree will fail those suites.",
           "sources": [
             "Makefile#L323",
             "Makefile#L343-361"
@@ -16247,7 +16247,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Coverage thresholds are declared in `.nycrc` — 95% lines, 95% statements, 93% branches — over `lib/` only, with `test/`, `tools/`, `benchmark/`, and `deps/` excluded.",
+          "claim": "Coverage thresholds are declared in `.nycrc` \u2014 95% lines, 95% statements, 93% branches \u2014 over `lib/` only, with `test/`, `tools/`, `benchmark/`, and `deps/` excluded.",
           "sources": [
             ".nycrc"
           ],
@@ -16263,7 +16263,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "`test/common/index.js` exposes capability predicates that tests use to self-skip — `hasCrypto`, `hasIntl`, `hasFullICU`, `hasTemporal`, `hasDtls`, `hasQuic`, `hasSQLite`, `hasFFI`, `hasInspector`, `hasLocalStorage` — so conditionally-compiled bindings do not produce false failures.",
+          "claim": "`test/common/index.js` exposes capability predicates that tests use to self-skip \u2014 `hasCrypto`, `hasIntl`, `hasFullICU`, `hasTemporal`, `hasDtls`, `hasQuic`, `hasSQLite`, `hasFFI`, `hasInspector`, `hasLocalStorage` \u2014 so conditionally-compiled bindings do not produce false failures.",
           "sources": [
             "test/common/index.js#L1008-1033"
           ],
@@ -16289,10 +16289,10 @@
       ]
     },
     "risk_map": {
-      "summary": "The highest-value security surfaces are the permission model, `node:ffi`, and the VFS path router — and they interact. FFI is a documented memory-unsafe API whose only guard is the `kFFI` scope; the VFS is documented as explicitly *not* a security boundary despite superficially resembling a sandbox; and the permission model's correctness depends on non-obvious hardening (freezing `path`, killing `process.binding`) that a refactor could silently undo. Fragile coupling concentrates in the VFS's reliance on string-prefix path ownership and on cache invalidation across five separate module-loader caches. The `--vfs-load` provenance recovery by re-parsing execArgv is the most brittle single mechanism in the tree.",
+      "summary": "The highest-value security surfaces are the permission model, `node:ffi`, and the VFS path router \u2014 and they interact. FFI is a documented memory-unsafe API whose only guard is the `kFFI` scope; the VFS is documented as explicitly *not* a security boundary despite superficially resembling a sandbox; and the permission model's correctness depends on non-obvious hardening (freezing `path`, killing `process.binding`) that a refactor could silently undo. Fragile coupling concentrates in the VFS's reliance on string-prefix path ownership and on cache invalidation across five separate module-loader caches. The `--vfs-load` provenance recovery by re-parsing execArgv is the most brittle single mechanism in the tree.",
       "claims": [
         {
-          "claim": "`node:ffi` is memory-unsafe by design — the docs state that invalid pointers, wrong signatures, or use-after-free 'can crash the process or corrupt memory' — and its only gate is `THROW_IF_INSUFFICIENT_PERMISSIONS(kFFI)`, which is a no-op unless `--permission` is on.",
+          "claim": "`node:ffi` is memory-unsafe by design \u2014 the docs state that invalid pointers, wrong signatures, or use-after-free 'can crash the process or corrupt memory' \u2014 and its only gate is `THROW_IF_INSUFFICIENT_PERMISSIONS(kFFI)`, which is a no-op unless `--permission` is on.",
           "sources": [
             "doc/api/ffi.md#L16-19",
             "src/node_ffi.cc#L503",
@@ -16359,7 +16359,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "`registerProvider()` unshifts onto a module-global array with no removal API and no ordering control beyond 'newest wins', and the doc comment confirms a registered provider 'can back, wrap, or vet any source' — a `--require`/`--import` preload can therefore intercept every subsequent mount.",
+          "claim": "`registerProvider()` unshifts onto a module-global array with no removal API and no ordering control beyond 'newest wins', and the doc comment confirms a registered provider 'can back, wrap, or vet any source' \u2014 a `--require`/`--import` preload can therefore intercept every subsequent mount.",
           "sources": [
             "lib/internal/vfs/provider_registry.js#L58-80",
             "lib/internal/process/pre_execution.js#L186-192"
@@ -16398,7 +16398,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "SEA construction writes an executable to disk from a JSON config with `assets` and `useSnapshot`/`useCodeCache`, and `FixupArgsForSEA` rewrites argv before any option parsing — a supply-chain-relevant path where the config file fully determines the resulting binary's behaviour.",
+          "claim": "SEA construction writes an executable to disk from a JSON config with `assets` and `useSnapshot`/`useCodeCache`, and `FixupArgsForSEA` rewrites argv before any option parsing \u2014 a supply-chain-relevant path where the config file fully determines the resulting binary's behaviour.",
           "sources": [
             "src/node_sea.cc#L440-500",
             "src/node.cc#L1727-1740"
@@ -16452,7 +16452,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "`Module._load`, `Module._resolveFilename`, and `Module._findPath` remain intentionally monkey-patchable — `resolveMainPath()` comments that `Module._findPath` 'is monkey-patchable here', and the repo's own `eslint.config.mjs` patches `Module._resolveFilename` to resolve vendored ESLint plugins.",
+          "claim": "`Module._load`, `Module._resolveFilename`, and `Module._findPath` remain intentionally monkey-patchable \u2014 `resolveMainPath()` comments that `Module._findPath` 'is monkey-patchable here', and the repo's own `eslint.config.mjs` patches `Module._resolveFilename` to resolve vendored ESLint plugins.",
           "sources": [
             "lib/internal/modules/run_main.js#L31-37",
             "lib/internal/modules/cjs/loader.js#L1341",
@@ -16461,7 +16461,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Adding a native binding means adding `V(name)` to the appropriate macro list in `src/node_binding.h` — `NODE_BUILTIN_STANDARD_BINDINGS` for unconditional ones, or a new `#if`-guarded `NODE_BUILTIN_X_BINDINGS(V)` block for optional subsystems.",
+          "claim": "Adding a native binding means adding `V(name)` to the appropriate macro list in `src/node_binding.h` \u2014 `NODE_BUILTIN_STANDARD_BINDINGS` for unconditional ones, or a new `#if`-guarded `NODE_BUILTIN_X_BINDINGS(V)` block for optional subsystems.",
           "sources": [
             "src/node_binding.h#L28-81"
           ],
@@ -16485,7 +16485,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "`sqlite.createModule()` backed by `VirtualTableModule` lets user JS supply `xBestIndex`/`xOpen`/`xClose` behaviour into SQLite's `sqlite3_module` vtable — a genuine C++-level plugin surface reachable from JS.",
+          "claim": "`sqlite.createModule()` backed by `VirtualTableModule` lets user JS supply `xBestIndex`/`xOpen`/`xClose` behaviour into SQLite's `sqlite3_module` vtable \u2014 a genuine C++-level plugin surface reachable from JS.",
           "sources": [
             "src/node_sqlite.cc#L1029-1060"
           ],
@@ -16509,7 +16509,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Lint is composed from per-directory partial configs (`lib/eslint.config_partial.mjs`, `test/`, `doc/`, `benchmark/`, `tools/eslint/`) assembled by the root `eslint.config.mjs`, plus a custom `tools/eslint-rules` plugin directory — the place to add core-specific rules.",
+          "claim": "Lint is composed from per-directory partial configs (`lib/eslint.config_partial.mjs`, `test/`, `doc/`, `benchmark/`, `tools/eslint/`) assembled by the root `eslint.config.mjs`, plus a custom `tools/eslint-rules` plugin directory \u2014 the place to add core-specific rules.",
           "sources": [
             "eslint.config.mjs#L5-29",
             "lib/eslint.config_partial.mjs",
@@ -16529,7 +16529,7 @@
       ]
     },
     "agent_handoff": {
-      "summary": "Read `AGENTS.md` first — it is binding policy, not advice, and it forbids an agent from pushing, opening PRs, or posting comments without active human oversight. Code style in `lib/` is not ordinary JavaScript: everything goes through `primordials` to be immune to user monkey-patching, and a custom ESLint plugin enforces it. Before editing, understand that `lib/` is snapshotted at build time, so top-level side effects in bootstrap files have outsized consequences. Nothing in `deps/` should be hand-edited. The realistic verification loop is a full build followed by targeted `tools/test.py` runs, not a fast unit-test cycle.",
+      "summary": "Read `AGENTS.md` first \u2014 it is binding policy, not advice, and it forbids an agent from pushing, opening PRs, or posting comments without active human oversight. Code style in `lib/` is not ordinary JavaScript: everything goes through `primordials` to be immune to user monkey-patching, and a custom ESLint plugin enforces it. Before editing, understand that `lib/` is snapshotted at build time, so top-level side effects in bootstrap files have outsized consequences. Nothing in `deps/` should be hand-edited. The realistic verification loop is a full build followed by targeted `tools/test.py` runs, not a fast unit-test cycle.",
       "claims": [
         {
           "claim": "`AGENTS.md` requires `Signed-off-by:` from the human contributor and an `Assisted-by: <agent name>` annotation, and explicitly prohibits `Signed-off-by:`/`Co-authored-by:` naming an agent, pushing to any branch or tag, and creating unsupervised PRs or issues.",
@@ -16549,7 +16549,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Every file in `lib/` destructures from `primordials` at the top (`ArrayPrototypePush`, `StringPrototypeStartsWith`, `ObjectFreeze`, …) instead of using built-in methods directly; new code must match this or `tools/eslint-rules` will reject it.",
+          "claim": "Every file in `lib/` destructures from `primordials` at the top (`ArrayPrototypePush`, `StringPrototypeStartsWith`, `ObjectFreeze`, \u2026) instead of using built-in methods directly; new code must match this or `tools/eslint-rules` will reject it.",
           "sources": [
             "lib/internal/vfs/provider_registry.js#L8-10",
             "lib/internal/process/permission.js#L3-7",
@@ -16601,7 +16601,7 @@
           "kind": "inference"
         },
         {
-          "claim": "Trap: options are read twice — once at parse time into `EnvironmentOptions` and again in JS via `getOptionValue()` after `refreshRuntimeOptions()`. Caching an option value at JS module scope before that call yields a stale snapshot-time value.",
+          "claim": "Trap: options are read twice \u2014 once at parse time into `EnvironmentOptions` and again in JS via `getOptionValue()` after `refreshRuntimeOptions()`. Caching an option value at JS module scope before that call yields a stale snapshot-time value.",
           "sources": [
             "lib/internal/process/pre_execution.js#L109-113",
             "lib/internal/process/pre_execution.js#L366-377"
@@ -16617,7 +16617,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Trap: worker option state is not the main thread's — `src/node_worker.cc` overwrites `vfs_load` to false per worker, so a JS-side `getOptionValue('--vfs-load')` reasoning must account for thread identity.",
+          "claim": "Trap: worker option state is not the main thread's \u2014 `src/node_worker.cc` overwrites `vfs_load` to false per worker, so a JS-side `getOptionValue('--vfs-load')` reasoning must account for thread identity.",
           "sources": [
             "src/node_worker.cc#L705-710"
           ],
@@ -16656,11 +16656,11 @@
         }
       ]
     },
-    "agent_prompt": "You are working in the Node.js runtime source tree (v26.10.0, branch `main`, remote https://github.com/nodejs/node.git). This is not an application — it is a C++/V8 host plus a JavaScript standard library, and the build artifact is the `node` binary itself.\n\nSHAPE. `src/` (~495 files) is the C++ host; `lib/` (~429 files) is the JS standard library; `deps/` vendors every native dependency (v8, uv, openssl, libffi, sqlite, undici, simdjson, plus `deps/crates`, a Rust staticlib carrying temporal_rs and ICU4X); `test/` holds ~863 suite files driven by a bespoke Python harness; `tools/` holds build, lint, and doc tooling; `doc/api/` holds the public API reference.\n\nSTARTUP SPINE. `src/node_main.cc` (`main`/`wmain`) → `node::Start` → SEA argv fixup → `LoadSnapshotData` → `NodeMainInstance::Run`. C++ then picks exactly one main script via a linear if-chain in `src/node.cc` (~L351-413): worker_thread, inspect, print_help, prof_process, eval_string, check_syntax, bench_runner, test_runner, watch_mode, run_main_module, repl, eval_stdin. That script calls `prepareExecution()` in `lib/internal/process/pre_execution.js`, which is the single funnel for every execution mode. `lib/internal/bootstrap/node.js` is normally NOT executed at runtime — its heap is captured into the V8 startup snapshot at build time, so it must stay synchronous and must not read argv or env at top level.\n\nDISTINCTIVE SUBSYSTEMS. Beyond the familiar builtins, this tree carries `node:vfs` (a virtual file system that intercepts `node:fs` and the module loaders at reserved mount points under `${os.devNull}/vfs/<id>`, with a pluggable provider registry), `node:ffi` (libffi-backed, memory-unsafe, gated by a `kFFI` permission scope), `node:dtls`, `node:bench` (a benchmark runner mirroring the test runner's API), `node:quic`, and SQLite virtual tables.\n\nTHE FOUR-PART RITUAL. Adding a user-visible capability almost always means four coordinated edits: (1) `AddOption(...)` in `src/node_options.cc` plus a field in `src/node_options.h`; (2) a `V(name)` entry in a `NODE_BUILTIN_*_BINDINGS` macro in `src/node_binding.h` if native code is involved; (3) a `setupX()` in `pre_execution.js` that checks `getOptionValue('--experimental-X')` and calls `BuiltinModule.allowRequireByUsers('x')`; (4) a `doc/api/x.md` page with a YAML `added:` block. New run modes additionally need a branch in `src/node.cc` and a file in `lib/internal/main/`.\n\nCONVENTIONS. All of `lib/` uses `primordials` (`ArrayPrototypePush`, `StringPrototypeStartsWith`, …) instead of built-in methods, so user monkey-patching cannot subvert internals; a custom ESLint plugin in `tools/eslint-rules` enforces this. Never hand-edit `deps/` — those are updated by `tools/dep_updaters/` and scheduled workflows. `typings/internalBinding/*.d.ts` carries hand-written types for the C++ boundary.\n\nVERIFY. `./configure && make -j4`, then `python3 tools/test.py parallel/test-<pattern>` for targeted runs, or `make test-only` for the full gate (it builds addons, js-native-api, node-api, sqlite, and ffi test fixtures first, then runs cctest + jstest + tooltest). Lint with `make lint`. Suites like `test/ffi` and `test/addons` fail on an unbuilt tree — that means 'not built', not 'broken'. CI also asserts the working tree is unchanged after tests run, so tests must write only to tmpdirs.\n\nTRAPS. Options are read twice (parse time, then JS after `refreshRuntimeOptions()`); `internal/process/permission.js` memoizes its option reads permanently. `src/node_worker.cc` force-disables `vfs_load` per worker, so main-thread and worker option state intentionally diverge. The VFS is explicitly documented as NOT a security boundary. The permission model's integrity depends on `initializePermission()` replacing `process.binding` with a thrower and freezing the `path` module — do not remove either.\n\nPOLICY. Read `AGENTS.md` before doing anything outward-facing. It is binding: no pushing to any branch or tag, no unsupervised PRs, issues, or comments; commits need a human `Signed-off-by:` and an `Assisted-by: <agent name>` annotation; an agent must never sign off or be listed as co-author."
+    "agent_prompt": "You are working in the Node.js runtime source tree (v26.10.0, branch `main`, remote https://github.com/nodejs/node.git). This is not an application \u2014 it is a C++/V8 host plus a JavaScript standard library, and the build artifact is the `node` binary itself.\n\nSHAPE. `src/` (~495 files) is the C++ host; `lib/` (~429 files) is the JS standard library; `deps/` vendors every native dependency (v8, uv, openssl, libffi, sqlite, undici, simdjson, plus `deps/crates`, a Rust staticlib carrying temporal_rs and ICU4X); `test/` holds ~863 suite files driven by a bespoke Python harness; `tools/` holds build, lint, and doc tooling; `doc/api/` holds the public API reference.\n\nSTARTUP SPINE. `src/node_main.cc` (`main`/`wmain`) \u2192 `node::Start` \u2192 SEA argv fixup \u2192 `LoadSnapshotData` \u2192 `NodeMainInstance::Run`. C++ then picks exactly one main script via a linear if-chain in `src/node.cc` (~L351-413): worker_thread, inspect, print_help, prof_process, eval_string, check_syntax, bench_runner, test_runner, watch_mode, run_main_module, repl, eval_stdin. That script calls `prepareExecution()` in `lib/internal/process/pre_execution.js`, which is the single funnel for every execution mode. `lib/internal/bootstrap/node.js` is normally NOT executed at runtime \u2014 its heap is captured into the V8 startup snapshot at build time, so it must stay synchronous and must not read argv or env at top level.\n\nDISTINCTIVE SUBSYSTEMS. Beyond the familiar builtins, this tree carries `node:vfs` (a virtual file system that intercepts `node:fs` and the module loaders at reserved mount points under `${os.devNull}/vfs/<id>`, with a pluggable provider registry), `node:ffi` (libffi-backed, memory-unsafe, gated by a `kFFI` permission scope), `node:dtls`, `node:bench` (a benchmark runner mirroring the test runner's API), `node:quic`, and SQLite virtual tables.\n\nTHE FOUR-PART RITUAL. Adding a user-visible capability almost always means four coordinated edits: (1) `AddOption(...)` in `src/node_options.cc` plus a field in `src/node_options.h`; (2) a `V(name)` entry in a `NODE_BUILTIN_*_BINDINGS` macro in `src/node_binding.h` if native code is involved; (3) a `setupX()` in `pre_execution.js` that checks `getOptionValue('--experimental-X')` and calls `BuiltinModule.allowRequireByUsers('x')`; (4) a `doc/api/x.md` page with a YAML `added:` block. New run modes additionally need a branch in `src/node.cc` and a file in `lib/internal/main/`.\n\nCONVENTIONS. All of `lib/` uses `primordials` (`ArrayPrototypePush`, `StringPrototypeStartsWith`, \u2026) instead of built-in methods, so user monkey-patching cannot subvert internals; a custom ESLint plugin in `tools/eslint-rules` enforces this. Never hand-edit `deps/` \u2014 those are updated by `tools/dep_updaters/` and scheduled workflows. `typings/internalBinding/*.d.ts` carries hand-written types for the C++ boundary.\n\nVERIFY. `./configure && make -j4`, then `python3 tools/test.py parallel/test-<pattern>` for targeted runs, or `make test-only` for the full gate (it builds addons, js-native-api, node-api, sqlite, and ffi test fixtures first, then runs cctest + jstest + tooltest). Lint with `make lint`. Suites like `test/ffi` and `test/addons` fail on an unbuilt tree \u2014 that means 'not built', not 'broken'. CI also asserts the working tree is unchanged after tests run, so tests must write only to tmpdirs.\n\nTRAPS. Options are read twice (parse time, then JS after `refreshRuntimeOptions()`); `internal/process/permission.js` memoizes its option reads permanently. `src/node_worker.cc` force-disables `vfs_load` per worker, so main-thread and worker option state intentionally diverge. The VFS is explicitly documented as NOT a security boundary. The permission model's integrity depends on `initializePermission()` replacing `process.binding` with a thrower and freezing the `path` module \u2014 do not remove either.\n\nPOLICY. Read `AGENTS.md` before doing anything outward-facing. It is binding: no pushing to any branch or tag, no unsupervised PRs, issues, or comments; commits need a human `Signed-off-by:` and an `Assisted-by: <agent name>` annotation; an agent must never sign off or be listed as co-author."
   },
   "analysis": {
     "agent": "claude",
-    "model": "cli:claude",
+    "model": "claude-opus-5",
     "runtime_ms": 422346,
     "cost_usd": 2.6922639999999998,
     "collected_at": "2026-09-22T09:30:51.077Z"

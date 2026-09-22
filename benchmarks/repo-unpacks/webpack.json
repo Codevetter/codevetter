@@ -586,17 +586,17 @@
         {
           "path": "AGENTS.md",
           "bytes": 112233,
-          "preview": "# Webpack Development Guide\n\n> Note: CLAUDE.md is a symlink to AGENTS.md. They are the same file.\n\n## Conventions in this guide\n\nA `> [!REQUIRED]` callout placed immediately under a heading marks that whole section as **mandatory and not optional**: follow it exactly, do not paraphrase, do not skip, do not substitute a similar-looking convention from other tooling. Reviewers have repeatedly flagged that REQUIRED sections (especially the [Pull request body](#pull-request-body)) are being skipped or partially filled in — doing so blocks the PR every time. Read each REQUIRED section in full whenever it applies; do not rely on memory or on a previous task's output. Sections without the callout are normal guidance — apply judgement.\n\n## Project overview\n\nwebpack is a JavaScript module bundler. It builds a dependency graph from entry modules and emits optimized static assets (chunks) for browsers, Node.js, and other targets. The config API is defined by JSON schemas and everything is wired through a `tapable` plugin/hook architecture.\n\n**Core model:** a `Compiler` drives the build; each run creates a `Compilation` holding the module graph (`Module`s) and output `Chunk`s, which is then `seal`ed and `emit`ted. Plugins expose an `apply(compiler)` method and tap the `tapable` hooks they need.\n\n## Tech stack\n\n- **Language:** JavaScript. `lib/` is **CommonJS only**; types are declared via JSDoc `@typedef` and compiled into `types.d.ts`.\n- **Package manager:** **yarn** (not npm).\n- **Tests:** jest, run through the `test:base` wrapper (never bare `jest`).\n- **Type checking / generation:** TypeScript, driven over the JSDoc annotations.\n\n## Commands\n\nAll commands are defined in `package.json` `scripts`.\n\n| Command                                                              | What it does                                                                                                         |\n| -------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |\n| `yarn fix`                                                           | `fix:code` (ESLint) + `fix:special` (regenerate types/validators) + `fmt` (Prettier). Prefer as the final step.      |\n| `yarn setup`                                                         | Install dependencies and link the checkout in as `webpack`; non-interactive off a TTY.                               |\n| `yarn fix:special`                                                   | Regenerate `types.d.ts`, declarations, schema validators, and generated runtime code.                                |\n| `yarn lint`                                                          | Full lint: ESLint + generated-output checks + every `tsc` project + Prettier + spellcheck (what CI runs).            |\n| `yarn tsc`                                                           | TypeScript type check of `lib/` JSDoc (catches type errors in annotations).                                          |\n| `yarn validate:changeset`                                            | Validate the pending `.changeset/` files.                                                                            |\n| `yarn test:base --testPathPatterns=\"<pattern>\"`                      | Run targeted tests. Also `yarn test:base -t \"<name>\"`.                                                               |\n| `yarn test:unit`                                                     | Run all `*.unittest.js`.                                                                                             |\n| `yarn test:integration`                                              | Run the integration suites (`basictest`/`longtest`/`test`).                                                          |\n| `yarn test:test262` / `yarn test:html5lib` / `yarn test:css-parsing` | Spec-conformance suites.                                                                                             |\n| `yarn test:syntax-equivalence`                                       | Holds the HTML/CSS printers to a real browser's reading of their output, over `configCases` and `test/external/wpt`. |\n| `yarn test:base -u`                                                  | Update snapshots (eyeball the diff first).                                                                           |\n| `yarn test:size`                                                     | Size of the generated code over all `configCases/` (per asset, plus runtime module counts per runtime).              |\n| `yarn cover:unit`                                                    | Unit-test coverage.                                                                                                  |\n| `yarn types:cover`                                                   | Type-coverage report (share of `lib/` that is precisely typed).                                                      |\n| `yarn build:examples`                                                | Build the `examples/` (verify after changing options).                                                               |\n| `yarn test`                                                          | Full suite — don't run unless asked.                                                                                 |\n\nNever invoke `yarn jest`/`npx jest` directly: the required `--experimental-vm-modules` node flag lives only in the `test:base` wrapper, and bare jest crashes ESM/test262 suites. See [TESTING_DOCS.md](TESTING_DOCS.md) for how to run a single case.\n\n**CI must come back green in full** — see [After opening the PR](#after-opening-the-pr--every-check-ends-green); the jobs are defined in `.github/workflows/`, which is the list to read rather than one memorized here. Two of them behave unlike the rest and are worth knowing about: the benchmark job's memory mode is sensitive to fixture size and to which cases share its process, and the Bun job runs under `--smol` and surfaces OOMs the Node suites don't. Watch both when touching hot paths or large test fixtures. Every job that costs more than a few minutes waits on `lint`, `basic` and `unit` — the three a merge needs anyway — so on a pull request where one of the three is red most of the run reports `skipped` rather than a result, and going green is what starts it. The benchmark shards are in that set: on a pull request `test.yml` calls `benchmarks.yml` behind the same three, which is why they report as `benchmarks / benchmark (1/4)` there and as plain `benchmark (1/4)` on `main`, where nothing gates them so CodSpeed always has a baseline to compare against.\n\n## Architecture\n\n> [!REQUIRED]\n\nThe directory listings below are the canonical map of the repository. **Whenever you add, rename, or remove a top-level directory** (under the repo root, under `lib/`, under `test/`, or under `schemas/`) you must update the matching bullet here in the same commit. CI does not check this — drift is only caught by humans, which is why it must be part of the change itself. If a new directory does not fit any existing group, add a new group rather than dropping the entry.\n\n**Source**\n\n- `lib/` — Main source code (CommonJS only; types declared via JSDoc `@typedef`).\n  - `lib/asset/` — Asset modules (images, fonts, raw files); includes the `asset/webmanifest` type that parses `<link rel=\"manifest\">` icon URLs.\n  - `lib/async-modules/` — Top-level await.\n  - `lib/bun/` — Bun target externals preset (`bun:*` and node.js built-in modules).\n  - `lib/cache/` — Filesystem and memory caches.\n  - `lib/config/` — Everything between a user's config object and a `Compiler`:\n    `validateSchema` checks it against the schema, `normalization.js` canonicalizes its\n    shape, `defaults.js` fills values in, and `WebpackOptionsApply` reads the result into\n    the plugins it implies. `WebpackOptionsDefaulter` is the normalize-then-default pair\n    under one deprecated name, and `OptionsApply` the base class the apply step extends.\n    Also holds the target presets, `defineConfig`, and `PlatformPlugin`, which pins the\n    target platform a `target"
+          "preview": "# Webpack Development Guide\n\n> Note: CLAUDE.md is a symlink to AGENTS.md. They are the same file.\n\n## Conventions in this guide\n\nA `> [!REQUIRED]` callout placed immediately under a heading marks that whole section as **mandatory and not optional**: follow it exactly, do not paraphrase, do not skip, do not substitute a similar-looking convention from other tooling. Reviewers have repeatedly flagged that REQUIRED sections (especially the [Pull request body](#pull-request-body)) are being skipped or partially filled in \u2014 doing so blocks the PR every time. Read each REQUIRED section in full whenever it applies; do not rely on memory or on a previous task's output. Sections without the callout are normal guidance \u2014 apply judgement.\n\n## Project overview\n\nwebpack is a JavaScript module bundler. It builds a dependency graph from entry modules and emits optimized static assets (chunks) for browsers, Node.js, and other targets. The config API is defined by JSON schemas and everything is wired through a `tapable` plugin/hook architecture.\n\n**Core model:** a `Compiler` drives the build; each run creates a `Compilation` holding the module graph (`Module`s) and output `Chunk`s, which is then `seal`ed and `emit`ted. Plugins expose an `apply(compiler)` method and tap the `tapable` hooks they need.\n\n## Tech stack\n\n- **Language:** JavaScript. `lib/` is **CommonJS only**; types are declared via JSDoc `@typedef` and compiled into `types.d.ts`.\n- **Package manager:** **yarn** (not npm).\n- **Tests:** jest, run through the `test:base` wrapper (never bare `jest`).\n- **Type checking / generation:** TypeScript, driven over the JSDoc annotations.\n\n## Commands\n\nAll commands are defined in `package.json` `scripts`.\n\n| Command                                                              | What it does                                                                                                         |\n| -------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |\n| `yarn fix`                                                           | `fix:code` (ESLint) + `fix:special` (regenerate types/validators) + `fmt` (Prettier). Prefer as the final step.      |\n| `yarn setup`                                                         | Install dependencies and link the checkout in as `webpack`; non-interactive off a TTY.                               |\n| `yarn fix:special`                                                   | Regenerate `types.d.ts`, declarations, schema validators, and generated runtime code.                                |\n| `yarn lint`                                                          | Full lint: ESLint + generated-output checks + every `tsc` project + Prettier + spellcheck (what CI runs).            |\n| `yarn tsc`                                                           | TypeScript type check of `lib/` JSDoc (catches type errors in annotations).                                          |\n| `yarn validate:changeset`                                            | Validate the pending `.changeset/` files.                                                                            |\n| `yarn test:base --testPathPatterns=\"<pattern>\"`                      | Run targeted tests. Also `yarn test:base -t \"<name>\"`.                                                               |\n| `yarn test:unit`                                                     | Run all `*.unittest.js`.                                                                                             |\n| `yarn test:integration`                                              | Run the integration suites (`basictest`/`longtest`/`test`).                                                          |\n| `yarn test:test262` / `yarn test:html5lib` / `yarn test:css-parsing` | Spec-conformance suites.                                                                                             |\n| `yarn test:syntax-equivalence`                                       | Holds the HTML/CSS printers to a real browser's reading of their output, over `configCases` and `test/external/wpt`. |\n| `yarn test:base -u`                                                  | Update snapshots (eyeball the diff first).                                                                           |\n| `yarn test:size`                                                     | Size of the generated code over all `configCases/` (per asset, plus runtime module counts per runtime).              |\n| `yarn cover:unit`                                                    | Unit-test coverage.                                                                                                  |\n| `yarn types:cover`                                                   | Type-coverage report (share of `lib/` that is precisely typed).                                                      |\n| `yarn build:examples`                                                | Build the `examples/` (verify after changing options).                                                               |\n| `yarn test`                                                          | Full suite \u2014 don't run unless asked.                                                                                 |\n\nNever invoke `yarn jest`/`npx jest` directly: the required `--experimental-vm-modules` node flag lives only in the `test:base` wrapper, and bare jest crashes ESM/test262 suites. See [TESTING_DOCS.md](TESTING_DOCS.md) for how to run a single case.\n\n**CI must come back green in full** \u2014 see [After opening the PR](#after-opening-the-pr--every-check-ends-green); the jobs are defined in `.github/workflows/`, which is the list to read rather than one memorized here. Two of them behave unlike the rest and are worth knowing about: the benchmark job's memory mode is sensitive to fixture size and to which cases share its process, and the Bun job runs under `--smol` and surfaces OOMs the Node suites don't. Watch both when touching hot paths or large test fixtures. Every job that costs more than a few minutes waits on `lint`, `basic` and `unit` \u2014 the three a merge needs anyway \u2014 so on a pull request where one of the three is red most of the run reports `skipped` rather than a result, and going green is what starts it. The benchmark shards are in that set: on a pull request `test.yml` calls `benchmarks.yml` behind the same three, which is why they report as `benchmarks / benchmark (1/4)` there and as plain `benchmark (1/4)` on `main`, where nothing gates them so CodSpeed always has a baseline to compare against.\n\n## Architecture\n\n> [!REQUIRED]\n\nThe directory listings below are the canonical map of the repository. **Whenever you add, rename, or remove a top-level directory** (under the repo root, under `lib/`, under `test/`, or under `schemas/`) you must update the matching bullet here in the same commit. CI does not check this \u2014 drift is only caught by humans, which is why it must be part of the change itself. If a new directory does not fit any existing group, add a new group rather than dropping the entry.\n\n**Source**\n\n- `lib/` \u2014 Main source code (CommonJS only; types declared via JSDoc `@typedef`).\n  - `lib/asset/` \u2014 Asset modules (images, fonts, raw files); includes the `asset/webmanifest` type that parses `<link rel=\"manifest\">` icon URLs.\n  - `lib/async-modules/` \u2014 Top-level await.\n  - `lib/bun/` \u2014 Bun target externals preset (`bun:*` and node.js built-in modules).\n  - `lib/cache/` \u2014 Filesystem and memory caches.\n  - `lib/config/` \u2014 Everything between a user's config object and a `Compiler`:\n    `validateSchema` checks it against the schema, `normalization.js` canonicalizes its\n    shape, `defaults.js` fills values in, and `WebpackOptionsApply` reads the result into\n    the plugins it implies. `WebpackOptionsDefaulter` is the normalize-then-default pair\n    under one deprecated name, and `OptionsApply` the base class the apply step extends.\n    Also holds the target presets, `defineConfig`, and `PlatformPlugin`, which pins the\n    target platform a `target"
         },
         {
           "path": "CONTRIBUTING.md",
           "bytes": 5541,
-          "preview": "# Contributing\n\nFrom opening a bug report to creating a pull request: every contribution is\nappreciated and welcome. If you're planning to implement a new feature or change\nthe API please create an issue first. This way we can ensure that your precious\nwork is not in vain.\n\n## Issues\n\nMost of the time, if webpack is not working correctly for you, it is a simple configuration issue.\n\nIf you are still having difficulty after looking over your configuration carefully, please post\na question to [Discussions](https://github.com/webpack/webpack/discussions), [StackOverflow with the webpack tag](https://stackoverflow.com/tags/webpack) or ask this in our [Discord](https://discord.gg/5sxFZPdx2k). Questions\nthat include your webpack.config.js, relevant files, and the full error message are more likely to receive responses.\n\n> ⚠️ Note on dependency vulnerability warnings\n>\n> Tools like `npm audit` may report vulnerabilities originating from development-only dependencies\n> (for example `webpack-dev-server`). These warnings do not always indicate a security issue\n> in your production bundle.\n>\n> Before opening an issue, please check whether the warning comes from a dev dependency\n> and whether an update or workaround already exists.\n\n**If you have discovered a bug or have a feature suggestion, please [create an issue on GitHub](https://github.com/webpack/webpack/issues/new).**\n\nDo you want to fix an issue? Look at the issues with a tag of [Send a PR](https://github.com/webpack/webpack/issues?q=is%3Aissue%20state%3Aopen%20label%3A%22Send%20a%20PR%22). Here are some of the key labels you may encounter:\n\n- **bug**: An unexpected problem or unintended behavior.\n- **enhancement**: A suggestion for a new feature or improvement.\n- **question**: Requests for clarification or more information.\n- **documentation**: Issues related to improving or adding documentation.\n\n## Contributing to the webpack ecosystem\n\nIf you have created your own loader/plugin please include it on the relevant documentation pages:\n\n- [List of loaders](https://webpack.js.org/loaders/) or [awesome-webpack](https://github.com/webpack-contrib/awesome-webpack#loaders)\n- [List of plugins](https://webpack.js.org/plugins) or [awesome-webpack](https://github.com/webpack-contrib/awesome-webpack#webpack-plugins)\n\n## Setup\n\n[Set up your local webpack repository](_SETUP.md)\n\n## Submitting Changes\n\nAfter getting some feedback, push to your fork and submit a pull request. We\nmay suggest some changes or improvements or alternatives, but for small changes\nyour pull request should be accepted quickly.\n\nThings that will increase the chance that your pull request is accepted:\n\n- [Write tests](./test/README.md)\n- Follow the existing coding style\n- Write a [good commit message](https://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html)\n- For a major fix/feature make sure your PR has an issue and if it doesn't, please create one. This would help discussion with the community, and polish ideas in case of a new feature.\n- Make sure your PR's description contains GitHub's special keyword references that automatically close the related issue when the PR is merged. ([More info](https://github.com/blog/1506-closing-issues-via-pull-requests))\n- When you have a lot of commits in your PR, it's good practice to squash all your commits in one single commit. ([Learn how to squash here](https://davidwalsh.name/squash-commits-git))\n- For a better understanding of the folder structure and testing procedures, refer to the [Testing Documentation](./TESTING_DOCS.md).\n\n## Releases\n\nPatch releases ship as soon as a fix is ready, minor releases every 4 weeks on Thursday, and major releases only after the roadmap has been discussed. See [RELEASE_SCHEDULE.md](./RELEASE_SCHEDULE.md).\n\n## Documentation\n\nwebpack is insanely feature rich and documentation is a huge time sink. We\ngreatly appreciate any time spent fixing typos or clarifying sections in the\ndocumentation. [See a list of issues with the documentation tag](https://github.com/webpack/webpack/labels/documentation),\nor [check out the issues on the documentation website's repository](https://github.com/webpack/webpack.js.org/issues).\n\n## Types\n\nwebpack is statically typed using JSDoc annotation and TypeScript. If you would like to export a new type which doesn't belong to a public API, then you can do so by declaring it in `webpack/lib/index.js`.\n\n`webpack/lib/index.js`\n\n```js\n/** @typedef {import(\"./NormalModuleFactory\").ResolveData} ResolveData */\n```\n\nThen, automatically generate the type declarations by running `yarn fix` locally, and the changes you have made will be reflected in `types.d.ts`.\n\n## Discussions\n\nFor discussions please use our [Discussions](https://github.com/webpack/webpack/discussions).\n\n## Join the development\n\n- Before you join development, please [set up the project](./_SETUP.md) on your local machine, run it and go through the application completely. Use any command you can find and see what it does. Explore.\n\n  > Don't worry ... Nothing will happen to the project or to you due to the exploring. The only thing that will happen is you'll be more familiar with what is where and might even get some cool ideas on how to improve various aspects of the project.\n\n- If you would like to work on an issue, drop in a comment at the issue. If it is already assigned to someone, but there is no sign of any work being done, please feel free to drop in a comment so that the issue can be assigned to you if the previous assignee has dropped it entirely.\n"
+          "preview": "# Contributing\n\nFrom opening a bug report to creating a pull request: every contribution is\nappreciated and welcome. If you're planning to implement a new feature or change\nthe API please create an issue first. This way we can ensure that your precious\nwork is not in vain.\n\n## Issues\n\nMost of the time, if webpack is not working correctly for you, it is a simple configuration issue.\n\nIf you are still having difficulty after looking over your configuration carefully, please post\na question to [Discussions](https://github.com/webpack/webpack/discussions), [StackOverflow with the webpack tag](https://stackoverflow.com/tags/webpack) or ask this in our [Discord](https://discord.gg/5sxFZPdx2k). Questions\nthat include your webpack.config.js, relevant files, and the full error message are more likely to receive responses.\n\n> \u26a0\ufe0f Note on dependency vulnerability warnings\n>\n> Tools like `npm audit` may report vulnerabilities originating from development-only dependencies\n> (for example `webpack-dev-server`). These warnings do not always indicate a security issue\n> in your production bundle.\n>\n> Before opening an issue, please check whether the warning comes from a dev dependency\n> and whether an update or workaround already exists.\n\n**If you have discovered a bug or have a feature suggestion, please [create an issue on GitHub](https://github.com/webpack/webpack/issues/new).**\n\nDo you want to fix an issue? Look at the issues with a tag of [Send a PR](https://github.com/webpack/webpack/issues?q=is%3Aissue%20state%3Aopen%20label%3A%22Send%20a%20PR%22). Here are some of the key labels you may encounter:\n\n- **bug**: An unexpected problem or unintended behavior.\n- **enhancement**: A suggestion for a new feature or improvement.\n- **question**: Requests for clarification or more information.\n- **documentation**: Issues related to improving or adding documentation.\n\n## Contributing to the webpack ecosystem\n\nIf you have created your own loader/plugin please include it on the relevant documentation pages:\n\n- [List of loaders](https://webpack.js.org/loaders/) or [awesome-webpack](https://github.com/webpack-contrib/awesome-webpack#loaders)\n- [List of plugins](https://webpack.js.org/plugins) or [awesome-webpack](https://github.com/webpack-contrib/awesome-webpack#webpack-plugins)\n\n## Setup\n\n[Set up your local webpack repository](_SETUP.md)\n\n## Submitting Changes\n\nAfter getting some feedback, push to your fork and submit a pull request. We\nmay suggest some changes or improvements or alternatives, but for small changes\nyour pull request should be accepted quickly.\n\nThings that will increase the chance that your pull request is accepted:\n\n- [Write tests](./test/README.md)\n- Follow the existing coding style\n- Write a [good commit message](https://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html)\n- For a major fix/feature make sure your PR has an issue and if it doesn't, please create one. This would help discussion with the community, and polish ideas in case of a new feature.\n- Make sure your PR's description contains GitHub's special keyword references that automatically close the related issue when the PR is merged. ([More info](https://github.com/blog/1506-closing-issues-via-pull-requests))\n- When you have a lot of commits in your PR, it's good practice to squash all your commits in one single commit. ([Learn how to squash here](https://davidwalsh.name/squash-commits-git))\n- For a better understanding of the folder structure and testing procedures, refer to the [Testing Documentation](./TESTING_DOCS.md).\n\n## Releases\n\nPatch releases ship as soon as a fix is ready, minor releases every 4 weeks on Thursday, and major releases only after the roadmap has been discussed. See [RELEASE_SCHEDULE.md](./RELEASE_SCHEDULE.md).\n\n## Documentation\n\nwebpack is insanely feature rich and documentation is a huge time sink. We\ngreatly appreciate any time spent fixing typos or clarifying sections in the\ndocumentation. [See a list of issues with the documentation tag](https://github.com/webpack/webpack/labels/documentation),\nor [check out the issues on the documentation website's repository](https://github.com/webpack/webpack.js.org/issues).\n\n## Types\n\nwebpack is statically typed using JSDoc annotation and TypeScript. If you would like to export a new type which doesn't belong to a public API, then you can do so by declaring it in `webpack/lib/index.js`.\n\n`webpack/lib/index.js`\n\n```js\n/** @typedef {import(\"./NormalModuleFactory\").ResolveData} ResolveData */\n```\n\nThen, automatically generate the type declarations by running `yarn fix` locally, and the changes you have made will be reflected in `types.d.ts`.\n\n## Discussions\n\nFor discussions please use our [Discussions](https://github.com/webpack/webpack/discussions).\n\n## Join the development\n\n- Before you join development, please [set up the project](./_SETUP.md) on your local machine, run it and go through the application completely. Use any command you can find and see what it does. Explore.\n\n  > Don't worry ... Nothing will happen to the project or to you due to the exploring. The only thing that will happen is you'll be more familiar with what is where and might even get some cool ideas on how to improve various aspects of the project.\n\n- If you would like to work on an issue, drop in a comment at the issue. If it is already assigned to someone, but there is no sign of any work being done, please feel free to drop in a comment so that the issue can be assigned to you if the previous assignee has dropped it entirely.\n"
         },
         {
           "path": "README.md",
           "bytes": 79636,
-          "preview": "<div align=\"center\">\n  <a href=\"https://github.com/webpack/webpack\">\n    <img width=\"200\" height=\"200\" src=\"https://webpack.js.org/assets/icon-square-big.svg\">\n  </a>\n  <br>\n  <br>\n\n[![npm][npm]][npm-url]\n\n[![node][node]][node-url]\n[![builds1][builds1]][builds1-url]\n[![dependency-review][dependency-review]][dependency-review-url]\n[![coverage][cover]][cover-url]\n[![pkg.pr.new](https://pkg.pr.new/badge/webpack/webpack)](https://pkg.pr.new/~/webpack/webpack)\n[![PR's welcome][prs]][prs-url]\n[![compatibility-score](https://api.dependabot.com/badges/compatibility_score?dependency-name=webpack&package-manager=npm_and_yarn&previous-version=5.72.1&new-version=5.73.0)](https://docs.github.com/en/code-security/dependabot/dependabot-security-updates/about-dependabot-security-updates#about-compatibility-scores)\n[![downloads](https://img.shields.io/npm/dm/webpack.svg)](https://npmcharts.com/compare/webpack?minimal=true)\n[![install-size](https://packagephobia.com/badge?p=webpack)](https://packagephobia.com/result?p=webpack)\n[![backers](https://opencollective.com/webpack/backers/badge.svg)](https://opencollective.com/webpack#backer)\n[![sponsors](https://opencollective.com/webpack/sponsors/badge.svg)](https://opencollective.com/webpack#sponsors)\n[![contributors](https://img.shields.io/github/contributors/webpack/webpack.svg)](https://github.com/webpack/webpack/graphs/contributors)\n[![discussions](https://img.shields.io/github/discussions/webpack/webpack)](https://github.com/webpack/webpack/discussions)\n[![discord](https://img.shields.io/discord/1180618526436888586?label=discord&logo=discord&logoColor=white&style=flat)](https://discord.gg/5sxFZPdx2k)\n[![LFX Health Score](https://insights.linuxfoundation.org/api/badge/health-score?project=webpack)](https://insights.linuxfoundation.org/project/webpack)\n[![Agent Friendly](https://agentfriendlycode.com/api/badge/github/webpack/webpack.svg)](https://agentfriendlycode.com/repo/12618)\n\n  <h1>webpack</h1>\n  <p>\n    Webpack is a module bundler. Its main purpose is to bundle JavaScript files for usage in a browser, yet it is also capable of transforming, bundling, or packaging just about any resource or asset.\n  </p>\n</div>\n\n## Table of Contents\n\n- [Install](#install)\n- [Introduction](#introduction)\n- [Concepts](#concepts)\n- [Contributing](#contributing)\n- [Support](#support)\n- [Current project members](#current-project-members)\n  - [TSC (Technical Steering Committee)](#tsc-technical-steering-committee)\n  - [Core Collaborators](#core-collaborators)\n- [Sponsoring](#sponsoring)\n  - [Premium Partners](#premium-partners)\n  - [Gold Sponsors](#gold-sponsors)\n  - [Silver Sponsors](#silver-sponsors)\n  - [Bronze Sponsors](#bronze-sponsors)\n  - [Backers](#backers)\n- [Special Thanks](#special-thanks-to)\n\n## Install\n\nInstall with npm:\n\n```bash\nnpm install --save-dev webpack\n```\n\nInstall with yarn:\n\n```bash\nyarn add webpack --dev\n```\n\n## Introduction\n\nWebpack is a bundler for modules. The main purpose is to bundle JavaScript\nfiles for usage in a browser, yet it is also capable of transforming, bundling,\nor packaging just about any resource or asset.\n\n**TL;DR**\n\n- Bundles [ES Modules](https://www.2ality.com/2014/09/es6-modules-final.html), [CommonJS](https://wiki.commonjs.org/), and [AMD](https://github.com/amdjs/amdjs-api/wiki/AMD) modules (even combined).\n- Can create a single bundle or multiple chunks that are asynchronously loaded at runtime (to reduce initial loading time).\n- Dependencies are resolved during compilation, reducing the runtime size.\n- Loaders can preprocess files while compiling, e.g. TypeScript to JavaScript, Handlebars strings to compiled functions, images to Base64, etc.\n- Highly modular plugin system to do whatever else your application requires.\n\n#### Learn about webpack through videos!\n\n- [Understanding Webpack - Video 1](https://www.youtube.com/watch?v=xj93pvQIsRo)\n- [Understanding Webpack - Video 2](https://www.youtube.com/watch?v=4tQiJaFzuJ8)\n\n### Get Started\n\nCheck out webpack's quick [**Get Started**](https://webpack.js.org/guides/getting-started) guide and the [other guides](https://webpack.js.org/guides/).\n\n### Browser Compatibility\n\nWebpack supports all browsers that are [ES5-compliant](https://kangax.github.io/compat-table/es5/) (IE8 and below are not supported).\nWebpack also needs `Promise` for `import()` and `require.ensure()`. If you want to support older browsers, you will need to [load a polyfill](https://webpack.js.org/guides/shimming/) before using these expressions.\n\n## Concepts\n\n### [Plugins](https://webpack.js.org/plugins/)\n\nWebpack has a [rich plugin\ninterface](https://webpack.js.org/plugins/). Most of the features\nwithin webpack itself use this plugin interface. This makes webpack very\n**flexible**.\n\nWebpack can generate HTML pages and extract CSS files itself, both experimental —\nsee what that covers, and what still needs a plugin, for\n[CSS](https://webpack.js.org/guides/native-css/#whats-built-in) and\n[HTML](https://webpack.js.org/guides/native-html/#whats-built-in).\n\n|                   Name                    |       Status       |    Install Size     | Description                                                                             |\n| :---------------------------------------: | :----------------: | :-----------------: | :-------------------------------------------------------------------------------------- |\n| [compression-webpack-plugin][compression] | ![compression-npm] | ![compression-size] | Prepares compressed versions of assets to serve them with Content-Encoding              |\n|  [html-bundler-webpack-plugin][bundler]   |   ![bundler-npm]   |   ![bundler-size]   | Renders a template (EJS, Handlebars, Pug) with referenced source asset files into HTML. |\n|         [pug-plugin][pug-plugin]          | ![pug-plugin-npm]  | ![pug-plugin-size]  | Renders Pug files to HTML, extracts JS and CSS from sources specified directly in Pug.  |\n\n[common-npm]: https://img.shields.io/npm/v/webpack.svg\n[component]: https://github.com/webpack-contrib/component-webpack-plugin\n[component-npm]: https://img.shields.io/npm/v/component-webpack-plugin.svg\n[component-size]: https://packagephobia.com/badge?p=component-webpack-plugin\n[compression]: https://github.com/webpack-contrib/compression-webpack-plugin\n[compression-npm]: https://img.shields.io/npm/v/compression-webpack-plugin.svg\n[compression-size]: https://packagephobia.com/badge?p=compression-webpack-plugin\n[bundler]: https://github.com/webdiscus/html-bundler-webpack-plugin\n[bundler-npm]: https://img.shields.io/npm/v/html-bundler-webpack-plugin.svg\n[bundler-size]: https://packagephobia.com/badge?p=html-bundler-webpack-plugin\n[pug-plugin]: https://github.com/webdiscus/pug-plugin\n[pug-plugin-npm]: https://img.shields.io/npm/v/pug-plugin.svg\n[pug-plugin-size]: https://packagephobia.com/badge?p=pug-plugin\n\n### [Loaders](https://webpack.js.org/loaders/)\n\nWebpack enables the use of loaders to preprocess files. This allows you to bundle\n**any static resource** way beyond JavaScript. You can easily [write your own\nloaders](https://webpack.js.org/api/loaders/) using Node.js.\n\nLoaders are activated by using `loadername!` prefixes in `require()` statements,\nor are automatically applied via regex from your webpack configuration.\n\nJavaScript, JSON and [assets](https://webpack.js.org/guides/asset-modules/) need no\nloader, and [CSS](https://webpack.js.org/guides/native-css/#whats-built-in) and\n[HTML](https://webpack.js.org/guides/native-html/#whats-built-in) have experimental\nbuilt-in support — but preprocessors and template engines keep their loaders.\n\n#### JSON\n\n|                                                                                       Name                                                                                       |   Status    | Install Size |           Description            |\n| :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :---------: | :----------: | :------------------------------: |\n| <a href=\"https://github.com/awnist/cson-loader\"><img width=\"48\" height=\"48\" src=\"https://cdn.jsdeli"
+          "preview": "<div align=\"center\">\n  <a href=\"https://github.com/webpack/webpack\">\n    <img width=\"200\" height=\"200\" src=\"https://webpack.js.org/assets/icon-square-big.svg\">\n  </a>\n  <br>\n  <br>\n\n[![npm][npm]][npm-url]\n\n[![node][node]][node-url]\n[![builds1][builds1]][builds1-url]\n[![dependency-review][dependency-review]][dependency-review-url]\n[![coverage][cover]][cover-url]\n[![pkg.pr.new](https://pkg.pr.new/badge/webpack/webpack)](https://pkg.pr.new/~/webpack/webpack)\n[![PR's welcome][prs]][prs-url]\n[![compatibility-score](https://api.dependabot.com/badges/compatibility_score?dependency-name=webpack&package-manager=npm_and_yarn&previous-version=5.72.1&new-version=5.73.0)](https://docs.github.com/en/code-security/dependabot/dependabot-security-updates/about-dependabot-security-updates#about-compatibility-scores)\n[![downloads](https://img.shields.io/npm/dm/webpack.svg)](https://npmcharts.com/compare/webpack?minimal=true)\n[![install-size](https://packagephobia.com/badge?p=webpack)](https://packagephobia.com/result?p=webpack)\n[![backers](https://opencollective.com/webpack/backers/badge.svg)](https://opencollective.com/webpack#backer)\n[![sponsors](https://opencollective.com/webpack/sponsors/badge.svg)](https://opencollective.com/webpack#sponsors)\n[![contributors](https://img.shields.io/github/contributors/webpack/webpack.svg)](https://github.com/webpack/webpack/graphs/contributors)\n[![discussions](https://img.shields.io/github/discussions/webpack/webpack)](https://github.com/webpack/webpack/discussions)\n[![discord](https://img.shields.io/discord/1180618526436888586?label=discord&logo=discord&logoColor=white&style=flat)](https://discord.gg/5sxFZPdx2k)\n[![LFX Health Score](https://insights.linuxfoundation.org/api/badge/health-score?project=webpack)](https://insights.linuxfoundation.org/project/webpack)\n[![Agent Friendly](https://agentfriendlycode.com/api/badge/github/webpack/webpack.svg)](https://agentfriendlycode.com/repo/12618)\n\n  <h1>webpack</h1>\n  <p>\n    Webpack is a module bundler. Its main purpose is to bundle JavaScript files for usage in a browser, yet it is also capable of transforming, bundling, or packaging just about any resource or asset.\n  </p>\n</div>\n\n## Table of Contents\n\n- [Install](#install)\n- [Introduction](#introduction)\n- [Concepts](#concepts)\n- [Contributing](#contributing)\n- [Support](#support)\n- [Current project members](#current-project-members)\n  - [TSC (Technical Steering Committee)](#tsc-technical-steering-committee)\n  - [Core Collaborators](#core-collaborators)\n- [Sponsoring](#sponsoring)\n  - [Premium Partners](#premium-partners)\n  - [Gold Sponsors](#gold-sponsors)\n  - [Silver Sponsors](#silver-sponsors)\n  - [Bronze Sponsors](#bronze-sponsors)\n  - [Backers](#backers)\n- [Special Thanks](#special-thanks-to)\n\n## Install\n\nInstall with npm:\n\n```bash\nnpm install --save-dev webpack\n```\n\nInstall with yarn:\n\n```bash\nyarn add webpack --dev\n```\n\n## Introduction\n\nWebpack is a bundler for modules. The main purpose is to bundle JavaScript\nfiles for usage in a browser, yet it is also capable of transforming, bundling,\nor packaging just about any resource or asset.\n\n**TL;DR**\n\n- Bundles [ES Modules](https://www.2ality.com/2014/09/es6-modules-final.html), [CommonJS](https://wiki.commonjs.org/), and [AMD](https://github.com/amdjs/amdjs-api/wiki/AMD) modules (even combined).\n- Can create a single bundle or multiple chunks that are asynchronously loaded at runtime (to reduce initial loading time).\n- Dependencies are resolved during compilation, reducing the runtime size.\n- Loaders can preprocess files while compiling, e.g. TypeScript to JavaScript, Handlebars strings to compiled functions, images to Base64, etc.\n- Highly modular plugin system to do whatever else your application requires.\n\n#### Learn about webpack through videos!\n\n- [Understanding Webpack - Video 1](https://www.youtube.com/watch?v=xj93pvQIsRo)\n- [Understanding Webpack - Video 2](https://www.youtube.com/watch?v=4tQiJaFzuJ8)\n\n### Get Started\n\nCheck out webpack's quick [**Get Started**](https://webpack.js.org/guides/getting-started) guide and the [other guides](https://webpack.js.org/guides/).\n\n### Browser Compatibility\n\nWebpack supports all browsers that are [ES5-compliant](https://kangax.github.io/compat-table/es5/) (IE8 and below are not supported).\nWebpack also needs `Promise` for `import()` and `require.ensure()`. If you want to support older browsers, you will need to [load a polyfill](https://webpack.js.org/guides/shimming/) before using these expressions.\n\n## Concepts\n\n### [Plugins](https://webpack.js.org/plugins/)\n\nWebpack has a [rich plugin\ninterface](https://webpack.js.org/plugins/). Most of the features\nwithin webpack itself use this plugin interface. This makes webpack very\n**flexible**.\n\nWebpack can generate HTML pages and extract CSS files itself, both experimental \u2014\nsee what that covers, and what still needs a plugin, for\n[CSS](https://webpack.js.org/guides/native-css/#whats-built-in) and\n[HTML](https://webpack.js.org/guides/native-html/#whats-built-in).\n\n|                   Name                    |       Status       |    Install Size     | Description                                                                             |\n| :---------------------------------------: | :----------------: | :-----------------: | :-------------------------------------------------------------------------------------- |\n| [compression-webpack-plugin][compression] | ![compression-npm] | ![compression-size] | Prepares compressed versions of assets to serve them with Content-Encoding              |\n|  [html-bundler-webpack-plugin][bundler]   |   ![bundler-npm]   |   ![bundler-size]   | Renders a template (EJS, Handlebars, Pug) with referenced source asset files into HTML. |\n|         [pug-plugin][pug-plugin]          | ![pug-plugin-npm]  | ![pug-plugin-size]  | Renders Pug files to HTML, extracts JS and CSS from sources specified directly in Pug.  |\n\n[common-npm]: https://img.shields.io/npm/v/webpack.svg\n[component]: https://github.com/webpack-contrib/component-webpack-plugin\n[component-npm]: https://img.shields.io/npm/v/component-webpack-plugin.svg\n[component-size]: https://packagephobia.com/badge?p=component-webpack-plugin\n[compression]: https://github.com/webpack-contrib/compression-webpack-plugin\n[compression-npm]: https://img.shields.io/npm/v/compression-webpack-plugin.svg\n[compression-size]: https://packagephobia.com/badge?p=compression-webpack-plugin\n[bundler]: https://github.com/webdiscus/html-bundler-webpack-plugin\n[bundler-npm]: https://img.shields.io/npm/v/html-bundler-webpack-plugin.svg\n[bundler-size]: https://packagephobia.com/badge?p=html-bundler-webpack-plugin\n[pug-plugin]: https://github.com/webdiscus/pug-plugin\n[pug-plugin-npm]: https://img.shields.io/npm/v/pug-plugin.svg\n[pug-plugin-size]: https://packagephobia.com/badge?p=pug-plugin\n\n### [Loaders](https://webpack.js.org/loaders/)\n\nWebpack enables the use of loaders to preprocess files. This allows you to bundle\n**any static resource** way beyond JavaScript. You can easily [write your own\nloaders](https://webpack.js.org/api/loaders/) using Node.js.\n\nLoaders are activated by using `loadername!` prefixes in `require()` statements,\nor are automatically applied via regex from your webpack configuration.\n\nJavaScript, JSON and [assets](https://webpack.js.org/guides/asset-modules/) need no\nloader, and [CSS](https://webpack.js.org/guides/native-css/#whats-built-in) and\n[HTML](https://webpack.js.org/guides/native-html/#whats-built-in) have experimental\nbuilt-in support \u2014 but preprocessors and template engines keep their loaders.\n\n#### JSON\n\n|                                                                                       Name                                                                                       |   Status    | Install Size |           Description            |\n| :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :---------: | :----------: | :------------------------------: |\n| <a href=\"https://github.com/awnist/cson-loader\"><img width=\"48\" height=\"48\" src=\"https://cdn.jsdeli"
         }
       ],
       "config_files": [
@@ -1105,7 +1105,7 @@
             "kind": "decision",
             "label": "why",
             "path": "AGENTS.md",
-            "detail": "` states why the code is shaped the way it is — the spec prose behind a `SUPPLEMENT` entry, a measured engine disagreement, a constraint some other file depends",
+            "detail": "` states why the code is shaped the way it is \u2014 the spec prose behind a `SUPPLEMENT` entry, a measured engine disagreement, a constraint some other file depends",
             "sources": [
               "AGENTS.md#L401"
             ],
@@ -6320,7 +6320,7 @@
         "decisions": [
           {
             "marker": "why",
-            "text": "` states why the code is shaped the way it is — the spec prose behind a `SUPPLEMENT` entry, a measured engine disagreement, a constraint some other file depends on — which is the o",
+            "text": "` states why the code is shaped the way it is \u2014 the spec prose behind a `SUPPLEMENT` entry, a measured engine disagreement, a constraint some other file depends on \u2014 which is the o",
             "source": "AGENTS.md#L401"
           },
           {
@@ -6523,7 +6523,7 @@
             {
               "id": "decision:0-agents-md-l401",
               "kind": "decision",
-              "label": "` states why the code is shaped the way it is — the spec prose behind a `SUPPLEMENT` entry, a measured engine disagreement, a constraint some other file depends on — which is the o",
+              "label": "` states why the code is shaped the way it is \u2014 the spec prose behind a `SUPPLEMENT` entry, a measured engine disagreement, a constraint some other file depends on \u2014 which is the o",
               "path": "AGENTS.md",
               "detail": "why",
               "citations": [
@@ -8594,7 +8594,7 @@
               "from": "file:agents-md",
               "to": "decision:0-agents-md-l401",
               "kind": "records_decision",
-              "evidence": "` states why the code is shaped the way it is — the spec prose behind a `SUPPLEMENT` entry, a measured engine disagreement, a constraint some other file depends on — which is the o",
+              "evidence": "` states why the code is shaped the way it is \u2014 the spec prose behind a `SUPPLEMENT` entry, a measured engine disagreement, a constraint some other file depends on \u2014 which is the o",
               "citations": [
                 "AGENTS.md#L401"
               ],
@@ -12690,7 +12690,7 @@
         "steps": [
           {
             "id": "serialize",
-            "label": "JSON serialize (inventory → SQLite)",
+            "label": "JSON serialize (inventory \u2192 SQLite)",
             "ms": 0,
             "pct": 0
           },
@@ -12711,12 +12711,12 @@
     ]
   },
   "report": {
-    "overview": "webpack is the JavaScript module bundler (v5.111.1, MIT, `main: lib/index.js`, CLI at `bin/webpack.js`): a `Compiler` builds a module graph from entry dependencies, a `Compilation` seals that graph into chunks, and the result is emitted as static assets for web, Node, worker, Deno, Bun, Electron and universal targets. Everything is `tapable` hooks over CommonJS + JSDoc source — the public config API is defined by JSON Schema in `schemas/` and every type, validator and declaration is code-generated from it by `tooling/generate-types.js`. What is distinctive about this tree is how much webpack now owns itself: its own acorn-derived ECMAScript parser (`lib/javascript/syntax-parser.js`, 17.8k lines), its own CSS and HTML parser/printer/minifier pairs, generated lookup-table modules (`lib/{css,html,javascript}/data.js`), and a comparison harness in `tooling/` that benchmarks those against the ecosystem and gates printer invariants in CI. It is aimed at application developers via config, and at the plugin/loader ecosystem via ~100 exported classes and several hundred hooks.",
+    "overview": "webpack is the JavaScript module bundler (v5.111.1, MIT, `main: lib/index.js`, CLI at `bin/webpack.js`): a `Compiler` builds a module graph from entry dependencies, a `Compilation` seals that graph into chunks, and the result is emitted as static assets for web, Node, worker, Deno, Bun, Electron and universal targets. Everything is `tapable` hooks over CommonJS + JSDoc source \u2014 the public config API is defined by JSON Schema in `schemas/` and every type, validator and declaration is code-generated from it by `tooling/generate-types.js`. What is distinctive about this tree is how much webpack now owns itself: its own acorn-derived ECMAScript parser (`lib/javascript/syntax-parser.js`, 17.8k lines), its own CSS and HTML parser/printer/minifier pairs, generated lookup-table modules (`lib/{css,html,javascript}/data.js`), and a comparison harness in `tooling/` that benchmarks those against the ecosystem and gates printer invariants in CI. It is aimed at application developers via config, and at the plugin/loader ecosystem via ~100 exported classes and several hundred hooks.",
     "system_map": {
-      "summary": "The public surface is `lib/index.js` — a lazily-evaluated getter object exporting the `webpack()` factory plus ~100 plugin/class names and namespaced sub-objects (`webpack.cli`, `webpack.javascript.syntax`, `webpack.container`, `webpack.sharing`). `lib/webpack.js` normalizes, defaults and validates options, constructs a `Compiler`, and hands off to `WebpackOptionsApply`, which is the single place that translates resolved options into the ~60 plugins a build implies. Runtime boundaries are the filesystem (`lib/fs/fs.js` declares `InputFileSystem`/`OutputFileSystem`, `NodeEnvironmentPlugin` supplies the Node implementations), the loader sandbox (`lib/loaders/LoaderRunner.js`), and optional network I/O (`lib/schemes/HttpUriPlugin.js`, `lib/hmr/lazyCompilationBackend.js`). Persistence is the filesystem cache pack under `lib/cache/` plus the custom binary serializer in `lib/serialization/`. Build/test is all yarn scripts in `package.json`, and CI is 13 GitHub Actions workflows with `test.yml` as the hub.",
+      "summary": "The public surface is `lib/index.js` \u2014 a lazily-evaluated getter object exporting the `webpack()` factory plus ~100 plugin/class names and namespaced sub-objects (`webpack.cli`, `webpack.javascript.syntax`, `webpack.container`, `webpack.sharing`). `lib/webpack.js` normalizes, defaults and validates options, constructs a `Compiler`, and hands off to `WebpackOptionsApply`, which is the single place that translates resolved options into the ~60 plugins a build implies. Runtime boundaries are the filesystem (`lib/fs/fs.js` declares `InputFileSystem`/`OutputFileSystem`, `NodeEnvironmentPlugin` supplies the Node implementations), the loader sandbox (`lib/loaders/LoaderRunner.js`), and optional network I/O (`lib/schemes/HttpUriPlugin.js`, `lib/hmr/lazyCompilationBackend.js`). Persistence is the filesystem cache pack under `lib/cache/` plus the custom binary serializer in `lib/serialization/`. Build/test is all yarn scripts in `package.json`, and CI is 13 GitHub Actions workflows with `test.yml` as the hub.",
       "claims": [
         {
-          "claim": "`lib/index.js` is the public export surface: every entry is a memoized getter so `require(\"webpack\")` does not eagerly load the ~770 files under `lib/` — `webpack.cli` and `webpack.util.terminalColors` are split specifically so reading a terminal color does not pull in the options schema.",
+          "claim": "`lib/index.js` is the public export surface: every entry is a memoized getter so `require(\"webpack\")` does not eagerly load the ~770 files under `lib/` \u2014 `webpack.cli` and `webpack.util.terminalColors` are split specifically so reading a terminal color does not pull in the options schema.",
           "sources": [
             "lib/index.js#L1-30",
             "lib/index.js#L250-420"
@@ -12732,7 +12732,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "`createCompiler` fixes the startup order: `getNormalizedWebpackOptions` → `applyWebpackOptionsBaseDefaults` → `new Compiler` → `NodeEnvironmentPlugin` → user plugins → `applyWebpackOptionsDefaults` → `environment`/`afterEnvironment` hooks → `WebpackOptionsApply.process` → `initialize` hook. User plugins are therefore applied *before* the mode/target-dependent defaults are filled in.",
+          "claim": "`createCompiler` fixes the startup order: `getNormalizedWebpackOptions` \u2192 `applyWebpackOptionsBaseDefaults` \u2192 `new Compiler` \u2192 `NodeEnvironmentPlugin` \u2192 user plugins \u2192 `applyWebpackOptionsDefaults` \u2192 `environment`/`afterEnvironment` hooks \u2192 `WebpackOptionsApply.process` \u2192 `initialize` hook. User plugins are therefore applied *before* the mode/target-dependent defaults are filled in.",
           "sources": [
             "lib/webpack.js#L143-197",
             "lib/config/WebpackOptionsApply.js#L1-70"
@@ -12740,7 +12740,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "`lib/config/WebpackOptionsApply.js` (1,274 lines) is the option→plugin translation layer: it statically requires the always-on plugins (`JavascriptModulesPlugin`, `APIPlugin`, `ConstPlugin`, `RuntimePlugin`, `DefaultStatsFactoryPlugin`, …) and lazily requires target-specific ones (`NodeTargetPlugin`, `DenoTargetPlugin`, `BunTargetPlugin`, `ElectronTargetPlugin`, `EnableChunkLoadingPlugin`) inside the branches that need them.",
+          "claim": "`lib/config/WebpackOptionsApply.js` (1,274 lines) is the option\u2192plugin translation layer: it statically requires the always-on plugins (`JavascriptModulesPlugin`, `APIPlugin`, `ConstPlugin`, `RuntimePlugin`, `DefaultStatsFactoryPlugin`, \u2026) and lazily requires target-specific ones (`NodeTargetPlugin`, `DenoTargetPlugin`, `BunTargetPlugin`, `ElectronTargetPlugin`, `EnableChunkLoadingPlugin`) inside the branches that need them.",
           "sources": [
             "lib/config/WebpackOptionsApply.js#L8-63",
             "lib/config/WebpackOptionsApply.js#L99-401"
@@ -12748,7 +12748,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "`lib/config/target.js` holds the target preset table: `TARGETS` is a list of `[name, description, regExp, handler]` tuples covering `browserslist[:…]`, `web`, `webworker`, `node[X.Y]`, `async-node`, `electron[X.Y]-main/preload/renderer`, `nwjs`/`node-webkit`, `deno`, `bun`, and `getTargetProperties` throws a message enumerating all of them for an unknown target.",
+          "claim": "`lib/config/target.js` holds the target preset table: `TARGETS` is a list of `[name, description, regExp, handler]` tuples covering `browserslist[:\u2026]`, `web`, `webworker`, `node[X.Y]`, `async-node`, `electron[X.Y]-main/preload/renderer`, `nwjs`/`node-webkit`, `deno`, `bun`, and `getTargetProperties` throws a message enumerating all of them for an unknown target.",
           "sources": [
             "lib/config/target.js#L128-560",
             "lib/config/target.js#L545-612"
@@ -12765,7 +12765,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Cache persistence rides on a hand-written binary serializer in `lib/serialization/` (`BinaryMiddleware`, `ObjectMiddleware`, `FileMiddleware`, plus per-type serializers for Map/Set/RegExp/Date/Error); classes opt in through `makeSerializable(Class, \"webpack/lib/…\")`, used across 144 files in `lib/`.",
+          "claim": "Cache persistence rides on a hand-written binary serializer in `lib/serialization/` (`BinaryMiddleware`, `ObjectMiddleware`, `FileMiddleware`, plus per-type serializers for Map/Set/RegExp/Date/Error); classes opt in through `makeSerializable(Class, \"webpack/lib/\u2026\")`, used across 144 files in `lib/`.",
           "sources": [
             "lib/util/makeSerializable.js#L60-70",
             "lib/serialization/ObjectMiddleware.js",
@@ -12775,7 +12775,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Deserialization resolves a class by request prefix: `ObjectMiddleware.registerLoader(/^webpack\\/lib\\//, …)` looks the suffix up in the generated `lib/util/internalSerializables.js` map and warns `<req> not found in internalSerializables` when a class was moved without regenerating — which is why `yarn fix:serializables` exists.",
+          "claim": "Deserialization resolves a class by request prefix: `ObjectMiddleware.registerLoader(/^webpack\\/lib\\//, \u2026)` looks the suffix up in the generated `lib/util/internalSerializables.js` map and warns `<req> not found in internalSerializables` when a class was moved without regenerating \u2014 which is why `yarn fix:serializables` exists.",
           "sources": [
             "lib/util/serialization.js#L25-50",
             "package.json#L52-53"
@@ -12790,7 +12790,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "All commands are yarn scripts: `yarn fix` (`fix:code` + `fix:special` + `fmt`), `yarn lint` (a nine-stage `&&` chain ending in `fmt:check` and `cspell`), `yarn test:base` (the only sanctioned jest wrapper — it carries `--experimental-vm-modules --expose-gc --max-old-space-size=4096`), and `yarn fix:special`, which runs all seven generators.",
+          "claim": "All commands are yarn scripts: `yarn fix` (`fix:code` + `fix:special` + `fmt`), `yarn lint` (a nine-stage `&&` chain ending in `fmt:check` and `cspell`), `yarn test:base` (the only sanctioned jest wrapper \u2014 it carries `--experimental-vm-modules --expose-gc --max-old-space-size=4096`), and `yarn fix:special`, which runs all seven generators.",
           "sources": [
             "package.json#L36-56",
             "package.json#L96-99"
@@ -12826,7 +12826,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "`hot/` is a separate shipped surface — browser-side HMR runtime (`dev-server.js`, `poll.js`, `signal.js`, `log-apply-result.js`) plus the three lazy-compilation clients (`lazy-compilation-node.js`, `-web.js`, `-universal.js`) — type-checked by its own `tsconfig.hot.json` rather than the `lib/` project.",
+          "claim": "`hot/` is a separate shipped surface \u2014 browser-side HMR runtime (`dev-server.js`, `poll.js`, `signal.js`, `log-apply-result.js`) plus the three lazy-compilation clients (`lazy-compilation-node.js`, `-web.js`, `-universal.js`) \u2014 type-checked by its own `tsconfig.hot.json` rather than the `lib/` project.",
           "sources": [
             "hot/",
             "package.json#L39",
@@ -12840,7 +12840,7 @@
       "summary": "There are no routes or screens; the user-facing surface is the config schema, the CLI shim, and the exported plugin classes. `schemas/WebpackOptions.json` defines 36 top-level options and 12 `experiments` flags, each of which maps to plugins wired in `WebpackOptionsApply`/`defaults.js`. Language support is organized as parser+generator+printer triples per module type (javascript, css, html, json, asset, wasm, typescript), most of which webpack implements itself rather than delegating. Beyond bundling proper, the shipped features include Module Federation, HMR and lazy compilation, persistent caching, source maps, code splitting, library output formats, and a stats/reporting layer.",
       "claims": [
         {
-          "claim": "The config API exposes 36 top-level options — `amd, bail, cache, context, dependencies, devServer, devtool, dotenv, entry, experiments, extends, externals, externalsPresets, externalsType, ignoreWarnings, infrastructureLogging, loader, mode, module, name, node, optimization, output, parallelism, performance, plugins, profile, recordsInputPath, recordsOutputPath, recordsPath, resolve, resolveLoader, snapshot, stats, target, validate, watch, watchOptions` — all validated against one schema.",
+          "claim": "The config API exposes 36 top-level options \u2014 `amd, bail, cache, context, dependencies, devServer, devtool, dotenv, entry, experiments, extends, externals, externalsPresets, externalsType, ignoreWarnings, infrastructureLogging, loader, mode, module, name, node, optimization, output, parallelism, performance, plugins, profile, recordsInputPath, recordsOutputPath, recordsPath, resolve, resolveLoader, snapshot, stats, target, validate, watch, watchOptions` \u2014 all validated against one schema.",
           "sources": [
             "schemas/WebpackOptions.json"
           ],
@@ -12855,7 +12855,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Native CSS and HTML are full pipelines, not loaders: `lib/css/` ships `syntax-parser.js` (14,973 lines), `syntax-printer.js` (4,730) and a generated `data.js` (8,003) of MDN-derived tables; `lib/html/` ships `syntax-parser.js` (13,197, including §13.2 tree construction) and `HtmlGenerator.js`.",
+          "claim": "Native CSS and HTML are full pipelines, not loaders: `lib/css/` ships `syntax-parser.js` (14,973 lines), `syntax-printer.js` (4,730) and a generated `data.js` (8,003) of MDN-derived tables; `lib/html/` ships `syntax-parser.js` (13,197, including \u00a713.2 tree construction) and `HtmlGenerator.js`.",
           "sources": [
             "lib/css/syntax-parser.js",
             "lib/css/syntax-printer.js",
@@ -12865,7 +12865,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "JavaScript is parsed by webpack's own acorn-derived parser (`lib/javascript/syntax-parser.js`, 17,844 lines) feeding `JavascriptParser.js` (7,604 lines) which raises the hook surface every dependency plugin taps (`evaluateIdentifier`, `call`, `expression`, …).",
+          "claim": "JavaScript is parsed by webpack's own acorn-derived parser (`lib/javascript/syntax-parser.js`, 17,844 lines) feeding `JavascriptParser.js` (7,604 lines) which raises the hook surface every dependency plugin taps (`evaluateIdentifier`, `call`, `expression`, \u2026).",
           "sources": [
             "lib/javascript/syntax-parser.js",
             "lib/javascript/JavascriptParser.js",
@@ -12874,7 +12874,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Minification defaults to one `minimizer-webpack-plugin` instance sharing a single worker-thread pool across up to three `minify` functions dispatched by extension — `jsMinify` (`[cm]?js`), `cssMinify` (`css`) and `htmlMinify` (`html`) — and steps aside entirely when `getClaimedAssetTypes` finds a user-configured minimizer for that type.",
+          "claim": "Minification defaults to one `minimizer-webpack-plugin` instance sharing a single worker-thread pool across up to three `minify` functions dispatched by extension \u2014 `jsMinify` (`[cm]?js`), `cssMinify` (`css`) and `htmlMinify` (`html`) \u2014 and steps aside entirely when `getClaimedAssetTypes` finds a user-configured minimizer for that type.",
           "sources": [
             "lib/config/defaults.js#L2521-2627",
             "lib/javascript/jsMinify.js#L30-70"
@@ -12968,10 +12968,10 @@
       ]
     },
     "data_flow": {
-      "summary": "Input boundaries are the config object (validated against JSON Schema), the input filesystem behind `InputFileSystem`, and optionally the network (`HttpUriPlugin`) or a data/virtual URL scheme. A request becomes a module through `NormalModuleFactory.create` (resolve → rules match → factory hooks), is read and transformed by the loader chain in `LoaderRunner`, then parsed into `Dependency` objects that populate the `ModuleGraph`. At seal time the `ModuleGraph` is frozen and `buildChunkGraph` fills a `ChunkGraph`; code generation renders each module through its `Generator` and `DependencyTemplate`s into `Source` objects, which are hashed, assembled into assets, passed through the `processAssets` stage pipeline, and finally written by `Compiler.emitAssets` through `OutputFileSystem`. Everything durable — module graph, code generation results, resolver results — round-trips through `lib/serialization/` into the filesystem cache pack.",
+      "summary": "Input boundaries are the config object (validated against JSON Schema), the input filesystem behind `InputFileSystem`, and optionally the network (`HttpUriPlugin`) or a data/virtual URL scheme. A request becomes a module through `NormalModuleFactory.create` (resolve \u2192 rules match \u2192 factory hooks), is read and transformed by the loader chain in `LoaderRunner`, then parsed into `Dependency` objects that populate the `ModuleGraph`. At seal time the `ModuleGraph` is frozen and `buildChunkGraph` fills a `ChunkGraph`; code generation renders each module through its `Generator` and `DependencyTemplate`s into `Source` objects, which are hashed, assembled into assets, passed through the `processAssets` stage pipeline, and finally written by `Compiler.emitAssets` through `OutputFileSystem`. Everything durable \u2014 module graph, code generation results, resolver results \u2014 round-trips through `lib/serialization/` into the filesystem cache pack.",
       "claims": [
         {
-          "claim": "Input normalization is two distinct layers: `normalization.js` canonicalizes the user's config shape (shorthand → full form, 828 lines) and `defaults.js` fills mode/target-dependent values (2,889 lines); `applyWebpackOptionsBaseDefaults` runs before plugins and `applyWebpackOptionsDefaults` after.",
+          "claim": "Input normalization is two distinct layers: `normalization.js` canonicalizes the user's config shape (shorthand \u2192 full form, 828 lines) and `defaults.js` fills mode/target-dependent values (2,889 lines); `applyWebpackOptionsBaseDefaults` runs before plugins and `applyWebpackOptionsDefaults` after.",
           "sources": [
             "lib/config/normalization.js",
             "lib/config/defaults.js",
@@ -12980,7 +12980,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "`NormalModuleFactory.create` builds a single mutable `ResolveData` object carrying `contextInfo`, `request`, `phase`, import `attributes`, `createData`, and three `LazySet`s of file/missing/context dependencies, then drives it through `beforeResolve` → `factorize` → `resolve` → `afterResolve` → `createModule` → `module`.",
+          "claim": "`NormalModuleFactory.create` builds a single mutable `ResolveData` object carrying `contextInfo`, `request`, `phase`, import `attributes`, `createData`, and three `LazySet`s of file/missing/context dependencies, then drives it through `beforeResolve` \u2192 `factorize` \u2192 `resolve` \u2192 `afterResolve` \u2192 `createModule` \u2192 `module`.",
           "sources": [
             "lib/module/NormalModuleFactory.js#L1269-1345",
             "lib/module/NormalModuleFactory.js#L628-676"
@@ -12996,7 +12996,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Source text enters through `NormalModule._doBuild`, which calls the vendored `runLoaders` with a `processResource` callback; the loader chain is executed as a pitching pass then a normal pass (`iteratePitchingLoaders` → `processResource` → unwind), and each loader module is loaded by `loadLoader`.",
+          "claim": "Source text enters through `NormalModule._doBuild`, which calls the vendored `runLoaders` with a `processResource` callback; the loader chain is executed as a pitching pass then a normal pass (`iteratePitchingLoaders` \u2192 `processResource` \u2192 unwind), and each loader module is loaded by `loadLoader`.",
           "sources": [
             "lib/module/NormalModule.js#L1339-1470",
             "lib/loaders/LoaderRunner.js#L503-580",
@@ -13005,7 +13005,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "The loader chain can bypass parsing entirely: a loader may return `webpackAST` in its `additionalData`, which `LoaderRunner` types as `AdditionalDataKnown.webpackAST` — \"the AST webpack should parse instead of the source\".",
+          "claim": "The loader chain can bypass parsing entirely: a loader may return `webpackAST` in its `additionalData`, which `LoaderRunner` types as `AdditionalDataKnown.webpackAST` \u2014 \"the AST webpack should parse instead of the source\".",
           "sources": [
             "lib/loaders/LoaderRunner.js#L49-56"
           ],
@@ -13038,7 +13038,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "After chunking, the ordered tail of `seal` is `processRuntimeRequirements` → `_attachPendingRuntimeModules` → `createHash` (which returns the code-generation jobs) → `_runCodeGenerationJobs` → `createModuleAssets` → `createChunkAssets` → `processAssets` → freeze `this.assets` → `summarizeDependencies` → `afterSeal`.",
+          "claim": "After chunking, the ordered tail of `seal` is `processRuntimeRequirements` \u2192 `_attachPendingRuntimeModules` \u2192 `createHash` (which returns the code-generation jobs) \u2192 `_runCodeGenerationJobs` \u2192 `createModuleAssets` \u2192 `createChunkAssets` \u2192 `processAssets` \u2192 freeze `this.assets` \u2192 `summarizeDependencies` \u2192 `afterSeal`.",
           "sources": [
             "lib/Compilation.js#L3900-3999",
             "lib/Compilation.js#L5174-5200",
@@ -13047,7 +13047,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "`this.assets` is frozen at the end of `processAssets` — literally `Object.freeze` when `backCompat` is off, and a `soonFrozenObjectDeprecation` proxy carrying `DEP_WEBPACK_COMPILATION_ASSETS` when it is on — so post-seal asset mutation is a hard boundary.",
+          "claim": "`this.assets` is frozen at the end of `processAssets` \u2014 literally `Object.freeze` when `backCompat` is off, and a `soonFrozenObjectDeprecation` proxy carrying `DEP_WEBPACK_COMPILATION_ASSETS` when it is on \u2014 so post-seal asset mutation is a hard boundary.",
           "sources": [
             "lib/Compilation.js#L3945-3965"
           ],
@@ -13061,7 +13061,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Emitted-asset writes are deduplicated through two caches on the compiler — `_assetEmittingWrittenFiles` (path → generation) and `_assetEmittingSourceCache` (Source → `{ sizeOnlySource, writtenTo }`) — so an unchanged `Source` in a watch rebuild is compared rather than rewritten.",
+          "claim": "Emitted-asset writes are deduplicated through two caches on the compiler \u2014 `_assetEmittingWrittenFiles` (path \u2192 generation) and `_assetEmittingSourceCache` (Source \u2192 `{ sizeOnlySource, writtenTo }`) \u2014 so an unchanged `Source` in a watch rebuild is compared rather than rewritten.",
           "sources": [
             "lib/Compiler.js#L848-900"
           ],
@@ -13077,7 +13077,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Build dependencies close the loop into the cache: after `done`, `run`'s final step is `this.cache.storeBuildDependencies(compilation.buildDependencies, compilation.optionalBuildDependencies, …)`, which `PackFileCacheStrategy` snapshots into the `PackContainer` alongside a version string.",
+          "claim": "Build dependencies close the loop into the cache: after `done`, `run`'s final step is `this.cache.storeBuildDependencies(compilation.buildDependencies, compilation.optionalBuildDependencies, \u2026)`, which `PackFileCacheStrategy` snapshots into the `PackContainer` alongside a version string.",
           "sources": [
             "lib/Compiler.js#L672-686",
             "lib/cache/PackFileCacheStrategy.js#L57-110",
@@ -13088,10 +13088,10 @@
       ]
     },
     "behavior_traces": {
-      "summary": "Four flows are worth walking: a one-shot `webpack(config, cb)` run, a single module's resolve→build→parse path, a watch rebuild, and the persistent-cache store/restore path. Each is a callback chain rather than promises, with `tapable` hooks at every joint and `logger.time`/`timeEnd` pairs marking the phases you see in `stats` profiling output. The names below are the actual functions in call order.",
+      "summary": "Four flows are worth walking: a one-shot `webpack(config, cb)` run, a single module's resolve\u2192build\u2192parse path, a watch rebuild, and the persistent-cache store/restore path. Each is a callback chain rather than promises, with `tapable` hooks at every joint and `logger.time`/`timeEnd` pairs marking the phases you see in `stats` profiling output. The names below are the actual functions in call order.",
       "claims": [
         {
-          "claim": "Startup (one-shot): `webpack(options, cb)` → `create()` → schema check → `createCompiler` → `compiler.run(cb)`; `run` calls `cache.endIdle` if idle, then `hooks.beforeRun` → `hooks.run` → `readRecords` → `compile(onCompiled)`.",
+          "claim": "Startup (one-shot): `webpack(options, cb)` \u2192 `create()` \u2192 schema check \u2192 `createCompiler` \u2192 `compiler.run(cb)`; `run` calls `cache.endIdle` if idle, then `hooks.beforeRun` \u2192 `hooks.run` \u2192 `readRecords` \u2192 `compile(onCompiled)`.",
           "sources": [
             "lib/webpack.js#L255-330",
             "lib/Compiler.js#L578-710"
@@ -13099,28 +13099,28 @@
           "kind": "evidence"
         },
         {
-          "claim": "`Compiler.compile` runs `newCompilationParams()` → `hooks.beforeCompile` → `hooks.compile` → `newCompilation(params)` → `hooks.make` → `hooks.finishMake` → `process.nextTick` → `compilation.finish` → `compilation.seal` → `hooks.afterCompile`, timing each phase with the `webpack.Compiler` logger.",
+          "claim": "`Compiler.compile` runs `newCompilationParams()` \u2192 `hooks.beforeCompile` \u2192 `hooks.compile` \u2192 `newCompilation(params)` \u2192 `hooks.make` \u2192 `hooks.finishMake` \u2192 `process.nextTick` \u2192 `compilation.finish` \u2192 `compilation.seal` \u2192 `hooks.afterCompile`, timing each phase with the `webpack.Compiler` logger.",
           "sources": [
             "lib/Compiler.js#L1602-1648"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "Completion: `onCompiled` checks `hooks.shouldEmit`; if emitting it defers a `process.nextTick`, calls `emitAssets`, re-enters `compile` when `needAdditionalPass` is true, then `emitRecords` → build `new Stats(compilation)` → `hooks.done` → `cache.storeBuildDependencies` → `finalCallback`, which sets `cache.beginIdle()` and fires `hooks.afterDone`.",
+          "claim": "Completion: `onCompiled` checks `hooks.shouldEmit`; if emitting it defers a `process.nextTick`, calls `emitAssets`, re-enters `compile` when `needAdditionalPass` is true, then `emitRecords` \u2192 build `new Stats(compilation)` \u2192 `hooks.done` \u2192 `cache.storeBuildDependencies` \u2192 `finalCallback`, which sets `cache.beginIdle()` and fires `hooks.afterDone`.",
           "sources": [
             "lib/Compiler.js#L596-700"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "The callback form of `webpack()` always closes the compiler for you — `compiler.run((err, stats) => compiler.close((err2) => callback(err || err2, stats)))` — which is why plugin authors using the no-callback form must call `close` themselves.",
+          "claim": "The callback form of `webpack()` always closes the compiler for you \u2014 `compiler.run((err, stats) => compiler.close((err2) => callback(err || err2, stats)))` \u2014 which is why plugin authors using the no-callback form must call `close` themselves.",
           "sources": [
             "lib/webpack.js#L300-320"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "Module creation: `Compilation.handleModuleCreation` → `factorizeQueue` → `NormalModuleFactory.create` → `hooks.beforeResolve` (a `false` result short-circuits to an ignored module) → `hooks.factorize`/`resolveResource` → `hooks.afterResolve` → `hooks.createModule`/`createModuleClass` → `hooks.module` waterfall.",
+          "claim": "Module creation: `Compilation.handleModuleCreation` \u2192 `factorizeQueue` \u2192 `NormalModuleFactory.create` \u2192 `hooks.beforeResolve` (a `false` result short-circuits to an ignored module) \u2192 `hooks.factorize`/`resolveResource` \u2192 `hooks.afterResolve` \u2192 `hooks.createModule`/`createModuleClass` \u2192 `hooks.module` waterfall.",
           "sources": [
             "lib/Compilation.js#L2441-2500",
             "lib/module/NormalModuleFactory.js#L1269-1340",
@@ -13129,7 +13129,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Module build: `NormalModule.build` → `_doBuild` → `runLoaders` (pitch pass, `processResource`, normal pass) → on success the parser runs and dependencies are collected; every failure path funnels through `markModuleAsErrored(err)` followed by `_initBuildHash(compilation)` so an errored module still has a hash.",
+          "claim": "Module build: `NormalModule.build` \u2192 `_doBuild` \u2192 `runLoaders` (pitch pass, `processResource`, normal pass) \u2192 on success the parser runs and dependencies are collected; every failure path funnels through `markModuleAsErrored(err)` followed by `_initBuildHash(compilation)` so an errored module still has a hash.",
           "sources": [
             "lib/module/NormalModule.js#L1676-1760",
             "lib/module/NormalModule.js#L1339-1470",
@@ -13147,7 +13147,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Seal, in order: clear queues in `finalCallback`, optionally re-attach `ChunkGraph` per module for `backCompat`, `hooks.seal`, loop `hooks.optimizeDependencies` until it returns falsy, `hooks.beforeChunks`, `moduleGraph.freeze(\"seal\")`, entry→chunk creation with `assignDepths`, then the optimize/hash/codegen/assets tail.",
+          "claim": "Seal, in order: clear queues in `finalCallback`, optionally re-attach `ChunkGraph` per module for `backCompat`, `hooks.seal`, loop `hooks.optimizeDependencies` until it returns falsy, `hooks.beforeChunks`, `moduleGraph.freeze(\"seal\")`, entry\u2192chunk creation with `assignDepths`, then the optimize/hash/codegen/assets tail.",
           "sources": [
             "lib/Compilation.js#L3612-3700",
             "lib/Compilation.js#L3900-3999"
@@ -13155,7 +13155,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Watch rebuild: `Watching._invalidate` → `_go(fileTimeInfoEntries, contextTimeInfoEntries, changedFiles, removedFiles)` → `compiler.compile` → `_done(err, compilation)`, which re-enters `_go` when `this.invalid` was set during the run; `_done` is pre-bound in the constructor and the first pass is kicked off by `_invalidate` when `_initial`.",
+          "claim": "Watch rebuild: `Watching._invalidate` \u2192 `_go(fileTimeInfoEntries, contextTimeInfoEntries, changedFiles, removedFiles)` \u2192 `compiler.compile` \u2192 `_done(err, compilation)`, which re-enters `_go` when `this.invalid` was set during the run; `_done` is pre-bound in the constructor and the first pass is kicked off by `_invalidate` when `_initial`.",
           "sources": [
             "lib/watch/Watching.js#L26-130",
             "lib/watch/Watching.js#L273-320",
@@ -13171,7 +13171,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "A cache pack is read lazily by location: `Pack.get(identifier, etag)` looks the identifier up in `itemInfo`, finds its `location`, and only then materializes that `PackContent`'s map — so restoring one module does not deserialize the whole pack.",
+          "claim": "A cache pack is read lazily by location: `Pack.get(identifier, etag)` looks the identifier up in `itemInfo`, finds its `location`, and only then materializes that `PackContent`'s map \u2014 so restoring one module does not deserialize the whole pack.",
           "sources": [
             "lib/cache/PackFileCacheStrategy.js#L203-235",
             "lib/cache/PackFileCacheStrategy.js#L903-990"
@@ -13193,7 +13193,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Test execution mirrors the real runtime rather than mocking it: `test/templates/ConfigTestCases.js` runs a real `webpack()` build, resolves the bundle via a per-case `findBundle`, and executes it in a `vm` context — `test/harness/runner/asModule.js` even builds `vm.SyntheticModule`/`SourceTextModule` wrappers so ESM output is linked and evaluated for real.",
+          "claim": "Test execution mirrors the real runtime rather than mocking it: `test/templates/ConfigTestCases.js` runs a real `webpack()` build, resolves the bundle via a per-case `findBundle`, and executes it in a `vm` context \u2014 `test/harness/runner/asModule.js` even builds `vm.SyntheticModule`/`SourceTextModule` wrappers so ESM output is linked and evaluated for real.",
           "sources": [
             "test/templates/ConfigTestCases.js#L94-260",
             "test/templates/ConfigTestCases.js#L600-640",
@@ -13214,14 +13214,14 @@
           "kind": "evidence"
         },
         {
-          "claim": "Three `minify` entry points are deliberately excluded from coverage — `lib/css/cssMinify.js`, `lib/html/htmlMinify.js`, `lib/javascript/jsMinify.js` — because they are serialized to the minimizer worker pool as source and instrumentation counters would not resolve there.",
+          "claim": "Three `minify` entry points are deliberately excluded from coverage \u2014 `lib/css/cssMinify.js`, `lib/html/htmlMinify.js`, `lib/javascript/jsMinify.js` \u2014 because they are serialized to the minimizer worker pool as source and instrumentation counters would not resolve there.",
           "sources": [
             "jest.config.js#L46-52"
           ],
           "kind": "evidence"
         },
         {
-          "claim": "The suite is built from thin shims over four drivers: `test/*.test.js`/`*.basictest.js`/`*.longtest.js` each call `describeCases(config)` from `test/templates/{TestCases,ConfigTestCases,HotTestCases,WatchTestCases}.js` — e.g. `ConfigTestCases.basictest.js` is five lines.",
+          "claim": "The suite is built from thin shims over four drivers: `test/*.test.js`/`*.basictest.js`/`*.longtest.js` each call `describeCases(config)` from `test/templates/{TestCases,ConfigTestCases,HotTestCases,WatchTestCases}.js` \u2014 e.g. `ConfigTestCases.basictest.js` is five lines.",
           "sources": [
             "test/ConfigTestCases.basictest.js",
             "test/templates/ConfigTestCases.js#L94-100",
@@ -13230,7 +13230,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "The option-set matrix lives in one file, `test/templates/variants.js`: `normal`, `development`, `production`, `production-global-used`, `module` (target node14 + `module: true`), `hot`, nine devtool variants, `minimized-source-map`, and `cache-pack` — one `test/` shim per entry because jest parallelizes per file.",
+          "claim": "The option-set matrix lives in one file, `test/templates/variants.js`: `normal`, `development`, `production`, `production-global-used`, `module` (target node14 + `module: true`), `hot`, nine devtool variants, `minimized-source-map`, and `cache-pack` \u2014 one `test/` shim per entry because jest parallelizes per file.",
           "sources": [
             "test/templates/variants.js#L1-111"
           ],
@@ -13256,7 +13256,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Spec conformance is imported wholesale via four git submodules under `test/external/` — test262, html5lib-tests, WPT (~161k files, shallow-cloned) and css-parsing-tests — each with its own `specCases/*.spectest.js` runner and its own CI job.",
+          "claim": "Spec conformance is imported wholesale via four git submodules under `test/external/` \u2014 test262, html5lib-tests, WPT (~161k files, shallow-cloned) and css-parsing-tests \u2014 each with its own `specCases/*.spectest.js` runner and its own CI job.",
           "sources": [
             "TESTING_DOCS.md#L36-58",
             "test/specCases/",
@@ -13291,7 +13291,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "CI gates the expensive suites on three cheap ones — `integration`, `test262`, `parser`, `syntax-equivalence`, the Deno/Bun matrix and the benchmark shards all declare `needs: [lint, basic, unit]`, so a red lint leaves most of the run reporting `skipped` rather than a result.",
+          "claim": "CI gates the expensive suites on three cheap ones \u2014 `integration`, `test262`, `parser`, `syntax-equivalence`, the Deno/Bun matrix and the benchmark shards all declare `needs: [lint, basic, unit]`, so a red lint leaves most of the run reporting `skipped` rather than a result.",
           "sources": [
             ".github/workflows/test.yml#L247-260",
             ".github/workflows/test.yml#L305-312",
@@ -13300,7 +13300,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "The integration matrix retries once before failing (`yarn cover:integration:${part} --ci … || yarn cover:integration:${part} --ci … -f`) and only uploads coverage on the non-legacy Node versions, so Node 10/12/14/16/18/20 legs run `test:integration` without instrumentation.",
+          "claim": "The integration matrix retries once before failing (`yarn cover:integration:${part} --ci \u2026 || yarn cover:integration:${part} --ci \u2026 -f`) and only uploads coverage on the non-legacy Node versions, so Node 10/12/14/16/18/20 legs run `test:integration` without instrumentation.",
           "sources": [
             ".github/workflows/test.yml#L636-660"
           ],
@@ -13337,10 +13337,10 @@
       ]
     },
     "risk_map": {
-      "summary": "webpack's real security surface is that it executes arbitrary third-party code by design — loaders, plugins and config files all run with full Node privileges in the developer's process — so the interesting risks are the paths that widen that, not the bundler core. Concretely: `HttpUriPlugin` fetches remote code over the network, `lazyCompilationBackend` opens a listening HTTP server, `CleanPlugin` deletes files, `DotenvPlugin` reads secrets into the bundle, and the cache deserializer reconstructs arbitrary registered classes from disk. Operationally, the largest fragility is size and coupling: `Compilation.js` is 6,724 lines with a seal pipeline whose phase ordering is load-bearing, the three `syntax-parser.js` files total ~46k lines with V8-inlining-budget constraints baked into specific methods, and several correctness properties (cache round-trip, generated-file freshness, deep-import compatibility) are enforced only by conventions that a careless edit silently violates.",
+      "summary": "webpack's real security surface is that it executes arbitrary third-party code by design \u2014 loaders, plugins and config files all run with full Node privileges in the developer's process \u2014 so the interesting risks are the paths that widen that, not the bundler core. Concretely: `HttpUriPlugin` fetches remote code over the network, `lazyCompilationBackend` opens a listening HTTP server, `CleanPlugin` deletes files, `DotenvPlugin` reads secrets into the bundle, and the cache deserializer reconstructs arbitrary registered classes from disk. Operationally, the largest fragility is size and coupling: `Compilation.js` is 6,724 lines with a seal pipeline whose phase ordering is load-bearing, the three `syntax-parser.js` files total ~46k lines with V8-inlining-budget constraints baked into specific methods, and several correctness properties (cache round-trip, generated-file freshness, deep-import compatibility) are enforced only by conventions that a careless edit silently violates.",
       "claims": [
         {
-          "claim": "Arbitrary code execution is the design, not a bug: `loadLoader` requires loader modules from the resolved graph and `runLoaders` invokes them with a full loader context, so any dependency reachable as a loader runs with the developer's privileges — there is no sandbox in this path.",
+          "claim": "Arbitrary code execution is the design, not a bug: `loadLoader` requires loader modules from the resolved graph and `runLoaders` invokes them with a full loader context, so any dependency reachable as a loader runs with the developer's privileges \u2014 there is no sandbox in this path.",
           "sources": [
             "lib/loaders/loadLoader.js",
             "lib/loaders/LoaderRunner.js#L528-580",
@@ -13349,7 +13349,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "`HttpUriPlugin` is the highest-value security path: it fetches module source over `http:`/`https:`, routes through `options.proxy` or the `http_proxy`/`HTTP_PROXY` environment variables, and its `allowedUris` policy must be re-checked after every redirect — the redirect check at L773-790 is the control that stops an allowed host from redirecting to an arbitrary one.",
+          "claim": "`HttpUriPlugin` is the highest-value security path: it fetches module source over `http:`/`https:`, routes through `options.proxy` or the `http_proxy`/`HTTP_PROXY` environment variables, and its `allowedUris` policy must be re-checked after every redirect \u2014 the redirect check at L773-790 is the control that stops an allowed host from redirecting to an arbitrary one.",
           "sources": [
             "lib/schemes/HttpUriPlugin.js#L546-560",
             "lib/schemes/HttpUriPlugin.js#L773-790",
@@ -13374,7 +13374,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "`CleanPlugin` performs `unlink` and `rmdir` under `output.path` based on a filesystem diff, with `keep` (a `SyncBailHook` plus user matcher) and `dry` as the only brakes — a misconfigured `output.path` makes this a destructive operation on a directory the user did not intend.",
+          "claim": "`CleanPlugin` performs `unlink` and `rmdir` under `output.path` based on a filesystem diff, with `keep` (a `SyncBailHook` plus user matcher) and `dry` as the only brakes \u2014 a misconfigured `output.path` makes this a destructive operation on a directory the user did not intend.",
           "sources": [
             "lib/output/CleanPlugin.js#L92-120",
             "lib/output/CleanPlugin.js#L180-340",
@@ -13383,7 +13383,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "`DotenvPlugin` reads `.env`, `.env.local`, `.env.[mode]` and `.env.[mode].local` and feeds the parsed, `dotenv-expand`-expanded values into `DefinePlugin` — i.e. straight into the emitted bundle — so a missing `prefix` filter ships secrets to the browser.",
+          "claim": "`DotenvPlugin` reads `.env`, `.env.local`, `.env.[mode]` and `.env.[mode].local` and feeds the parsed, `dotenv-expand`-expanded values into `DefinePlugin` \u2014 i.e. straight into the emitted bundle \u2014 so a missing `prefix` filter ships secrets to the browser.",
           "sources": [
             "lib/define/DotenvPlugin.js#L55-65",
             "lib/define/DotenvPlugin.js#L199-215",
@@ -13392,7 +13392,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "The cache deserializer instantiates classes named by strings read off disk: `registerLoader(/^webpack\\/lib\\//, …)` maps a request to a loader in the generated `internalSerializables`, and an unknown request only produces a `console.warn` — a cache file is therefore a trusted input.",
+          "claim": "The cache deserializer instantiates classes named by strings read off disk: `registerLoader(/^webpack\\/lib\\//, \u2026)` maps a request to a loader in the generated `internalSerializables`, and an unknown request only produces a `console.warn` \u2014 a cache file is therefore a trusted input.",
           "sources": [
             "lib/util/serialization.js#L25-50",
             "lib/serialization/ObjectMiddleware.js",
@@ -13401,7 +13401,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Deserialization re-enters constructors with no arguments, so a constructor that dereferences a parameter throws during restore and manifests only as a `Restoring failed for <identifier> from pack` debug line — a silent-by-default failure mode documented as a recurring trap.",
+          "claim": "Deserialization re-enters constructors with no arguments, so a constructor that dereferences a parameter throws during restore and manifests only as a `Restoring failed for <identifier> from pack` debug line \u2014 a silent-by-default failure mode documented as a recurring trap.",
           "sources": [
             "AGENTS.md",
             "lib/util/makeSerializable.js#L45-58"
@@ -13409,7 +13409,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Blast-radius hotspot #1 is `lib/Compilation.js` (6,724 lines): a single class owning the module graph, chunk graph, five async queues, the whole seal pipeline, asset emission and the hook surface — any reordering inside `seal` changes what plugins observe.",
+          "claim": "Blast-radius hotspot #1 is `lib/Compilation.js` (6,724 lines): a single class owning the module graph, chunk graph, five async queues, the whole seal pipeline, asset emission and the hook surface \u2014 any reordering inside `seal` changes what plugins observe.",
           "sources": [
             "lib/Compilation.js#L3612-3999",
             "lib/Compilation.js#L4484-4530",
@@ -13418,7 +13418,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Blast-radius hotspot #2 is the parser trio: `javascript/syntax-parser.js` (17,844 lines), `css/syntax-parser.js` (14,973) and `html/syntax-parser.js` (13,197), whose hot methods (`readWord`, `readString`, `finishToken`) are sized to fit V8's ~460-byte inlining budget — adding one argument to `readWord` once cost 1.4%.",
+          "claim": "Blast-radius hotspot #2 is the parser trio: `javascript/syntax-parser.js` (17,844 lines), `css/syntax-parser.js` (14,973) and `html/syntax-parser.js` (13,197), whose hot methods (`readWord`, `readString`, `finishToken`) are sized to fit V8's ~460-byte inlining budget \u2014 adding one argument to `readWord` once cost 1.4%.",
           "sources": [
             "lib/javascript/syntax-parser.js",
             "lib/css/syntax-parser.js",
@@ -13427,7 +13427,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Fragile coupling: five `lib/*/data.js` modules and every `types.d.ts`/`declarations/*.d.ts`/`schemas/**/*.check.js` file are generated, and the `lint` job fails with only `… need to be updated` — a message that reads like a code problem even when the cause is a reworded JSDoc paragraph.",
+          "claim": "Fragile coupling: five `lib/*/data.js` modules and every `types.d.ts`/`declarations/*.d.ts`/`schemas/**/*.check.js` file are generated, and the `lint` job fails with only `\u2026 need to be updated` \u2014 a message that reads like a code problem even when the cause is a reworded JSDoc paragraph.",
           "sources": [
             "lib/css/data.js",
             "lib/html/data.js",
@@ -13457,7 +13457,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "The Node 10.13 baseline is an under-enforced trap: `lib/` and `hot/` ship as raw source with no build step, and the baseline binds test fixtures too — a `configCases/` fixture using newer syntax passes locally and fails the Node 10 CI job with a bare `SyntaxError` inside the emitted bundle.",
+          "claim": "The Node 10.13 baseline is an under-enforced trap: `lib/` and `hot/` ship as raw source with no build step, and the baseline binds test fixtures too \u2014 a `configCases/` fixture using newer syntax passes locally and fails the Node 10 CI job with a bare `SyntaxError` inside the emitted bundle.",
           "sources": [
             "AGENTS.md",
             ".github/workflows/test.yml#L579-645",
@@ -13476,7 +13476,7 @@
       ]
     },
     "extension_points": {
-      "summary": "Extension is the architecture: everything user-visible is a plugin that taps `tapable` hooks, and webpack's own features are implemented the same way user plugins are. The four main seams are (1) the hook objects on `Compiler`, `Compilation` and `NormalModuleFactory`, including `HookMap`s keyed by module type; (2) the `Dependency` + `DependencyTemplate` + `makeSerializable` triple for new dependency kinds; (3) `RuntimeGlobals` + `RuntimeModule` + `runtimeRequirementInTree` for new runtime code; and (4) the plugin-based `RuleSetCompiler` for new `module.rules` vocabulary. Generators of tables and types are themselves extension points — a new CSS math function or HTML attribute is a descriptor added to a `tooling/generate-*-data.js` SUPPLEMENT, not code added to a printer.",
+      "summary": "Extension is the architecture: everything user-visible is a plugin that taps `tapable` hooks, and webpack's own features are implemented the same way user plugins are. The four main seams are (1) the hook objects on `Compiler`, `Compilation` and `NormalModuleFactory`, including `HookMap`s keyed by module type; (2) the `Dependency` + `DependencyTemplate` + `makeSerializable` triple for new dependency kinds; (3) `RuntimeGlobals` + `RuntimeModule` + `runtimeRequirementInTree` for new runtime code; and (4) the plugin-based `RuleSetCompiler` for new `module.rules` vocabulary. Generators of tables and types are themselves extension points \u2014 a new CSS math function or HTML attribute is a descriptor added to a `tooling/generate-*-data.js` SUPPLEMENT, not code added to a printer.",
       "claims": [
         {
           "claim": "`NormalModuleFactory.hooks` is the richest factory seam: `resolve`, `factorize`, `beforeResolve`, `afterResolve`, `createModule`, `module`, plus five `HookMap`s keyed by scheme or module type (`resolveForScheme`, `resolveInScheme`, `prepareModuleType`, `createParser`/`parser`, `createGenerator`/`generator`, `createModuleClass`), several annotated with `@since` versions.",
@@ -13486,7 +13486,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "New URL schemes plug in through `resolveForScheme`/`resolveInScheme` — the pattern used by `DataUriPlugin`, `FileUriPlugin`, `HttpUriPlugin` and `VirtualUrlPlugin` in `lib/schemes/`.",
+          "claim": "New URL schemes plug in through `resolveForScheme`/`resolveInScheme` \u2014 the pattern used by `DataUriPlugin`, `FileUriPlugin`, `HttpUriPlugin` and `VirtualUrlPlugin` in `lib/schemes/`.",
           "sources": [
             "lib/schemes/DataUriPlugin.js",
             "lib/schemes/VirtualUrlPlugin.js",
@@ -13505,7 +13505,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "A new dependency type is the documented triple: a `Dependency` subclass in `lib/dependencies/`, a `DependencyTemplate` registered into `compilation.dependencyTemplates`, and a `makeSerializable(Class, \"webpack/lib/…\")` call — the pattern appears in 144 files.",
+          "claim": "A new dependency type is the documented triple: a `Dependency` subclass in `lib/dependencies/`, a `DependencyTemplate` registered into `compilation.dependencyTemplates`, and a `makeSerializable(Class, \"webpack/lib/\u2026\")` call \u2014 the pattern appears in 144 files.",
           "sources": [
             "lib/graph/Dependency.js",
             "lib/DependencyTemplate.js",
@@ -13542,7 +13542,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Chunk-loading, wasm-loading and library formats are enabled through dedicated dispatch plugins — `EnableChunkLoadingPlugin`, `EnableWasmLoadingPlugin`, `EnableLibraryPlugin` — which `WebpackOptionsApply` calls per configured type, so a new format registers itself with one of these rather than editing the option branch.",
+          "claim": "Chunk-loading, wasm-loading and library formats are enabled through dedicated dispatch plugins \u2014 `EnableChunkLoadingPlugin`, `EnableWasmLoadingPlugin`, `EnableLibraryPlugin` \u2014 which `WebpackOptionsApply` calls per configured type, so a new format registers itself with one of these rather than editing the option branch.",
           "sources": [
             "lib/config/WebpackOptionsApply.js#L355-385",
             "lib/javascript/EnableChunkLoadingPlugin.js",
@@ -13551,7 +13551,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Stats output is extensible through the factory/preset/printer split: `DefaultStatsFactoryPlugin` builds the object graph, `DefaultStatsPresetPlugin` defines named presets, and `DefaultStatsPrinterPlugin` renders it — each a separate tap point.",
+          "claim": "Stats output is extensible through the factory/preset/printer split: `DefaultStatsFactoryPlugin` builds the object graph, `DefaultStatsPresetPlugin` defines named presets, and `DefaultStatsPrinterPlugin` renders it \u2014 each a separate tap point.",
           "sources": [
             "lib/stats/DefaultStatsFactoryPlugin.js",
             "lib/stats/DefaultStatsPresetPlugin.js",
@@ -13609,10 +13609,10 @@
       ]
     },
     "agent_handoff": {
-      "summary": "This repo has an unusually strict, written contract in `AGENTS.md` (symlinked as `CLAUDE.md`) with `> [!REQUIRED]` sections that reviewers enforce literally — read it before touching anything. The three rules that bite hardest: never invoke bare `jest` (use `yarn test:base`), never hand-edit generated files (run `yarn fix:special` and diff), and never sweep whole suites locally (push and read CI). Edits are safe inside `lib/` subdirectories and `test/`; they are dangerous at `lib/` root (deep-import breakage), inside generated `data.js`/`types.d.ts`/`*.check.js`, and in the hot parser methods sized to V8's inlining budget. Every user-facing change needs a `.changeset/NNN-*.md` entry and, for bug fixes, a failing test written first.",
+      "summary": "This repo has an unusually strict, written contract in `AGENTS.md` (symlinked as `CLAUDE.md`) with `> [!REQUIRED]` sections that reviewers enforce literally \u2014 read it before touching anything. The three rules that bite hardest: never invoke bare `jest` (use `yarn test:base`), never hand-edit generated files (run `yarn fix:special` and diff), and never sweep whole suites locally (push and read CI). Edits are safe inside `lib/` subdirectories and `test/`; they are dangerous at `lib/` root (deep-import breakage), inside generated `data.js`/`types.d.ts`/`*.check.js`, and in the hot parser methods sized to V8's inlining budget. Every user-facing change needs a `.changeset/NNN-*.md` entry and, for bug fixes, a failing test written first.",
       "claims": [
         {
-          "claim": "Read first, in order: `AGENTS.md` (the binding contract, including the mandatory PR template), `TESTING_DOCS.md` (suite layout and how to run one case), `lib/index.js` (the public surface), `lib/config/WebpackOptionsApply.js` (option→plugin map), and `lib/Compilation.js#L3612-3999` (the seal pipeline everything else hangs off).",
+          "claim": "Read first, in order: `AGENTS.md` (the binding contract, including the mandatory PR template), `TESTING_DOCS.md` (suite layout and how to run one case), `lib/index.js` (the public surface), `lib/config/WebpackOptionsApply.js` (option\u2192plugin map), and `lib/Compilation.js#L3612-3999` (the seal pipeline everything else hangs off).",
           "sources": [
             "AGENTS.md",
             "TESTING_DOCS.md",
@@ -13623,7 +13623,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "`lib/` is CommonJS only with types as JSDoc `@typedef`/`@import` — no `import`/`export` syntax, no TypeScript syntax in `.js` files — and the annotations are compiled to `types.d.ts` by `yarn fix:special`.",
+          "claim": "`lib/` is CommonJS only with types as JSDoc `@typedef`/`@import` \u2014 no `import`/`export` syntax, no TypeScript syntax in `.js` files \u2014 and the annotations are compiled to `types.d.ts` by `yarn fix:special`.",
           "sources": [
             "lib/webpack.js#L1-45",
             "tsconfig.json#L1-12",
@@ -13632,7 +13632,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Adding or renaming an option requires four ordered edits plus regeneration: `schemas/WebpackOptions.json` → `lib/config/defaults.js` → `lib/config/normalization.js` → the consuming site → `yarn fix:special`, then the snapshots the option's name leaks into (`test/__snapshots__/Cli.basictest.js.snap`, `Defaults.unittest.js`, `Validation.unittest.js`, the browserslist config cases).",
+          "claim": "Adding or renaming an option requires four ordered edits plus regeneration: `schemas/WebpackOptions.json` \u2192 `lib/config/defaults.js` \u2192 `lib/config/normalization.js` \u2192 the consuming site \u2192 `yarn fix:special`, then the snapshots the option's name leaks into (`test/__snapshots__/Cli.basictest.js.snap`, `Defaults.unittest.js`, `Validation.unittest.js`, the browserslist config cases).",
           "sources": [
             "AGENTS.md",
             "schemas/WebpackOptions.json",
@@ -13652,7 +13652,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Run targeted tests only: `yarn test:base --testPathPatterns=\"<pattern>\"` or `yarn test:basic --testPathPatterns=\"ConfigTestCases\" --testNamePattern=\"<category> <case>\"`. Never pipe a jest run through `grep`/`tail` — that discards the exit code and a red run reads as green.",
+          "claim": "Run targeted tests only: `yarn test:base --testPathPatterns=\"<pattern>\"` or `yarn test:basic --testPathPatterns=\"ConfigTestCases\" --testNamePattern=\"<category> <case>\"`. Never pipe a jest run through `grep`/`tail` \u2014 that discards the exit code and a red run reads as green.",
           "sources": [
             "package.json#L96-101",
             "AGENTS.md",
@@ -13661,7 +13661,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "A snapshot can live in two suites: `ConfigTestCases` and `ConfigCacheTestCases` both snapshot `configCases/`, and `--testPathPatterns=ConfigTestCases` misses the second — update with `yarn test:basic --testNamePattern=\"<case>\" -u` and no path filter.",
+          "claim": "A snapshot can live in two suites: `ConfigTestCases` and `ConfigCacheTestCases` both snapshot `configCases/`, and `--testPathPatterns=ConfigTestCases` misses the second \u2014 update with `yarn test:basic --testNamePattern=\"<case>\" -u` and no path filter.",
           "sources": [
             "test/ConfigTestCases.basictest.js",
             "test/ConfigCacheTestCases.basictest.js",
@@ -13688,7 +13688,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Moving a file out of `lib/` root has six carriers to rewrite — `require`/`require.resolve`, `@import` JSDoc, `@typedef {import(...)}`, `tsType` in schemas, the `makeSerializable` request, and paths written into `tooling/generate-runtime-code.js` or `eslint.config.mjs` — and `yarn find-deep-imports:check` must be run before the commit.",
+          "claim": "Moving a file out of `lib/` root has six carriers to rewrite \u2014 `require`/`require.resolve`, `@import` JSDoc, `@typedef {import(...)}`, `tsType` in schemas, the `makeSerializable` request, and paths written into `tooling/generate-runtime-code.js` or `eslint.config.mjs` \u2014 and `yarn find-deep-imports:check` must be run before the commit.",
           "sources": [
             "AGENTS.md",
             "tooling/find-deep-webpack-imports.js",
@@ -13706,7 +13706,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Deferred work uses exactly one wording — `TODO in the next major release: <what to do>` — never a version number, so `grep -rn \"TODO in the next major release\" codecov.yml bin hot lib setup test tooling` lists the whole backlog.",
+          "claim": "Deferred work uses exactly one wording \u2014 `TODO in the next major release: <what to do>` \u2014 never a version number, so `grep -rn \"TODO in the next major release\" codecov.yml bin hot lib setup test tooling` lists the whole backlog.",
           "sources": [
             "AGENTS.md",
             "lib/wasm-sync/",
@@ -13734,7 +13734,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Every user-facing change needs one `.changeset/NNN-<name>.md` with a `patch`/`minor`/`major` bump and a single capitalized imperative sentence ≤80 chars; the numeric prefix controls ordering in `CHANGELOG.md`, and `yarn validate:changeset` checks the format (there are 42 pending entries today).",
+          "claim": "Every user-facing change needs one `.changeset/NNN-<name>.md` with a `patch`/`minor`/`major` bump and a single capitalized imperative sentence \u226480 chars; the numeric prefix controls ordering in `CHANGELOG.md`, and `yarn validate:changeset` checks the format (there are 42 pending entries today).",
           "sources": [
             ".changeset/",
             "package.json#L43",
@@ -13744,7 +13744,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "Before pushing, run the full `yarn lint` (nine stages, `&&`-chained so the first failure hides the rest) — `yarn fix` alone runs no type check and no spellcheck; cspell reads every Markdown file in the repo, so even a docs-only change can red the `lint` job.",
+          "claim": "Before pushing, run the full `yarn lint` (nine stages, `&&`-chained so the first failure hides the rest) \u2014 `yarn fix` alone runs no type check and no spellcheck; cspell reads every Markdown file in the repo, so even a docs-only change can red the `lint` job.",
           "sources": [
             "package.json#L36-43",
             "cspell.json",
@@ -13753,7 +13753,7 @@
           "kind": "evidence"
         },
         {
-          "claim": "A local failure is only yours if it does not reproduce on `main` — `Cli createColors`, `profiling-plugin`, the `many-replacements` cases and the generated-declaration check are known sandbox-environment failures, so check with `git worktree add <dir> origin/main` before chasing one.",
+          "claim": "A local failure is only yours if it does not reproduce on `main` \u2014 `Cli createColors`, `profiling-plugin`, the `many-replacements` cases and the generated-declaration check are known sandbox-environment failures, so check with `git worktree add <dir> origin/main` before chasing one.",
           "sources": [
             "AGENTS.md",
             "test/Cli.basictest.js",
@@ -13763,11 +13763,11 @@
         }
       ]
     },
-    "agent_prompt": "You are working in the webpack repository (v5.111.1, MIT, github.com/webpack/webpack). webpack is a JavaScript module bundler: a `Compiler` drives a build, each run creates a `Compilation` holding the module graph and output chunks, which is then sealed and emitted. Everything is wired through `tapable` hooks, and plugins expose `apply(compiler)`.\n\nFirst, read `AGENTS.md` (symlinked as `CLAUDE.md`) in full. It is a binding contract, not guidance: sections marked `> [!REQUIRED]` are enforced literally by reviewers, and skipping one blocks the PR. Then read `TESTING_DOCS.md` for suite layout.\n\nOrientation. Public surface is `lib/index.js` — a getter object exporting `webpack()` plus ~100 plugin/class names, all lazy so `require(\"webpack\")` doesn't load 770 files. `lib/webpack.js` normalizes → defaults → validates → constructs `Compiler` → applies user plugins → `WebpackOptionsApply.process`, which is the single place options become plugins. `lib/Compiler.js`: `run` → `beforeRun`/`run`/`readRecords` → `compile` → `beforeCompile`/`compile`/`newCompilation`/`make`/`finishMake`/`finish`/`seal`/`afterCompile` → `emitAssets` → `emitRecords` → `done`. `lib/Compilation.js` (6,724 lines) owns the seal pipeline: freeze module graph → build chunks → optimize → `processRuntimeRequirements` → `createHash` → code generation → `createModuleAssets`/`createChunkAssets` → `processAssets` → freeze assets → `afterSeal`.\n\nLanguage support is webpack's own: `lib/javascript/syntax-parser.js` (17.8k lines, acorn-derived), `lib/css/` and `lib/html/` each with `syntax-parser.js`/`syntax-printer.js`/generated `data.js`. Persistence is `lib/cache/PackFileCacheStrategy.js` over the hand-written serializer in `lib/serialization/`.\n\nHard rules. (1) Package manager is **yarn**, never npm. (2) Never invoke `jest`/`npx jest` directly — the required `--experimental-vm-modules` flag lives only in the `test:base` wrapper. Use `yarn test:base --testPathPatterns=\"<p>\"` or `yarn test:basic --testNamePattern=\"<category> <case>\"`. (3) Run only tests for your change; never sweep suites locally — push and read CI. (4) Never hand-edit generated files: `types.d.ts`, `declarations/**`, `schemas/**/*.check.*`, generated runtime code, `lib/{css,html,javascript}/data.js`. Run `yarn fix:special` and diff. (5) `lib/` is CommonJS + JSDoc types only; target Node ≥ 10.13 (no `?.`, no `??`) — this binds test fixtures too. (6) Plain comments are capped at three lines (`webpack/comment-length` lint rule). (7) Defer work with the exact phrase `TODO in the next major release: <what to do>` — never a version number. (8) Don't enumerate module/source/dependency types; ask the object or match the class. (9) Initialize every instance field in the constructor; never `delete` one.\n\nWorkflow. For a bug fix write the failing test first, preferring an integration case in `test/configCases/` over a unit test. Adding an option means schema → defaults → normalization → implementation → `yarn fix:special` → the snapshots the name leaks into (`Cli.basictest.js.snap`, `Defaults.unittest.js`, `Validation.unittest.js`). Every user-facing change needs one `.changeset/NNN-<name>.md` (patch/minor/major, one capitalized imperative sentence ≤80 chars, trailing period). Run the full `yarn lint` before pushing — `yarn fix` runs no type check and no spellcheck. Branch names are `<type>/<description>` derived from the diff; commits are authored by the human requester with no `Co-authored-by` bot lines; the PR body must use the exact org template with bold labels and a filled-in **Use of AI** section.\n\nTraps that have actually bitten: a cache-suite `Pack got invalid because of write to:` line means a class is missing `makeSerializable` — fix it, never silence it with `test.filter.js`. A snapshot may live in both `ConfigTestCases` and `ConfigCacheTestCases`. `lint`, `basic` and `unit` gate every expensive CI job, so a red one of the three makes everything else report `skipped`. Coverage arrives in pieces — read the \"uploads still missing\" line before the percentage. And a local failure is only yours if it doesn't reproduce on a `git worktree` of `origin/main`."
+    "agent_prompt": "You are working in the webpack repository (v5.111.1, MIT, github.com/webpack/webpack). webpack is a JavaScript module bundler: a `Compiler` drives a build, each run creates a `Compilation` holding the module graph and output chunks, which is then sealed and emitted. Everything is wired through `tapable` hooks, and plugins expose `apply(compiler)`.\n\nFirst, read `AGENTS.md` (symlinked as `CLAUDE.md`) in full. It is a binding contract, not guidance: sections marked `> [!REQUIRED]` are enforced literally by reviewers, and skipping one blocks the PR. Then read `TESTING_DOCS.md` for suite layout.\n\nOrientation. Public surface is `lib/index.js` \u2014 a getter object exporting `webpack()` plus ~100 plugin/class names, all lazy so `require(\"webpack\")` doesn't load 770 files. `lib/webpack.js` normalizes \u2192 defaults \u2192 validates \u2192 constructs `Compiler` \u2192 applies user plugins \u2192 `WebpackOptionsApply.process`, which is the single place options become plugins. `lib/Compiler.js`: `run` \u2192 `beforeRun`/`run`/`readRecords` \u2192 `compile` \u2192 `beforeCompile`/`compile`/`newCompilation`/`make`/`finishMake`/`finish`/`seal`/`afterCompile` \u2192 `emitAssets` \u2192 `emitRecords` \u2192 `done`. `lib/Compilation.js` (6,724 lines) owns the seal pipeline: freeze module graph \u2192 build chunks \u2192 optimize \u2192 `processRuntimeRequirements` \u2192 `createHash` \u2192 code generation \u2192 `createModuleAssets`/`createChunkAssets` \u2192 `processAssets` \u2192 freeze assets \u2192 `afterSeal`.\n\nLanguage support is webpack's own: `lib/javascript/syntax-parser.js` (17.8k lines, acorn-derived), `lib/css/` and `lib/html/` each with `syntax-parser.js`/`syntax-printer.js`/generated `data.js`. Persistence is `lib/cache/PackFileCacheStrategy.js` over the hand-written serializer in `lib/serialization/`.\n\nHard rules. (1) Package manager is **yarn**, never npm. (2) Never invoke `jest`/`npx jest` directly \u2014 the required `--experimental-vm-modules` flag lives only in the `test:base` wrapper. Use `yarn test:base --testPathPatterns=\"<p>\"` or `yarn test:basic --testNamePattern=\"<category> <case>\"`. (3) Run only tests for your change; never sweep suites locally \u2014 push and read CI. (4) Never hand-edit generated files: `types.d.ts`, `declarations/**`, `schemas/**/*.check.*`, generated runtime code, `lib/{css,html,javascript}/data.js`. Run `yarn fix:special` and diff. (5) `lib/` is CommonJS + JSDoc types only; target Node \u2265 10.13 (no `?.`, no `??`) \u2014 this binds test fixtures too. (6) Plain comments are capped at three lines (`webpack/comment-length` lint rule). (7) Defer work with the exact phrase `TODO in the next major release: <what to do>` \u2014 never a version number. (8) Don't enumerate module/source/dependency types; ask the object or match the class. (9) Initialize every instance field in the constructor; never `delete` one.\n\nWorkflow. For a bug fix write the failing test first, preferring an integration case in `test/configCases/` over a unit test. Adding an option means schema \u2192 defaults \u2192 normalization \u2192 implementation \u2192 `yarn fix:special` \u2192 the snapshots the name leaks into (`Cli.basictest.js.snap`, `Defaults.unittest.js`, `Validation.unittest.js`). Every user-facing change needs one `.changeset/NNN-<name>.md` (patch/minor/major, one capitalized imperative sentence \u226480 chars, trailing period). Run the full `yarn lint` before pushing \u2014 `yarn fix` runs no type check and no spellcheck. Branch names are `<type>/<description>` derived from the diff; commits are authored by the human requester with no `Co-authored-by` bot lines; the PR body must use the exact org template with bold labels and a filled-in **Use of AI** section.\n\nTraps that have actually bitten: a cache-suite `Pack got invalid because of write to:` line means a class is missing `makeSerializable` \u2014 fix it, never silence it with `test.filter.js`. A snapshot may live in both `ConfigTestCases` and `ConfigCacheTestCases`. `lint`, `basic` and `unit` gate every expensive CI job, so a red one of the three makes everything else report `skipped`. Coverage arrives in pieces \u2014 read the \"uploads still missing\" line before the percentage. And a local failure is only yours if it doesn't reproduce on a `git worktree` of `origin/main`."
   },
   "analysis": {
     "agent": "claude",
-    "model": "cli:claude",
+    "model": "claude-opus-5",
     "runtime_ms": 467183,
     "cost_usd": 3.548572,
     "collected_at": "2026-09-22T09:31:35.914Z"
