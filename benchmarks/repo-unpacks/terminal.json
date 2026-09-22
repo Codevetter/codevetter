@@ -181,7 +181,7 @@
         {
           "path": "CONTRIBUTING.md",
           "bytes": 13496,
-          "preview": "# Terminal Contributor's Guide\r\n\r\nIf you use AI when contributing or interacting in this repository, please read and follow our [AI Usage Policy](./AGENTS.md).\r\n\r\nBelow is our guidance for how to report issues, propose new features, and submit contributions via Pull Requests (PRs).\r\n\r\n## Open Development Workflow\r\n\r\nThe Windows Terminal team is VERY active in this GitHub Repo. In fact, we live in it all day long and carry out all our development in the open!\r\n\r\nWhen the team finds issues we file them in the repo. When we propose new ideas or think-up new features, we file new feature requests. When we work on fixes or features, we create branches and work on those improvements. And when PRs are reviewed, we review in public - including all the good, the bad, and the ugly parts.\r\n\r\nThe point of doing all this work in public is to ensure that we are holding ourselves to a high degree of transparency, and so that the community sees that we apply the same processes and hold ourselves to the same quality-bar as we do to community-submitted issues and PRs. We also want to make sure that we expose our team culture and \"tribal knowledge\" that is inherent in any closely-knit team, which often contains considerable value to those new to the project who are trying to figure out \"why the heck does this thing look/work like this???\"\r\n\r\n### Repo Bot\r\n\r\nThe team triages new issues several times a week. During triage, the team uses labels to categorize, manage, and drive the project workflow.\r\n\r\nWe employ [a bot engine](./doc/bot.md) to help us automate common processes within our workflow.\r\n\r\nWe drive the bot by tagging issues with specific labels which cause the bot engine to close issues, merge branches, etc. This bot engine helps us keep the repo clean by automating the process of notifying appropriate parties if/when information/follow-up is needed, and closing stale issues/PRs after reminders have remained unanswered for several days.\r\n\r\nTherefore, if you do file issues, or create PRs, please keep an eye on your GitHub notifications. If you do not respond to requests for information, your issues/PRs may be closed automatically.\r\n\r\n---\r\n## Reporting Security Issues\r\n\r\n**Please do not report security vulnerabilities through public GitHub issues.** Instead, please report them to the Microsoft Security Response Center (MSRC). See [SECURITY.md](./SECURITY.md) for more information.\r\n\r\n## Before you start, file an issue\r\n\r\nPlease follow this simple rule to help us eliminate any unnecessary wasted effort & frustration, and ensure an efficient and effective use of everyone's time - yours, ours, and other community members':\r\n\r\n> \ud83d\udc49 If you have a question, think you've discovered an issue, would like to propose a new feature, etc., then find/file an issue **BEFORE** starting work to fix/implement it.\r\n\r\n### Search existing issues first\r\n\r\nBefore filing a new issue, search existing open and closed issues first: This project is moving fast! It is likely someone else has found the problem you're seeing, and someone may be working on or have already contributed a fix!\r\n\r\nIf no existing item describes your issue/feature, great - please file a new issue:\r\n\r\n### File a new Issue\r\n\r\n* Don't know whether you're reporting an issue or requesting a feature? File an issue\r\n* Have a question that you don't see answered in docs, videos, etc.? File an issue\r\n* Want to know if we're planning on building a particular feature? File an issue\r\n* Got a great idea for a new feature? File an issue/request/idea\r\n* Don't understand how to do something? File an issue\r\n* Found an existing issue that describes yours? Great - upvote and add additional commentary / info / repro-steps / etc.\r\n\r\nWhen you hit \"New Issue\", select the type of issue closest to what you want to report/ask/request:\r\n![New issue types](/doc/images/new-issue-template.png)\r\n\r\n### Complete the template\r\n\r\n**Complete the information requested in the issue template, providing as much information as possible**. The more information you provide, the more likely your issue/ask will be understood and implemented. Helpful information includes:\r\n\r\n* What device you're running (inc. CPU type, memory, disk, etc.)\r\n* What build of Windows your device is running\r\n\r\n  \ud83d\udc49 Tip: Run the following in PowerShell Core\r\n\r\n  ```powershell\r\n  C:\\> $PSVersionTable.OS\r\n  Microsoft Windows 10.0.18909\r\n  ```\r\n\r\n  ... or in Windows PowerShell\r\n\r\n  ```powershell\r\n  C:\\> $PSVersionTable.BuildVersion\r\n\r\n  Major  Minor  Build  Revision\r\n  -----  -----  -----  --------\r\n  10     0      18912  1001\r\n  ```\r\n\r\n  ... or Cmd:\r\n\r\n  ```cmd\r\n  C:\\> ver\r\n\r\n  Microsoft Windows [Version 10.0.18900.1001]\r\n  ```\r\n\r\n* What tools and apps you're using (e.g. VS 2022, VSCode, etc.)\r\n* Don't assume we're experts in setting up YOUR environment and don't assume we are experts in `<your distro/tool of choice>`. Teach us to help you!\r\n* **We LOVE detailed repro steps!** What steps do we need to take to reproduce the issue? Assume we love to read repro steps. As much detail as you can stand is probably _barely_ enough detail for us!\r\n* If you're reporting a particular character/glyph not rendering correctly, the specific Unicode codepoint would be MOST welcome (e.g. U+1F4AF, U+4382)\r\n* Prefer error message text where possible or screenshots of errors if text cannot be captured\r\n* We MUCH prefer text command-line script than screenshots of command-line script.\r\n* **If you intend to implement the fix/feature yourself then say so!** If you do not indicate otherwise we will assume that the issue is our to solve, or may label the issue as `Help-Wanted`.\r\n\r\n### DO NOT post \"+1\" comments\r\n\r\n> \u26a0 DO NOT post \"+1\", \"me too\", or similar comments - they just add noise to an issue.\r\n\r\nIf you don't have any additional info/context to add but would like to indicate that you're affected by the issue, upvote the original issue by clicking its [+\ud83d\ude0a] button and hitting \ud83d\udc4d (+1) icon. This way we can actually measure how impactful an issue is.\r\n\r\n---\r\n\r\n## Contributing fixes / features\r\n\r\nIf you're able & willing to help fix issues and/or implement features, we'd love your contribution!\r\n\r\nThe best place to start is the list of [\"walkthroughs\"](https://aka.ms/terminal-walkthroughs). This is a collection of issues where we've written a \"walkthrough\", little guides to help get started with a particular issue. These are usually good first issues, and are a great way to get familiar with the codebase. Additionally, the list of [\"good first issue\"](https://github.com/microsoft/terminal/issues?q=is%3Aopen+is%3Aissue+label%3A%22Help+Wanted%22++label%3A%22good+first+issue%22+)s is another set of issues that might be easier for first-time contributors. Once you're feeling more comfortable in the codebase, feel free to just use the [\"Help Wanted\"](https://github.com/microsoft/terminal/issues?q=is%3Aopen+is%3Aissue+label%3A%22Help+Wanted%22+) label, or just find any issue you're interested in and hop in!\r\n\r\nGenerally, we categorize issues in the following way, which is largely derived from our old internal work tracking system:\r\n* [\"Bugs\"](https://github.com/microsoft/terminal/issues?q=is%3Aopen+is%3Aissue+label%3A%22Issue-Bug%22+) are parts of the Terminal & Console that are not quite working the right way. There's code to already support some scenario, but it's not quite working right. Fixing these is generally a matter of debugging the broken functionality and fixing the wrong code.\r\n* [\"Tasks\"](https://github.com/microsoft/terminal/issues?q=is%3Aopen+is%3Aissue+label%3A%22Issue-Task%22+) are usually new pieces of functionality that aren't yet implemented for the Terminal/Console. These are usually smaller features, which we believe\r\n  - could be a single, atomic PR\r\n  - Don't require much design consideration, or we've already written the spec for the larger feature they belong to.\r\n* [\"Features\"](https://github.com/microsoft/terminal/issues?q=is%3Aopen+is%3Aissue+label%3A%22Issue-Feature%22+) are larger pieces of new functionality. These are usually things we believe would require larger discussion of how they should be implemented, or they'll require some complicated new settings. The"
+          "preview": "# Terminal Contributor's Guide\r\n\r\nIf you use AI when contributing or interacting in this repository, please read and follow our [AI Usage Policy](./AGENTS.md).\r\n\r\nBelow is our guidance for how to report issues, propose new features, and submit contributions via Pull Requests (PRs).\r\n\r\n## Open Development Workflow\r\n\r\nThe Windows Terminal team is VERY active in this GitHub Repo. In fact, we live in it all day long and carry out all our development in the open!\r\n\r\nWhen the team finds issues we file them in the repo. When we propose new ideas or think-up new features, we file new feature requests. When we work on fixes or features, we create branches and work on those improvements. And when PRs are reviewed, we review in public - including all the good, the bad, and the ugly parts.\r\n\r\nThe point of doing all this work in public is to ensure that we are holding ourselves to a high degree of transparency, and so that the community sees that we apply the same processes and hold ourselves to the same quality-bar as we do to community-submitted issues and PRs. We also want to make sure that we expose our team culture and \"tribal knowledge\" that is inherent in any closely-knit team, which often contains considerable value to those new to the project who are trying to figure out \"why the heck does this thing look/work like this???\"\r\n\r\n### Repo Bot\r\n\r\nThe team triages new issues several times a week. During triage, the team uses labels to categorize, manage, and drive the project workflow.\r\n\r\nWe employ [a bot engine](./doc/bot.md) to help us automate common processes within our workflow.\r\n\r\nWe drive the bot by tagging issues with specific labels which cause the bot engine to close issues, merge branches, etc. This bot engine helps us keep the repo clean by automating the process of notifying appropriate parties if/when information/follow-up is needed, and closing stale issues/PRs after reminders have remained unanswered for several days.\r\n\r\nTherefore, if you do file issues, or create PRs, please keep an eye on your GitHub notifications. If you do not respond to requests for information, your issues/PRs may be closed automatically.\r\n\r\n---\r\n## Reporting Security Issues\r\n\r\n**Please do not report security vulnerabilities through public GitHub issues.** Instead, please report them to the Microsoft Security Response Center (MSRC). See [SECURITY.md](./SECURITY.md) for more information.\r\n\r\n## Before you start, file an issue\r\n\r\nPlease follow this simple rule to help us eliminate any unnecessary wasted effort & frustration, and ensure an efficient and effective use of everyone's time - yours, ours, and other community members':\r\n\r\n> 👉 If you have a question, think you've discovered an issue, would like to propose a new feature, etc., then find/file an issue **BEFORE** starting work to fix/implement it.\r\n\r\n### Search existing issues first\r\n\r\nBefore filing a new issue, search existing open and closed issues first: This project is moving fast! It is likely someone else has found the problem you're seeing, and someone may be working on or have already contributed a fix!\r\n\r\nIf no existing item describes your issue/feature, great - please file a new issue:\r\n\r\n### File a new Issue\r\n\r\n* Don't know whether you're reporting an issue or requesting a feature? File an issue\r\n* Have a question that you don't see answered in docs, videos, etc.? File an issue\r\n* Want to know if we're planning on building a particular feature? File an issue\r\n* Got a great idea for a new feature? File an issue/request/idea\r\n* Don't understand how to do something? File an issue\r\n* Found an existing issue that describes yours? Great - upvote and add additional commentary / info / repro-steps / etc.\r\n\r\nWhen you hit \"New Issue\", select the type of issue closest to what you want to report/ask/request:\r\n![New issue types](/doc/images/new-issue-template.png)\r\n\r\n### Complete the template\r\n\r\n**Complete the information requested in the issue template, providing as much information as possible**. The more information you provide, the more likely your issue/ask will be understood and implemented. Helpful information includes:\r\n\r\n* What device you're running (inc. CPU type, memory, disk, etc.)\r\n* What build of Windows your device is running\r\n\r\n  👉 Tip: Run the following in PowerShell Core\r\n\r\n  ```powershell\r\n  C:\\> $PSVersionTable.OS\r\n  Microsoft Windows 10.0.18909\r\n  ```\r\n\r\n  ... or in Windows PowerShell\r\n\r\n  ```powershell\r\n  C:\\> $PSVersionTable.BuildVersion\r\n\r\n  Major  Minor  Build  Revision\r\n  -----  -----  -----  --------\r\n  10     0      18912  1001\r\n  ```\r\n\r\n  ... or Cmd:\r\n\r\n  ```cmd\r\n  C:\\> ver\r\n\r\n  Microsoft Windows [Version 10.0.18900.1001]\r\n  ```\r\n\r\n* What tools and apps you're using (e.g. VS 2022, VSCode, etc.)\r\n* Don't assume we're experts in setting up YOUR environment and don't assume we are experts in `<your distro/tool of choice>`. Teach us to help you!\r\n* **We LOVE detailed repro steps!** What steps do we need to take to reproduce the issue? Assume we love to read repro steps. As much detail as you can stand is probably _barely_ enough detail for us!\r\n* If you're reporting a particular character/glyph not rendering correctly, the specific Unicode codepoint would be MOST welcome (e.g. U+1F4AF, U+4382)\r\n* Prefer error message text where possible or screenshots of errors if text cannot be captured\r\n* We MUCH prefer text command-line script than screenshots of command-line script.\r\n* **If you intend to implement the fix/feature yourself then say so!** If you do not indicate otherwise we will assume that the issue is our to solve, or may label the issue as `Help-Wanted`.\r\n\r\n### DO NOT post \"+1\" comments\r\n\r\n> ⚠ DO NOT post \"+1\", \"me too\", or similar comments - they just add noise to an issue.\r\n\r\nIf you don't have any additional info/context to add but would like to indicate that you're affected by the issue, upvote the original issue by clicking its [+😊] button and hitting 👍 (+1) icon. This way we can actually measure how impactful an issue is.\r\n\r\n---\r\n\r\n## Contributing fixes / features\r\n\r\nIf you're able & willing to help fix issues and/or implement features, we'd love your contribution!\r\n\r\nThe best place to start is the list of [\"walkthroughs\"](https://aka.ms/terminal-walkthroughs). This is a collection of issues where we've written a \"walkthrough\", little guides to help get started with a particular issue. These are usually good first issues, and are a great way to get familiar with the codebase. Additionally, the list of [\"good first issue\"](https://github.com/microsoft/terminal/issues?q=is%3Aopen+is%3Aissue+label%3A%22Help+Wanted%22++label%3A%22good+first+issue%22+)s is another set of issues that might be easier for first-time contributors. Once you're feeling more comfortable in the codebase, feel free to just use the [\"Help Wanted\"](https://github.com/microsoft/terminal/issues?q=is%3Aopen+is%3Aissue+label%3A%22Help+Wanted%22+) label, or just find any issue you're interested in and hop in!\r\n\r\nGenerally, we categorize issues in the following way, which is largely derived from our old internal work tracking system:\r\n* [\"Bugs\"](https://github.com/microsoft/terminal/issues?q=is%3Aopen+is%3Aissue+label%3A%22Issue-Bug%22+) are parts of the Terminal & Console that are not quite working the right way. There's code to already support some scenario, but it's not quite working right. Fixing these is generally a matter of debugging the broken functionality and fixing the wrong code.\r\n* [\"Tasks\"](https://github.com/microsoft/terminal/issues?q=is%3Aopen+is%3Aissue+label%3A%22Issue-Task%22+) are usually new pieces of functionality that aren't yet implemented for the Terminal/Console. These are usually smaller features, which we believe\r\n  - could be a single, atomic PR\r\n  - Don't require much design consideration, or we've already written the spec for the larger feature they belong to.\r\n* [\"Features\"](https://github.com/microsoft/terminal/issues?q=is%3Aopen+is%3Aissue+label%3A%22Issue-Feature%22+) are larger pieces of new functionality. These are usually things we believe would require larger discussion of how they should be implemented, or they'll require some complicated new settings. The"
         },
         {
           "path": "README.md",
@@ -10586,7 +10586,7 @@
         "steps": [
           {
             "id": "serialize",
-            "label": "JSON serialize (inventory \u2192 SQLite)",
+            "label": "JSON serialize (inventory → SQLite)",
             "ms": 0,
             "pct": 0
           },
@@ -10605,5 +10605,906 @@
         ]
       }
     ]
+  },
+  "report": {
+    "overview": "This is the microsoft/terminal monorepo: it builds the Windows Terminal application (a WinUI 3 / C++/WinRT tabbed terminal emulator), the classic Windows console host (conhost.exe), and the shared components between them (VT parser, text buffer, renderers, types). Windows Terminal spawns client command-line apps through ConPTY pseudoconsoles, parses their VT output through a state machine into a text buffer, and renders with a Direct2D/Direct3D 'Atlas' engine. Distinctive aspects include a single-instance 'WindowEmperor' process model with WM_COPYDATA command-line handoff, a heavily layered JSON settings model with dynamic profile generators and third-party fragments, and an X-macro-driven action/keybinding system.",
+    "system_map": {
+      "summary": "The repo is one MSBuild workspace (OpenConsole.slnx) producing several binaries: WindowsTerminal.exe (the packaged terminal app, entrypoint in src/cascadia/WindowsTerminal/main.cpp), conhost.exe/OpenConsole.exe (src/host/exe), a wt.exe CLI shim, a shell extension, and many DLL/LIB components under src/cascadia and src/terminal. The terminal app is a Win32 process hosting WinUI 3 XAML islands; a single-instance 'WindowEmperor' owns all windows. Terminal functionality is layered: TerminalConnection (process/pipe IO) -> TerminalControl/ControlCore (XAML + renderer glue) -> TerminalCore (buffer + VT state machine) -> renderer/atlas (D3D text rendering). The conhost side lives under src/host and src/server and talks to the ConDrv driver. Build is MSBuild via tools/razzle.cmd + bcz.cmd or the OpenConsole.psm1 module; CI is Azure Pipelines (build/pipelines), with GitHub Actions only for release publishing and spell-checking.",
+      "claims": [
+        {
+          "claim": "The repo builds three products: Windows Terminal, Windows Terminal Preview, and the Windows console host (conhost.exe), plus shared components, ColorTool, and Console API samples.",
+          "sources": [
+            "README.md#L42-50"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "WindowsTerminal.exe entrypoint is wWinMain in src/cascadia/WindowsTerminal/main.cpp: it registers the 'Microsoft.Windows.Terminal.Win32Host' TraceLogging provider, resets Ctrl handlers, calls EnsureNativeArchitecture() to block wrong-arch launches, enables WM_POINTER, initializes the thread as STA, then constructs a WindowEmperor and calls HandleCommandlineArgs(nCmdShow).",
+          "sources": [
+            "src/cascadia/WindowsTerminal/main.cpp#L85-125"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "WindowEmperor is the single-instance owner of all terminal windows: it builds a branding/elevation/SID-scoped window class name (e.g. 'Windows Terminal Admin <hash> <hash>'), acquires a named mutex or hands the serialized command line to the existing instance via WM_COPYDATA, then runs the process-wide GetMessageW loop that pumps every AppHost window.",
+          "sources": [
+            "src/cascadia/WindowsTerminal/WindowEmperor.cpp#L483-545",
+            "src/cascadia/WindowsTerminal/WindowEmperor.cpp#L643-715"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Each visible window is an AppHost wrapping a XAML-island HWND (IslandWindow/NonClientIslandWindow); windows are created by WindowEmperor::CreateNewWindow which constructs AppHost with WindowRequestedArgs and tracks them in _windows.",
+          "sources": [
+            "src/cascadia/WindowsTerminal/AppHost.cpp",
+            "src/cascadia/WindowsTerminal/IslandWindow.cpp",
+            "src/cascadia/WindowsTerminal/WindowEmperor.cpp#L249-297"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The terminal app's code is split into projects under src/cascadia: TerminalApp (window/page/tab/pane UI + actions), TerminalControl (XAML control + ControlCore), TerminalCore (UI-agnostic terminal: buffer, VT parser wiring), TerminalSettingsModel (settings.json model), TerminalConnection (ConPTY/Azure/Echo connection types), TerminalSettingsEditor (Settings UI), plus helpers (ElevateShim, ShellExtension, wt shim, WpfTerminalControl).",
+          "sources": [
+            "doc/ORGANIZATION.md",
+            "src/cascadia/TerminalApp/TerminalPage.cpp",
+            "src/cascadia/TerminalControl/TermControl.cpp"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Client processes are spawned through ConPTY: ConptyConnection::Start calls ConptyCreatePseudoConsole (statically linked from src/inc/conpty-static.h / src/winconpty) then _LaunchAttachedClient uses CreateProcessW with PROC_THREAD_ATTRIBUTE_PSEUDOCONSOLE.",
+          "sources": [
+            "src/cascadia/TerminalConnection/ConptyConnection.cpp#L400-427",
+            "src/cascadia/TerminalConnection/ConptyConnection.cpp#L32-53",
+            "src/inc/conpty-static.h"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "conhost.exe is built from src/host/exe (Host.EXE.vcxproj) with wWinMain in exemain.cpp; it registers COM out-of-proc class objects (including CConsoleHandoff for incoming ConPTY handoff), honors the HKCU\\Console ForceV2 registry value for the legacy console, and initializes the server side under src/server (ConDrvDeviceComm, IoDispatchers, ApiDispatchers).",
+          "sources": [
+            "src/host/exe/exemain.cpp#L24-120",
+            "src/host/exe/CConsoleHandoff.cpp",
+            "src/server/IoDispatchers.cpp",
+            "src/server/ConDrvDeviceComm.cpp"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "wt.exe is a ~40-line shim (src/cascadia/wt/shim.cpp) that replaces its own filename with WindowsTerminal.exe in the same directory and CreateProcessW's it, prepending its own name (wt/wtd) to the command line.",
+          "sources": [
+            "src/cascadia/wt/shim.cpp"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Packaging is MSIX via src/cascadia/CascadiaPackage/CascadiaPackage.wapproj with four branding manifests (Package.appxmanifest, Package-Pre.appxmanifest, Package-Can.appxmanifest, Package-Dev.appxmanifest) selected by WT_BRANDING_* macros.",
+          "sources": [
+            "src/cascadia/CascadiaPackage/Package.appxmanifest",
+            "src/cascadia/WindowsTerminal/WindowEmperor.cpp#L485-497"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Third-party dependencies are managed by vcpkg (vcpkg.json): fmt 12.1.0, ms-gsl 4.2.2, jsoncpp 1.9.6, cli11 2.6.1, cmark 0.31.1, with overlay ports/triplets under dep/vcpkg-overlay-*.",
+          "sources": [
+            "vcpkg.json"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The master build is OpenConsole.slnx (XML solution listing ~all vcxproj/csproj/wapproj with AuditMode/Debug/Fuzzing/Release configs on x86/x64/arm64); conhost.slnf is a filtered solution for conhost-only work, and Scratch.sln exists for experiments.",
+          "sources": [
+            "OpenConsole.slnx",
+            "conhost.slnf"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Developer builds run through tools/: razzle.cmd sets up the environment, bcz.cmd/bx.cmd wrap MSBuild Clean;Build, and tools/OpenConsole.psm1 provides Invoke-OpenConsoleBuild/Set-MsBuildDevEnvironment; tests run via tools/runut.cmd, runft.cmd, runuia.cmd.",
+          "sources": [
+            "tools/razzle.cmd",
+            "tools/bcz.cmd",
+            "tools/OpenConsole.psm1",
+            "README.md#L355-375"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CI is Azure Pipelines, not GitHub Actions: build/pipelines/ci.yml runs an Audit x64 stage, a code-format check (templates-v2/job-check-code-format.yml), and per-platform builds for x64/x86/arm64 with a runTests parameter; the three .github/workflows files only handle winget publishing, check-spelling, and project-board automation.",
+          "sources": [
+            "build/pipelines/ci.yml",
+            ".github/workflows/winget.yml",
+            ".github/workflows/spelling2.yml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Feature flags are declared in src/features.xml (e.g. Feature_ReceiveIncomingHandoff, Feature_AttemptHandoff, Feature_ConhostAtlasEngineCustomShaders) with per-branding alwaysEnabled/alwaysDisabled tokens, and turned into TIL_FEATURE_* macros by tools/Generate-FeatureStagingHeader.ps1.",
+          "sources": [
+            "src/features.xml",
+            "tools/Generate-FeatureStagingHeader.ps1",
+            "doc/feature_flags.md"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "feature_catalog": {
+      "summary": "Windows Terminal's user-facing surface is a tabbed, split-pane terminal with profiles, color schemes, themes, keybindings ('actions'), a command palette, search, a GUI settings editor, a wt command line, session persistence, quake-mode summon, global hotkeys, and deep shell/OS integration (default-terminal handoff, 'Open in Terminal' explorer extension, jump lists, elevated tabs). The settings model supports dynamic profile generators (WSL, PowerShell, Azure Cloud Shell, Visual Studio, SSH hosts) and third-party JSON fragments/app-extensions. VT features include Sixel graphics, scroll marks, and custom HLSL pixel shaders in the Atlas renderer.",
+      "claims": [
+        {
+          "claim": "The wt CLI supports subcommands parsed with CLI11 in AppCommandlineArgs: new-tab/nt, split-pane/sp (-H/-V/--size/-D), move-pane/mp, focus-tab, and more; an implicit 'new-tab' parse is attempted when no subcommand is given.",
+          "sources": [
+            "src/cascadia/TerminalApp/AppCommandlineArgs.cpp#L72-317"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "There are ~70 bindable 'shortcut actions' (CopyText, PasteText, NewTab, SplitPane, SendInput, ScrollToMark, ToggleShaderEffects, ToggleFocusMode, ...) enumerated by the ALL_SHORTCUT_ACTIONS X-macro and dispatched by ShortcutActionDispatch::DoAction which raises a per-action event.",
+          "sources": [
+            "src/cascadia/TerminalSettingsModel/AllShortcutActions.h#L21-60",
+            "src/cascadia/TerminalApp/ShortcutActionDispatch.cpp#L31-78"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Settings live in settings.json layered over inbox defaults.json: keys include profiles/defaults+list, schemes, themes (builtin names system/light/dark plus legacy* variants), actions, and newTabMenu; DEFAULT_WINDOWS_POWERSHELL_GUID and DEFAULT_COMMAND_PROMPT_GUID are hardcoded defaults.",
+          "sources": [
+            "src/cascadia/TerminalSettingsModel/CascadiaSettingsSerialization.cpp#L34-67",
+            "src/cascadia/TerminalSettingsModel/defaults.json"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Dynamic profile generators ship for WSL distros, PowerShell Core, Azure Cloud Shell, Visual Studio developer shells, and SSH hosts; they run during settings load via SettingsLoader::GenerateProfiles().",
+          "sources": [
+            "src/cascadia/TerminalSettingsModel/CascadiaSettingsSerialization.cpp#L14-18",
+            "src/cascadia/TerminalSettingsModel/CascadiaSettingsSerialization.cpp#L1281",
+            "src/cascadia/TerminalSettingsModel/WslDistroGenerator.h"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Third-party apps can inject settings 'fragments' by dropping JSON under '...\\Microsoft\\Windows Terminal\\Fragments' in a package's LocalState or by registering a 'com.microsoft.windows.terminal.settings' app extension; FindFragmentsAndMergeIntoUserSettings merges them during load.",
+          "sources": [
+            "src/cascadia/TerminalSettingsModel/CascadiaSettingsSerialization.cpp#L59-63",
+            "src/cascadia/TerminalSettingsModel/CascadiaSettingsSerialization.cpp#L329-397"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Windows Terminal can be registered as the default terminal: CTerminalHandoff registers a COM local server to receive PTY handles from the OS, and ConptyConnection::StartInboundListener/NewConnection feed inbound connections into a new tab (TerminalPage::CreateTabFromConnection with Elevate forced false).",
+          "sources": [
+            "src/cascadia/TerminalConnection/CTerminalHandoff.cpp#L30-48",
+            "src/cascadia/TerminalConnection/ConptyConnection.cpp#L864",
+            "src/cascadia/TerminalApp/TerminalPage.cpp#L788-818"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Connection types are pluggable: ConptyConnection (local shells), AzureConnection (Azure Cloud Shell), EchoConnection (loopback test), and DebugTapConnection (tap another connection's output); TerminalPage::_CreateConnectionFromSettings picks by profile.ConnectionType().",
+          "sources": [
+            "src/cascadia/TerminalConnection/ITerminalConnection.idl",
+            "src/cascadia/TerminalConnection/AzureConnection.cpp",
+            "src/cascadia/TerminalConnection/EchoConnection.cpp",
+            "src/cascadia/TerminalApp/TerminalPage.cpp#L1572-1589",
+            "src/cascadia/TerminalApp/DebugTapConnection.cpp"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Tab/pane UX includes: a customizable new-tab dropdown built from NewTabMenuEntry types (Profile, Folder, Separator, RemainingProfiles, MatchProfiles, Action), a fuzzy-filtered Command Palette (CommandPalette.cpp + vendored fzf in src/cascadia/fzf), search box, and a tab switcher.",
+          "sources": [
+            "src/cascadia/TerminalApp/TerminalPage.cpp#L1027-1280",
+            "src/cascadia/TerminalApp/CommandPalette.cpp",
+            "src/cascadia/fzf/fzf.cpp",
+            "src/cascadia/TerminalControl/SearchBoxControl.cpp"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "A full GUI settings editor lives in src/cascadia/TerminalSettingsEditor (XAML pages for profiles, color schemes, actions/keybindings, appearance, extensions, compatibility) and can also launch settings.json in the user's editor; Jumplist.cpp builds taskbar jump-list profiles.",
+          "sources": [
+            "src/cascadia/TerminalSettingsEditor",
+            "src/cascadia/TerminalApp/TerminalPage.cpp#L1701-1708",
+            "src/cascadia/TerminalApp/Jumplist.cpp"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Window/session features: persisted window layouts restored at launch (ApplicationState::SharedInstance().PersistedWindowLayouts -> synthetic 'wt -w new -s <i>' dispatches), named windows ('wt -w <name>'), quake-style summon/dropdown, and global hotkeys registered from ActionMap::GlobalHotkeys.",
+          "sources": [
+            "src/cascadia/WindowsTerminal/WindowEmperor.cpp#L582-620",
+            "src/cascadia/TerminalApp/AppLogic.cpp#L466-469",
+            "src/cascadia/TerminalApp/Remoting.idl"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Elevation is handled by spawning an elevated sibling: ElevateShim/elevate-shim.cpp performs the ShellExecute runas-style launch, and elevated instances are isolated by the ' Admin' suffix on the window class name/mutex.",
+          "sources": [
+            "src/cascadia/ElevateShim/elevate-shim.cpp",
+            "src/cascadia/WindowsTerminal/WindowEmperor.cpp#L498-501",
+            "src/cascadia/TerminalApp/TerminalPage.cpp#L806-811"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Shell/OS integrations include the 'Open in Terminal' Explorer context-menu extension (ShellExtension/OpenTerminalHere.cpp), taskbar AUMID management with deferred .lnk stamping for pinned icons (GH#20053 workaround in _setupAumid), and a notification-area icon for hidden/quake windows.",
+          "sources": [
+            "src/cascadia/ShellExtension/OpenTerminalHere.cpp",
+            "src/cascadia/WindowsTerminal/WindowEmperor.cpp#L371-470",
+            "src/cascadia/WindowsTerminal/WindowEmperor.cpp#L719-722"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The Atlas renderer supports pixel-shader effects via custom_shader_ps.hlsl/custom_shader_vs.hlsl, optional D2D (BackendD2D) and D3D (BackendD3D) backends, builtin glyphs for box drawing, and a WIC-based image path for Sixel graphics decoded by terminal/adapter/SixelParser.",
+          "sources": [
+            "src/renderer/atlas/custom_shader_ps.hlsl",
+            "src/renderer/atlas/BackendD3D.cpp",
+            "src/renderer/atlas/BuiltinGlyphs.cpp",
+            "src/terminal/adapter/SixelParser.cpp"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Embeddable terminal surfaces exist for third parties: HwndTerminal (Win32 HWND host) and WpfTerminalControl (WPF control, with WpfTerminalTestNetCore harness), letting other apps host a terminal.",
+          "sources": [
+            "src/cascadia/TerminalControl/HwndTerminal.cpp",
+            "src/cascadia/WpfTerminalControl",
+            "src/cascadia/WpfTerminalTestNetCore"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Terminal bell can be routed through a MIDI synth: src/audio/midi/MidiAudio.cpp implements note playback for BEL/sequence-driven audio.",
+          "sources": [
+            "src/audio/midi/MidiAudio.cpp"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "data_flow": {
+      "summary": "The core data path is bidirectional ConPTY pipes. Outbound: keystrokes travel XAML -> TermControl/ControlCore -> ITerminalConnection::WriteInput (UTF-16 to UTF-8, overlapped WriteFile on the ConPTY input pipe). Inbound: ConptyConnection's dedicated _OutputThread ReadFile's the output pipe and raises the TerminalOutput event; ControlCore::_connectionOutputHandler takes the terminal write lock and calls Terminal::Write -> StateMachine::ProcessString -> OutputStateMachineEngine -> ITermDispatch handlers that mutate TextBuffer rows; the Atlas renderer then paints the buffer. Settings flow from settings.json + inbox defaults.json + dynamic generators + fragments through SettingsLoader's layered ParsedSettings into CascadiaSettings, with a directory watcher triggering throttled reloads. Command lines flow through CLI11 parsing into ActionAndArgs vectors executed by ShortcutActionDispatch; between processes, whole invocations are serialized into WM_COPYDATA blobs.",
+      "claims": [
+        {
+          "claim": "Input path: key presses reach the WindowEmperor message loop (which pre-filters F7, Alt keyup, and Alt+Space because XAML cannot suppress them), then XAML -> TermControl key handlers -> ControlCore::_sendInputToConnection -> ITerminalConnection::WriteInput.",
+          "sources": [
+            "src/cascadia/WindowsTerminal/WindowEmperor.cpp#L643-715",
+            "src/cascadia/TerminalControl/ControlCore.cpp#L490-492"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "ConptyConnection::WriteInput serializes writers with a first-come-first-served ticket lock, drains any pending overlapped write via GetOverlappedResult, converts UTF-16 to UTF-8 into _writeBuffer, and issues an overlapped WriteFile on the ConPTY pipe; ERROR_BROKEN_PIPE tears the connection down.",
+          "sources": [
+            "src/cascadia/TerminalConnection/ConptyConnection.cpp#L553-596"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Output path: ConptyConnection::Start creates an overlapped 128KB pipe pair and ConPTY, then spawns 'ConptyConnection Output Thread' running _OutputThread which ReadFile's the pipe and raises the TerminalOutput event; ConPTY size/show/reparent changes go through ConptyResizePseudoConsole/ConptyShowHidePseudoConsole/ConptyReparentPseudoConsole.",
+          "sources": [
+            "src/cascadia/TerminalConnection/ConptyConnection.cpp#L400-475",
+            "src/cascadia/TerminalConnection/ConptyConnection.cpp#L602-656"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "ControlCore::_connectionOutputHandler receives the connection's TerminalOutput string, takes _terminal->LockForWriting() (a til::recursive_ticket_lock in TerminalCore), calls Terminal::Write, then flushes any _pendingResponses (e.g. DA/DSR replies) back to the connection.",
+          "sources": [
+            "src/cascadia/TerminalControl/ControlCore.cpp#L2286-2298",
+            "src/cascadia/TerminalCore/Terminal.cpp#L965-1014"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Terminal::Write feeds the VT StateMachine::ProcessString; OutputStateMachineEngine translates C0/C1/ESC/CSI/OSC sequences into ITermDispatch calls (Print, PrintString, LineFeed, CursorBackward, DeviceAttributes...) that land on the TextBuffer (src/buffer/out/textBuffer.cpp) via the adapter layer.",
+          "sources": [
+            "src/cascadia/TerminalCore/Terminal.cpp#L482-484",
+            "src/terminal/parser/stateMachine.cpp#L14-32",
+            "src/terminal/parser/OutputStateMachineEngine.cpp#L59-166",
+            "src/buffer/out/textBuffer.cpp"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Rendering: ControlCore owns an AtlasEngine (Direct2D/DirectWrite text rasterization with optional D3D backend and custom shaders) created lazily in TermControl; EnablePainting/size changes flow TermControl::_InitializeTerminal -> _core.Initialize/SizeOrScaleChanged.",
+          "sources": [
+            "src/cascadia/TerminalControl/TermControl.cpp#L2861-2864",
+            "src/cascadia/TerminalControl/TermControl.cpp#L1376-1434",
+            "src/renderer/atlas/AtlasEngine.cpp"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Settings flow: CascadiaSettings::LoadAll reads settings.json via til::io::read_file_as_utf8_string_if_exists, falls back to a Release-channel copy on Preview/Canary first-run, seeds from embedded resources IDR_USER_DEFAULTS + IDR_DEFAULTS, then runs SettingsLoader steps in fixed order: GenerateProfiles -> ApplyRuntimeInitialSettings -> MergeInboxIntoUserSettings -> FindFragmentsAndMergeIntoUserSettings -> FinalizeLayering -> DisableDeletedProfiles/FixupUserSettings/AddDynamicProfileFolders.",
+          "sources": [
+            "src/cascadia/TerminalSettingsModel/CascadiaSettingsSerialization.cpp#L1226-1321"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Settings location: GetBaseSettingsPath returns the packaged LocalState folder, or %LOCALAPPDATA%\\Microsoft\\Windows Terminal for unpackaged builds, or the exe directory when a '.portable' marker file exists (portable mode).",
+          "sources": [
+            "src/cascadia/TerminalSettingsModel/FileUtils.cpp#L13-70"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Write-back: LoadAll only writes settings.json when it was a first-time setup or when fixups/new dynamic profiles require persistence; otherwise it just caches a hash of file content+timestamp used by AppLogic::_ProcessLazySettingsChanges to skip redundant Jumplist rebuilds.",
+          "sources": [
+            "src/cascadia/TerminalSettingsModel/CascadiaSettingsSerialization.cpp#L1297-1317",
+            "src/cascadia/TerminalApp/AppLogic.cpp#L252-268"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Command-line data flow: GetCommandLineW -> commandlineToArgArray -> CommandlineArgs -> AppCommandlineArgs (CLI11) producing std::vector<ActionAndArgs> -> TerminalPage::ProcessStartupActions which feeds each entry to _actionDispatch->DoAction, suspending to the dispatcher between panes/tabs so WinUI can lay out controls (GH#13136).",
+          "sources": [
+            "src/cascadia/WindowsTerminal/WindowEmperor.cpp#L40-53",
+            "src/cascadia/TerminalApp/TerminalPage.cpp#L724-786"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Cross-process handoff serializes GetCommandLineW + full environment block + CWD + nCmdShow into a length-prefixed byte blob delivered by WM_COPYDATA with TERMINAL_HANDOFF_MAGIC ('TERMINAL'), retried with exponential backoff for ~30s until the owner finishes creating its message window.",
+          "sources": [
+            "src/cascadia/WindowsTerminal/WindowEmperor.cpp#L112-197"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Environment synthesis for each session: ConptyConnection injects WT_SESSION (plain GUID) and WT_PROFILE_ID (braced GUID), merges user 'environment' overrides, and maintains WSLENV so those variables propagate into WSL; initial env comes from til::env::from_current_environment or a serialized block for handoffs.",
+          "sources": [
+            "src/cascadia/TerminalConnection/ConptyConnection.cpp#L58-148",
+            "src/cascadia/TerminalConnection/ConptyConnection.cpp#L297-317"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Defterm/inbound handoff: when _pipe is already set (connection received via CTerminalHandoff), Start() skips CreatePseudoConsole/_LaunchAttachedClient and only resizes/reparents/shows the existing HPCON, logging 'ConPtyConnectedToDefterm' instead of launching a client.",
+          "sources": [
+            "src/cascadia/TerminalConnection/ConptyConnection.cpp#L407-449"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "behavior_traces": {
+      "summary": "Three load-bearing flows were traced end-to-end. (1) Process startup: wWinMain -> WindowEmperor::HandleCommandlineArgs does mutex-or-WM_COPYDATA handoff, loads settings via AppLogic::ReloadSettings -> CascadiaSettings::LoadAll, restores persisted windows, dispatches the command line into AppHost windows, then pumps a single message loop. (2) New tab: an action (keybinding/menu/CLI) reaches ShortcutActionDispatch::DoAction -> TerminalPage handlers -> _MakePane -> _CreateConnectionFromSettings (ConptyConnection) -> TermControl::_InitializeTerminal -> connection.Start() -> ConPTY + CreateProcessW -> _OutputThread -> TerminalOutput -> Terminal::Write. (3) Settings persistence: a wil::FolderChangeReader on the settings directory triggers ReloadSettingsThrottled -> _TryLoadSettings -> SettingsChanged event, which WindowEmperor and TerminalPage subscribe to for hot-reload of hotkeys, themes, and profiles.",
+      "claims": [
+        {
+          "claim": "Startup step 1 (pre-XAML): wWinMain registers TraceLogging, calls SetConsoleCtrlHandler(NULL,FALSE) to unbreak inherited ^C state, EnsureNativeArchitecture() to refuse wrong-arch binaries, EnableMouseInPointer(true), then winrt::init_apartment(single_threaded) — explicitly load-bearing for UIAutomation correctness per the comment.",
+          "sources": [
+            "src/cascadia/WindowsTerminal/main.cpp#L85-125"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Startup step 2 (instance arbitration): WindowEmperor::HandleCommandlineArgs builds a branding+elevation+SID-scoped window class name, sets an AUMID for unpackaged runs (_setupAumid with deferred taskbar-pin stamping), then acquireMutexOrAttemptHandoff either wins the mutex or WM_COPYDATA's the serialized invocation to the running instance and TerminateProcess(0)s itself.",
+          "sources": [
+            "src/cascadia/WindowsTerminal/WindowEmperor.cpp#L472-545"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Startup step 3 (app + settings): the emperor creates winrt::TerminalApp::App, calls App.Logic().ReloadSettings() (AppLogic::_TryLoadSettings -> CascadiaSettings::LoadAll -> SettingsLoader pipeline), pre-warms FOLDERID_LocalAppData to avoid an Nvidia loader-lock stall (GH#20348), creates the hidden message window, registers global hotkeys and notification icon, and subscribes to SettingsChanged.",
+          "sources": [
+            "src/cascadia/WindowsTerminal/WindowEmperor.cpp#L547-574",
+            "src/cascadia/TerminalApp/AppLogic.cpp#L206-247"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Startup step 4 (window materialization): persisted layouts are replayed as synthetic 'wt -w new -s <idx>' command lines; then the real argv is dispatched via _dispatchCommandlineCommon -> CreateNewWindow -> AppHost::Initialize; '-Embedding' mode instead arms a 5s handoff timeout; finally a single GetMessageW loop pumps all windows, then _finalizeSessionPersistence runs at exit.",
+          "sources": [
+            "src/cascadia/WindowsTerminal/WindowEmperor.cpp#L576-641",
+            "src/cascadia/WindowsTerminal/WindowEmperor.cpp#L643-717"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New-tab step 1 (invocation): keybindings go AppKeyBindings -> ActionMap lookup -> ShortcutActionDispatch::DoAction raising the NewTab event; the same dispatch is reused for command-line startup actions, the new-tab flyout items (which embed NewTabArgs with a profile index), and command palette entries.",
+          "sources": [
+            "src/cascadia/TerminalApp/AppKeyBindings.cpp#L19",
+            "src/cascadia/TerminalApp/ShortcutActionDispatch.cpp#L31-78",
+            "src/cascadia/TerminalApp/TerminalPage.cpp#L1286-1355"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New-tab step 2 (pane + connection): the NewTab handler builds a pane via _MakePane -> _CreateConnectionFromSettings, which selects ConptyConnection or AzureConnection by profile.ConnectionType(), resolves StartingDirectory against the virtual CWD (for 'wt -w 0 -d .' correctness), packs a ValueSet (commandline, dirs, rows/cols, sessionId, textMeasurement, ambiguousIsWide, inheritCursor, environment) and calls connection.Initialize.",
+          "sources": [
+            "src/cascadia/TerminalApp/TerminalPage.cpp#L1549-1657"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New-tab step 3 (terminal bring-up): TermControl::_InitializeTerminal waits for a nonzero SwapChainPanel size, calls ControlCore::Initialize (creates Terminal + AtlasEngine), then _core.Connection().Start() — or _restoreInBackground for restored buffer contents — followed by EnablePainting, scrollbar setup, appearance application, and raising Initialized.",
+          "sources": [
+            "src/cascadia/TerminalControl/TermControl.cpp#L1376-1456"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New-tab step 4 (process + IO): ConptyConnection::Start transitions to Connecting, creates overlapped pipes, ConptyCreatePseudoConsole, _LaunchAttachedClient (CreateProcessW with PROC_THREAD_ATTRIBUTE_PSEUDOCONSOLE, WSLENV-augmented env, WT_SESSION/WT_PROFILE_ID), ConptyReleasePseudoConsole, then spawns _OutputThread and transitions to Connected; failures emit localized ProcessFailedToLaunch/BadPathText/ElevationRequired text as TerminalOutput and transition to Failed.",
+          "sources": [
+            "src/cascadia/TerminalConnection/ConptyConnection.cpp#L32-193",
+            "src/cascadia/TerminalConnection/ConptyConnection.cpp#L400-511"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New-tab step 5 (steady state): _OutputThread pipe reads -> TerminalOutput event -> ControlCore::_connectionOutputHandler -> LockForWriting -> Terminal::Write -> StateMachine::ProcessString -> OutputStateMachineEngine Action* -> dispatch -> TextBuffer; scrollback/viewport changes invalidate the AtlasEngine for the next frame.",
+          "sources": [
+            "src/cascadia/TerminalControl/ControlCore.cpp#L2286-2298",
+            "src/cascadia/TerminalCore/Terminal.cpp#L482-484",
+            "src/terminal/parser/OutputStateMachineEngine.cpp#L140-166"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Settings-reload trace: AppLogic::_RegisterSettingsChange creates a wil::FolderChangeReader on the settings directory watching FileName+LastWriteTime; when settings.json changes, ReloadSettingsThrottled debounces 100ms then _TryLoadSettings -> CascadiaSettings::LoadAll; success raises SettingsChanged (WindowEmperor re-registers global hotkeys/notification icon/persistence; TerminalPage re-binds keybindings), failure keeps the old settings and surfaces _settingsLoadExceptionText.",
+          "sources": [
+            "src/cascadia/TerminalApp/AppLogic.cpp#L137-160",
+            "src/cascadia/TerminalApp/AppLogic.cpp#L277-417",
+            "src/cascadia/WindowsTerminal/WindowEmperor.cpp#L564-574"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "First-run fixup trace: when settings.json is absent/empty, LoadAll resets ApplicationState, loads embedded IDR_USER_DEFAULTS, runs ApplyRuntimeInitialSettings + dynamic generators, and WriteSettingsToDisk persists the materialized file; Preview/Canary first try migrating the Release-channel settings.json instead.",
+          "sources": [
+            "src/cascadia/TerminalSettingsModel/CascadiaSettingsSerialization.cpp#L1226-1317"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Teardown trace: ConptyConnection::Close sets state Closing, resets the HPCON (sends CTRL_CLOSE_EVENT to clients), then loops CancelIoEx + WaitForSingleObject(1000) until the output thread exits — required so TerminalOutput.raise can't hit a dead ControlCore (GH#13880); the code documents three termination 'EXIT POINT's that must not flap each other.",
+          "sources": [
+            "src/cascadia/TerminalConnection/ConptyConnection.cpp#L17-26",
+            "src/cascadia/TerminalConnection/ConptyConnection.cpp#L657-700"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "testing_signals": {
+      "summary": "Tests are TAEF-based C++ unit tests (TEST_CLASS/TEST_METHOD) plus WexTaef te.exe for the settings model, feature tests, a fuzzing harness, and a small C# WinAppDriver UIA suite. tools/runut.cmd enumerates the unit test DLLs: Conhost.Unit.Tests, TextBuffer.Unit.Tests, Terminal.Core.Unit.Tests, ConParser/ConAdapter.Unit.Tests, Types, til.unit.tests, Terminal.App.Unit.Tests, Control.Unit.Tests, TerminalApp.LocalTests, and SettingsModel.Unit.Tests. CI (Azure Pipelines) gates on code formatting and runs tests per-platform. Coverage is strong for settings serialization, the parser/adapter, buffer, and control core; the Win32 windowing layer (WindowEmperor/AppHost/IslandWindow) and remoting have no dedicated unit tests.",
+      "claims": [
+        {
+          "claim": "Unit tests run under TAEF via tools/runut.cmd, which invokes %TAEF% over ten test DLLs and then te.exe for SettingsModel.Unit.Tests; the comment says to keep the list in sync with tools/tests.xml.",
+          "sources": [
+            "tools/runut.cmd",
+            "tools/tests.xml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Settings model tests (src/cascadia/UnitTests_SettingsModel) cover deserialization, serialization round-trips, keybindings, profiles, color schemes, themes, new-tab menu, application state, and media resources — e.g. SerializationTests.cpp TEST_METHODs GlobalSettings, Profile, ColorScheme, Actions, CascadiaSettings, RoundtripReloadEnvVars.",
+          "sources": [
+            "src/cascadia/UnitTests_SettingsModel/SerializationTests.cpp#L37-49",
+            "src/cascadia/UnitTests_SettingsModel/DeserializationTests.cpp"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "TerminalCore unit tests cover TerminalApiTest, selection, scrolling, screen-size limits, buffer tests, and input; Control tests cover ControlCore and ControlInteractivity with MockConnection/MockControlSettings fakes.",
+          "sources": [
+            "src/cascadia/UnitTests_TerminalCore/TerminalApiTest.cpp",
+            "src/cascadia/UnitTests_TerminalCore/SelectionTest.cpp",
+            "src/cascadia/UnitTests_Control/ControlCoreTests.cpp",
+            "src/cascadia/UnitTests_Control/MockConnection.h"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Conhost-side tests: src/host/ut_host exercises screen buffer, input buffer, history, aliases, VtIo, console arguments; src/til/ut_til covers the til utility library; adapter/parser have ut_adapter and ConParser.Unit.Tests.",
+          "sources": [
+            "src/host/ut_host/ScreenBufferTests.cpp",
+            "src/host/ut_host/VtIoTests.cpp",
+            "src/til/ut_til/BaseTests.cpp",
+            "src/terminal/adapter/ut_adapter"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "TerminalApp has 'LocalTests' that run inside a TestHostApp cppwinrt harness (LocalTests_TerminalApp/TestHostApp) rather than the real packaged app, which is why AppLogic::Current()/CurrentAppSettings() have try/catch guards for the non-App case.",
+          "sources": [
+            "src/cascadia/LocalTests_TerminalApp/TestHostApp",
+            "src/cascadia/TerminalApp/AppLogic.cpp#L85-120"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "UI automation tests exist as a C# WinAppDriver suite (src/cascadia/WindowsTerminal_UIATests, SmokeTests.cs, WindowsTerminal.UIA.Tests.csproj) run via tools/runuia.cmd; WinAppDriver itself is vendored under dep/WinAppDriver.",
+          "sources": [
+            "src/cascadia/WindowsTerminal_UIATests/SmokeTests.cs",
+            "tools/runuia.cmd",
+            "dep/WinAppDriver"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Fuzzing is first-class: src/host/ft_fuzzer and src/terminal/parser/ft_fuzzer/ft_fuzzwrapper provide harnesses, 'Fuzzing' is a solution build type in OpenConsole.slnx, and build/pipelines/fuzz.yml + doc/fuzzing.md document the pipeline.",
+          "sources": [
+            "src/terminal/parser/ft_fuzzer",
+            "src/host/ft_fuzzer",
+            "build/pipelines/fuzz.yml",
+            "OpenConsole.slnx"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Feature/integration tests live in ft_* dirs (src/host/ft_host, ft_integrity, ft_uia) run by tools/runft.cmd; additional manual test tools exist under src/tools (vttests, texttests, RenderingTests, echokey).",
+          "sources": [
+            "src/host/ft_host",
+            "src/host/ft_integrity",
+            "tools/runft.cmd",
+            "src/tools/vttests"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CI runs a dedicated code-format job (templates-v2/job-check-code-format.yml) plus AuditMode and per-platform builds; doc/ changes are path-excluded from CI triggers.",
+          "sources": [
+            "build/pipelines/ci.yml",
+            "build/pipelines/templates-v2/job-check-code-format.yml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "No unit test project exists for the WindowsTerminal.exe windowing layer (WindowEmperor, AppHost, IslandWindow, handoff serialization) — coverage there relies on the UIA smoke suite; this is an inference from the test-DLL list in runut.cmd.",
+          "sources": [
+            "tools/runut.cmd",
+            "src/cascadia/WindowsTerminal_UIATests/SmokeTests.cs"
+          ],
+          "kind": "inference"
+        }
+      ]
+    },
+    "risk_map": {
+      "summary": "The riskiest areas are cross-process trust boundaries and lifecycle races. The WM_COPYDATA handoff sends the entire environment block (potentially containing secrets) to an existing instance and parses a remote buffer — bounds-checked, but a real IPC attack surface. ConPTY spawn uses raw CreateProcessW with expanded environment and user-controlled profile commandlines. The defterm COM handoff accepts duplicated handles from other processes. The codebase repeatedly documents fragile threading invariants (STA-before-XAML, recursive ticket lock, output-thread join on Close, XAML islands quirks) — these are blast-radius hotspots. Telemetry (TraceLogging with Microsoft telemetry options) is pervasive and warrants privacy review on changes.",
+      "claims": [
+        {
+          "claim": "WM_COPYDATA handoff serializes the caller's full environment block (GetEnvironmentStringsW) into the message to the existing instance — any spawned wt.exe inherits and forwards env secrets; the receiving side parses remote memory via deserializeHandoffPayload/deserializeString with bounds checks.",
+          "sources": [
+            "src/cascadia/WindowsTerminal/WindowEmperor.cpp#L56-147",
+            "src/cascadia/WindowsTerminal/WindowEmperor.cpp#L171-191"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Process launch surface: profile 'commandline' strings from settings.json go through wil::ExpandEnvironmentStringsW and CreateProcessW with a mutable buffer and custom environment block; startingDirectory is WSL-mangled. Command lines are attacker-influenceable if a profile/fragment is malicious.",
+          "sources": [
+            "src/cascadia/TerminalConnection/ConptyConnection.cpp#L55-177"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Settings fragments: JSON files under other packages' 'Microsoft\\Windows Terminal\\Fragments' folders and registered app extensions are merged into the user's settings (profiles, schemes) during every load — a content injection path gated only by package identity.",
+          "sources": [
+            "src/cascadia/TerminalSettingsModel/CascadiaSettingsSerialization.cpp#L59-63",
+            "src/cascadia/TerminalSettingsModel/CascadiaSettingsSerialization.cpp#L329-397"
+          ],
+          "kind": "inference"
+        },
+        {
+          "claim": "COM defterm handoff: CTerminalHandoff registers a CLSCTX_LOCAL_SERVER class object that accepts in/out/signal/reference/process handles from arbitrary callers to adopt a PTY — trust boundary across processes.",
+          "sources": [
+            "src/cascadia/TerminalConnection/CTerminalHandoff.cpp#L30-48",
+            "src/cascadia/TerminalConnection/ConptyConnection.cpp#L864"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Elevation boundary is only the window-class-name/mutex namespacing (' Admin' suffix) plus forcing Elevate(false) on defterm tabs; the ElevateShim does the actual elevated spawn. Mixing elevated and non-elevated commandlines in one instance would be a security bug, so the class-name isolation is load-bearing.",
+          "sources": [
+            "src/cascadia/WindowsTerminal/WindowEmperor.cpp#L498-501",
+            "src/cascadia/TerminalApp/TerminalPage.cpp#L806-811",
+            "src/cascadia/ElevateShim/elevate-shim.cpp"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Termination is documented as fragile: ConptyConnection has an 'EXIT POINT' protocol for the three ways a connection dies (Close, spawn failure, pipe EOF) to avoid reentrant state flapping; Close() busy-loops CancelIoEx/WaitForSingleObject to guarantee no async TerminalOutput.raise after ControlCore teardown (GH#13880).",
+          "sources": [
+            "src/cascadia/TerminalConnection/ConptyConnection.cpp#L17-26",
+            "src/cascadia/TerminalConnection/ConptyConnection.cpp#L657-700"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Threading invariants are subtle and enforced by comments, not types: STA must precede all XAML objects (main.cpp '!!! LOAD BEARING !!!'), TerminalCore guards the buffer with a til::recursive_ticket_lock (LockForWriting) with suspend support, and TermControl warns about deadlocking when calling into ControlCore from event handlers.",
+          "sources": [
+            "src/cascadia/WindowsTerminal/main.cpp#L112-121",
+            "src/cascadia/TerminalCore/Terminal.cpp#L965-1014",
+            "src/cascadia/TerminalControl/TermControl.cpp#L3748"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The single message loop hand-patches XAML deficiencies: F7 caret-browsing, Alt-keyup, and Alt+Space are intercepted before TranslateMessage/DispatchMessage — behavioral coupling that could break on WinUI updates.",
+          "sources": [
+            "src/cascadia/WindowsTerminal/WindowEmperor.cpp#L679-694"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Process exit after command-line handoff uses TerminateProcess(0) 'primarily to avoid WinUI shutdown issues' — abrupt termination means destructors/finalizers never run; anything added after the handoff point must tolerate that.",
+          "sources": [
+            "src/cascadia/WindowsTerminal/WindowEmperor.cpp#L539-545"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Settings watcher auto-reloads on ANY rename/write of a file named settings.json in the watched dir; malformed JSON keeps old settings but posts errors, and the code warns against holding a static ApplicationState ref in the callback because teardown ordering would crash (a real past bug pattern).",
+          "sources": [
+            "src/cascadia/TerminalApp/AppLogic.cpp#L277-311"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "conhost still carries the legacy console path: HKCU\\Console\\ForceV2=0 reverts to v1 console, and interactivity/win32 maintains classic window/menu/clipboard code — a large legacy surface kept alive for inbox compatibility.",
+          "sources": [
+            "src/host/exe/exemain.cpp#L75-120",
+            "src/interactivity/win32/window.cpp",
+            "src/propsheet"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Registry/file probing at startup includes scanning the user's pinned-taskbar .lnk files (IShellLink/IPersistFile) to decide AUMID stamping — benign but a privacy-sensitive file enumeration on every unpackaged launch.",
+          "sources": [
+            "src/cascadia/WindowsTerminal/WindowEmperor.cpp#L392-470"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Telemetry is pervasive: every component defines a TraceLogging provider with TraceLoggingOptionMicrosoftTelemetry and emits measure-keyworded events (ExeCreated, SessionBecameInteractive, ConPtyConnected, ActionDispatched, ThemesInUse) — changes touching these paths have privacy-review implications.",
+          "sources": [
+            "src/cascadia/WindowsTerminal/main.cpp#L16-23",
+            "src/cascadia/TerminalApp/ShortcutActionDispatch.cpp#L67-74",
+            "src/cascadia/TerminalSettingsModel/CascadiaSettingsSerialization.cpp#L1336-1410"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "extension_points": {
+      "summary": "The codebase is built around explicit extension surfaces: the ALL_SHORTCUT_ACTIONS X-macro generates dispatch for every bindable action; ACTION_ARGS_STRUCT macros synthesize args classes with JSON keys; NewTabMenuEntry variants compose the new-tab menu; IDynamicProfileGenerator feeds discovered profiles; ITerminalConnection abstracts transports; IStateMachineEngine/ITermDispatch decouple the VT parser from its consumer; renderers are swappable behind the renderer/base interface; settings fragments + app extensions let third parties inject configuration; and features.xml adds staged feature flags. HwndTerminal/WpfTerminalControl expose the terminal as an embeddable control.",
+      "claims": [
+        {
+          "claim": "Adding a new keybindable action means adding one line to ALL_SHORTCUT_ACTIONS in AllShortcutActions.h — the X-macro auto-generates the ShortcutAction enum entry, the ShortcutActionDispatch case that raises the event, and handler declarations consumed by TerminalPage/AppActionHandlers.",
+          "sources": [
+            "src/cascadia/TerminalSettingsModel/AllShortcutActions.h#L1-60",
+            "src/cascadia/TerminalApp/ShortcutActionDispatch.cpp#L44-52",
+            "src/cascadia/TerminalApp/AppActionHandlers.cpp"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Action argument types are generated by macro: ACTION_ARGS_STRUCT(MyArgs, MY_ARGS) plus a per-action args X-macro produces the class, its JSON keys, and (de)serialization hooks — documented inline in ActionArgsMagic.h including a godbolt -E tip for debugging expansion.",
+          "sources": [
+            "src/cascadia/TerminalSettingsModel/ActionArgsMagic.h#L20-50"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The new-tab dropdown is data-driven from settings via NewTabMenuEntry variants — Profile, Folder, Separator, RemainingProfiles, MatchProfiles, Action — recursively materialized by _CreateNewTabFlyoutItems.",
+          "sources": [
+            "src/cascadia/TerminalSettingsModel/NewTabMenuEntry.h",
+            "src/cascadia/TerminalApp/TerminalPage.cpp#L1155-1280"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New dynamic profile sources implement IDynamicProfileGenerator and are enumerated during CascadiaSettings::LoadAll -> GenerateProfiles; existing examples are WslDistroGenerator, PowershellCoreProfileGenerator, AzureCloudShellGenerator, VisualStudioGenerator, SshHostGenerator.",
+          "sources": [
+            "src/cascadia/TerminalSettingsModel/IDynamicProfileGenerator.h",
+            "src/cascadia/TerminalSettingsModel/CascadiaSettingsSerialization.cpp#L14-18",
+            "src/cascadia/TerminalSettingsModel/WslDistroGenerator.h"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Third-party settings injection: JSON 'fragments' dropped in '<LocalState>\\Microsoft\\Windows Terminal\\Fragments' or delivered via the 'com.microsoft.windows.terminal.settings' app-extension host are merged by FindFragmentsAndMergeIntoUserSettings and surfaced as ExtensionPackages in the Settings UI.",
+          "sources": [
+            "src/cascadia/TerminalSettingsModel/CascadiaSettingsSerialization.cpp#L125-137",
+            "src/cascadia/TerminalSettingsModel/CascadiaSettingsSerialization.cpp#L329-397"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New connection transports implement ITerminalConnection (idl: Initialize(ValueSet), Start, WriteInput, Resize, Close; events TerminalOutput/StateChanged) — ConptyConnection, AzureConnection, EchoConnection are the built-ins, and _CreateConnectionFromSettings selects by profile.ConnectionType().",
+          "sources": [
+            "src/cascadia/TerminalConnection/ITerminalConnection.idl",
+            "src/cascadia/TerminalConnection/EchoConnection.cpp",
+            "src/cascadia/TerminalApp/TerminalPage.cpp#L1570-1589"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The VT parser is engine-agnostic: StateMachine owns an IStateMachineEngine (OutputStateMachineEngine for output, InputStateMachineEngine for input), which forwards to an ITermDispatch/ITerminalApi implementation — letting conhost (AdaptDispatch) and TerminalCore share the same parser.",
+          "sources": [
+            "src/terminal/parser/stateMachine.cpp#L14-32",
+            "src/terminal/parser/OutputStateMachineEngine.cpp#L21-44",
+            "src/terminal/adapter/adaptDispatch.cpp",
+            "src/terminal/parser/InputStateMachineEngine.cpp"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Renderers are pluggable behind renderer/base's IRenderer: AtlasEngine (D2D/D3D, custom shaders) for the new terminal, a GDI engine under renderer/gdi for legacy conhost, plus renderer/uia and renderer/wddmcon variants.",
+          "sources": [
+            "src/renderer/atlas/AtlasEngine.cpp",
+            "src/renderer/base/Renderer.cpp",
+            "src/renderer/gdi"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Settings layering is tag-based: ParsedSettings entries carry an OriginTag (InBox, User, Generated, Dynamic, Fragment) and SettingsLoader merges them in a fixed order — new settings sources plug in as additional origins without changing the merge engine.",
+          "sources": [
+            "src/cascadia/TerminalSettingsModel/CascadiaSettingsSerialization.cpp#L102-160"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New feature flags are added declaratively in src/features.xml with a name/description/stage and per-branding alwaysEnabled/alwaysDisabled tokens, then materialized as TIL_FEATURE_* macros by tools/Generate-FeatureStagingHeader.ps1 (schema: tools/FeatureStagingSchema.xsd).",
+          "sources": [
+            "src/features.xml",
+            "tools/Generate-FeatureStagingHeader.ps1",
+            "doc/feature_flags.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The terminal control is embeddable: HwndTerminal hosts it as a raw HWND and WpfTerminalControl wraps it for WPF apps — the intended surface for third-party embedding.",
+          "sources": [
+            "src/cascadia/TerminalControl/HwndTerminal.cpp",
+            "src/cascadia/WpfTerminalControl"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "wt subcommands extend through CLI11: _addNewTerminalArgs adds the shared option set to each subcommand and each subcommand registers a callback that pushes ActionAndArgs onto _startupActions — new subcommands follow the new-tab/split-pane pattern.",
+          "sources": [
+            "src/cascadia/TerminalApp/AppCommandlineArgs.cpp#L216-317"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Adding a new setting is a documented recipe (doc/AddASetting.md): model class + .idl property + JSON key in the serialization layer + defaults.json + Settings UI page — the specs folder contains design docs for past additions like marks, unfocused appearance, and quake mode.",
+          "sources": [
+            "doc/AddASetting.md",
+            "doc/specs"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_handoff": {
+      "summary": "This is a Windows-only C++/WinRT + WinUI 3 codebase; you cannot build or run it on Linux/macOS. Read AGENTS.md first: the project has a strict AI-usage policy that bans most AI-authored public contributions and Co-authored-by AI credits. Build with tools/razzle.cmd + bcz (or OpenConsole.psm1 Invoke-OpenConsoleBuild), test with tools/runut.cmd (TAEF). Conventions: wil RAII + THROW_IF_*/RETURN_IF_* macros, til:: types, fmt, .idl files generate .g.cpp via cppwinrt (never edit generated files), settings changes follow doc/AddASetting.md, new actions go through the ALL_SHORTCUT_ACTIONS X-macro. Key traps: STA must precede XAML creation, don't hold static refs to ApplicationState in callbacks, first tab must be created synchronously, and WindowsTerminal.exe can't just be double-clicked when packaged.",
+      "claims": [
+        {
+          "claim": "AGENTS.md is an AI usage POLICY, not a build guide: it permits only small localized AI fixes and disclosed+maintainer-approved contributions, bans AI-authored public interactions and Co-authored-by AI credits, and instructs agents to STOP and explain the restriction if the work is prohibited. Read it before producing any PR-bound change.",
+          "sources": [
+            "AGENTS.md",
+            "CLAUDE.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Build requires Windows with VS 2026 18.6+, Windows 11 SDK 10.0.26100.8249+, PowerShell 7+, .NET Framework 4.7.2 targeting pack (for test projects), Developer Mode enabled; quickest setup is `winget configure .config/configuration.winget`.",
+          "sources": [
+            "README.md#L330-365",
+            ".config/configuration.winget"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Build commands: `Import-Module ./tools/OpenConsole.psm1; Set-MsBuildDevEnvironment; Invoke-OpenConsoleBuild` in PowerShell, or `tools\\razzle.cmd` then `bcz` in cmd; bcz supports dbg/rel/no_clean/exclusive args. Debug via the CascadiaPackage project with 'Native Only' debugging, x64 or x86 (not Any CPU).",
+          "sources": [
+            "README.md#L355-390",
+            "tools/bcz.cmd",
+            "tools/OpenConsole.psm1"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Tests: tools/runut.cmd runs the TAEF unit suite (must match tools/tests.xml), tools/runft.cmd runs feature tests, tools/runuia.cmd runs the WinAppDriver UIA suite; repo convention is a ut_ folder per project and ft_ for functional tests (doc/ORGANIZATION.md).",
+          "sources": [
+            "tools/runut.cmd",
+            "tools/runft.cmd",
+            "tools/runuia.cmd",
+            "doc/ORGANIZATION.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Coding conventions: wil::unique_* RAII wrappers and THROW_IF_WIN32_BOOL_FALSE/RETURN_IF_FAILED/CATCH_LOG/CATCH_RETURN error macros, til:: geometry/string types, fmt::format with FMT_COMPILE, gsl::narrow for casts, winrt namespaces with .idl-defined runtimeclasses; see doc/STYLE.md, doc/WIL.md, doc/EXCEPTIONS.md.",
+          "sources": [
+            "doc/STYLE.md",
+            "doc/WIL.md",
+            "doc/ORGANIZATION.md",
+            "src/cascadia/TerminalConnection/ConptyConnection.cpp#L44-53"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "cppwinrt generates *.g.cpp/*.g.h from .idl files at build time (cppwinrt.build.*.props) — edit the .idl, never the generated files; many projects pair a source dir with a dll/ subdir holding the .vcxproj and .def.",
+          "sources": [
+            "src/cppwinrt.build.pre.props",
+            "src/cppwinrt.build.post.props",
+            "src/cascadia/TerminalApp/dll/TerminalApp.vcxproj"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "settings.json lives at CascadiaSettings::SettingsPath(): packaged LocalState (8wekyb3d8bbwe), %LOCALAPPDATA%\\Microsoft\\Windows Terminal for unpackaged, or beside the exe when a '.portable' file exists; first-run on Preview/Canary migrates the Release channel's file.",
+          "sources": [
+            "src/cascadia/TerminalSettingsModel/FileUtils.cpp#L13-70",
+            "src/cascadia/TerminalSettingsModel/CascadiaSettingsSerialization.cpp#L1233-1251"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Known traps documented in-code: init_apartment(STA) must precede any Xaml object (main.cpp '!!! LOAD BEARING !!!'); the first tab must be created synchronously because WinUI won't size hidden content and ControlCore needs a size (TerminalPage ProcessStartupActions GH#13136); don't keep a static ref to ApplicationState in the folder-watcher callback or teardown crashes (AppLogic.cpp).",
+          "sources": [
+            "src/cascadia/WindowsTerminal/main.cpp#L112-121",
+            "src/cascadia/TerminalApp/TerminalPage.cpp#L748-763",
+            "src/cascadia/TerminalApp/AppLogic.cpp#L289-302"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "You cannot launch a packaged build by running WindowsTerminal.exe directly (GH#926/GH#4043) — deploy/debug through CascadiaPackage; the wt.exe shim resolves WindowsTerminal.exe from its own directory.",
+          "sources": [
+            "README.md#L380-390",
+            "src/cascadia/wt/shim.cpp"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Files to read before editing a feature: src/cascadia/TerminalApp/TerminalPage.cpp (action handlers, tab/pane lifecycle), src/cascadia/TerminalSettingsModel/AllShortcutActions.h + ActionArgsMagic.h (action plumbing), src/cascadia/TerminalSettingsModel/CascadiaSettingsSerialization.cpp (settings layering), src/cascadia/TerminalControl/ControlCore.cpp + TermControl.cpp (control/renderer/connection glue), src/cascadia/WindowsTerminal/WindowEmperor.cpp (process model).",
+          "sources": [
+            "src/cascadia/TerminalApp/TerminalPage.cpp",
+            "src/cascadia/TerminalSettingsModel/CascadiaSettingsSerialization.cpp",
+            "src/cascadia/TerminalControl/ControlCore.cpp",
+            "src/cascadia/WindowsTerminal/WindowEmperor.cpp"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Safe-edit boundaries: TerminalCore/parser/adapter changes are UI-agnostic and unit-testable via UnitTests_TerminalCore + ConParser/ConAdapter tests; settings-model changes should round-trip through UnitTests_SettingsModel; UI changes in TerminalApp/TerminalControl can't be validated without a Windows desktop — prefer unit-testable layers when possible.",
+          "sources": [
+            "src/cascadia/UnitTests_SettingsModel/SerializationTests.cpp",
+            "src/cascadia/UnitTests_TerminalCore/TerminalApiTest.cpp",
+            "doc/ORGANIZATION.md"
+          ],
+          "kind": "inference"
+        },
+        {
+          "claim": "Localization: user-facing strings go through Resources.resw per project and RS_/USES_RESOURCE/GetStringResource helpers; WindowsTerminal.exe borrows TerminalApp's resources via UTILS_DEFINE_LIBRARY_RESOURCE_SCOPE(\"TerminalApp/Resources\") marked '!! BODGY !!' — add new strings there, not in WindowsTerminal.",
+          "sources": [
+            "src/cascadia/WindowsTerminal/main.cpp#L25-31"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_prompt": "You are working in the microsoft/terminal monorepo (Windows-only C++/WinRT + WinUI 3). It builds three products: Windows Terminal (WindowsTerminal.exe + wt.exe shim + MSIX CascadiaPackage), the classic console host (conhost.exe / OpenConsole.exe under src/host + src/server), and shared components (VT parser src/terminal/parser, adapter src/terminal/adapter, text buffer src/buffer/out, renderers src/renderer/*).\n\nIMPORTANT: Read AGENTS.md first — it is an AI-usage policy banning most AI-authored public contributions and Co-authored-by AI credits; for PR-bound work, flag the restriction to the requester.\n\nArchitecture: src/cascadia/WindowsTerminal/main.cpp wWinMain -> WindowEmperor (single instance; named mutex + WM_COPYDATA command-line handoff; owns all AppHost windows and the GetMessageW loop) -> TerminalApp::App -> AppLogic (settings load/reload via CascadiaSettings::LoadAll) -> TerminalPage (tabs, panes, ShortcutActionDispatch) -> TermControl/ControlCore (XAML + AtlasEngine renderer + TerminalCore Terminal) -> ITerminalConnection (ConptyConnection spawns client via ConPTY + CreateProcessW; a dedicated _OutputThread reads the pipe -> TerminalOutput event -> Terminal::Write -> StateMachine -> TextBuffer).\n\nConventions: wil RAII + THROW_IF_*/RETURN_IF_* macros; til:: types; fmt with FMT_COMPILE; .idl files generate .g.cpp via cppwinrt — never edit generated output; TraceLogging telemetry providers everywhere.\n\nCommon tasks:\n- Add a keybindable action: add to ALL_SHORTCUT_ACTIONS in src/cascadia/TerminalSettingsModel/AllShortcutActions.h, define args via ACTION_ARGS_STRUCT (ActionArgsMagic.h), wire the handler in TerminalPage/AppActionHandlers.cpp, update serialization + docs (doc/specs pattern).\n- Add a setting: follow doc/AddASetting.md — model + .idl + JSON key + defaults.json + Settings UI page.\n- New connection type: implement ITerminalConnection.idl, register in TerminalPage::_CreateConnectionFromSettings.\n- Feature flag: add entry to src/features.xml (tools/Generate-FeatureStagingHeader.ps1 generates TIL_FEATURE_* macros).\n\nBuild/test (Windows only): `Import-Module ./tools/OpenConsole.psm1; Set-MsBuildDevEnvironment; Invoke-OpenConsoleBuild` or `tools\\razzle.cmd` then `bcz`. Unit tests: `tools\\runut.cmd` (TAEF; keep in sync with tools/tests.xml); feature tests `tools\\runft.cmd`; UIA tests `tools\\runuia.cmd`. Debug through the CascadiaPackage project (Native Only, x64/x86 — not Any CPU); you cannot run packaged WindowsTerminal.exe directly.\n\nTraps: STA must precede XAML creation; first tab must be created synchronously (GH#13136); don't hold static refs to ApplicationState in callbacks; connection teardown follows the documented EXIT POINT protocol; ConPTY settings ride in a ValueSet (commandline, startingDirectory, environment, textMeasurement, inheritCursor)."
+  },
+  "analysis": {
+    "agent": "devin",
+    "model": "swe-2",
+    "runtime_ms": null,
+    "cost_usd": null,
+    "collected_at": "2026-09-22T16:25:34.908Z"
   }
 }

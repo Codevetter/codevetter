@@ -118,7 +118,7 @@
         {
           "path": "README.md",
           "bytes": 25792,
-          "preview": "# JavaScript Algorithms and Data Structures\n\n> \ud83c\uddfa\ud83c\udde6 UKRAINE [IS BEING ATTACKED](https://war.ukraine.ua/) BY RUSSIAN ARMY. CIVILIANS ARE GETTING KILLED. RESIDENTIAL AREAS ARE GETTING BOMBED.\n> - Help Ukraine via:\n>   - [Serhiy Prytula Charity Foundation](https://prytulafoundation.org/en/)\n>   - [Come Back Alive Charity Foundation](https://savelife.in.ua/en/donate-en/)\n>   - [National Bank of Ukraine](https://bank.gov.ua/en/news/all/natsionalniy-bank-vidkriv-spetsrahunok-dlya-zboru-koshtiv-na-potrebi-armiyi)\n> - More info on [war.ukraine.ua](https://war.ukraine.ua/) and [MFA of Ukraine](https://twitter.com/MFA_Ukraine)\n\n<hr/>\n\n[![CI](https://github.com/trekhleb/javascript-algorithms/workflows/CI/badge.svg)](https://github.com/trekhleb/javascript-algorithms/actions?query=workflow%3ACI+branch%3Amaster)\n[![codecov](https://codecov.io/gh/trekhleb/javascript-algorithms/branch/master/graph/badge.svg)](https://codecov.io/gh/trekhleb/javascript-algorithms)\n![repo size](https://img.shields.io/github/repo-size/trekhleb/javascript-algorithms.svg)\n\nThis repository contains JavaScript based examples of many\npopular algorithms and data structures.\n\nEach algorithm and data structure has its own separate README\nwith related explanations and links for further reading (including ones\nto YouTube videos).\n\n_Read this in other languages:_\n[_\u7b80\u4f53\u4e2d\u6587_](README.zh-CN.md),\n[_\u7e41\u9ad4\u4e2d\u6587_](README.zh-TW.md),\n[_\ud55c\uad6d\uc5b4_](README.ko-KR.md),\n[_\u65e5\u672c\u8a9e_](README.ja-JP.md),\n[_Polski_](README.pl-PL.md),\n[_Fran\u00e7ais_](README.fr-FR.md),\n[_Espa\u00f1ol_](README.es-ES.md),\n[_Portugu\u00eas_](README.pt-BR.md),\n[_\u0420\u0443\u0441\u0441\u043a\u0438\u0439_](README.ru-RU.md),\n[_T\u00fcrk\u00e7e_](README.tr-TR.md),\n[_Italiano_](README.it-IT.md),\n[_Bahasa Indonesia_](README.id-ID.md),\n[_\u0423\u043a\u0440\u0430\u0457\u043d\u0441\u044c\u043a\u0430_](README.uk-UA.md),\n[_Arabic_](README.ar-AR.md),\n[_Ti\u1ebfng Vi\u1ec7t_](README.vi-VN.md),\n[_Deutsch_](README.de-DE.md),\n[_Uzbek_](README.uz-UZ.md),\n[_\u05e2\u05d1\u05e8\u05d9\u05ea_](README.he-IL.md)\n\n## Data Structures\n\nA data structure is a particular way of organizing and storing data in a computer so that it can\nbe accessed and modified efficiently. More precisely, a data structure is a collection of data\nvalues, the relationships among them, and the functions or operations that can be applied to\nthe data.\n\nRemember that each data has its own trade-offs. And you need to pay attention more to why you're choosing a certain data structure than to how to implement it.\n\n`B` - Beginner, `A` - Advanced\n\n* `B` [Linked List](src/data-structures/linked-list)\n* `B` [Doubly Linked List](src/data-structures/doubly-linked-list)\n* `B` [Queue](src/data-structures/queue)\n* `B` [Stack](src/data-structures/stack)\n* `B` [Deque](src/data-structures/deque) - double-ended queue\n* `B` [Hash Table](src/data-structures/hash-table)\n* `B` [Heap](src/data-structures/heap) - max and min heap versions\n* `B` [Priority Queue](src/data-structures/priority-queue)\n* `A` [Trie](src/data-structures/trie)\n* `A` [Tree](src/data-structures/tree)\n  * `A` [Binary Search Tree](src/data-structures/tree/binary-search-tree)\n  * `A` [AVL Tree](src/data-structures/tree/avl-tree)\n  * `A` [Red-Black Tree](src/data-structures/tree/red-black-tree)\n  * `A` [Segment Tree](src/data-structures/tree/segment-tree) - with min/max/sum range queries examples\n  * `A` [Fenwick Tree](src/data-structures/tree/fenwick-tree) (Binary Indexed Tree)\n* `A` [Graph](src/data-structures/graph) (both directed and undirected)\n* `A` [Disjoint Set](src/data-structures/disjoint-set) - a union\u2013find data structure or merge\u2013find set\n* `A` [Bloom Filter](src/data-structures/bloom-filter)\n* `A` [LRU Cache](src/data-structures/lru-cache/) - Least Recently Used (LRU) cache\n\n## Algorithms\n\nAn algorithm is an unambiguous specification of how to solve a class of problems. It is\na set of rules that precisely define a sequence of operations.\n\n`B` - Beginner, `A` - Advanced\n\n### Algorithms by Topic\n\n* **Math**\n  * `B` [Bit Manipulation](src/algorithms/math/bits) - set/get/update/clear bits, multiplication/division by two, make negative etc.\n  * `B` [Binary Floating Point](src/algorithms/math/binary-floating-point) - binary representation of the floating-point numbers.\n  * `B` [Factorial](src/algorithms/math/factorial)\n  * `B` [Fibonacci Number](src/algorithms/math/fibonacci) - classic and closed-form versions\n  * `B` [Prime Factors](src/algorithms/math/prime-factors) - finding prime factors and counting them using Hardy-Ramanujan's theorem\n  * `B` [Primality Test](src/algorithms/math/primality-test) (trial division method)\n  * `B` [Euclidean Algorithm](src/algorithms/math/euclidean-algorithm) - calculate the Greatest Common Divisor (GCD)\n  * `B` [Least Common Multiple](src/algorithms/math/least-common-multiple) (LCM)\n  * `B` [Sieve of Eratosthenes](src/algorithms/math/sieve-of-eratosthenes) - finding all prime numbers up to any given limit\n  * `B` [Is Power of Two](src/algorithms/math/is-power-of-two) - check if the number is power of two (naive and bitwise algorithms)\n  * `B` [Pascal's Triangle](src/algorithms/math/pascal-triangle)\n  * `B` [Complex Number](src/algorithms/math/complex-number) - complex numbers and basic operations with them\n  * `B` [Radian & Degree](src/algorithms/math/radian) - radians to degree and backwards conversion\n  * `B` [Fast Powering](src/algorithms/math/fast-powering)\n  * `B` [Horner's method](src/algorithms/math/horner-method) - polynomial evaluation\n  * `B` [Matrices](src/algorithms/math/matrix) - matrices and basic matrix operations (multiplication, transposition, etc.)\n  * `B` [Euclidean Distance](src/algorithms/math/euclidean-distance) - distance between two points/vectors/matrices\n  * `A` [Integer Partition](src/algorithms/math/integer-partition)\n  * `A` [Square Root](src/algorithms/math/square-root) - Newton's method\n  * `A` [Liu Hui \u03c0 Algorithm](src/algorithms/math/liu-hui) - approximate \u03c0 calculations based on N-gons\n  * `A` [Discrete Fourier Transform](src/algorithms/math/fourier-transform) - decompose a function of time (a signal) into the frequencies that make it up\n* **Sets**\n  * `B` [Cartesian Product](src/algorithms/sets/cartesian-product) - product of multiple sets\n  * `B` [Fisher\u2013Yates Shuffle](src/algorithms/sets/fisher-yates) - random permutation of a finite sequence\n  * `A` [Power Set](src/algorithms/sets/power-set) - all subsets of a set (bitwise, backtracking, and cascading solutions)\n  * `A` [Permutations](src/algorithms/sets/permutations) (with and without repetitions)\n  * `A` [Combinations](src/algorithms/sets/combinations) (with and without repetitions)\n  * `A` [Longest Common Subsequence](src/algorithms/sets/longest-common-subsequence) (LCS)\n  * `A` [Longest Increasing Subsequence](src/algorithms/sets/longest-increasing-subsequence)\n  * `A` [Shortest Common Supersequence](src/algorithms/sets/shortest-common-supersequence) (SCS)\n  * `A` [Knapsack Problem](src/algorithms/sets/knapsack-problem) - \"0/1\" and \"Unbound\" ones\n  * `A` [Maximum Subarray](src/algorithms/sets/maximum-subarray) - \"Brute Force\" and \"Dynamic Programming\" (Kadane's) versions\n  * `A` [Combination Sum](src/algorithms/sets/combination-sum) - find all combinations that form specific sum\n* **Strings**\n  * `B` [Hamming Distance](src/algorithms/string/hamming-distance) - number of positions at which the symbols are different\n  * `B` [Palindrome](src/algorithms/string/palindrome) - check if the string is the same in reverse\n  * `A` [Levenshtein Distance](src/algorithms/string/levenshtein-distance) - minimum edit distance between two sequences\n  * `A` [Knuth\u2013Morris\u2013Pratt Algorithm](src/algorithms/string/knuth-morris-pratt) (KMP Algorithm) - substring search (pattern matching)\n  * `A` [Z Algorithm](src/algorithms/string/z-algorithm) - substring search (pattern matching)\n  * `A` [Rabin Karp Algorithm](src/algorithms/string/rabin-karp) - substring search\n  * `A` [Longest Common Substring](src/algorithms/string/longest-common-substring)\n  * `A` [Regular Expression Matching](src/algorithms/string/regular-expression-matching)\n* **Searches**\n  * `B` [Linear Search](src/algorithms/search/linear-search)\n  * `B` [Jump Search](src/algorithms/search/jump-search) (or Block Search) - search in sorted array\n  "
+          "preview": "# JavaScript Algorithms and Data Structures\n\n> 🇺🇦 UKRAINE [IS BEING ATTACKED](https://war.ukraine.ua/) BY RUSSIAN ARMY. CIVILIANS ARE GETTING KILLED. RESIDENTIAL AREAS ARE GETTING BOMBED.\n> - Help Ukraine via:\n>   - [Serhiy Prytula Charity Foundation](https://prytulafoundation.org/en/)\n>   - [Come Back Alive Charity Foundation](https://savelife.in.ua/en/donate-en/)\n>   - [National Bank of Ukraine](https://bank.gov.ua/en/news/all/natsionalniy-bank-vidkriv-spetsrahunok-dlya-zboru-koshtiv-na-potrebi-armiyi)\n> - More info on [war.ukraine.ua](https://war.ukraine.ua/) and [MFA of Ukraine](https://twitter.com/MFA_Ukraine)\n\n<hr/>\n\n[![CI](https://github.com/trekhleb/javascript-algorithms/workflows/CI/badge.svg)](https://github.com/trekhleb/javascript-algorithms/actions?query=workflow%3ACI+branch%3Amaster)\n[![codecov](https://codecov.io/gh/trekhleb/javascript-algorithms/branch/master/graph/badge.svg)](https://codecov.io/gh/trekhleb/javascript-algorithms)\n![repo size](https://img.shields.io/github/repo-size/trekhleb/javascript-algorithms.svg)\n\nThis repository contains JavaScript based examples of many\npopular algorithms and data structures.\n\nEach algorithm and data structure has its own separate README\nwith related explanations and links for further reading (including ones\nto YouTube videos).\n\n_Read this in other languages:_\n[_简体中文_](README.zh-CN.md),\n[_繁體中文_](README.zh-TW.md),\n[_한국어_](README.ko-KR.md),\n[_日本語_](README.ja-JP.md),\n[_Polski_](README.pl-PL.md),\n[_Français_](README.fr-FR.md),\n[_Español_](README.es-ES.md),\n[_Português_](README.pt-BR.md),\n[_Русский_](README.ru-RU.md),\n[_Türkçe_](README.tr-TR.md),\n[_Italiano_](README.it-IT.md),\n[_Bahasa Indonesia_](README.id-ID.md),\n[_Українська_](README.uk-UA.md),\n[_Arabic_](README.ar-AR.md),\n[_Tiếng Việt_](README.vi-VN.md),\n[_Deutsch_](README.de-DE.md),\n[_Uzbek_](README.uz-UZ.md),\n[_עברית_](README.he-IL.md)\n\n## Data Structures\n\nA data structure is a particular way of organizing and storing data in a computer so that it can\nbe accessed and modified efficiently. More precisely, a data structure is a collection of data\nvalues, the relationships among them, and the functions or operations that can be applied to\nthe data.\n\nRemember that each data has its own trade-offs. And you need to pay attention more to why you're choosing a certain data structure than to how to implement it.\n\n`B` - Beginner, `A` - Advanced\n\n* `B` [Linked List](src/data-structures/linked-list)\n* `B` [Doubly Linked List](src/data-structures/doubly-linked-list)\n* `B` [Queue](src/data-structures/queue)\n* `B` [Stack](src/data-structures/stack)\n* `B` [Deque](src/data-structures/deque) - double-ended queue\n* `B` [Hash Table](src/data-structures/hash-table)\n* `B` [Heap](src/data-structures/heap) - max and min heap versions\n* `B` [Priority Queue](src/data-structures/priority-queue)\n* `A` [Trie](src/data-structures/trie)\n* `A` [Tree](src/data-structures/tree)\n  * `A` [Binary Search Tree](src/data-structures/tree/binary-search-tree)\n  * `A` [AVL Tree](src/data-structures/tree/avl-tree)\n  * `A` [Red-Black Tree](src/data-structures/tree/red-black-tree)\n  * `A` [Segment Tree](src/data-structures/tree/segment-tree) - with min/max/sum range queries examples\n  * `A` [Fenwick Tree](src/data-structures/tree/fenwick-tree) (Binary Indexed Tree)\n* `A` [Graph](src/data-structures/graph) (both directed and undirected)\n* `A` [Disjoint Set](src/data-structures/disjoint-set) - a union–find data structure or merge–find set\n* `A` [Bloom Filter](src/data-structures/bloom-filter)\n* `A` [LRU Cache](src/data-structures/lru-cache/) - Least Recently Used (LRU) cache\n\n## Algorithms\n\nAn algorithm is an unambiguous specification of how to solve a class of problems. It is\na set of rules that precisely define a sequence of operations.\n\n`B` - Beginner, `A` - Advanced\n\n### Algorithms by Topic\n\n* **Math**\n  * `B` [Bit Manipulation](src/algorithms/math/bits) - set/get/update/clear bits, multiplication/division by two, make negative etc.\n  * `B` [Binary Floating Point](src/algorithms/math/binary-floating-point) - binary representation of the floating-point numbers.\n  * `B` [Factorial](src/algorithms/math/factorial)\n  * `B` [Fibonacci Number](src/algorithms/math/fibonacci) - classic and closed-form versions\n  * `B` [Prime Factors](src/algorithms/math/prime-factors) - finding prime factors and counting them using Hardy-Ramanujan's theorem\n  * `B` [Primality Test](src/algorithms/math/primality-test) (trial division method)\n  * `B` [Euclidean Algorithm](src/algorithms/math/euclidean-algorithm) - calculate the Greatest Common Divisor (GCD)\n  * `B` [Least Common Multiple](src/algorithms/math/least-common-multiple) (LCM)\n  * `B` [Sieve of Eratosthenes](src/algorithms/math/sieve-of-eratosthenes) - finding all prime numbers up to any given limit\n  * `B` [Is Power of Two](src/algorithms/math/is-power-of-two) - check if the number is power of two (naive and bitwise algorithms)\n  * `B` [Pascal's Triangle](src/algorithms/math/pascal-triangle)\n  * `B` [Complex Number](src/algorithms/math/complex-number) - complex numbers and basic operations with them\n  * `B` [Radian & Degree](src/algorithms/math/radian) - radians to degree and backwards conversion\n  * `B` [Fast Powering](src/algorithms/math/fast-powering)\n  * `B` [Horner's method](src/algorithms/math/horner-method) - polynomial evaluation\n  * `B` [Matrices](src/algorithms/math/matrix) - matrices and basic matrix operations (multiplication, transposition, etc.)\n  * `B` [Euclidean Distance](src/algorithms/math/euclidean-distance) - distance between two points/vectors/matrices\n  * `A` [Integer Partition](src/algorithms/math/integer-partition)\n  * `A` [Square Root](src/algorithms/math/square-root) - Newton's method\n  * `A` [Liu Hui π Algorithm](src/algorithms/math/liu-hui) - approximate π calculations based on N-gons\n  * `A` [Discrete Fourier Transform](src/algorithms/math/fourier-transform) - decompose a function of time (a signal) into the frequencies that make it up\n* **Sets**\n  * `B` [Cartesian Product](src/algorithms/sets/cartesian-product) - product of multiple sets\n  * `B` [Fisher–Yates Shuffle](src/algorithms/sets/fisher-yates) - random permutation of a finite sequence\n  * `A` [Power Set](src/algorithms/sets/power-set) - all subsets of a set (bitwise, backtracking, and cascading solutions)\n  * `A` [Permutations](src/algorithms/sets/permutations) (with and without repetitions)\n  * `A` [Combinations](src/algorithms/sets/combinations) (with and without repetitions)\n  * `A` [Longest Common Subsequence](src/algorithms/sets/longest-common-subsequence) (LCS)\n  * `A` [Longest Increasing Subsequence](src/algorithms/sets/longest-increasing-subsequence)\n  * `A` [Shortest Common Supersequence](src/algorithms/sets/shortest-common-supersequence) (SCS)\n  * `A` [Knapsack Problem](src/algorithms/sets/knapsack-problem) - \"0/1\" and \"Unbound\" ones\n  * `A` [Maximum Subarray](src/algorithms/sets/maximum-subarray) - \"Brute Force\" and \"Dynamic Programming\" (Kadane's) versions\n  * `A` [Combination Sum](src/algorithms/sets/combination-sum) - find all combinations that form specific sum\n* **Strings**\n  * `B` [Hamming Distance](src/algorithms/string/hamming-distance) - number of positions at which the symbols are different\n  * `B` [Palindrome](src/algorithms/string/palindrome) - check if the string is the same in reverse\n  * `A` [Levenshtein Distance](src/algorithms/string/levenshtein-distance) - minimum edit distance between two sequences\n  * `A` [Knuth–Morris–Pratt Algorithm](src/algorithms/string/knuth-morris-pratt) (KMP Algorithm) - substring search (pattern matching)\n  * `A` [Z Algorithm](src/algorithms/string/z-algorithm) - substring search (pattern matching)\n  * `A` [Rabin Karp Algorithm](src/algorithms/string/rabin-karp) - substring search\n  * `A` [Longest Common Substring](src/algorithms/string/longest-common-substring)\n  * `A` [Regular Expression Matching](src/algorithms/string/regular-expression-matching)\n* **Searches**\n  * `B` [Linear Search](src/algorithms/search/linear-search)\n  * `B` [Jump Search](src/algorithms/search/jump-search) (or Block Search) - search in sorted array\n  "
         }
       ],
       "config_files": [
@@ -4299,7 +4299,7 @@
           {
             "sha": "758b93ac8951",
             "date": "2026-05-29",
-            "subject": "fix(pt-BR): 'Espa\u00e7\u00f8'->'Espa\u00e7o' em linked-list",
+            "subject": "fix(pt-BR): 'Espaçø'->'Espaço' em linked-list",
             "files": [
               "src/data-structures/linked-list/README.pt-BR.md"
             ]
@@ -4315,7 +4315,7 @@
           {
             "sha": "14e885ad33a5",
             "date": "2026-05-29",
-            "subject": "fix(pt-BR): 'file'->'fila' e heading References->Refer\u00eancias em queue",
+            "subject": "fix(pt-BR): 'file'->'fila' e heading References->Referências em queue",
             "files": [
               "src/data-structures/queue/README.pt-BR.md"
             ]
@@ -4434,7 +4434,7 @@
             {
               "id": "commit:14e885ad33a5",
               "kind": "commit",
-              "label": "fix(pt-BR): 'file'->'fila' e heading References->Refer\u00eancias em queue",
+              "label": "fix(pt-BR): 'file'->'fila' e heading References->Referências em queue",
               "path": null,
               "detail": "2026-05-29",
               "citations": [
@@ -4489,7 +4489,7 @@
             {
               "id": "commit:758b93ac8951",
               "kind": "commit",
-              "label": "fix(pt-BR): 'Espa\u00e7\u00f8'->'Espa\u00e7o' em linked-list",
+              "label": "fix(pt-BR): 'Espaçø'->'Espaço' em linked-list",
               "path": null,
               "detail": "2026-05-29",
               "citations": [
@@ -8874,7 +8874,7 @@
         "steps": [
           {
             "id": "serialize",
-            "label": "JSON serialize (inventory \u2192 SQLite)",
+            "label": "JSON serialize (inventory → SQLite)",
             "ms": 1,
             "pct": 33.33333333333333
           },
@@ -8893,5 +8893,705 @@
         ]
       }
     ]
+  },
+  "report": {
+    "overview": "trekhleb/javascript-algorithms is a curated, test-driven educational collection of classic computer-science data structures and algorithms implemented in plain ES-module JavaScript, organized as ~150 self-contained topic folders under src/data-structures and src/algorithms, each paired with a README (often translated into ~20 locales) and a Jest test suite. It is not an application or published library — there is no runtime entrypoint, no index.js despite the package.json \"main\" field, and the only 'product' surface is the code itself plus the npm test/lint/coverage scripts. Distinctive traits: a shared Comparator/abstract-Sort callback design lets learners inject custom comparison and visiting hooks, and Jest coverage thresholds of 100% statements/functions/lines are enforced via npm run coverage in CI.",
+    "system_map": {
+      "summary": "The repo is a flat monorepo of independent algorithm/data-structure modules — there is no app server, CLI, or build artifact; the runtime boundary is simply Node.js >=22 running Jest 30 over ES-module sources transpiled by @babel/preset-env. Code lives in three subtrees: src/data-structures (14 categories), src/algorithms (14 topic dirs), plus src/utils and a src/playground scratch area. Cross-cutting wiring is minimal: a single shared Comparator utility and a small inheritance graph (Sort -> QuickSort et al.; Heap -> MinHeap/MaxHeap -> PriorityQueue). Quality gates are npm run lint (eslint airbnb config) on pre-commit via husky, and npm run coverage in GitHub Actions CI on Node 22.x with Codecov upload.",
+      "claims": [
+        {
+          "claim": "There is no application entrypoint or index.js at the repo root even though package.json declares \"main\": \"index.js\"; the package is a code collection consumed by reading/importing individual modules, not a runnable or publishable artifact.",
+          "sources": [
+            "package.json#L29",
+            "README.md#L16-21"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "npm scripts define the entire developer workflow: `npm run lint` (eslint ./src/**), `npm test` (jest), `npm run coverage` (jest --coverage), `npm run ci` (lint + coverage), and `prepare` installs husky hooks.",
+          "sources": [
+            "package.json#L30-36"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Source is ES modules transpiled for tests by @babel/preset-env via .babelrc; there is no bundler, TypeScript, or build step.",
+          "sources": [
+            ".babelrc",
+            "package.json#L37-49"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The code is organized into src/data-structures (linked-list, doubly-linked-list, queue, stack, deque, hash-table, heap, priority-queue, trie, tree/{avl,red-black,segment,fenwick,binary-search-tree}, graph, disjoint-set, bloom-filter, lru-cache) and src/algorithms (sorting, search, graph, tree, linked-list, math, string, sets, cryptography, image-processing, ml, statistics, stack, uncategorized).",
+          "sources": [
+            "README.md#L43-80",
+            "src/data-structures/linked-list/LinkedList.js",
+            "src/algorithms/sorting/quick-sort/QuickSort.js"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "src/utils/comparator/Comparator.js is the single shared utility: it wraps an optional custom compare function and exposes equal/lessThan/greaterThan/lessThanOrEqual/greaterThanOrEqual/reverse, and is injected into LinkedList, Heap, Sort, and PriorityQueue constructors.",
+          "sources": [
+            "src/utils/comparator/Comparator.js#L7-23",
+            "src/data-structures/linked-list/LinkedList.js#L15",
+            "src/data-structures/heap/Heap.js#L18",
+            "src/data-structures/priority-queue/PriorityQueue.js#L2-17"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "A small inheritance hierarchy provides shared structure: abstract Heap throws if constructed directly and is extended by MinHeap and MaxHeap; PriorityQueue extends MinHeap and swaps in a priority-aware Comparator.",
+          "sources": [
+            "src/data-structures/heap/Heap.js#L6-19",
+            "src/data-structures/heap/MinHeap.js#L1",
+            "src/data-structures/heap/MaxHeap.js",
+            "src/data-structures/priority-queue/PriorityQueue.js#L1-17"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The abstract Sort base class normalizes {compareCallback, visitingCallback} in initSortingCallbacks and forces subclasses to implement sort() (throws 'sort method must be implemented'); QuickSort and the other 10 sorting dirs subclass it.",
+          "sources": [
+            "src/algorithms/sorting/Sort.js#L11-34",
+            "src/algorithms/sorting/quick-sort/QuickSort.js#L3"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "ESLint uses the airbnb preset with jest plugin and five relaxed rules (no-bitwise, no-lonely-if, class-methods-use-this, arrow-body-style, no-loop-func); a React version setting exists in .eslintrc despite the repo containing no React code.",
+          "sources": [
+            ".eslintrc#L1-21"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "GitHub Actions CI (.github/workflows/CI.yml) runs on push/PR to master on ubuntu-latest with a Node 22.x matrix: npm i -> npm run lint -> npm run coverage -> codecov/codecov-action@v4 upload.",
+          "sources": [
+            ".github/workflows/CI.yml#L1-35"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Husky is wired through the `prepare` script and .husky/pre-commit runs `npm run lint` on every commit, so lint is the only client-side gate; tests are enforced only in CI.",
+          "sources": [
+            ".husky/pre-commit",
+            "package.json#L35"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Engines require node >=22.0.0 and npm >=10.0.0; devDependencies are limited to babel, eslint stack, jest 30, @types/jest, husky, and pngjs (used only by the seam-carving image test).",
+          "sources": [
+            "package.json#L37-53"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "feature_catalog": {
+      "summary": "Features here are the algorithm/data-structure modules themselves — each is a self-contained folder with one default-exported function or class, a README.md (frequently translated), and a co-located test directory. The catalog spans ~30 data-structure implementations across 14 categories and ~100 algorithm implementations across 14 topics, ranging from beginner (factorial, bubble sort) to advanced (red-black tree, seam carving, k-means). There are no routes, screens, or CLI subcommands; the 'user-facing' surface is the module APIs plus the playground scratch file.",
+      "claims": [
+        {
+          "claim": "LinkedList provides a full fluent API — prepend, append, insert(value, rawIndex), delete(value), find({value, callback}), deleteTail, deleteHead, fromArray, toArray, toString(callback), reverse — with most mutating methods returning `this` for chaining.",
+          "sources": [
+            "src/data-structures/linked-list/LinkedList.js#L22-271"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Graph supports directed and undirected modes via a constructor flag, auto-adds missing vertices on addEdge, throws on duplicate vertex/edge insertion, and offers getNeighbors, findEdge, getWeight, reverse (for directed graphs), getVerticesIndices and getAdjacencyMatrix.",
+          "sources": [
+            "src/data-structures/graph/Graph.js#L5-200"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "HashTable implements separate-chaining collision handling by filling each of its 32 default buckets with a LinkedList and tracking keys in a parallel `keys` object for O(1) has().",
+          "sources": [
+            "src/data-structures/hash-table/HashTable.js#L7-19",
+            "src/data-structures/linked-list/LinkedList.js#L137-159"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "LRUCache implements O(1) get/set using a nodesMap plus an internal doubly-linked list with sentinel head/tail nodes, promote() and evict() helpers, and a hard capacity eviction; an alternative LRUCacheOnMap implementation ships alongside it.",
+          "sources": [
+            "src/data-structures/lru-cache/LRUCache.js#L31-151",
+            "src/data-structures/lru-cache/LRUCacheOnMap.js"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "BloomFilter exposes insert/mayContain backed by a closed-over boolean array (createStore) and three hand-rolled hash functions (hash1/hash2/hash3), demonstrating false-positive semantics.",
+          "sources": [
+            "src/data-structures/bloom-filter/BloomFilter.js#L15-130"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Eleven sorting algorithms live under src/algorithms/sorting (bubble, bucket, counting, heap, insertion, merge, quick, radix, selection, shell) all extending the abstract Sort class and honoring compareCallback/visitingCallback hooks.",
+          "sources": [
+            "src/algorithms/sorting/Sort.js#L4-15",
+            "src/algorithms/sorting/quick-sort/QuickSort.js#L8-47",
+            "src/algorithms/sorting/SortTester.js#L9-21"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Graph algorithms cover traversals (breadthFirstSearch, depthFirstSearch) plus articulation-points, bellman-ford, bridges, detect-cycle, dijkstra, eulerian-path, floyd-warshall, hamiltonian-cycle, kruskal, prim, strongly-connected-components, topological-sorting and travelling-salesman.",
+          "sources": [
+            "src/algorithms/graph/breadth-first-search/breadthFirstSearch.js",
+            "src/algorithms/graph/depth-first-search/depthFirstSearch.js",
+            "README.md#L74-80"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The image-processing topic implements content-aware seam carving: resizeImageWidth shrinks an ImageData-like object width via energy-map calculation, DP lowest-energy seam finding, and in-place seam deletion.",
+          "sources": [
+            "src/algorithms/image-processing/seam-carving/resizeImageWidth.js#L217-253"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Math topics include factorial (iterative and recursive variants), fibonacci, primality-test, sieve-of-eratosthenes, euclidean-algorithm, fourier-transform, matrix operations, complex-number, bits manipulation and liu-hui pi approximation.",
+          "sources": [
+            "src/algorithms/math/factorial/factorial.js",
+            "src/algorithms/math/factorial/factorialRecursive.js",
+            "README.md#L74-80"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Cryptography offers caesar-cipher, hill-cipher, rail-fence-cipher and polynomial-hash (PolynomialHash plus a SimplePolynomialHash variant) — educational ciphers, not production crypto.",
+          "sources": [
+            "src/algorithms/cryptography/polynomial-hash/PolynomialHash.js",
+            "src/algorithms/cryptography/polynomial-hash/SimplePolynomialHash.js"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "src/playground/playground.js is an explicit sandbox: it imports an algorithm (factorial by default), exposes a playground() function, and is exercised by src/playground/__test__/playground.test.js via `npm test -- 'playground'`.",
+          "sources": [
+            "src/playground/playground.js#L1-12",
+            "src/playground/__test__/playground.test.js#L1-8"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Every topic folder ships a README.md with explanations and further-reading links, and most offer translations as README.xx-XX.md files (e.g., linked-list alone has 10 locale variants).",
+          "sources": [
+            "README.md#L19-41",
+            "CONTRIBUTING.md#L9-15"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "data_flow": {
+      "summary": "Data flow is simple and uniform: callers (tests or the playground) invoke a module's default export with plain JS values; the module mutates or returns in-memory structures; results are compared with Jest matchers. There is no persistence, network, or external state — the only file IO is the seam-carving test streaming PNG fixtures through pngjs. The Comparator-injection pattern and traversal callbacks are the two mechanisms that let callers steer internal behavior without subclassing.",
+      "claims": [
+        {
+          "claim": "Inputs are plain JS values passed directly to functions/classes (e.g., factorial(number), quickSort.sort(array), linkedList.append(value)); there is no request/response, CLI parsing, or stdin handling anywhere in src/.",
+          "sources": [
+            "src/algorithms/math/factorial/factorial.js#L5-13",
+            "src/data-structures/linked-list/LinkedList.js#L39-55"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Comparator is the primary data-normalization seam: constructors accept an optional compareFunction, and all ordering decisions flow through comparator.equal/lessThan/greaterThan rather than native operators.",
+          "sources": [
+            "src/utils/comparator/Comparator.js#L7-53",
+            "src/algorithms/sorting/quick-sort/QuickSort.js#L32-37",
+            "src/data-structures/linked-list/LinkedList.js#L104-124"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Sorting transforms input -> cloned array -> pivot-partitioned left/center/right arrays -> recursively sorted concatenated output; QuickSort clones the input (`[...originalArray]`) so the caller's array is never mutated.",
+          "sources": [
+            "src/algorithms/sorting/quick-sort/QuickSort.js#L8-47"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Traversal algorithms move data through a callback pipeline: initCallbacks builds a closed-over `seen` map for allowTraversal, then each vertex flows enterVertex -> neighbor iteration gated by allowTraversal -> leaveVertex.",
+          "sources": [
+            "src/algorithms/graph/breadth-first-search/breadthFirstSearch.js#L19-74",
+            "src/algorithms/graph/depth-first-search/depthFirstSearch.js#L17-58"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Queue is a thin adapter over LinkedList: enqueue delegates to append (tail), dequeue delegates to deleteHead (front), isEmpty checks linkedList.head — showing how data-structures compose as building blocks.",
+          "sources": [
+            "src/data-structures/queue/Queue.js#L3-48",
+            "src/data-structures/linked-list/LinkedList.js#L195-210"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "HashTable.set flows key -> hash() (char-code sum mod bucket count) -> buckets[hash] LinkedList -> find by callback -> append or update node.value.value; get/delete follow the same path.",
+          "sources": [
+            "src/data-structures/hash-table/HashTable.js#L27-91"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Seam carving is the only flow touching the filesystem, and only in tests: pngLoad streams a .png via fs.createReadStream into pngjs, converts to an ImageData-shaped object, then resizeImageWidth mutates img.data in place while tracking a separate logical {w,h} size.",
+          "sources": [
+            "src/algorithms/image-processing/seam-carving/__tests__/resizeImageWidth.node.js#L43-68",
+            "src/algorithms/image-processing/seam-carving/resizeImageWidth.js#L217-251"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "State owners are instance fields on the structures: LinkedList.head/tail, Graph.vertices/edges (plain objects keyed by getKey()), HashTable.buckets/keys, Heap.heapContainer array, LRUCache.nodesMap/size plus sentinel nodes.",
+          "sources": [
+            "src/data-structures/linked-list/LinkedList.js#L8-16",
+            "src/data-structures/graph/Graph.js#L5-9",
+            "src/data-structures/hash-table/HashTable.js#L13-19",
+            "src/data-structures/heap/Heap.js#L16-18",
+            "src/data-structures/lru-cache/LRUCache.js#L36-42"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Outputs are returned values (sorted arrays, found nodes, traversal orders accumulated by caller-supplied callbacks) plus toString() representations that tests use as the primary assertion mechanism (e.g., expect(linkedList.toString()).toBe('1,2')).",
+          "sources": [
+            "src/data-structures/linked-list/LinkedList.js#L241-243",
+            "src/data-structures/linked-list/__test__/LinkedList.test.js#L18-33"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Graph.getAdjacencyMatrix materializes a derived NxN weight matrix filled with Infinity for non-edges by iterating vertices and their neighbors — an explicit transform from adjacency-list storage to matrix output for algorithms like floyd-warshall.",
+          "sources": [
+            "src/data-structures/graph/Graph.js#L169-200"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "behavior_traces": {
+      "summary": "Three flows were traced end-to-end. (1) Test execution: npm test -> jest -> testRegex match -> test file imports module under test -> assertions on return values/toString. (2) Sorting: QuickSort construction -> Sort.initSortingCallbacks -> sort() recursion driven by Comparator and visitingCallback. (3) BFS over a graph: callback init with seen-set -> Queue enqueue/dequeue -> getNeighbors -> allowTraversal gating. A fourth flow (seam carving) shows the only IO path: PNG load -> energy map -> DP seam -> in-place pixel shift.",
+      "claims": [
+        {
+          "claim": "Test-run trace: `npm test` invokes jest, which applies testRegex '(/__tests__/.*|(\\\\.|/)(test|spec))\\\\.jsx?$' from jest.config.js, picks up files like src/data-structures/linked-list/__test__/LinkedList.test.js, which imports ../LinkedList, which imports LinkedListNode and ../../utils/comparator/Comparator.",
+          "sources": [
+            "package.json#L32",
+            "jest.config.js#L22",
+            "src/data-structures/linked-list/__test__/LinkedList.test.js#L1-6",
+            "src/data-structures/linked-list/LinkedList.js#L1-2"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Sorting trace (QuickSort): new QuickSort(callbacks) -> Sort constructor -> Sort.initSortingCallbacks fills visitingCallback stub and wraps compareCallback in Comparator -> sort(originalArray) clones array -> shift() pivot -> partition loop calls callbacks.visitingCallback and comparator.equal/lessThan -> recursive sort of left/right -> concat result.",
+          "sources": [
+            "src/algorithms/sorting/Sort.js#L12-29",
+            "src/algorithms/sorting/quick-sort/QuickSort.js#L8-47"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "BFS trace: breadthFirstSearch(graph, startVertex, callbacks) -> initCallbacks builds allowTraversal closure with `seen` map -> new Queue() -> enqueue(startVertex) -> while !isEmpty: dequeue -> enterVertex -> graph.getNeighbors(currentVertex) -> allowTraversal decides enqueue -> leaveVertex -> repeat.",
+          "sources": [
+            "src/algorithms/graph/breadth-first-search/breadthFirstSearch.js#L19-74",
+            "src/data-structures/queue/Queue.js#L36-48",
+            "src/data-structures/graph/Graph.js#L39-41"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "DFS trace: depthFirstSearch -> initCallbacks (same seen-set pattern as BFS) -> depthFirstSearchRecursive -> enterVertex -> forEach neighbor -> allowTraversal gate -> recurse -> leaveVertex; recursion depth equals longest path, no explicit stack structure.",
+          "sources": [
+            "src/algorithms/graph/depth-first-search/depthFirstSearch.js#L17-68"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Seam-carving trace: test calls pngLoad (fs.createReadStream.pipe(new PNG()).on('parsed')) to build an ImageData-shaped object -> resizeImageWidth({img,toWidth}) -> per removed column: calculateEnergyMap (getPixelEnergy of left/middle/right RGB deltas) -> findLowEnergySeam (DP seamPixelsMap then backtrack via `previous` links) -> deleteSeam (row-wise setPixel left-shift) -> return {img, size}.",
+          "sources": [
+            "src/algorithms/image-processing/seam-carving/__tests__/resizeImageWidth.node.js#L43-68",
+            "src/algorithms/image-processing/seam-carving/resizeImageWidth.js#L92-251",
+            "src/algorithms/image-processing/utils/imageData.js"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "HashTable write trace: set(key,value) -> hash(key) (charCode sum % buckets.length) -> this.keys[key]=keyHash -> bucket LinkedList.find({callback: nodeValue.key===key}) -> append new {key,value} node or overwrite node.value.value.",
+          "sources": [
+            "src/data-structures/hash-table/HashTable.js#L27-64",
+            "src/data-structures/linked-list/LinkedList.js#L137-159"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "LinkedList deletion trace: delete(value) strips all matching head nodes in a while loop, then walks currentNode.next unlinking matches via compare.equal, finally reassigns this.tail if the tail matched — O(n) with the injected comparator deciding equality.",
+          "sources": [
+            "src/data-structures/linked-list/LinkedList.js#L95-129"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "LRUCache.get trace: get(key) -> nodesMap lookup -> promote(node) which evicts then re-appends the node to the tail of the doubly-linked list -> return node.val; set() appends a new node and evicts head.next when size exceeds capacity.",
+          "sources": [
+            "src/data-structures/lru-cache/LRUCache.js#L50-150"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CI pipeline trace: push/PR to master -> actions/checkout@v4 -> setup-node 22.x -> npm i -> npm run lint (eslint ./src/**) -> npm run coverage (jest --coverage, enforcing 100/95/100/100 thresholds) -> codecov upload.",
+          "sources": [
+            ".github/workflows/CI.yml#L16-35",
+            "jest.config.js#L32-39",
+            "package.json#L30-34"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "testing_signals": {
+      "summary": "Testing is the project's backbone: Jest 30 with ~112 __test__/__tests__ directories and ~178 spec files co-located beside implementations. Coverage thresholds are aspirational-strict (100% statements/functions/lines, 95% branches) but only enforced when the `coverage` script runs — plain `npm test` collects no coverage. Shared tester harnesses (SortTester, FourierTester) standardize whole algorithm families, and CI runs lint + coverage with Codecov upload on Node 22.",
+      "claims": [
+        {
+          "claim": "Jest is configured in jest.config.js with testRegex '(/__tests__/.*|(\\\\.|/)(test|spec))\\\\.jsx?$', node_modules ignored, bail:false, verbose:false, and collectCoverage off by default.",
+          "sources": [
+            "jest.config.js#L1-30"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "coverageThreshold demands 100% statements/functions/lines and 95% branches globally, but because collectCoverage is false this only bites under `npm run coverage`/`npm run ci`.",
+          "sources": [
+            "jest.config.js#L10-39",
+            "package.json#L33-34"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Tests are co-located in `__test__` (singular, the dominant convention, ~112 dirs) or `__tests__` (plural, used by a few newer areas like seam-carving and matrix) directories next to the code they exercise.",
+          "sources": [
+            "src/data-structures/linked-list/__test__/LinkedList.test.js",
+            "src/algorithms/image-processing/seam-carving/__tests__/resizeImageWidth.node.js"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "SortTester is a shared test harness exporting canned fixtures (sortedArr, reverseArr, notSortedArr, equalArr, negativeArr) plus static methods testSort, testNegativeNumbersSort, testSortWithCustomComparator, testSortStability and testAlgorithmTimeComplexity — the last uses jest.fn() to count visitingCallback invocations as a complexity proxy.",
+          "sources": [
+            "src/algorithms/sorting/SortTester.js#L1-72"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The seam-carving spec uses a `.node.js` suffix inside a `__tests__` (plural) dir so the testRegex `__tests__/.*` alternative picks it up, and validates output against a reference PNG allowing <=10% of pixels to differ beyond a 50-value color threshold — a fuzzy image-equality assertion, not exact matching.",
+          "sources": [
+            "src/algorithms/image-processing/seam-carving/__tests__/resizeImageWidth.node.js#L58-84",
+            "jest.config.js#L22"
+          ],
+          "kind": "inference"
+        },
+        {
+          "claim": "Helper files like src/algorithms/sorting/SortTester.js and src/algorithms/math/fourier-transform/__test__/FourierTester.js are deliberately named so they are NOT matched by testRegex (no .test/.spec suffix, not in a `__tests__` dir) — they exist only to be imported by real specs.",
+          "sources": [
+            "src/algorithms/sorting/SortTester.js",
+            "jest.config.js#L22"
+          ],
+          "kind": "inference"
+        },
+        {
+          "claim": "LinkedList.test.js exemplifies the house test style: construct the structure, call mutating methods, and assert primarily on toString() output and head/tail invariants rather than internal state.",
+          "sources": [
+            "src/data-structures/linked-list/__test__/LinkedList.test.js#L3-60"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CI is the only place tests gate merges: the workflow runs `npm run coverage` after lint and uploads results via codecov/codecov-action@v4; the local pre-commit hook runs lint only, so a contributor can commit failing tests locally.",
+          "sources": [
+            ".github/workflows/CI.yml#L28-35",
+            ".husky/pre-commit"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The playground has its own spec asserting playground() === 120 (factorial(5)), giving contributors a sandbox that still participates in the coverage run.",
+          "sources": [
+            "src/playground/__test__/playground.test.js#L1-8",
+            "src/playground/playground.js#L7-10"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CONTRIBUTING.md codifies the 100% coverage expectation for PRs and asks contributors to run npm run lint and npm test before submitting.",
+          "sources": [
+            "CONTRIBUTING.md#L3-7"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "risk_map": {
+      "summary": "Security exposure is minimal — no network, auth, secrets, or shell-out; the only file IO is the seam-carving test reading local PNG fixtures. The real risks are correctness and maintainability quirks: deliberately simplified primitives (char-sum hash, first-element pivot), mutating APIs, a missing package entrypoint, mixed test-dir naming, and a coverage gate that only runs in CI. Educational intent means several implementations trade robustness for clarity.",
+      "claims": [
+        {
+          "claim": "package.json declares \"main\": \"index.js\" but no index.js exists at the root, and there is no \"private\" flag or exports map — the package cannot actually be require()'d as published; consumers must deep-import module files.",
+          "sources": [
+            "package.json#L29",
+            "package.json#L1-8"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "HashTable.hash uses a naive sum of char codes mod bucket count with a tiny default size of 32, so real-world key sets collide heavily; the code comments acknowledge this and point to polynomial hashing as the better approach.",
+          "sources": [
+            "src/data-structures/hash-table/HashTable.js#L7-45"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "QuickSort shifts elements out of the array in a while loop (array.shift() is O(n) per call) and always picks the first element as pivot — clean for teaching but quadratic on already-sorted input; SortTester's sortedArr/reverseArr fixtures exercise exactly that worst case.",
+          "sources": [
+            "src/algorithms/sorting/quick-sort/QuickSort.js#L22-39",
+            "src/algorithms/sorting/SortTester.js#L1-21"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Several APIs mutate in place, which can surprise consumers: Graph.reverse() deletes and re-adds every edge mutating the graph, resizeImageWidth rewrites img.data in place while reporting a smaller logical size, and LinkedList.reverse() rewrites node links.",
+          "sources": [
+            "src/data-structures/graph/Graph.js#L145-164",
+            "src/algorithms/image-processing/seam-carving/resizeImageWidth.js#L217-251",
+            "src/data-structures/linked-list/LinkedList.js#L249-271"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Graph.addVertex and addEdge throw generic Errors on duplicates ('Vertex has already been added before', 'Edge has already been added before') — callers must wrap or pre-check, and the error type gives no distinguishing subclass.",
+          "sources": [
+            "src/data-structures/graph/Graph.js#L15-25",
+            "src/data-structures/graph/Graph.js#L79-83"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "depthFirstSearch uses unbounded recursion (depthFirstSearchRecursive), so pathological deep graphs can hit the Node call-stack limit; the iterative alternative is not provided.",
+          "sources": [
+            "src/algorithms/graph/depth-first-search/depthFirstSearch.js#L48-58"
+          ],
+          "kind": "inference"
+        },
+        {
+          "claim": "Test-directory naming is inconsistent (`__test__` vs `__tests__`) and helper files rely on precise filename conventions to avoid being executed as specs — a misplaced rename could silently drop or break tests.",
+          "sources": [
+            "jest.config.js#L22",
+            "src/algorithms/sorting/SortTester.js",
+            "src/algorithms/image-processing/seam-carving/__tests__/resizeImageWidth.node.js"
+          ],
+          "kind": "inference"
+        },
+        {
+          "claim": "The only filesystem access in the codebase is the seam-carving spec's fs.createReadStream of repo-relative PNG fixtures (./src/algorithms/image-processing/seam-carving/__tests__/test-image-*.png), so tests are CWD-sensitive — running jest from another directory breaks that spec.",
+          "sources": [
+            "src/algorithms/image-processing/seam-carving/__tests__/resizeImageWidth.node.js#L1-7"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Coverage enforcement (100/95/100/100) runs only via `npm run coverage` in CI; local `npm test` skips coverage and pre-commit runs only lint, so coverage regressions are caught late.",
+          "sources": [
+            "jest.config.js#L10-39",
+            ".husky/pre-commit",
+            ".github/workflows/CI.yml#L28-35"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": ".eslintrc carries a react version setting and airbnb's jsx-a11y plugin chain despite zero JSX/React code in the repo — dead config that could confuse tooling choices.",
+          "sources": [
+            ".eslintrc#L16-21",
+            "package.json#L41-45"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "extension_points": {
+      "summary": "The whole repo is designed as an additive catalog: a new algorithm or data structure is a new folder that plugs in via file convention, not registration. Two deliberate seams exist inside the code — constructor-injected Comparator functions and the Sort/Heap/MinHeap inheritance chain plus traversal callbacks — and CONTRIBUTING.md spells out the social conventions (one algorithm per PR, README required, 100% coverage).",
+      "claims": [
+        {
+          "claim": "Adding an algorithm means creating src/algorithms/<topic>/<name>/<name>.js with a default export plus a __test__ directory; no index file or registry needs updating — Jest discovers tests via testRegex.",
+          "sources": [
+            "CONTRIBUTING.md#L17-25",
+            "jest.config.js#L22"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New sorting algorithms plug in by extending Sort: implement sort(), inherit this.comparator and this.callbacks (compareCallback, visitingCallback), then reuse SortTester.testSort/testSortStability/testAlgorithmTimeComplexity for free coverage.",
+          "sources": [
+            "src/algorithms/sorting/Sort.js#L11-34",
+            "src/algorithms/sorting/quick-sort/QuickSort.js#L3",
+            "src/algorithms/sorting/SortTester.js#L9-71"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Comparator injection is the universal customization point: LinkedList, Heap, Sort and PriorityQueue all accept a compareFunction in their constructor, letting the same structures order arbitrary objects.",
+          "sources": [
+            "src/utils/comparator/Comparator.js#L7-9",
+            "src/data-structures/linked-list/LinkedList.js#L8-16",
+            "src/data-structures/heap/Heap.js#L11-19"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Graph traversal behavior is extended through the {allowTraversal, enterVertex, leaveVertex} callback object — consumers implement cycle detection, ordering, or instrumentation without touching the traversal internals.",
+          "sources": [
+            "src/algorithms/graph/breadth-first-search/breadthFirstSearch.js#L4-42",
+            "src/algorithms/graph/depth-first-search/depthFirstSearch.js#L2-40"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Heap is intentionally abstract (new.target guard throws on direct construction) so MinHeap/MaxHeap define ordering by overriding pairIsInCorrectOrder; PriorityQueue shows a second extension axis by overriding compare wholesale.",
+          "sources": [
+            "src/data-structures/heap/Heap.js#L6-14",
+            "src/data-structures/priority-queue/PriorityQueue.js#L6-17"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New heap-flavored structures can subclass MinHeap or swap in a custom Comparator, exactly as PriorityQueue does with its priorities Map.",
+          "sources": [
+            "src/data-structures/priority-queue/PriorityQueue.js#L1-30",
+            "src/data-structures/heap/MinHeap.js"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "BloomFilter.createStore returns a closed-over storage interface ({getValue,setValue}), so the bit-array backend could be swapped without changing insert/mayContain.",
+          "sources": [
+            "src/data-structures/bloom-filter/BloomFilter.js#L40-67"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Translation is an extension surface: adding README.xx-XX.md files (root or per-topic) follows a documented locale-code convention in CONTRIBUTING.md.",
+          "sources": [
+            "CONTRIBUTING.md#L9-15",
+            "README.md#L23-41"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The playground (src/playground/playground.js + __test__/playground.test.js) is a designed extension point for experimentation — it already demonstrates importing an algorithm and asserting on it.",
+          "sources": [
+            "src/playground/playground.js#L1-12",
+            "src/playground/__test__/playground.test.js"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_handoff": {
+      "summary": "Safe mental model: this is an educational algorithm catalog, not an app — optimize for clarity and pedagogy over cleverness or performance. Before editing, read CONTRIBUTING.md, .eslintrc, jest.config.js and the target module's README. Conventions: one default export per file, file name matches export (camelCase for functions, PascalCase for classes), heavy JSDoc typedefs and explanatory comments, co-located __test__ dirs, toString()-based assertions. Verify with npm test and npm run lint; keep 100% coverage or CI fails.",
+      "claims": [
+        {
+          "claim": "Read first: CONTRIBUTING.md (PR rules: focused one-algorithm PRs, README required, 100% coverage), jest.config.js (testRegex + thresholds), .eslintrc (airbnb + relaxed rules), and the module's own README.md for the math/intent.",
+          "sources": [
+            "CONTRIBUTING.md",
+            "jest.config.js",
+            ".eslintrc"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "House style: every module default-exports one function or class, annotates params/returns with JSDoc (including @typedef blocks for callback shapes), and explains non-obvious steps with inline comments — match this rather than introducing terse idioms.",
+          "sources": [
+            "src/algorithms/image-processing/seam-carving/resizeImageWidth.js#L1-48",
+            "src/algorithms/graph/breadth-first-search/breadthFirstSearch.js#L4-14",
+            "src/data-structures/linked-list/LinkedList.js#L18-21"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Tests belong in a sibling `__test__` dir named <Module>.test.js; for shared algorithm families reuse the harness (SortTester statics) instead of duplicating fixtures.",
+          "sources": [
+            "src/data-structures/linked-list/__test__/LinkedList.test.js",
+            "src/algorithms/sorting/SortTester.js#L9-71"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Run `npm test -- <pattern>` for a single module (e.g. 'playground'), `npm test` for the full suite, `npm run lint` before committing (husky does this anyway), and `npm run coverage` to check the CI gate locally.",
+          "sources": [
+            "package.json#L30-36",
+            "src/playground/playground.js#L6",
+            ".husky/pre-commit"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Node >=22 and npm >=10 are required; dependencies are dev-only — do not add runtime dependencies, and prefer plain JS over new libraries since pedagogy is the product.",
+          "sources": [
+            "package.json#L37-53"
+          ],
+          "kind": "inference"
+        },
+        {
+          "claim": "Do not create index.js or try to 'package' the repo — the missing main entry is the status quo; consumers deep-import files like src/data-structures/linked-list/LinkedList.js.",
+          "sources": [
+            "package.json#L29",
+            "src/data-structures/linked-list/LinkedList.js"
+          ],
+          "kind": "inference"
+        },
+        {
+          "claim": "Mutating methods on data structures conventionally return `this` for chaining (append/prepend/insert/reverse); preserve that contract when editing or tests asserting chains will break.",
+          "sources": [
+            "src/data-structures/linked-list/LinkedList.js#L22-55"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "When touching Comparator behavior, remember Comparator.reverse() mutates the compare function in place — several tests rely on reversing sort order via this mechanism.",
+          "sources": [
+            "src/utils/comparator/Comparator.js#L78-81"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The seam-carving test resolves PNG fixtures relative to process CWD (./src/...), so always run jest from the repo root; new file-IO tests should follow the `__tests__` plural dir convention so testRegex matches.",
+          "sources": [
+            "src/algorithms/image-processing/seam-carving/__tests__/resizeImageWidth.node.js#L6-7",
+            "jest.config.js#L22"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Known traps: Graph throws on duplicate addVertex/addEdge (pre-check or expect the throw), HashTable keys must be strings (hash() iterates chars), and delete() on LinkedList removes ALL matching nodes, not just the first.",
+          "sources": [
+            "src/data-structures/graph/Graph.js#L15-25",
+            "src/data-structures/hash-table/HashTable.js#L27-45",
+            "src/data-structures/linked-list/LinkedList.js#L95-129"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_prompt": "You are working in trekhleb/javascript-algorithms, an educational collection of classic data structures and algorithms in plain ES-module JavaScript (Node >=22, Jest 30, Babel preset-env). It is NOT an application: there is no server, CLI, or bundle — each module under src/data-structures/<name>/ and src/algorithms/<topic>/<name>/ is a self-contained folder with one default-exported implementation file, a co-located `__test__` (or `__tests__`) directory, and a README.md (often translated as README.xx-XX.md). package.json says \"main\": \"index.js\" but no index.js exists — consumers deep-import files; do not add packaging machinery.\n\nArchitecture: a single shared utility, src/utils/comparator/Comparator.js, wraps an optional compare function and is injected into LinkedList, Heap, Sort and PriorityQueue constructors — use it for any ordering logic instead of raw < / ===. Two small inheritance chains matter: abstract Sort (src/algorithms/sorting/Sort.js) normalizes {compareCallback, visitingCallback} and forces subclasses to implement sort(); abstract Heap (src/data-structures/heap/Heap.js) throws on direct construction and is extended by MinHeap/MaxHeap, with PriorityQueue extending MinHeap. Graph algorithms traverse via a callback contract {allowTraversal, enterVertex, leaveVertex} initialized by a local initCallbacks with a closed-over `seen` map (see breadth-first-search/depth-first-search). Data structures compose: Queue wraps LinkedList, HashTable buckets are LinkedLists.\n\nConventions: file names match their export (camelCase functions like breadthFirstSearch.js, PascalCase classes like LinkedList.js); heavy JSDoc with @typedef for callback shapes; explanatory inline comments are expected — this repo optimizes for teaching, not terseness. Mutating methods return `this` for chaining. Tests assert mostly on toString() output and return values. For sorting algorithms, reuse SortTester (src/algorithms/sorting/SortTester.js) statics: testSort, testNegativeNumbersSort, testSortWithCustomComparator, testSortStability, testAlgorithmTimeComplexity. Helper files must avoid the .test.js/.spec.js suffix and `__tests__` dir name or Jest will execute them.\n\nWorkflow: `npm test` (jest; use `npm test -- <pattern>` for one module), `npm run lint` (eslint airbnb; husky runs it pre-commit), `npm run coverage` (enforces 100% statements/functions/lines, 95% branches — CI fails otherwise). CI (.github/workflows/CI.yml) runs lint + coverage on Node 22.x for pushes/PRs to master and uploads to Codecov. CONTRIBUTING.md requires one algorithm per PR, a README with explanations/links, and 100% coverage.\n\nTraps: implementations favor clarity — HashTable.hash is a char-sum mod 32 (collisions by design), QuickSort uses shift() and first-element pivot (quadratic worst case), Graph.addVertex/addEdge throw on duplicates, LinkedList.delete removes ALL matching values, depthFirstSearch is recursive (stack-depth risk), and seam-carving mutates ImageData in place. The only file IO is the seam-carving test reading PNG fixtures via CWD-relative paths — always run jest from repo root. Keep diffs small, match neighboring style, and never sacrifice readability for cleverness."
+  },
+  "analysis": {
+    "agent": "devin",
+    "model": "swe-2",
+    "runtime_ms": null,
+    "cost_usd": null,
+    "collected_at": "2026-09-22T16:34:49.819Z"
   }
 }

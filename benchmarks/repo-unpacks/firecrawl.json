@@ -817,7 +817,7 @@
         {
           "path": "CLAUDE.md",
           "bytes": 1668,
-          "preview": "Firecrawl is a web scraper API. The directory you have access to is a monorepo:\n - `apps/api` has the actual API and worker code\n - `apps/*-sdk` are various SDKs\n\nWhen making changes to the API, here are the general steps you should take:\n1. Write some end-to-end tests that assert your win conditions, if they don't already exist\n  - 1 happy path (more is encouraged if there are multiple happy paths with significantly different code paths taken)\n  - 1+ failure path(s)\n  - Generally, E2E (called `snips` in the API) is always preferred over unit testing.\n  - In the API, always use `scrapeTimeout` from `./lib` to set the timeout you use for scrapes.\n  - These tests will be ran on a variety of configurations. You should gate tests in the following manner:\n    - If it requires fire-engine: `!process.env.TEST_SUITE_SELF_HOSTED`\n    - If it requires AI: `!process.env.TEST_SUITE_SELF_HOSTED || process.env.OPENAI_API_KEY || process.env.OLLAMA_BASE_URL`\n2. Write code to achieve your win conditions\n3. Run your tests using `pnpm harness jest ...`\n  - `pnpm harness` is a command that gets the API server and workers up for you to run the tests. Don't try to `pnpm start` manually.\n  - The full test suite takes a long time to run, so you should try to only execute the relevant tests locally, and let CI run the full test suite.\n4. Push to a branch, open a PR, and let CI run to verify your win condition.\nKeep these steps in mind while building your TODO list.\n\nNever bypass `knip` failures (e.g. with `git commit --no-verify`). If the pre-commit `knip` check fails, fix the reported unused exports/files \u2014 even if they predate your change \u2014 before committing."
+          "preview": "Firecrawl is a web scraper API. The directory you have access to is a monorepo:\n - `apps/api` has the actual API and worker code\n - `apps/*-sdk` are various SDKs\n\nWhen making changes to the API, here are the general steps you should take:\n1. Write some end-to-end tests that assert your win conditions, if they don't already exist\n  - 1 happy path (more is encouraged if there are multiple happy paths with significantly different code paths taken)\n  - 1+ failure path(s)\n  - Generally, E2E (called `snips` in the API) is always preferred over unit testing.\n  - In the API, always use `scrapeTimeout` from `./lib` to set the timeout you use for scrapes.\n  - These tests will be ran on a variety of configurations. You should gate tests in the following manner:\n    - If it requires fire-engine: `!process.env.TEST_SUITE_SELF_HOSTED`\n    - If it requires AI: `!process.env.TEST_SUITE_SELF_HOSTED || process.env.OPENAI_API_KEY || process.env.OLLAMA_BASE_URL`\n2. Write code to achieve your win conditions\n3. Run your tests using `pnpm harness jest ...`\n  - `pnpm harness` is a command that gets the API server and workers up for you to run the tests. Don't try to `pnpm start` manually.\n  - The full test suite takes a long time to run, so you should try to only execute the relevant tests locally, and let CI run the full test suite.\n4. Push to a branch, open a PR, and let CI run to verify your win condition.\nKeep these steps in mind while building your TODO list.\n\nNever bypass `knip` failures (e.g. with `git commit --no-verify`). If the pre-commit `knip` check fails, fix the reported unused exports/files — even if they predate your change — before committing."
         },
         {
           "path": "CONTRIBUTING.md",
@@ -827,7 +827,7 @@
         {
           "path": "README.md",
           "bytes": 25492,
-          "preview": "<h3 align=\"center\">\n  <a name=\"readme-top\"></a>\n  <img\n    src=\"https://raw.githubusercontent.com/firecrawl/firecrawl/main/img/firecrawl_logo.png\"\n    height=\"200\"\n  >\n</h3>\n\n<div align=\"center\">\n  <a href=\"https://github.com/firecrawl/firecrawl/blob/main/LICENSE\">\n    <img src=\"https://img.shields.io/github/license/firecrawl/firecrawl\" alt=\"License\">\n  </a>\n  <a href=\"https://pepy.tech/project/firecrawl-py\">\n    <img src=\"https://static.pepy.tech/badge/firecrawl-py\" alt=\"Downloads\">\n  </a>\n  <a href=\"https://GitHub.com/firecrawl/firecrawl/graphs/contributors\">\n    <img src=\"https://img.shields.io/github/contributors/firecrawl/firecrawl.svg\" alt=\"GitHub Contributors\">\n  </a>\n  <a href=\"https://firecrawl.dev\">\n    <img src=\"https://img.shields.io/badge/Visit-firecrawl.dev-orange\" alt=\"Visit firecrawl.dev\">\n  </a>\n</div>\n\n<div>\n  <p align=\"center\">\n    <a href=\"https://twitter.com/firecrawl\">\n      <img src=\"https://img.shields.io/badge/Follow%20on%20X-000000?style=for-the-badge&logo=x&logoColor=white\" alt=\"Follow on X\" />\n    </a>\n    <a href=\"https://www.linkedin.com/company/104100957\">\n      <img src=\"https://img.shields.io/badge/Follow%20on%20LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white\" alt=\"Follow on LinkedIn\" />\n    </a>\n    <a href=\"https://discord.gg/firecrawl\">\n      <img src=\"https://img.shields.io/badge/Join%20our%20Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white\" alt=\"Join our Discord\" />\n    </a>\n  </p>\n</div>\n\n---\n\n# **\ud83d\udd25 Firecrawl**\n\n**The API to search, scrape, and interact with the web at scale. \ud83d\udd25** The web data API to find sources, extract content, and turn it into clean Markdown or structured data your agents can ship with. Open source and available as a [hosted service](https://firecrawl.dev/?ref=github).\n\n_Pst. Hey, you, join our stargazers :)_\n\n<a href=\"https://github.com/firecrawl/firecrawl\">\n  <img src=\"https://img.shields.io/github/stars/firecrawl/firecrawl.svg?style=social&label=Star&maxAge=2592000\" alt=\"GitHub stars\">\n</a>\n\n---\n\n## Why Firecrawl?\n\n- **Industry-leading reliability**: Covers 96% of the web, including JS-heavy pages \u2014 no proxy headaches, just clean data ([see benchmarks](https://www.firecrawl.dev/blog/the-worlds-best-web-data-api-v25))\n- **Blazingly fast**: P95 latency of 3.4s across millions of pages, built for real-time agents and dynamic apps\n- **LLM-ready output**: Clean markdown, structured JSON, screenshots, and more \u2014 spend fewer tokens, build better AI apps\n- **We handle the hard stuff**: Rotating proxies, orchestration, rate limits, JS-blocked content, and more \u2014 zero configuration\n- **Agent ready**: Connect Firecrawl to any AI agent or MCP client with a single command\n- **Media parsing**: Parse and extract content from web-hosted PDFs, DOCX, and more\n- **Actions**: Click, scroll, write, wait, and press before extracting content\n- **Open source**: Developed transparently and collaboratively \u2014 [join our community](https://discord.gg/firecrawl)\n\n---\n\n## Feature Overview\n\n**Core Endpoints**\n\n| Feature | Description |\n|---------|-------------|\n| [**Search**](#search) | Search the web and get full page content from results |\n| [**Scrape**](#scrape) | Convert any URL to markdown, HTML, screenshots, or structured JSON |\n| [**Interact**](#interact) | Scrape a page, then interact with it using AI prompts or code |\n\n**More**\n\n| Feature | Description |\n|---------|-------------|\n| [**Agent**](#agent) | Automated data gathering, just describe what you need |\n| [**Crawl**](#crawl) | Scrape all URLs of a website with a single request |\n| [**Map**](#map) | Discover all URLs on a website instantly |\n| [**Batch Scrape**](#batch-scrape) | Scrape thousands of URLs asynchronously |\n\n---\n\n## Quick Start\n\nSign up at [firecrawl.dev](https://firecrawl.dev) to get your API key. Try the [playground](https://firecrawl.dev/playground) to test it out.\n\n### Search\n\nSearch the web and get full content from results.\n\n```python\nfrom firecrawl import Firecrawl\n\napp = Firecrawl(api_key=\"fc-YOUR_API_KEY\")\n\nsearch_result = app.search(\"firecrawl\", limit=5)\n```\n\n<details>\n<summary><b>Node.js / cURL / CLI</b></summary>\n\n**Node.js**\n```javascript\nimport { Firecrawl } from 'firecrawl';\n\nconst app = new Firecrawl({apiKey: \"fc-YOUR_API_KEY\"});\n\napp.search(\"firecrawl\", { limit: 5 })\n```\n\n**cURL**\n```bash\ncurl -X POST 'https://api.firecrawl.dev/v2/search' \\\n-H 'Authorization: Bearer fc-YOUR_API_KEY' \\\n-H 'Content-Type: application/json' \\\n-d '{\n  \"query\": \"firecrawl\",\n  \"limit\": 5\n}'\n```\n\n**CLI**\n```bash\nfirecrawl search \"firecrawl\" --limit 5\n```\n</details>\n\nOutput:\n```json\n[\n  {\n    \"url\": \"https://firecrawl.dev\",\n    \"title\": \"Firecrawl\",\n    \"markdown\": \"Turn websites into...\"\n  },\n  {\n    \"url\": \"https://docs.firecrawl.dev\",\n    \"title\": \"Firecrawl Docs\",\n    \"markdown\": \"# Getting Started...\"\n  }\n]\n```\n\n### Scrape\n\nGet LLM-ready data from any website \u2014 markdown, JSON, screenshots, and more.\n\n```python\nfrom firecrawl import Firecrawl\n\napp = Firecrawl(api_key=\"fc-YOUR_API_KEY\")\n\nresult = app.scrape('firecrawl.dev')\n```\n\n<details>\n<summary><b>Node.js / cURL / CLI</b></summary>\n\n**Node.js**\n```javascript\nimport { Firecrawl } from 'firecrawl';\n\nconst app = new Firecrawl({ apiKey: \"fc-YOUR_API_KEY\" });\n\napp.scrape('firecrawl.dev')\n```\n\n**cURL**\n```bash\ncurl -X POST 'https://api.firecrawl.dev/v2/scrape' \\\n-H 'Authorization: Bearer fc-YOUR_API_KEY' \\\n-H 'Content-Type: application/json' \\\n-d '{\n  \"url\": \"firecrawl.dev\"\n}'\n```\n\n**CLI**\n```bash\nfirecrawl scrape https://firecrawl.dev\nfirecrawl https://firecrawl.dev --only-main-content\n```\n</details>\n\nOutput:\n```\n# Firecrawl\n\nFirecrawl helps AI agents search, scrape, and interact with the web.\n\n## Features\n- Search: Find information across the web\n- Scrape: Clean data from any page\n- Interact: Click, navigate, and operate pages\n- Agent: Autonomous data gathering\n```\n\n### Interact\n\nScrape a page, then interact with it using AI prompts or code.\n\n```python\nfrom firecrawl import Firecrawl\n\napp = Firecrawl(api_key=\"fc-YOUR_API_KEY\")\n\nresult = app.scrape(\"https://amazon.com\")\nscrape_id = result.metadata.scrape_id\n\napp.interact(scrape_id, prompt=\"Search for 'mechanical keyboard'\")\napp.interact(scrape_id, prompt=\"Click the first result\")\n```\n\n<details>\n<summary><b>Node.js / cURL / CLI</b></summary>\n\n**Node.js**\n```javascript\nimport { Firecrawl } from 'firecrawl';\n\nconst app = new Firecrawl({apiKey: \"fc-YOUR_API_KEY\"});\n\nconst result = await app.scrape(\"https://amazon.com\");\n\nawait app.interact(result.metadata.scrapeId, {\n  prompt: \"Search for 'mechanical keyboard'\"\n});\nawait app.interact(result.metadata.scrapeId, {\n  prompt: \"Click the first result\"\n});\n```\n\n**cURL**\n```bash\n# 1. Scrape the page\ncurl -X POST 'https://api.firecrawl.dev/v2/scrape' \\\n-H 'Authorization: Bearer fc-YOUR_API_KEY' \\\n-H 'Content-Type: application/json' \\\n-d '{\"url\": \"https://amazon.com\"}'\n\n# 2. Interact with the page (use scrapeId from step 1)\ncurl -X POST 'https://api.firecrawl.dev/v2/scrape/SCRAPE_ID/interact' \\\n-H 'Authorization: Bearer fc-YOUR_API_KEY' \\\n-H 'Content-Type: application/json' \\\n-d '{\"prompt\": \"Search for mechanical keyboard\"}'\n```\n\n**CLI**\n```bash\nfirecrawl scrape https://amazon.com\nfirecrawl interact exec --prompt \"Search for 'mechanical keyboard'\"\nfirecrawl interact exec --prompt \"Click the first result\"\n```\n</details>\n\nOutput:\n```json\n{\n  \"success\": true,\n  \"output\": \"Keyboard available at $100\",\n  \"liveViewUrl\": \"https://liveview.firecrawl.dev/...\"\n}\n```\n\n---\n\n## Power Your Agent\n\nConnect Firecrawl to any AI agent or MCP client in minutes.\n\n### Skill\n\nGive your agent easy access to real-time web data with one command.\n\n```bash\nnpx -y firecrawl-cli@latest init --all --browser\n```\n\nRestart your agent after installing. Works with [Claude Code](https://claude.ai/code), [Antigravity](https://antigravity.google), [OpenCode](https://opencode.ai), and more.\n\n### MCP\n\nConnect any MCP-compatible client to the web in seconds.\n\n```json\n{\n  \"mcpServers\": {\n    \"firecrawl-mcp\": {\n      \"command\": \"npx\",\n      \"args\": [\"-y\", \"firecrawl-mcp\"],\n      \"env\": {\n        \"FIRECRAWL_API_KEY\": \"fc-YOUR_API_KEY\"\n      }\n    }\n  }\n}\n```\n\n### Agent Onboarding\n\nAre you an AI agen"
+          "preview": "<h3 align=\"center\">\n  <a name=\"readme-top\"></a>\n  <img\n    src=\"https://raw.githubusercontent.com/firecrawl/firecrawl/main/img/firecrawl_logo.png\"\n    height=\"200\"\n  >\n</h3>\n\n<div align=\"center\">\n  <a href=\"https://github.com/firecrawl/firecrawl/blob/main/LICENSE\">\n    <img src=\"https://img.shields.io/github/license/firecrawl/firecrawl\" alt=\"License\">\n  </a>\n  <a href=\"https://pepy.tech/project/firecrawl-py\">\n    <img src=\"https://static.pepy.tech/badge/firecrawl-py\" alt=\"Downloads\">\n  </a>\n  <a href=\"https://GitHub.com/firecrawl/firecrawl/graphs/contributors\">\n    <img src=\"https://img.shields.io/github/contributors/firecrawl/firecrawl.svg\" alt=\"GitHub Contributors\">\n  </a>\n  <a href=\"https://firecrawl.dev\">\n    <img src=\"https://img.shields.io/badge/Visit-firecrawl.dev-orange\" alt=\"Visit firecrawl.dev\">\n  </a>\n</div>\n\n<div>\n  <p align=\"center\">\n    <a href=\"https://twitter.com/firecrawl\">\n      <img src=\"https://img.shields.io/badge/Follow%20on%20X-000000?style=for-the-badge&logo=x&logoColor=white\" alt=\"Follow on X\" />\n    </a>\n    <a href=\"https://www.linkedin.com/company/104100957\">\n      <img src=\"https://img.shields.io/badge/Follow%20on%20LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white\" alt=\"Follow on LinkedIn\" />\n    </a>\n    <a href=\"https://discord.gg/firecrawl\">\n      <img src=\"https://img.shields.io/badge/Join%20our%20Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white\" alt=\"Join our Discord\" />\n    </a>\n  </p>\n</div>\n\n---\n\n# **🔥 Firecrawl**\n\n**The API to search, scrape, and interact with the web at scale. 🔥** The web data API to find sources, extract content, and turn it into clean Markdown or structured data your agents can ship with. Open source and available as a [hosted service](https://firecrawl.dev/?ref=github).\n\n_Pst. Hey, you, join our stargazers :)_\n\n<a href=\"https://github.com/firecrawl/firecrawl\">\n  <img src=\"https://img.shields.io/github/stars/firecrawl/firecrawl.svg?style=social&label=Star&maxAge=2592000\" alt=\"GitHub stars\">\n</a>\n\n---\n\n## Why Firecrawl?\n\n- **Industry-leading reliability**: Covers 96% of the web, including JS-heavy pages — no proxy headaches, just clean data ([see benchmarks](https://www.firecrawl.dev/blog/the-worlds-best-web-data-api-v25))\n- **Blazingly fast**: P95 latency of 3.4s across millions of pages, built for real-time agents and dynamic apps\n- **LLM-ready output**: Clean markdown, structured JSON, screenshots, and more — spend fewer tokens, build better AI apps\n- **We handle the hard stuff**: Rotating proxies, orchestration, rate limits, JS-blocked content, and more — zero configuration\n- **Agent ready**: Connect Firecrawl to any AI agent or MCP client with a single command\n- **Media parsing**: Parse and extract content from web-hosted PDFs, DOCX, and more\n- **Actions**: Click, scroll, write, wait, and press before extracting content\n- **Open source**: Developed transparently and collaboratively — [join our community](https://discord.gg/firecrawl)\n\n---\n\n## Feature Overview\n\n**Core Endpoints**\n\n| Feature | Description |\n|---------|-------------|\n| [**Search**](#search) | Search the web and get full page content from results |\n| [**Scrape**](#scrape) | Convert any URL to markdown, HTML, screenshots, or structured JSON |\n| [**Interact**](#interact) | Scrape a page, then interact with it using AI prompts or code |\n\n**More**\n\n| Feature | Description |\n|---------|-------------|\n| [**Agent**](#agent) | Automated data gathering, just describe what you need |\n| [**Crawl**](#crawl) | Scrape all URLs of a website with a single request |\n| [**Map**](#map) | Discover all URLs on a website instantly |\n| [**Batch Scrape**](#batch-scrape) | Scrape thousands of URLs asynchronously |\n\n---\n\n## Quick Start\n\nSign up at [firecrawl.dev](https://firecrawl.dev) to get your API key. Try the [playground](https://firecrawl.dev/playground) to test it out.\n\n### Search\n\nSearch the web and get full content from results.\n\n```python\nfrom firecrawl import Firecrawl\n\napp = Firecrawl(api_key=\"fc-YOUR_API_KEY\")\n\nsearch_result = app.search(\"firecrawl\", limit=5)\n```\n\n<details>\n<summary><b>Node.js / cURL / CLI</b></summary>\n\n**Node.js**\n```javascript\nimport { Firecrawl } from 'firecrawl';\n\nconst app = new Firecrawl({apiKey: \"fc-YOUR_API_KEY\"});\n\napp.search(\"firecrawl\", { limit: 5 })\n```\n\n**cURL**\n```bash\ncurl -X POST 'https://api.firecrawl.dev/v2/search' \\\n-H 'Authorization: Bearer fc-YOUR_API_KEY' \\\n-H 'Content-Type: application/json' \\\n-d '{\n  \"query\": \"firecrawl\",\n  \"limit\": 5\n}'\n```\n\n**CLI**\n```bash\nfirecrawl search \"firecrawl\" --limit 5\n```\n</details>\n\nOutput:\n```json\n[\n  {\n    \"url\": \"https://firecrawl.dev\",\n    \"title\": \"Firecrawl\",\n    \"markdown\": \"Turn websites into...\"\n  },\n  {\n    \"url\": \"https://docs.firecrawl.dev\",\n    \"title\": \"Firecrawl Docs\",\n    \"markdown\": \"# Getting Started...\"\n  }\n]\n```\n\n### Scrape\n\nGet LLM-ready data from any website — markdown, JSON, screenshots, and more.\n\n```python\nfrom firecrawl import Firecrawl\n\napp = Firecrawl(api_key=\"fc-YOUR_API_KEY\")\n\nresult = app.scrape('firecrawl.dev')\n```\n\n<details>\n<summary><b>Node.js / cURL / CLI</b></summary>\n\n**Node.js**\n```javascript\nimport { Firecrawl } from 'firecrawl';\n\nconst app = new Firecrawl({ apiKey: \"fc-YOUR_API_KEY\" });\n\napp.scrape('firecrawl.dev')\n```\n\n**cURL**\n```bash\ncurl -X POST 'https://api.firecrawl.dev/v2/scrape' \\\n-H 'Authorization: Bearer fc-YOUR_API_KEY' \\\n-H 'Content-Type: application/json' \\\n-d '{\n  \"url\": \"firecrawl.dev\"\n}'\n```\n\n**CLI**\n```bash\nfirecrawl scrape https://firecrawl.dev\nfirecrawl https://firecrawl.dev --only-main-content\n```\n</details>\n\nOutput:\n```\n# Firecrawl\n\nFirecrawl helps AI agents search, scrape, and interact with the web.\n\n## Features\n- Search: Find information across the web\n- Scrape: Clean data from any page\n- Interact: Click, navigate, and operate pages\n- Agent: Autonomous data gathering\n```\n\n### Interact\n\nScrape a page, then interact with it using AI prompts or code.\n\n```python\nfrom firecrawl import Firecrawl\n\napp = Firecrawl(api_key=\"fc-YOUR_API_KEY\")\n\nresult = app.scrape(\"https://amazon.com\")\nscrape_id = result.metadata.scrape_id\n\napp.interact(scrape_id, prompt=\"Search for 'mechanical keyboard'\")\napp.interact(scrape_id, prompt=\"Click the first result\")\n```\n\n<details>\n<summary><b>Node.js / cURL / CLI</b></summary>\n\n**Node.js**\n```javascript\nimport { Firecrawl } from 'firecrawl';\n\nconst app = new Firecrawl({apiKey: \"fc-YOUR_API_KEY\"});\n\nconst result = await app.scrape(\"https://amazon.com\");\n\nawait app.interact(result.metadata.scrapeId, {\n  prompt: \"Search for 'mechanical keyboard'\"\n});\nawait app.interact(result.metadata.scrapeId, {\n  prompt: \"Click the first result\"\n});\n```\n\n**cURL**\n```bash\n# 1. Scrape the page\ncurl -X POST 'https://api.firecrawl.dev/v2/scrape' \\\n-H 'Authorization: Bearer fc-YOUR_API_KEY' \\\n-H 'Content-Type: application/json' \\\n-d '{\"url\": \"https://amazon.com\"}'\n\n# 2. Interact with the page (use scrapeId from step 1)\ncurl -X POST 'https://api.firecrawl.dev/v2/scrape/SCRAPE_ID/interact' \\\n-H 'Authorization: Bearer fc-YOUR_API_KEY' \\\n-H 'Content-Type: application/json' \\\n-d '{\"prompt\": \"Search for mechanical keyboard\"}'\n```\n\n**CLI**\n```bash\nfirecrawl scrape https://amazon.com\nfirecrawl interact exec --prompt \"Search for 'mechanical keyboard'\"\nfirecrawl interact exec --prompt \"Click the first result\"\n```\n</details>\n\nOutput:\n```json\n{\n  \"success\": true,\n  \"output\": \"Keyboard available at $100\",\n  \"liveViewUrl\": \"https://liveview.firecrawl.dev/...\"\n}\n```\n\n---\n\n## Power Your Agent\n\nConnect Firecrawl to any AI agent or MCP client in minutes.\n\n### Skill\n\nGive your agent easy access to real-time web data with one command.\n\n```bash\nnpx -y firecrawl-cli@latest init --all --browser\n```\n\nRestart your agent after installing. Works with [Claude Code](https://claude.ai/code), [Antigravity](https://antigravity.google), [OpenCode](https://opencode.ai), and more.\n\n### MCP\n\nConnect any MCP-compatible client to the web in seconds.\n\n```json\n{\n  \"mcpServers\": {\n    \"firecrawl-mcp\": {\n      \"command\": \"npx\",\n      \"args\": [\"-y\", \"firecrawl-mcp\"],\n      \"env\": {\n        \"FIRECRAWL_API_KEY\": \"fc-YOUR_API_KEY\"\n      }\n    }\n  }\n}\n```\n\n### Agent Onboarding\n\nAre you an AI agen"
         }
       ],
       "config_files": [
@@ -15408,7 +15408,7 @@
         "steps": [
           {
             "id": "serialize",
-            "label": "JSON serialize (inventory \u2192 SQLite)",
+            "label": "JSON serialize (inventory → SQLite)",
             "ms": 0,
             "pct": 0
           },
@@ -15427,5 +15427,824 @@
         ]
       }
     ]
+  },
+  "report": {
+    "overview": "Firecrawl is a self-hostable web-scraping API monorepo: an Express 5/TypeScript service in apps/api exposes versioned REST endpoints (/v0, /v1, /v2) that turn URLs into markdown, JSON, screenshots and more, while background workers pull scrape jobs off a custom Postgres/FoundationDB-backed queue (NuQ) and run a waterfall of pluggable fetch engines (index cache, fire-engine Chrome CDP, Playwright microservice, plain fetch, PDF/document/image parsers). Billing (Autumn), auth (Supabase-backed API keys plus a keyless free tier), rate limiting (Redis), job state (Bigtable), and a web index cache (GCS + Postgres) are all first-class subsystems. Nine language SDKs, a Playwright sidecar, a Go html-to-markdown service, and a test-site app round out the monorepo.",
+    "system_map": {
+      "summary": "The core product is apps/api, an Express 5 server (src/index.ts) plus a family of worker processes spawned by a supervisor script (src/harness.ts). Jobs flow through NuQ, a bespoke queue layered on Postgres (apps/nuq-postgres/nuq.sql) with an experimental FoundationDB backend and RabbitMQ/PG-listen completion signaling; a few legacy BullMQ queues remain for LLMs.txt, deep-research and billing. Persistence is split across Redis (crawl state, rate limits, auth cache), Postgres via Drizzle (teams/API keys/Supabase), Bigtable (job state, index metadata), GCS (index documents, screenshots, logs) and ClickHouse (request logs). Scraping itself is delegated to a quality-ordered engine registry in scraper/scrapeURL/engines. Everything is configured through a single Zod schema in src/config.ts and deployed as Docker images via docker-compose.yaml and GitHub Actions.",
+      "claims": [
+        {
+          "claim": "The HTTP entrypoint is apps/api/src/index.ts: it creates an express-ws app, mounts v0Router, /v1, /v2, /labs, /exchange and adminRouter, then registers a not-found handler and two error middlewares that map ZodError to 400 and everything else to a uuidv7-tagged 500.",
+          "sources": [
+            "apps/api/src/index.ts#L121-138",
+            "apps/api/src/index.ts#L209-310"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "src/harness.ts is a process supervisor, not a server: it spawns the api process, legacy worker, NUQ_WORKER_COUNT nuq-workers plus prefetch/reconciler workers, extract and index workers, and manages Docker/Podman containers for nuq-postgres, RabbitMQ and FoundationDB when running locally.",
+          "sources": [
+            "apps/api/src/harness.ts#L43-64",
+            "apps/api/src/harness.ts#L516-670"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "NuQ is a hand-rolled queue: class NuQ in services/worker/nuq.ts stores jobs in a Postgres table (nuq.queue_scrape, defined in apps/nuq-postgres/nuq.sql) and notifies waiters either through a dedicated PG LISTEN client or a RabbitMQ queue per worker.",
+          "sources": [
+            "apps/api/src/services/worker/nuq.ts#L94-120",
+            "apps/api/src/services/worker/nuq.ts#L1755-1764",
+            "apps/nuq-postgres/nuq.sql#L44-60"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Four BullMQ queues still exist alongside NuQ — generate-llmstxt, deep-research, billing and precrawl — created lazily in services/queue-service.ts and surfaced through a bull-board UI mounted at /admin/<BULL_AUTH_KEY>/queues.",
+          "sources": [
+            "apps/api/src/services/queue-service.ts#L41-97",
+            "apps/api/src/index.ts#L100-119"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Worker binaries are separate entrypoints under src/services: queue-worker.ts (BullMQ + NuQ scrape queue + monitor scheduler), worker/nuq-worker.ts, nuq-fdb-worker.ts, nuq-prefetch-worker.ts, nuq-reconciler-worker.ts, extract-worker.ts, indexing/index-worker.ts, zdr-worker.ts and cclog-worker.ts — each has its own package.json script.",
+          "sources": [
+            "apps/api/package.json#L23-40",
+            "apps/api/src/services/worker/nuq-worker.ts",
+            "apps/api/src/services/queue-worker.ts#L1-37"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Scrape engines live in a single registry: Engine is a string-union type, engines[] is the enabled list gated by env config (PLAYWRIGHT_MICROSERVICE_URL, FIRE_PDF_BASE_URL, WIKIPEDIA_ENTERPRISE_*, XAI_API_KEY), and engineHandlers/engineOptions/engineMRTs map each engine to its implementation, feature support matrix and max-reasonable-time.",
+          "sources": [
+            "apps/api/src/scraper/scrapeURL/engines/index.ts#L51-103",
+            "apps/api/src/scraper/scrapeURL/engines/index.ts#L193-239"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "HTML→markdown conversion is a Go shared library loaded through koffi FFI (lib/html-to-markdown.ts resolves sharedLibs/go-html-to-md via natives.ts), with an HTTP fallback (html-to-markdown-client.ts) to the standalone apps/go-html-to-md-service gorilla/mux service; @mendable/firecrawl-rs provides postProcessMarkdown.",
+          "sources": [
+            "apps/api/src/lib/html-to-markdown.ts#L1-45",
+            "apps/api/src/natives.ts",
+            "apps/go-html-to-md-service/main.go#L1-40"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "All configuration is a single Zod object in src/config.ts (638 lines) covering ports, DB URLs, feature envs like KEYLESS_CREDITS_PER_DAY, GOOGLE_WEB_RISK_API_KEY, NUQ_BACKEND and proxy credentials; modules import { config } directly.",
+          "sources": [
+            "apps/api/src/config.ts#L71-150"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Drizzle ORM over node-postgres provides DB access: db/connection.ts builds named pools per a DB_POOL_PROFILE sizing scheme (db/pool-profiles.ts), returning null when a connection string is unset so features degrade gracefully.",
+          "sources": [
+            "apps/api/src/db/connection.ts#L1-50"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "docker-compose.yaml defines the self-hosted deployment: api (built from apps/api, command node dist/src/harness.js --start-docker), playwright-service (apps/playwright-service-ts), redis, rabbitmq:3-management, nuq-postgres and an experimental foundationdb pair gated by NUQ_BACKEND=fdb.",
+          "sources": [
+            "docker-compose.yaml#L62-128",
+            "docker-compose.yaml#L147-227"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The monorepo ships nine SDK packages (js-sdk, python-sdk, go-sdk, rust-sdk, ruby-sdk, php-sdk, java-sdk, dot-net-sdk, elixir-sdk) each with its own manifest and publish workflow under .github/workflows/publish-*.yml.",
+          "sources": [
+            "apps/api/package.json",
+            ".github/workflows/publish-js-sdk.yml",
+            "docker-compose.yaml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Observability is built in: OpenTelemetry tracing (src/otel.ts, lib/otel-tracer.ts withSpan/setSpanAttributes used across scrape paths), Prometheus metrics via prom-client (lib/http-metrics.ts, nuqGetLocalMetrics), and structured winston logging (lib/logger.ts).",
+          "sources": [
+            "apps/api/src/otel.ts",
+            "apps/api/src/lib/otel-tracer.ts",
+            "apps/api/src/scraper/scrapeURL/index.ts#L3-7"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "feature_catalog": {
+      "summary": "The v2 API (routes/v2.ts) is the primary surface: scrape, batch scrape, crawl (+status/errors/cancel/websocket), map, search (+developer/research proxies), extract/agent jobs, parse (multipart upload), browser/interact sessions, monitors, Slack integration, team usage/SIEM/threat-protection administration, and keyless free-tier endpoints. v1 mirrors the core endpoints (scrape/crawl/map/extract/search/deep-research/llms.txt) and v0 is a thin deprecated shim. Every mutating endpoint passes through the same middleware chain: authMiddleware (API key, OAuth, MCP delegated credential, or keyless), countryCheck, checkCreditsMiddleware (Autumn), blocklistMiddleware, and optionally idempotencyMiddleware.",
+      "claims": [
+        {
+          "claim": "POST /v2/scrape runs scrapeController: zod-validates via scrapeRequestSchema, resolves safe mode and threat-protection policy, checks permissions and per-key format restrictions, acquires a team concurrency semaphore slot, then executes the scrape in-process via processJobInternal (skipNuq: true) rather than enqueueing.",
+          "sources": [
+            "apps/api/src/routes/v2.ts#L235-242",
+            "apps/api/src/controllers/v2/scrape.ts#L57-99",
+            "apps/api/src/controllers/v2/scrape.ts#L358-441"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "POST /v2/crawl creates a StoredCrawl in Redis (saveCrawl), registers a NuQ job group for concurrency/delay control, optionally expands a natural-language prompt into crawler options via generateCrawlerOptionsFromPrompt, then enqueues a mode:'kickoff' job that discovers links and fans out child scrape jobs.",
+          "sources": [
+            "apps/api/src/controllers/v2/crawl.ts#L218-267",
+            "apps/api/src/controllers/v2/crawl.ts#L324-400",
+            "apps/api/src/services/worker/scrape-worker.ts#L1818-1840"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Crawl lifecycle endpoints: GET/DELETE /v2/crawl/:jobId (status via crawlStatusController, cancel via crawlCancelController), a WebSocket status channel on the same path, /crawl/ongoing|active, /crawl/:jobId/errors, /batch/scrape/:jobId reusing crawlStatusController, and /crawl/params-preview.",
+          "sources": [
+            "apps/api/src/routes/v2.ts#L282-366"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "POST /v2/map and /v2/search are credit-gated discovery endpoints; search chains providers fire_engine → searxng → DuckDuckGo (search/index.ts), and /v2/search/:jobId/feedback plus /v2/feedback collect quality signals.",
+          "sources": [
+            "apps/api/src/routes/v2.ts#L189-210",
+            "apps/api/src/routes/v2.ts#L274-280",
+            "apps/api/src/search/index.ts#L29-60"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "/v2/extract and /v2/agent are async job APIs (POST to start, GET /:jobId for status, agent also has trace/skill/snapshots/thread/cancel endpoints); both are billed at 20 credits via checkCreditsMiddleware(20) and extract carries a deprecationMiddleware('v2_extract') notice.",
+          "sources": [
+            "apps/api/src/routes/v2.ts#L368-441"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Browser sessions are a first-class feature: POST/GET/DELETE /v2/browser (aliased /interact), /:sessionId/execute, /:sessionId/replay[/:pageId], and a public /browser/webhook/destroyed callback for the browser infra to report teardown.",
+          "sources": [
+            "apps/api/src/routes/v2.ts#L625-666"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Monitors (scheduled re-scrapes with alerting) get full CRUD plus /monitor/:id/run, /checks history, and unauthenticated email confirm/unsubscribe endpoints; a scheduler in queue-worker.ts enqueues due checks via services/monitoring/scheduler.ts.",
+          "sources": [
+            "apps/api/src/routes/v2.ts#L533-596",
+            "apps/api/src/services/queue-worker.ts#L25-32",
+            "apps/api/src/services/monitoring/scheduler.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "A Slack app is embedded in the API: /v2/slack/oauth/start|callback, /status, /channels, DELETE /installation, plus unauthenticated /slack/commands and /slack/events verified by Slack's request signature (raw body captured by captureRawBody in index.ts).",
+          "sources": [
+            "apps/api/src/routes/v2.ts#L598-623",
+            "apps/api/src/index.ts#L72-88"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Team administration endpoints expose credit/token usage (current + historical), concurrency-check, queue-status, activity, threat-protection config incl. Zscaler test/sync/categories, and SIEM logging config with a test delivery route.",
+          "sources": [
+            "apps/api/src/routes/v2.ts#L443-531",
+            "apps/api/src/controllers/v2/team-threat-protection.ts",
+            "apps/api/src/controllers/v2/team-siem-logging.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "/v2/parse accepts multipart file uploads (multer, 50MB cap, memoryStorage) or an uploadRef pointing at a prior PUT /v2/parse/upload/:uploadId body, converting documents to markdown via the same scrapeURL pipeline engines.",
+          "sources": [
+            "apps/api/src/routes/v2.ts#L123-233"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "A keyless free tier allows unauthenticated scrape/search/interact/parse requests capped per IPv4 per day when KEYLESS_CREDITS_PER_DAY and KEYLESS_REQUESTS_PER_DAY are both set; the trusted-proxy path uses x-firecrawl-keyless-ip authenticated by KEYLESS_PROXY_SECRET, with optional Spur VPN/TOR screening.",
+          "sources": [
+            "apps/api/src/controllers/auth.ts#L466-630",
+            "apps/api/src/config.ts#L101-121"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "v0 and v1 routers remain mounted: v0 exposes /v0/crawl, /v0/scrape, /v0/keyAuth and health endpoints behind deprecationMiddleware; v1 mirrors scrape/crawl/map/extract/search plus deep-research and generate-llmstxt status endpoints.",
+          "sources": [
+            "apps/api/src/routes/v0.ts#L14-43",
+            "apps/api/src/routes/v1.ts",
+            "apps/api/src/index.ts#L133-135"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Research/search proxying is conditionally mounted: /v2/search/research, /v2/research (legacy), /v2/search/developer and deprecated /developer only exist when RESEARCH_PROXY_URL is configured, each behind its own RateLimiterMode.",
+          "sources": [
+            "apps/api/src/routes/v2.ts#L680-709"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "data_flow": {
+      "summary": "Inbound JSON is validated by Zod schemas in controllers/v2/types.ts, then the request is stamped with team/org identity (ACUC), credits are checked against Autumn, and the job is either executed inline (sync scrape) or persisted as a NuQ row. The scrapeURL pipeline rewrites/permutes the URL, consults the blocklist, robots.txt, safe-mode and threat-protection policy, then walks a quality-ordered engine waterfall; each engine returns raw HTML which is normalized (removeUnwantedElements), converted to markdown (Go native lib or HTTP service), and passed through transformers (LLM extract, JSON, screenshots, change tracking) and postprocessors. Results are persisted to Bigtable job state, indexed to GCS+Postgres, billed per-feature, logged to PubSub/ClickHouse, and returned synchronously or delivered via webhook.",
+      "claims": [
+        {
+          "claim": "Request validation is schema-first: scrapeRequestSchema.parse(req.body) runs inside an 'api.scrape.validate' OTel span, and ZodError is mapped centrally to a 400 with a strict 'Unrecognized key' message for v2.",
+          "sources": [
+            "apps/api/src/controllers/v2/scrape.ts#L94-99",
+            "apps/api/src/index.ts#L225-254",
+            "apps/api/src/controllers/v2/types.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "authenticateUser resolves the API key to an ACUC (auth credit usage chunk) via Redis-cached DB RPCs (authCreditUsageChunk), supports PREVIEW_TOKEN bypass, USE_DB_AUTHENTICATION mode, OAuth token introspection and MCP delegated credentials; the chunk carries team_id, org_id and feature flags used everywhere downstream.",
+          "sources": [
+            "apps/api/src/controllers/auth.ts#L57-95",
+            "apps/api/src/controllers/auth.ts#L635-748",
+            "apps/api/src/db/rpc.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Credits are enforced by Autumn: checkCreditsMiddleware calls autumnService.checkCredits, fails open when Autumn is unreachable, clamps crawl/batch limits to remaining balance, and returns 402 with pricing links when denied; scrape-worker bills actual usage post-hoc via billScrapeJob → billTeam.",
+          "sources": [
+            "apps/api/src/routes/shared.ts#L157-268",
+            "apps/api/src/services/worker/scrape-worker.ts#L143-161",
+            "apps/api/src/services/autumn/autumn.service.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Sync scrapes run a NuQJob in-process: scrapeController builds a NuQJob<ScrapeJobData> with skipNuq:true and calls processJobInternal directly inside teamConcurrencySemaphore.withSemaphore, so the queue row is skipped but the same worker code path executes.",
+          "sources": [
+            "apps/api/src/controllers/v2/scrape.ts#L390-441",
+            "apps/api/src/services/worker/team-semaphore.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Async jobs persist as rows in nuq.queue_scrape via scrapeQueue.addJob/addJobs (queue-jobs.ts), with routing through nuq-router/scrapeQueueFdb when the FDB backend is selected; workers consume via runNuqWorker → processJobInternal.",
+          "sources": [
+            "apps/api/src/services/queue-jobs.ts#L154-226",
+            "apps/api/src/services/worker/nuq-worker-runner.ts#L52-173",
+            "apps/api/src/services/worker/nuq-router.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Inside scrapeURL, URL handling precedes engines: safe-mode resolution strips credentials/login actions, threat-protection checkUrl runs before any fetch with a per-scrape dedup map, robots.txt is consulted via shouldCheckRobots/fetchRobotsTxt, and urlSpecificParams/rewriteUrl normalize the target.",
+          "sources": [
+            "apps/api/src/scraper/scrapeURL/index.ts#L1237-1363",
+            "apps/api/src/scraper/scrapeURL/shouldCheckRobots.ts",
+            "apps/api/src/lib/robots-txt.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "buildFallbackList computes the engine waterfall: exchange/index short-circuits first, then engines are filtered by required FeatureFlags and sorted by quality (index=1000, wikipedia=500, fire-engine chrome-cdp=50, playwright=20, tlsclient=10, fetch=5, file engines=-20); scrapeURLLoopIter runs each and deems success on markdown length + status code + absence of page error.",
+          "sources": [
+            "apps/api/src/scraper/scrapeURL/engines/index.ts#L241-608",
+            "apps/api/src/scraper/scrapeURL/engines/index.ts#L637-734",
+            "apps/api/src/scraper/scrapeURL/index.ts#L662-803"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Engine output flows through htmlTransform (removeUnwantedElements), parseMarkdown, executeTransformers (llmExtract, deterministicJson, diff/changeTracking, audio/video, menu, product, query, sendToSearchIndex) and postprocessors (youtube) before becoming the Document returned to callers.",
+          "sources": [
+            "apps/api/src/scraper/scrapeURL/index.ts#L30-31",
+            "apps/api/src/scraper/scrapeURL/index.ts#L720-743",
+            "apps/api/src/scraper/scrapeURL/transformers/index.ts",
+            "apps/api/src/scraper/scrapeURL/postprocessors/index.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Crawl state lives in Redis: StoredCrawl, per-URL locks (lockURL/lockURLsIndividually), job membership (addCrawlJob/addCrawlJobDone), robots.txt cache and crawl errors are managed by lib/crawl-redis.ts; completion fans out through crawlFinishedQueue to finishCrawlSuper.",
+          "sources": [
+            "apps/api/src/lib/crawl-redis.ts",
+            "apps/api/src/controllers/v2/crawl.ts#L324-380",
+            "apps/api/src/services/worker/crawl-logic.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Terminal job state is written to Bigtable (job-state-store.ts, salted uuidv7 row keys) so scrape-status can read results after Redis TTLs expire; a SCRAPE_STATE_BARRIER_MS=2000 wait in scrape-worker lets the write land before sync responses return.",
+          "sources": [
+            "apps/api/src/lib/job-state-store.ts#L113-204",
+            "apps/api/src/services/worker/scrape-worker.ts#L116-120"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The URL index is a two-tier cache: metadata/verdicts in Postgres via db/rpc.ts functions (queryIndexAtSplitLevel, queryEngpickerVerdict) plus document blobs in GCS (getIndexFromGCS), with a Redis index-cache layer and screenshot URL re-signing.",
+          "sources": [
+            "apps/api/src/services/index.ts#L1-60",
+            "apps/api/src/services/index-cache.ts",
+            "apps/api/src/db/rpc.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Webhooks are queued and delivered asynchronously: createWebhookSender builds per-crawl senders, delivery.ts filters events and persists deliveries, and shutdownWebhookQueue is part of the graceful-exit chain in index.ts.",
+          "sources": [
+            "apps/api/src/services/webhook/delivery.ts#L32-49",
+            "apps/api/src/services/webhook/index.ts",
+            "apps/api/src/index.ts#L176-188"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Request/audit logging is pipelined: logRequest/logScrape in services/logging/log_job.ts emit to PubSub/GCS, cclog-worker handles ClickHouse logs, and SIEM events go through lib/siem-logging to per-team transports (e.g. Azure Sentinel) via a RabbitMQ-delivered worker.",
+          "sources": [
+            "apps/api/src/services/logging/log_job.ts",
+            "apps/api/src/services/cclog-worker.ts",
+            "apps/api/src/lib/siem-logging/index.ts",
+            "apps/api/src/index.ts#L108-110"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "behavior_traces": {
+      "summary": "Three flows were traced end-to-end. Startup: harness.ts supervises containers and child processes, then index.ts initializes blocklist/engine-forcing/exchange catalog and mounts routers. Sync scrape: middleware chain → scrapeController → semaphore → processJobInternal → startWebScraperPipeline → scrapeURL → engine waterfall → transforms → billing/logging → Document. Crawl: crawlController persists Redis crawl + NuQ group, enqueues a kickoff job, and workers discover links, enqueue child single_urls jobs, track completions via addCrawlJobDone and finish via crawl-logic.",
+      "claims": [
+        {
+          "claim": "Startup (local dev): `pnpm harness` → tsx src/harness.ts --start → detectContainerRuntime() (docker|podman) → setupNuqPostgres() builds apps/nuq-postgres image, runs container, waits with pg SELECT 1 → setupNuqRabbitMQ() runs rabbitmq:3-management → spawns api (index.ts), worker, N nuq-workers, prefetch/reconciler, extract and index workers via execForward.",
+          "sources": [
+            "apps/api/src/harness.ts#L397-409",
+            "apps/api/src/harness.ts#L516-584",
+            "apps/api/package.json#L22-30"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "API boot: index.ts loads dotenv+config, installs cacheableLookup on global http/https agents, registers body parsers with rawBody capture, mounts routers, then startServer() awaits initializeBlocklist(), initializeEngineForcing(), warmExchangeCatalog() before app.listen; SIGTERM drains via a 60s Kubernetes wait then nuqShutdown → webhook → indexer → pubsub → tracing shutdown.",
+          "sources": [
+            "apps/api/src/index.ts#L55-68",
+            "apps/api/src/index.ts#L143-196"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Scrape request, step order: requestTimingMiddleware → authMiddleware(Scrape, allowKeyless) → authenticateUser → countryCheck (geoip on req.ip when actions/headers/agent present) → checkCreditsMiddleware(1) → scrapeBlocklistMiddleware → scrapeController → scrapeRequestSchema.parse → resolveSafeMode → resolveThreatProtection → checkPermissions → checkKeyFormatRestriction → teamConcurrencySemaphore.withSemaphore → processJobInternal.",
+          "sources": [
+            "apps/api/src/routes/v2.ts#L235-242",
+            "apps/api/src/routes/shared.ts#L271-478",
+            "apps/api/src/controllers/v2/scrape.ts#L57-210"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Worker execution: processJobInternal wraps the job in zero-data-retention trace context → processJobWithTracing starts a Redis lock-extension interval for non-FDB jobs → dispatches on job.data.mode (kickoff → processKickoffJob, kickoff_sitemap → processKickoffSitemapJob, single_urls → processJob) → processJob races startWebScraperPipeline against remaining timeout → runWebScraper → scrapeURL.",
+          "sources": [
+            "apps/api/src/services/worker/scrape-worker.ts#L1765-1840",
+            "apps/api/src/services/worker/scrape-worker.ts#L392-465",
+            "apps/api/src/main/runWebScraper.ts#L9-97"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Engine waterfall: scrapeURL → buildMetaObject → threat checkUrl → buildFallbackList (exchange/index short-circuit, else feature-flag filtered quality sort) → scrapeURLLoop iterates engines calling scrapeURLWithEngine → scrapeURLLoopIter validates output (markdown non-empty, 2xx/304, no page error, auto-escalates stealthProxy on 401/403/429) → executeTransformers + postprocessors → Document.",
+          "sources": [
+            "apps/api/src/scraper/scrapeURL/index.ts#L821-870",
+            "apps/api/src/scraper/scrapeURL/index.ts#L662-807",
+            "apps/api/src/scraper/scrapeURL/engines/index.ts#L637-734"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Crawl acceptance: crawlController → crawlRequestSchema.parse → safe-mode/threat/permission/key-restriction gates → optional prompt → buildPromptWithWebsiteStructure + generateCrawlerOptionsFromPrompt → merge with explicit options → initializeRequestCredits (Bigtable shards) → crawlToCrawler + getRobotsTxt → resolveNewGroupBackend → crawlGroup.addGroup → saveCrawl → markCrawlActive → _addScrapeJobToBullMQ(mode:'kickoff') → return {id, url}.",
+          "sources": [
+            "apps/api/src/controllers/v2/crawl.ts#L49-177",
+            "apps/api/src/controllers/v2/crawl.ts#L301-412"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Crawl fan-out (worker side): the kickoff job handler discovers links (WebCrawler/generateURLPermutations, sitemap via scrapeSitemap), checks discovered URLs against threat policy, then addCrawlJobs inserts child single_urls NuQ jobs; each child completion calls addCrawlJobDone and the last one pushes to crawlFinishedQueue handled by finishCrawlSuper.",
+          "sources": [
+            "apps/api/src/services/worker/scrape-worker.ts#L14-31",
+            "apps/api/src/services/worker/scrape-worker.ts#L1557-1724",
+            "apps/api/src/services/worker/crawl-logic.ts",
+            "apps/api/src/scraper/crawler/sitemap.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Persistence path for a scrape result: pipeline Document → GCS upload when saveScrapeResultToGCS → index write (saveIndexToGCS/upsertCachedIndexEntries) unless ZDR → writeScrapeJobState to Bigtable → billScrapeJob computes credits via calculateCreditsToBeBilled → logScrape → webhook sender emits crawl.page/scrape events → addCrawlJobDone when part of a crawl.",
+          "sources": [
+            "apps/api/src/services/worker/scrape-worker.ts#L819-1021",
+            "apps/api/src/services/index.ts",
+            "apps/api/src/lib/gcs-jobs.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Keyless request path: authMiddleware with allowKeyless → request lacks Bearer token → keyless branch resolves client IPv4 (or trusted x-firecrawl-keyless-ip) → optional Spur suspicious-IP check → consumeKeylessRequest decrements Redis daily counters → synthetic keylessTeamId(ip) → credits reserved via reserveKeylessCredits in the controller and refunded on failure via adjustKeylessCredits.",
+          "sources": [
+            "apps/api/src/controllers/auth.ts#L466-630",
+            "apps/api/src/controllers/v2/scrape.ts#L247-270",
+            "apps/api/src/lib/keyless.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Shutdown: SIGTERM → mcpActionLogRetention.stop() → 60s GCE drain wait under IS_KUBERNETES → server.close → nuqShutdown → shutdownWebhookQueue → shutdownIndexerQueue → shutdownPubSubLogging → shutdownTracing → process.exit(0); the harness also SIGTERMs child process groups and force-kills after 5s in dev.",
+          "sources": [
+            "apps/api/src/index.ts#L168-194",
+            "apps/api/src/harness.ts#L329-395"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "testing_signals": {
+      "summary": "Tests run under Vitest (vitest.config.ts, globals on, 120s timeouts, junit output) with ~112 test files under src/__tests__ plus colocated *.test.ts units. The dominant pattern is 'snips' — end-to-end tests hitting a live API brought up by `pnpm harness` — gated by env flags (TEST_SUITE_SELF_HOSTED, OPENAI_API_KEY, SEARXNG_ENDPOINT, PROXY_SERVER). CI (test-server.yml) runs a matrix over engine/proxy/search/ai/nuq-backend on self-hosted infra. Coverage is strong on the scrape pipeline and route surface; deep unit coverage exists for config-adjacent libs but many services/ workers have no dedicated tests.",
+      "claims": [
+        {
+          "claim": "Test runner is Vitest with globals:true, environment node, include src/**/*.test.ts, testTimeout/hookTimeout 120s, junit reporter to test-results/junit.xml; a resolve alias redirects pdf-parse to skip its module.parent debug self-test.",
+          "sources": [
+            "apps/api/vitest.config.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "package.json test scripts split the suite by auth mode: test (exclude e2e_noAuth), test:local-no-auth (exclude e2e_withAuth), test:full, test:prod, and test:snips scoped to src/__tests__/snips/v1 and v2.",
+          "sources": [
+            "apps/api/package.json#L17-22"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Snips are true E2E: __tests__/snips/lib.ts derives TEST_API_URL/TEST_SUITE_WEBSITE from config, exposes describeIf/testIf gating helpers and capability flags (HAS_FIRE_ENGINE, HAS_PLAYWRIGHT, HAS_PROXY, HAS_AI), and refuses local TEST_SUITE_WEBSITE in production mode.",
+          "sources": [
+            "apps/api/src/__tests__/snips/lib.ts#L9-60"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The snips/v2 directory alone holds ~40 suites covering scrape, crawl, batch, map, parse, parsers/pdf variants, billing, concurrency, keyless, key-restriction, ip-restriction, idempotency (idmux), browser replay, monitors, agent auth/threads/effort, alexandria feedback and Express 5 behavior.",
+          "sources": [
+            "apps/api/src/__tests__/snips/v2/crawl.test.ts",
+            "apps/api/src/__tests__/snips/v2/scrape.test.ts",
+            "apps/api/src/__tests__/snips/v2/keyless.test.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "AGENTS.md prescribes the workflow: write E2E 'snips' (1 happy + 1+ failure path), always use scrapeTimeout from ./lib, gate fire-engine tests with !TEST_SUITE_SELF_HOSTED and AI tests additionally on OPENAI_API_KEY/OLLAMA_BASE_URL, then run via `pnpm harness jest` (never pnpm start manually).",
+          "sources": [
+            "AGENTS.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CI test-server.yml runs a self-hosted matrix (playwright|fetch × proxy|no-proxy × searxng × openai × nuq postgres, plus one fdb-backend leg) with redis/rabbitmq services, installing FoundationDB client and setting NUQ_DATABASE_URL/NUQ_RABBITMQ_URL/USE_GO_MARKDOWN_PARSER/ALLOW_LOCAL_WEBHOOKS.",
+          "sources": [
+            ".github/workflows/test-server.yml#L11-65"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Each SDK has a dedicated publish/test workflow (test-js-sdk, test-go-sdk, test-rust-sdk, test-dotnet-sdk, etc.) and repo-level workflows cover deploy-image staging/prod, nuq-postgres deploy, playwright deploy, redis deploy, scrape-evals and npm-audit remediation.",
+          "sources": [
+            ".github/workflows/test-server.yml",
+            ".github/workflows/publish-js-sdk.yml",
+            ".github/workflows/deploy-image-staging.yml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Unit tests exist colocated for critical libs: exchange.test.ts, canonical-url.test.ts, crawl-redis.test.ts, job-state-store.test.ts, key-restriction.test.ts, image-ocr-gate.test.ts, ip-restriction.test.ts, oauth-token-introspection.test.ts, rate-limiter.test.ts, scrapeURL.test.ts and snips mocks under __tests__/snips/mocks.",
+          "sources": [
+            "apps/api/src/lib/exchange.test.ts",
+            "apps/api/src/lib/job-state-store.test.ts",
+            "apps/api/src/scraper/scrapeURL/scrapeURL.test.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Coverage gaps: worker orchestration files (queue-worker.ts, nuq.ts, nuq-worker-runner.ts, harness.ts) and most services/monitoring, webhook delivery internals, and the go-html-to-md-service (only handler_test.go) have thin or no direct unit tests — behavior is mostly exercised through snips.",
+          "sources": [
+            "apps/api/src/services/queue-worker.ts",
+            "apps/api/src/services/worker/nuq.ts",
+            "apps/go-html-to-md-service/handler_test.go"
+          ],
+          "kind": "inference"
+        },
+        {
+          "claim": "A dedicated test fixture app (apps/test-site, name firecrawl-test-site) and TEST_SUITE_WEBSITE=http://127.0.0.1:4321 in CI provide deterministic scrape targets; knip (knip.config.ts) plus a pre-commit hook enforces no unused exports/files.",
+          "sources": [
+            "apps/api/package.json",
+            ".github/workflows/test-server.yml#L40-41",
+            "apps/api/knip.config.ts"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "risk_map": {
+      "summary": "The highest blast radius sits in the auth/credit middleware chain and the scrapeURL pipeline: both are fail-open in places (Autumn outage, missing org_id) and carry many security gates that must run in the right order. Keyless free-tier abuse is mitigated by IPv4-only identity and Spur checks but is inherently risky. Shell-out exists in harness.ts (container commands are escaped) and via koffi FFI to a native lib. Secrets flow through env config; SIEM/webhook/ZDR paths handle sensitive customer data. Legacy BullMQ code, v0/v1 routers, and parallel PG/FDB queue backends add maintenance surface.",
+      "claims": [
+        {
+          "claim": "checkCreditsMiddleware deliberately fails open when Autumn returns null and when req.auth.org_id is absent (keyless/preview/DB-auth bypass), so an Autumn outage or missing org mapping grants unlimited credits — explicitly commented as intentional to avoid customer outage.",
+          "sources": [
+            "apps/api/src/routes/shared.ts#L157-190"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Keyless tier trusts a forwarded client IP only when x-firecrawl-keyless-secret matches KEYLESS_PROXY_SECRET; IPv6 clients are refused outright and Spur screening is optional (disabled without SPUR_API_KEY), so anonymized abuse controls depend on deployment config.",
+          "sources": [
+            "apps/api/src/controllers/auth.ts#L513-543",
+            "apps/api/src/config.ts#L101-121"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "harness.ts shells out to docker/podman with string commands; a shellEscape helper quotes credentials, but commands like `runtime ps --filter name=^${containerName}$` interpolate values — the file itself flags injection concerns in comments.",
+          "sources": [
+            "apps/api/src/harness.ts#L129-133",
+            "apps/api/src/harness.ts#L416-425",
+            "apps/api/src/harness.ts#L467-478"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Native FFI: lib/html-to-markdown.ts loads a .so/.dylib via koffi and calls ConvertHTMLToMarkdown on arbitrary scraped HTML; a malformed page or lib bug crashes the process, and GoMarkdownConverter.getInstance throws 'Go shared library not found' when sharedLibs is missing (e.g. partial Docker builds).",
+          "sources": [
+            "apps/api/src/lib/html-to-markdown.ts#L11-45",
+            "apps/api/src/natives.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The bull-board admin UI is gated only by knowledge of BULL_AUTH_KEY embedded in the URL path (/admin/<key>/queues); when unset the routes are disabled with a warning, but a leaked key exposes queue contents.",
+          "sources": [
+            "apps/api/src/index.ts#L100-119"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Public unauthenticated endpoints exist by design: /v2/slack/commands + /slack/events (signature-verified), /browser/webhook/destroyed, /monitor/email/confirm + unsubscribe (token in body), /keyless/eligibility (secret-gated in controller), /mcp action-log ingest — each must verify its own credential since no authMiddleware runs.",
+          "sources": [
+            "apps/api/src/routes/v2.ts#L548-554",
+            "apps/api/src/routes/v2.ts#L598-623",
+            "apps/api/src/routes/v2.ts#L182",
+            "apps/api/src/routes/v2.ts#L663-666"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Zero-data-retention is a cross-cutting invariant: ZDR is resolved early in scrapeController specifically so the root OTel span never records the URL, and processJobInternal wraps execution in withZeroDataRetention; a missed code path anywhere leaks target URLs into traces/logs.",
+          "sources": [
+            "apps/api/src/controllers/v2/scrape.ts#L63-72",
+            "apps/api/src/services/worker/scrape-worker.ts#L1776-1796"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Scrape pipeline has ~30 distinct error types (error.ts imports in scrapeURL/index.ts) mapped to ad-hoc status codes in the controller catch-block; new TransportableError codes must be added to the mapping or they fall through to generic 500s.",
+          "sources": [
+            "apps/api/src/scraper/scrapeURL/index.ts#L33-63",
+            "apps/api/src/controllers/v2/scrape.ts#L462-585"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Dual queue backends double the worker logic surface: scrape-worker branches on (job as any).backend === 'fdb' for lock extension, queue-jobs routes between scrapeQueue/scrapeQueueFdb/routedScrapeQueue, and nuq-postgres vs nuq-fdb diverge in prefetch/reconciler workers — bugs can affect one backend silently.",
+          "sources": [
+            "apps/api/src/services/worker/scrape-worker.ts#L1798-1817",
+            "apps/api/src/services/queue-jobs.ts#L27-35",
+            "docker-compose.yaml#L58-60"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Crawl children bypass request-time gates: discovered URLs rely on worker-side checks (isUrlBlocked post-scrape, checkUrlsAgainstThreatPolicy during link discovery, per-URL safe-mode in scrapeURL) so ordering bugs there would let a seed-approved crawl scrape disallowed pages.",
+          "sources": [
+            "apps/api/src/services/worker/scrape-worker.ts#L476-501",
+            "apps/api/src/controllers/v2/crawl.ts#L115-164",
+            "apps/api/src/scraper/scrapeURL/index.ts#L1247-1305"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Supabase/Postgres pools are sized against a shared pgbouncer cap ('pods * max' per pool per comments in db/connection.ts); a misconfigured DB_POOL_PROFILE or missing keepWarm behavior can exhaust the 12000-connection pooler budget fleet-wide.",
+          "sources": [
+            "apps/api/src/db/connection.ts#L28-50",
+            "apps/api/src/db/pool-profiles.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Deprecated surfaces remain live: v0 router, /v2/extract (deprecationMiddleware), /v2/research and /developer legacy proxies, plus a v1 API surface — each is a maintenance and audit surface that still executes production code paths.",
+          "sources": [
+            "apps/api/src/routes/v0.ts",
+            "apps/api/src/routes/v2.ts#L368-384",
+            "apps/api/src/routes/v2.ts#L689-708"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "extension_points": {
+      "summary": "The cleanest extension seams are the scrape engine registry (add an Engine string, handler, MRT and feature/quality entry), the transformer/postprocessor lists, and the route tables (v2Router wiring controllers through shared middlewares). NuQ job modes ('single_urls', 'kickoff', 'kickoff_sitemap') dispatch in processJobWithTracing, search providers chain in search/index.ts, threat-protection providers plug behind lib/threat-protection, and exchange eligibility is isolated in lib/exchange.ts. New env config goes in the Zod schema; new team flags ride TeamFlags in the ACUC.",
+      "claims": [
+        {
+          "claim": "Adding a scrape engine = extend the Engine union, append to engines[] behind an env gate, and fill engineHandlers, engineMRTs and engineOptions (feature support + quality) — buildFallbackList and the waterfall pick it up automatically.",
+          "sources": [
+            "apps/api/src/scraper/scrapeURL/engines/index.ts#L51-103",
+            "apps/api/src/scraper/scrapeURL/engines/index.ts#L193-239",
+            "apps/api/src/scraper/scrapeURL/engines/index.ts#L241-608"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Feature flags are declarative: the featureFlags tuple plus featureFlagOptions priorities drive which engines qualify; adding a flag requires updating the union, every engine's features map, and the format/options schema in controllers/v2/types.ts.",
+          "sources": [
+            "apps/api/src/scraper/scrapeURL/engines/index.ts#L105-149"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New output formats plug in as transformers: executeTransformers runs modules like llmExtract, deterministicJson, diff (changeTracking), menu, product, audio, video, sendToSearchIndex; postprocessors (youtube) run after.",
+          "sources": [
+            "apps/api/src/scraper/scrapeURL/transformers/index.ts",
+            "apps/api/src/scraper/scrapeURL/postprocessors/index.ts",
+            "apps/api/src/scraper/scrapeURL/index.ts#L65-66"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Routes are registered flat in routes/v2.ts with per-route middleware composition; a new endpoint needs a controller under controllers/v2, a RateLimiterMode in types.ts, and the standard auth/credits/blocklist middleware stack.",
+          "sources": [
+            "apps/api/src/routes/v2.ts#L189-242",
+            "apps/api/src/routes/shared.ts#L271-326"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "NuQ job dispatch is a mode switch: ScrapeJobData.mode ('single_urls'|'kickoff'|'kickoff_sitemap') selects processJob/processKickoffJob/processKickoffSitemapJob in processJobWithTracing — new job kinds extend the union in types.ts and add a branch.",
+          "sources": [
+            "apps/api/src/types.ts#L33-89",
+            "apps/api/src/services/worker/scrape-worker.ts#L1818-1840"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Search providers chain by config: search/index.ts tries fire_engine_search when FIRE_ENGINE_BETA_URL is set, then searxng_search when SEARXNG_ENDPOINT is set, then ddgSearch — a new provider slots into that fallback chain.",
+          "sources": [
+            "apps/api/src/search/index.ts#L29-60",
+            "apps/api/src/search/searxng.ts",
+            "apps/api/src/search/v2/ddgsearch.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "URL-specific behavior is table-driven: urlSpecificParams overrides options per domain, engine-forcing (getEngineForUrl/initializeEngineForcing) pins engines per host, and the blocklist (initializeBlocklist/isUrlBlocked) is a warmed data file — all three are data-shaped extension points.",
+          "sources": [
+            "apps/api/src/scraper/scrapeURL/lib/urlSpecificParams.ts",
+            "apps/api/src/scraper/WebScraper/utils/engine-forcing.ts",
+            "apps/api/src/scraper/WebScraper/utils/blocklist.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Threat protection is provider-pluggable: lib/threat-protection resolves a policy per team/request and checkUrl consults providers (Google Web Risk normal/ZDR-synced modes, Zscaler ZIA), with org config exposed via /v2/team/threat-protection routes.",
+          "sources": [
+            "apps/api/src/lib/threat-protection/index.ts",
+            "apps/api/src/lib/threat-protection/request.ts",
+            "apps/api/src/config.ts#L123-150"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Billing features are keyed by Autumn feature IDs (CREDITS_FEATURE_ID, SEARCH_CREDITS_FEATURE_ID, featureIdForBillingEndpoint) — new metered endpoints pass their featureId through checkCreditsMiddleware's second arg.",
+          "sources": [
+            "apps/api/src/routes/shared.ts#L38-41",
+            "apps/api/src/routes/v2.ts#L194",
+            "apps/api/src/services/autumn/autumn.service.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "SDKs are independently versioned packages under apps/*-sdk with per-language publish workflows; the API surface they consume is documented by openapi.json/v1-openapi.json/openapi-v0.json in apps/api.",
+          "sources": [
+            "apps/api/package.json",
+            ".github/workflows/publish-js-sdk.yml",
+            "apps/api/openapi.json"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Config extension is centralized: new env vars require a Zod entry in configSchema (with helpers like emptyStringAsUndefined/delimitedList) and are then read as config.X everywhere; MCP action-log config even validates at startup via getMcpActionLogConfigErrors.",
+          "sources": [
+            "apps/api/src/config.ts#L1-70"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_handoff": {
+      "summary": "Work happens almost entirely in apps/api. Read AGENTS.md/CLAUDE.md first — they mandate E2E 'snips' over unit tests, `pnpm harness jest` (never pnpm start), and fixing knip failures rather than bypassing hooks. Safe edit boundaries: a new engine touches only engines/* plus the registry; a new endpoint touches controllers/v2 + routes/v2.ts + a RateLimiterMode; a new transformer touches transformers/. Danger zones: the auth/credit middleware order, ZDR propagation, and anything changing job payload shape (NuQ rows in flight). Always add env config to the Zod schema and gate tests by capability flags.",
+      "claims": [
+        {
+          "claim": "AGENTS.md is the contract: write snips (1 happy + 1+ failure paths), use scrapeTimeout from ./lib for scrape timeouts, gate fire-engine tests on !TEST_SUITE_SELF_HOSTED and AI tests on OPENAI_API_KEY/OLLAMA_BASE_URL, run via `pnpm harness jest`, push a PR and let CI run the full suite.",
+          "sources": [
+            "AGENTS.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CLAUDE.md adds: never bypass the pre-commit knip check (fix unused exports/files even if preexisting); package.json wires husky+lint-staged+knip so commits enforce prettier formatting and dead-code hygiene.",
+          "sources": [
+            "CLAUDE.md",
+            "apps/api/package.json#L43-44",
+            "apps/api/knip.config.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Read first for scrape work: controllers/v2/types.ts (2825-line zod schema for all request/response types), scraper/scrapeURL/index.ts (1926-line pipeline), engines/index.ts (registry), and lib/error.ts + scrapeURL/error.ts for the TransportableError taxonomy.",
+          "sources": [
+            "apps/api/src/controllers/v2/types.ts",
+            "apps/api/src/scraper/scrapeURL/index.ts",
+            "apps/api/src/lib/error.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Middleware order is load-bearing: requestTiming → authMiddleware → countryCheck → checkCredits → blocklist → controller; reordering or omitting one (e.g. on a new route) silently drops auth, geo-restriction, billing or blocklist enforcement.",
+          "sources": [
+            "apps/api/src/routes/v2.ts#L235-290",
+            "apps/api/src/routes/shared.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Zero-data-retention must be threaded: ZDR suppresses OTel recording, GCS/index writes, and URL logging; any new code path that touches a scrape must check internalOptions.zeroDataRetention / getScrapeZDR before persisting or tracing.",
+          "sources": [
+            "apps/api/src/controllers/v2/scrape.ts#L63-72",
+            "apps/api/src/lib/zdr-helpers.ts",
+            "apps/api/src/services/worker/scrape-worker.ts#L1776-1783"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Tests require a running stack: `pnpm harness` spawns api+workers+containers; snips hit TEST_API_URL with TEST_API_KEY='test'/TEST_TEAM_ID='bypass' in self-host mode — do not hand-start the server, and scope test runs to the relevant suite since the full suite is slow.",
+          "sources": [
+            "AGENTS.md",
+            "apps/api/src/__tests__/snips/lib.ts#L9-30",
+            "apps/api/package.json#L17-22"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Naming traps: _addScrapeJobToBullMQ actually enqueues onto NuQ (BullMQ naming is vestigial); 'snips' means E2E tests; 'ACUC' is the auth/credit chunk; 'NuQ' queues live in Postgres tables prefixed nuq.; job 'mode' (not endpoint) selects worker behavior.",
+          "sources": [
+            "apps/api/src/services/queue-jobs.ts#L154-226",
+            "apps/api/src/types.ts#L33-89",
+            "apps/api/src/services/worker/nuq.ts#L1755-1760"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Error contract: controllers return {success:false, error} with status codes mapped per TransportableError code in scrape.ts's catch block — new error codes need an explicit branch (e.g. SCRAPE_DNS_RESOLUTION_ERROR→200, SCRAPE_NO_CACHED_DATA→404) or they surface as UNKNOWN_ERROR 500s.",
+          "sources": [
+            "apps/api/src/controllers/v2/scrape.ts#L462-585",
+            "apps/api/src/lib/error.ts"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Env/config changes: add the var to the Zod schema in config.ts (empty-string handling matters — use emptyStringAsUndefined), reference it via config.X, and update docker-compose.yaml common-env + CI workflow envs if the feature must work self-hosted.",
+          "sources": [
+            "apps/api/src/config.ts#L13-17",
+            "docker-compose.yaml#L24-60",
+            ".github/workflows/test-server.yml#L36-62"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "In-flight job compatibility: NuQ rows are JSONB payloads consumed by separate worker binaries, so changing ScrapeJobData/internalOptions shape requires backward-compat handling (the code already guards with ?? fallbacks like job.data.internalOptions?.orgId ?? null).",
+          "sources": [
+            "apps/api/src/main/runWebScraper.ts#L28-34",
+            "apps/nuq-postgres/nuq.sql#L44-60",
+            "apps/api/src/types.ts"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_prompt": "You are working in the Firecrawl monorepo: a self-hostable web-scraping API. The core service is apps/api (TypeScript, Express 5, pnpm, Zod, Vitest); apps/*-sdk are thin client SDKs in nine languages you rarely need to touch.\n\nArchitecture in one paragraph: src/index.ts mounts versioned routers (v0/v1/v2/labs/exchange/admin). Every v2 route runs a fixed middleware chain — requestTimingMiddleware, authMiddleware(rateLimiterMode), countryCheck, checkCreditsMiddleware (Autumn billing; fails open on outage), blocklistMiddleware — then a controller in controllers/v2. Sync scrapes execute in-process: scrapeController builds a NuQJob (skipNuq:true) and calls processJobInternal inside teamConcurrencySemaphore. Async work (crawls, batches) persists NuQJob rows in Postgres table nuq.queue_scrape (schema: apps/nuq-postgres/nuq.sql) or FoundationDB (NUQ_BACKEND=fdb), consumed by separate worker binaries (services/worker/*) spawned by the supervisor script src/harness.ts.\n\nThe scrape pipeline is scraper/scrapeURL/index.ts: scrapeURL → buildMetaObject → safe-mode + threat-protection gates → buildFallbackList → scrapeURLLoop iterates a quality-ordered engine waterfall (index cache 1000, wikipedia 500, fire-engine chrome-cdp 50, playwright 20, tlsclient 10, fetch 5, pdf/document/image -20) → executeTransformers → Document. Engines register in engines/index.ts via the Engine union + engines[] + engineHandlers/engineMRTs/engineOptions tables. HTML→markdown uses a Go shared lib via koffi FFI (lib/html-to-markdown.ts) or the go-html-to-md-service HTTP fallback. State lives in Redis (crawls, rate limits, ACUC cache), Postgres/Drizzle (teams, index metadata), Bigtable (job state), GCS (index blobs, screenshots, logs).\n\nWorkflow (per AGENTS.md/CLAUDE.md): 1) Write E2E 'snips' first — one happy path, one+ failure path — in src/__tests__/snips/v2; use scrapeTimeout from ./lib; gate with describeIf/testIf on TEST_SUITE_SELF_HOSTED, OPENAI_API_KEY, etc. 2) Implement. 3) Run ONLY your tests with `pnpm harness jest <file>` — harness boots api+workers+Postgres/RabbitMQ containers; never `pnpm start` manually; let CI (.github/workflows/test-server.yml matrix) run the full suite. 4) Never bypass the knip pre-commit hook; fix reported unused exports.\n\nTraps: _addScrapeJobToBullMQ actually enqueues to NuQ. Errors must be TransportableError codes mapped in scrape.ts's catch block or they become 500s. zeroDataRetention must suppress persistence/tracing on every new path. Middleware order is load-bearing — never reorder. Job payload changes need backward-compat since in-flight NuQ rows are JSONB. New env vars go in the Zod schema in src/config.ts plus docker-compose.yaml common-env. Public endpoints (slack/commands, monitor/email/*, browser/webhook/destroyed) have no authMiddleware — they verify their own credentials. Read controllers/v2/types.ts before touching request/response shapes."
+  },
+  "analysis": {
+    "agent": "devin",
+    "model": "swe-2",
+    "runtime_ms": null,
+    "cost_usd": null,
+    "collected_at": "2026-09-22T16:18:54.590Z"
   }
 }

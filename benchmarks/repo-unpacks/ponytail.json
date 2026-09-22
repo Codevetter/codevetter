@@ -270,27 +270,27 @@
         {
           "path": "AGENTS.md",
           "bytes": 2593,
-          "preview": "# Ponytail, lazy senior dev mode\n\nYou are a lazy senior developer. Lazy means efficient, not careless. The best code is the code never written.\n\nBefore writing any code, stop at the first rung that holds:\n\n1. Does this need to be built at all? (YAGNI)\n2. Does it already exist in this codebase? Reuse the helper, util, or pattern that's already here, don't re-write it.\n3. Does the standard library already do this? Use it.\n4. Does a native platform feature cover it? Use it.\n5. Does an already-installed dependency solve it? Use it.\n6. Can this be one line? Make it one line.\n7. Only then: write the minimum code that works.\n\nThe ladder runs after you understand the problem, not instead of it: read the task and the code it touches, trace the real flow end to end, then climb.\n\nBug fix = root cause, not symptom: a report names a symptom. Grep every caller of the function you touch and fix the shared function once \u2014 one guard there is a smaller diff than one per caller, and patching only the path the ticket names leaves a sibling caller still broken.\n\nRules:\n\n- No abstractions that weren't explicitly requested.\n- No new dependency if it can be avoided.\n- No boilerplate nobody asked for.\n- Deletion over addition. Boring over clever. Fewest files possible.\n- Shortest working diff wins, but only once you understand the problem. The smallest change in the wrong place isn't lazy, it's a second bug.\n- Question complex requests: \"Do you actually need X, or does Y cover it?\"\n- Pick the edge-case-correct option when two stdlib approaches are the same size, lazy means less code, not the flimsier algorithm.\n- Mark deliberate simplifications that cut a real corner with a known ceiling (global lock, O(n\u00b2) scan, naive heuristic) with a `ponytail:` comment naming the ceiling and upgrade path.\n\nNot lazy about: understanding the problem (read it fully and trace the real flow before picking a rung, a small diff you don't understand is just laziness dressed up as efficiency), input validation at trust boundaries, error handling that prevents data loss, security, accessibility, the calibration real hardware needs (the platform is never the spec ideal, a clock drifts, a sensor reads off), anything explicitly requested. Lazy code without its check is unfinished: non-trivial logic leaves ONE runnable check behind, the smallest thing that fails if the logic breaks (an assert-based demo/self-check or one small test file; no frameworks, no fixtures). Trivial one-liners need no test.\n\n(Yes, this file also applies to agents working on the ponytail repo itself. Especially to them.)\n"
+          "preview": "# Ponytail, lazy senior dev mode\n\nYou are a lazy senior developer. Lazy means efficient, not careless. The best code is the code never written.\n\nBefore writing any code, stop at the first rung that holds:\n\n1. Does this need to be built at all? (YAGNI)\n2. Does it already exist in this codebase? Reuse the helper, util, or pattern that's already here, don't re-write it.\n3. Does the standard library already do this? Use it.\n4. Does a native platform feature cover it? Use it.\n5. Does an already-installed dependency solve it? Use it.\n6. Can this be one line? Make it one line.\n7. Only then: write the minimum code that works.\n\nThe ladder runs after you understand the problem, not instead of it: read the task and the code it touches, trace the real flow end to end, then climb.\n\nBug fix = root cause, not symptom: a report names a symptom. Grep every caller of the function you touch and fix the shared function once — one guard there is a smaller diff than one per caller, and patching only the path the ticket names leaves a sibling caller still broken.\n\nRules:\n\n- No abstractions that weren't explicitly requested.\n- No new dependency if it can be avoided.\n- No boilerplate nobody asked for.\n- Deletion over addition. Boring over clever. Fewest files possible.\n- Shortest working diff wins, but only once you understand the problem. The smallest change in the wrong place isn't lazy, it's a second bug.\n- Question complex requests: \"Do you actually need X, or does Y cover it?\"\n- Pick the edge-case-correct option when two stdlib approaches are the same size, lazy means less code, not the flimsier algorithm.\n- Mark deliberate simplifications that cut a real corner with a known ceiling (global lock, O(n²) scan, naive heuristic) with a `ponytail:` comment naming the ceiling and upgrade path.\n\nNot lazy about: understanding the problem (read it fully and trace the real flow before picking a rung, a small diff you don't understand is just laziness dressed up as efficiency), input validation at trust boundaries, error handling that prevents data loss, security, accessibility, the calibration real hardware needs (the platform is never the spec ideal, a clock drifts, a sensor reads off), anything explicitly requested. Lazy code without its check is unfinished: non-trivial logic leaves ONE runnable check behind, the smallest thing that fails if the logic breaks (an assert-based demo/self-check or one small test file; no frameworks, no fixtures). Trivial one-liners need no test.\n\n(Yes, this file also applies to agents working on the ponytail repo itself. Especially to them.)\n"
         },
         {
           "path": "README.md",
           "bytes": 23564,
-          "preview": "<p align=\"center\">\n  <picture>\n    <source media=\"(prefers-color-scheme: dark)\" srcset=\"assets/logo-dark.png\">\n    <img src=\"assets/logo.png\" width=\"220\" alt=\"Ponytail, the lazy senior dev\">\n  </picture>\n</p>\n\n<h1 align=\"center\">Ponytail</h1>\n\n<p align=\"center\">\n  <em>He says nothing. He writes one line. It works.</em>\n</p>\n\n<p align=\"center\">\n  <a href=\"https://trendshift.io/repositories/50668?utm_source=repository-badge&amp;utm_medium=badge&amp;utm_campaign=badge-repository-50668\" target=\"_blank\" rel=\"noopener noreferrer\"><img src=\"https://trendshift.io/api/badge/repositories/50668\" alt=\"DietrichGebert%2Fponytail | Trendshift\" width=\"250\" height=\"55\"/></a>\n</p>\n\n<p align=\"center\">\n  <img src=\"https://img.shields.io/github/stars/DietrichGebert/ponytail?style=flat-square&color=111111&label=stars\" alt=\"Stars\">\n  <img src=\"https://img.shields.io/github/v/release/DietrichGebert/ponytail?style=flat-square&color=111111&label=release\" alt=\"Release\">\n  <img src=\"https://img.shields.io/npm/v/@dietrichgebert/ponytail?style=flat-square&color=111111&label=npm\" alt=\"npm\">\n  <img src=\"https://img.shields.io/badge/works%20with-20%20agents-111111?style=flat-square\" alt=\"Works with 20 agents\">\n  <img src=\"https://img.shields.io/badge/license-MIT-111111?style=flat-square\" alt=\"MIT license\">\n</p>\n\n<p align=\"center\">\n  <a href=\"https://trendshift.io/repositories/50668\" target=\"_blank\" rel=\"noopener noreferrer\"><img src=\"https://trendshift.io/api/badge/trendshift/repositories/50668/daily\" alt=\"DietrichGebert/ponytail | Trendshift\" width=\"250\" height=\"55\"/></a>\n  <a href=\"https://trendshift.io/repositories/50668\" target=\"_blank\" rel=\"noopener noreferrer\"><img src=\"https://trendshift.io/api/badge/trendshift/repositories/50668/weekly\" alt=\"DietrichGebert/ponytail | Trendshift\" width=\"250\" height=\"55\"/></a>\n  <a href=\"https://trendshift.io/repositories/50668?utm_source=trendshift-badge&amp;utm_medium=badge&amp;utm_campaign=badge-trendshift-50668\" target=\"_blank\" rel=\"noopener noreferrer\"><img src=\"https://trendshift.io/api/badge/trendshift/repositories/50668/monthly?language=JavaScript\" alt=\"DietrichGebert%2Fponytail | Trendshift monthly ranking\" width=\"250\" height=\"55\"/></a>\n</p>\n\n<p align=\"center\">\n  <strong>~54% less code (up to 94%) &middot; ~20% cheaper &middot; ~27% faster &middot; 100% safe</strong><br>\n  <sub>Measured on real Claude Code sessions editing a real open-source repo (FastAPI + React), against the same agent with no skill. ~54% is the mean across 12 feature tasks (Haiku 4.5, n=4); it reaches 94% where an agent over-builds (a date picker) and is near zero where the code is already minimal. ponytail keeps every safety guard while a bare \"write one-liners\" prompt drops one. (The earlier single-shot benchmark reported 80-94% as a flat figure; against a fair agentic baseline that is the per-task ceiling, not the average.) <a href=\"benchmarks/results/2026-06-18-agentic.md\">Full writeup</a> &middot; <a href=\"benchmarks/\">reproduce it</a>.</sub>\n</p>\n\n<p align=\"center\">\n  <sub><a href=\"README.es.md\">Espa\u00f1ol</a> &middot; <a href=\"README.ko.md\">\ud55c\uad6d\uc5b4</a></sub>\n</p>\n\n---\n\n<p align=\"center\">\n  <a href=\"https://ponytail.dev/soon\"><img src=\"assets/waitlist-banner.png\" alt=\"Something's coming, join the waitlist\" width=\"760\"></a>\n</p>\n\n## Already built with Ponytail\n\n<a href=\"https://theretriever.app\">\n  <picture>\n    <source media=\"(prefers-color-scheme: dark)\" srcset=\"assets/retriever-logo-dark.svg\">\n    <img src=\"assets/retriever-logo-light.svg\" height=\"128\" alt=\"Retriever\">\n  </picture>\n</a>\n\n---\n\nYou know him. Long ponytail. Oval glasses. Has been at the company longer than the version control. You show him fifty lines; he looks at them, says nothing, and replaces them with one.\n\nPonytail puts him inside your AI agent.\n\n## Before / after\n\nYou ask for a date picker. Your agent installs flatpickr, writes a wrapper component, adds a stylesheet, and starts a discussion about timezones.\n\nWith ponytail:\n\n```html\n<!-- ponytail: browser has one -->\n<input type=\"date\">\n```\n\nMore survivors in [examples/](examples/).\n\n## Numbers\n\nThe honest measurement is a real agent doing real work: a headless Claude Code session editing [tiangolo's full-stack-fastapi-template](https://github.com/fastapi/full-stack-fastapi-template) (a real FastAPI + React repo), scored on the `git diff` it leaves behind. Twelve feature tickets, the same agent with and without the skill, n=4, Haiku 4.5.\n\n<p align=\"center\">\n  <img src=\"assets/benchmark-agentic.svg\" width=\"860\" alt=\"Each arm as a percent of the no-skill baseline across LOC, tokens, cost and time (Haiku 4.5). ponytail is lowest on every metric (LOC 46%, tokens 78%, cost 80%, time 73%); caveman rises above 100% on tokens, cost and time; yagni-oneliner LOC 67%. Safety, separate adversarial tier: baseline, caveman and ponytail 100%, yagni-oneliner 95%.\">\n</p>\n\n| vs no-skill baseline | LOC | tokens | cost | time | safe |\n|---|--:|--:|--:|--:|--:|\n| **ponytail** | **-54%** | **-22%** | **-20%** | **-27%** | **100%** |\n| caveman (terse-prose control) | -20% | +7% | +3% | +2% | 100% |\n| \"YAGNI + one-liners\" prompt | -33% | -14% | -21% | -30% | 95% |\n\nponytail is the only arm that cuts every metric, and the only one that stays fully safe while doing it. The cut is biggest where there is a real over-build trap (date picker 404 to 23 lines, color picker 287 to 23, because it reaches for a native `<input>` instead of a component) and near zero on code that is already minimal. Full method, per-task tables, and limitations: [benchmarks/results/2026-06-18-agentic.md](benchmarks/results/2026-06-18-agentic.md).\n\n<details>\n<summary><strong>Older single-shot numbers (isolated generation)</strong></summary>\n\nFive everyday tasks, three models, three arms (no skill, [caveman](https://github.com/JuliusBrussee/caveman), ponytail), ten runs, median reported. One prompt, one completion, counting lines of the answer:\n\n<p align=\"center\">\n  <img src=\"assets/benchmark-3model.svg\" width=\"860\" alt=\"Median lines of code per arm across Haiku, Sonnet and Opus\">\n</p>\n\nThis showed **80-94% less code**. [#126](https://github.com/DietrichGebert/ponytail/issues/126) fairly pointed out that the bare-model baseline pads its answer with prose and options, so that gap is partly a conversational-baseline artifact. The agentic numbers above are the corrected, defensible version. Reproduce the single-shot run with `npx promptfoo eval -c benchmarks/promptfooconfig.yaml`.\n\n</details>\n\n**The rule was never \"fewest tokens.\"** It is: write only what the task needs, and never cut validation, error handling, security, or accessibility. The code ends up small because it is necessary, not golfed. Lower cost and latency are a side effect on the models that follow the ladder; a terse reasoning model that spends thinking tokens deliberating the rungs can go the other way (on GPT-5.5 it does).\n\n## How it works\n\nBefore writing code, the agent stops at the first rung that holds:\n\n```\n1. Does this need to exist?   \u2192 no: skip it (YAGNI)\n2. Already in this codebase?  \u2192 reuse it, don't rewrite\n3. Stdlib does it?            \u2192 use it\n4. Native platform feature?   \u2192 use it\n5. Installed dependency?      \u2192 use it\n6. One line?                  \u2192 one line\n7. Only then: the minimum that works\n```\n\nThe ladder runs *after* it understands the problem, not instead of it: it reads the code the change touches and traces the real flow before picking a rung. Lazy about the solution, never about reading.\n\nLazy, not negligent: trust-boundary validation, data-loss handling, security, and accessibility are never on the chopping block.\n\n## Install\n\nThe most effort ponytail will ever ask of you:\n\nThe Claude Code and Codex plugins (and the Cursor hooks) run two tiny Node.js lifecycle hooks, so `node` needs to be on your PATH (note for Nix/nvm users: it must be on the non-interactive shell's PATH). If it isn't, the skills still work, the always-on activation just stays quiet instead of erroring on every prompt.\n\n### Claude Code\n\n```\n/plugin marketplace add DietrichGebert/ponytail\n```\n```\n/plugin install ponytail@ponytail\n```\n(You have to send two separate prompts for the install to work) \n\nSame steps "
+          "preview": "<p align=\"center\">\n  <picture>\n    <source media=\"(prefers-color-scheme: dark)\" srcset=\"assets/logo-dark.png\">\n    <img src=\"assets/logo.png\" width=\"220\" alt=\"Ponytail, the lazy senior dev\">\n  </picture>\n</p>\n\n<h1 align=\"center\">Ponytail</h1>\n\n<p align=\"center\">\n  <em>He says nothing. He writes one line. It works.</em>\n</p>\n\n<p align=\"center\">\n  <a href=\"https://trendshift.io/repositories/50668?utm_source=repository-badge&amp;utm_medium=badge&amp;utm_campaign=badge-repository-50668\" target=\"_blank\" rel=\"noopener noreferrer\"><img src=\"https://trendshift.io/api/badge/repositories/50668\" alt=\"DietrichGebert%2Fponytail | Trendshift\" width=\"250\" height=\"55\"/></a>\n</p>\n\n<p align=\"center\">\n  <img src=\"https://img.shields.io/github/stars/DietrichGebert/ponytail?style=flat-square&color=111111&label=stars\" alt=\"Stars\">\n  <img src=\"https://img.shields.io/github/v/release/DietrichGebert/ponytail?style=flat-square&color=111111&label=release\" alt=\"Release\">\n  <img src=\"https://img.shields.io/npm/v/@dietrichgebert/ponytail?style=flat-square&color=111111&label=npm\" alt=\"npm\">\n  <img src=\"https://img.shields.io/badge/works%20with-20%20agents-111111?style=flat-square\" alt=\"Works with 20 agents\">\n  <img src=\"https://img.shields.io/badge/license-MIT-111111?style=flat-square\" alt=\"MIT license\">\n</p>\n\n<p align=\"center\">\n  <a href=\"https://trendshift.io/repositories/50668\" target=\"_blank\" rel=\"noopener noreferrer\"><img src=\"https://trendshift.io/api/badge/trendshift/repositories/50668/daily\" alt=\"DietrichGebert/ponytail | Trendshift\" width=\"250\" height=\"55\"/></a>\n  <a href=\"https://trendshift.io/repositories/50668\" target=\"_blank\" rel=\"noopener noreferrer\"><img src=\"https://trendshift.io/api/badge/trendshift/repositories/50668/weekly\" alt=\"DietrichGebert/ponytail | Trendshift\" width=\"250\" height=\"55\"/></a>\n  <a href=\"https://trendshift.io/repositories/50668?utm_source=trendshift-badge&amp;utm_medium=badge&amp;utm_campaign=badge-trendshift-50668\" target=\"_blank\" rel=\"noopener noreferrer\"><img src=\"https://trendshift.io/api/badge/trendshift/repositories/50668/monthly?language=JavaScript\" alt=\"DietrichGebert%2Fponytail | Trendshift monthly ranking\" width=\"250\" height=\"55\"/></a>\n</p>\n\n<p align=\"center\">\n  <strong>~54% less code (up to 94%) &middot; ~20% cheaper &middot; ~27% faster &middot; 100% safe</strong><br>\n  <sub>Measured on real Claude Code sessions editing a real open-source repo (FastAPI + React), against the same agent with no skill. ~54% is the mean across 12 feature tasks (Haiku 4.5, n=4); it reaches 94% where an agent over-builds (a date picker) and is near zero where the code is already minimal. ponytail keeps every safety guard while a bare \"write one-liners\" prompt drops one. (The earlier single-shot benchmark reported 80-94% as a flat figure; against a fair agentic baseline that is the per-task ceiling, not the average.) <a href=\"benchmarks/results/2026-06-18-agentic.md\">Full writeup</a> &middot; <a href=\"benchmarks/\">reproduce it</a>.</sub>\n</p>\n\n<p align=\"center\">\n  <sub><a href=\"README.es.md\">Español</a> &middot; <a href=\"README.ko.md\">한국어</a></sub>\n</p>\n\n---\n\n<p align=\"center\">\n  <a href=\"https://ponytail.dev/soon\"><img src=\"assets/waitlist-banner.png\" alt=\"Something's coming, join the waitlist\" width=\"760\"></a>\n</p>\n\n## Already built with Ponytail\n\n<a href=\"https://theretriever.app\">\n  <picture>\n    <source media=\"(prefers-color-scheme: dark)\" srcset=\"assets/retriever-logo-dark.svg\">\n    <img src=\"assets/retriever-logo-light.svg\" height=\"128\" alt=\"Retriever\">\n  </picture>\n</a>\n\n---\n\nYou know him. Long ponytail. Oval glasses. Has been at the company longer than the version control. You show him fifty lines; he looks at them, says nothing, and replaces them with one.\n\nPonytail puts him inside your AI agent.\n\n## Before / after\n\nYou ask for a date picker. Your agent installs flatpickr, writes a wrapper component, adds a stylesheet, and starts a discussion about timezones.\n\nWith ponytail:\n\n```html\n<!-- ponytail: browser has one -->\n<input type=\"date\">\n```\n\nMore survivors in [examples/](examples/).\n\n## Numbers\n\nThe honest measurement is a real agent doing real work: a headless Claude Code session editing [tiangolo's full-stack-fastapi-template](https://github.com/fastapi/full-stack-fastapi-template) (a real FastAPI + React repo), scored on the `git diff` it leaves behind. Twelve feature tickets, the same agent with and without the skill, n=4, Haiku 4.5.\n\n<p align=\"center\">\n  <img src=\"assets/benchmark-agentic.svg\" width=\"860\" alt=\"Each arm as a percent of the no-skill baseline across LOC, tokens, cost and time (Haiku 4.5). ponytail is lowest on every metric (LOC 46%, tokens 78%, cost 80%, time 73%); caveman rises above 100% on tokens, cost and time; yagni-oneliner LOC 67%. Safety, separate adversarial tier: baseline, caveman and ponytail 100%, yagni-oneliner 95%.\">\n</p>\n\n| vs no-skill baseline | LOC | tokens | cost | time | safe |\n|---|--:|--:|--:|--:|--:|\n| **ponytail** | **-54%** | **-22%** | **-20%** | **-27%** | **100%** |\n| caveman (terse-prose control) | -20% | +7% | +3% | +2% | 100% |\n| \"YAGNI + one-liners\" prompt | -33% | -14% | -21% | -30% | 95% |\n\nponytail is the only arm that cuts every metric, and the only one that stays fully safe while doing it. The cut is biggest where there is a real over-build trap (date picker 404 to 23 lines, color picker 287 to 23, because it reaches for a native `<input>` instead of a component) and near zero on code that is already minimal. Full method, per-task tables, and limitations: [benchmarks/results/2026-06-18-agentic.md](benchmarks/results/2026-06-18-agentic.md).\n\n<details>\n<summary><strong>Older single-shot numbers (isolated generation)</strong></summary>\n\nFive everyday tasks, three models, three arms (no skill, [caveman](https://github.com/JuliusBrussee/caveman), ponytail), ten runs, median reported. One prompt, one completion, counting lines of the answer:\n\n<p align=\"center\">\n  <img src=\"assets/benchmark-3model.svg\" width=\"860\" alt=\"Median lines of code per arm across Haiku, Sonnet and Opus\">\n</p>\n\nThis showed **80-94% less code**. [#126](https://github.com/DietrichGebert/ponytail/issues/126) fairly pointed out that the bare-model baseline pads its answer with prose and options, so that gap is partly a conversational-baseline artifact. The agentic numbers above are the corrected, defensible version. Reproduce the single-shot run with `npx promptfoo eval -c benchmarks/promptfooconfig.yaml`.\n\n</details>\n\n**The rule was never \"fewest tokens.\"** It is: write only what the task needs, and never cut validation, error handling, security, or accessibility. The code ends up small because it is necessary, not golfed. Lower cost and latency are a side effect on the models that follow the ladder; a terse reasoning model that spends thinking tokens deliberating the rungs can go the other way (on GPT-5.5 it does).\n\n## How it works\n\nBefore writing code, the agent stops at the first rung that holds:\n\n```\n1. Does this need to exist?   → no: skip it (YAGNI)\n2. Already in this codebase?  → reuse it, don't rewrite\n3. Stdlib does it?            → use it\n4. Native platform feature?   → use it\n5. Installed dependency?      → use it\n6. One line?                  → one line\n7. Only then: the minimum that works\n```\n\nThe ladder runs *after* it understands the problem, not instead of it: it reads the code the change touches and traces the real flow before picking a rung. Lazy about the solution, never about reading.\n\nLazy, not negligent: trust-boundary validation, data-loss handling, security, and accessibility are never on the chopping block.\n\n## Install\n\nThe most effort ponytail will ever ask of you:\n\nThe Claude Code and Codex plugins (and the Cursor hooks) run two tiny Node.js lifecycle hooks, so `node` needs to be on your PATH (note for Nix/nvm users: it must be on the non-interactive shell's PATH). If it isn't, the skills still work, the always-on activation just stays quiet instead of erroring on every prompt.\n\n### Claude Code\n\n```\n/plugin marketplace add DietrichGebert/ponytail\n```\n```\n/plugin install ponytail@ponytail\n```\n(You have to send two separate prompts for the install to work) \n\nSame steps "
         },
         {
           "path": "docs/agent-portability.md",
           "bytes": 6878,
-          "preview": "# Agent Portability\n\nPonytail is an agent-portable skill distribution. The skills in `skills/` hold\nthe core behavior; host-specific files are adapters that make that behavior easy\nto load in a given agent.\n\n## Supported Adapters\n\n| Host | Files | Notes |\n|------|-------|-------|\n| Claude Code | `.claude-plugin/plugin.json`, `commands/`, `hooks/claude-codex-hooks.json`, `hooks/` | Full plugin install with session activation, mode tracking, commands, and statusline support. |\n| Codex | `.codex-plugin/plugin.json`, `hooks/claude-codex-hooks.json`, `hooks/`, `skills/` | Plugin install with the same skills plus lifecycle hooks for activation and mode tracking. |\n| Grok Build | root `plugin.json`, `.grok-plugin/marketplace.json`, `skills/`, `commands/` | `grok plugin install DietrichGebert/ponytail --trust`, then enable. Grok can auto-invoke ponytail from its coding-task skill description; `/ponytail` makes activation explicit. Grok lifecycle hooks are not used because passive hook output cannot inject instructions. |\n| OpenCode | `.opencode/plugins/ponytail.mjs`, `.opencode/command/`, `hooks/`, `skills/` | Server plugin injects the ruleset each turn via `experimental.chat.system.transform` and persists `/ponytail` switches; reuses the shared instruction builder. |\n| pi | `pi-extension/`, `skills/`, `hooks/` | Package extension: injects the ruleset each turn through the shared instruction builder and registers the `/ponytail` commands. |\n| Hermes Agent | `plugin.yaml`, `__init__.py`, `skills/` | Native Hermes plugin: injects active mode through `pre_llm_call`, rewrites gateway `/ponytail-*` skill commands into agent prompts, registers `/ponytail` mode switching, and exposes bundled skills as `ponytail:<skill>`. |\n| Gemini CLI | `gemini-extension.json`, `AGENTS.md`, `commands/`, `skills/` | Extension manifest points `contextFileName` at `AGENTS.md` for always-on rules, and reuses the existing `commands/*.toml` and `skills/`, which Gemini CLI auto-discovers. The Claude/Codex hook map is not placed at Gemini's auto-discovered `hooks/hooks.json` path. |\n| Cursor | `hooks/cursor-hooks.json`, `scripts/cursor-hooks.js`, `hooks/`, `.cursor/rules/ponytail.mdc` | Native hooks: `node scripts/cursor-hooks.js install` merges `sessionStart` (default-level ruleset via `additional_context`) and `beforeSubmitPrompt` (`/ponytail` level tracking, new-level ruleset via `additional_context`) into `~/.cursor/hooks.json`, or `.cursor/hooks.json` with `--project`, keeping unrelated hooks. No subagent injection (Cursor's `subagentStart` takes only `permission`/`user_message`) and no `sessionStart` in cloud agents. `.cursor/rules/ponytail.mdc` stays the instruction-only alternative; while that rule is in a workspace the hooks inject only a notice. Contract and verification record: [cursor-hooks.md](cursor-hooks.md). |\n| Windsurf | `.windsurf/rules/ponytail.md` | Project rule. |\n| Cline | `.clinerules/ponytail.md` | Project rule. |\n| GitHub Copilot | `.github/copilot-instructions.md` | Repository instruction file. |\n| GitHub Copilot CLI | `.github/plugin/`, `AGENTS.md`, `.github/copilot-instructions.md`, `~/.copilot/copilot-instructions.md` | Plugin-supported (`copilot plugin marketplace add DietrichGebert/ponytail` + `copilot plugin install ponytail@ponytail`). Fallback instruction mode remains: per-project from `AGENTS.md` or `.github/copilot-instructions.md`, or globally from `~/.copilot/copilot-instructions.md` (instruction-tier, no `/ponytail` levels or hooks). |\n| Antigravity | `AGENTS.md` | Reads `AGENTS.md` at the repo root as always-on rules (like `.cursorrules`/`CLAUDE.md`); `.agents/rules/` also works for workspace rules. Instruction-tier. |\n| CodeWhale | `AGENTS.md` | Reads `AGENTS.md` from the repo root as project instructions; also reads `CLAUDE.md` and `.claude/instructions.md` as fallbacks. Instruction-tier. |\n| Swival | `.swival/skills/`, `AGENTS.md` | `swival skills add https://github.com/DietrichGebert/ponytail` installs the six skills straight into `.swival/skills/`. Add `--global` to stage them in the library (`~/.config/swival/library`) first, then `swival skills add ponytail` (or `--global ponytail`) to activate per-project or everywhere. Also reads `AGENTS.md` from the repo root and `~/.config/swival/AGENTS.md` globally as instruction-tier fallback. |\n| VS Code + Codex extension | `AGENTS.md` | The Codex extension reads `AGENTS.md` (repo root, or `~/.codex/AGENTS.md` globally). Instruction-tier; the full Codex plugin row above adds `/ponytail` levels and hooks. |\n| JetBrains Junie | `AGENTS.md` | Junie reads `AGENTS.md` once you point it there in Settings \u2192 Tools \u2192 Junie \u2192 Project Settings \u2192 Guidelines Path (not automatic yet); this repo ships `AGENTS.md`, and `.junie/guidelines.md` is Junie's legacy path. Instruction-tier. |\n| Amp (Sourcegraph) | `AGENTS.md` | Amp reads `AGENTS.md` from the working directory and parent directories up to `$HOME` (plus global config like `~/.config/amp/AGENTS.md`); falls back to `AGENT.md`/`CLAUDE.md`. Instruction-tier. |\n| Jules (Google) | `AGENTS.md` | Jules automatically reads `AGENTS.md` from the repository root. Instruction-tier. |\n| Kiro | `.kiro/steering/ponytail.md` | Steering rule; copy globally or into a project. |\n| Qoder | `.qoder/rules/ponytail.md`, `.qoder-plugin/plugin.json`, `hooks/qoder-hooks.json`, `skills/`, `AGENTS.md` | Qoder auto-loads `AGENTS.md` as always-on context; `.qoder/rules/ponytail.md` provides per-project rules; the plugin manifest points at `skills/` for the six ponytail skills (invoked as `/ponytail`, `/ponytail-review`, etc. via the Skill system). Full plugin-tier: `hooks/qoder-hooks.json` template registers `UserPromptSubmit` (mode activation + ruleset injection) and `PreToolUse` with `task|Task` matcher (subagent injection). Instruction-tier works from repo root with zero setup via `AGENTS.md`. |\n| Zed | `AGENTS.md` | Auto-includes `AGENTS.md` from the worktree root as one of its default rule files for the Agent Panel. Instruction-tier. |\n| Generic agents | `AGENTS.md` or `skills/*/SKILL.md` | Copy the compact rule file or load the skill files directly. |\n\n## Adapter Rule\n\nKeep adapters thin. When a host supports skills or hooks, point it at the\nexisting `skills/` and `hooks/` files. When a host only supports project\ninstructions, keep its copied rule text aligned with `AGENTS.md`.\n\n## Portable Behavior\n\n- `skills/ponytail/SKILL.md`: lazy senior dev mode\n- `skills/ponytail-review/SKILL.md`: over-engineering review\n- `skills/ponytail-audit/SKILL.md`: whole-repo over-engineering audit\n- `skills/ponytail-debt/SKILL.md`: harvest `ponytail:` shortcuts into a tracked ledger\n- `skills/ponytail-gain/SKILL.md`: measured-impact scoreboard from the benchmark\n- `skills/ponytail-help/SKILL.md`: quick reference\n- `AGENTS.md`: compact always-on instruction set for agents without skill support\n"
+          "preview": "# Agent Portability\n\nPonytail is an agent-portable skill distribution. The skills in `skills/` hold\nthe core behavior; host-specific files are adapters that make that behavior easy\nto load in a given agent.\n\n## Supported Adapters\n\n| Host | Files | Notes |\n|------|-------|-------|\n| Claude Code | `.claude-plugin/plugin.json`, `commands/`, `hooks/claude-codex-hooks.json`, `hooks/` | Full plugin install with session activation, mode tracking, commands, and statusline support. |\n| Codex | `.codex-plugin/plugin.json`, `hooks/claude-codex-hooks.json`, `hooks/`, `skills/` | Plugin install with the same skills plus lifecycle hooks for activation and mode tracking. |\n| Grok Build | root `plugin.json`, `.grok-plugin/marketplace.json`, `skills/`, `commands/` | `grok plugin install DietrichGebert/ponytail --trust`, then enable. Grok can auto-invoke ponytail from its coding-task skill description; `/ponytail` makes activation explicit. Grok lifecycle hooks are not used because passive hook output cannot inject instructions. |\n| OpenCode | `.opencode/plugins/ponytail.mjs`, `.opencode/command/`, `hooks/`, `skills/` | Server plugin injects the ruleset each turn via `experimental.chat.system.transform` and persists `/ponytail` switches; reuses the shared instruction builder. |\n| pi | `pi-extension/`, `skills/`, `hooks/` | Package extension: injects the ruleset each turn through the shared instruction builder and registers the `/ponytail` commands. |\n| Hermes Agent | `plugin.yaml`, `__init__.py`, `skills/` | Native Hermes plugin: injects active mode through `pre_llm_call`, rewrites gateway `/ponytail-*` skill commands into agent prompts, registers `/ponytail` mode switching, and exposes bundled skills as `ponytail:<skill>`. |\n| Gemini CLI | `gemini-extension.json`, `AGENTS.md`, `commands/`, `skills/` | Extension manifest points `contextFileName` at `AGENTS.md` for always-on rules, and reuses the existing `commands/*.toml` and `skills/`, which Gemini CLI auto-discovers. The Claude/Codex hook map is not placed at Gemini's auto-discovered `hooks/hooks.json` path. |\n| Cursor | `hooks/cursor-hooks.json`, `scripts/cursor-hooks.js`, `hooks/`, `.cursor/rules/ponytail.mdc` | Native hooks: `node scripts/cursor-hooks.js install` merges `sessionStart` (default-level ruleset via `additional_context`) and `beforeSubmitPrompt` (`/ponytail` level tracking, new-level ruleset via `additional_context`) into `~/.cursor/hooks.json`, or `.cursor/hooks.json` with `--project`, keeping unrelated hooks. No subagent injection (Cursor's `subagentStart` takes only `permission`/`user_message`) and no `sessionStart` in cloud agents. `.cursor/rules/ponytail.mdc` stays the instruction-only alternative; while that rule is in a workspace the hooks inject only a notice. Contract and verification record: [cursor-hooks.md](cursor-hooks.md). |\n| Windsurf | `.windsurf/rules/ponytail.md` | Project rule. |\n| Cline | `.clinerules/ponytail.md` | Project rule. |\n| GitHub Copilot | `.github/copilot-instructions.md` | Repository instruction file. |\n| GitHub Copilot CLI | `.github/plugin/`, `AGENTS.md`, `.github/copilot-instructions.md`, `~/.copilot/copilot-instructions.md` | Plugin-supported (`copilot plugin marketplace add DietrichGebert/ponytail` + `copilot plugin install ponytail@ponytail`). Fallback instruction mode remains: per-project from `AGENTS.md` or `.github/copilot-instructions.md`, or globally from `~/.copilot/copilot-instructions.md` (instruction-tier, no `/ponytail` levels or hooks). |\n| Antigravity | `AGENTS.md` | Reads `AGENTS.md` at the repo root as always-on rules (like `.cursorrules`/`CLAUDE.md`); `.agents/rules/` also works for workspace rules. Instruction-tier. |\n| CodeWhale | `AGENTS.md` | Reads `AGENTS.md` from the repo root as project instructions; also reads `CLAUDE.md` and `.claude/instructions.md` as fallbacks. Instruction-tier. |\n| Swival | `.swival/skills/`, `AGENTS.md` | `swival skills add https://github.com/DietrichGebert/ponytail` installs the six skills straight into `.swival/skills/`. Add `--global` to stage them in the library (`~/.config/swival/library`) first, then `swival skills add ponytail` (or `--global ponytail`) to activate per-project or everywhere. Also reads `AGENTS.md` from the repo root and `~/.config/swival/AGENTS.md` globally as instruction-tier fallback. |\n| VS Code + Codex extension | `AGENTS.md` | The Codex extension reads `AGENTS.md` (repo root, or `~/.codex/AGENTS.md` globally). Instruction-tier; the full Codex plugin row above adds `/ponytail` levels and hooks. |\n| JetBrains Junie | `AGENTS.md` | Junie reads `AGENTS.md` once you point it there in Settings → Tools → Junie → Project Settings → Guidelines Path (not automatic yet); this repo ships `AGENTS.md`, and `.junie/guidelines.md` is Junie's legacy path. Instruction-tier. |\n| Amp (Sourcegraph) | `AGENTS.md` | Amp reads `AGENTS.md` from the working directory and parent directories up to `$HOME` (plus global config like `~/.config/amp/AGENTS.md`); falls back to `AGENT.md`/`CLAUDE.md`. Instruction-tier. |\n| Jules (Google) | `AGENTS.md` | Jules automatically reads `AGENTS.md` from the repository root. Instruction-tier. |\n| Kiro | `.kiro/steering/ponytail.md` | Steering rule; copy globally or into a project. |\n| Qoder | `.qoder/rules/ponytail.md`, `.qoder-plugin/plugin.json`, `hooks/qoder-hooks.json`, `skills/`, `AGENTS.md` | Qoder auto-loads `AGENTS.md` as always-on context; `.qoder/rules/ponytail.md` provides per-project rules; the plugin manifest points at `skills/` for the six ponytail skills (invoked as `/ponytail`, `/ponytail-review`, etc. via the Skill system). Full plugin-tier: `hooks/qoder-hooks.json` template registers `UserPromptSubmit` (mode activation + ruleset injection) and `PreToolUse` with `task|Task` matcher (subagent injection). Instruction-tier works from repo root with zero setup via `AGENTS.md`. |\n| Zed | `AGENTS.md` | Auto-includes `AGENTS.md` from the worktree root as one of its default rule files for the Agent Panel. Instruction-tier. |\n| Generic agents | `AGENTS.md` or `skills/*/SKILL.md` | Copy the compact rule file or load the skill files directly. |\n\n## Adapter Rule\n\nKeep adapters thin. When a host supports skills or hooks, point it at the\nexisting `skills/` and `hooks/` files. When a host only supports project\ninstructions, keep its copied rule text aligned with `AGENTS.md`.\n\n## Portable Behavior\n\n- `skills/ponytail/SKILL.md`: lazy senior dev mode\n- `skills/ponytail-review/SKILL.md`: over-engineering review\n- `skills/ponytail-audit/SKILL.md`: whole-repo over-engineering audit\n- `skills/ponytail-debt/SKILL.md`: harvest `ponytail:` shortcuts into a tracked ledger\n- `skills/ponytail-gain/SKILL.md`: measured-impact scoreboard from the benchmark\n- `skills/ponytail-help/SKILL.md`: quick reference\n- `AGENTS.md`: compact always-on instruction set for agents without skill support\n"
         },
         {
           "path": "docs/cursor-hooks.md",
           "bytes": 13264,
-          "preview": "# Cursor hooks\n\nNative Cursor support through `hooks.json` (issue #817). The adapter reuses the\nshared hook scripts; the only Cursor-specific pieces are the hooks template, the\ninstall script and a small output branch in `hooks/ponytail-runtime.js`.\n\n| File | Role |\n|------|------|\n| `hooks/cursor-hooks.json` | Template: `sessionStart` and `beforeSubmitPrompt` entries with a `PONYTAIL_DIR` placeholder. |\n| `scripts/cursor-hooks.js` | `install` / `uninstall`, merges into `~/.cursor/hooks.json` (or `.cursor/hooks.json` with `--project`). |\n| `hooks/ponytail-activate.js` | `sessionStart`: injects the default-level ruleset. |\n| `hooks/ponytail-mode-tracker.js` | `beforeSubmitPrompt`: tracks `/ponytail` commands, injects the new level's ruleset. |\n| `hooks/ponytail-runtime.js` | Detects Cursor (`CURSOR_VERSION`), keeps state in `~/.cursor/.ponytail-active`, emits Cursor-shaped JSON. |\n\n## Install and uninstall\n\n```bash\ngit clone https://github.com/DietrichGebert/ponytail\nnode ponytail/scripts/cursor-hooks.js install            # ~/.cursor/hooks.json, every project\nnode ponytail/scripts/cursor-hooks.js install --project  # <cwd>/.cursor/hooks.json, this project only\nnode ponytail/scripts/cursor-hooks.js uninstall          # add --project for the project file\n```\n\nWhat the install script does:\n\n- Reads the target file if it exists and keeps every hook that is not ponytail's.\n  Ponytail's entries are the ones whose `command` runs a `hooks/ponytail-*.js`\n  script; they are replaced on re-install, so running it twice never duplicates.\n- Replaces `PONYTAIL_DIR` with the checkout's absolute path, forward slashes, so\n  the command runs unchanged under cmd, PowerShell and bash. A checkout path with\n  shell metacharacters is refused; copy the template by hand in that case.\n- Refuses to touch a `hooks.json` that is not valid JSON, and says so.\n- `uninstall` removes only ponytail's entries and deletes the file when nothing\n  else was in it. `node scripts/uninstall.js` runs the same removal for the user\n  file and also deletes `~/.cursor/.ponytail-active`.\n\nCursor watches `hooks.json` and reloads it on save; open a new chat afterwards.\n`node` has to be on the PATH Cursor sees. The Hooks tab under Customize and the\nHooks output channel show each execution and any parse errors.\n\n## Contract\n\nSources: the Cursor hooks docs (`cursor.com/docs/hooks`, read 2026-09-14) and the\nCursor 3.20.17 client on Windows, whose hook runner and response validators were\nread directly. \"Docs\" below means the page documents it; \"client\" means it was\nverified in the shipped code.\n\n| Event | Ponytail uses | Delivery | Source |\n|-------|---------------|----------|--------|\n| `sessionStart` | output `additional_context` | Stored on the conversation and sent as system context with every request of that conversation. | Docs (field). Client (persistence: the value is kept on the composer as `hooksAdditionalContext` and attached to each request). |\n| `beforeSubmitPrompt` | input `prompt`; output `continue: true` plus `additional_context` | Wrapped as a system reminder for that turn. Inline up to 10,000 characters; longer payloads are written to a file the agent is told to read; above 1,000,000 the payload is dropped. | Docs list only `continue` and `user_message`. Client: the response validator accepts `additional_context` and the submit path injects it. Undocumented, so treat it as version-dependent. |\n| `subagentStart` | not registered | None. | Docs and client: the output schema is `permission` and `user_message` only. The client's protobuf has an unused `additional_context` slot that the hook path never fills. |\n| `preToolUse`, `postToolUse` | not registered | `additional_context` exists on both, but it would cost a process per tool call and `beforeSubmitPrompt` already covers mode changes. | Docs. |\n\nOutput rules the runtime follows:\n\n- Cursor parses stdout as JSON. Empty stdout means \"nothing to add\"; raw text is\n  logged as a parse error and ignored. The Cursor branch therefore prints either\n  one JSON object or nothing (`off` mode, ordinary prompts).\n- `user_message` on `beforeSubmitPrompt` is shown only when `continue` is\n  `false`, so ponytail never sets it. Confirmations reach the user through the\n  model's own reply.\n- Exit code is always 0. Cursor treats exit code 2 as \"block\" and other non-zero\n  codes as fail-open; ponytail never blocks anything.\n\nExecution environment (client, 3.20.17):\n\n- Every hook process gets `CURSOR_VERSION`, `CURSOR_PROJECT_DIR` and its alias\n  `CLAUDE_PROJECT_DIR`. `CURSOR_VERSION` is assigned in exactly one place, the\n  hook environment builder, so it does not leak into terminals inside Cursor.\n  Ponytail uses it for host detection and keeps state in `~/.cursor/`.\n- On Windows the payload is written to a temp file and the command runs inside\n  `powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass` as\n  `Get-Content -LiteralPath <file> -Raw | & { $input | <command> }`, so the hook\n  still reads its JSON from stdin. On macOS and Linux it is piped directly.\n- Cursor can also run hooks declared by Claude-format plugins and then sets\n  `CLAUDE_PLUGIN_ROOT` next to `CURSOR_VERSION`. The runtime prefers the Cursor\n  output shape in that case. Installing ponytail that way was not tested.\n\n## Behavior\n\n- New conversation: `sessionStart` writes `~/.cursor/.ponytail-active` with the\n  default level (`PONYTAIL_DEFAULT_MODE`, then `config.json`, then `full`) and\n  injects `PONYTAIL MODE ACTIVE \u2014 level: <level>` followed by the ruleset filtered\n  to that level. Default `off`: no flag, no output.\n- `/ponytail lite|full|ultra` sent as a plain message: the flag changes and the\n  turn receives `PONYTAIL MODE CHANGED \u2014 level: <level>` plus that level's ruleset\n  (about 5,300 characters, under the inline cap). Cursor has no `/ponytail`\n  command to load the skill body, so the hook carries it. `@ponytail` and\n  `$ponytail` are parsed too, but `@` opens Cursor's context picker. If the\n  ponytail skills are also installed under `~/.cursor/skills`, Cursor treats\n  `/ponytail lite` as a manual skill attachment and inlines the full, unfiltered\n  skill body into that message as well; the hook still receives the literal\n  `/ponytail lite` and remains the thing that tracks the level.\n- `/ponytail off`, `stop ponytail`, `normal mode`: the flag is removed and the\n  turn receives `PONYTAIL MODE OFF`. The ruleset injected at `sessionStart` stays\n  in the conversation's system context; the notice is what tells the model to\n  stop applying it, the same as in Claude Code.\n- `/ponytail`: reports `PONYTAIL MODE ACTIVE \u2014 level: <level>` without changing\n  anything. `/ponytail default <level>` persists the default to `config.json`.\n- Any other prompt: no output.\n\n### Coexistence with `.cursor/rules/ponytail.mdc`\n\nThe always-on rule and the hooks are alternatives, not layers. The rule already\nputs the compact ruleset in front of every prompt, and no hook can remove a rule\nfrom context, so `off` cannot win against it and `lite` or `ultra` would\ncontradict it. While `<workspace>/.cursor/rules/ponytail.mdc` exists (first\nworkspace root, from `CURSOR_PROJECT_DIR` or the working directory):\n\n- `sessionStart` injects a one-line notice instead of the ruleset and leaves the\n  mode flag alone.\n- `/ponytail ...`, `stop ponytail` and `normal mode` answer with the same notice\n  and change nothing.\n\nDelete the rule to let the hooks manage the level. A project that keeps the rule\nfor teammates without hooks stays on the rule's fixed behavior for everyone.\n\n## Limitations\n\n- Subagents never receive the ruleset. `subagentStart` can only allow or deny,\n  and `preToolUse` `updated_input` on the `Task` tool would mean guessing the\n  undocumented shape of the subagent prompt. `PONYTAIL_SUBAGENT_MATCHER` has no\n  effect in Cursor.\n- Cloud agents do not run `sessionStart` (documented), so there is no startup\n  injection there. Project-level `beforeSubmitPrompt` still runs, so `/ponytail\n  <level>` sets the level for the rest of that conversation.\n- `sessionStart` is fire-and-forget. A prompt sent within the first fraction of a\n  second of a new chat can leave before the context is attached.\n"
+          "preview": "# Cursor hooks\n\nNative Cursor support through `hooks.json` (issue #817). The adapter reuses the\nshared hook scripts; the only Cursor-specific pieces are the hooks template, the\ninstall script and a small output branch in `hooks/ponytail-runtime.js`.\n\n| File | Role |\n|------|------|\n| `hooks/cursor-hooks.json` | Template: `sessionStart` and `beforeSubmitPrompt` entries with a `PONYTAIL_DIR` placeholder. |\n| `scripts/cursor-hooks.js` | `install` / `uninstall`, merges into `~/.cursor/hooks.json` (or `.cursor/hooks.json` with `--project`). |\n| `hooks/ponytail-activate.js` | `sessionStart`: injects the default-level ruleset. |\n| `hooks/ponytail-mode-tracker.js` | `beforeSubmitPrompt`: tracks `/ponytail` commands, injects the new level's ruleset. |\n| `hooks/ponytail-runtime.js` | Detects Cursor (`CURSOR_VERSION`), keeps state in `~/.cursor/.ponytail-active`, emits Cursor-shaped JSON. |\n\n## Install and uninstall\n\n```bash\ngit clone https://github.com/DietrichGebert/ponytail\nnode ponytail/scripts/cursor-hooks.js install            # ~/.cursor/hooks.json, every project\nnode ponytail/scripts/cursor-hooks.js install --project  # <cwd>/.cursor/hooks.json, this project only\nnode ponytail/scripts/cursor-hooks.js uninstall          # add --project for the project file\n```\n\nWhat the install script does:\n\n- Reads the target file if it exists and keeps every hook that is not ponytail's.\n  Ponytail's entries are the ones whose `command` runs a `hooks/ponytail-*.js`\n  script; they are replaced on re-install, so running it twice never duplicates.\n- Replaces `PONYTAIL_DIR` with the checkout's absolute path, forward slashes, so\n  the command runs unchanged under cmd, PowerShell and bash. A checkout path with\n  shell metacharacters is refused; copy the template by hand in that case.\n- Refuses to touch a `hooks.json` that is not valid JSON, and says so.\n- `uninstall` removes only ponytail's entries and deletes the file when nothing\n  else was in it. `node scripts/uninstall.js` runs the same removal for the user\n  file and also deletes `~/.cursor/.ponytail-active`.\n\nCursor watches `hooks.json` and reloads it on save; open a new chat afterwards.\n`node` has to be on the PATH Cursor sees. The Hooks tab under Customize and the\nHooks output channel show each execution and any parse errors.\n\n## Contract\n\nSources: the Cursor hooks docs (`cursor.com/docs/hooks`, read 2026-09-14) and the\nCursor 3.20.17 client on Windows, whose hook runner and response validators were\nread directly. \"Docs\" below means the page documents it; \"client\" means it was\nverified in the shipped code.\n\n| Event | Ponytail uses | Delivery | Source |\n|-------|---------------|----------|--------|\n| `sessionStart` | output `additional_context` | Stored on the conversation and sent as system context with every request of that conversation. | Docs (field). Client (persistence: the value is kept on the composer as `hooksAdditionalContext` and attached to each request). |\n| `beforeSubmitPrompt` | input `prompt`; output `continue: true` plus `additional_context` | Wrapped as a system reminder for that turn. Inline up to 10,000 characters; longer payloads are written to a file the agent is told to read; above 1,000,000 the payload is dropped. | Docs list only `continue` and `user_message`. Client: the response validator accepts `additional_context` and the submit path injects it. Undocumented, so treat it as version-dependent. |\n| `subagentStart` | not registered | None. | Docs and client: the output schema is `permission` and `user_message` only. The client's protobuf has an unused `additional_context` slot that the hook path never fills. |\n| `preToolUse`, `postToolUse` | not registered | `additional_context` exists on both, but it would cost a process per tool call and `beforeSubmitPrompt` already covers mode changes. | Docs. |\n\nOutput rules the runtime follows:\n\n- Cursor parses stdout as JSON. Empty stdout means \"nothing to add\"; raw text is\n  logged as a parse error and ignored. The Cursor branch therefore prints either\n  one JSON object or nothing (`off` mode, ordinary prompts).\n- `user_message` on `beforeSubmitPrompt` is shown only when `continue` is\n  `false`, so ponytail never sets it. Confirmations reach the user through the\n  model's own reply.\n- Exit code is always 0. Cursor treats exit code 2 as \"block\" and other non-zero\n  codes as fail-open; ponytail never blocks anything.\n\nExecution environment (client, 3.20.17):\n\n- Every hook process gets `CURSOR_VERSION`, `CURSOR_PROJECT_DIR` and its alias\n  `CLAUDE_PROJECT_DIR`. `CURSOR_VERSION` is assigned in exactly one place, the\n  hook environment builder, so it does not leak into terminals inside Cursor.\n  Ponytail uses it for host detection and keeps state in `~/.cursor/`.\n- On Windows the payload is written to a temp file and the command runs inside\n  `powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass` as\n  `Get-Content -LiteralPath <file> -Raw | & { $input | <command> }`, so the hook\n  still reads its JSON from stdin. On macOS and Linux it is piped directly.\n- Cursor can also run hooks declared by Claude-format plugins and then sets\n  `CLAUDE_PLUGIN_ROOT` next to `CURSOR_VERSION`. The runtime prefers the Cursor\n  output shape in that case. Installing ponytail that way was not tested.\n\n## Behavior\n\n- New conversation: `sessionStart` writes `~/.cursor/.ponytail-active` with the\n  default level (`PONYTAIL_DEFAULT_MODE`, then `config.json`, then `full`) and\n  injects `PONYTAIL MODE ACTIVE — level: <level>` followed by the ruleset filtered\n  to that level. Default `off`: no flag, no output.\n- `/ponytail lite|full|ultra` sent as a plain message: the flag changes and the\n  turn receives `PONYTAIL MODE CHANGED — level: <level>` plus that level's ruleset\n  (about 5,300 characters, under the inline cap). Cursor has no `/ponytail`\n  command to load the skill body, so the hook carries it. `@ponytail` and\n  `$ponytail` are parsed too, but `@` opens Cursor's context picker. If the\n  ponytail skills are also installed under `~/.cursor/skills`, Cursor treats\n  `/ponytail lite` as a manual skill attachment and inlines the full, unfiltered\n  skill body into that message as well; the hook still receives the literal\n  `/ponytail lite` and remains the thing that tracks the level.\n- `/ponytail off`, `stop ponytail`, `normal mode`: the flag is removed and the\n  turn receives `PONYTAIL MODE OFF`. The ruleset injected at `sessionStart` stays\n  in the conversation's system context; the notice is what tells the model to\n  stop applying it, the same as in Claude Code.\n- `/ponytail`: reports `PONYTAIL MODE ACTIVE — level: <level>` without changing\n  anything. `/ponytail default <level>` persists the default to `config.json`.\n- Any other prompt: no output.\n\n### Coexistence with `.cursor/rules/ponytail.mdc`\n\nThe always-on rule and the hooks are alternatives, not layers. The rule already\nputs the compact ruleset in front of every prompt, and no hook can remove a rule\nfrom context, so `off` cannot win against it and `lite` or `ultra` would\ncontradict it. While `<workspace>/.cursor/rules/ponytail.mdc` exists (first\nworkspace root, from `CURSOR_PROJECT_DIR` or the working directory):\n\n- `sessionStart` injects a one-line notice instead of the ruleset and leaves the\n  mode flag alone.\n- `/ponytail ...`, `stop ponytail` and `normal mode` answer with the same notice\n  and change nothing.\n\nDelete the rule to let the hooks manage the level. A project that keeps the rule\nfor teammates without hooks stays on the rule's fixed behavior for everyone.\n\n## Limitations\n\n- Subagents never receive the ruleset. `subagentStart` can only allow or deny,\n  and `preToolUse` `updated_input` on the `Task` tool would mean guessing the\n  undocumented shape of the subagent prompt. `PONYTAIL_SUBAGENT_MATCHER` has no\n  effect in Cursor.\n- Cloud agents do not run `sessionStart` (documented), so there is no startup\n  injection there. Project-level `beforeSubmitPrompt` still runs, so `/ponytail\n  <level>` sets the level for the rest of that conversation.\n- `sessionStart` is fire-and-forget. A prompt sent within the first fraction of a\n  second of a new chat can leave before the context is attached.\n"
         },
         {
           "path": "docs/platform-native.md",
           "bytes": 9434,
-          "preview": "# Platform-Native Solutions\n\nThe lazy senior dev's first question is always: *does the platform already do this?*\n\nThis document answers that question for the most common cases. Before reaching for a package, scan here. The platform ships with your app for free, doesn't break on updates, and was written by people whose job is exactly that problem.\n\n---\n\n## HTML Elements\n\nThings the browser already has as a form control.\n\n| You think you need | What the platform has |\n|---|---|\n| Date picker library | `<input type=\"date\">` |\n| Time picker library | `<input type=\"time\">` |\n| Color picker library | `<input type=\"color\">` |\n| Range slider library | `<input type=\"range\">` |\n| Progress bar component | `<progress value=\"70\" max=\"100\">` |\n| Meter/gauge component | `<meter value=\"0.7\">` |\n| Modal/dialog library | `<dialog>` + `dialog.showModal()` |\n| Accordion/FAQ component | `<details><summary>Title</summary>\u2026</details>` |\n| Tooltip library | `title` attribute + CSS `::before`/`::after` |\n| Searchable dropdown | `<input list=\"id\"> <datalist id=\"id\">` |\n| Auto-growing textarea | `field-sizing: content` (CSS) |\n| Sticky header | `position: sticky; top: 0` (CSS) |\n\n---\n\n## CSS Capabilities\n\nThings developers reach for JavaScript to do.\n\n| You think you need JS for | What CSS has |\n|---|---|\n| Responsive font size | `font-size: clamp(1rem, 2.5vw, 2rem)` |\n| Fluid spacing | `padding: clamp(1rem, 5vw, 3rem)` |\n| Dark mode | `@media (prefers-color-scheme: dark)` |\n| Reduced motion | `@media (prefers-reduced-motion: reduce)` |\n| Responsive layout without breakpoints | `grid-template-columns: repeat(auto-fill, minmax(250px, 1fr))` |\n| Component-level responsive design | `@container` queries |\n| Global design tokens / theming | CSS custom properties (`--color-primary: #7c3aed`) |\n| Smooth scroll | `scroll-behavior: smooth` |\n| Scroll-snap carousel | `scroll-snap-type: x mandatory` + `scroll-snap-align: start` |\n| Aspect ratio enforcement | `aspect-ratio: 16 / 9` |\n| Truncate text with ellipsis | `overflow: hidden; text-overflow: ellipsis; white-space: nowrap` |\n| Multi-line text clamp | `-webkit-line-clamp: 3` |\n| CSS cascade layers (style isolation) | `@layer base, components, utilities` |\n| Nested CSS selectors | Native CSS nesting (no preprocessor needed) |\n| `has()` parent selector | `:has(input:checked)` |\n\n---\n\n## JavaScript / Browser APIs\n\nLibraries people install that the runtime already ships.\n\n| You think you need | What the platform has |\n|---|---|\n| `query-string` / `qs` | `new URLSearchParams(location.search)` |\n| `lodash.clonedeep` | `structuredClone(obj)` |\n| `lodash.groupby` | `Object.groupBy(arr, fn)` |\n| `lodash.debounce` | see debounce one-liner below |\n| `numeral` / `accounting` | `new Intl.NumberFormat(\"en-US\", { style: \"currency\", currency: \"USD\" })` |\n| `date-fns` format | `new Intl.DateTimeFormat(\"en-US\", { dateStyle: \"long\" }).format(date)` |\n| `date-fns` relative time | `new Intl.RelativeTimeFormat(\"en\", { numeric: \"auto\" }).format(-3, \"day\")` |\n| `plural` / `i18n` plurals | `new Intl.PluralRules(\"en-US\").select(count)` |\n| `clipboard.js` | `navigator.clipboard.writeText(text)` |\n| `uuid` (v4) | `crypto.randomUUID()` |\n| Infinite scroll library | `new IntersectionObserver(cb).observe(sentinel)` |\n| Resize listener library | `new ResizeObserver(cb).observe(element)` |\n| DOM mutation watcher | `new MutationObserver(cb).observe(el, options)` |\n| `uuid-validate` | `/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id)` |\n| `is-online` / `connectivity check` | `navigator.onLine` + `online`/`offline` events |\n| `sharesheet` library | `navigator.share({ title, text, url })` |\n| `store.js` / `localForage` (simple case) | `localStorage.setItem(key, JSON.stringify(val))` |\n| Abort fetch on timeout | `AbortSignal.timeout(5000)` passed to `fetch` |\n| Custom event bus | `new EventTarget()` / `dispatchEvent(new CustomEvent(\"x\", { detail }))` |\n\n**Debounce one-liner** (no library):\n```js\n// ponytail: 3 lines beats a dependency\nlet t;\nconst debounce = (fn, ms) => (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); };\n```\n\n---\n\n## Swift / SwiftUI\n\nUI components people reach for a library or a custom view for.\n\n| You think you need | What the platform has |\n|---|---|\n| Date/time picker library | `DatePicker` |\n| Color picker library | `ColorPicker` |\n| Search bar + filtering | `.searchable(text:)` |\n| Pull-to-refresh library | `.refreshable { }` |\n| Swipe-to-delete / row actions | `.swipeActions { }` |\n| Async image loading + cache | `AsyncImage` |\n| Charting library | Swift Charts (`import Charts`) |\n| Markdown rendering | `Text(...)` markdown / `AttributedString(markdown:)` |\n| Share sheet wrapper | `ShareLink` |\n| Loading spinner | `ProgressView()` |\n| Photo picker | `PhotosPicker` |\n| Map SDK (basic) | `Map` (MapKit for SwiftUI) |\n| Grid layout library | `Grid` / `LazyVGrid` |\n\nFrameworks and stdlib that wrappers wrap.\n\n| You think you need | What the platform has |\n|---|---|\n| JSON library (SwiftyJSON) | `Codable` + `JSONDecoder` / `JSONEncoder` |\n| HTTP client (Alamofire, simple use) | `URLSession` async/await; Alamofire earns it for complex retry/multipart at scale |\n| Date/number/currency formatting | `.formatted()` / `FormatStyle` |\n| Regex library | Swift regex literals + `Regex` |\n| Crypto library (CryptoSwift) | `CryptoKit` |\n| Keychain wrapper | Security `SecItem`; a few lines, not a dependency |\n| Persistence / ORM | `SwiftData`, or `@AppStorage` for small key-values |\n| Logging library | `Logger` (`os.log`) |\n| UUID / Base64 helpers | `UUID()`, `Data(...).base64EncodedString()` |\n| Image downsampling | ImageIO `CGImageSourceCreateThumbnailAtIndex` |\n| Combine wrappers for async | async/await + `AsyncSequence` |\n\n---\n\n## Node.js Standard Library\n\nPackages that wrap Node built-ins.\n\n| You think you need | What Node has |\n|---|---|\n| `mkdirp` | `fs.mkdirSync(path, { recursive: true })` |\n| `rimraf` | `fs.rmSync(path, { recursive: true, force: true })` |\n| `make-dir` | `fs.mkdirSync(path, { recursive: true })` |\n| `slash` (win paths) | `path.posix` or `path.normalize()` |\n| `uuid` (v4) | `crypto.randomUUID()` |\n| `ms` (parse duration strings) | keep `ms`, it's genuinely useful and tiny |\n| `is-stream` | `val instanceof stream.Readable` |\n| `object-assign` | `Object.assign()` / spread |\n| `array-uniq` | `[...new Set(arr)]` |\n| `array-flatten` | `arr.flat(Infinity)` |\n| `flat` | `arr.flat(depth)` |\n| `path-exists` | `fs.existsSync(path)` |\n| `load-json-file` | `JSON.parse(fs.readFileSync(path, \"utf8\"))` |\n| `write-json-file` | `fs.writeFileSync(path, JSON.stringify(obj, null, 2))` |\n| `pkg-dir` | `path.resolve(__dirname, \"..\")` / `import.meta.dirname` |\n\n---\n\n## Python Standard Library\n\nPackages that wrap what Python already ships.\n\n| You think you need | What Python has |\n|---|---|\n| `python-dateutil` (basic parsing) | `datetime.fromisoformat()` (Python 3.7+) |\n| `pytz` | `zoneinfo.ZoneInfo(\"America/New_York\")` (Python 3.9+) |\n| `attrs` (simple data classes) | `@dataclass` |\n| `six` | drop it, Python 2 is gone |\n| `pathlib2` | `pathlib.Path` (built-in since Python 3.4) |\n| `enum34` | `enum.Enum` (built-in since Python 3.4) |\n| `typing_extensions` (common types) | `from __future__ import annotations` + built-in generics |\n| `simplejson` (basic use) | `json` (stdlib) |\n| `requests` (simple GET) | `urllib.request.urlopen(url)`, `requests` for anything real |\n| `click` (single command) | `argparse` (stdlib) |\n| `mergedeep` | `dict \\| other_dict` (Python 3.9+) |\n| `more-itertools` (basic) | `itertools` (stdlib): `chain`, `islice`, `groupby`, `product` |\n| `toolz` (basic) | `functools`: `lru_cache`, `partial`, `reduce` |\n| `tabulate` (dev/debug only) | `pprint.pprint()` for quick inspection |\n\n---\n\n## Database\n\nThings the application layer implements that the database already does.\n\n| You think you need app code for | What the database has |\n|---|---|\n| Pagination offset/limit | `LIMIT 20 OFFSET 40` |\n| Running totals | `SUM(...) OVER (ORDER BY date)` (window function) |\n| Rank within group | `RANK() OVER (PARTITION BY category ORDER BY score DESC)` |\n| Pivot / cross-tab | `FILTER (WHERE ...)` "
+          "preview": "# Platform-Native Solutions\n\nThe lazy senior dev's first question is always: *does the platform already do this?*\n\nThis document answers that question for the most common cases. Before reaching for a package, scan here. The platform ships with your app for free, doesn't break on updates, and was written by people whose job is exactly that problem.\n\n---\n\n## HTML Elements\n\nThings the browser already has as a form control.\n\n| You think you need | What the platform has |\n|---|---|\n| Date picker library | `<input type=\"date\">` |\n| Time picker library | `<input type=\"time\">` |\n| Color picker library | `<input type=\"color\">` |\n| Range slider library | `<input type=\"range\">` |\n| Progress bar component | `<progress value=\"70\" max=\"100\">` |\n| Meter/gauge component | `<meter value=\"0.7\">` |\n| Modal/dialog library | `<dialog>` + `dialog.showModal()` |\n| Accordion/FAQ component | `<details><summary>Title</summary>…</details>` |\n| Tooltip library | `title` attribute + CSS `::before`/`::after` |\n| Searchable dropdown | `<input list=\"id\"> <datalist id=\"id\">` |\n| Auto-growing textarea | `field-sizing: content` (CSS) |\n| Sticky header | `position: sticky; top: 0` (CSS) |\n\n---\n\n## CSS Capabilities\n\nThings developers reach for JavaScript to do.\n\n| You think you need JS for | What CSS has |\n|---|---|\n| Responsive font size | `font-size: clamp(1rem, 2.5vw, 2rem)` |\n| Fluid spacing | `padding: clamp(1rem, 5vw, 3rem)` |\n| Dark mode | `@media (prefers-color-scheme: dark)` |\n| Reduced motion | `@media (prefers-reduced-motion: reduce)` |\n| Responsive layout without breakpoints | `grid-template-columns: repeat(auto-fill, minmax(250px, 1fr))` |\n| Component-level responsive design | `@container` queries |\n| Global design tokens / theming | CSS custom properties (`--color-primary: #7c3aed`) |\n| Smooth scroll | `scroll-behavior: smooth` |\n| Scroll-snap carousel | `scroll-snap-type: x mandatory` + `scroll-snap-align: start` |\n| Aspect ratio enforcement | `aspect-ratio: 16 / 9` |\n| Truncate text with ellipsis | `overflow: hidden; text-overflow: ellipsis; white-space: nowrap` |\n| Multi-line text clamp | `-webkit-line-clamp: 3` |\n| CSS cascade layers (style isolation) | `@layer base, components, utilities` |\n| Nested CSS selectors | Native CSS nesting (no preprocessor needed) |\n| `has()` parent selector | `:has(input:checked)` |\n\n---\n\n## JavaScript / Browser APIs\n\nLibraries people install that the runtime already ships.\n\n| You think you need | What the platform has |\n|---|---|\n| `query-string` / `qs` | `new URLSearchParams(location.search)` |\n| `lodash.clonedeep` | `structuredClone(obj)` |\n| `lodash.groupby` | `Object.groupBy(arr, fn)` |\n| `lodash.debounce` | see debounce one-liner below |\n| `numeral` / `accounting` | `new Intl.NumberFormat(\"en-US\", { style: \"currency\", currency: \"USD\" })` |\n| `date-fns` format | `new Intl.DateTimeFormat(\"en-US\", { dateStyle: \"long\" }).format(date)` |\n| `date-fns` relative time | `new Intl.RelativeTimeFormat(\"en\", { numeric: \"auto\" }).format(-3, \"day\")` |\n| `plural` / `i18n` plurals | `new Intl.PluralRules(\"en-US\").select(count)` |\n| `clipboard.js` | `navigator.clipboard.writeText(text)` |\n| `uuid` (v4) | `crypto.randomUUID()` |\n| Infinite scroll library | `new IntersectionObserver(cb).observe(sentinel)` |\n| Resize listener library | `new ResizeObserver(cb).observe(element)` |\n| DOM mutation watcher | `new MutationObserver(cb).observe(el, options)` |\n| `uuid-validate` | `/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id)` |\n| `is-online` / `connectivity check` | `navigator.onLine` + `online`/`offline` events |\n| `sharesheet` library | `navigator.share({ title, text, url })` |\n| `store.js` / `localForage` (simple case) | `localStorage.setItem(key, JSON.stringify(val))` |\n| Abort fetch on timeout | `AbortSignal.timeout(5000)` passed to `fetch` |\n| Custom event bus | `new EventTarget()` / `dispatchEvent(new CustomEvent(\"x\", { detail }))` |\n\n**Debounce one-liner** (no library):\n```js\n// ponytail: 3 lines beats a dependency\nlet t;\nconst debounce = (fn, ms) => (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); };\n```\n\n---\n\n## Swift / SwiftUI\n\nUI components people reach for a library or a custom view for.\n\n| You think you need | What the platform has |\n|---|---|\n| Date/time picker library | `DatePicker` |\n| Color picker library | `ColorPicker` |\n| Search bar + filtering | `.searchable(text:)` |\n| Pull-to-refresh library | `.refreshable { }` |\n| Swipe-to-delete / row actions | `.swipeActions { }` |\n| Async image loading + cache | `AsyncImage` |\n| Charting library | Swift Charts (`import Charts`) |\n| Markdown rendering | `Text(...)` markdown / `AttributedString(markdown:)` |\n| Share sheet wrapper | `ShareLink` |\n| Loading spinner | `ProgressView()` |\n| Photo picker | `PhotosPicker` |\n| Map SDK (basic) | `Map` (MapKit for SwiftUI) |\n| Grid layout library | `Grid` / `LazyVGrid` |\n\nFrameworks and stdlib that wrappers wrap.\n\n| You think you need | What the platform has |\n|---|---|\n| JSON library (SwiftyJSON) | `Codable` + `JSONDecoder` / `JSONEncoder` |\n| HTTP client (Alamofire, simple use) | `URLSession` async/await; Alamofire earns it for complex retry/multipart at scale |\n| Date/number/currency formatting | `.formatted()` / `FormatStyle` |\n| Regex library | Swift regex literals + `Regex` |\n| Crypto library (CryptoSwift) | `CryptoKit` |\n| Keychain wrapper | Security `SecItem`; a few lines, not a dependency |\n| Persistence / ORM | `SwiftData`, or `@AppStorage` for small key-values |\n| Logging library | `Logger` (`os.log`) |\n| UUID / Base64 helpers | `UUID()`, `Data(...).base64EncodedString()` |\n| Image downsampling | ImageIO `CGImageSourceCreateThumbnailAtIndex` |\n| Combine wrappers for async | async/await + `AsyncSequence` |\n\n---\n\n## Node.js Standard Library\n\nPackages that wrap Node built-ins.\n\n| You think you need | What Node has |\n|---|---|\n| `mkdirp` | `fs.mkdirSync(path, { recursive: true })` |\n| `rimraf` | `fs.rmSync(path, { recursive: true, force: true })` |\n| `make-dir` | `fs.mkdirSync(path, { recursive: true })` |\n| `slash` (win paths) | `path.posix` or `path.normalize()` |\n| `uuid` (v4) | `crypto.randomUUID()` |\n| `ms` (parse duration strings) | keep `ms`, it's genuinely useful and tiny |\n| `is-stream` | `val instanceof stream.Readable` |\n| `object-assign` | `Object.assign()` / spread |\n| `array-uniq` | `[...new Set(arr)]` |\n| `array-flatten` | `arr.flat(Infinity)` |\n| `flat` | `arr.flat(depth)` |\n| `path-exists` | `fs.existsSync(path)` |\n| `load-json-file` | `JSON.parse(fs.readFileSync(path, \"utf8\"))` |\n| `write-json-file` | `fs.writeFileSync(path, JSON.stringify(obj, null, 2))` |\n| `pkg-dir` | `path.resolve(__dirname, \"..\")` / `import.meta.dirname` |\n\n---\n\n## Python Standard Library\n\nPackages that wrap what Python already ships.\n\n| You think you need | What Python has |\n|---|---|\n| `python-dateutil` (basic parsing) | `datetime.fromisoformat()` (Python 3.7+) |\n| `pytz` | `zoneinfo.ZoneInfo(\"America/New_York\")` (Python 3.9+) |\n| `attrs` (simple data classes) | `@dataclass` |\n| `six` | drop it, Python 2 is gone |\n| `pathlib2` | `pathlib.Path` (built-in since Python 3.4) |\n| `enum34` | `enum.Enum` (built-in since Python 3.4) |\n| `typing_extensions` (common types) | `from __future__ import annotations` + built-in generics |\n| `simplejson` (basic use) | `json` (stdlib) |\n| `requests` (simple GET) | `urllib.request.urlopen(url)`, `requests` for anything real |\n| `click` (single command) | `argparse` (stdlib) |\n| `mergedeep` | `dict \\| other_dict` (Python 3.9+) |\n| `more-itertools` (basic) | `itertools` (stdlib): `chain`, `islice`, `groupby`, `product` |\n| `toolz` (basic) | `functools`: `lru_cache`, `partial`, `reduce` |\n| `tabulate` (dev/debug only) | `pprint.pprint()` for quick inspection |\n\n---\n\n## Database\n\nThings the application layer implements that the database already does.\n\n| You think you need app code for | What the database has |\n|---|---|\n| Pagination offset/limit | `LIMIT 20 OFFSET 40` |\n| Running totals | `SUM(...) OVER (ORDER BY date)` (window function) |\n| Rank within group | `RANK() OVER (PARTITION BY category ORDER BY score DESC)` |\n| Pivot / cross-tab | `FILTER (WHERE ...)` "
         }
       ],
       "config_files": [
@@ -6288,7 +6288,7 @@
         "steps": [
           {
             "id": "serialize",
-            "label": "JSON serialize (inventory \u2192 SQLite)",
+            "label": "JSON serialize (inventory → SQLite)",
             "ms": 0,
             "pct": 0
           },
@@ -6307,5 +6307,850 @@
         ]
       }
     ]
+  },
+  "report": {
+    "overview": "Ponytail is a cross-platform 'lazy senior dev' behavior pack for AI coding agents: it injects a YAGNI/stdlib-first/minimal-diff ruleset into ~20 different agent hosts (Claude Code, Codex, Copilot, Cursor, Gemini, OpenCode, pi, Hermes, Qoder, Grok, OpenClaw, Devin, and more). The canonical behavior lives in skills/ponytail/SKILL.md plus a compact copy in AGENTS.md; everything else is a thin per-host adapter — lifecycle hook scripts in hooks/, plugin manifests, copied rule files, a pi extension, a Hermes plugin, an OpenCode plugin, and an MCP server — that resolves an intensity mode (lite/full/ultra/off), filters the ruleset to that level, and injects it into the agent's context. It ships with an extensive benchmark harness (promptfoo single-shot plus a headless Claude Code agentic bench) backing the README's claim of ~54% less code at 100% safety.",
+    "system_map": {
+      "summary": "There is no long-running application: ponytail is a distribution of instruction text plus small adapter shims that host agents invoke. The runtime core is five CommonJS scripts in hooks/ (config resolution, instruction building, host detection/output, activation, mode tracking, subagent injection) spawned by host lifecycle hooks. Per-host adapters (Claude/Codex plugin manifest + hooks JSON, Copilot hooks JSON, Cursor hooks installer, Gemini extension manifest, OpenCode .mjs plugin, pi extension, Hermes Python plugin, MCP stdio server, and instruction-only rule files) all funnel into the shared instruction builder. State is a single mode flag file plus an optional config.json in the user's home/config dirs. Tests are node:test files at tests/, plus nested suites in pi-extension/test and ponytail-mcp/test, driven by `npm test` and the test.yml GitHub Action.",
+      "claims": [
+        {
+          "claim": "The npm package's only entrypoint is the OpenCode plugin module: package.json sets \"main\" and exports to ./.opencode/plugins/ponytail.mjs.",
+          "sources": [
+            "package.json#L19-23"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The runtime core is five shared CommonJS modules — ponytail-config.js (mode/config resolution), ponytail-instructions.js (ruleset builder), ponytail-runtime.js (host detection, state file, stdout protocol), ponytail-activate.js (SessionStart), ponytail-mode-tracker.js (UserPromptSubmit), ponytail-subagent.js (SubagentStart).",
+          "sources": [
+            "hooks/ponytail-config.js",
+            "hooks/ponytail-instructions.js",
+            "hooks/ponytail-runtime.js",
+            "hooks/ponytail-activate.js",
+            "hooks/ponytail-mode-tracker.js",
+            "hooks/ponytail-subagent.js"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Claude Code and Codex share one hook map, hooks/claude-codex-hooks.json, wiring SessionStart → ponytail-activate.js, SubagentStart → ponytail-subagent.js, and UserPromptSubmit → ponytail-mode-tracker.js, each run as `node \"${CLAUDE_PLUGIN_ROOT}/hooks/…\"` with a 5s timeout.",
+          "sources": [
+            "hooks/claude-codex-hooks.json",
+            ".claude-plugin/plugin.json#L9",
+            ".codex-plugin/plugin.json#L14"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Host detection is env-var based and order-sensitive: COPILOT_PLUGIN_DATA (or a CLAUDE_PLUGIN_ROOT under .vscode/agent-plugins) → Copilot, PLUGIN_DATA → Codex, QODER_SESSION_ID → Qoder, CURSOR_VERSION → Cursor, otherwise native Claude; each host picks a different stateDir and a different stdout JSON shape.",
+          "sources": [
+            "hooks/ponytail-runtime.js#L13-39",
+            "hooks/ponytail-runtime.js#L80-131"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The single source of truth for the ruleset is skills/ponytail/SKILL.md; getPonytailInstructions() reads it and strips mode-keyed table rows/example bullets for the active level, falling back to an embedded condensed ruleset if the file is unreadable.",
+          "sources": [
+            "hooks/ponytail-instructions.js#L9-41",
+            "hooks/ponytail-instructions.js#L77-92",
+            "skills/ponytail/SKILL.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Runtime state is a per-host flag file named .ponytail-active holding the mode string (e.g. ~/.claude/.ponytail-active, $PLUGIN_DATA/.ponytail-active, ~/.cursor/.ponytail-active, ~/.qoder/.ponytail-active); an absent flag means ponytail is off.",
+          "sources": [
+            "hooks/ponytail-runtime.js#L6-57"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "User configuration resolves in order: PONYTAIL_DEFAULT_MODE env var, then defaultMode in $XDG_CONFIG_HOME/ponytail/config.json (~/.config/ponytail or %APPDATA%\\ponytail), then the built-in 'full'.",
+          "sources": [
+            "hooks/ponytail-config.js#L54-100"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The OpenCode adapter is a server plugin that registers slash commands from .opencode/command/*.md, adds skills/ to config.skills.paths, appends the ruleset via the experimental.chat.system.transform hook, and persists /ponytail switches in command.execute.before to ~/.config/opencode/.ponytail-active.",
+          "sources": [
+            ".opencode/plugins/ponytail.mjs#L27-98",
+            ".opencode/plugins/ponytail-frontmatter.cjs"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The pi adapter (pi-extension/index.js) registers six slash commands, paints a status-bar indicator via ctx.ui.setStatus, persists session mode through pi.appendEntry('ponytail-mode'), and prepends the ruleset in the before_agent_start event.",
+          "sources": [
+            "pi-extension/index.js#L63-210"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The Hermes adapter is the root __init__.py Python plugin: register() exposes the six skills, hooks pre_llm_call for ruleset injection and pre_gateway_dispatch to rewrite authorized /ponytail-* gateway commands into agent prompts.",
+          "sources": [
+            "__init__.py#L125-217",
+            "plugin.yaml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "ponytail-mcp is a private, internal-only MCP stdio server that serves the same ruleset as a 'ponytail' prompt and a 'ponytail_instructions' tool, reusing hooks/ponytail-instructions.js via createRequire.",
+          "sources": [
+            "ponytail-mcp/index.js",
+            "ponytail-mcp/instructions.js",
+            "ponytail-mcp/package.json"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Instruction-only hosts get verbatim copies of the compact ruleset: .cursor/rules/ponytail.mdc, .windsurf/rules/ponytail.md, .clinerules/ponytail.md, .agents/rules/ponytail.md, .qoder/rules/ponytail.md, .github/copilot-instructions.md, .kiro/steering/ponytail.md — all byte-compared against AGENTS.md by scripts/check-rule-copies.js.",
+          "sources": [
+            "scripts/check-rule-copies.js#L15-37",
+            "docs/agent-portability.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Build/test: `npm test` runs `node --test tests/*.test.js` then the nested pi-extension and ponytail-mcp suites; CI (.github/workflows/test.yml) additionally runs check-rule-copies.js and check-versions.js on Node 22 / Python 3.12. Release is `npm publish` via publish.yml using OIDC trusted publishing, no token.",
+          "sources": [
+            "package.json#L37-38",
+            ".github/workflows/test.yml",
+            ".github/workflows/publish.yml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Deployment shape is per-host plugin manifests: .claude-plugin/, .codex-plugin/, .devin-plugin/, .github/plugin/ (Copilot), .qoder-plugin/, .grok-plugin/marketplace.json, .agents/plugins/marketplace.json, gemini-extension.json, plugin.yaml (Hermes), .openclaw/skills/ (ClawHub), and the pi package block in package.json.",
+          "sources": [
+            ".claude-plugin/plugin.json",
+            ".codex-plugin/plugin.json",
+            ".devin-plugin/plugin.json",
+            ".github/plugin/plugin.json",
+            "gemini-extension.json",
+            "plugin.yaml",
+            "package.json#L40-43"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "feature_catalog": {
+      "summary": "User-facing surface is six skills/commands plus a mode system. The core skill ponytail enforces the 'ladder' (YAGNI → reuse → stdlib → native → installed dep → one line → minimum code) at three intensities (lite/full/ultra) plus off. Companion skills ponytail-review, -audit, -debt, -gain, -help provide focused prompts. Host adapters add activation, mode switching, subagent injection, a statusline badge, and a Cursor hooks installer. Benchmarks and example before/after docs round out the offering.",
+      "claims": [
+        {
+          "claim": "Six skills ship in skills/: ponytail (the ruleset with lite/full/ultra levels), ponytail-review (over-engineering diff review with delete/stdlib/native/yagni/shrink tags), ponytail-audit, ponytail-debt (harvests `ponytail:` comments into a debt ledger), ponytail-gain (benchmark scoreboard), ponytail-help.",
+          "sources": [
+            "skills/ponytail/SKILL.md",
+            "skills/ponytail-review/SKILL.md",
+            "docs/agent-portability.md#L43-49",
+            "scripts/build-openclaw-skills.js#L19-26"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The ponytail skill defines the 7-rung decision ladder, the 'bug fix = root cause' rule (grep all callers, fix the shared function once), the `ponytail:` ceiling-comment convention, the 'never lazy about' safety carve-outs, and the intensity table keyed by lite/full/ultra.",
+          "sources": [
+            "skills/ponytail/SKILL.md#L32-118"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Mode switching: `/ponytail lite|full|ultra|off`, `@ponytail`/`$ponytail` aliases, `/ponytail` alone reports the level, `/ponytail default <mode>` persists to config.json, and the standalone phrases 'stop ponytail'/'normal mode' deactivate.",
+          "sources": [
+            "hooks/ponytail-mode-tracker.js#L40-114",
+            "hooks/ponytail-config.js#L40-43"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "File-based commands mirror the skills for hosts that need them: commands/*.toml (Claude/Gemini) and .opencode/command/*.md (OpenCode), with tests/commands.test.js asserting every pi-registered command ships both file forms.",
+          "sources": [
+            "commands/ponytail.toml",
+            ".opencode/command/ponytail.md",
+            "tests/commands.test.js#L17-39"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "A statusline badge feature: ponytail-activate.js detects a missing statusLine in settings.json and nudges the agent once (flag file .ponytail-statusline-nudged) to install hooks/ponytail-statusline.sh (POSIX) or .ps1 (Windows), which renders [PONYTAIL] / [PONYTAIL:ULTRA] from the flag file.",
+          "sources": [
+            "hooks/ponytail-activate.js#L63-109",
+            "hooks/ponytail-statusline.sh",
+            "tests/hooks.test.js#L161-184"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Subagent coverage: ponytail-subagent.js injects the active ruleset into every spawned subagent, scoped optionally by the PONYTAIL_SUBAGENT_MATCHER regex against agent_type (unanchored, case-insensitive, fail-open).",
+          "sources": [
+            "hooks/ponytail-subagent.js",
+            "tests/hooks.test.js#L292-358"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Cursor support is a manual installer: `node scripts/cursor-hooks.js install [--project]` merges ponytail's sessionStart/beforeSubmitPrompt entries into ~/.cursor/hooks.json (or a project file), replacing PONYTAIL_DIR with the checkout path and preserving unrelated hooks; uninstall removes only ponytail entries.",
+          "sources": [
+            "scripts/cursor-hooks.js",
+            "hooks/cursor-hooks.json",
+            "docs/cursor-hooks.md#L15-39"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Hermes-specific features: bundled skills registered as ponytail:<skill>, slash commands /ponytail and /ponytail-review/-audit/-debt/-gain/-help, gateway command rewriting with a slash-access check (_slash_access_denied), and process-local runtime mode.",
+          "sources": [
+            "__init__.py#L14-20",
+            "__init__.py#L140-217",
+            "plugin.yaml#L5-21",
+            "after-install.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The MCP server exposes a user-invoked 'ponytail' prompt and a read-only 'ponytail_instructions' tool, both taking a lite/full/ultra mode argument validated by a zod enum, serving hosts whose only injection point is the prompt menu.",
+          "sources": [
+            "ponytail-mcp/index.js#L18-50"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Gemini/Antigravity use gemini-extension.json pointing contextFileName at AGENTS.md for always-on rules plus auto-discovered commands/*.toml and skills/; the repo deliberately does not ship a root hooks/hooks.json because Gemini would auto-load Claude-named events.",
+          "sources": [
+            "gemini-extension.json",
+            "docs/agent-portability.md#L17",
+            "README.md#L204-205"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Qoder full-tier support is a reference template hooks/qoder-hooks.json (UserPromptSubmit → mode-tracker, PreToolUse task|Task → subagent hook) that users merge into .qoder/settings.json with a PONYTAIL_DIR substitution.",
+          "sources": [
+            "hooks/qoder-hooks.json",
+            "README.md#L207-211"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Benchmarks are a shipped feature: single-shot promptfoo evals (benchmarks/promptfooconfig*.yaml), a headless-Claude agentic bench (benchmarks/agentic/run.py) scoring LOC/cost/time/safety, an Ollama local runner (benchmarks/benchmark-local.py), a behavior gate (benchmarks/behavior.js + behavior.yaml), and dated result write-ups in benchmarks/results/.",
+          "sources": [
+            "benchmarks/README.md",
+            "benchmarks/agentic/run.py",
+            "benchmarks/behavior.js",
+            "tests/behavior.test.js"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "examples/ contains 11 before/after 'survivor' write-ups (date-picker-style over-builds collapsed to native features) referenced from the README; assets/ holds the logos and benchmark SVGs the README renders.",
+          "sources": [
+            "examples/README.md",
+            "examples/debounce.md",
+            "README.md#L62-73"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "data_flow": {
+      "summary": "Data flow is prompt-text injection: config resolution produces a mode, the mode filters the canonical SKILL.md body, and the host-specific hook output protocol (raw stdout, additionalContext JSON, or additional_context JSON) carries the ruleset into the model's context. State is minimal: a one-word flag file per host state dir, a config.json for the persisted default, and a nudge marker file. Inputs are env vars (host detection, mode default, subagent matcher) and stdin JSON (prompt text, agent_type); outputs are stdout writes the host harness parses.",
+      "claims": [
+        {
+          "claim": "Ruleset path: skills/ponytail/SKILL.md → getPonytailInstructions(mode) → filterSkillBodyForMode strips frontmatter and drops intensity-table rows (`| **lite** |`) and worked-example bullets (`- lite: \"…\"`) whose label isn't the active mode → prefixed with 'PONYTAIL MODE ACTIVE — level: <mode>'.",
+          "sources": [
+            "hooks/ponytail-instructions.js#L11-41",
+            "hooks/ponytail-instructions.js#L77-92"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Mode resolution path: PONYTAIL_DEFAULT_MODE env → ~/.config/ponytail/config.json (or %APPDATA%\\ponytail) defaultMode → 'full'; only RUNTIME_MODES (off/lite/full/ultra) are accepted, so 'review' can never become a default (#377).",
+          "sources": [
+            "hooks/ponytail-config.js#L16-34",
+            "hooks/ponytail-config.js#L76-100"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Session persistence: ponytail-activate.js writes the resolved mode into <stateDir>/.ponytail-active; ponytail-mode-tracker.js rewrites or deletes it on /ponytail commands; ponytail-subagent.js and the statusline scripts read it.",
+          "sources": [
+            "hooks/ponytail-activate.js#L53-58",
+            "hooks/ponytail-mode-tracker.js#L85-114",
+            "hooks/ponytail-subagent.js#L16-21",
+            "hooks/ponytail-statusline.sh#L3-6"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Stdout protocol is host-shaped: Copilot gets {additionalContext} only on SessionStart, Codex gets systemMessage + hookSpecificOutput, Qoder gets hookSpecificOutput without systemMessage, Cursor gets {additional_context, continue}, native Claude gets raw stdout except SubagentStart which needs hookSpecificOutput JSON.",
+          "sources": [
+            "hooks/ponytail-runtime.js#L80-131"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "UserPromptSubmit input arrives as piped stdin JSON; the tracker parses data.prompt, lowercases it, matches ^[/@$]ponytail or the exact deactivation phrases, then emits the mode-change header (Cursor also gets the new level's full ruleset since it has no /ponytail command that loads the skill).",
+          "sources": [
+            "hooks/ponytail-mode-tracker.js#L21-107"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Qoder lacks SessionStart, so its UserPromptSubmit path does double duty: first prompt initializes the flag from getDefaultMode(), and every prompt re-injects the full ruleset, folding the mode-change confirmation into one JSON write.",
+          "sources": [
+            "hooks/ponytail-mode-tracker.js#L116-138"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Subagent scoping input: when PONYTAIL_SUBAGENT_MATCHER is set, the hook reads agent_type from stdin JSON and skips injection only on a definite mismatch; missing/unparseable payloads, regex errors, and timeouts all fail open to injecting.",
+          "sources": [
+            "hooks/ponytail-subagent.js#L31-77"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Config writes: only `/ponytail default <mode>` calls writeDefaultMode, which mkdirs the config dir, merges defaultMode into any existing JSON (preserving unrelated keys), and refuses non-runtime modes; plain switches stay session-scoped.",
+          "sources": [
+            "hooks/ponytail-config.js#L136-151",
+            "hooks/ponytail-mode-tracker.js#L55-66",
+            "tests/hooks.test.js#L429-469"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "OpenCode data flow: command.execute.before persists the /ponytail argument to ~/.config/opencode/.ponytail-active; experimental.chat.system.transform reads it each turn and appends the filtered ruleset to the last system message (or pushes one), so a mode switch applies from the next message.",
+          "sources": [
+            ".opencode/plugins/ponytail.mjs#L27-44",
+            ".opencode/plugins/ponytail.mjs#L74-97"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "pi data flow: session_start replays persisted 'ponytail-mode' entries via resolveSessionMode to recover the mode, before_agent_start returns {systemPrompt: base + ruleset}, and the input event listener turns the deactivation phrase into setMode('off').",
+          "sources": [
+            "pi-extension/index.js#L24-37",
+            "pi-extension/index.js#L174-210"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Hermes data flow: _pre_llm_call returns {'context': build_injected_context(mode)} each turn; mode lives in the module-global _current_mode set by the /ponytail command handler (process-local, not persisted); review mode injects the ponytail-review SKILL.md body instead of the filtered ladder.",
+          "sources": [
+            "__init__.py#L27",
+            "__init__.py#L105-128",
+            "__init__.py#L167-177"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "OpenClaw/ClawHub artifacts are generated: scripts/build-openclaw-skills.js copies each skills/<name>/SKILL.md body verbatim into .openclaw/skills/ with a rewritten single-line <160-char description frontmatter, so the ruleset can't drift from canonical.",
+          "sources": [
+            "scripts/build-openclaw-skills.js#L1-60"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Benchmark data flow: run.py seeds a temp workspace (fixture repo or seed files + git baseline), runs `claude -p` with --plugin-dir for skill arms or --append-system-prompt for prompt arms, then scores the git diff / file stats for correctness+safety and reads cost/tokens from the CLI's JSON output.",
+          "sources": [
+            "benchmarks/agentic/run.py#L283-339",
+            "benchmarks/agentic/run.py#L257-281",
+            "benchmarks/agentic/tasks.py#L1-31"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "behavior_traces": {
+      "summary": "Three traced flows: (1) session activation — host fires SessionStart → ponytail-activate.js resolves mode → writes flag → emits filtered ruleset; (2) mid-session mode switch — UserPromptSubmit → ponytail-mode-tracker.js parses stdin → updates flag/config → confirms; (3) subagent spawn — SubagentStart → ponytail-subagent.js reads flag → optionally filters on agent_type → injects. Also traced: OpenCode turn injection and the Cursor hooks install/uninstall path.",
+      "claims": [
+        {
+          "claim": "Startup flow (Claude Code): claude-codex-hooks.json SessionStart spawns `node hooks/ponytail-activate.js` → getDefaultMode() resolves env→config→'full' → 'off' exits early after clearMode() → setMode(mode) writes $CLAUDE_CONFIG_DIR/.ponytail-active → getPonytailInstructions(mode) builds the ruleset → statusline check appends a one-time setup nudge → writeHookOutput('SessionStart', mode, output).",
+          "sources": [
+            "hooks/claude-codex-hooks.json#L3-15",
+            "hooks/ponytail-activate.js#L28-115"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Cursor startup differs: ponytail-activate.js first checks cursorRulePath() for .cursor/rules/ponytail.mdc in CURSOR_PROJECT_DIR; if the always-on rule exists it emits only a cursorRuleNotice (no flag write, no ruleset) so hook and rule can't contradict.",
+          "sources": [
+            "hooks/ponytail-activate.js#L38-51",
+            "hooks/ponytail-runtime.js#L59-78"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Mode-switch flow: UserPromptSubmit → ponytail-mode-tracker.js accumulates stdin → finish() JSON-parses (BOM-stripped) → /^[/@$]ponytail/ match → 'default' arg calls writeDefaultMode and returns early; a level arg calls setMode + emits 'PONYTAIL MODE CHANGED'; 'off' calls clearMode + 'PONYTAIL MODE OFF'; bare /ponytail is report-only.",
+          "sources": [
+            "hooks/ponytail-mode-tracker.js#L21-107"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Deactivation flow: isDeactivationCommand requires the whole trimmed message to be 'stop ponytail' or 'normal mode' (after dropping trailing punctuation), so an incidental phrase like 'add a normal mode toggle' cannot turn ponytail off — regression-tested in tests/hooks.test.js.",
+          "sources": [
+            "hooks/ponytail-config.js#L36-43",
+            "hooks/ponytail-mode-tracker.js#L109-114",
+            "tests/hooks.test.js#L110-125"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Subagent flow: SubagentStart → ponytail-subagent.js → readMode() returns flag contents; absent/'off' exits 0 silently → optional PONYTAIL_SUBAGENT_MATCHER compiled in try/catch (invalid → inject-everywhere) → if matcher set, stdin agent_type tested; definite mismatch exits, everything else → inject() → writeHookOutput('SubagentStart', mode, ruleset).",
+          "sources": [
+            "hooks/ponytail-subagent.js"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Never-hang contract: both stdin-reading hooks attach stdin 'error' → finish()+exit and a 1000ms unref'd setTimeout fallback, because Windows PowerShell `if {}` wrappers can swallow piped JSON so 'end' never fires (#443); the no-matcher subagent path never touches stdin at all.",
+          "sources": [
+            "hooks/ponytail-mode-tracker.js#L144-155",
+            "hooks/ponytail-subagent.js#L41-48",
+            "hooks/ponytail-subagent.js#L73-77"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "OpenCode turn flow: plugin config() hook scans .opencode/command/*.md via parseCommandFile into config.command and appends skills/ to config.skills.paths → per turn, experimental.chat.system.transform reads ~/.config/opencode/.ponytail-active (falling back to getDefaultMode) and appends getPonytailInstructions(mode) to the system prompt → command.execute.before writes the new mode when the user runs /ponytail.",
+          "sources": [
+            ".opencode/plugins/ponytail.mjs#L51-98",
+            ".opencode/plugins/ponytail-frontmatter.cjs#L13-21"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "pi session flow: session_start → getDefaultMode + getHideStatus + resolveSessionMode(entries) → syncStatus paints '🐴 ponytail: <icon> <MODE>' → before_agent_start returns systemPrompt with ruleset appended (guard against null event/systemPrompt, #439/#440) → agent_start/agent_end toggle the ●/○ active dot.",
+          "sources": [
+            "pi-extension/index.js#L183-210",
+            "pi-extension/index.js#L71-99"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Cursor install flow: scripts/cursor-hooks.js install → readConfig (malformed JSON → SyntaxError → refuse) → stripPonytail removes stale ponytail entries → ponytailEntries() renders cursor-hooks.json with PONYTAIL_DIR→forward-slash root after isShellSafe() rejects metachar paths → merged entries appended per event → writeConfig; uninstall reverses and deletes the file if nothing else remains.",
+          "sources": [
+            "scripts/cursor-hooks.js#L44-105"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Cleanup flow: scripts/uninstall.js removes .ponytail-active from the Claude and Cursor dirs, the config file, strips ponytail entries from ~/.cursor/hooks.json via cursorHooks.uninstall('user'), and surgically removes only the ponytail segment from a possibly-combined statusLine command in settings.json.",
+          "sources": [
+            "scripts/uninstall.js"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Agentic benchmark flow: run.py run_cell copies the fixture repo (or writes seed files) → git snapshot → spawns `claude -p <prompt> --model <m> --permission-mode bypassPermissions --disallowedTools Bash --strict-mcp-config` (+ --plugin-dir for skill arms) → stdout→_claude.json file (never a PIPE, so timeouts work) → 300s CELL_TIMEOUT with _tree_kill → score_workspace computes git_diff_stats/code_stats + per-task deterministic scorers.",
+          "sources": [
+            "benchmarks/agentic/run.py#L283-339"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "testing_signals": {
+      "summary": "Tests are plain node:test/assert suites — no framework, matching the project's own dogma. tests/*.test.js covers hook behavior end-to-end via spawnSync (every host env permutation), manifest/command/packaging drift guards, and grader self-checks; pi-extension/test and ponytail-mcp/test cover the adapters' pure functions. CI runs the suite plus two consistency scripts on every push/PR. Coverage is strong on the hooks protocol and drift guards; weaker on the Hermes Python plugin logic depth and on actual model behavior (benchmarks are manual, API-spend).",
+      "claims": [
+        {
+          "claim": "Test framework is node:test + assert with no dependencies; `npm test` = `node --test tests/*.test.js && npm test --prefix pi-extension && npm test --prefix ponytail-mcp`.",
+          "sources": [
+            "package.json#L37-38",
+            "tests/commands.test.js#L8-9",
+            "pi-extension/package.json#L5-7"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "tests/hooks.test.js is an integration suite that spawnSyncs the real hook scripts under fabricated HOME/env dirs, asserting flag-file placement, per-host stdout JSON shapes, statusline nudge once-only behavior, CLAUDE_CONFIG_DIR override, and Copilot-vs-Codex state isolation.",
+          "sources": [
+            "tests/hooks.test.js#L21-253"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Subagent matcher behavior is fully covered: case-insensitive unanchored match, anchored rejection of superset names, missing agent_type fail-open, invalid-regex fail-open, and the no-matcher path's independence from stdin.",
+          "sources": [
+            "tests/hooks.test.js#L292-358"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Drift guards: tests/commands.test.js greps pi-extension/index.js for registerCommand calls and fails if any registered command lacks commands/<name>.toml or .opencode/command/<name>.md; tests/package.test.js guards scripts/uninstall.js staying in the npm files list.",
+          "sources": [
+            "tests/commands.test.js#L17-39",
+            "tests/package.test.js"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Per-host manifest tests exist for every adapter: gemini-extension.test.js, qoder-plugin.test.js, grok-plugin.test.js, hermes-plugin.test.js, copilot-plugin.test.js, opencode-plugin.test.js, openclaw-skills.test.js, plus hooks-windows.test.js and cursor-hooks.test.js for platform edges.",
+          "sources": [
+            "tests/gemini-extension.test.js",
+            "tests/hermes-plugin.test.js",
+            "tests/opencode-plugin.test.js",
+            "tests/cursor-hooks.test.js",
+            "tests/hooks-windows.test.js"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Two consistency scripts run in CI before tests: scripts/check-rule-copies.js byte-compares seven rule-file copies against AGENTS.md and asserts 9 rule invariants survive in SKILL.md+AGENTS.md; scripts/check-versions.js requires all 8 version-bearing manifests to share one pinned semver equal to the release tag.",
+          "sources": [
+            "scripts/check-rule-copies.js#L19-76",
+            "scripts/check-versions.js#L21-78",
+            ".github/workflows/test.yml#L29-36"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Benchmark self-verification: `python benchmarks/agentic/run.py --selftest` validates every task scorer (good ref passes, bad ref caught on its declared axis), the plugin-dir resolver, and the tree-kill — before any API spend; tests/correctness.test.js and benchmarks/correctness.test.js cover scorer units.",
+          "sources": [
+            "benchmarks/agentic/run.py#L183-244",
+            "benchmarks/agentic/tasks.py#L15-21",
+            "benchmarks/correctness.test.js"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "tests/behavior.test.js unit-tests the promptfoo behavior grader (benchmarks/behavior.js) by feeding known behavior-present/absent outputs through each probe checker, making the behavior.yaml eval trustworthy without an API key.",
+          "sources": [
+            "tests/behavior.test.js#L1-50",
+            "benchmarks/behavior.yaml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CI (.github/workflows/test.yml) runs on push to main, tags, and PRs: checkout → Node 22 + Python 3.12 + pandas → npm install for ponytail-mcp → check-rule-copies → check-versions → npm test. There is no coverage tool, lint step, or Windows/macOS CI matrix.",
+          "sources": [
+            ".github/workflows/test.yml"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The Hermes Python plugin (__init__.py) has a dedicated test (tests/hermes-plugin.test.js) but the deep logic — _filter_skill_body_for_mode parity with the JS version, gateway access denial — is exercised through JS-side assertions rather than a Python suite; there is no pytest configuration in the repo.",
+          "sources": [
+            "tests/hermes-plugin.test.js",
+            "__init__.py#L70-122"
+          ],
+          "kind": "inference"
+        },
+        {
+          "claim": "Uncovered-by-default areas: live model behavior (benchmarks require ANTHROPIC_API_KEY/manual runs and are not in CI), the .ps1 statusline path on Windows (guarded only by hooks-windows.test.js shape checks), and whether hosts actually deliver injected context (docs/cursor-hooks.md notes that's a live-session check).",
+          "sources": [
+            ".env.example",
+            "benchmarks/README.md#L9-19",
+            "tests/hooks-windows.test.js",
+            "docs/cursor-hooks.md#L8-10"
+          ],
+          "kind": "inference"
+        }
+      ]
+    },
+    "risk_map": {
+      "summary": "Primary risk surface is that ponytail code runs inside the user's home directory on every prompt: it writes state files under ~/.claude, ~/.cursor, ~/.qoder, plugin data dirs, and config dirs, and it edits user-owned settings.json/hooks.json files. Mitigations are real — a shell-safe path allowlist, BOM-tolerant parsing, fail-open hooks with hard timeouts, and surgical uninstalls — but the blast radius of a bug is the user's agent config, not the repo. Secondary risks: drift between 8 version manifests and 7+ rule copies (guarded), env-detection order fragility, and benchmark runs that shell out to claude with bypassPermissions.",
+      "claims": [
+        {
+          "claim": "Hooks write outside the repo: setMode/clearMode mutate <stateDir>/.ponytail-active under ~/.claude, $PLUGIN_DATA, $COPILOT_PLUGIN_DATA, ~/.qoder, or ~/.cursor; writeDefaultMode mutates the user's global ponytail config.json; uninstall.js and cursor-hooks.js edit or delete ~/.cursor/hooks.json and ~/.claude/settings.json.",
+          "sources": [
+            "hooks/ponytail-runtime.js#L31-48",
+            "hooks/ponytail-config.js#L136-151",
+            "scripts/uninstall.js",
+            "scripts/cursor-hooks.js#L24-47"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Shell-injection guard: isShellSafe() allowlists path characters before the install path is embedded in a statusline shell command or a Cursor hooks.json entry; a checkout path with quotes/&/$/backtick/; falls back to manual-setup text instead of emitting a command.",
+          "sources": [
+            "hooks/ponytail-config.js#L45-52",
+            "hooks/ponytail-activate.js#L84-105",
+            "scripts/cursor-hooks.js#L53-65",
+            "tests/hooks.test.js#L15-19"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Host detection is a single ordered cascade of env checks in ponytail-runtime.js; a host that sets a foreign env var (e.g. CLAUDE_PLUGIN_ROOT under VS Code Copilot, CURSOR_VERSION leaking into a nested Claude session) is misrouted — the file documents two such bugs already fixed (#528, #817), so new hosts must be inserted with care.",
+          "sources": [
+            "hooks/ponytail-runtime.js#L8-29"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Fail-silent posture: nearly every hook error path is an empty catch ('Silent fail — don't block session start'), which keeps sessions alive but means real breakage (unwritable state dir, EPIPE) leaves no signal beyond missing output.",
+          "sources": [
+            "hooks/ponytail-activate.js#L54-58",
+            "hooks/ponytail-activate.js#L107-115",
+            "hooks/ponytail-mode-tracker.js#L139-141",
+            "hooks/ponytail-subagent.js#L26-29"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "A hung hook would freeze the user's prompt submission; both stdin-consuming hooks defend with an 'error' handler plus a 1s unref'd timeout that force-finishes, a workaround for Windows PowerShell swallowing piped stdin (#443).",
+          "sources": [
+            "hooks/ponytail-mode-tracker.js#L147-155",
+            "hooks/ponytail-subagent.js#L75-77"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "settings.json/hooks.json edits are surgical but fragile: uninstall.js splits a combined statusLine command on '&&'/';' (documented ponytail: simplification — piped statuslines are unsupported), and cursor-hooks.js identifies ponytail entries only by the /ponytail-[\\w-]+\\.js/ regex on the command string.",
+          "sources": [
+            "scripts/uninstall.js#L48-66",
+            "scripts/cursor-hooks.js#L18-22"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Version drift has shipped before (v4.8.0 stayed at 4.7.0 across all manifests, #260/#262); check-versions.js now pins 8 files and validates the release tag, but it only runs in CI — a local tag push before CI could still publish stale manifests.",
+          "sources": [
+            "scripts/check-versions.js#L1-30",
+            ".github/workflows/publish.yml"
+          ],
+          "kind": "inference"
+        },
+        {
+          "claim": "Rule-copy drift: seven per-host rule files must stay byte-identical to AGENTS.md and nine invariant phrases must exist in SKILL.md; check-rule-copies.js is a canary, not full equality for SKILL.md (noted in its own comment), so subtle ruleset wording changes can slip if they dodge the invariants.",
+          "sources": [
+            "scripts/check-rule-copies.js#L39-69"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The agentic benchmark deliberately runs `claude -p` with --permission-mode bypassPermissions on seeded repos and force-kills process trees on timeout — safe by design (temp dirs, Bash disallowed, per-session killpg/taskkill /T) but it is the only code path that executes an agent with full permissions.",
+          "sources": [
+            "benchmarks/agentic/run.py#L225-244",
+            "benchmarks/agentic/run.py#L310-336"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Mode-filtering correctness is load-bearing: filterSkillBodyForMode drops SKILL.md lines whose table/example label is a mode name; a future SKILL.md edit that labels a normal rule 'full:'-style (without a quoted value) is safe, but the Python port in __init__.py uses a slightly different example regex (`:\\s*` vs `:\\s*\"`), so the two filters can diverge on edge lines.",
+          "sources": [
+            "hooks/ponytail-instructions.js#L11-41",
+            "__init__.py#L70-87"
+          ],
+          "kind": "inference"
+        },
+        {
+          "claim": "PONYTAIL_SUBAGENT_MATCHER is user-supplied regex compiled with 'i'; catastrophic backtracking on a hostile pattern is theoretically possible but bounded by the 1s timeout and fail-open design.",
+          "sources": [
+            "hooks/ponytail-subagent.js#L31-48"
+          ],
+          "kind": "inference"
+        },
+        {
+          "claim": "Cursor rule conflict is handled but detection only checks the first workspace root (CURSOR_PROJECT_DIR || cwd) — a documented ponytail: simplification; a ponytail.mdc in a secondary folder of a multi-root workspace goes undetected and would double-inject.",
+          "sources": [
+            "hooks/ponytail-runtime.js#L59-70"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "extension_points": {
+      "summary": "The repo is built for adapter growth: a new host means a manifest plus (ideally) a reuse of the shared hooks/ scripts, and the test suite auto-discovers some surfaces. Adding a skill requires touching five places (skills/, SKILL_COMMANDS in __init__.py, pi registerCommand, commands/*.toml, .opencode/command/*.md, DESCRIPTIONS in build-openclaw-skills.js) — commands.test.js catches the file gaps. Adding a mode means extending RUNTIME_MODES/VALID_MODES and the SKILL.md intensity table. Adding a host version manifest requires updating VERSION_FILES in check-versions.js.",
+      "claims": [
+        {
+          "claim": "New host adapters should reuse the shared builder: every existing adapter (OpenCode, pi, MCP, hooks, Hermes) funnels through getPonytailInstructions()/getDefaultMode() so a new host needs only host detection + output shaping, per the documented 'Adapter Rule: keep adapters thin'.",
+          "sources": [
+            "docs/agent-portability.md#L35-39",
+            "hooks/ponytail-instructions.js#L77-92",
+            "ponytail-mcp/instructions.js#L4-8"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New version-bearing manifests must be registered in the VERSION_FILES array in scripts/check-versions.js ('Add new host manifests here so a future ecosystem can't drift unnoticed').",
+          "sources": [
+            "scripts/check-versions.js#L19-30"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New rule-file copies must be added to the copies array in scripts/check-rule-copies.js with a normalizer (stripFrontmatter or trim), or they won't be drift-checked against AGENTS.md.",
+          "sources": [
+            "scripts/check-rule-copies.js#L19-37"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New skills plug in at skills/<name>/SKILL.md with frontmatter (name/description/argument-hint); the OpenCode plugin auto-discovers the skills/ dir, and Hermes's register() iterates skills/ children — but SKILL_COMMANDS in __init__.py, pi registerCommand calls, commands/*.toml, .opencode/command/*.md, and DESCRIPTIONS in build-openclaw-skills.js must be added by hand.",
+          "sources": [
+            "__init__.py#L14-20",
+            "__init__.py#L195-201",
+            "pi-extension/index.js#L114-172",
+            "scripts/build-openclaw-skills.js#L19-26",
+            ".opencode/plugins/ponytail.mjs#L55-71"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "tests/commands.test.js enforces the command-file contract automatically: it regexes registerCommand names out of pi-extension/index.js and requires matching commands/<name>.toml and .opencode/command/<name>.md files — a registered command with no adapter files fails CI.",
+          "sources": [
+            "tests/commands.test.js#L15-39"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New intensity modes extend RUNTIME_MODES (runtime levels) vs VALID_MODES (adds 'review' for config) in ponytail-config.js, the SKILL.md intensity table/example bullets (auto-filtered by label), and the pi status icon map — Hermes mirrors RUNTIME_MODES/CONFIG_MODES in __init__.py.",
+          "sources": [
+            "hooks/ponytail-config.js#L16-34",
+            "skills/ponytail/SKILL.md#L79-88",
+            "pi-extension/index.js#L84",
+            "__init__.py#L11-13"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "INDEPENDENT_MODES in ponytail-instructions.js is the extension seam for modes that don't share the ladder ruleset (currently 'review', which emits only a pointer to its skill); adding a mode there bypasses SKILL.md filtering.",
+          "sources": [
+            "hooks/ponytail-instructions.js#L8",
+            "hooks/ponytail-instructions.js#L80-82"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Hook output protocol for a new host is one branch in writeHookOutput() plus detection flags at the top of ponytail-runtime.js; Cursor's branch was added exactly this way ({additional_context, continue} shape).",
+          "sources": [
+            "hooks/ponytail-runtime.js#L19-37",
+            "hooks/ponytail-runtime.js#L111-122"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Config surface extension: getQuietStartup and getHideStatus are the pattern for new user toggles — env var (PONYTAIL_*) beats config.json field, both BOM-tolerant, both exported for the pi extension.",
+          "sources": [
+            "hooks/ponytail-config.js#L102-134",
+            "pi-extension/index.js#L8-9"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Benchmark arms are a registry: the ARMS dict in run.py maps arm name → skill loader (file read or literal prompt); PLUGIN_ARMS selects which arms activate via --plugin-dir vs --append-system-prompt, and MODELS maps friendly names to model IDs.",
+          "sources": [
+            "benchmarks/agentic/run.py#L35-61"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "OpenClaw packaging is generated, not hand-maintained: extend DESCRIPTIONS in build-openclaw-skills.js and rerun to emit .openclaw/skills/<name>/SKILL.md; tests/openclaw-skills.test.js fails on stale committed copies.",
+          "sources": [
+            "scripts/build-openclaw-skills.js#L19-44",
+            "tests/openclaw-skills.test.js"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_handoff": {
+      "summary": "This repo edits its own dogma: AGENTS.md demands the smallest correct diff and `ponytail:` comments marking deliberate ceilings — match that style. The golden rules: SKILL.md and AGENTS.md are the sources of truth and every copy must stay in sync (CI enforces it); all shared logic lives in the CJS hooks/ modules so adapters stay thin; hooks must never hang or crash a session (fail-open, BOM-strip, timeouts); and any version bump touches 8 files. Always run `npm test` plus the two check scripts before claiming done.",
+      "claims": [
+        {
+          "claim": "Read first, in order: AGENTS.md (the ruleset and the repo's own working style), skills/ponytail/SKILL.md (canonical long-form rules), hooks/ponytail-runtime.js + ponytail-config.js + ponytail-instructions.js (the shared core every adapter calls), then docs/agent-portability.md for the host→file map.",
+          "sources": [
+            "AGENTS.md",
+            "skills/ponytail/SKILL.md",
+            "hooks/ponytail-runtime.js",
+            "hooks/ponytail-config.js",
+            "hooks/ponytail-instructions.js",
+            "docs/agent-portability.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "After editing AGENTS.md or any rule copy (.cursor/rules/ponytail.mdc, .windsurf, .clinerules, .agents, .qoder, .github/copilot-instructions.md, .kiro), run `node scripts/check-rule-copies.js` — it fails CI on drift; after touching SKILL.md verify the 9 INVARIANTS phrases still appear verbatim.",
+          "sources": [
+            "scripts/check-rule-copies.js#L19-76"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Version bumps touch 8 files: .claude-plugin/plugin.json, .codex-plugin/plugin.json, .devin-plugin/plugin.json, .github/plugin/plugin.json, .qoder-plugin/plugin.json, gemini-extension.json, package.json, ponytail-mcp/package.json — run `node scripts/check-versions.js` to verify they agree.",
+          "sources": [
+            "scripts/check-versions.js#L21-30"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Test command: `npm test` (root node:test suite + pi-extension + ponytail-mcp); the MCP suite needs `npm install --prefix ponytail-mcp` first (only directory with real deps: @modelcontextprotocol/sdk + zod).",
+          "sources": [
+            "package.json#L37-38",
+            "ponytail-mcp/package.json#L9-12",
+            ".github/workflows/test.yml#L26-27"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Hook contract traps: strip UTF-8 BOM before JSON.parse everywhere; never block on stdin without the 1s unref'd timeout + error handler (Windows swallows piped input, #443); native Claude SubagentStart requires hookSpecificOutput JSON not raw stdout; Cursor treats empty stdout as no-op and raw text as a parse error.",
+          "sources": [
+            "hooks/ponytail-mode-tracker.js#L147-155",
+            "hooks/ponytail-runtime.js#L111-131",
+            "tests/cursor-hooks.test.js#L1-10"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Mode semantics: 'review' is session-only and must never be a default (#377) — validate against RUNTIME_MODES for defaults and VALID_MODES for persisted values; isDeactivationCommand only fires on the whole-message phrase, not substring matches.",
+          "sources": [
+            "hooks/ponytail-config.js#L16-43",
+            "tests/hooks.test.js#L466-475"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Safe edit boundaries: per-host manifests and hook JSONs are isolated (edit one without touching others); the shared hooks/ modules and skills/ are high blast-radius — a bug there affects every host. Anything in .openclaw/skills/ is generated — edit skills/ and rerun scripts/build-openclaw-skills.js instead.",
+          "sources": [
+            "scripts/build-openclaw-skills.js#L1-12",
+            "docs/agent-portability.md#L35-39"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "House style: CommonJS in hooks/ and scripts/ (ESM only where the host requires it — ponytail.mjs and pi-extension/index.js bridge via createRequire), no dependencies outside ponytail-mcp, `ponytail:` comments mark deliberate simplifications with a named ceiling and upgrade path, and non-trivial logic leaves one runnable check behind.",
+          "sources": [
+            "hooks/ponytail-runtime.js#L1-4",
+            ".opencode/plugins/ponytail.mjs#L12-24",
+            "ponytail-mcp/package.json#L9-12",
+            "AGENTS.md"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Issue-number archaeology matters: comments cite GitHub issues (#34 CLAUDE_CONFIG_DIR, #252 subagents, #377 review default, #443 Windows stdin, #483 nudge-once, #506 matcher, #528 VS Code Copilot, #573 Codex JSON shape, #817 Cursor) — when changing that code, re-check the referenced constraint or a regression test will catch it.",
+          "sources": [
+            "hooks/ponytail-runtime.js#L8-29",
+            "hooks/ponytail-config.js#L79-83",
+            "hooks/ponytail-mode-tracker.js#L147-149",
+            "tests/hooks.test.js"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Windows is a first-class target: tests set both HOME and USERPROFILE, paths go through os.homedir(), cursor-hooks.js normalizes to forward slashes, the statusline has a .ps1 twin, and hooks-windows.test.js covers platform edges — don't introduce POSIX-only assumptions.",
+          "sources": [
+            "tests/hooks.test.js#L53-59",
+            "scripts/cursor-hooks.js#L53-58",
+            "hooks/ponytail-statusline.ps1",
+            "tests/hooks-windows.test.js"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_prompt": "You are working in the ponytail repo: a cross-platform 'lazy senior dev' behavior pack for AI coding agents. It ships a ruleset (YAGNI → reuse → stdlib → native → dep → one-line → minimum) to ~20 agent hosts. Canonical sources: skills/ponytail/SKILL.md (long-form ruleset with lite/full/ultra modes) and AGENTS.md (compact copy). Seven per-host rule files (.cursor/rules/ponytail.mdc, .windsurf/rules/ponytail.md, .clinerules/ponytail.md, .agents/rules/ponytail.md, .qoder/rules/ponytail.md, .github/copilot-instructions.md, .kiro/steering/ponytail.md) must stay byte-identical to AGENTS.md — enforced by `node scripts/check-rule-copies.js` in CI.\n\nArchitecture: the shared core is CommonJS modules in hooks/ — ponytail-config.js (mode resolution: PONYTAIL_DEFAULT_MODE env → ~/.config/ponytail/config.json defaultMode → 'full'; RUNTIME_MODES = off/lite/full/ultra; 'review' is session-only, never a valid default), ponytail-instructions.js (getPonytailInstructions filters SKILL.md table rows/example bullets by mode), ponytail-runtime.js (env-based host detection — COPILOT_PLUGIN_DATA, PLUGIN_DATA, QODER_SESSION_ID, CURSOR_VERSION — a .ponytail-active flag file per host state dir, and host-shaped stdout JSON in writeHookOutput), ponytail-activate.js (SessionStart: writes flag, emits ruleset, one-time statusline nudge), ponytail-mode-tracker.js (UserPromptSubmit: parses /ponytail commands from stdin JSON, 'stop ponytail'/'normal mode' are whole-phrase deactivation only), ponytail-subagent.js (SubagentStart injection, optional PONYTAIL_SUBAGENT_MATCHER regex, fail-open). Adapters: .opencode/plugins/ponytail.mjs (ESM, createRequire-bridged; registers commands, appends ruleset via experimental.chat.system.transform), pi-extension/index.js (status bar + before_agent_start prepend), root __init__.py (Hermes plugin: pre_llm_call + gateway command rewrite), ponytail-mcp/ (MCP stdio server, the only dir with npm deps), plus manifests under .claude-plugin/, .codex-plugin/, .devin-plugin/, .github/plugin/, .qoder-plugin/, .grok-plugin/, gemini-extension.json, plugin.yaml. Cursor uses `node scripts/cursor-hooks.js install` to merge hooks/cursor-hooks.json into ~/.cursor/hooks.json.\n\nHard rules: hooks must never hang or crash a session — fail-open, strip UTF-8 BOM before JSON.parse, keep the 1s unref'd stdin timeout (#443). Never embed a path in a shell command unless isShellSafe() passes. Version bumps touch all 8 files listed in scripts/check-versions.js. Adding a skill or command touches: skills/<name>/SKILL.md, commands/<name>.toml, .opencode/command/<name>.md, SKILL_COMMANDS in __init__.py, registerCommand in pi-extension/index.js, DESCRIPTIONS in scripts/build-openclaw-skills.js (then regenerate .openclaw/skills/); tests/commands.test.js fails on missing file-based commands. Test with `npm test` after `npm install --prefix ponytail-mcp`; CI (.github/workflows/test.yml) also runs both check scripts on Node 22. Follow AGENTS.md style: smallest correct diff, fix the shared function not each caller, `ponytail:` comments marking deliberate ceilings, one runnable check per non-trivial change."
+  },
+  "analysis": {
+    "agent": "devin",
+    "model": "swe-2",
+    "runtime_ms": null,
+    "cost_usd": null,
+    "collected_at": "2026-09-22T16:34:50.298Z"
   }
 }
