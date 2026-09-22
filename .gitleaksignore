@@ -1,5 +1,7 @@
 benchmarks/repo-unpacks/ponytail.json:sourcegraph-access-token:8
 benchmarks/repo-unpacks/ponytail.json:sourcegraph-access-token:20
+benchmarks/repo-unpacks/ponytail.json:sourcegraph-access-token:8
+benchmarks/repo-unpacks/ponytail.json:sourcegraph-access-token:20
 70a16b627507b985b8c3366dfc4cb2411d98e9ab:apps/landing-page-astro/public/app-health-log.js:generic-api-key:6
 930c8952a3c80edd61c06c2f49106e616c8dde9a:apps/desktop/src/lib/analytics.ts:generic-api-key:25
 39f414d063cac9ebe9258c69a81c05348f3e4b89:apps/desktop/src/lib/analytics.ts:generic-api-key:25
