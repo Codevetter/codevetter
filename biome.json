@@ -31,7 +31,8 @@
       "!**/*.css",
       "!**/*.svg",
       "!**/*.astro",
-      "!benchmarks/public-catch-rate/cases"
+      "!benchmarks/public-catch-rate/cases",
+      "!benchmarks/repo-unpacks"
     ]
   },
   "formatter": {

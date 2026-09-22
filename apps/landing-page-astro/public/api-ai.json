@@ -504,6 +504,146 @@
       "md": "https://codevetter.com/unpack/sqlite.md",
       "kind": "static",
       "description": "Repo Unpack evidence scan of sqlite/sqlite at fde3a84"
+    },
+    {
+      "id": "unpack-biome",
+      "url": "https://codevetter.com/unpack/biome",
+      "md": "https://codevetter.com/unpack/biome.md",
+      "kind": "static",
+      "description": "Repo Unpack evidence scan of biomejs/biome at 82f9b0e"
+    },
+    {
+      "id": "unpack-bun",
+      "url": "https://codevetter.com/unpack/bun",
+      "md": "https://codevetter.com/unpack/bun.md",
+      "kind": "static",
+      "description": "Repo Unpack evidence scan of oven-sh/bun at bf80d21"
+    },
+    {
+      "id": "unpack-deno",
+      "url": "https://codevetter.com/unpack/deno",
+      "md": "https://codevetter.com/unpack/deno.md",
+      "kind": "static",
+      "description": "Repo Unpack evidence scan of denoland/deno at 461f32e"
+    },
+    {
+      "id": "unpack-django",
+      "url": "https://codevetter.com/unpack/django",
+      "md": "https://codevetter.com/unpack/django.md",
+      "kind": "static",
+      "description": "Repo Unpack evidence scan of django/django at dd6f6b1"
+    },
+    {
+      "id": "unpack-esbuild",
+      "url": "https://codevetter.com/unpack/esbuild",
+      "md": "https://codevetter.com/unpack/esbuild.md",
+      "kind": "static",
+      "description": "Repo Unpack evidence scan of evanw/esbuild at f6058f8"
+    },
+    {
+      "id": "unpack-nextjs",
+      "url": "https://codevetter.com/unpack/nextjs",
+      "md": "https://codevetter.com/unpack/nextjs.md",
+      "kind": "static",
+      "description": "Repo Unpack evidence scan of vercel/next.js at 2861a36"
+    },
+    {
+      "id": "unpack-node",
+      "url": "https://codevetter.com/unpack/node",
+      "md": "https://codevetter.com/unpack/node.md",
+      "kind": "static",
+      "description": "Repo Unpack evidence scan of nodejs/node at 976a36a"
+    },
+    {
+      "id": "unpack-prettier",
+      "url": "https://codevetter.com/unpack/prettier",
+      "md": "https://codevetter.com/unpack/prettier.md",
+      "kind": "static",
+      "description": "Repo Unpack evidence scan of prettier/prettier at 1a36a7d"
+    },
+    {
+      "id": "unpack-prisma",
+      "url": "https://codevetter.com/unpack/prisma",
+      "md": "https://codevetter.com/unpack/prisma.md",
+      "kind": "static",
+      "description": "Repo Unpack evidence scan of prisma/prisma at dd86723"
+    },
+    {
+      "id": "unpack-rails",
+      "url": "https://codevetter.com/unpack/rails",
+      "md": "https://codevetter.com/unpack/rails.md",
+      "kind": "static",
+      "description": "Repo Unpack evidence scan of rails/rails at be63fd9"
+    },
+    {
+      "id": "unpack-react",
+      "url": "https://codevetter.com/unpack/react",
+      "md": "https://codevetter.com/unpack/react.md",
+      "kind": "static",
+      "description": "Repo Unpack evidence scan of facebook/react at 59aff3e"
+    },
+    {
+      "id": "unpack-ruff",
+      "url": "https://codevetter.com/unpack/ruff",
+      "md": "https://codevetter.com/unpack/ruff.md",
+      "kind": "static",
+      "description": "Repo Unpack evidence scan of astral-sh/ruff at c131cba"
+    },
+    {
+      "id": "unpack-svelte",
+      "url": "https://codevetter.com/unpack/svelte",
+      "md": "https://codevetter.com/unpack/svelte.md",
+      "kind": "static",
+      "description": "Repo Unpack evidence scan of sveltejs/svelte at 636eaaa"
+    },
+    {
+      "id": "unpack-tailwindcss",
+      "url": "https://codevetter.com/unpack/tailwindcss",
+      "md": "https://codevetter.com/unpack/tailwindcss.md",
+      "kind": "static",
+      "description": "Repo Unpack evidence scan of tailwindlabs/tailwindcss at 41d9cae"
+    },
+    {
+      "id": "unpack-trpc",
+      "url": "https://codevetter.com/unpack/trpc",
+      "md": "https://codevetter.com/unpack/trpc.md",
+      "kind": "static",
+      "description": "Repo Unpack evidence scan of trpc/trpc at 8b649ad"
+    },
+    {
+      "id": "unpack-uv",
+      "url": "https://codevetter.com/unpack/uv",
+      "md": "https://codevetter.com/unpack/uv.md",
+      "kind": "static",
+      "description": "Repo Unpack evidence scan of astral-sh/uv at a9e231a"
+    },
+    {
+      "id": "unpack-vite",
+      "url": "https://codevetter.com/unpack/vite",
+      "md": "https://codevetter.com/unpack/vite.md",
+      "kind": "static",
+      "description": "Repo Unpack evidence scan of vitejs/vite at 1544bb1"
+    },
+    {
+      "id": "unpack-vue",
+      "url": "https://codevetter.com/unpack/vue",
+      "md": "https://codevetter.com/unpack/vue.md",
+      "kind": "static",
+      "description": "Repo Unpack evidence scan of vuejs/core at 4ab865a"
+    },
+    {
+      "id": "unpack-webpack",
+      "url": "https://codevetter.com/unpack/webpack",
+      "md": "https://codevetter.com/unpack/webpack.md",
+      "kind": "static",
+      "description": "Repo Unpack evidence scan of webpack/webpack at 87a62de"
+    },
+    {
+      "id": "unpack-zod",
+      "url": "https://codevetter.com/unpack/zod",
+      "md": "https://codevetter.com/unpack/zod.md",
+      "kind": "static",
+      "description": "Repo Unpack evidence scan of colinhacks/zod at 10dda3a"
     }
   ],
   "auth": {
