@@ -1,0 +1,3954 @@
+{
+  "schema_version": "codevetter.repo-unpack-corpus/v1",
+  "repo": "psf/requests",
+  "slug": "requests",
+  "codevetter_version": "codevetter 1.12.0",
+  "collected_at": "2026-09-22T05:15:33.932Z",
+  "last_commit": {
+    "sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "date": "2026-09-21",
+    "subject": "Bump the actions group with 3 updates (#7628)"
+  },
+  "scan": {
+    "schema_version": "codevetter.unpack-scan/v1",
+    "report_id": "ef229df2-8a76-4631-a0d8-7651a58806dc",
+    "status": "scan_only",
+    "created_at": "2026-09-22T05:15:33.929642+00:00",
+    "inventory": {
+      "repo_path": "/private/var/folders/9_/1109_2dd1qz6zyvmxb5zp8pc0000gn/T/unpack-pilot-P26pP7/requests",
+      "repo_name": "requests",
+      "commit_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+      "branch": "main",
+      "remote_url": "https://github.com/psf/requests.git",
+      "files_scanned": 124,
+      "files_skipped": 6,
+      "bytes_scanned": 1548250,
+      "max_files_hit": false,
+      "estimated_total_files": null,
+      "languages": [
+        {
+          "language": "Python",
+          "files": 37,
+          "bytes": 407127
+        },
+        {
+          "language": "Markdown",
+          "files": 13,
+          "bytes": 81800
+        },
+        {
+          "language": "YAML",
+          "files": 12,
+          "bytes": 12921
+        },
+        {
+          "language": "TOML",
+          "files": 1,
+          "bytes": 3404
+        },
+        {
+          "language": "HTML",
+          "files": 1,
+          "bytes": 1361
+        },
+        {
+          "language": "CSS",
+          "files": 1,
+          "bytes": 287
+        }
+      ],
+      "manifests": [
+        {
+          "path": "pyproject.toml",
+          "kind": "pyproject.toml",
+          "name": "requests",
+          "version": "{attr = \"requests.__version__.__version__\"}",
+          "dependencies": [
+            "security",
+            "socks",
+            "use_chardet_on_py3"
+          ],
+          "scripts": []
+        }
+      ],
+      "entrypoints": [
+        {
+          "path": "README.md",
+          "kind": "docs",
+          "reason": "Repository readme"
+        },
+        {
+          "path": ".github/workflows/publish.yml",
+          "kind": "config",
+          "reason": "GitHub Actions workflow"
+        },
+        {
+          "path": ".github/workflows/codeql-analysis.yml",
+          "kind": "config",
+          "reason": "GitHub Actions workflow"
+        },
+        {
+          "path": ".github/workflows/lint.yml",
+          "kind": "config",
+          "reason": "GitHub Actions workflow"
+        },
+        {
+          "path": ".github/workflows/typecheck.yml",
+          "kind": "config",
+          "reason": "GitHub Actions workflow"
+        },
+        {
+          "path": ".github/workflows/run-tests.yml",
+          "kind": "config",
+          "reason": "GitHub Actions workflow"
+        },
+        {
+          "path": ".github/workflows/lock-issues.yml",
+          "kind": "config",
+          "reason": "GitHub Actions workflow"
+        },
+        {
+          "path": ".github/workflows/zizmor.yml",
+          "kind": "config",
+          "reason": "GitHub Actions workflow"
+        },
+        {
+          "path": ".github/workflows/close-issues.yml",
+          "kind": "config",
+          "reason": "GitHub Actions workflow"
+        }
+      ],
+      "top_level_dirs": [
+        {
+          "path": "tests",
+          "file_count": 42,
+          "bytes": 199102
+        },
+        {
+          "path": "docs",
+          "file_count": 25,
+          "bytes": 131164
+        },
+        {
+          "path": "src",
+          "file_count": 20,
+          "bytes": 216088
+        },
+        {
+          "path": ".github",
+          "file_count": 19,
+          "bytes": 25646
+        },
+        {
+          "path": "ext",
+          "file_count": 2,
+          "bytes": 883845
+        }
+      ],
+      "docs": [
+        {
+          "path": "README.md",
+          "bytes": 2906,
+          "preview": "# Requests\n\n[![Version](https://img.shields.io/pypi/v/requests.svg?maxAge=86400)](https://pypi.org/project/requests/)\n[![Supported Versions](https://img.shields.io/pypi/pyversions/requests.svg)](https://pypi.org/project/requests)\n[![Downloads](https://static.pepy.tech/badge/requests/month)](https://pepy.tech/project/requests)\n[![Contributors](https://img.shields.io/github/contributors/psf/requests.svg)](https://github.com/psf/requests/graphs/contributors)\n[![Documentation](https://readthedocs.org/projects/requests/badge/?version=latest)](https://requests.readthedocs.io)\n\n**Requests** is a simple, yet elegant, HTTP library.\n\n```python\n>>> import requests\n>>> r = requests.get('https://httpbin.org/basic-auth/user/pass', auth=('user', 'pass'))\n>>> r.status_code\n200\n>>> r.headers['content-type']\n'application/json; charset=utf8'\n>>> r.encoding\n'utf-8'\n>>> r.text\n'{\"authenticated\": true, ...'\n>>> r.json()\n{'authenticated': True, ...}\n```\n\nRequests allows you to send HTTP/1.1 requests extremely easily. There’s no need to manually add query strings to your URLs, or to form-encode your `PUT` & `POST` data — but nowadays, just use the `json` method!\n\nRequests is one of the most downloaded Python packages today, pulling in around `300M downloads / week` — according to GitHub, Requests is currently [depended upon](https://github.com/psf/requests/network/dependents?package_id=UGFja2FnZS01NzA4OTExNg%3D%3D) by `4,000,000+` repositories.\n\n## Installing Requests and Supported Versions\n\nRequests is available on PyPI:\n\n```console\n$ python -m pip install requests\n```\n\nRequests officially supports Python 3.10+.\n\n## Supported Features & Best–Practices\n\nRequests is ready for the demands of building robust and reliable HTTP–speaking applications, for the needs of today.\n\n- Keep-Alive & Connection Pooling\n- International Domains and URLs\n- Sessions with Cookie Persistence\n- Browser-style TLS/SSL Verification\n- Basic & Digest Authentication\n- Familiar `dict`–like Cookies\n- Automatic Content Decompression and Decoding\n- Multi-part File Uploads\n- SOCKS Proxy Support\n- Connection Timeouts\n- Streaming Downloads\n- Automatic honoring of `.netrc`\n- Chunked HTTP Requests\n\n## Cloning the repository\n\nWhen cloning the Requests repository, you may need to add the `-c\nfetch.fsck.badTimezone=ignore` flag to avoid an error about a bad commit timestamp (see\n[this issue](https://github.com/psf/requests/issues/2690) for more background):\n\n```shell\ngit clone -c fetch.fsck.badTimezone=ignore https://github.com/psf/requests.git\n```\n\nYou can also apply this setting to your global Git config:\n\n```shell\ngit config --global fetch.fsck.badTimezone ignore\n```\n\n---\n\n[![Kenneth Reitz](https://raw.githubusercontent.com/psf/requests/main/ext/kr.png)](https://kennethreitz.org) [![Python Software Foundation](https://raw.githubusercontent.com/psf/requests/main/ext/psf.png)](https://www.python.org/psf)\n"
+        }
+      ],
+      "config_files": [],
+      "stack_tags": [
+        "GitHub Actions",
+        "Python"
+      ],
+      "workspace_units": [
+        {
+          "path": ".",
+          "name": "requests",
+          "kind": "workspace",
+          "manifest_path": "pyproject.toml",
+          "build_system": "pyproject.toml",
+          "file_count": 124,
+          "languages": [
+            {
+              "language": "Python",
+              "files": 37,
+              "bytes": 407127
+            },
+            {
+              "language": "Markdown",
+              "files": 13,
+              "bytes": 81800
+            },
+            {
+              "language": "YAML",
+              "files": 12,
+              "bytes": 12921
+            },
+            {
+              "language": "TOML",
+              "files": 1,
+              "bytes": 3404
+            },
+            {
+              "language": "HTML",
+              "files": 1,
+              "bytes": 1361
+            }
+          ],
+          "scripts": [],
+          "entrypoints": [
+            ".github/workflows/close-issues.yml",
+            ".github/workflows/codeql-analysis.yml",
+            ".github/workflows/lint.yml",
+            ".github/workflows/lock-issues.yml",
+            ".github/workflows/publish.yml",
+            ".github/workflows/run-tests.yml",
+            ".github/workflows/typecheck.yml",
+            ".github/workflows/zizmor.yml"
+          ],
+          "test_files": [],
+          "tags": [
+            "Markdown",
+            "Python",
+            "YAML"
+          ]
+        }
+      ],
+      "qa_readiness": {
+        "score": 0,
+        "status": "missing",
+        "summary": "Repo does not expose enough local browser QA structure for a reliable Synthetic QA workflow yet.",
+        "signals": [
+          {
+            "id": "browser_runner",
+            "label": "Browser runner",
+            "status": "missing",
+            "detail": "No Playwright, Cypress, or browser runner config was found.",
+            "sources": []
+          },
+          {
+            "id": "user_flow_specs",
+            "label": "User-flow specs",
+            "status": "missing",
+            "detail": "No e2e/playwright/cypress spec files were found.",
+            "sources": []
+          },
+          {
+            "id": "local_app_command",
+            "label": "Local app command",
+            "status": "missing",
+            "detail": "No obvious package script for starting the app locally was found.",
+            "sources": []
+          },
+          {
+            "id": "qa_script",
+            "label": "QA script",
+            "status": "missing",
+            "detail": "No explicit QA/e2e/browser test script was found.",
+            "sources": []
+          },
+          {
+            "id": "artifact_trail",
+            "label": "Artifact trail",
+            "status": "missing",
+            "detail": "No browser QA artifacts or artifact-capable runner were found.",
+            "sources": []
+          },
+          {
+            "id": "targetable_routes",
+            "label": "Targetable surfaces",
+            "status": "missing",
+            "detail": "No obvious web entrypoint or route file was found.",
+            "sources": []
+          }
+        ],
+        "suggested_flows": []
+      },
+      "repo_graph": {
+        "schema_version": 2,
+        "nodes": [
+          {
+            "id": "file:github-ai-policy-md",
+            "kind": "file",
+            "label": ".github/AI_POLICY.md",
+            "path": ".github/AI_POLICY.md",
+            "detail": "source marker candidate",
+            "sources": [
+              ".github/AI_POLICY.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:github-code-of-conduct-md",
+            "kind": "file",
+            "label": ".github/CODE_OF_CONDUCT.md",
+            "path": ".github/CODE_OF_CONDUCT.md",
+            "detail": "source marker candidate",
+            "sources": [
+              ".github/CODE_OF_CONDUCT.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:github-contributing-md",
+            "kind": "file",
+            "label": ".github/CONTRIBUTING.md",
+            "path": ".github/CONTRIBUTING.md",
+            "detail": "source marker candidate",
+            "sources": [
+              ".github/CONTRIBUTING.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:github-issue-template-md",
+            "kind": "file",
+            "label": ".github/ISSUE_TEMPLATE.md",
+            "path": ".github/ISSUE_TEMPLATE.md",
+            "detail": "source marker candidate",
+            "sources": [
+              ".github/ISSUE_TEMPLATE.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:github-issue-template-bug-report-md",
+            "kind": "file",
+            "label": ".github/ISSUE_TEMPLATE/Bug_report.md",
+            "path": ".github/ISSUE_TEMPLATE/Bug_report.md",
+            "detail": "source marker candidate",
+            "sources": [
+              ".github/ISSUE_TEMPLATE/Bug_report.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:github-issue-template-custom-md",
+            "kind": "file",
+            "label": ".github/ISSUE_TEMPLATE/Custom.md",
+            "path": ".github/ISSUE_TEMPLATE/Custom.md",
+            "detail": "source marker candidate",
+            "sources": [
+              ".github/ISSUE_TEMPLATE/Custom.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:github-issue-template-feature-request-md",
+            "kind": "file",
+            "label": ".github/ISSUE_TEMPLATE/Feature_request.md",
+            "path": ".github/ISSUE_TEMPLATE/Feature_request.md",
+            "detail": "source marker candidate",
+            "sources": [
+              ".github/ISSUE_TEMPLATE/Feature_request.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:github-security-md",
+            "kind": "file",
+            "label": ".github/SECURITY.md",
+            "path": ".github/SECURITY.md",
+            "detail": "source marker candidate",
+            "sources": [
+              ".github/SECURITY.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:github-workflows-close-issues-yml",
+            "kind": "file",
+            "label": ".github/workflows/close-issues.yml",
+            "path": ".github/workflows/close-issues.yml",
+            "detail": "workspace entrypoint",
+            "sources": [
+              ".github/workflows/close-issues.yml"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:github-workflows-codeql-analysis-yml",
+            "kind": "file",
+            "label": ".github/workflows/codeql-analysis.yml",
+            "path": ".github/workflows/codeql-analysis.yml",
+            "detail": "workspace entrypoint",
+            "sources": [
+              ".github/workflows/codeql-analysis.yml"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:github-workflows-lint-yml",
+            "kind": "file",
+            "label": ".github/workflows/lint.yml",
+            "path": ".github/workflows/lint.yml",
+            "detail": "workspace entrypoint",
+            "sources": [
+              ".github/workflows/lint.yml"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:github-workflows-lock-issues-yml",
+            "kind": "file",
+            "label": ".github/workflows/lock-issues.yml",
+            "path": ".github/workflows/lock-issues.yml",
+            "detail": "workspace entrypoint",
+            "sources": [
+              ".github/workflows/lock-issues.yml"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:github-workflows-publish-yml",
+            "kind": "file",
+            "label": ".github/workflows/publish.yml",
+            "path": ".github/workflows/publish.yml",
+            "detail": "workspace entrypoint",
+            "sources": [
+              ".github/workflows/publish.yml"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:github-workflows-run-tests-yml",
+            "kind": "file",
+            "label": ".github/workflows/run-tests.yml",
+            "path": ".github/workflows/run-tests.yml",
+            "detail": "workspace entrypoint",
+            "sources": [
+              ".github/workflows/run-tests.yml"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:github-workflows-typecheck-yml",
+            "kind": "file",
+            "label": ".github/workflows/typecheck.yml",
+            "path": ".github/workflows/typecheck.yml",
+            "detail": "GitHub Actions workflow",
+            "sources": [
+              ".github/workflows/typecheck.yml"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:github-workflows-zizmor-yml",
+            "kind": "file",
+            "label": ".github/workflows/zizmor.yml",
+            "path": ".github/workflows/zizmor.yml",
+            "detail": "GitHub Actions workflow",
+            "sources": [
+              ".github/workflows/zizmor.yml"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:history-md",
+            "kind": "file",
+            "label": "HISTORY.md",
+            "path": "HISTORY.md",
+            "detail": "source marker candidate",
+            "sources": [
+              "HISTORY.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:makefile",
+            "kind": "file",
+            "label": "Makefile",
+            "path": "Makefile",
+            "detail": "source marker candidate",
+            "sources": [
+              "Makefile"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:readme-md",
+            "kind": "file",
+            "label": "README.md",
+            "path": "README.md",
+            "detail": "Repository readme",
+            "sources": [
+              "README.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:docs-makefile",
+            "kind": "file",
+            "label": "docs/Makefile",
+            "path": "docs/Makefile",
+            "detail": "source marker candidate",
+            "sources": [
+              "docs/Makefile"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:tests-certs-readme-md",
+            "kind": "file",
+            "label": "tests/certs/README.md",
+            "path": "tests/certs/README.md",
+            "detail": "source marker candidate",
+            "sources": [
+              "tests/certs/README.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:tests-certs-expired-makefile",
+            "kind": "file",
+            "label": "tests/certs/expired/Makefile",
+            "path": "tests/certs/expired/Makefile",
+            "detail": "source marker candidate",
+            "sources": [
+              "tests/certs/expired/Makefile"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:tests-certs-expired-readme-md",
+            "kind": "file",
+            "label": "tests/certs/expired/README.md",
+            "path": "tests/certs/expired/README.md",
+            "detail": "source marker candidate",
+            "sources": [
+              "tests/certs/expired/README.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:tests-certs-expired-ca-makefile",
+            "kind": "file",
+            "label": "tests/certs/expired/ca/Makefile",
+            "path": "tests/certs/expired/ca/Makefile",
+            "detail": "source marker candidate",
+            "sources": [
+              "tests/certs/expired/ca/Makefile"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:tests-certs-expired-server-makefile",
+            "kind": "file",
+            "label": "tests/certs/expired/server/Makefile",
+            "path": "tests/certs/expired/server/Makefile",
+            "detail": "source marker candidate",
+            "sources": [
+              "tests/certs/expired/server/Makefile"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:tests-certs-mtls-makefile",
+            "kind": "file",
+            "label": "tests/certs/mtls/Makefile",
+            "path": "tests/certs/mtls/Makefile",
+            "detail": "source marker candidate",
+            "sources": [
+              "tests/certs/mtls/Makefile"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:tests-certs-mtls-readme-md",
+            "kind": "file",
+            "label": "tests/certs/mtls/README.md",
+            "path": "tests/certs/mtls/README.md",
+            "detail": "source marker candidate",
+            "sources": [
+              "tests/certs/mtls/README.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:tests-certs-mtls-client-makefile",
+            "kind": "file",
+            "label": "tests/certs/mtls/client/Makefile",
+            "path": "tests/certs/mtls/client/Makefile",
+            "detail": "source marker candidate",
+            "sources": [
+              "tests/certs/mtls/client/Makefile"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:tests-certs-valid-server-makefile",
+            "kind": "file",
+            "label": "tests/certs/valid/server/Makefile",
+            "path": "tests/certs/valid/server/Makefile",
+            "detail": "source marker candidate",
+            "sources": [
+              "tests/certs/valid/server/Makefile"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "package:pyproject-toml",
+            "kind": "package",
+            "label": "requests",
+            "path": "pyproject.toml",
+            "detail": "pyproject.toml manifest",
+            "sources": [
+              "pyproject.toml"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-init-py",
+            "kind": "test",
+            "label": "tests/__init__.py",
+            "path": "tests/__init__.py",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/__init__.py"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-certs-readme-md",
+            "kind": "test",
+            "label": "tests/certs/README.md",
+            "path": "tests/certs/README.md",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/certs/README.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-certs-expired-makefile",
+            "kind": "test",
+            "label": "tests/certs/expired/Makefile",
+            "path": "tests/certs/expired/Makefile",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/certs/expired/Makefile"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-certs-expired-readme-md",
+            "kind": "test",
+            "label": "tests/certs/expired/README.md",
+            "path": "tests/certs/expired/README.md",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/certs/expired/README.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-certs-expired-ca-makefile",
+            "kind": "test",
+            "label": "tests/certs/expired/ca/Makefile",
+            "path": "tests/certs/expired/ca/Makefile",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/certs/expired/ca/Makefile"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-certs-expired-ca-ca-private-key",
+            "kind": "test",
+            "label": "tests/certs/expired/ca/ca-private.key",
+            "path": "tests/certs/expired/ca/ca-private.key",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/certs/expired/ca/ca-private.key"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-certs-expired-ca-ca-cnf",
+            "kind": "test",
+            "label": "tests/certs/expired/ca/ca.cnf",
+            "path": "tests/certs/expired/ca/ca.cnf",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/certs/expired/ca/ca.cnf"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-certs-expired-ca-ca-crt",
+            "kind": "test",
+            "label": "tests/certs/expired/ca/ca.crt",
+            "path": "tests/certs/expired/ca/ca.crt",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/certs/expired/ca/ca.crt"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-certs-expired-ca-ca-srl",
+            "kind": "test",
+            "label": "tests/certs/expired/ca/ca.srl",
+            "path": "tests/certs/expired/ca/ca.srl",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/certs/expired/ca/ca.srl"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-certs-expired-server-makefile",
+            "kind": "test",
+            "label": "tests/certs/expired/server/Makefile",
+            "path": "tests/certs/expired/server/Makefile",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/certs/expired/server/Makefile"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-certs-expired-server-cert-cnf",
+            "kind": "test",
+            "label": "tests/certs/expired/server/cert.cnf",
+            "path": "tests/certs/expired/server/cert.cnf",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/certs/expired/server/cert.cnf"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-certs-expired-server-server-csr",
+            "kind": "test",
+            "label": "tests/certs/expired/server/server.csr",
+            "path": "tests/certs/expired/server/server.csr",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/certs/expired/server/server.csr"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-certs-expired-server-server-key",
+            "kind": "test",
+            "label": "tests/certs/expired/server/server.key",
+            "path": "tests/certs/expired/server/server.key",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/certs/expired/server/server.key"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-certs-expired-server-server-pem",
+            "kind": "test",
+            "label": "tests/certs/expired/server/server.pem",
+            "path": "tests/certs/expired/server/server.pem",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/certs/expired/server/server.pem"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-certs-mtls-makefile",
+            "kind": "test",
+            "label": "tests/certs/mtls/Makefile",
+            "path": "tests/certs/mtls/Makefile",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/certs/mtls/Makefile"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-certs-mtls-readme-md",
+            "kind": "test",
+            "label": "tests/certs/mtls/README.md",
+            "path": "tests/certs/mtls/README.md",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/certs/mtls/README.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-certs-mtls-client-makefile",
+            "kind": "test",
+            "label": "tests/certs/mtls/client/Makefile",
+            "path": "tests/certs/mtls/client/Makefile",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/certs/mtls/client/Makefile"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-certs-mtls-client-ca",
+            "kind": "test",
+            "label": "tests/certs/mtls/client/ca",
+            "path": "tests/certs/mtls/client/ca",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/certs/mtls/client/ca"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-certs-mtls-client-cert-cnf",
+            "kind": "test",
+            "label": "tests/certs/mtls/client/cert.cnf",
+            "path": "tests/certs/mtls/client/cert.cnf",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/certs/mtls/client/cert.cnf"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-certs-mtls-client-client-csr",
+            "kind": "test",
+            "label": "tests/certs/mtls/client/client.csr",
+            "path": "tests/certs/mtls/client/client.csr",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/certs/mtls/client/client.csr"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-certs-mtls-client-client-key",
+            "kind": "test",
+            "label": "tests/certs/mtls/client/client.key",
+            "path": "tests/certs/mtls/client/client.key",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/certs/mtls/client/client.key"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-certs-mtls-client-client-pem",
+            "kind": "test",
+            "label": "tests/certs/mtls/client/client.pem",
+            "path": "tests/certs/mtls/client/client.pem",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/certs/mtls/client/client.pem"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-certs-valid-ca",
+            "kind": "test",
+            "label": "tests/certs/valid/ca",
+            "path": "tests/certs/valid/ca",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/certs/valid/ca"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-certs-valid-server-makefile",
+            "kind": "test",
+            "label": "tests/certs/valid/server/Makefile",
+            "path": "tests/certs/valid/server/Makefile",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/certs/valid/server/Makefile"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-certs-valid-server-cert-cnf",
+            "kind": "test",
+            "label": "tests/certs/valid/server/cert.cnf",
+            "path": "tests/certs/valid/server/cert.cnf",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/certs/valid/server/cert.cnf"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-certs-valid-server-server-csr",
+            "kind": "test",
+            "label": "tests/certs/valid/server/server.csr",
+            "path": "tests/certs/valid/server/server.csr",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/certs/valid/server/server.csr"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-certs-valid-server-server-key",
+            "kind": "test",
+            "label": "tests/certs/valid/server/server.key",
+            "path": "tests/certs/valid/server/server.key",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/certs/valid/server/server.key"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-certs-valid-server-server-pem",
+            "kind": "test",
+            "label": "tests/certs/valid/server/server.pem",
+            "path": "tests/certs/valid/server/server.pem",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/certs/valid/server/server.pem"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-compat-py",
+            "kind": "test",
+            "label": "tests/compat.py",
+            "path": "tests/compat.py",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/compat.py"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-conftest-py",
+            "kind": "test",
+            "label": "tests/conftest.py",
+            "path": "tests/conftest.py",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/conftest.py"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-test-adapters-py",
+            "kind": "test",
+            "label": "tests/test_adapters.py",
+            "path": "tests/test_adapters.py",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/test_adapters.py"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-test-help-py",
+            "kind": "test",
+            "label": "tests/test_help.py",
+            "path": "tests/test_help.py",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/test_help.py"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-test-hooks-py",
+            "kind": "test",
+            "label": "tests/test_hooks.py",
+            "path": "tests/test_hooks.py",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/test_hooks.py"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-test-lowlevel-py",
+            "kind": "test",
+            "label": "tests/test_lowlevel.py",
+            "path": "tests/test_lowlevel.py",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/test_lowlevel.py"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-test-packages-py",
+            "kind": "test",
+            "label": "tests/test_packages.py",
+            "path": "tests/test_packages.py",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/test_packages.py"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-test-requests-py",
+            "kind": "test",
+            "label": "tests/test_requests.py",
+            "path": "tests/test_requests.py",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/test_requests.py"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-test-structures-py",
+            "kind": "test",
+            "label": "tests/test_structures.py",
+            "path": "tests/test_structures.py",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/test_structures.py"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-test-testserver-py",
+            "kind": "test",
+            "label": "tests/test_testserver.py",
+            "path": "tests/test_testserver.py",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/test_testserver.py"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-test-utils-py",
+            "kind": "test",
+            "label": "tests/test_utils.py",
+            "path": "tests/test_utils.py",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/test_utils.py"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-testserver-init-py",
+            "kind": "test",
+            "label": "tests/testserver/__init__.py",
+            "path": "tests/testserver/__init__.py",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/testserver/__init__.py"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-testserver-server-py",
+            "kind": "test",
+            "label": "tests/testserver/server.py",
+            "path": "tests/testserver/server.py",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/testserver/server.py"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-utils-py",
+            "kind": "test",
+            "label": "tests/utils.py",
+            "path": "tests/utils.py",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/utils.py"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "workspace:",
+            "kind": "workspace_unit",
+            "label": "requests",
+            "path": null,
+            "detail": "workspace | 124 files | 37 Python, 13 Markdown, 12 YAML",
+            "sources": [
+              ".github/workflows/close-issues.yml",
+              ".github/workflows/codeql-analysis.yml",
+              "pyproject.toml"
+            ],
+            "source_location": null,
+            "community": null
+          }
+        ],
+        "edges": [
+          {
+            "from": "workspace:",
+            "to": "package:pyproject-toml",
+            "kind": "defines",
+            "evidence": "workspace unit owns this manifest",
+            "sources": [
+              "pyproject.toml"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "file:github-workflows-close-issues-yml",
+            "kind": "entrypoint",
+            "evidence": "entrypoint belongs to this workspace unit",
+            "sources": [
+              ".github/workflows/close-issues.yml"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "file:github-workflows-codeql-analysis-yml",
+            "kind": "entrypoint",
+            "evidence": "entrypoint belongs to this workspace unit",
+            "sources": [
+              ".github/workflows/codeql-analysis.yml"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "file:github-workflows-lint-yml",
+            "kind": "entrypoint",
+            "evidence": "entrypoint belongs to this workspace unit",
+            "sources": [
+              ".github/workflows/lint.yml"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "file:github-workflows-lock-issues-yml",
+            "kind": "entrypoint",
+            "evidence": "entrypoint belongs to this workspace unit",
+            "sources": [
+              ".github/workflows/lock-issues.yml"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "file:github-workflows-publish-yml",
+            "kind": "entrypoint",
+            "evidence": "entrypoint belongs to this workspace unit",
+            "sources": [
+              ".github/workflows/publish.yml"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "file:github-workflows-run-tests-yml",
+            "kind": "entrypoint",
+            "evidence": "entrypoint belongs to this workspace unit",
+            "sources": [
+              ".github/workflows/run-tests.yml"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          }
+        ],
+        "truncated": false
+      },
+      "history_brief": {
+        "schema_version": 2,
+        "summary": "Local history brief captured 1 recent commit, 0 decision markers, 12 test hints, and 0 co-change clusters for Repo Unpacked. Treat commit subjects as leads and rely on cited files for durable constraints.",
+        "recent_commits": [
+          {
+            "sha": "611c6162cbc4",
+            "date": "2026-09-21",
+            "subject": "Bump the actions group with 3 updates (#7628)",
+            "files": [
+              ".github/AI_POLICY.md",
+              ".github/CODE_OF_CONDUCT.md",
+              ".github/CONTRIBUTING.md",
+              ".github/FUNDING.yml",
+              ".github/ISSUE_TEMPLATE.md",
+              ".github/ISSUE_TEMPLATE/Bug_report.md",
+              ".github/ISSUE_TEMPLATE/Custom.md",
+              ".github/ISSUE_TEMPLATE/Feature_request.md",
+              ".github/SECURITY.md",
+              ".github/dependabot.yml",
+              ".github/workflows/close-issues.yml",
+              ".github/workflows/codeql-analysis.yml",
+              ".github/workflows/lint.yml",
+              ".github/workflows/lock-issues.yml",
+              ".github/workflows/publish.yml",
+              ".github/workflows/run-tests.yml",
+              ".github/workflows/typecheck.yml",
+              ".github/workflows/zizmor.yml",
+              ".pre-commit-config.yaml",
+              ".readthedocs.yaml",
+              "HISTORY.md",
+              "Makefile",
+              "README.md",
+              "docs/Makefile"
+            ]
+          }
+        ],
+        "decisions": [],
+        "test_hints": [
+          {
+            "path": "tests/test_utils.py",
+            "reason": "test/spec file anchors expected behavior"
+          },
+          {
+            "path": "tests/conftest.py",
+            "reason": "test/spec file anchors expected behavior"
+          },
+          {
+            "path": "tests/test_structures.py",
+            "reason": "test/spec file anchors expected behavior"
+          },
+          {
+            "path": "tests/test_packages.py",
+            "reason": "test/spec file anchors expected behavior"
+          },
+          {
+            "path": "tests/testserver/server.py",
+            "reason": "test/spec file anchors expected behavior"
+          },
+          {
+            "path": "tests/testserver/__init__.py",
+            "reason": "test/spec file anchors expected behavior"
+          },
+          {
+            "path": "tests/test_testserver.py",
+            "reason": "test/spec file anchors expected behavior"
+          },
+          {
+            "path": "tests/compat.py",
+            "reason": "test/spec file anchors expected behavior"
+          },
+          {
+            "path": "tests/__init__.py",
+            "reason": "test/spec file anchors expected behavior"
+          },
+          {
+            "path": "tests/test_hooks.py",
+            "reason": "test/spec file anchors expected behavior"
+          },
+          {
+            "path": "tests/certs/valid/ca",
+            "reason": "test/spec file anchors expected behavior"
+          },
+          {
+            "path": "tests/certs/valid/server/server.key",
+            "reason": "test/spec file anchors expected behavior"
+          }
+        ],
+        "temporal_couplings": [],
+        "graph": {
+          "schema_version": 2,
+          "nodes": [
+            {
+              "id": "commit:611c6162cbc4",
+              "kind": "commit",
+              "label": "Bump the actions group with 3 updates (#7628)",
+              "path": null,
+              "detail": "2026-09-21",
+              "citations": [
+                "git:611c6162cbc4"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:-github-ai-policy-md",
+              "kind": "file",
+              "label": ".github/AI_POLICY.md",
+              "path": ".github/AI_POLICY.md",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                ".github/AI_POLICY.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:-github-code-of-conduct-md",
+              "kind": "file",
+              "label": ".github/CODE_OF_CONDUCT.md",
+              "path": ".github/CODE_OF_CONDUCT.md",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                ".github/CODE_OF_CONDUCT.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:-github-contributing-md",
+              "kind": "file",
+              "label": ".github/CONTRIBUTING.md",
+              "path": ".github/CONTRIBUTING.md",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                ".github/CONTRIBUTING.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:-github-dependabot-yml",
+              "kind": "file",
+              "label": ".github/dependabot.yml",
+              "path": ".github/dependabot.yml",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                ".github/dependabot.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:-github-funding-yml",
+              "kind": "file",
+              "label": ".github/FUNDING.yml",
+              "path": ".github/FUNDING.yml",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                ".github/FUNDING.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:-github-issue-template-bug-report-md",
+              "kind": "file",
+              "label": ".github/ISSUE_TEMPLATE/Bug_report.md",
+              "path": ".github/ISSUE_TEMPLATE/Bug_report.md",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                ".github/ISSUE_TEMPLATE/Bug_report.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:-github-issue-template-custom-md",
+              "kind": "file",
+              "label": ".github/ISSUE_TEMPLATE/Custom.md",
+              "path": ".github/ISSUE_TEMPLATE/Custom.md",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                ".github/ISSUE_TEMPLATE/Custom.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:-github-issue-template-feature-request-md",
+              "kind": "file",
+              "label": ".github/ISSUE_TEMPLATE/Feature_request.md",
+              "path": ".github/ISSUE_TEMPLATE/Feature_request.md",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                ".github/ISSUE_TEMPLATE/Feature_request.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:-github-issue-template-md",
+              "kind": "file",
+              "label": ".github/ISSUE_TEMPLATE.md",
+              "path": ".github/ISSUE_TEMPLATE.md",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                ".github/ISSUE_TEMPLATE.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:-github-security-md",
+              "kind": "file",
+              "label": ".github/SECURITY.md",
+              "path": ".github/SECURITY.md",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                ".github/SECURITY.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:-github-workflows-close-issues-yml",
+              "kind": "file",
+              "label": ".github/workflows/close-issues.yml",
+              "path": ".github/workflows/close-issues.yml",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                ".github/workflows/close-issues.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:-github-workflows-codeql-analysis-yml",
+              "kind": "file",
+              "label": ".github/workflows/codeql-analysis.yml",
+              "path": ".github/workflows/codeql-analysis.yml",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                ".github/workflows/codeql-analysis.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:-github-workflows-lint-yml",
+              "kind": "file",
+              "label": ".github/workflows/lint.yml",
+              "path": ".github/workflows/lint.yml",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                ".github/workflows/lint.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:-github-workflows-lock-issues-yml",
+              "kind": "file",
+              "label": ".github/workflows/lock-issues.yml",
+              "path": ".github/workflows/lock-issues.yml",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                ".github/workflows/lock-issues.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:-github-workflows-publish-yml",
+              "kind": "file",
+              "label": ".github/workflows/publish.yml",
+              "path": ".github/workflows/publish.yml",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                ".github/workflows/publish.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:-github-workflows-run-tests-yml",
+              "kind": "file",
+              "label": ".github/workflows/run-tests.yml",
+              "path": ".github/workflows/run-tests.yml",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                ".github/workflows/run-tests.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:-github-workflows-typecheck-yml",
+              "kind": "file",
+              "label": ".github/workflows/typecheck.yml",
+              "path": ".github/workflows/typecheck.yml",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                ".github/workflows/typecheck.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:-github-workflows-zizmor-yml",
+              "kind": "file",
+              "label": ".github/workflows/zizmor.yml",
+              "path": ".github/workflows/zizmor.yml",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                ".github/workflows/zizmor.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:-pre-commit-config-yaml",
+              "kind": "file",
+              "label": ".pre-commit-config.yaml",
+              "path": ".pre-commit-config.yaml",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                ".pre-commit-config.yaml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:-readthedocs-yaml",
+              "kind": "file",
+              "label": ".readthedocs.yaml",
+              "path": ".readthedocs.yaml",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                ".readthedocs.yaml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:docs-makefile",
+              "kind": "file",
+              "label": "docs/Makefile",
+              "path": "docs/Makefile",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "docs/Makefile"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:history-md",
+              "kind": "file",
+              "label": "HISTORY.md",
+              "path": "HISTORY.md",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "HISTORY.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:makefile",
+              "kind": "file",
+              "label": "Makefile",
+              "path": "Makefile",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "Makefile"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:readme-md",
+              "kind": "file",
+              "label": "README.md",
+              "path": "README.md",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "README.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:tests---init---py",
+              "kind": "file",
+              "label": "tests/__init__.py",
+              "path": "tests/__init__.py",
+              "detail": "Verification source",
+              "citations": [
+                "tests/__init__.py"
+              ],
+              "trust": "source_backed"
+            },
+            {
+              "id": "file:tests-certs-valid-ca",
+              "kind": "file",
+              "label": "tests/certs/valid/ca",
+              "path": "tests/certs/valid/ca",
+              "detail": "Verification source",
+              "citations": [
+                "tests/certs/valid/ca"
+              ],
+              "trust": "source_backed"
+            },
+            {
+              "id": "file:tests-certs-valid-server-server-key",
+              "kind": "file",
+              "label": "tests/certs/valid/server/server.key",
+              "path": "tests/certs/valid/server/server.key",
+              "detail": "Verification source",
+              "citations": [
+                "tests/certs/valid/server/server.key"
+              ],
+              "trust": "source_backed"
+            },
+            {
+              "id": "file:tests-compat-py",
+              "kind": "file",
+              "label": "tests/compat.py",
+              "path": "tests/compat.py",
+              "detail": "Verification source",
+              "citations": [
+                "tests/compat.py"
+              ],
+              "trust": "source_backed"
+            },
+            {
+              "id": "file:tests-conftest-py",
+              "kind": "file",
+              "label": "tests/conftest.py",
+              "path": "tests/conftest.py",
+              "detail": "Verification source",
+              "citations": [
+                "tests/conftest.py"
+              ],
+              "trust": "source_backed"
+            },
+            {
+              "id": "file:tests-test-hooks-py",
+              "kind": "file",
+              "label": "tests/test_hooks.py",
+              "path": "tests/test_hooks.py",
+              "detail": "Verification source",
+              "citations": [
+                "tests/test_hooks.py"
+              ],
+              "trust": "source_backed"
+            },
+            {
+              "id": "file:tests-test-packages-py",
+              "kind": "file",
+              "label": "tests/test_packages.py",
+              "path": "tests/test_packages.py",
+              "detail": "Verification source",
+              "citations": [
+                "tests/test_packages.py"
+              ],
+              "trust": "source_backed"
+            },
+            {
+              "id": "file:tests-test-structures-py",
+              "kind": "file",
+              "label": "tests/test_structures.py",
+              "path": "tests/test_structures.py",
+              "detail": "Verification source",
+              "citations": [
+                "tests/test_structures.py"
+              ],
+              "trust": "source_backed"
+            },
+            {
+              "id": "file:tests-test-testserver-py",
+              "kind": "file",
+              "label": "tests/test_testserver.py",
+              "path": "tests/test_testserver.py",
+              "detail": "Verification source",
+              "citations": [
+                "tests/test_testserver.py"
+              ],
+              "trust": "source_backed"
+            },
+            {
+              "id": "file:tests-test-utils-py",
+              "kind": "file",
+              "label": "tests/test_utils.py",
+              "path": "tests/test_utils.py",
+              "detail": "Verification source",
+              "citations": [
+                "tests/test_utils.py"
+              ],
+              "trust": "source_backed"
+            },
+            {
+              "id": "file:tests-testserver---init---py",
+              "kind": "file",
+              "label": "tests/testserver/__init__.py",
+              "path": "tests/testserver/__init__.py",
+              "detail": "Verification source",
+              "citations": [
+                "tests/testserver/__init__.py"
+              ],
+              "trust": "source_backed"
+            },
+            {
+              "id": "file:tests-testserver-server-py",
+              "kind": "file",
+              "label": "tests/testserver/server.py",
+              "path": "tests/testserver/server.py",
+              "detail": "Verification source",
+              "citations": [
+                "tests/testserver/server.py"
+              ],
+              "trust": "source_backed"
+            },
+            {
+              "id": "test:tests---init---py-test-spec-file-anchors-expected-behavior",
+              "kind": "test",
+              "label": "test/spec file anchors expected behavior",
+              "path": "tests/__init__.py",
+              "detail": "Likely verification lead",
+              "citations": [
+                "tests/__init__.py"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "id": "test:tests-certs-valid-ca-test-spec-file-anchors-expected-behavior",
+              "kind": "test",
+              "label": "test/spec file anchors expected behavior",
+              "path": "tests/certs/valid/ca",
+              "detail": "Likely verification lead",
+              "citations": [
+                "tests/certs/valid/ca"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "id": "test:tests-certs-valid-server-server-key-test-spec-file-anchors-expected-behavior",
+              "kind": "test",
+              "label": "test/spec file anchors expected behavior",
+              "path": "tests/certs/valid/server/server.key",
+              "detail": "Likely verification lead",
+              "citations": [
+                "tests/certs/valid/server/server.key"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "id": "test:tests-compat-py-test-spec-file-anchors-expected-behavior",
+              "kind": "test",
+              "label": "test/spec file anchors expected behavior",
+              "path": "tests/compat.py",
+              "detail": "Likely verification lead",
+              "citations": [
+                "tests/compat.py"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "id": "test:tests-conftest-py-test-spec-file-anchors-expected-behavior",
+              "kind": "test",
+              "label": "test/spec file anchors expected behavior",
+              "path": "tests/conftest.py",
+              "detail": "Likely verification lead",
+              "citations": [
+                "tests/conftest.py"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "id": "test:tests-test-hooks-py-test-spec-file-anchors-expected-behavior",
+              "kind": "test",
+              "label": "test/spec file anchors expected behavior",
+              "path": "tests/test_hooks.py",
+              "detail": "Likely verification lead",
+              "citations": [
+                "tests/test_hooks.py"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "id": "test:tests-test-packages-py-test-spec-file-anchors-expected-behavior",
+              "kind": "test",
+              "label": "test/spec file anchors expected behavior",
+              "path": "tests/test_packages.py",
+              "detail": "Likely verification lead",
+              "citations": [
+                "tests/test_packages.py"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "id": "test:tests-test-structures-py-test-spec-file-anchors-expected-behavior",
+              "kind": "test",
+              "label": "test/spec file anchors expected behavior",
+              "path": "tests/test_structures.py",
+              "detail": "Likely verification lead",
+              "citations": [
+                "tests/test_structures.py"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "id": "test:tests-test-testserver-py-test-spec-file-anchors-expected-behavior",
+              "kind": "test",
+              "label": "test/spec file anchors expected behavior",
+              "path": "tests/test_testserver.py",
+              "detail": "Likely verification lead",
+              "citations": [
+                "tests/test_testserver.py"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "id": "test:tests-test-utils-py-test-spec-file-anchors-expected-behavior",
+              "kind": "test",
+              "label": "test/spec file anchors expected behavior",
+              "path": "tests/test_utils.py",
+              "detail": "Likely verification lead",
+              "citations": [
+                "tests/test_utils.py"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "id": "test:tests-testserver---init---py-test-spec-file-anchors-expected-behavior",
+              "kind": "test",
+              "label": "test/spec file anchors expected behavior",
+              "path": "tests/testserver/__init__.py",
+              "detail": "Likely verification lead",
+              "citations": [
+                "tests/testserver/__init__.py"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "id": "test:tests-testserver-server-py-test-spec-file-anchors-expected-behavior",
+              "kind": "test",
+              "label": "test/spec file anchors expected behavior",
+              "path": "tests/testserver/server.py",
+              "detail": "Likely verification lead",
+              "citations": [
+                "tests/testserver/server.py"
+              ],
+              "trust": "navigation_lead"
+            }
+          ],
+          "edges": [
+            {
+              "from": "commit:611c6162cbc4",
+              "to": "file:-github-ai-policy-md",
+              "kind": "changed",
+              "evidence": "611c6162cbc4 changed this file",
+              "citations": [
+                "git:611c6162cbc4",
+                ".github/AI_POLICY.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:611c6162cbc4",
+              "to": "file:-github-code-of-conduct-md",
+              "kind": "changed",
+              "evidence": "611c6162cbc4 changed this file",
+              "citations": [
+                "git:611c6162cbc4",
+                ".github/CODE_OF_CONDUCT.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:611c6162cbc4",
+              "to": "file:-github-contributing-md",
+              "kind": "changed",
+              "evidence": "611c6162cbc4 changed this file",
+              "citations": [
+                "git:611c6162cbc4",
+                ".github/CONTRIBUTING.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:611c6162cbc4",
+              "to": "file:-github-dependabot-yml",
+              "kind": "changed",
+              "evidence": "611c6162cbc4 changed this file",
+              "citations": [
+                "git:611c6162cbc4",
+                ".github/dependabot.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:611c6162cbc4",
+              "to": "file:-github-funding-yml",
+              "kind": "changed",
+              "evidence": "611c6162cbc4 changed this file",
+              "citations": [
+                "git:611c6162cbc4",
+                ".github/FUNDING.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:611c6162cbc4",
+              "to": "file:-github-issue-template-bug-report-md",
+              "kind": "changed",
+              "evidence": "611c6162cbc4 changed this file",
+              "citations": [
+                "git:611c6162cbc4",
+                ".github/ISSUE_TEMPLATE/Bug_report.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:611c6162cbc4",
+              "to": "file:-github-issue-template-custom-md",
+              "kind": "changed",
+              "evidence": "611c6162cbc4 changed this file",
+              "citations": [
+                "git:611c6162cbc4",
+                ".github/ISSUE_TEMPLATE/Custom.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:611c6162cbc4",
+              "to": "file:-github-issue-template-feature-request-md",
+              "kind": "changed",
+              "evidence": "611c6162cbc4 changed this file",
+              "citations": [
+                "git:611c6162cbc4",
+                ".github/ISSUE_TEMPLATE/Feature_request.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:611c6162cbc4",
+              "to": "file:-github-issue-template-md",
+              "kind": "changed",
+              "evidence": "611c6162cbc4 changed this file",
+              "citations": [
+                "git:611c6162cbc4",
+                ".github/ISSUE_TEMPLATE.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:611c6162cbc4",
+              "to": "file:-github-security-md",
+              "kind": "changed",
+              "evidence": "611c6162cbc4 changed this file",
+              "citations": [
+                "git:611c6162cbc4",
+                ".github/SECURITY.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:611c6162cbc4",
+              "to": "file:-github-workflows-close-issues-yml",
+              "kind": "changed",
+              "evidence": "611c6162cbc4 changed this file",
+              "citations": [
+                "git:611c6162cbc4",
+                ".github/workflows/close-issues.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:611c6162cbc4",
+              "to": "file:-github-workflows-codeql-analysis-yml",
+              "kind": "changed",
+              "evidence": "611c6162cbc4 changed this file",
+              "citations": [
+                "git:611c6162cbc4",
+                ".github/workflows/codeql-analysis.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:611c6162cbc4",
+              "to": "file:-github-workflows-lint-yml",
+              "kind": "changed",
+              "evidence": "611c6162cbc4 changed this file",
+              "citations": [
+                "git:611c6162cbc4",
+                ".github/workflows/lint.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:611c6162cbc4",
+              "to": "file:-github-workflows-lock-issues-yml",
+              "kind": "changed",
+              "evidence": "611c6162cbc4 changed this file",
+              "citations": [
+                "git:611c6162cbc4",
+                ".github/workflows/lock-issues.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:611c6162cbc4",
+              "to": "file:-github-workflows-publish-yml",
+              "kind": "changed",
+              "evidence": "611c6162cbc4 changed this file",
+              "citations": [
+                "git:611c6162cbc4",
+                ".github/workflows/publish.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:611c6162cbc4",
+              "to": "file:-github-workflows-run-tests-yml",
+              "kind": "changed",
+              "evidence": "611c6162cbc4 changed this file",
+              "citations": [
+                "git:611c6162cbc4",
+                ".github/workflows/run-tests.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:611c6162cbc4",
+              "to": "file:-github-workflows-typecheck-yml",
+              "kind": "changed",
+              "evidence": "611c6162cbc4 changed this file",
+              "citations": [
+                "git:611c6162cbc4",
+                ".github/workflows/typecheck.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:611c6162cbc4",
+              "to": "file:-github-workflows-zizmor-yml",
+              "kind": "changed",
+              "evidence": "611c6162cbc4 changed this file",
+              "citations": [
+                "git:611c6162cbc4",
+                ".github/workflows/zizmor.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:611c6162cbc4",
+              "to": "file:-pre-commit-config-yaml",
+              "kind": "changed",
+              "evidence": "611c6162cbc4 changed this file",
+              "citations": [
+                "git:611c6162cbc4",
+                ".pre-commit-config.yaml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:611c6162cbc4",
+              "to": "file:-readthedocs-yaml",
+              "kind": "changed",
+              "evidence": "611c6162cbc4 changed this file",
+              "citations": [
+                "git:611c6162cbc4",
+                ".readthedocs.yaml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:611c6162cbc4",
+              "to": "file:docs-makefile",
+              "kind": "changed",
+              "evidence": "611c6162cbc4 changed this file",
+              "citations": [
+                "git:611c6162cbc4",
+                "docs/Makefile"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:611c6162cbc4",
+              "to": "file:history-md",
+              "kind": "changed",
+              "evidence": "611c6162cbc4 changed this file",
+              "citations": [
+                "git:611c6162cbc4",
+                "HISTORY.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:611c6162cbc4",
+              "to": "file:makefile",
+              "kind": "changed",
+              "evidence": "611c6162cbc4 changed this file",
+              "citations": [
+                "git:611c6162cbc4",
+                "Makefile"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:611c6162cbc4",
+              "to": "file:readme-md",
+              "kind": "changed",
+              "evidence": "611c6162cbc4 changed this file",
+              "citations": [
+                "git:611c6162cbc4",
+                "README.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "file:tests---init---py",
+              "to": "test:tests---init---py-test-spec-file-anchors-expected-behavior",
+              "kind": "verified_by",
+              "evidence": "test/spec file anchors expected behavior",
+              "citations": [
+                "tests/__init__.py"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:tests-certs-valid-ca",
+              "to": "test:tests-certs-valid-ca-test-spec-file-anchors-expected-behavior",
+              "kind": "verified_by",
+              "evidence": "test/spec file anchors expected behavior",
+              "citations": [
+                "tests/certs/valid/ca"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:tests-certs-valid-server-server-key",
+              "to": "test:tests-certs-valid-server-server-key-test-spec-file-anchors-expected-behavior",
+              "kind": "verified_by",
+              "evidence": "test/spec file anchors expected behavior",
+              "citations": [
+                "tests/certs/valid/server/server.key"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:tests-compat-py",
+              "to": "test:tests-compat-py-test-spec-file-anchors-expected-behavior",
+              "kind": "verified_by",
+              "evidence": "test/spec file anchors expected behavior",
+              "citations": [
+                "tests/compat.py"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:tests-conftest-py",
+              "to": "test:tests-conftest-py-test-spec-file-anchors-expected-behavior",
+              "kind": "verified_by",
+              "evidence": "test/spec file anchors expected behavior",
+              "citations": [
+                "tests/conftest.py"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:tests-test-hooks-py",
+              "to": "test:tests-test-hooks-py-test-spec-file-anchors-expected-behavior",
+              "kind": "verified_by",
+              "evidence": "test/spec file anchors expected behavior",
+              "citations": [
+                "tests/test_hooks.py"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:tests-test-packages-py",
+              "to": "test:tests-test-packages-py-test-spec-file-anchors-expected-behavior",
+              "kind": "verified_by",
+              "evidence": "test/spec file anchors expected behavior",
+              "citations": [
+                "tests/test_packages.py"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:tests-test-structures-py",
+              "to": "test:tests-test-structures-py-test-spec-file-anchors-expected-behavior",
+              "kind": "verified_by",
+              "evidence": "test/spec file anchors expected behavior",
+              "citations": [
+                "tests/test_structures.py"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:tests-test-testserver-py",
+              "to": "test:tests-test-testserver-py-test-spec-file-anchors-expected-behavior",
+              "kind": "verified_by",
+              "evidence": "test/spec file anchors expected behavior",
+              "citations": [
+                "tests/test_testserver.py"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:tests-test-utils-py",
+              "to": "test:tests-test-utils-py-test-spec-file-anchors-expected-behavior",
+              "kind": "verified_by",
+              "evidence": "test/spec file anchors expected behavior",
+              "citations": [
+                "tests/test_utils.py"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:tests-testserver---init---py",
+              "to": "test:tests-testserver---init---py-test-spec-file-anchors-expected-behavior",
+              "kind": "verified_by",
+              "evidence": "test/spec file anchors expected behavior",
+              "citations": [
+                "tests/testserver/__init__.py"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:tests-testserver-server-py",
+              "to": "test:tests-testserver-server-py-test-spec-file-anchors-expected-behavior",
+              "kind": "verified_by",
+              "evidence": "test/spec file anchors expected behavior",
+              "citations": [
+                "tests/testserver/server.py"
+              ],
+              "trust": "navigation_lead"
+            }
+          ],
+          "truncated": false
+        },
+        "sources": [
+          "tests/test_utils.py",
+          "tests/conftest.py",
+          "tests/test_structures.py",
+          "tests/test_packages.py",
+          "tests/testserver/server.py",
+          "tests/testserver/__init__.py",
+          "tests/test_testserver.py",
+          "tests/compat.py",
+          "tests/__init__.py",
+          "tests/test_hooks.py",
+          "tests/certs/valid/ca",
+          "tests/certs/valid/server/server.key",
+          "pyproject.toml"
+        ],
+        "truncated": true
+      },
+      "repo_health": {
+        "schema_version": 1,
+        "summary": "Deterministic scan scored 22 source files across simple size, churn, structural, test-adjacency, and performance-risk signals. 0 hotspots surfaced; average score is 8.8/10. Treat these as review leads, not proof of a bug.",
+        "average_score": 8.8,
+        "hotspot_count": 0,
+        "files_analyzed": 22,
+        "files_with_test_signal": 1,
+        "top_files": [
+          {
+            "path": "src/requests/models.py",
+            "score": 6.6,
+            "bucket": "watch",
+            "lines": 1184,
+            "bytes": 41462,
+            "churn": 0,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "high",
+                "detail": "1184 lines in one source file; inspect whether the module hides multiple responsibilities.",
+                "sources": [
+                  "src/requests/models.py"
+                ]
+              },
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 16; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "src/requests/models.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "src/requests/models.py"
+                ]
+              },
+              {
+                "id": "io_boundary",
+                "label": "I/O or process boundary",
+                "dimension": "defect",
+                "severity": "low",
+                "detail": "File touches filesystem, network, database, or subprocess boundaries; changes need concrete runtime proof.",
+                "sources": [
+                  "src/requests/models.py"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow.",
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "src/requests/sessions.py",
+            "score": 6.6,
+            "bucket": "watch",
+            "lines": 920,
+            "bytes": 34072,
+            "churn": 0,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "high",
+                "detail": "920 lines in one source file; inspect whether the module hides multiple responsibilities.",
+                "sources": [
+                  "src/requests/sessions.py"
+                ]
+              },
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 10; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "src/requests/sessions.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "src/requests/sessions.py"
+                ]
+              },
+              {
+                "id": "io_boundary",
+                "label": "I/O or process boundary",
+                "dimension": "defect",
+                "severity": "low",
+                "detail": "File touches filesystem, network, database, or subprocess boundaries; changes need concrete runtime proof.",
+                "sources": [
+                  "src/requests/sessions.py"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow.",
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "src/requests/utils.py",
+            "score": 6.9,
+            "bucket": "watch",
+            "lines": 1155,
+            "bytes": 36061,
+            "churn": 0,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "high",
+                "detail": "1155 lines in one source file; inspect whether the module hides multiple responsibilities.",
+                "sources": [
+                  "src/requests/utils.py"
+                ]
+              },
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 12; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "src/requests/utils.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "src/requests/utils.py"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow.",
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "src/requests/cookies.py",
+            "score": 7.1,
+            "bucket": "watch",
+            "lines": 625,
+            "bytes": 21504,
+            "churn": 0,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "625 lines in one source file; changes here may be harder to review.",
+                "sources": [
+                  "src/requests/cookies.py"
+                ]
+              },
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 16; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "src/requests/cookies.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "src/requests/cookies.py"
+                ]
+              },
+              {
+                "id": "io_boundary",
+                "label": "I/O or process boundary",
+                "dimension": "defect",
+                "severity": "low",
+                "detail": "File touches filesystem, network, database, or subprocess boundaries; changes need concrete runtime proof.",
+                "sources": [
+                  "src/requests/cookies.py"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "src/requests/adapters.py",
+            "score": 7.4,
+            "bucket": "watch",
+            "lines": 748,
+            "bytes": 27992,
+            "churn": 0,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "748 lines in one source file; changes here may be harder to review.",
+                "sources": [
+                  "src/requests/adapters.py"
+                ]
+              },
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 10; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "src/requests/adapters.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "src/requests/adapters.py"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "src/requests/auth.py",
+            "score": 8.8,
+            "bucket": "healthy",
+            "lines": 354,
+            "bytes": 12107,
+            "churn": 0,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 10; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "src/requests/auth.py"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "src/requests/help.py",
+            "score": 8.8,
+            "bucket": "healthy",
+            "lines": 132,
+            "bytes": 4068,
+            "churn": 0,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 8; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "src/requests/help.py"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "src/requests/structures.py",
+            "score": 8.8,
+            "bucket": "healthy",
+            "lines": 130,
+            "bytes": 4134,
+            "churn": 0,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 8; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "src/requests/structures.py"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "src/requests/status_codes.py",
+            "score": 8.8,
+            "bucket": "healthy",
+            "lines": 128,
+            "bytes": 4351,
+            "churn": 0,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 8; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "src/requests/status_codes.py"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "src/requests/compat.py",
+            "score": 8.8,
+            "bucket": "healthy",
+            "lines": 115,
+            "bytes": 2494,
+            "churn": 0,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 8; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "src/requests/compat.py"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "src/requests/hooks.py",
+            "score": 8.8,
+            "bucket": "healthy",
+            "lines": 48,
+            "bytes": 1138,
+            "churn": 0,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 8; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "src/requests/hooks.py"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "src/requests/api.py",
+            "score": 9,
+            "bucket": "healthy",
+            "lines": 180,
+            "bytes": 7152,
+            "churn": 0,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "Maximum indentation depth is about 6; inspect branch-heavy paths before risky edits.",
+                "sources": [
+                  "src/requests/api.py"
+                ]
+              },
+              {
+                "id": "io_boundary",
+                "label": "I/O or process boundary",
+                "dimension": "defect",
+                "severity": "low",
+                "detail": "File touches filesystem, network, database, or subprocess boundaries; changes need concrete runtime proof.",
+                "sources": [
+                  "src/requests/api.py"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          }
+        ],
+        "truncated": false
+      },
+      "all_files": [],
+      "ignored_dirs": [
+        ".git"
+      ],
+      "coverage": {
+        "schema_version": 1,
+        "strategy": "full_walk",
+        "sampled_files": 124,
+        "total_files": null,
+        "sample_percent": null,
+        "languages": [
+          {
+            "language": "Python",
+            "files": 37,
+            "bytes": 407127
+          },
+          {
+            "language": "Markdown",
+            "files": 13,
+            "bytes": 81800
+          },
+          {
+            "language": "YAML",
+            "files": 12,
+            "bytes": 12921
+          },
+          {
+            "language": "CSS",
+            "files": 1,
+            "bytes": 287
+          },
+          {
+            "language": "HTML",
+            "files": 1,
+            "bytes": 1361
+          },
+          {
+            "language": "TOML",
+            "files": 1,
+            "bytes": 3404
+          }
+        ],
+        "top_level_dirs": [
+          {
+            "path": "tests",
+            "file_count": 42,
+            "bytes": 199102
+          },
+          {
+            "path": "docs",
+            "file_count": 25,
+            "bytes": 131164
+          },
+          {
+            "path": "src",
+            "file_count": 20,
+            "bytes": 216088
+          },
+          {
+            "path": ".github",
+            "file_count": 19,
+            "bytes": 25646
+          },
+          {
+            "path": "ext",
+            "file_count": 2,
+            "bytes": 883845
+          }
+        ],
+        "notes": [
+          "Full local walk covered the repo within the scan cap."
+        ]
+      },
+      "all_files_capped": false,
+      "dir_tree_preview": {
+        "name": "",
+        "path": "",
+        "is_dir": true,
+        "file_count": 124,
+        "children": [
+          {
+            "name": ".github",
+            "path": ".github",
+            "is_dir": true,
+            "file_count": 19,
+            "children": [
+              {
+                "name": "ISSUE_TEMPLATE",
+                "path": ".github/ISSUE_TEMPLATE",
+                "is_dir": true,
+                "file_count": 3,
+                "children": [
+                  {
+                    "name": "Bug_report.md",
+                    "path": ".github/ISSUE_TEMPLATE/Bug_report.md",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "Custom.md",
+                    "path": ".github/ISSUE_TEMPLATE/Custom.md",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "Feature_request.md",
+                    "path": ".github/ISSUE_TEMPLATE/Feature_request.md",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "workflows",
+                "path": ".github/workflows",
+                "is_dir": true,
+                "file_count": 8,
+                "children": [
+                  {
+                    "name": "close-issues.yml",
+                    "path": ".github/workflows/close-issues.yml",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "codeql-analysis.yml",
+                    "path": ".github/workflows/codeql-analysis.yml",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "lint.yml",
+                    "path": ".github/workflows/lint.yml",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "lock-issues.yml",
+                    "path": ".github/workflows/lock-issues.yml",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "publish.yml",
+                    "path": ".github/workflows/publish.yml",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "run-tests.yml",
+                    "path": ".github/workflows/run-tests.yml",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "typecheck.yml",
+                    "path": ".github/workflows/typecheck.yml",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "zizmor.yml",
+                    "path": ".github/workflows/zizmor.yml",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "AI_POLICY.md",
+                "path": ".github/AI_POLICY.md",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "CODEOWNERS",
+                "path": ".github/CODEOWNERS",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "CODE_OF_CONDUCT.md",
+                "path": ".github/CODE_OF_CONDUCT.md",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "CONTRIBUTING.md",
+                "path": ".github/CONTRIBUTING.md",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "FUNDING.yml",
+                "path": ".github/FUNDING.yml",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "ISSUE_TEMPLATE.md",
+                "path": ".github/ISSUE_TEMPLATE.md",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "SECURITY.md",
+                "path": ".github/SECURITY.md",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "dependabot.yml",
+                "path": ".github/dependabot.yml",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "docs",
+            "path": "docs",
+            "is_dir": true,
+            "file_count": 25,
+            "children": [
+              {
+                "name": "_static",
+                "path": "docs/_static",
+                "is_dir": true,
+                "file_count": 1,
+                "children": [
+                  {
+                    "name": "custom.css",
+                    "path": "docs/_static/custom.css",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "_templates",
+                "path": "docs/_templates",
+                "is_dir": true,
+                "file_count": 1,
+                "children": [
+                  {
+                    "name": "sidebar.html",
+                    "path": "docs/_templates/sidebar.html",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "_themes",
+                "path": "docs/_themes",
+                "is_dir": true,
+                "file_count": 3,
+                "children": [
+                  {
+                    "name": ".gitignore",
+                    "path": "docs/_themes/.gitignore",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "LICENSE",
+                    "path": "docs/_themes/LICENSE",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "flask_theme_support.py",
+                    "path": "docs/_themes/flask_theme_support.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "community",
+                "path": "docs/community",
+                "is_dir": true,
+                "file_count": 7,
+                "children": [
+                  {
+                    "name": "faq.rst",
+                    "path": "docs/community/faq.rst",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "out-there.rst",
+                    "path": "docs/community/out-there.rst",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "recommended.rst",
+                    "path": "docs/community/recommended.rst",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "release-process.rst",
+                    "path": "docs/community/release-process.rst",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "support.rst",
+                    "path": "docs/community/support.rst",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "updates.rst",
+                    "path": "docs/community/updates.rst",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "vulnerabilities.rst",
+                    "path": "docs/community/vulnerabilities.rst",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "dev",
+                "path": "docs/dev",
+                "is_dir": true,
+                "file_count": 2,
+                "children": [
+                  {
+                    "name": "authors.rst",
+                    "path": "docs/dev/authors.rst",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "contributing.rst",
+                    "path": "docs/dev/contributing.rst",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "user",
+                "path": "docs/user",
+                "is_dir": true,
+                "file_count": 4,
+                "children": [
+                  {
+                    "name": "advanced.rst",
+                    "path": "docs/user/advanced.rst",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "authentication.rst",
+                    "path": "docs/user/authentication.rst",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "install.rst",
+                    "path": "docs/user/install.rst",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "quickstart.rst",
+                    "path": "docs/user/quickstart.rst",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": ".nojekyll",
+                "path": "docs/.nojekyll",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "Makefile",
+                "path": "docs/Makefile",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "api.rst",
+                "path": "docs/api.rst",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "conf.py",
+                "path": "docs/conf.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "index.rst",
+                "path": "docs/index.rst",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "make.bat",
+                "path": "docs/make.bat",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "requirements.txt",
+                "path": "docs/requirements.txt",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "ext",
+            "path": "ext",
+            "is_dir": true,
+            "file_count": 2,
+            "children": [
+              {
+                "name": "LICENSE",
+                "path": "ext/LICENSE",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "requests-logo.svg",
+                "path": "ext/requests-logo.svg",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "src",
+            "path": "src",
+            "is_dir": true,
+            "file_count": 20,
+            "children": [
+              {
+                "name": "requests",
+                "path": "src/requests",
+                "is_dir": true,
+                "file_count": 20,
+                "children": [
+                  {
+                    "name": "__init__.py",
+                    "path": "src/requests/__init__.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "__version__.py",
+                    "path": "src/requests/__version__.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "_internal_utils.py",
+                    "path": "src/requests/_internal_utils.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "_types.py",
+                    "path": "src/requests/_types.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "adapters.py",
+                    "path": "src/requests/adapters.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "api.py",
+                    "path": "src/requests/api.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "auth.py",
+                    "path": "src/requests/auth.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "certs.py",
+                    "path": "src/requests/certs.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "compat.py",
+                    "path": "src/requests/compat.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "cookies.py",
+                    "path": "src/requests/cookies.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "exceptions.py",
+                    "path": "src/requests/exceptions.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "help.py",
+                    "path": "src/requests/help.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "hooks.py",
+                    "path": "src/requests/hooks.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "models.py",
+                    "path": "src/requests/models.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "packages.py",
+                    "path": "src/requests/packages.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "py.typed",
+                    "path": "src/requests/py.typed",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "sessions.py",
+                    "path": "src/requests/sessions.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "status_codes.py",
+                    "path": "src/requests/status_codes.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "structures.py",
+                    "path": "src/requests/structures.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "utils.py",
+                    "path": "src/requests/utils.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "tests",
+            "path": "tests",
+            "is_dir": true,
+            "file_count": 42,
+            "children": [
+              {
+                "name": "certs",
+                "path": "tests/certs",
+                "is_dir": true,
+                "file_count": 27,
+                "children": [
+                  {
+                    "name": "expired",
+                    "path": "tests/certs/expired",
+                    "is_dir": true,
+                    "file_count": 12,
+                    "children": [
+                      {
+                        "name": "ca",
+                        "path": "tests/certs/expired/ca",
+                        "is_dir": true,
+                        "file_count": 5,
+                        "children": [
+                          {
+                            "name": "Makefile",
+                            "path": "tests/certs/expired/ca/Makefile",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          },
+                          {
+                            "name": "ca-private.key",
+                            "path": "tests/certs/expired/ca/ca-private.key",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          },
+                          {
+                            "name": "ca.cnf",
+                            "path": "tests/certs/expired/ca/ca.cnf",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          },
+                          {
+                            "name": "ca.crt",
+                            "path": "tests/certs/expired/ca/ca.crt",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          },
+                          {
+                            "name": "ca.srl",
+                            "path": "tests/certs/expired/ca/ca.srl",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          }
+                        ]
+                      },
+                      {
+                        "name": "server",
+                        "path": "tests/certs/expired/server",
+                        "is_dir": true,
+                        "file_count": 5,
+                        "children": [
+                          {
+                            "name": "Makefile",
+                            "path": "tests/certs/expired/server/Makefile",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          },
+                          {
+                            "name": "cert.cnf",
+                            "path": "tests/certs/expired/server/cert.cnf",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          },
+                          {
+                            "name": "server.csr",
+                            "path": "tests/certs/expired/server/server.csr",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          },
+                          {
+                            "name": "server.key",
+                            "path": "tests/certs/expired/server/server.key",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          },
+                          {
+                            "name": "server.pem",
+                            "path": "tests/certs/expired/server/server.pem",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Makefile",
+                        "path": "tests/certs/expired/Makefile",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "README.md",
+                        "path": "tests/certs/expired/README.md",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": "mtls",
+                    "path": "tests/certs/mtls",
+                    "is_dir": true,
+                    "file_count": 8,
+                    "children": [
+                      {
+                        "name": "client",
+                        "path": "tests/certs/mtls/client",
+                        "is_dir": true,
+                        "file_count": 6,
+                        "children": [
+                          {
+                            "name": "Makefile",
+                            "path": "tests/certs/mtls/client/Makefile",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          },
+                          {
+                            "name": "ca",
+                            "path": "tests/certs/mtls/client/ca",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          },
+                          {
+                            "name": "cert.cnf",
+                            "path": "tests/certs/mtls/client/cert.cnf",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          },
+                          {
+                            "name": "client.csr",
+                            "path": "tests/certs/mtls/client/client.csr",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          },
+                          {
+                            "name": "client.key",
+                            "path": "tests/certs/mtls/client/client.key",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          },
+                          {
+                            "name": "client.pem",
+                            "path": "tests/certs/mtls/client/client.pem",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Makefile",
+                        "path": "tests/certs/mtls/Makefile",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "README.md",
+                        "path": "tests/certs/mtls/README.md",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": "valid",
+                    "path": "tests/certs/valid",
+                    "is_dir": true,
+                    "file_count": 6,
+                    "children": [
+                      {
+                        "name": "server",
+                        "path": "tests/certs/valid/server",
+                        "is_dir": true,
+                        "file_count": 5,
+                        "children": [
+                          {
+                            "name": "Makefile",
+                            "path": "tests/certs/valid/server/Makefile",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          },
+                          {
+                            "name": "cert.cnf",
+                            "path": "tests/certs/valid/server/cert.cnf",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          },
+                          {
+                            "name": "server.csr",
+                            "path": "tests/certs/valid/server/server.csr",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          },
+                          {
+                            "name": "server.key",
+                            "path": "tests/certs/valid/server/server.key",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          },
+                          {
+                            "name": "server.pem",
+                            "path": "tests/certs/valid/server/server.pem",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          }
+                        ]
+                      },
+                      {
+                        "name": "ca",
+                        "path": "tests/certs/valid/ca",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": "README.md",
+                    "path": "tests/certs/README.md",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "testserver",
+                "path": "tests/testserver",
+                "is_dir": true,
+                "file_count": 2,
+                "children": [
+                  {
+                    "name": "__init__.py",
+                    "path": "tests/testserver/__init__.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "server.py",
+                    "path": "tests/testserver/server.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "__init__.py",
+                "path": "tests/__init__.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "compat.py",
+                "path": "tests/compat.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "conftest.py",
+                "path": "tests/conftest.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "test_adapters.py",
+                "path": "tests/test_adapters.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "test_help.py",
+                "path": "tests/test_help.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "test_hooks.py",
+                "path": "tests/test_hooks.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "test_lowlevel.py",
+                "path": "tests/test_lowlevel.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "test_packages.py",
+                "path": "tests/test_packages.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "test_requests.py",
+                "path": "tests/test_requests.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "test_structures.py",
+                "path": "tests/test_structures.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "test_testserver.py",
+                "path": "tests/test_testserver.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "test_utils.py",
+                "path": "tests/test_utils.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "utils.py",
+                "path": "tests/utils.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": ".coveragerc",
+            "path": ".coveragerc",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": ".git-blame-ignore-revs",
+            "path": ".git-blame-ignore-revs",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": ".gitignore",
+            "path": ".gitignore",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": ".pre-commit-config.yaml",
+            "path": ".pre-commit-config.yaml",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": ".readthedocs.yaml",
+            "path": ".readthedocs.yaml",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "AUTHORS.rst",
+            "path": "AUTHORS.rst",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "HISTORY.md",
+            "path": "HISTORY.md",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "LICENSE",
+            "path": "LICENSE",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "MANIFEST.in",
+            "path": "MANIFEST.in",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "Makefile",
+            "path": "Makefile",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "NOTICE",
+            "path": "NOTICE",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "README.md",
+            "path": "README.md",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "pyproject.toml",
+            "path": "pyproject.toml",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "requirements-dev.txt",
+            "path": "requirements-dev.txt",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "setup.py",
+            "path": "setup.py",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "tox.ini",
+            "path": "tox.ini",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          }
+        ]
+      }
+    },
+    "profiles": [
+      {
+        "stage": "full_scan",
+        "total_ms": 28,
+        "peak_rss_bytes": 29147136,
+        "steps": [
+          {
+            "id": "git_metadata",
+            "label": "Git metadata",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "file_walk",
+            "label": "Parallel file walk",
+            "ms": 6,
+            "pct": 21.428571428571427
+          },
+          {
+            "id": "languages",
+            "label": "Language breakdown",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "manifests",
+            "label": "Manifest parsing",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "docs",
+            "label": "Doc previews",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "aggregates",
+            "label": "Dirs, configs, stack tags",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "entrypoints",
+            "label": "Entrypoints, workspace units & QA readiness",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "source_previews",
+            "label": "Source preview cache",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "repo_graph",
+            "label": "Deterministic graph scan",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "history",
+            "label": "Git history & decision scan",
+            "ms": 13,
+            "pct": 46.42857142857143
+          },
+          {
+            "id": "repo_health",
+            "label": "Deterministic health scoring",
+            "ms": 7,
+            "pct": 25
+          },
+          {
+            "id": "dir_tree",
+            "label": "Directory tree preview",
+            "ms": 0,
+            "pct": 0
+          }
+        ]
+      },
+      {
+        "stage": "local_scan_persist",
+        "total_ms": 0,
+        "peak_rss_bytes": 29573120,
+        "steps": [
+          {
+            "id": "serialize",
+            "label": "JSON serialize (inventory → SQLite)",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "db_insert",
+            "label": "SQLite insert",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "touch_project",
+            "label": "Update repo project metadata",
+            "ms": 0,
+            "pct": 0
+          }
+        ]
+      }
+    ]
+  }
+}

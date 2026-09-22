@@ -1,0 +1,3275 @@
+{
+  "schema_version": "codevetter.repo-unpack-corpus/v1",
+  "repo": "lodash/lodash",
+  "slug": "lodash",
+  "codevetter_version": "codevetter 1.12.0",
+  "collected_at": "2026-09-22T05:15:33.855Z",
+  "last_commit": {
+    "sha": "2b5e6f7399a7b48005140b5d5c6bc6c0e62919a8",
+    "date": "2026-09-11",
+    "subject": "ci: update actions to latest versions (#6279)"
+  },
+  "scan": {
+    "schema_version": "codevetter.unpack-scan/v1",
+    "report_id": "41232035-2d7f-4ec2-90c9-b3b6317e00ae",
+    "status": "scan_only",
+    "created_at": "2026-09-22T05:15:33.852362+00:00",
+    "inventory": {
+      "repo_path": "/private/var/folders/9_/1109_2dd1qz6zyvmxb5zp8pc0000gn/T/unpack-pilot-4GEWaF/lodash",
+      "repo_name": "lodash",
+      "commit_sha": "2b5e6f7399a7b48005140b5d5c6bc6c0e62919a8",
+      "branch": "main",
+      "remote_url": "https://github.com/lodash/lodash.git",
+      "files_scanned": 64,
+      "files_skipped": 1,
+      "bytes_scanned": 1931846,
+      "max_files_hit": false,
+      "estimated_total_files": null,
+      "languages": [
+        {
+          "language": "JavaScript",
+          "files": 27,
+          "bytes": 1543734
+        },
+        {
+          "language": "Markdown",
+          "files": 7,
+          "bytes": 326770
+        },
+        {
+          "language": "HTML",
+          "files": 5,
+          "bytes": 35861
+        },
+        {
+          "language": "YAML",
+          "files": 8,
+          "bytes": 9925
+        },
+        {
+          "language": "JSON",
+          "files": 2,
+          "bytes": 2347
+        }
+      ],
+      "manifests": [
+        {
+          "path": "package.json",
+          "kind": "package.json",
+          "name": "lodash",
+          "version": "4.18.1",
+          "dependencies": [
+            "async",
+            "benchmark",
+            "chalk",
+            "cheerio",
+            "codecov.io",
+            "coveralls",
+            "curl-amd",
+            "docdown",
+            "dojo",
+            "ecstatic",
+            "fs-extra",
+            "glob",
+            "istanbul",
+            "jquery",
+            "jscs",
+            "lodash",
+            "lodash-doc-globals",
+            "markdown-doctest",
+            "optional-dev-dependency",
+            "platform",
+            "qunit-extras",
+            "qunitjs",
+            "request",
+            "requirejs",
+            "sauce-tunnel",
+            "uglify-js",
+            "webpack"
+          ],
+          "scripts": [
+            "build",
+            "build:fp",
+            "build:fp-modules",
+            "build:main",
+            "build:main-modules",
+            "doc",
+            "doc:fp",
+            "doc:site",
+            "doc:sitehtml",
+            "pretest",
+            "style",
+            "style:fp",
+            "style:main",
+            "style:perf",
+            "style:test",
+            "test",
+            "test:doc",
+            "test:fp",
+            "test:main",
+            "validate"
+          ]
+        }
+      ],
+      "entrypoints": [
+        {
+          "path": "README.md",
+          "kind": "docs",
+          "reason": "Repository readme"
+        },
+        {
+          "path": ".github/workflows/renovate.yml",
+          "kind": "config",
+          "reason": "GitHub Actions workflow"
+        },
+        {
+          "path": ".github/workflows/ci-dist-sync.yml",
+          "kind": "config",
+          "reason": "GitHub Actions workflow"
+        },
+        {
+          "path": ".github/workflows/scorecards.yml",
+          "kind": "config",
+          "reason": "GitHub Actions workflow"
+        },
+        {
+          "path": ".github/workflows/browser-testing.yml",
+          "kind": "config",
+          "reason": "GitHub Actions workflow"
+        },
+        {
+          "path": ".github/workflows/codeql.yml",
+          "kind": "config",
+          "reason": "GitHub Actions workflow"
+        },
+        {
+          "path": ".github/workflows/ci-bun.yml",
+          "kind": "config",
+          "reason": "GitHub Actions workflow"
+        },
+        {
+          "path": ".github/workflows/ci-docs.yml",
+          "kind": "config",
+          "reason": "GitHub Actions workflow"
+        },
+        {
+          "path": ".github/workflows/ci-node.yml",
+          "kind": "config",
+          "reason": "GitHub Actions workflow"
+        },
+        {
+          "path": "package.json",
+          "kind": "config",
+          "reason": "npm scripts: build, build:fp, build:fp-modules, build:main, build:main-modules, doc, doc:fp, doc:site"
+        }
+      ],
+      "top_level_dirs": [
+        {
+          "path": "lib",
+          "file_count": 21,
+          "bytes": 31101
+        },
+        {
+          "path": "test",
+          "file_count": 10,
+          "bytes": 920611
+        },
+        {
+          "path": ".github",
+          "file_count": 9,
+          "bytes": 13185
+        },
+        {
+          "path": "fp",
+          "file_count": 4,
+          "bytes": 27089
+        },
+        {
+          "path": "perf",
+          "file_count": 3,
+          "bytes": 62158
+        },
+        {
+          "path": "doc",
+          "file_count": 1,
+          "bytes": 295392
+        }
+      ],
+      "docs": [
+        {
+          "path": "README.md",
+          "bytes": 3623,
+          "preview": "# lodash v4.18.1\n\n[Site](https://lodash.com/) |\n[Docs](https://lodash.com/docs) |\n[FP Guide](https://github.com/lodash/lodash/wiki/FP-Guide) |\n[Contributing](https://github.com/lodash/lodash/blob/main/.github/CONTRIBUTING.md) |\n[Wiki](https://github.com/lodash/lodash/wiki \"Changelog, Roadmap, etc.\") |\n[Code of Conduct](https://github.com/openjs-foundation/cross-project-council/blob/main/CODE_OF_CONDUCT.md) |\n[Governance](https://github.com/lodash/lodash/blob/HEAD/GOVERNANCE.md) |\n[Twitter](https://twitter.com/bestiejs) |\n[Chat](https://gitter.im/lodash/lodash)\n\n> [!IMPORTANT]\n> As announced on the [OpenJS Foundation blog](https://openjsf.org/blog/sta-supports-lodash), Lodash has received support from the Sovereign Tech Agency and will transition to the Feature-Complete maturity stage so that it remains stable, secure, and sustainable long-term. As part of this effort, Lodash is rebooting its governance. A draft charter will be published shortly. The upcoming Technical Steering Committee (TSC) is already at work. For transparency, its members are listed in [GOVERNANCE.md](https://github.com/lodash/lodash/blob/HEAD/GOVERNANCE.md).\n\nThe [Lodash](https://lodash.com/) library exported as a [UMD](https://github.com/umdjs/umd) module.\n\nGenerated using [lodash-cli](https://www.npmjs.com/package/lodash-cli):\n```shell\n$ npm run build\n$ lodash -o ./dist/lodash.js\n$ lodash core -o ./dist/lodash.core.js\n```\n\n## Download\n\n * [Core build](https://raw.githubusercontent.com/lodash/lodash/4.18.1/dist/lodash.core.js) ([~4 kB gzipped](https://raw.githubusercontent.com/lodash/lodash/4.18.1/dist/lodash.core.min.js))\n * [Full build](https://raw.githubusercontent.com/lodash/lodash/4.18.1/dist/lodash.js) ([~24 kB gzipped](https://raw.githubusercontent.com/lodash/lodash/4.18.1/dist/lodash.min.js))\n * [CDN copies](https://www.jsdelivr.com/projects/lodash)\n\nLodash is released under the [MIT license](https://raw.githubusercontent.com/lodash/lodash/4.18.1/LICENSE) & supports modern environments.<br>\nReview the [build differences](https://github.com/lodash/lodash/wiki/build-differences) & pick one that’s right for you.\n\n## Installation\n\nIn a browser:\n```html\n<script src=\"lodash.js\"></script>\n```\n\nUsing npm:\n```shell\n$ npm i -g npm\n$ npm i --save lodash\n```\n\nIn Node.js:\n```js\n// Load the full build.\nvar _ = require('lodash');\n// Load the core build.\nvar _ = require('lodash/core');\n// Load the FP build for immutable auto-curried iteratee-first data-last methods.\nvar fp = require('lodash/fp');\n\n// Load method categories.\nvar array = require('lodash/array');\nvar object = require('lodash/fp/object');\n\n// Cherry-pick methods for smaller browserify/rollup/webpack bundles.\nvar at = require('lodash/at');\nvar curryN = require('lodash/fp/curryN');\n```\n\n## Why Lodash?\n\nLodash makes JavaScript easier by taking the hassle out of working with arrays,<br>\nnumbers, objects, strings, etc. Lodash’s modular methods are great for:\n\n * Iterating arrays, objects, & strings\n * Manipulating & testing values\n * Creating composite functions\n\n## Module Formats\n\nLodash is available in a [variety of builds](https://lodash.com/custom-builds) & module formats.\n\n * [lodash](https://www.npmjs.com/package/lodash) & [per method packages](https://www.npmjs.com/browse/keyword/lodash-modularized)\n * [lodash-es](https://www.npmjs.com/package/lodash-es), [babel-plugin-lodash](https://www.npmjs.com/package/babel-plugin-lodash), & [lodash-webpack-plugin](https://www.npmjs.com/package/lodash-webpack-plugin)\n * [lodash/fp](https://github.com/lodash/lodash/tree/npm/fp)\n * [lodash-amd](https://www.npmjs.com/package/lodash-amd)\n\n\n"
+        }
+      ],
+      "config_files": [
+        "renovate.json"
+      ],
+      "stack_tags": [
+        "GitHub Actions"
+      ],
+      "workspace_units": [
+        {
+          "path": ".",
+          "name": "lodash",
+          "kind": "workspace",
+          "manifest_path": "package.json",
+          "build_system": "package.json",
+          "file_count": 64,
+          "languages": [
+            {
+              "language": "JavaScript",
+              "files": 27,
+              "bytes": 1543734
+            },
+            {
+              "language": "YAML",
+              "files": 8,
+              "bytes": 9925
+            },
+            {
+              "language": "Markdown",
+              "files": 7,
+              "bytes": 326770
+            },
+            {
+              "language": "HTML",
+              "files": 5,
+              "bytes": 35861
+            },
+            {
+              "language": "JSON",
+              "files": 2,
+              "bytes": 2347
+            }
+          ],
+          "scripts": [
+            "build",
+            "build:fp",
+            "build:fp-modules",
+            "build:main",
+            "build:main-modules",
+            "doc",
+            "doc:fp",
+            "doc:site",
+            "doc:sitehtml",
+            "pretest",
+            "style",
+            "style:fp"
+          ],
+          "entrypoints": [
+            ".github/workflows/browser-testing.yml",
+            ".github/workflows/ci-bun.yml",
+            ".github/workflows/ci-dist-sync.yml",
+            ".github/workflows/ci-docs.yml",
+            ".github/workflows/ci-node.yml",
+            ".github/workflows/codeql.yml",
+            ".github/workflows/renovate.yml",
+            ".github/workflows/scorecards.yml"
+          ],
+          "test_files": [],
+          "tags": [
+            "JavaScript",
+            "Markdown",
+            "YAML"
+          ]
+        }
+      ],
+      "qa_readiness": {
+        "score": 25,
+        "status": "missing",
+        "summary": "Repo does not expose enough local browser QA structure for a reliable Synthetic QA workflow yet.",
+        "signals": [
+          {
+            "id": "browser_runner",
+            "label": "Browser runner",
+            "status": "ready",
+            "detail": "1 browser runner config file found.",
+            "sources": [
+              "playwright.config.js"
+            ]
+          },
+          {
+            "id": "user_flow_specs",
+            "label": "User-flow specs",
+            "status": "missing",
+            "detail": "No e2e/playwright/cypress spec files were found.",
+            "sources": []
+          },
+          {
+            "id": "local_app_command",
+            "label": "Local app command",
+            "status": "missing",
+            "detail": "No obvious package script for starting the app locally was found.",
+            "sources": []
+          },
+          {
+            "id": "qa_script",
+            "label": "QA script",
+            "status": "missing",
+            "detail": "No explicit QA/e2e/browser test script was found.",
+            "sources": []
+          },
+          {
+            "id": "artifact_trail",
+            "label": "Artifact trail",
+            "status": "partial",
+            "detail": "Runner is artifact-capable, but no existing screenshot/trace/report artifacts were found in the scanned files.",
+            "sources": []
+          },
+          {
+            "id": "targetable_routes",
+            "label": "Targetable surfaces",
+            "status": "missing",
+            "detail": "No obvious web entrypoint or route file was found.",
+            "sources": []
+          }
+        ],
+        "suggested_flows": []
+      },
+      "repo_graph": {
+        "schema_version": 2,
+        "nodes": [
+          {
+            "id": "file:github-contributing-md",
+            "kind": "file",
+            "label": ".github/CONTRIBUTING.md",
+            "path": ".github/CONTRIBUTING.md",
+            "detail": "source marker candidate",
+            "sources": [
+              ".github/CONTRIBUTING.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:github-workflows-browser-testing-yml",
+            "kind": "file",
+            "label": ".github/workflows/browser-testing.yml",
+            "path": ".github/workflows/browser-testing.yml",
+            "detail": "workspace entrypoint",
+            "sources": [
+              ".github/workflows/browser-testing.yml"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:github-workflows-ci-bun-yml",
+            "kind": "file",
+            "label": ".github/workflows/ci-bun.yml",
+            "path": ".github/workflows/ci-bun.yml",
+            "detail": "workspace entrypoint",
+            "sources": [
+              ".github/workflows/ci-bun.yml"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:github-workflows-ci-dist-sync-yml",
+            "kind": "file",
+            "label": ".github/workflows/ci-dist-sync.yml",
+            "path": ".github/workflows/ci-dist-sync.yml",
+            "detail": "workspace entrypoint",
+            "sources": [
+              ".github/workflows/ci-dist-sync.yml"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:github-workflows-ci-docs-yml",
+            "kind": "file",
+            "label": ".github/workflows/ci-docs.yml",
+            "path": ".github/workflows/ci-docs.yml",
+            "detail": "workspace entrypoint",
+            "sources": [
+              ".github/workflows/ci-docs.yml"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:github-workflows-ci-node-yml",
+            "kind": "file",
+            "label": ".github/workflows/ci-node.yml",
+            "path": ".github/workflows/ci-node.yml",
+            "detail": "workspace entrypoint",
+            "sources": [
+              ".github/workflows/ci-node.yml"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:github-workflows-codeql-yml",
+            "kind": "file",
+            "label": ".github/workflows/codeql.yml",
+            "path": ".github/workflows/codeql.yml",
+            "detail": "workspace entrypoint",
+            "sources": [
+              ".github/workflows/codeql.yml"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:github-workflows-renovate-yml",
+            "kind": "file",
+            "label": ".github/workflows/renovate.yml",
+            "path": ".github/workflows/renovate.yml",
+            "detail": "GitHub Actions workflow",
+            "sources": [
+              ".github/workflows/renovate.yml"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:github-workflows-scorecards-yml",
+            "kind": "file",
+            "label": ".github/workflows/scorecards.yml",
+            "path": ".github/workflows/scorecards.yml",
+            "detail": "GitHub Actions workflow",
+            "sources": [
+              ".github/workflows/scorecards.yml"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:markdown-doctest-setup-js",
+            "kind": "file",
+            "label": ".markdown-doctest-setup.js",
+            "path": ".markdown-doctest-setup.js",
+            "detail": "source marker candidate",
+            "sources": [
+              ".markdown-doctest-setup.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:governance-md",
+            "kind": "file",
+            "label": "GOVERNANCE.md",
+            "path": "GOVERNANCE.md",
+            "detail": "source marker candidate",
+            "sources": [
+              "GOVERNANCE.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:readme-md",
+            "kind": "file",
+            "label": "README.md",
+            "path": "README.md",
+            "detail": "Repository readme",
+            "sources": [
+              "README.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:security-md",
+            "kind": "file",
+            "label": "SECURITY.md",
+            "path": "SECURITY.md",
+            "detail": "source marker candidate",
+            "sources": [
+              "SECURITY.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:doc-readme-md",
+            "kind": "file",
+            "label": "doc/README.md",
+            "path": "doc/README.md",
+            "detail": "source marker candidate",
+            "sources": [
+              "doc/README.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:fp-baseconvert-js",
+            "kind": "file",
+            "label": "fp/_baseConvert.js",
+            "path": "fp/_baseConvert.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "fp/_baseConvert.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:fp-convertbrowser-js",
+            "kind": "file",
+            "label": "fp/_convertBrowser.js",
+            "path": "fp/_convertBrowser.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "fp/_convertBrowser.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:fp-mapping-js",
+            "kind": "file",
+            "label": "fp/_mapping.js",
+            "path": "fp/_mapping.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "fp/_mapping.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:fp-placeholder-js",
+            "kind": "file",
+            "label": "fp/placeholder.js",
+            "path": "fp/placeholder.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "fp/placeholder.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:incident-response-plan-md",
+            "kind": "file",
+            "label": "incident_response_plan.md",
+            "path": "incident_response_plan.md",
+            "detail": "source marker candidate",
+            "sources": [
+              "incident_response_plan.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:lib-common-file-js",
+            "kind": "file",
+            "label": "lib/common/file.js",
+            "path": "lib/common/file.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "lib/common/file.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:lib-common-mapping-js",
+            "kind": "file",
+            "label": "lib/common/mapping.js",
+            "path": "lib/common/mapping.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "lib/common/mapping.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:lib-common-minify-js",
+            "kind": "file",
+            "label": "lib/common/minify.js",
+            "path": "lib/common/minify.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "lib/common/minify.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:lib-common-uglify-options-js",
+            "kind": "file",
+            "label": "lib/common/uglify.options.js",
+            "path": "lib/common/uglify.options.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "lib/common/uglify.options.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:lib-common-util-js",
+            "kind": "file",
+            "label": "lib/common/util.js",
+            "path": "lib/common/util.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "lib/common/util.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:lib-fp-build-dist-js",
+            "kind": "file",
+            "label": "lib/fp/build-dist.js",
+            "path": "lib/fp/build-dist.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "lib/fp/build-dist.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:lib-fp-build-doc-js",
+            "kind": "file",
+            "label": "lib/fp/build-doc.js",
+            "path": "lib/fp/build-doc.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "lib/fp/build-doc.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:lib-fp-build-modules-js",
+            "kind": "file",
+            "label": "lib/fp/build-modules.js",
+            "path": "lib/fp/build-modules.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "lib/fp/build-modules.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:lib-main-build-dist-js",
+            "kind": "file",
+            "label": "lib/main/build-dist.js",
+            "path": "lib/main/build-dist.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "lib/main/build-dist.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:lib-main-build-doc-js",
+            "kind": "file",
+            "label": "lib/main/build-doc.js",
+            "path": "lib/main/build-doc.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "lib/main/build-doc.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:lib-main-build-modules-js",
+            "kind": "file",
+            "label": "lib/main/build-modules.js",
+            "path": "lib/main/build-modules.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "lib/main/build-modules.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:lib-main-build-site-js",
+            "kind": "file",
+            "label": "lib/main/build-site.js",
+            "path": "lib/main/build-site.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "lib/main/build-site.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:lodash-js",
+            "kind": "file",
+            "label": "lodash.js",
+            "path": "lodash.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "lodash.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:package-json",
+            "kind": "file",
+            "label": "package.json",
+            "path": "package.json",
+            "detail": "npm scripts: build, build:fp, build:fp-modules, build:main, build:main-modules, doc, doc:fp, doc:site",
+            "sources": [
+              "package.json"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:perf-asset-perf-ui-js",
+            "kind": "file",
+            "label": "perf/asset/perf-ui.js",
+            "path": "perf/asset/perf-ui.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "perf/asset/perf-ui.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:perf-perf-js",
+            "kind": "file",
+            "label": "perf/perf.js",
+            "path": "perf/perf.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "perf/perf.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:playwright-config-js",
+            "kind": "file",
+            "label": "playwright.config.js",
+            "path": "playwright.config.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "playwright.config.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:test-asset-test-ui-js",
+            "kind": "file",
+            "label": "test/asset/test-ui.js",
+            "path": "test/asset/test-ui.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "test/asset/test-ui.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:test-asset-worker-js",
+            "kind": "file",
+            "label": "test/asset/worker.js",
+            "path": "test/asset/worker.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "test/asset/worker.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:test-playwright-runner-spec-js",
+            "kind": "file",
+            "label": "test/playwright-runner.spec.js",
+            "path": "test/playwright-runner.spec.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "test/playwright-runner.spec.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:test-remove-js",
+            "kind": "file",
+            "label": "test/remove.js",
+            "path": "test/remove.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "test/remove.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:test-test-fp-js",
+            "kind": "file",
+            "label": "test/test-fp.js",
+            "path": "test/test-fp.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "test/test-fp.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:test-test-js",
+            "kind": "file",
+            "label": "test/test.js",
+            "path": "test/test.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "test/test.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:threat-model-md",
+            "kind": "file",
+            "label": "threat-model.md",
+            "path": "threat-model.md",
+            "detail": "source marker candidate",
+            "sources": [
+              "threat-model.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "package:package-json",
+            "kind": "package",
+            "label": "lodash",
+            "path": "package.json",
+            "detail": "package.json manifest",
+            "sources": [
+              "package.json"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "script:package-json-build",
+            "kind": "script",
+            "label": "build",
+            "path": "package.json",
+            "detail": "package script",
+            "sources": [
+              "package.json"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "script:package-json-build-fp",
+            "kind": "script",
+            "label": "build:fp",
+            "path": "package.json",
+            "detail": "package script",
+            "sources": [
+              "package.json"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "script:package-json-build-fp-modules",
+            "kind": "script",
+            "label": "build:fp-modules",
+            "path": "package.json",
+            "detail": "package script",
+            "sources": [
+              "package.json"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "script:package-json-build-main",
+            "kind": "script",
+            "label": "build:main",
+            "path": "package.json",
+            "detail": "package script",
+            "sources": [
+              "package.json"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "script:package-json-build-main-modules",
+            "kind": "script",
+            "label": "build:main-modules",
+            "path": "package.json",
+            "detail": "package script",
+            "sources": [
+              "package.json"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "script:package-json-doc",
+            "kind": "script",
+            "label": "doc",
+            "path": "package.json",
+            "detail": "package script",
+            "sources": [
+              "package.json"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "script:package-json-doc-fp",
+            "kind": "script",
+            "label": "doc:fp",
+            "path": "package.json",
+            "detail": "package script",
+            "sources": [
+              "package.json"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "script:package-json-doc-site",
+            "kind": "script",
+            "label": "doc:site",
+            "path": "package.json",
+            "detail": "package script",
+            "sources": [
+              "package.json"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "script:package-json-doc-sitehtml",
+            "kind": "script",
+            "label": "doc:sitehtml",
+            "path": "package.json",
+            "detail": "package script",
+            "sources": [
+              "package.json"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "script:package-json-pretest",
+            "kind": "script",
+            "label": "pretest",
+            "path": "package.json",
+            "detail": "package script",
+            "sources": [
+              "package.json"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "script:package-json-style",
+            "kind": "script",
+            "label": "style",
+            "path": "package.json",
+            "detail": "package script",
+            "sources": [
+              "package.json"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "script:package-json-style-fp",
+            "kind": "script",
+            "label": "style:fp",
+            "path": "package.json",
+            "detail": "package script",
+            "sources": [
+              "package.json"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "script:package-json-style-main",
+            "kind": "script",
+            "label": "style:main",
+            "path": "package.json",
+            "detail": "package script",
+            "sources": [
+              "package.json"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "script:package-json-style-perf",
+            "kind": "script",
+            "label": "style:perf",
+            "path": "package.json",
+            "detail": "package script",
+            "sources": [
+              "package.json"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "script:package-json-style-test",
+            "kind": "script",
+            "label": "style:test",
+            "path": "package.json",
+            "detail": "package script",
+            "sources": [
+              "package.json"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "script:package-json-test",
+            "kind": "script",
+            "label": "test",
+            "path": "package.json",
+            "detail": "package script",
+            "sources": [
+              "package.json"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "script:package-json-test-doc",
+            "kind": "script",
+            "label": "test:doc",
+            "path": "package.json",
+            "detail": "package script",
+            "sources": [
+              "package.json"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "script:package-json-test-fp",
+            "kind": "script",
+            "label": "test:fp",
+            "path": "package.json",
+            "detail": "package script",
+            "sources": [
+              "package.json"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "workspace:",
+            "kind": "workspace_unit",
+            "label": "lodash",
+            "path": null,
+            "detail": "workspace | 64 files | 27 JavaScript, 8 YAML, 7 Markdown",
+            "sources": [
+              ".github/workflows/browser-testing.yml",
+              ".github/workflows/ci-bun.yml",
+              "package.json"
+            ],
+            "source_location": null,
+            "community": null
+          }
+        ],
+        "edges": [
+          {
+            "from": "package:package-json",
+            "to": "script:package-json-build",
+            "kind": "defines",
+            "evidence": "package.json defines npm script `build`",
+            "sources": [
+              "package.json"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "package:package-json",
+            "to": "script:package-json-build-fp",
+            "kind": "defines",
+            "evidence": "package.json defines npm script `build:fp`",
+            "sources": [
+              "package.json"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "package:package-json",
+            "to": "script:package-json-build-fp-modules",
+            "kind": "defines",
+            "evidence": "package.json defines npm script `build:fp-modules`",
+            "sources": [
+              "package.json"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "package:package-json",
+            "to": "script:package-json-build-main",
+            "kind": "defines",
+            "evidence": "package.json defines npm script `build:main`",
+            "sources": [
+              "package.json"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "package:package-json",
+            "to": "script:package-json-build-main-modules",
+            "kind": "defines",
+            "evidence": "package.json defines npm script `build:main-modules`",
+            "sources": [
+              "package.json"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "package:package-json",
+            "to": "script:package-json-doc",
+            "kind": "defines",
+            "evidence": "package.json defines npm script `doc`",
+            "sources": [
+              "package.json"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "package:package-json",
+            "to": "script:package-json-doc-fp",
+            "kind": "defines",
+            "evidence": "package.json defines npm script `doc:fp`",
+            "sources": [
+              "package.json"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "package:package-json",
+            "to": "script:package-json-doc-site",
+            "kind": "defines",
+            "evidence": "package.json defines npm script `doc:site`",
+            "sources": [
+              "package.json"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "package:package-json",
+            "to": "script:package-json-doc-sitehtml",
+            "kind": "defines",
+            "evidence": "package.json defines npm script `doc:sitehtml`",
+            "sources": [
+              "package.json"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "package:package-json",
+            "to": "script:package-json-pretest",
+            "kind": "defines",
+            "evidence": "package.json defines npm script `pretest`",
+            "sources": [
+              "package.json"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "package:package-json",
+            "to": "script:package-json-style",
+            "kind": "defines",
+            "evidence": "package.json defines npm script `style`",
+            "sources": [
+              "package.json"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "package:package-json",
+            "to": "script:package-json-style-fp",
+            "kind": "defines",
+            "evidence": "package.json defines npm script `style:fp`",
+            "sources": [
+              "package.json"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "package:package-json",
+            "to": "script:package-json-style-main",
+            "kind": "defines",
+            "evidence": "package.json defines npm script `style:main`",
+            "sources": [
+              "package.json"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "package:package-json",
+            "to": "script:package-json-style-perf",
+            "kind": "defines",
+            "evidence": "package.json defines npm script `style:perf`",
+            "sources": [
+              "package.json"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "package:package-json",
+            "to": "script:package-json-style-test",
+            "kind": "defines",
+            "evidence": "package.json defines npm script `style:test`",
+            "sources": [
+              "package.json"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "package:package-json",
+            "to": "script:package-json-test",
+            "kind": "defines",
+            "evidence": "package.json defines npm script `test`",
+            "sources": [
+              "package.json"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "package:package-json",
+            "to": "script:package-json-test-doc",
+            "kind": "defines",
+            "evidence": "package.json defines npm script `test:doc`",
+            "sources": [
+              "package.json"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "package:package-json",
+            "to": "script:package-json-test-fp",
+            "kind": "defines",
+            "evidence": "package.json defines npm script `test:fp`",
+            "sources": [
+              "package.json"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "package:package-json",
+            "kind": "defines",
+            "evidence": "workspace unit owns this manifest",
+            "sources": [
+              "package.json"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "file:github-workflows-browser-testing-yml",
+            "kind": "entrypoint",
+            "evidence": "entrypoint belongs to this workspace unit",
+            "sources": [
+              ".github/workflows/browser-testing.yml"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "file:github-workflows-ci-bun-yml",
+            "kind": "entrypoint",
+            "evidence": "entrypoint belongs to this workspace unit",
+            "sources": [
+              ".github/workflows/ci-bun.yml"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "file:github-workflows-ci-dist-sync-yml",
+            "kind": "entrypoint",
+            "evidence": "entrypoint belongs to this workspace unit",
+            "sources": [
+              ".github/workflows/ci-dist-sync.yml"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "file:github-workflows-ci-docs-yml",
+            "kind": "entrypoint",
+            "evidence": "entrypoint belongs to this workspace unit",
+            "sources": [
+              ".github/workflows/ci-docs.yml"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "file:github-workflows-ci-node-yml",
+            "kind": "entrypoint",
+            "evidence": "entrypoint belongs to this workspace unit",
+            "sources": [
+              ".github/workflows/ci-node.yml"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "file:github-workflows-codeql-yml",
+            "kind": "entrypoint",
+            "evidence": "entrypoint belongs to this workspace unit",
+            "sources": [
+              ".github/workflows/codeql.yml"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          }
+        ],
+        "truncated": false
+      },
+      "history_brief": {
+        "schema_version": 2,
+        "summary": "Local history brief captured 1 recent commit, 0 decision markers, 6 test hints, and 0 co-change clusters for Repo Unpacked. Treat commit subjects as leads and rely on cited files for durable constraints.",
+        "recent_commits": [
+          {
+            "sha": "2b5e6f7399a7",
+            "date": "2026-09-11",
+            "subject": "ci: update actions to latest versions (#6279)",
+            "files": [
+              ".github/CONTRIBUTING.md",
+              ".github/workflows/browser-testing.yml",
+              ".github/workflows/ci-bun.yml",
+              ".github/workflows/ci-dist-sync.yml",
+              ".github/workflows/ci-docs.yml",
+              ".github/workflows/ci-node.yml",
+              ".github/workflows/codeql.yml",
+              ".github/workflows/renovate.yml",
+              ".github/workflows/scorecards.yml",
+              ".markdown-doctest-setup.js",
+              "GOVERNANCE.md",
+              "README.md",
+              "SECURITY.md",
+              "dist/lodash.core.js",
+              "dist/lodash.fp.js",
+              "dist/lodash.js",
+              "dist/mapping.fp.js",
+              "doc/README.md",
+              "fp/_baseConvert.js",
+              "fp/_convertBrowser.js",
+              "fp/_mapping.js",
+              "fp/placeholder.js",
+              "incident_response_plan.md",
+              "lib/common/file.js"
+            ]
+          }
+        ],
+        "decisions": [],
+        "test_hints": [
+          {
+            "path": "package.json",
+            "reason": "package script `pretest` is a likely verification command"
+          },
+          {
+            "path": "package.json",
+            "reason": "package script `style:test` is a likely verification command"
+          },
+          {
+            "path": "package.json",
+            "reason": "package script `test` is a likely verification command"
+          },
+          {
+            "path": "package.json",
+            "reason": "package script `test:doc` is a likely verification command"
+          },
+          {
+            "path": "package.json",
+            "reason": "package script `test:fp` is a likely verification command"
+          },
+          {
+            "path": "package.json",
+            "reason": "package script `test:main` is a likely verification command"
+          }
+        ],
+        "temporal_couplings": [],
+        "graph": {
+          "schema_version": 2,
+          "nodes": [
+            {
+              "id": "commit:2b5e6f7399a7",
+              "kind": "commit",
+              "label": "ci: update actions to latest versions (#6279)",
+              "path": null,
+              "detail": "2026-09-11",
+              "citations": [
+                "git:2b5e6f7399a7"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:-github-contributing-md",
+              "kind": "file",
+              "label": ".github/CONTRIBUTING.md",
+              "path": ".github/CONTRIBUTING.md",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                ".github/CONTRIBUTING.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:-github-workflows-browser-testing-yml",
+              "kind": "file",
+              "label": ".github/workflows/browser-testing.yml",
+              "path": ".github/workflows/browser-testing.yml",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                ".github/workflows/browser-testing.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:-github-workflows-ci-bun-yml",
+              "kind": "file",
+              "label": ".github/workflows/ci-bun.yml",
+              "path": ".github/workflows/ci-bun.yml",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                ".github/workflows/ci-bun.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:-github-workflows-ci-dist-sync-yml",
+              "kind": "file",
+              "label": ".github/workflows/ci-dist-sync.yml",
+              "path": ".github/workflows/ci-dist-sync.yml",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                ".github/workflows/ci-dist-sync.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:-github-workflows-ci-docs-yml",
+              "kind": "file",
+              "label": ".github/workflows/ci-docs.yml",
+              "path": ".github/workflows/ci-docs.yml",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                ".github/workflows/ci-docs.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:-github-workflows-ci-node-yml",
+              "kind": "file",
+              "label": ".github/workflows/ci-node.yml",
+              "path": ".github/workflows/ci-node.yml",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                ".github/workflows/ci-node.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:-github-workflows-codeql-yml",
+              "kind": "file",
+              "label": ".github/workflows/codeql.yml",
+              "path": ".github/workflows/codeql.yml",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                ".github/workflows/codeql.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:-github-workflows-renovate-yml",
+              "kind": "file",
+              "label": ".github/workflows/renovate.yml",
+              "path": ".github/workflows/renovate.yml",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                ".github/workflows/renovate.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:-github-workflows-scorecards-yml",
+              "kind": "file",
+              "label": ".github/workflows/scorecards.yml",
+              "path": ".github/workflows/scorecards.yml",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                ".github/workflows/scorecards.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:-markdown-doctest-setup-js",
+              "kind": "file",
+              "label": ".markdown-doctest-setup.js",
+              "path": ".markdown-doctest-setup.js",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                ".markdown-doctest-setup.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:dist-lodash-core-js",
+              "kind": "file",
+              "label": "dist/lodash.core.js",
+              "path": "dist/lodash.core.js",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "dist/lodash.core.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:dist-lodash-fp-js",
+              "kind": "file",
+              "label": "dist/lodash.fp.js",
+              "path": "dist/lodash.fp.js",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "dist/lodash.fp.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:dist-lodash-js",
+              "kind": "file",
+              "label": "dist/lodash.js",
+              "path": "dist/lodash.js",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "dist/lodash.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:dist-mapping-fp-js",
+              "kind": "file",
+              "label": "dist/mapping.fp.js",
+              "path": "dist/mapping.fp.js",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "dist/mapping.fp.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:doc-readme-md",
+              "kind": "file",
+              "label": "doc/README.md",
+              "path": "doc/README.md",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "doc/README.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:fp--baseconvert-js",
+              "kind": "file",
+              "label": "fp/_baseConvert.js",
+              "path": "fp/_baseConvert.js",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "fp/_baseConvert.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:fp--convertbrowser-js",
+              "kind": "file",
+              "label": "fp/_convertBrowser.js",
+              "path": "fp/_convertBrowser.js",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "fp/_convertBrowser.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:fp--mapping-js",
+              "kind": "file",
+              "label": "fp/_mapping.js",
+              "path": "fp/_mapping.js",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "fp/_mapping.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:fp-placeholder-js",
+              "kind": "file",
+              "label": "fp/placeholder.js",
+              "path": "fp/placeholder.js",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "fp/placeholder.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:governance-md",
+              "kind": "file",
+              "label": "GOVERNANCE.md",
+              "path": "GOVERNANCE.md",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "GOVERNANCE.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:incident-response-plan-md",
+              "kind": "file",
+              "label": "incident_response_plan.md",
+              "path": "incident_response_plan.md",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "incident_response_plan.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:lib-common-file-js",
+              "kind": "file",
+              "label": "lib/common/file.js",
+              "path": "lib/common/file.js",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "lib/common/file.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:package-json",
+              "kind": "file",
+              "label": "package.json",
+              "path": "package.json",
+              "detail": "Verification source",
+              "citations": [
+                "package.json"
+              ],
+              "trust": "source_backed"
+            },
+            {
+              "id": "file:readme-md",
+              "kind": "file",
+              "label": "README.md",
+              "path": "README.md",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "README.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:security-md",
+              "kind": "file",
+              "label": "SECURITY.md",
+              "path": "SECURITY.md",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "SECURITY.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "test:package-json-package-script--pretest--is-a-likely-verification-command",
+              "kind": "test",
+              "label": "package script `pretest` is a likely verification command",
+              "path": "package.json",
+              "detail": "Likely verification lead",
+              "citations": [
+                "package.json"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "id": "test:package-json-package-script--style-test--is-a-likely-verification-command",
+              "kind": "test",
+              "label": "package script `style:test` is a likely verification command",
+              "path": "package.json",
+              "detail": "Likely verification lead",
+              "citations": [
+                "package.json"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "id": "test:package-json-package-script--test--is-a-likely-verification-command",
+              "kind": "test",
+              "label": "package script `test` is a likely verification command",
+              "path": "package.json",
+              "detail": "Likely verification lead",
+              "citations": [
+                "package.json"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "id": "test:package-json-package-script--test-doc--is-a-likely-verification-command",
+              "kind": "test",
+              "label": "package script `test:doc` is a likely verification command",
+              "path": "package.json",
+              "detail": "Likely verification lead",
+              "citations": [
+                "package.json"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "id": "test:package-json-package-script--test-fp--is-a-likely-verification-command",
+              "kind": "test",
+              "label": "package script `test:fp` is a likely verification command",
+              "path": "package.json",
+              "detail": "Likely verification lead",
+              "citations": [
+                "package.json"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "id": "test:package-json-package-script--test-main--is-a-likely-verification-command",
+              "kind": "test",
+              "label": "package script `test:main` is a likely verification command",
+              "path": "package.json",
+              "detail": "Likely verification lead",
+              "citations": [
+                "package.json"
+              ],
+              "trust": "navigation_lead"
+            }
+          ],
+          "edges": [
+            {
+              "from": "commit:2b5e6f7399a7",
+              "to": "file:-github-contributing-md",
+              "kind": "changed",
+              "evidence": "2b5e6f7399a7 changed this file",
+              "citations": [
+                "git:2b5e6f7399a7",
+                ".github/CONTRIBUTING.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:2b5e6f7399a7",
+              "to": "file:-github-workflows-browser-testing-yml",
+              "kind": "changed",
+              "evidence": "2b5e6f7399a7 changed this file",
+              "citations": [
+                "git:2b5e6f7399a7",
+                ".github/workflows/browser-testing.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:2b5e6f7399a7",
+              "to": "file:-github-workflows-ci-bun-yml",
+              "kind": "changed",
+              "evidence": "2b5e6f7399a7 changed this file",
+              "citations": [
+                "git:2b5e6f7399a7",
+                ".github/workflows/ci-bun.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:2b5e6f7399a7",
+              "to": "file:-github-workflows-ci-dist-sync-yml",
+              "kind": "changed",
+              "evidence": "2b5e6f7399a7 changed this file",
+              "citations": [
+                "git:2b5e6f7399a7",
+                ".github/workflows/ci-dist-sync.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:2b5e6f7399a7",
+              "to": "file:-github-workflows-ci-docs-yml",
+              "kind": "changed",
+              "evidence": "2b5e6f7399a7 changed this file",
+              "citations": [
+                "git:2b5e6f7399a7",
+                ".github/workflows/ci-docs.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:2b5e6f7399a7",
+              "to": "file:-github-workflows-ci-node-yml",
+              "kind": "changed",
+              "evidence": "2b5e6f7399a7 changed this file",
+              "citations": [
+                "git:2b5e6f7399a7",
+                ".github/workflows/ci-node.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:2b5e6f7399a7",
+              "to": "file:-github-workflows-codeql-yml",
+              "kind": "changed",
+              "evidence": "2b5e6f7399a7 changed this file",
+              "citations": [
+                "git:2b5e6f7399a7",
+                ".github/workflows/codeql.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:2b5e6f7399a7",
+              "to": "file:-github-workflows-renovate-yml",
+              "kind": "changed",
+              "evidence": "2b5e6f7399a7 changed this file",
+              "citations": [
+                "git:2b5e6f7399a7",
+                ".github/workflows/renovate.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:2b5e6f7399a7",
+              "to": "file:-github-workflows-scorecards-yml",
+              "kind": "changed",
+              "evidence": "2b5e6f7399a7 changed this file",
+              "citations": [
+                "git:2b5e6f7399a7",
+                ".github/workflows/scorecards.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:2b5e6f7399a7",
+              "to": "file:-markdown-doctest-setup-js",
+              "kind": "changed",
+              "evidence": "2b5e6f7399a7 changed this file",
+              "citations": [
+                "git:2b5e6f7399a7",
+                ".markdown-doctest-setup.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:2b5e6f7399a7",
+              "to": "file:dist-lodash-core-js",
+              "kind": "changed",
+              "evidence": "2b5e6f7399a7 changed this file",
+              "citations": [
+                "git:2b5e6f7399a7",
+                "dist/lodash.core.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:2b5e6f7399a7",
+              "to": "file:dist-lodash-fp-js",
+              "kind": "changed",
+              "evidence": "2b5e6f7399a7 changed this file",
+              "citations": [
+                "git:2b5e6f7399a7",
+                "dist/lodash.fp.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:2b5e6f7399a7",
+              "to": "file:dist-lodash-js",
+              "kind": "changed",
+              "evidence": "2b5e6f7399a7 changed this file",
+              "citations": [
+                "git:2b5e6f7399a7",
+                "dist/lodash.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:2b5e6f7399a7",
+              "to": "file:dist-mapping-fp-js",
+              "kind": "changed",
+              "evidence": "2b5e6f7399a7 changed this file",
+              "citations": [
+                "git:2b5e6f7399a7",
+                "dist/mapping.fp.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:2b5e6f7399a7",
+              "to": "file:doc-readme-md",
+              "kind": "changed",
+              "evidence": "2b5e6f7399a7 changed this file",
+              "citations": [
+                "git:2b5e6f7399a7",
+                "doc/README.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:2b5e6f7399a7",
+              "to": "file:fp--baseconvert-js",
+              "kind": "changed",
+              "evidence": "2b5e6f7399a7 changed this file",
+              "citations": [
+                "git:2b5e6f7399a7",
+                "fp/_baseConvert.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:2b5e6f7399a7",
+              "to": "file:fp--convertbrowser-js",
+              "kind": "changed",
+              "evidence": "2b5e6f7399a7 changed this file",
+              "citations": [
+                "git:2b5e6f7399a7",
+                "fp/_convertBrowser.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:2b5e6f7399a7",
+              "to": "file:fp--mapping-js",
+              "kind": "changed",
+              "evidence": "2b5e6f7399a7 changed this file",
+              "citations": [
+                "git:2b5e6f7399a7",
+                "fp/_mapping.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:2b5e6f7399a7",
+              "to": "file:fp-placeholder-js",
+              "kind": "changed",
+              "evidence": "2b5e6f7399a7 changed this file",
+              "citations": [
+                "git:2b5e6f7399a7",
+                "fp/placeholder.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:2b5e6f7399a7",
+              "to": "file:governance-md",
+              "kind": "changed",
+              "evidence": "2b5e6f7399a7 changed this file",
+              "citations": [
+                "git:2b5e6f7399a7",
+                "GOVERNANCE.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:2b5e6f7399a7",
+              "to": "file:incident-response-plan-md",
+              "kind": "changed",
+              "evidence": "2b5e6f7399a7 changed this file",
+              "citations": [
+                "git:2b5e6f7399a7",
+                "incident_response_plan.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:2b5e6f7399a7",
+              "to": "file:lib-common-file-js",
+              "kind": "changed",
+              "evidence": "2b5e6f7399a7 changed this file",
+              "citations": [
+                "git:2b5e6f7399a7",
+                "lib/common/file.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:2b5e6f7399a7",
+              "to": "file:readme-md",
+              "kind": "changed",
+              "evidence": "2b5e6f7399a7 changed this file",
+              "citations": [
+                "git:2b5e6f7399a7",
+                "README.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:2b5e6f7399a7",
+              "to": "file:security-md",
+              "kind": "changed",
+              "evidence": "2b5e6f7399a7 changed this file",
+              "citations": [
+                "git:2b5e6f7399a7",
+                "SECURITY.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "file:package-json",
+              "to": "test:package-json-package-script--pretest--is-a-likely-verification-command",
+              "kind": "verified_by",
+              "evidence": "package script `pretest` is a likely verification command",
+              "citations": [
+                "package.json"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:package-json",
+              "to": "test:package-json-package-script--style-test--is-a-likely-verification-command",
+              "kind": "verified_by",
+              "evidence": "package script `style:test` is a likely verification command",
+              "citations": [
+                "package.json"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:package-json",
+              "to": "test:package-json-package-script--test--is-a-likely-verification-command",
+              "kind": "verified_by",
+              "evidence": "package script `test` is a likely verification command",
+              "citations": [
+                "package.json"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:package-json",
+              "to": "test:package-json-package-script--test-doc--is-a-likely-verification-command",
+              "kind": "verified_by",
+              "evidence": "package script `test:doc` is a likely verification command",
+              "citations": [
+                "package.json"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:package-json",
+              "to": "test:package-json-package-script--test-fp--is-a-likely-verification-command",
+              "kind": "verified_by",
+              "evidence": "package script `test:fp` is a likely verification command",
+              "citations": [
+                "package.json"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:package-json",
+              "to": "test:package-json-package-script--test-main--is-a-likely-verification-command",
+              "kind": "verified_by",
+              "evidence": "package script `test:main` is a likely verification command",
+              "citations": [
+                "package.json"
+              ],
+              "trust": "navigation_lead"
+            }
+          ],
+          "truncated": false
+        },
+        "sources": [
+          "package.json"
+        ],
+        "truncated": false
+      },
+      "repo_health": {
+        "schema_version": 1,
+        "summary": "Deterministic scan scored 27 source files across simple size, churn, structural, test-adjacency, and performance-risk signals. 1 hotspot surfaced; average score is 9.4/10. Treat these as review leads, not proof of a bug.",
+        "average_score": 9.4,
+        "hotspot_count": 1,
+        "files_analyzed": 27,
+        "files_with_test_signal": 0,
+        "top_files": [
+          {
+            "path": "test/test.js",
+            "score": 6.2,
+            "bucket": "hotspot",
+            "lines": 2639,
+            "bytes": 814532,
+            "churn": 0,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "high",
+                "detail": "2639 lines in one source file; inspect whether the module hides multiple responsibilities.",
+                "sources": [
+                  "test/test.js"
+                ]
+              },
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 8; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "test/test.js"
+                ]
+              },
+              {
+                "id": "long_block",
+                "label": "Long function/block",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "A brace-delimited block spans roughly 268 lines; consider extracting a helper when touching it.",
+                "sources": [
+                  "test/test.js"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "test/test.js"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow.",
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "test/test-fp.js",
+            "score": 6.7,
+            "bucket": "watch",
+            "lines": 2322,
+            "bytes": 65357,
+            "churn": 0,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "high",
+                "detail": "2322 lines in one source file; inspect whether the module hides multiple responsibilities.",
+                "sources": [
+                  "test/test-fp.js"
+                ]
+              },
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "Maximum indentation depth is about 7; inspect branch-heavy paths before risky edits.",
+                "sources": [
+                  "test/test-fp.js"
+                ]
+              },
+              {
+                "id": "long_block",
+                "label": "Long function/block",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "A brace-delimited block spans roughly 2322 lines; consider extracting a helper when touching it.",
+                "sources": [
+                  "test/test-fp.js"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "test/test-fp.js"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow.",
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "perf/perf.js",
+            "score": 6.7,
+            "bucket": "watch",
+            "lines": 1978,
+            "bytes": 56316,
+            "churn": 0,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "high",
+                "detail": "1978 lines in one source file; inspect whether the module hides multiple responsibilities.",
+                "sources": [
+                  "perf/perf.js"
+                ]
+              },
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "Maximum indentation depth is about 6; inspect branch-heavy paths before risky edits.",
+                "sources": [
+                  "perf/perf.js"
+                ]
+              },
+              {
+                "id": "long_block",
+                "label": "Long function/block",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "A brace-delimited block spans roughly 1978 lines; consider extracting a helper when touching it.",
+                "sources": [
+                  "perf/perf.js"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "perf/perf.js"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow.",
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "fp/_baseConvert.js",
+            "score": 7.2,
+            "bucket": "watch",
+            "lines": 569,
+            "bytes": 16414,
+            "churn": 0,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "569 lines in one source file; changes here may be harder to review.",
+                "sources": [
+                  "fp/_baseConvert.js"
+                ]
+              },
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "Maximum indentation depth is about 7; inspect branch-heavy paths before risky edits.",
+                "sources": [
+                  "fp/_baseConvert.js"
+                ]
+              },
+              {
+                "id": "long_block",
+                "label": "Long function/block",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "A brace-delimited block spans roughly 430 lines; consider extracting a helper when touching it.",
+                "sources": [
+                  "fp/_baseConvert.js"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "fp/_baseConvert.js"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow.",
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "lodash.js",
+            "score": 7.4,
+            "bucket": "watch",
+            "lines": 2541,
+            "bytes": 545953,
+            "churn": 0,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "high",
+                "detail": "2541 lines in one source file; inspect whether the module hides multiple responsibilities.",
+                "sources": [
+                  "lodash.js"
+                ]
+              },
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "Maximum indentation depth is about 7; inspect branch-heavy paths before risky edits.",
+                "sources": [
+                  "lodash.js"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "lodash.js"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow.",
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "playwright.config.js",
+            "score": 9.3,
+            "bucket": "healthy",
+            "lines": 31,
+            "bytes": 1010,
+            "churn": 0,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "Maximum indentation depth is about 6; inspect branch-heavy paths before risky edits.",
+                "sources": [
+                  "playwright.config.js"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "fp/_mapping.js",
+            "score": 10,
+            "bucket": "healthy",
+            "lines": 358,
+            "bytes": 9955,
+            "churn": 0,
+            "has_test_signal": false,
+            "findings": [],
+            "refactoring_targets": []
+          },
+          {
+            "path": "lib/main/build-site.js",
+            "score": 10,
+            "bucket": "healthy",
+            "lines": 239,
+            "bytes": 6554,
+            "churn": 0,
+            "has_test_signal": false,
+            "findings": [],
+            "refactoring_targets": []
+          },
+          {
+            "path": "test/asset/test-ui.js",
+            "score": 10,
+            "bucket": "healthy",
+            "lines": 155,
+            "bytes": 5178,
+            "churn": 0,
+            "has_test_signal": false,
+            "findings": [],
+            "refactoring_targets": []
+          },
+          {
+            "path": "lib/fp/build-modules.js",
+            "score": 10,
+            "bucket": "healthy",
+            "lines": 150,
+            "bytes": 3640,
+            "churn": 0,
+            "has_test_signal": false,
+            "findings": [],
+            "refactoring_targets": []
+          },
+          {
+            "path": "perf/asset/perf-ui.js",
+            "score": 10,
+            "bucket": "healthy",
+            "lines": 112,
+            "bytes": 3500,
+            "churn": 0,
+            "has_test_signal": false,
+            "findings": [],
+            "refactoring_targets": []
+          },
+          {
+            "path": "lib/main/build-doc.js",
+            "score": 10,
+            "bucket": "healthy",
+            "lines": 83,
+            "bytes": 2312,
+            "churn": 0,
+            "has_test_signal": false,
+            "findings": [],
+            "refactoring_targets": []
+          }
+        ],
+        "truncated": false
+      },
+      "all_files": [],
+      "ignored_dirs": [
+        "dist",
+        ".git",
+        "vendor"
+      ],
+      "coverage": {
+        "schema_version": 1,
+        "strategy": "full_walk",
+        "sampled_files": 64,
+        "total_files": null,
+        "sample_percent": null,
+        "languages": [
+          {
+            "language": "JavaScript",
+            "files": 27,
+            "bytes": 1543734
+          },
+          {
+            "language": "YAML",
+            "files": 8,
+            "bytes": 9925
+          },
+          {
+            "language": "Markdown",
+            "files": 7,
+            "bytes": 326770
+          },
+          {
+            "language": "HTML",
+            "files": 5,
+            "bytes": 35861
+          },
+          {
+            "language": "JSON",
+            "files": 2,
+            "bytes": 2347
+          }
+        ],
+        "top_level_dirs": [
+          {
+            "path": "lib",
+            "file_count": 21,
+            "bytes": 31101
+          },
+          {
+            "path": "test",
+            "file_count": 10,
+            "bytes": 920611
+          },
+          {
+            "path": ".github",
+            "file_count": 9,
+            "bytes": 13185
+          },
+          {
+            "path": "fp",
+            "file_count": 4,
+            "bytes": 27089
+          },
+          {
+            "path": "perf",
+            "file_count": 3,
+            "bytes": 62158
+          },
+          {
+            "path": "doc",
+            "file_count": 1,
+            "bytes": 295392
+          }
+        ],
+        "notes": [
+          "Full local walk covered the repo within the scan cap."
+        ]
+      },
+      "all_files_capped": false,
+      "dir_tree_preview": {
+        "name": "",
+        "path": "",
+        "is_dir": true,
+        "file_count": 64,
+        "children": [
+          {
+            "name": ".github",
+            "path": ".github",
+            "is_dir": true,
+            "file_count": 9,
+            "children": [
+              {
+                "name": "workflows",
+                "path": ".github/workflows",
+                "is_dir": true,
+                "file_count": 8,
+                "children": [
+                  {
+                    "name": "browser-testing.yml",
+                    "path": ".github/workflows/browser-testing.yml",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "ci-bun.yml",
+                    "path": ".github/workflows/ci-bun.yml",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "ci-dist-sync.yml",
+                    "path": ".github/workflows/ci-dist-sync.yml",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "ci-docs.yml",
+                    "path": ".github/workflows/ci-docs.yml",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "ci-node.yml",
+                    "path": ".github/workflows/ci-node.yml",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "codeql.yml",
+                    "path": ".github/workflows/codeql.yml",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "renovate.yml",
+                    "path": ".github/workflows/renovate.yml",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "scorecards.yml",
+                    "path": ".github/workflows/scorecards.yml",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "CONTRIBUTING.md",
+                "path": ".github/CONTRIBUTING.md",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "doc",
+            "path": "doc",
+            "is_dir": true,
+            "file_count": 1,
+            "children": [
+              {
+                "name": "README.md",
+                "path": "doc/README.md",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "fp",
+            "path": "fp",
+            "is_dir": true,
+            "file_count": 4,
+            "children": [
+              {
+                "name": "_baseConvert.js",
+                "path": "fp/_baseConvert.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "_convertBrowser.js",
+                "path": "fp/_convertBrowser.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "_mapping.js",
+                "path": "fp/_mapping.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "placeholder.js",
+                "path": "fp/placeholder.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "lib",
+            "path": "lib",
+            "is_dir": true,
+            "file_count": 21,
+            "children": [
+              {
+                "name": "common",
+                "path": "lib/common",
+                "is_dir": true,
+                "file_count": 5,
+                "children": [
+                  {
+                    "name": "file.js",
+                    "path": "lib/common/file.js",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "mapping.js",
+                    "path": "lib/common/mapping.js",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "minify.js",
+                    "path": "lib/common/minify.js",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "uglify.options.js",
+                    "path": "lib/common/uglify.options.js",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "util.js",
+                    "path": "lib/common/util.js",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "fp",
+                "path": "lib/fp",
+                "is_dir": true,
+                "file_count": 12,
+                "children": [
+                  {
+                    "name": "template",
+                    "path": "lib/fp/template",
+                    "is_dir": true,
+                    "file_count": 9,
+                    "children": [
+                      {
+                        "name": "doc",
+                        "path": "lib/fp/template/doc",
+                        "is_dir": true,
+                        "file_count": 1,
+                        "children": [
+                          {
+                            "name": "wiki.jst",
+                            "path": "lib/fp/template/doc/wiki.jst",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          }
+                        ]
+                      },
+                      {
+                        "name": "modules",
+                        "path": "lib/fp/template/modules",
+                        "is_dir": true,
+                        "file_count": 8,
+                        "children": [
+                          {
+                            "name": "_falseOptions.jst",
+                            "path": "lib/fp/template/modules/_falseOptions.jst",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          },
+                          {
+                            "name": "_util.jst",
+                            "path": "lib/fp/template/modules/_util.jst",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          },
+                          {
+                            "name": "alias.jst",
+                            "path": "lib/fp/template/modules/alias.jst",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          },
+                          {
+                            "name": "category.jst",
+                            "path": "lib/fp/template/modules/category.jst",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          },
+                          {
+                            "name": "convert.jst",
+                            "path": "lib/fp/template/modules/convert.jst",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          },
+                          {
+                            "name": "fp.jst",
+                            "path": "lib/fp/template/modules/fp.jst",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          },
+                          {
+                            "name": "module.jst",
+                            "path": "lib/fp/template/modules/module.jst",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          },
+                          {
+                            "name": "thru.jst",
+                            "path": "lib/fp/template/modules/thru.jst",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "name": "build-dist.js",
+                    "path": "lib/fp/build-dist.js",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "build-doc.js",
+                    "path": "lib/fp/build-doc.js",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "build-modules.js",
+                    "path": "lib/fp/build-modules.js",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "main",
+                "path": "lib/main",
+                "is_dir": true,
+                "file_count": 4,
+                "children": [
+                  {
+                    "name": "build-dist.js",
+                    "path": "lib/main/build-dist.js",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "build-doc.js",
+                    "path": "lib/main/build-doc.js",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "build-modules.js",
+                    "path": "lib/main/build-modules.js",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "build-site.js",
+                    "path": "lib/main/build-site.js",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "perf",
+            "path": "perf",
+            "is_dir": true,
+            "file_count": 3,
+            "children": [
+              {
+                "name": "asset",
+                "path": "perf/asset",
+                "is_dir": true,
+                "file_count": 1,
+                "children": [
+                  {
+                    "name": "perf-ui.js",
+                    "path": "perf/asset/perf-ui.js",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "index.html",
+                "path": "perf/index.html",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "perf.js",
+                "path": "perf/perf.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "test",
+            "path": "test",
+            "is_dir": true,
+            "file_count": 10,
+            "children": [
+              {
+                "name": "asset",
+                "path": "test/asset",
+                "is_dir": true,
+                "file_count": 2,
+                "children": [
+                  {
+                    "name": "test-ui.js",
+                    "path": "test/asset/test-ui.js",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "worker.js",
+                    "path": "test/asset/worker.js",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "backbone.html",
+                "path": "test/backbone.html",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "fp.html",
+                "path": "test/fp.html",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "index.html",
+                "path": "test/index.html",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "playwright-runner.spec.js",
+                "path": "test/playwright-runner.spec.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "remove.js",
+                "path": "test/remove.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "test-fp.js",
+                "path": "test/test-fp.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "test.js",
+                "path": "test/test.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "underscore.html",
+                "path": "test/underscore.html",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": ".editorconfig",
+            "path": ".editorconfig",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": ".gitattributes",
+            "path": ".gitattributes",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": ".gitignore",
+            "path": ".gitignore",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": ".jscsrc",
+            "path": ".jscsrc",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": ".markdown-doctest-setup.js",
+            "path": ".markdown-doctest-setup.js",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "CHANGELOG",
+            "path": "CHANGELOG",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "GOVERNANCE.md",
+            "path": "GOVERNANCE.md",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "LICENSE",
+            "path": "LICENSE",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "README.md",
+            "path": "README.md",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "SECURITY.md",
+            "path": "SECURITY.md",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "incident_response_plan.md",
+            "path": "incident_response_plan.md",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "lodash.js",
+            "path": "lodash.js",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "package.json",
+            "path": "package.json",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "playwright.config.js",
+            "path": "playwright.config.js",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "renovate.json",
+            "path": "renovate.json",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "threat-model.md",
+            "path": "threat-model.md",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          }
+        ]
+      }
+    },
+    "profiles": [
+      {
+        "stage": "full_scan",
+        "total_ms": 29,
+        "peak_rss_bytes": 29065216,
+        "steps": [
+          {
+            "id": "git_metadata",
+            "label": "Git metadata",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "file_walk",
+            "label": "Parallel file walk",
+            "ms": 6,
+            "pct": 20.689655172413794
+          },
+          {
+            "id": "languages",
+            "label": "Language breakdown",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "manifests",
+            "label": "Manifest parsing",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "docs",
+            "label": "Doc previews",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "aggregates",
+            "label": "Dirs, configs, stack tags",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "entrypoints",
+            "label": "Entrypoints, workspace units & QA readiness",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "source_previews",
+            "label": "Source preview cache",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "repo_graph",
+            "label": "Deterministic graph scan",
+            "ms": 2,
+            "pct": 6.896551724137931
+          },
+          {
+            "id": "history",
+            "label": "Git history & decision scan",
+            "ms": 13,
+            "pct": 44.827586206896555
+          },
+          {
+            "id": "repo_health",
+            "label": "Deterministic health scoring",
+            "ms": 7,
+            "pct": 24.137931034482758
+          },
+          {
+            "id": "dir_tree",
+            "label": "Directory tree preview",
+            "ms": 0,
+            "pct": 0
+          }
+        ]
+      },
+      {
+        "stage": "local_scan_persist",
+        "total_ms": 0,
+        "peak_rss_bytes": 29442048,
+        "steps": [
+          {
+            "id": "serialize",
+            "label": "JSON serialize (inventory → SQLite)",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "db_insert",
+            "label": "SQLite insert",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "touch_project",
+            "label": "Update repo project metadata",
+            "ms": 0,
+            "pct": 0
+          }
+        ]
+      }
+    ]
+  }
+}

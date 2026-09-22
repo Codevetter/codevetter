@@ -1,0 +1,2991 @@
+{
+  "schema_version": "codevetter.repo-unpack-corpus/v1",
+  "repo": "auth0/node-jsonwebtoken",
+  "slug": "jsonwebtoken",
+  "codevetter_version": "codevetter 1.12.0",
+  "collected_at": "2026-09-22T05:15:33.259Z",
+  "last_commit": {
+    "sha": "b924272f29192e12926b5414546f7c5bfcc9579d",
+    "date": "2026-06-25",
+    "subject": "ci: replace npx changelog call with npm script and fix prepare-release workflow (#1037)"
+  },
+  "scan": {
+    "schema_version": "codevetter.unpack-scan/v1",
+    "report_id": "237c254d-29f2-42a8-a4a3-240780ce74c2",
+    "status": "scan_only",
+    "created_at": "2026-09-22T05:15:33.255891+00:00",
+    "inventory": {
+      "repo_path": "/private/var/folders/9_/1109_2dd1qz6zyvmxb5zp8pc0000gn/T/unpack-pilot-yJqmEz/jsonwebtoken",
+      "repo_name": "jsonwebtoken",
+      "commit_sha": "b924272f29192e12926b5414546f7c5bfcc9579d",
+      "branch": "master",
+      "remote_url": "https://github.com/auth0/node-jsonwebtoken.git",
+      "files_scanned": 84,
+      "files_skipped": 0,
+      "bytes_scanned": 243233,
+      "max_files_hit": false,
+      "estimated_total_files": null,
+      "languages": [
+        {
+          "language": "JavaScript",
+          "files": 46,
+          "bytes": 153023
+        },
+        {
+          "language": "Markdown",
+          "files": 2,
+          "bytes": 59304
+        },
+        {
+          "language": "YAML",
+          "files": 6,
+          "bytes": 6219
+        },
+        {
+          "language": "JSON",
+          "files": 5,
+          "bytes": 3151
+        }
+      ],
+      "manifests": [
+        {
+          "path": "package.json",
+          "kind": "package.json",
+          "name": "jsonwebtoken",
+          "version": "9.0.3",
+          "dependencies": [
+            "@commitlint/cli",
+            "@commitlint/config-conventional",
+            "@semantic-release/exec",
+            "atob",
+            "chai",
+            "conventional-changelog",
+            "conventional-changelog-conventionalcommits",
+            "eslint",
+            "husky",
+            "jws",
+            "lodash.includes",
+            "lodash.isboolean",
+            "lodash.isinteger",
+            "lodash.isnumber",
+            "lodash.isplainobject",
+            "lodash.isstring",
+            "lodash.once",
+            "mocha",
+            "ms",
+            "nsp",
+            "nyc",
+            "semantic-release",
+            "semver",
+            "sinon"
+          ],
+          "scripts": [
+            "coverage",
+            "lint",
+            "prepare",
+            "test",
+            "update-changelog"
+          ]
+        }
+      ],
+      "entrypoints": [
+        {
+          "path": "README.md",
+          "kind": "docs",
+          "reason": "Repository readme"
+        },
+        {
+          "path": ".github/workflows/release.yml",
+          "kind": "config",
+          "reason": "GitHub Actions workflow"
+        },
+        {
+          "path": ".github/workflows/commitlint.yml",
+          "kind": "config",
+          "reason": "GitHub Actions workflow"
+        },
+        {
+          "path": ".github/workflows/test.yml",
+          "kind": "config",
+          "reason": "GitHub Actions workflow"
+        },
+        {
+          "path": ".github/workflows/prepare-release.yml",
+          "kind": "config",
+          "reason": "GitHub Actions workflow"
+        },
+        {
+          "path": ".github/workflows/sca-scan.yml",
+          "kind": "config",
+          "reason": "GitHub Actions workflow"
+        },
+        {
+          "path": "package.json",
+          "kind": "config",
+          "reason": "npm scripts: coverage, lint, prepare, test, update-changelog"
+        }
+      ],
+      "top_level_dirs": [
+        {
+          "path": "test",
+          "file_count": 52,
+          "bytes": 148688
+        },
+        {
+          "path": "lib",
+          "file_count": 8,
+          "bytes": 4140
+        },
+        {
+          "path": ".github",
+          "file_count": 5,
+          "bytes": 6153
+        },
+        {
+          "path": "bin",
+          "file_count": 1,
+          "bytes": 1419
+        },
+        {
+          "path": ".husky",
+          "file_count": 1,
+          "bytes": 35
+        }
+      ],
+      "docs": [
+        {
+          "path": "README.md",
+          "bytes": 17709,
+          "preview": "# jsonwebtoken\n\n| **Build**                                                                                                                               | **Dependency**                                                                                                         |\n|-----------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------|\n| [![Build Status](https://secure.travis-ci.org/auth0/node-jsonwebtoken.svg?branch=master)](http://travis-ci.org/auth0/node-jsonwebtoken) | [![Dependency Status](https://david-dm.org/auth0/node-jsonwebtoken.svg)](https://david-dm.org/auth0/node-jsonwebtoken) |\n\n\nAn implementation of [JSON Web Tokens](https://tools.ietf.org/html/rfc7519).\n\nThis was developed against `draft-ietf-oauth-json-web-token-08`. It makes use of [node-jws](https://github.com/brianloveswords/node-jws)\n\n# Install\n\n```bash\n$ npm install jsonwebtoken\n```\n\n# Migration notes\n\n* [From v8 to v9](https://github.com/auth0/node-jsonwebtoken/wiki/Migration-Notes:-v8-to-v9)\n* [From v7 to v8](https://github.com/auth0/node-jsonwebtoken/wiki/Migration-Notes:-v7-to-v8)\n\n# Usage\n\n### jwt.sign(payload, secretOrPrivateKey, [options, callback])\n\n(Asynchronous) If a callback is supplied, the callback is called with the `err` or the JWT.\n\n(Synchronous) Returns the JsonWebToken as string\n\n`payload` could be an object literal, buffer or string representing valid JSON. \n> **Please _note_ that** `exp` or any other claim is only set if the payload is an object literal. Buffer or string payloads are not checked for JSON validity.\n\n> If `payload` is not a buffer or a string, it will be coerced into a string using `JSON.stringify`.\n\n`secretOrPrivateKey` is a string (utf-8 encoded), buffer, object, or KeyObject containing either the secret for HMAC algorithms or the PEM\nencoded private key for RSA and ECDSA. In case of a private key with passphrase an object `{ key, passphrase }` can be used (based on [crypto documentation](https://nodejs.org/api/crypto.html#crypto_sign_sign_private_key_output_format)), in this case be sure you pass the `algorithm` option.\nWhen signing with RSA algorithms the minimum modulus length is 2048 except when the allowInsecureKeySizes option is set to true. Private keys below this size will be rejected with an error.\n\n`options`:\n\n* `algorithm` (default: `HS256`)\n* `expiresIn`: expressed in seconds or a string describing a time span [vercel/ms](https://github.com/vercel/ms). \n  > Eg: `60`, `\"2 days\"`, `\"10h\"`, `\"7d\"`. A numeric value is interpreted as a seconds count. If you use a string be sure you provide the time units (days, hours, etc), otherwise milliseconds unit is used by default (`\"120\"` is equal to `\"120ms\"`).\n* `notBefore`: expressed in seconds or a string describing a time span [vercel/ms](https://github.com/vercel/ms). \n  > Eg: `60`, `\"2 days\"`, `\"10h\"`, `\"7d\"`. A numeric value is interpreted as a seconds count. If you use a string be sure you provide the time units (days, hours, etc), otherwise milliseconds unit is used by default (`\"120\"` is equal to `\"120ms\"`).\n* `audience`\n* `issuer`\n* `jwtid`\n* `subject`\n* `noTimestamp`\n* `header`\n* `keyid`\n* `mutatePayload`: if true, the sign function will modify the payload object directly. This is useful if you need a raw reference to the payload after claims have been applied to it but before it has been encoded into a token.\n* `allowInsecureKeySizes`: if true allows private keys with a modulus below 2048 to be used for RSA\n* `allowInvalidAsymmetricKeyTypes`: if true, allows asymmetric keys which do not match the specified algorithm. This option is intended only for backwards compatability and should be avoided.\n\n\n\n> There are no default values for `expiresIn`, `notBefore`, `audience`, `subject`, `issuer`.  These claims can also be provided in the payload directly with `exp`, `nbf`, `aud`, `sub` and `iss` respectively, but you **_can't_** include in both places.\n\nRemember that `exp`, `nbf` and `iat` are **NumericDate**, see related [Token Expiration (exp claim)](#token-expiration-exp-claim)\n\n\nThe header can be customized via the `options.header` object.\n\nGenerated jwts will include an `iat` (issued at) claim by default unless `noTimestamp` is specified. If `iat` is inserted in the payload, it will be used instead of the real timestamp for calculating other things like `exp` given a timespan in `options.expiresIn`.\n\nSynchronous Sign with default (HMAC SHA256)\n\n```js\nvar jwt = require('jsonwebtoken');\nvar token = jwt.sign({ foo: 'bar' }, 'shhhhh');\n```\n\nSynchronous Sign with RSA SHA256\n```js\n// sign with RSA SHA256\nvar privateKey = fs.readFileSync('private.key');\nvar token = jwt.sign({ foo: 'bar' }, privateKey, { algorithm: 'RS256' });\n```\n\nSign asynchronously\n```js\njwt.sign({ foo: 'bar' }, privateKey, { algorithm: 'RS256' }, function(err, token) {\n  console.log(token);\n});\n```\n\nBackdate a jwt 30 seconds\n```js\nvar older_token = jwt.sign({ foo: 'bar', iat: Math.floor(Date.now() / 1000) - 30 }, 'shhhhh');\n```\n\n#### Token Expiration (exp claim)\n\nThe standard for JWT defines an `exp` claim for expiration. The expiration is represented as a **NumericDate**:\n\n> A JSON numeric value representing the number of seconds from 1970-01-01T00:00:00Z UTC until the specified UTC date/time, ignoring leap seconds.  This is equivalent to the IEEE Std 1003.1, 2013 Edition [POSIX.1] definition \"Seconds Since the Epoch\", in which each day is accounted for by exactly 86400 seconds, other than that non-integer values can be represented.  See RFC 3339 [RFC3339] for details regarding date/times in general and UTC in particular.\n\nThis means that the `exp` field should contain the number of seconds since the epoch.\n\nSigning a token with 1 hour of expiration:\n\n```javascript\njwt.sign({\n  exp: Math.floor(Date.now() / 1000) + (60 * 60),\n  data: 'foobar'\n}, 'secret');\n```\n\nAnother way to generate a token like this with this library is:\n\n```javascript\njwt.sign({\n  data: 'foobar'\n}, 'secret', { expiresIn: 60 * 60 });\n\n//or even better:\n\njwt.sign({\n  data: 'foobar'\n}, 'secret', { expiresIn: '1h' });\n```\n\n### jwt.verify(token, secretOrPublicKey, [options, callback])\n\n(Asynchronous) If a callback is supplied, function acts asynchronously. The callback is called with the decoded payload if the signature is valid and optional expiration, audience, or issuer are valid. If not, it will be called with the error.\n\n(Synchronous) If a callback is not supplied, function acts synchronously. Returns the payload decoded if the signature is valid and optional expiration, audience, or issuer are valid. If not, it will throw the error.\n\n> __Warning:__ When the token comes from an untrusted source (e.g. user input or external requests), the returned decoded payload should be treated like any other user input; please make sure to sanitize and only work with properties that are expected\n\n`token` is the JsonWebToken string\n\n`secretOrPublicKey` is a string (utf-8 encoded), buffer, or KeyObject containing either the secret for HMAC algorithms, or the PEM\nencoded public key for RSA and ECDSA.\nIf `jwt.verify` is called asynchronous, `secretOrPublicKey` can be a function that should fetch the secret or public key. See below for a detailed example\n\nAs mentioned in [this comment](https://github.com/auth0/node-jsonwebtoken/issues/208#issuecomment-231861138), there are other libraries that expect base64 encoded secrets (random bytes encoded using base64), if that is your case you can pass `Buffer.from(secret, 'base64')`, by doing this the secret will be decoded using base64 and the token verification will use the original random bytes.\n\n`options`\n\n* `algorithms`: List of strings with the names of the allowed algorithms. For instance, `[\"HS256\", \"HS384\"]`. \n  > If not specified a defaults will be used based on the type of key provided\n  > * secret - ['HS256', 'HS384', 'HS512']\n  > * rsa - ['RS256', 'RS384', 'RS512']\n  > * ec - ['ES256', 'ES384', 'ES512']\n  > * default - ['RS256', 'RS384', 'RS512']\n* `audience`: if you want to check audience (`aud`), provid"
+        }
+      ],
+      "config_files": [
+        ".eslintrc.json"
+      ],
+      "stack_tags": [
+        "GitHub Actions"
+      ],
+      "workspace_units": [
+        {
+          "path": ".",
+          "name": "jsonwebtoken",
+          "kind": "workspace",
+          "manifest_path": "package.json",
+          "build_system": "package.json",
+          "file_count": 84,
+          "languages": [
+            {
+              "language": "JavaScript",
+              "files": 46,
+              "bytes": 153023
+            },
+            {
+              "language": "YAML",
+              "files": 6,
+              "bytes": 6219
+            },
+            {
+              "language": "JSON",
+              "files": 5,
+              "bytes": 3151
+            },
+            {
+              "language": "Markdown",
+              "files": 2,
+              "bytes": 59304
+            }
+          ],
+          "scripts": [
+            "coverage",
+            "lint",
+            "prepare",
+            "test",
+            "update-changelog"
+          ],
+          "entrypoints": [
+            ".github/workflows/commitlint.yml",
+            ".github/workflows/prepare-release.yml",
+            ".github/workflows/release.yml",
+            ".github/workflows/sca-scan.yml",
+            ".github/workflows/test.yml",
+            "README.md",
+            "package.json"
+          ],
+          "test_files": [],
+          "tags": [
+            "JSON",
+            "JavaScript",
+            "YAML"
+          ]
+        }
+      ],
+      "qa_readiness": {
+        "score": 0,
+        "status": "missing",
+        "summary": "Repo does not expose enough local browser QA structure for a reliable Synthetic QA workflow yet.",
+        "signals": [
+          {
+            "id": "browser_runner",
+            "label": "Browser runner",
+            "status": "missing",
+            "detail": "No Playwright, Cypress, or browser runner config was found.",
+            "sources": []
+          },
+          {
+            "id": "user_flow_specs",
+            "label": "User-flow specs",
+            "status": "missing",
+            "detail": "No e2e/playwright/cypress spec files were found.",
+            "sources": []
+          },
+          {
+            "id": "local_app_command",
+            "label": "Local app command",
+            "status": "missing",
+            "detail": "No obvious package script for starting the app locally was found.",
+            "sources": []
+          },
+          {
+            "id": "qa_script",
+            "label": "QA script",
+            "status": "missing",
+            "detail": "No explicit QA/e2e/browser test script was found.",
+            "sources": []
+          },
+          {
+            "id": "artifact_trail",
+            "label": "Artifact trail",
+            "status": "missing",
+            "detail": "No browser QA artifacts or artifact-capable runner were found.",
+            "sources": []
+          },
+          {
+            "id": "targetable_routes",
+            "label": "Targetable surfaces",
+            "status": "missing",
+            "detail": "No obvious web entrypoint or route file was found.",
+            "sources": []
+          }
+        ],
+        "suggested_flows": []
+      },
+      "repo_graph": {
+        "schema_version": 2,
+        "nodes": [
+          {
+            "id": "file:github-workflows-commitlint-yml",
+            "kind": "file",
+            "label": ".github/workflows/commitlint.yml",
+            "path": ".github/workflows/commitlint.yml",
+            "detail": "workspace entrypoint",
+            "sources": [
+              ".github/workflows/commitlint.yml"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:github-workflows-prepare-release-yml",
+            "kind": "file",
+            "label": ".github/workflows/prepare-release.yml",
+            "path": ".github/workflows/prepare-release.yml",
+            "detail": "workspace entrypoint",
+            "sources": [
+              ".github/workflows/prepare-release.yml"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:github-workflows-release-yml",
+            "kind": "file",
+            "label": ".github/workflows/release.yml",
+            "path": ".github/workflows/release.yml",
+            "detail": "workspace entrypoint",
+            "sources": [
+              ".github/workflows/release.yml"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:github-workflows-sca-scan-yml",
+            "kind": "file",
+            "label": ".github/workflows/sca-scan.yml",
+            "path": ".github/workflows/sca-scan.yml",
+            "detail": "workspace entrypoint",
+            "sources": [
+              ".github/workflows/sca-scan.yml"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:github-workflows-test-yml",
+            "kind": "file",
+            "label": ".github/workflows/test.yml",
+            "path": ".github/workflows/test.yml",
+            "detail": "workspace entrypoint",
+            "sources": [
+              ".github/workflows/test.yml"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:changelog-md",
+            "kind": "file",
+            "label": "CHANGELOG.md",
+            "path": "CHANGELOG.md",
+            "detail": "source marker candidate",
+            "sources": [
+              "CHANGELOG.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:readme-md",
+            "kind": "file",
+            "label": "README.md",
+            "path": "README.md",
+            "detail": "workspace entrypoint",
+            "sources": [
+              "README.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:decode-js",
+            "kind": "file",
+            "label": "decode.js",
+            "path": "decode.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "decode.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:index-js",
+            "kind": "file",
+            "label": "index.js",
+            "path": "index.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "index.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:lib-jsonwebtokenerror-js",
+            "kind": "file",
+            "label": "lib/JsonWebTokenError.js",
+            "path": "lib/JsonWebTokenError.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "lib/JsonWebTokenError.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:lib-notbeforeerror-js",
+            "kind": "file",
+            "label": "lib/NotBeforeError.js",
+            "path": "lib/NotBeforeError.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "lib/NotBeforeError.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:lib-tokenexpirederror-js",
+            "kind": "file",
+            "label": "lib/TokenExpiredError.js",
+            "path": "lib/TokenExpiredError.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "lib/TokenExpiredError.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:lib-asymmetrickeydetailssupported-js",
+            "kind": "file",
+            "label": "lib/asymmetricKeyDetailsSupported.js",
+            "path": "lib/asymmetricKeyDetailsSupported.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "lib/asymmetricKeyDetailsSupported.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:lib-pssupported-js",
+            "kind": "file",
+            "label": "lib/psSupported.js",
+            "path": "lib/psSupported.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "lib/psSupported.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:lib-rsapsskeydetailssupported-js",
+            "kind": "file",
+            "label": "lib/rsaPssKeyDetailsSupported.js",
+            "path": "lib/rsaPssKeyDetailsSupported.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "lib/rsaPssKeyDetailsSupported.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:lib-timespan-js",
+            "kind": "file",
+            "label": "lib/timespan.js",
+            "path": "lib/timespan.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "lib/timespan.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:lib-validateasymmetrickey-js",
+            "kind": "file",
+            "label": "lib/validateAsymmetricKey.js",
+            "path": "lib/validateAsymmetricKey.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "lib/validateAsymmetricKey.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:package-json",
+            "kind": "file",
+            "label": "package.json",
+            "path": "package.json",
+            "detail": "npm scripts: coverage, lint, prepare, test, update-changelog",
+            "sources": [
+              "package.json"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:sign-js",
+            "kind": "file",
+            "label": "sign.js",
+            "path": "sign.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "sign.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:test-async-sign-tests-js",
+            "kind": "file",
+            "label": "test/async_sign.tests.js",
+            "path": "test/async_sign.tests.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "test/async_sign.tests.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:test-buffer-tests-js",
+            "kind": "file",
+            "label": "test/buffer.tests.js",
+            "path": "test/buffer.tests.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "test/buffer.tests.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:test-claim-aud-test-js",
+            "kind": "file",
+            "label": "test/claim-aud.test.js",
+            "path": "test/claim-aud.test.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "test/claim-aud.test.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:test-claim-exp-test-js",
+            "kind": "file",
+            "label": "test/claim-exp.test.js",
+            "path": "test/claim-exp.test.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "test/claim-exp.test.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:test-claim-iat-test-js",
+            "kind": "file",
+            "label": "test/claim-iat.test.js",
+            "path": "test/claim-iat.test.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "test/claim-iat.test.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:test-claim-iss-test-js",
+            "kind": "file",
+            "label": "test/claim-iss.test.js",
+            "path": "test/claim-iss.test.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "test/claim-iss.test.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:test-claim-jti-test-js",
+            "kind": "file",
+            "label": "test/claim-jti.test.js",
+            "path": "test/claim-jti.test.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "test/claim-jti.test.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:test-claim-nbf-test-js",
+            "kind": "file",
+            "label": "test/claim-nbf.test.js",
+            "path": "test/claim-nbf.test.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "test/claim-nbf.test.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:test-claim-private-tests-js",
+            "kind": "file",
+            "label": "test/claim-private.tests.js",
+            "path": "test/claim-private.tests.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "test/claim-private.tests.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:test-claim-sub-tests-js",
+            "kind": "file",
+            "label": "test/claim-sub.tests.js",
+            "path": "test/claim-sub.tests.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "test/claim-sub.tests.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:test-decoding-tests-js",
+            "kind": "file",
+            "label": "test/decoding.tests.js",
+            "path": "test/decoding.tests.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "test/decoding.tests.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:test-encoding-tests-js",
+            "kind": "file",
+            "label": "test/encoding.tests.js",
+            "path": "test/encoding.tests.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "test/encoding.tests.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:test-expires-format-tests-js",
+            "kind": "file",
+            "label": "test/expires_format.tests.js",
+            "path": "test/expires_format.tests.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "test/expires_format.tests.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:test-header-kid-test-js",
+            "kind": "file",
+            "label": "test/header-kid.test.js",
+            "path": "test/header-kid.test.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "test/header-kid.test.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:test-invalid-exp-tests-js",
+            "kind": "file",
+            "label": "test/invalid_exp.tests.js",
+            "path": "test/invalid_exp.tests.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "test/invalid_exp.tests.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:test-issue-147-tests-js",
+            "kind": "file",
+            "label": "test/issue_147.tests.js",
+            "path": "test/issue_147.tests.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "test/issue_147.tests.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:test-issue-304-tests-js",
+            "kind": "file",
+            "label": "test/issue_304.tests.js",
+            "path": "test/issue_304.tests.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "test/issue_304.tests.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:test-issue-70-tests-js",
+            "kind": "file",
+            "label": "test/issue_70.tests.js",
+            "path": "test/issue_70.tests.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "test/issue_70.tests.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:test-jwt-asymmetric-signing-tests-js",
+            "kind": "file",
+            "label": "test/jwt.asymmetric_signing.tests.js",
+            "path": "test/jwt.asymmetric_signing.tests.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "test/jwt.asymmetric_signing.tests.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:test-jwt-hs-tests-js",
+            "kind": "file",
+            "label": "test/jwt.hs.tests.js",
+            "path": "test/jwt.hs.tests.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "test/jwt.hs.tests.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:test-jwt-malicious-tests-js",
+            "kind": "file",
+            "label": "test/jwt.malicious.tests.js",
+            "path": "test/jwt.malicious.tests.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "test/jwt.malicious.tests.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:test-notimestamp-tests-js",
+            "kind": "file",
+            "label": "test/noTimestamp.tests.js",
+            "path": "test/noTimestamp.tests.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "test/noTimestamp.tests.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:test-non-object-values-tests-js",
+            "kind": "file",
+            "label": "test/non_object_values.tests.js",
+            "path": "test/non_object_values.tests.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "test/non_object_values.tests.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:test-option-complete-test-js",
+            "kind": "file",
+            "label": "test/option-complete.test.js",
+            "path": "test/option-complete.test.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "test/option-complete.test.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:test-option-maxage-test-js",
+            "kind": "file",
+            "label": "test/option-maxAge.test.js",
+            "path": "test/option-maxAge.test.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "test/option-maxAge.test.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:test-option-nonce-test-js",
+            "kind": "file",
+            "label": "test/option-nonce.test.js",
+            "path": "test/option-nonce.test.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "test/option-nonce.test.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:test-rsa-public-key-tests-js",
+            "kind": "file",
+            "label": "test/rsa-public-key.tests.js",
+            "path": "test/rsa-public-key.tests.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "test/rsa-public-key.tests.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:test-schema-tests-js",
+            "kind": "file",
+            "label": "test/schema.tests.js",
+            "path": "test/schema.tests.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "test/schema.tests.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:test-set-headers-tests-js",
+            "kind": "file",
+            "label": "test/set_headers.tests.js",
+            "path": "test/set_headers.tests.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "test/set_headers.tests.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:test-test-utils-js",
+            "kind": "file",
+            "label": "test/test-utils.js",
+            "path": "test/test-utils.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "test/test-utils.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:test-undefined-secretorpublickey-tests-js",
+            "kind": "file",
+            "label": "test/undefined_secretOrPublickey.tests.js",
+            "path": "test/undefined_secretOrPublickey.tests.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "test/undefined_secretOrPublickey.tests.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:test-validateasymmetrickey-tests-js",
+            "kind": "file",
+            "label": "test/validateAsymmetricKey.tests.js",
+            "path": "test/validateAsymmetricKey.tests.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "test/validateAsymmetricKey.tests.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:test-verify-tests-js",
+            "kind": "file",
+            "label": "test/verify.tests.js",
+            "path": "test/verify.tests.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "test/verify.tests.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:test-wrong-alg-tests-js",
+            "kind": "file",
+            "label": "test/wrong_alg.tests.js",
+            "path": "test/wrong_alg.tests.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "test/wrong_alg.tests.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:verify-js",
+            "kind": "file",
+            "label": "verify.js",
+            "path": "verify.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "verify.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "package:package-json",
+            "kind": "package",
+            "label": "jsonwebtoken",
+            "path": "package.json",
+            "detail": "package.json manifest",
+            "sources": [
+              "package.json"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "script:package-json-coverage",
+            "kind": "script",
+            "label": "coverage",
+            "path": "package.json",
+            "detail": "package script",
+            "sources": [
+              "package.json"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "script:package-json-lint",
+            "kind": "script",
+            "label": "lint",
+            "path": "package.json",
+            "detail": "package script",
+            "sources": [
+              "package.json"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "script:package-json-prepare",
+            "kind": "script",
+            "label": "prepare",
+            "path": "package.json",
+            "detail": "package script",
+            "sources": [
+              "package.json"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "script:package-json-test",
+            "kind": "script",
+            "label": "test",
+            "path": "package.json",
+            "detail": "package script",
+            "sources": [
+              "package.json"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "script:package-json-update-changelog",
+            "kind": "script",
+            "label": "update-changelog",
+            "path": "package.json",
+            "detail": "package script",
+            "sources": [
+              "package.json"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "workspace:",
+            "kind": "workspace_unit",
+            "label": "jsonwebtoken",
+            "path": null,
+            "detail": "workspace | 84 files | 46 JavaScript, 6 YAML, 5 JSON",
+            "sources": [
+              ".github/workflows/commitlint.yml",
+              ".github/workflows/prepare-release.yml",
+              "package.json"
+            ],
+            "source_location": null,
+            "community": null
+          }
+        ],
+        "edges": [
+          {
+            "from": "package:package-json",
+            "to": "script:package-json-coverage",
+            "kind": "defines",
+            "evidence": "package.json defines npm script `coverage`",
+            "sources": [
+              "package.json"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "package:package-json",
+            "to": "script:package-json-lint",
+            "kind": "defines",
+            "evidence": "package.json defines npm script `lint`",
+            "sources": [
+              "package.json"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "package:package-json",
+            "to": "script:package-json-prepare",
+            "kind": "defines",
+            "evidence": "package.json defines npm script `prepare`",
+            "sources": [
+              "package.json"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "package:package-json",
+            "to": "script:package-json-test",
+            "kind": "defines",
+            "evidence": "package.json defines npm script `test`",
+            "sources": [
+              "package.json"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "package:package-json",
+            "to": "script:package-json-update-changelog",
+            "kind": "defines",
+            "evidence": "package.json defines npm script `update-changelog`",
+            "sources": [
+              "package.json"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "package:package-json",
+            "kind": "defines",
+            "evidence": "workspace unit owns this manifest",
+            "sources": [
+              "package.json"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "file:github-workflows-commitlint-yml",
+            "kind": "entrypoint",
+            "evidence": "entrypoint belongs to this workspace unit",
+            "sources": [
+              ".github/workflows/commitlint.yml"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "file:github-workflows-prepare-release-yml",
+            "kind": "entrypoint",
+            "evidence": "entrypoint belongs to this workspace unit",
+            "sources": [
+              ".github/workflows/prepare-release.yml"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "file:github-workflows-release-yml",
+            "kind": "entrypoint",
+            "evidence": "entrypoint belongs to this workspace unit",
+            "sources": [
+              ".github/workflows/release.yml"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "file:github-workflows-sca-scan-yml",
+            "kind": "entrypoint",
+            "evidence": "entrypoint belongs to this workspace unit",
+            "sources": [
+              ".github/workflows/sca-scan.yml"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "file:github-workflows-test-yml",
+            "kind": "entrypoint",
+            "evidence": "entrypoint belongs to this workspace unit",
+            "sources": [
+              ".github/workflows/test.yml"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "file:readme-md",
+            "kind": "entrypoint",
+            "evidence": "entrypoint belongs to this workspace unit",
+            "sources": [
+              "README.md"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          }
+        ],
+        "truncated": false
+      },
+      "history_brief": {
+        "schema_version": 2,
+        "summary": "Local history brief captured 1 recent commit, 0 decision markers, 2 test hints, and 0 co-change clusters for Repo Unpacked. Treat commit subjects as leads and rely on cited files for durable constraints.",
+        "recent_commits": [
+          {
+            "sha": "b924272f2919",
+            "date": "2026-06-25",
+            "subject": "ci: replace npx changelog call with npm script and fix prepare-release workflow (#1037)",
+            "files": [
+              ".commitlintrc.json",
+              ".eslintrc.json",
+              ".github/workflows/commitlint.yml",
+              ".github/workflows/prepare-release.yml",
+              ".github/workflows/release.yml",
+              ".github/workflows/sca-scan.yml",
+              ".github/workflows/test.yml",
+              ".releaserc.json",
+              "CHANGELOG.md",
+              "README.md",
+              "decode.js",
+              "index.js",
+              "lib/JsonWebTokenError.js",
+              "lib/NotBeforeError.js",
+              "lib/TokenExpiredError.js",
+              "lib/asymmetricKeyDetailsSupported.js",
+              "lib/psSupported.js",
+              "lib/rsaPssKeyDetailsSupported.js",
+              "lib/timespan.js",
+              "lib/validateAsymmetricKey.js",
+              "opslevel.yml",
+              "package.json",
+              "sign.js",
+              "test/.eslintrc.json"
+            ]
+          }
+        ],
+        "decisions": [],
+        "test_hints": [
+          {
+            "path": "package.json",
+            "reason": "package script `lint` is a likely verification command"
+          },
+          {
+            "path": "package.json",
+            "reason": "package script `test` is a likely verification command"
+          }
+        ],
+        "temporal_couplings": [],
+        "graph": {
+          "schema_version": 2,
+          "nodes": [
+            {
+              "id": "commit:b924272f2919",
+              "kind": "commit",
+              "label": "ci: replace npx changelog call with npm script and fix prepare-release workflow (#1037)",
+              "path": null,
+              "detail": "2026-06-25",
+              "citations": [
+                "git:b924272f2919"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:-commitlintrc-json",
+              "kind": "file",
+              "label": ".commitlintrc.json",
+              "path": ".commitlintrc.json",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                ".commitlintrc.json"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:-eslintrc-json",
+              "kind": "file",
+              "label": ".eslintrc.json",
+              "path": ".eslintrc.json",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                ".eslintrc.json"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:-github-workflows-commitlint-yml",
+              "kind": "file",
+              "label": ".github/workflows/commitlint.yml",
+              "path": ".github/workflows/commitlint.yml",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                ".github/workflows/commitlint.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:-github-workflows-prepare-release-yml",
+              "kind": "file",
+              "label": ".github/workflows/prepare-release.yml",
+              "path": ".github/workflows/prepare-release.yml",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                ".github/workflows/prepare-release.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:-github-workflows-release-yml",
+              "kind": "file",
+              "label": ".github/workflows/release.yml",
+              "path": ".github/workflows/release.yml",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                ".github/workflows/release.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:-github-workflows-sca-scan-yml",
+              "kind": "file",
+              "label": ".github/workflows/sca-scan.yml",
+              "path": ".github/workflows/sca-scan.yml",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                ".github/workflows/sca-scan.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:-github-workflows-test-yml",
+              "kind": "file",
+              "label": ".github/workflows/test.yml",
+              "path": ".github/workflows/test.yml",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                ".github/workflows/test.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:-releaserc-json",
+              "kind": "file",
+              "label": ".releaserc.json",
+              "path": ".releaserc.json",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                ".releaserc.json"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:changelog-md",
+              "kind": "file",
+              "label": "CHANGELOG.md",
+              "path": "CHANGELOG.md",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "CHANGELOG.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:decode-js",
+              "kind": "file",
+              "label": "decode.js",
+              "path": "decode.js",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "decode.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:index-js",
+              "kind": "file",
+              "label": "index.js",
+              "path": "index.js",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "index.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:lib-asymmetrickeydetailssupported-js",
+              "kind": "file",
+              "label": "lib/asymmetricKeyDetailsSupported.js",
+              "path": "lib/asymmetricKeyDetailsSupported.js",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "lib/asymmetricKeyDetailsSupported.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:lib-jsonwebtokenerror-js",
+              "kind": "file",
+              "label": "lib/JsonWebTokenError.js",
+              "path": "lib/JsonWebTokenError.js",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "lib/JsonWebTokenError.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:lib-notbeforeerror-js",
+              "kind": "file",
+              "label": "lib/NotBeforeError.js",
+              "path": "lib/NotBeforeError.js",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "lib/NotBeforeError.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:lib-pssupported-js",
+              "kind": "file",
+              "label": "lib/psSupported.js",
+              "path": "lib/psSupported.js",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "lib/psSupported.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:lib-rsapsskeydetailssupported-js",
+              "kind": "file",
+              "label": "lib/rsaPssKeyDetailsSupported.js",
+              "path": "lib/rsaPssKeyDetailsSupported.js",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "lib/rsaPssKeyDetailsSupported.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:lib-timespan-js",
+              "kind": "file",
+              "label": "lib/timespan.js",
+              "path": "lib/timespan.js",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "lib/timespan.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:lib-tokenexpirederror-js",
+              "kind": "file",
+              "label": "lib/TokenExpiredError.js",
+              "path": "lib/TokenExpiredError.js",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "lib/TokenExpiredError.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:lib-validateasymmetrickey-js",
+              "kind": "file",
+              "label": "lib/validateAsymmetricKey.js",
+              "path": "lib/validateAsymmetricKey.js",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "lib/validateAsymmetricKey.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:opslevel-yml",
+              "kind": "file",
+              "label": "opslevel.yml",
+              "path": "opslevel.yml",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "opslevel.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:package-json",
+              "kind": "file",
+              "label": "package.json",
+              "path": "package.json",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "package.json"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:readme-md",
+              "kind": "file",
+              "label": "README.md",
+              "path": "README.md",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "README.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:sign-js",
+              "kind": "file",
+              "label": "sign.js",
+              "path": "sign.js",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "sign.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:test--eslintrc-json",
+              "kind": "file",
+              "label": "test/.eslintrc.json",
+              "path": "test/.eslintrc.json",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "test/.eslintrc.json"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "test:package-json-package-script--lint--is-a-likely-verification-command",
+              "kind": "test",
+              "label": "package script `lint` is a likely verification command",
+              "path": "package.json",
+              "detail": "Likely verification lead",
+              "citations": [
+                "package.json"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "id": "test:package-json-package-script--test--is-a-likely-verification-command",
+              "kind": "test",
+              "label": "package script `test` is a likely verification command",
+              "path": "package.json",
+              "detail": "Likely verification lead",
+              "citations": [
+                "package.json"
+              ],
+              "trust": "navigation_lead"
+            }
+          ],
+          "edges": [
+            {
+              "from": "commit:b924272f2919",
+              "to": "file:-commitlintrc-json",
+              "kind": "changed",
+              "evidence": "b924272f2919 changed this file",
+              "citations": [
+                "git:b924272f2919",
+                ".commitlintrc.json"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:b924272f2919",
+              "to": "file:-eslintrc-json",
+              "kind": "changed",
+              "evidence": "b924272f2919 changed this file",
+              "citations": [
+                "git:b924272f2919",
+                ".eslintrc.json"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:b924272f2919",
+              "to": "file:-github-workflows-commitlint-yml",
+              "kind": "changed",
+              "evidence": "b924272f2919 changed this file",
+              "citations": [
+                "git:b924272f2919",
+                ".github/workflows/commitlint.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:b924272f2919",
+              "to": "file:-github-workflows-prepare-release-yml",
+              "kind": "changed",
+              "evidence": "b924272f2919 changed this file",
+              "citations": [
+                "git:b924272f2919",
+                ".github/workflows/prepare-release.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:b924272f2919",
+              "to": "file:-github-workflows-release-yml",
+              "kind": "changed",
+              "evidence": "b924272f2919 changed this file",
+              "citations": [
+                "git:b924272f2919",
+                ".github/workflows/release.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:b924272f2919",
+              "to": "file:-github-workflows-sca-scan-yml",
+              "kind": "changed",
+              "evidence": "b924272f2919 changed this file",
+              "citations": [
+                "git:b924272f2919",
+                ".github/workflows/sca-scan.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:b924272f2919",
+              "to": "file:-github-workflows-test-yml",
+              "kind": "changed",
+              "evidence": "b924272f2919 changed this file",
+              "citations": [
+                "git:b924272f2919",
+                ".github/workflows/test.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:b924272f2919",
+              "to": "file:-releaserc-json",
+              "kind": "changed",
+              "evidence": "b924272f2919 changed this file",
+              "citations": [
+                "git:b924272f2919",
+                ".releaserc.json"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:b924272f2919",
+              "to": "file:changelog-md",
+              "kind": "changed",
+              "evidence": "b924272f2919 changed this file",
+              "citations": [
+                "git:b924272f2919",
+                "CHANGELOG.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:b924272f2919",
+              "to": "file:decode-js",
+              "kind": "changed",
+              "evidence": "b924272f2919 changed this file",
+              "citations": [
+                "git:b924272f2919",
+                "decode.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:b924272f2919",
+              "to": "file:index-js",
+              "kind": "changed",
+              "evidence": "b924272f2919 changed this file",
+              "citations": [
+                "git:b924272f2919",
+                "index.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:b924272f2919",
+              "to": "file:lib-asymmetrickeydetailssupported-js",
+              "kind": "changed",
+              "evidence": "b924272f2919 changed this file",
+              "citations": [
+                "git:b924272f2919",
+                "lib/asymmetricKeyDetailsSupported.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:b924272f2919",
+              "to": "file:lib-jsonwebtokenerror-js",
+              "kind": "changed",
+              "evidence": "b924272f2919 changed this file",
+              "citations": [
+                "git:b924272f2919",
+                "lib/JsonWebTokenError.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:b924272f2919",
+              "to": "file:lib-notbeforeerror-js",
+              "kind": "changed",
+              "evidence": "b924272f2919 changed this file",
+              "citations": [
+                "git:b924272f2919",
+                "lib/NotBeforeError.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:b924272f2919",
+              "to": "file:lib-pssupported-js",
+              "kind": "changed",
+              "evidence": "b924272f2919 changed this file",
+              "citations": [
+                "git:b924272f2919",
+                "lib/psSupported.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:b924272f2919",
+              "to": "file:lib-rsapsskeydetailssupported-js",
+              "kind": "changed",
+              "evidence": "b924272f2919 changed this file",
+              "citations": [
+                "git:b924272f2919",
+                "lib/rsaPssKeyDetailsSupported.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:b924272f2919",
+              "to": "file:lib-timespan-js",
+              "kind": "changed",
+              "evidence": "b924272f2919 changed this file",
+              "citations": [
+                "git:b924272f2919",
+                "lib/timespan.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:b924272f2919",
+              "to": "file:lib-tokenexpirederror-js",
+              "kind": "changed",
+              "evidence": "b924272f2919 changed this file",
+              "citations": [
+                "git:b924272f2919",
+                "lib/TokenExpiredError.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:b924272f2919",
+              "to": "file:lib-validateasymmetrickey-js",
+              "kind": "changed",
+              "evidence": "b924272f2919 changed this file",
+              "citations": [
+                "git:b924272f2919",
+                "lib/validateAsymmetricKey.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:b924272f2919",
+              "to": "file:opslevel-yml",
+              "kind": "changed",
+              "evidence": "b924272f2919 changed this file",
+              "citations": [
+                "git:b924272f2919",
+                "opslevel.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:b924272f2919",
+              "to": "file:package-json",
+              "kind": "changed",
+              "evidence": "b924272f2919 changed this file",
+              "citations": [
+                "git:b924272f2919",
+                "package.json"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:b924272f2919",
+              "to": "file:readme-md",
+              "kind": "changed",
+              "evidence": "b924272f2919 changed this file",
+              "citations": [
+                "git:b924272f2919",
+                "README.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:b924272f2919",
+              "to": "file:sign-js",
+              "kind": "changed",
+              "evidence": "b924272f2919 changed this file",
+              "citations": [
+                "git:b924272f2919",
+                "sign.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:b924272f2919",
+              "to": "file:test--eslintrc-json",
+              "kind": "changed",
+              "evidence": "b924272f2919 changed this file",
+              "citations": [
+                "git:b924272f2919",
+                "test/.eslintrc.json"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "file:package-json",
+              "to": "test:package-json-package-script--lint--is-a-likely-verification-command",
+              "kind": "verified_by",
+              "evidence": "package script `lint` is a likely verification command",
+              "citations": [
+                "package.json"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:package-json",
+              "to": "test:package-json-package-script--test--is-a-likely-verification-command",
+              "kind": "verified_by",
+              "evidence": "package script `test` is a likely verification command",
+              "citations": [
+                "package.json"
+              ],
+              "trust": "navigation_lead"
+            }
+          ],
+          "truncated": false
+        },
+        "sources": [
+          "package.json"
+        ],
+        "truncated": false
+      },
+      "repo_health": {
+        "schema_version": 1,
+        "summary": "Deterministic scan scored 45 source files across simple size, churn, structural, test-adjacency, and performance-risk signals. 0 hotspots surfaced; average score is 9.6/10. Treat these as review leads, not proof of a bug.",
+        "average_score": 9.6,
+        "hotspot_count": 0,
+        "files_analyzed": 45,
+        "files_with_test_signal": 0,
+        "top_files": [
+          {
+            "path": "test/claim-aud.test.js",
+            "score": 7.9,
+            "bucket": "watch",
+            "lines": 436,
+            "bytes": 17443,
+            "churn": 0,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "Maximum indentation depth is about 7; inspect branch-heavy paths before risky edits.",
+                "sources": [
+                  "test/claim-aud.test.js"
+                ]
+              },
+              {
+                "id": "long_block",
+                "label": "Long function/block",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "A brace-delimited block spans roughly 416 lines; consider extracting a helper when touching it.",
+                "sources": [
+                  "test/claim-aud.test.js"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "test/claim-aud.test.js"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow.",
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "test/claim-exp.test.js",
+            "score": 8.6,
+            "bucket": "healthy",
+            "lines": 343,
+            "bytes": 11329,
+            "churn": 0,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "Maximum indentation depth is about 7; inspect branch-heavy paths before risky edits.",
+                "sources": [
+                  "test/claim-exp.test.js"
+                ]
+              },
+              {
+                "id": "long_block",
+                "label": "Long function/block",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "A brace-delimited block spans roughly 326 lines; consider extracting a helper when touching it.",
+                "sources": [
+                  "test/claim-exp.test.js"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow.",
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "test/claim-nbf.test.js",
+            "score": 8.6,
+            "bucket": "healthy",
+            "lines": 339,
+            "bytes": 11222,
+            "churn": 0,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "Maximum indentation depth is about 7; inspect branch-heavy paths before risky edits.",
+                "sources": [
+                  "test/claim-nbf.test.js"
+                ]
+              },
+              {
+                "id": "long_block",
+                "label": "Long function/block",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "A brace-delimited block spans roughly 322 lines; consider extracting a helper when touching it.",
+                "sources": [
+                  "test/claim-nbf.test.js"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow.",
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "test/claim-iat.test.js",
+            "score": 8.6,
+            "bucket": "healthy",
+            "lines": 276,
+            "bytes": 8421,
+            "churn": 0,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "Maximum indentation depth is about 6; inspect branch-heavy paths before risky edits.",
+                "sources": [
+                  "test/claim-iat.test.js"
+                ]
+              },
+              {
+                "id": "long_block",
+                "label": "Long function/block",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "A brace-delimited block spans roughly 251 lines; consider extracting a helper when touching it.",
+                "sources": [
+                  "test/claim-iat.test.js"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow.",
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "verify.js",
+            "score": 8.6,
+            "bucket": "healthy",
+            "lines": 263,
+            "bytes": 8612,
+            "churn": 0,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "Maximum indentation depth is about 7; inspect branch-heavy paths before risky edits.",
+                "sources": [
+                  "verify.js"
+                ]
+              },
+              {
+                "id": "long_block",
+                "label": "Long function/block",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "A brace-delimited block spans roughly 243 lines; consider extracting a helper when touching it.",
+                "sources": [
+                  "verify.js"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow.",
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "test/claim-iss.test.js",
+            "score": 8.6,
+            "bucket": "healthy",
+            "lines": 205,
+            "bytes": 7247,
+            "churn": 0,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "Maximum indentation depth is about 7; inspect branch-heavy paths before risky edits.",
+                "sources": [
+                  "test/claim-iss.test.js"
+                ]
+              },
+              {
+                "id": "long_block",
+                "label": "Long function/block",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "A brace-delimited block spans roughly 190 lines; consider extracting a helper when touching it.",
+                "sources": [
+                  "test/claim-iss.test.js"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow.",
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "sign.js",
+            "score": 8.8,
+            "bucket": "healthy",
+            "lines": 253,
+            "bytes": 9350,
+            "churn": 0,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 12; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "sign.js"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "test/validateAsymmetricKey.tests.js",
+            "score": 8.8,
+            "bucket": "healthy",
+            "lines": 142,
+            "bytes": 5387,
+            "churn": 0,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 10; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "test/validateAsymmetricKey.tests.js"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "test/verify.tests.js",
+            "score": 9.3,
+            "bucket": "healthy",
+            "lines": 301,
+            "bytes": 11151,
+            "churn": 0,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "long_block",
+                "label": "Long function/block",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "A brace-delimited block spans roughly 291 lines; consider extracting a helper when touching it.",
+                "sources": [
+                  "test/verify.tests.js"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow."
+            ]
+          },
+          {
+            "path": "test/jwt.asymmetric_signing.tests.js",
+            "score": 9.3,
+            "bucket": "healthy",
+            "lines": 208,
+            "bytes": 7227,
+            "churn": 0,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "Maximum indentation depth is about 7; inspect branch-heavy paths before risky edits.",
+                "sources": [
+                  "test/jwt.asymmetric_signing.tests.js"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "test/claim-jti.test.js",
+            "score": 9.3,
+            "bucket": "healthy",
+            "lines": 155,
+            "bytes": 5150,
+            "churn": 0,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "Maximum indentation depth is about 7; inspect branch-heavy paths before risky edits.",
+                "sources": [
+                  "test/claim-jti.test.js"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "test/claim-sub.tests.js",
+            "score": 9.3,
+            "bucket": "healthy",
+            "lines": 153,
+            "bytes": 5098,
+            "churn": 0,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "Maximum indentation depth is about 6; inspect branch-heavy paths before risky edits.",
+                "sources": [
+                  "test/claim-sub.tests.js"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          }
+        ],
+        "truncated": false
+      },
+      "all_files": [],
+      "ignored_dirs": [
+        ".git"
+      ],
+      "coverage": {
+        "schema_version": 1,
+        "strategy": "full_walk",
+        "sampled_files": 84,
+        "total_files": null,
+        "sample_percent": null,
+        "languages": [
+          {
+            "language": "JavaScript",
+            "files": 46,
+            "bytes": 153023
+          },
+          {
+            "language": "YAML",
+            "files": 6,
+            "bytes": 6219
+          },
+          {
+            "language": "JSON",
+            "files": 5,
+            "bytes": 3151
+          },
+          {
+            "language": "Markdown",
+            "files": 2,
+            "bytes": 59304
+          }
+        ],
+        "top_level_dirs": [
+          {
+            "path": "test",
+            "file_count": 52,
+            "bytes": 148688
+          },
+          {
+            "path": "lib",
+            "file_count": 8,
+            "bytes": 4140
+          },
+          {
+            "path": ".github",
+            "file_count": 5,
+            "bytes": 6153
+          },
+          {
+            "path": ".husky",
+            "file_count": 1,
+            "bytes": 35
+          },
+          {
+            "path": "bin",
+            "file_count": 1,
+            "bytes": 1419
+          }
+        ],
+        "notes": [
+          "Full local walk covered the repo within the scan cap."
+        ]
+      },
+      "all_files_capped": false,
+      "dir_tree_preview": {
+        "name": "",
+        "path": "",
+        "is_dir": true,
+        "file_count": 84,
+        "children": [
+          {
+            "name": ".github",
+            "path": ".github",
+            "is_dir": true,
+            "file_count": 5,
+            "children": [
+              {
+                "name": "workflows",
+                "path": ".github/workflows",
+                "is_dir": true,
+                "file_count": 5,
+                "children": [
+                  {
+                    "name": "commitlint.yml",
+                    "path": ".github/workflows/commitlint.yml",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "prepare-release.yml",
+                    "path": ".github/workflows/prepare-release.yml",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "release.yml",
+                    "path": ".github/workflows/release.yml",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "sca-scan.yml",
+                    "path": ".github/workflows/sca-scan.yml",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "test.yml",
+                    "path": ".github/workflows/test.yml",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": ".husky",
+            "path": ".husky",
+            "is_dir": true,
+            "file_count": 1,
+            "children": [
+              {
+                "name": "commit-msg",
+                "path": ".husky/commit-msg",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "bin",
+            "path": "bin",
+            "is_dir": true,
+            "file_count": 1,
+            "children": [
+              {
+                "name": "changelog",
+                "path": "bin/changelog",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "lib",
+            "path": "lib",
+            "is_dir": true,
+            "file_count": 8,
+            "children": [
+              {
+                "name": "JsonWebTokenError.js",
+                "path": "lib/JsonWebTokenError.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "NotBeforeError.js",
+                "path": "lib/NotBeforeError.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "TokenExpiredError.js",
+                "path": "lib/TokenExpiredError.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "asymmetricKeyDetailsSupported.js",
+                "path": "lib/asymmetricKeyDetailsSupported.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "psSupported.js",
+                "path": "lib/psSupported.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "rsaPssKeyDetailsSupported.js",
+                "path": "lib/rsaPssKeyDetailsSupported.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "timespan.js",
+                "path": "lib/timespan.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "validateAsymmetricKey.js",
+                "path": "lib/validateAsymmetricKey.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "test",
+            "path": "test",
+            "is_dir": true,
+            "file_count": 52,
+            "children": [
+              {
+                "name": ".eslintrc.json",
+                "path": "test/.eslintrc.json",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "async_sign.tests.js",
+                "path": "test/async_sign.tests.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "buffer.tests.js",
+                "path": "test/buffer.tests.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "claim-aud.test.js",
+                "path": "test/claim-aud.test.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "claim-exp.test.js",
+                "path": "test/claim-exp.test.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "claim-iat.test.js",
+                "path": "test/claim-iat.test.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "claim-iss.test.js",
+                "path": "test/claim-iss.test.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "claim-jti.test.js",
+                "path": "test/claim-jti.test.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "claim-nbf.test.js",
+                "path": "test/claim-nbf.test.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "claim-private.tests.js",
+                "path": "test/claim-private.tests.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "claim-sub.tests.js",
+                "path": "test/claim-sub.tests.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "decoding.tests.js",
+                "path": "test/decoding.tests.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "dsa-private.pem",
+                "path": "test/dsa-private.pem",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "dsa-public.pem",
+                "path": "test/dsa-public.pem",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "ecdsa-private.pem",
+                "path": "test/ecdsa-private.pem",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "ecdsa-public-invalid.pem",
+                "path": "test/ecdsa-public-invalid.pem",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "ecdsa-public-x509.pem",
+                "path": "test/ecdsa-public-x509.pem",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "ecdsa-public.pem",
+                "path": "test/ecdsa-public.pem",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "encoding.tests.js",
+                "path": "test/encoding.tests.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "expires_format.tests.js",
+                "path": "test/expires_format.tests.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "header-kid.test.js",
+                "path": "test/header-kid.test.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "invalid_exp.tests.js",
+                "path": "test/invalid_exp.tests.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "invalid_pub.pem",
+                "path": "test/invalid_pub.pem",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "issue_147.tests.js",
+                "path": "test/issue_147.tests.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "issue_304.tests.js",
+                "path": "test/issue_304.tests.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "issue_70.tests.js",
+                "path": "test/issue_70.tests.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "jwt.asymmetric_signing.tests.js",
+                "path": "test/jwt.asymmetric_signing.tests.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "jwt.hs.tests.js",
+                "path": "test/jwt.hs.tests.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "jwt.malicious.tests.js",
+                "path": "test/jwt.malicious.tests.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "noTimestamp.tests.js",
+                "path": "test/noTimestamp.tests.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "non_object_values.tests.js",
+                "path": "test/non_object_values.tests.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "option-complete.test.js",
+                "path": "test/option-complete.test.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "option-maxAge.test.js",
+                "path": "test/option-maxAge.test.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "option-nonce.test.js",
+                "path": "test/option-nonce.test.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "prime256v1-private.pem",
+                "path": "test/prime256v1-private.pem",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "priv.pem",
+                "path": "test/priv.pem",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "pub.pem",
+                "path": "test/pub.pem",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "rsa-private.pem",
+                "path": "test/rsa-private.pem",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "rsa-pss-invalid-salt-length-private.pem",
+                "path": "test/rsa-pss-invalid-salt-length-private.pem",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "rsa-pss-private.pem",
+                "path": "test/rsa-pss-private.pem",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "rsa-public-key.pem",
+                "path": "test/rsa-public-key.pem",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "rsa-public-key.tests.js",
+                "path": "test/rsa-public-key.tests.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "rsa-public.pem",
+                "path": "test/rsa-public.pem",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "schema.tests.js",
+                "path": "test/schema.tests.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "secp384r1-private.pem",
+                "path": "test/secp384r1-private.pem",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "secp521r1-private.pem",
+                "path": "test/secp521r1-private.pem",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "set_headers.tests.js",
+                "path": "test/set_headers.tests.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "test-utils.js",
+                "path": "test/test-utils.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "undefined_secretOrPublickey.tests.js",
+                "path": "test/undefined_secretOrPublickey.tests.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "validateAsymmetricKey.tests.js",
+                "path": "test/validateAsymmetricKey.tests.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "verify.tests.js",
+                "path": "test/verify.tests.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "wrong_alg.tests.js",
+                "path": "test/wrong_alg.tests.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": ".commitlintrc.json",
+            "path": ".commitlintrc.json",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": ".editorconfig",
+            "path": ".editorconfig",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": ".eslintignore",
+            "path": ".eslintignore",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": ".eslintrc.json",
+            "path": ".eslintrc.json",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": ".gitignore",
+            "path": ".gitignore",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": ".npmignore",
+            "path": ".npmignore",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": ".releaserc.json",
+            "path": ".releaserc.json",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "CHANGELOG.md",
+            "path": "CHANGELOG.md",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "CODEOWNERS",
+            "path": "CODEOWNERS",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "LICENSE",
+            "path": "LICENSE",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "README.md",
+            "path": "README.md",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "decode.js",
+            "path": "decode.js",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "index.js",
+            "path": "index.js",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "opslevel.yml",
+            "path": "opslevel.yml",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "package.json",
+            "path": "package.json",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "sign.js",
+            "path": "sign.js",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "verify.js",
+            "path": "verify.js",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          }
+        ]
+      }
+    },
+    "profiles": [
+      {
+        "stage": "full_scan",
+        "total_ms": 27,
+        "peak_rss_bytes": 28868608,
+        "steps": [
+          {
+            "id": "git_metadata",
+            "label": "Git metadata",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "file_walk",
+            "label": "Parallel file walk",
+            "ms": 5,
+            "pct": 18.51851851851852
+          },
+          {
+            "id": "languages",
+            "label": "Language breakdown",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "manifests",
+            "label": "Manifest parsing",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "docs",
+            "label": "Doc previews",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "aggregates",
+            "label": "Dirs, configs, stack tags",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "entrypoints",
+            "label": "Entrypoints, workspace units & QA readiness",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "source_previews",
+            "label": "Source preview cache",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "repo_graph",
+            "label": "Deterministic graph scan",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "history",
+            "label": "Git history & decision scan",
+            "ms": 12,
+            "pct": 44.44444444444444
+          },
+          {
+            "id": "repo_health",
+            "label": "Deterministic health scoring",
+            "ms": 7,
+            "pct": 25.925925925925924
+          },
+          {
+            "id": "dir_tree",
+            "label": "Directory tree preview",
+            "ms": 0,
+            "pct": 0
+          }
+        ]
+      },
+      {
+        "stage": "local_scan_persist",
+        "total_ms": 0,
+        "peak_rss_bytes": 29278208,
+        "steps": [
+          {
+            "id": "serialize",
+            "label": "JSON serialize (inventory → SQLite)",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "db_insert",
+            "label": "SQLite insert",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "touch_project",
+            "label": "Update repo project metadata",
+            "ms": 0,
+            "pct": 0
+          }
+        ]
+      }
+    ]
+  }
+}

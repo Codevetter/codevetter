@@ -27,14 +27,14 @@
       "url": "https://codevetter.com/about",
       "md": "https://codevetter.com/about.md",
       "kind": "static",
-      "description": "About CodeVetter \u2014 what it is, open-source license, and author"
+      "description": "About CodeVetter — what it is, open-source license, and author"
     },
     {
       "id": "contact",
       "url": "https://codevetter.com/contact",
       "md": "https://codevetter.com/contact.md",
       "kind": "static",
-      "description": "Contact \u2014 GitHub issues, email, and social"
+      "description": "Contact — GitHub issues, email, and social"
     },
     {
       "id": "download",
@@ -413,6 +413,97 @@
       "md": "https://codevetter.com/xray/ts-xss.md",
       "kind": "static",
       "description": "Adjudicated typescript xss example"
+    },
+    {
+      "id": "unpack",
+      "url": "https://codevetter.com/unpack",
+      "md": "https://codevetter.com/unpack.md",
+      "kind": "static",
+      "description": "Repository evidence index — deterministic scans of well-known open-source projects"
+    },
+    {
+      "id": "unpack-axios",
+      "url": "https://codevetter.com/unpack/axios",
+      "md": "https://codevetter.com/unpack/axios.md",
+      "kind": "static",
+      "description": "Repo Unpack evidence scan of axios/axios at 56a5f1a"
+    },
+    {
+      "id": "unpack-curl",
+      "url": "https://codevetter.com/unpack/curl",
+      "md": "https://codevetter.com/unpack/curl.md",
+      "kind": "static",
+      "description": "Repo Unpack evidence scan of curl/curl at 53be819"
+    },
+    {
+      "id": "unpack-express",
+      "url": "https://codevetter.com/unpack/express",
+      "md": "https://codevetter.com/unpack/express.md",
+      "kind": "static",
+      "description": "Repo Unpack evidence scan of expressjs/express at 9a34acf"
+    },
+    {
+      "id": "unpack-fastapi",
+      "url": "https://codevetter.com/unpack/fastapi",
+      "md": "https://codevetter.com/unpack/fastapi.md",
+      "kind": "static",
+      "description": "Repo Unpack evidence scan of fastapi/fastapi at 50113da"
+    },
+    {
+      "id": "unpack-flask",
+      "url": "https://codevetter.com/unpack/flask",
+      "md": "https://codevetter.com/unpack/flask.md",
+      "kind": "static",
+      "description": "Repo Unpack evidence scan of pallets/flask at d73fa1c"
+    },
+    {
+      "id": "unpack-httpie",
+      "url": "https://codevetter.com/unpack/httpie",
+      "md": "https://codevetter.com/unpack/httpie.md",
+      "kind": "static",
+      "description": "Repo Unpack evidence scan of httpie/cli at 5b604c3"
+    },
+    {
+      "id": "unpack-jsonwebtoken",
+      "url": "https://codevetter.com/unpack/jsonwebtoken",
+      "md": "https://codevetter.com/unpack/jsonwebtoken.md",
+      "kind": "static",
+      "description": "Repo Unpack evidence scan of auth0/node-jsonwebtoken at b924272"
+    },
+    {
+      "id": "unpack-lodash",
+      "url": "https://codevetter.com/unpack/lodash",
+      "md": "https://codevetter.com/unpack/lodash.md",
+      "kind": "static",
+      "description": "Repo Unpack evidence scan of lodash/lodash at 2b5e6f7"
+    },
+    {
+      "id": "unpack-redis",
+      "url": "https://codevetter.com/unpack/redis",
+      "md": "https://codevetter.com/unpack/redis.md",
+      "kind": "static",
+      "description": "Repo Unpack evidence scan of redis/redis at c3215f0"
+    },
+    {
+      "id": "unpack-requests",
+      "url": "https://codevetter.com/unpack/requests",
+      "md": "https://codevetter.com/unpack/requests.md",
+      "kind": "static",
+      "description": "Repo Unpack evidence scan of psf/requests at 611c616"
+    },
+    {
+      "id": "unpack-ripgrep",
+      "url": "https://codevetter.com/unpack/ripgrep",
+      "md": "https://codevetter.com/unpack/ripgrep.md",
+      "kind": "static",
+      "description": "Repo Unpack evidence scan of BurntSushi/ripgrep at 3fce3b5"
+    },
+    {
+      "id": "unpack-sqlite",
+      "url": "https://codevetter.com/unpack/sqlite",
+      "md": "https://codevetter.com/unpack/sqlite.md",
+      "kind": "static",
+      "description": "Repo Unpack evidence scan of sqlite/sqlite at fde3a84"
     }
   ],
   "auth": {

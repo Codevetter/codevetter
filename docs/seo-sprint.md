@@ -48,7 +48,16 @@ Rules that keep this honest:
   comparing recognition fixtures vs repository-task benchmarks
   (SWE-bench lineage), and the codexglue-style "coding agent benchmark"
   explainer.
-- [ ] **Phase 4 — internal-link lattice.** Once phase 2 pages exist,
+- [x] **Phase 4 — Repo Unpack evidence pages.** `/unpack/<repo>` publishes
+  deterministic structural scans of well-known OSS repositories (express,
+  flask, requests, axios, lodash, fastapi, redis, sqlite, ripgrep, httpie,
+  curl, jsonwebtoken) — targeting "<repo> codebase explained / architecture"
+  demand. Corpus lives in `benchmarks/repo-unpacks/`; each page prints the
+  scanned commit, upstream last-commit date, and `codevetter` version.
+  Collect: `node scripts/collect-unpack-repo.mjs <org/repo>`; regenerate:
+  `node scripts/sync-unpack-pages.mjs`. Upgrade path: run the analysis pass
+  (`unpack` report sections) to add claim-cited system maps per repo.
+- [ ] **Phase 5 — internal-link lattice.** Once phase 2 pages exist,
   cross-link every comparison page to the nearest evidence page
   (`/xray/<case>`) and the benchmark methodology.
 
