@@ -1,20 +1,56 @@
 [
   {
-    "id": "ts-sql-injection",
-    "title": "SQL injection in a TypeScript lookup",
-    "language": "TypeScript",
-    "category": "Security",
-    "source": "codevetter-public-benchmark/ts-sql-injection",
+    "id": "go-errcheck",
+    "title": "Unchecked error return in Go",
+    "language": "go",
+    "category": "bug",
+    "source": "codevetter-public-benchmark/go-errcheck",
     "corpusState": "benchmark_ground_truth",
-    "outcome": "needs_review",
+    "outcome": "detected",
     "confidence": "medium",
-    "score": 80,
+    "score": 100,
     "finding": {
-      "severity": "critical",
-      "title": "User input is interpolated into an executed SQL query",
-      "summary": "The lookup builds SQL with user-controlled email input instead of a parameterized query.",
-      "file": "source.ts",
-      "line": 13
+      "severity": "medium",
+      "title": "unchecked error",
+      "summary": "The error return from os.WriteFile is discarded, so disk-full, permission, and invalid-path failures are silently swallowed and callers assume the config was saved.",
+      "file": "source.go",
+      "line": 12
+    }
+  },
+  {
+    "id": "go-hardcoded-credentials",
+    "title": "Hardcoded database credentials in Go",
+    "language": "go",
+    "category": "security",
+    "source": "codevetter-public-benchmark/go-hardcoded-credentials",
+    "corpusState": "benchmark_ground_truth",
+    "outcome": "detected",
+    "confidence": "high",
+    "score": 100,
+    "finding": {
+      "severity": "high",
+      "title": "hardcoded secret",
+      "summary": "Production database username, password, and host are committed in plaintext as package-level constants, exposing credentials to anyone with repository access.",
+      "file": "source.go",
+      "line": 7
+    }
+  },
+  {
+    "id": "go-nil-pointer",
+    "title": "Nil-pointer dereference on missing map value in Go",
+    "language": "go",
+    "category": "bug",
+    "source": "codevetter-public-benchmark/go-nil-pointer",
+    "corpusState": "benchmark_ground_truth",
+    "outcome": "detected",
+    "confidence": "medium",
+    "score": 100,
+    "finding": {
+      "severity": "medium",
+      "title": "nil dereference",
+      "summary": "FindUser dereferences u.Email without checking that the map lookup returned a non-nil pointer, so a missing id causes a nil pointer dereference and a process crash.",
+      "file": "source.go",
+      "line": 16
     }
   },
   {
@@ -36,6 +72,150 @@
     }
   },
   {
+    "id": "go-sql-injection",
+    "title": "SQL injection via fmt.Sprintf in Go",
+    "language": "go",
+    "category": "security",
+    "source": "codevetter-public-benchmark/go-sql-injection",
+    "corpusState": "benchmark_ground_truth",
+    "outcome": "detected",
+    "confidence": "high",
+    "score": 100,
+    "finding": {
+      "severity": "high",
+      "title": "sql injection",
+      "summary": "User-supplied email is interpolated into the SQL query via fmt.Sprintf instead of parameterized placeholders, allowing injection of arbitrary SQL.",
+      "file": "source.go",
+      "line": 13
+    }
+  },
+  {
+    "id": "java-insecure-random",
+    "title": "Predictable PRNG for security tokens in Java",
+    "language": "java",
+    "category": "security",
+    "source": "codevetter-public-benchmark/java-insecure-random",
+    "corpusState": "benchmark_ground_truth",
+    "outcome": "detected",
+    "confidence": "high",
+    "score": 100,
+    "finding": {
+      "severity": "high",
+      "title": "insecure random",
+      "summary": "Reset tokens are generated with java.util.Random, a predictable PRNG whose seed is recoverable from observed outputs, allowing token forgery. SecureRandom should be used instead.",
+      "file": "source.java",
+      "line": 10
+    }
+  },
+  {
+    "id": "js-eval-injection",
+    "title": "Arbitrary code execution via eval() in JavaScript",
+    "language": "javascript",
+    "category": "security",
+    "source": "codevetter-public-benchmark/js-eval-injection",
+    "corpusState": "benchmark_ground_truth",
+    "outcome": "detected",
+    "confidence": "high",
+    "score": 100,
+    "finding": {
+      "severity": "high",
+      "title": "code injection",
+      "summary": "Caller-supplied expression is passed directly to eval(), turning any user-controlled value into executing JavaScript and enabling arbitrary code execution.",
+      "file": "source.js",
+      "line": 7
+    }
+  },
+  {
+    "id": "js-open-redirect",
+    "title": "Open redirect via unvalidated URL in Express",
+    "language": "javascript",
+    "category": "security",
+    "source": "codevetter-public-benchmark/js-open-redirect",
+    "corpusState": "benchmark_ground_truth",
+    "outcome": "detected",
+    "confidence": "medium",
+    "score": 100,
+    "finding": {
+      "severity": "medium",
+      "title": "open redirect",
+      "summary": "The next query parameter is passed directly to res.redirect without an allowlist or same-origin check, enabling phishing redirects off the trusted domain.",
+      "file": "source.js",
+      "line": 9
+    }
+  },
+  {
+    "id": "py-bare-except",
+    "title": "Bare except swallows all errors in Python",
+    "language": "python",
+    "category": "bug",
+    "source": "codevetter-public-benchmark/py-bare-except",
+    "corpusState": "benchmark_ground_truth",
+    "outcome": "detected",
+    "confidence": "medium",
+    "score": 100,
+    "finding": {
+      "severity": "medium",
+      "title": "swallowed error",
+      "summary": "A bare except catches BaseException (including KeyboardInterrupt and SystemExit), hides JSON parse failures, and silently returns an empty dict so callers never learn the config failed to parse.",
+      "file": "source.py",
+      "line": 9
+    }
+  },
+  {
+    "id": "py-command-injection",
+    "title": "Command injection via subprocess shell=True in Python",
+    "language": "python",
+    "category": "security",
+    "source": "codevetter-public-benchmark/py-command-injection",
+    "corpusState": "benchmark_ground_truth",
+    "outcome": "detected",
+    "confidence": "high",
+    "score": 100,
+    "finding": {
+      "severity": "high",
+      "title": "command injection",
+      "summary": "subprocess.run is called with shell=True and a string command containing user-controlled host, allowing shell metacharacters to inject arbitrary commands.",
+      "file": "source.py",
+      "line": 9
+    }
+  },
+  {
+    "id": "py-hardcoded-secret",
+    "title": "Hardcoded cloud API credentials in Python",
+    "language": "python",
+    "category": "security",
+    "source": "codevetter-public-benchmark/py-hardcoded-secret",
+    "corpusState": "benchmark_ground_truth",
+    "outcome": "detected",
+    "confidence": "high",
+    "score": 100,
+    "finding": {
+      "severity": "high",
+      "title": "hardcoded secret",
+      "summary": "A live AWS access key id and secret access key are hardcoded in source. Anyone with repository access can extract and abuse these credentials.",
+      "file": "source.py",
+      "line": 10
+    }
+  },
+  {
+    "id": "py-insecure-deserialization",
+    "title": "Insecure pickle deserialization in Python",
+    "language": "python",
+    "category": "security",
+    "source": "codevetter-public-benchmark/py-insecure-deserialization",
+    "corpusState": "benchmark_ground_truth",
+    "outcome": "detected",
+    "confidence": "high",
+    "score": 100,
+    "finding": {
+      "severity": "high",
+      "title": "insecure deserialization",
+      "summary": "pickle.loads is called on a user-supplied base64 blob. pickle can execute arbitrary code during deserialization, so untrusted input lets an attacker run any payload on the server.",
+      "file": "source.py",
+      "line": 9
+    }
+  },
+  {
     "id": "py-path-traversal",
     "title": "Path traversal in a Python file handler",
     "language": "Python",
@@ -51,6 +231,258 @@
       "summary": "The requested filename is joined to the storage root without canonical containment validation.",
       "file": "source.py",
       "line": 9
+    }
+  },
+  {
+    "id": "py-sql-injection",
+    "title": "SQL injection via f-string in Python",
+    "language": "python",
+    "category": "security",
+    "source": "codevetter-public-benchmark/py-sql-injection",
+    "corpusState": "benchmark_ground_truth",
+    "outcome": "detected",
+    "confidence": "high",
+    "score": 100,
+    "finding": {
+      "severity": "high",
+      "title": "sql injection",
+      "summary": "User-supplied name is interpolated into the SQL query via an f-string, allowing injection of arbitrary SQL such as a UNION SELECT to exfiltrate other tables.",
+      "file": "source.py",
+      "line": 8
+    }
+  },
+  {
+    "id": "py-ssrf",
+    "title": "Server-side request forgery in Python",
+    "language": "python",
+    "category": "security",
+    "source": "codevetter-public-benchmark/py-ssrf",
+    "corpusState": "benchmark_ground_truth",
+    "outcome": "detected",
+    "confidence": "high",
+    "score": 100,
+    "finding": {
+      "severity": "high",
+      "title": "ssrf",
+      "summary": "The server fetches a user-supplied URL with no scheme, host, or private-range restrictions, allowing requests to cloud metadata endpoints (e.g. 169.254.169.254) to steal credentials or to internal services for pivoting.",
+      "file": "source.py",
+      "line": 9
+    }
+  },
+  {
+    "id": "py-weak-hash",
+    "title": "Weak password hashing with MD5 in Python",
+    "language": "python",
+    "category": "security",
+    "source": "codevetter-public-benchmark/py-weak-hash",
+    "corpusState": "benchmark_ground_truth",
+    "outcome": "detected",
+    "confidence": "high",
+    "score": 100,
+    "finding": {
+      "severity": "high",
+      "title": "weak crypto",
+      "summary": "Passwords are hashed with unsalted MD5, which is cryptographically broken and trivially reversed with rainbow tables; identical passwords produce identical hashes.",
+      "file": "source.py",
+      "line": 7
+    }
+  },
+  {
+    "id": "py-zip-bomb",
+    "title": "Unbounded zip extraction (zip bomb) in Python",
+    "language": "python",
+    "category": "security",
+    "source": "codevetter-public-benchmark/py-zip-bomb",
+    "corpusState": "benchmark_ground_truth",
+    "outcome": "detected",
+    "confidence": "high",
+    "score": 100,
+    "finding": {
+      "severity": "high",
+      "title": "resource exhaustion",
+      "summary": "extractall is called without checking uncompressed sizes or compression ratios, so a small zip bomb can decompress to petabytes and exhaust disk and memory.",
+      "file": "source.py",
+      "line": 9
+    }
+  },
+  {
+    "id": "rust-integer-overflow",
+    "title": "Unchecked integer arithmetic in Rust",
+    "language": "rust",
+    "category": "bug",
+    "source": "codevetter-public-benchmark/rust-integer-overflow",
+    "corpusState": "benchmark_ground_truth",
+    "outcome": "detected",
+    "confidence": "high",
+    "score": 100,
+    "finding": {
+      "severity": "high",
+      "title": "integer overflow",
+      "summary": "credit uses += on u64 without checked/saturating arithmetic; in release builds an overflowing credit wraps the balance silently, enabling balance manipulation.",
+      "file": "source.rs",
+      "line": 11
+    }
+  },
+  {
+    "id": "ts-dead-code",
+    "title": "Unreachable code after unconditional return",
+    "language": "typescript",
+    "category": "maintainability",
+    "source": "codevetter-public-benchmark/ts-dead-code",
+    "corpusState": "benchmark_ground_truth",
+    "outcome": "detected",
+    "confidence": "medium",
+    "score": 100,
+    "finding": {
+      "severity": "medium",
+      "title": "dead code",
+      "summary": "The if (score >= 70) branch and final return are unreachable because an unconditional return at line 8 always exits the function first.",
+      "file": "source.ts",
+      "line": 12
+    }
+  },
+  {
+    "id": "ts-hardcoded-credentials",
+    "title": "Hardcoded database password in TypeScript",
+    "language": "typescript",
+    "category": "security",
+    "source": "codevetter-public-benchmark/ts-hardcoded-credentials",
+    "corpusState": "benchmark_ground_truth",
+    "outcome": "detected",
+    "confidence": "high",
+    "score": 100,
+    "finding": {
+      "severity": "high",
+      "title": "hardcoded secret",
+      "summary": "The production database password is committed in plaintext inside the source file, exposing credentials to anyone with repository access.",
+      "file": "source.ts",
+      "line": 8
+    }
+  },
+  {
+    "id": "ts-insecure-cookie",
+    "title": "Insecure session cookie attributes in TypeScript",
+    "language": "typescript",
+    "category": "security",
+    "source": "codevetter-public-benchmark/ts-insecure-cookie",
+    "corpusState": "benchmark_ground_truth",
+    "outcome": "detected",
+    "confidence": "high",
+    "score": 100,
+    "finding": {
+      "severity": "high",
+      "title": "insecure cookie",
+      "summary": "The session cookie is set without Secure, HttpOnly, or SameSite attributes, so it is transmitted over HTTP, readable by JavaScript/XSS, and vulnerable to CSRF.",
+      "file": "source.ts",
+      "line": 8
+    }
+  },
+  {
+    "id": "ts-missing-await",
+    "title": "Missing await on async operation in TypeScript",
+    "language": "typescript",
+    "category": "bug",
+    "source": "codevetter-public-benchmark/ts-missing-await",
+    "corpusState": "benchmark_ground_truth",
+    "outcome": "detected",
+    "confidence": "medium",
+    "score": 100,
+    "finding": {
+      "severity": "medium",
+      "title": "missing await",
+      "summary": "deleteSession returns a promise but is not awaited, so a rejection becomes an unhandled promise rejection and logout resolves before the session is actually deleted, leaving stale sessions.",
+      "file": "source.ts",
+      "line": 8
+    }
+  },
+  {
+    "id": "ts-prototype-pollution",
+    "title": "Prototype pollution via recursive merge in TypeScript",
+    "language": "typescript",
+    "category": "security",
+    "source": "codevetter-public-benchmark/ts-prototype-pollution",
+    "corpusState": "benchmark_ground_truth",
+    "outcome": "detected",
+    "confidence": "high",
+    "score": 100,
+    "finding": {
+      "severity": "high",
+      "title": "prototype pollution",
+      "summary": "The recursive merge walks user-supplied keys without blocking __proto__/constructor/prototype, so a payload like {\"__proto__\": {\"admin\": true}} pollutes Object.prototype and escalates privileges across the application.",
+      "file": "source.ts",
+      "line": 11
+    }
+  },
+  {
+    "id": "ts-regex-dos",
+    "title": "Catastrophic backtracking regex (ReDoS) in TypeScript",
+    "language": "typescript",
+    "category": "security",
+    "source": "codevetter-public-benchmark/ts-regex-dos",
+    "corpusState": "benchmark_ground_truth",
+    "outcome": "detected",
+    "confidence": "high",
+    "score": 100,
+    "finding": {
+      "severity": "high",
+      "title": "regex dos",
+      "summary": "The regex uses a nested + quantifier ((...+)+) causing exponential backtracking on non-matching inputs; a long crafted string hangs the event loop and denies service to all other requests.",
+      "file": "source.ts",
+      "line": 4
+    }
+  },
+  {
+    "id": "ts-sql-injection",
+    "title": "SQL injection in a TypeScript lookup",
+    "language": "TypeScript",
+    "category": "Security",
+    "source": "codevetter-public-benchmark/ts-sql-injection",
+    "corpusState": "benchmark_ground_truth",
+    "outcome": "needs_review",
+    "confidence": "medium",
+    "score": 80,
+    "finding": {
+      "severity": "critical",
+      "title": "User input is interpolated into an executed SQL query",
+      "summary": "The lookup builds SQL with user-controlled email input instead of a parameterized query.",
+      "file": "source.ts",
+      "line": 13
+    }
+  },
+  {
+    "id": "ts-type-confusion",
+    "title": "Type-safety bypass via `as any` in TypeScript",
+    "language": "typescript",
+    "category": "bug",
+    "source": "codevetter-public-benchmark/ts-type-confusion",
+    "corpusState": "benchmark_ground_truth",
+    "outcome": "detected",
+    "confidence": "medium",
+    "score": 100,
+    "finding": {
+      "severity": "medium",
+      "title": "type confusion",
+      "summary": "The payload is cast through `as any` to Order, bypassing the compiler so a Refund-shaped object is treated as an Order; at runtime items is undefined and the .length access throws or silently corrupts downstream totals.",
+      "file": "source.ts",
+      "line": 19
+    }
+  },
+  {
+    "id": "ts-xss",
+    "title": "Reflected XSS via dangerouslySetInnerHTML in React",
+    "language": "typescript",
+    "category": "security",
+    "source": "codevetter-public-benchmark/ts-xss",
+    "corpusState": "benchmark_ground_truth",
+    "outcome": "detected",
+    "confidence": "high",
+    "score": 100,
+    "finding": {
+      "severity": "high",
+      "title": "xss",
+      "summary": "User-supplied comment body is rendered as raw HTML via dangerouslySetInnerHTML without any sanitization, enabling stored/reflected XSS.",
+      "file": "source.tsx",
+      "line": 12
     }
   }
 ]
