@@ -11,3 +11,5 @@ benchmarks/repo-unpacks/n8n.json:generic-api-key:37594
 benchmarks/repo-unpacks/n8n.json:generic-api-key:37846
 apps/landing-page-astro/src/data/unpack-reports.json:generic-api-key:68635
 apps/landing-page-astro/src/data/unpack-reports.json:generic-api-key:68887
+9a3724d4db56ecd2638c65bd649e40ab4e327e90:apps/landing-page-astro/public/app-health-log.js:generic-api-key:6
+60c1585a646838fe11f425eeb6cc5c9009ef067b:apps/landing-page-astro/src/layouts/Layout.astro:generic-api-key:102
