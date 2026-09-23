@@ -17,17 +17,24 @@ let package = Package(
       targets: ["NativeBridgeBenchmark"]
     ),
   ],
+  dependencies: [
+    .package(url: "https://github.com/sass-maker/app-health", exact: "0.1.0")
+  ],
   targets: [
     // Targets are the basic building blocks of a package, defining a module or a test suite.
     // Targets can depend on other targets in this package and products from dependencies.
     .target(
       name: "CodeVetterFeature",
+      dependencies: [
+        .product(name: "AppHealth", package: "app-health")
+      ],
       resources: [.process("Resources")]
     ),
     .testTarget(
       name: "CodeVetterFeatureTests",
       dependencies: [
-        "CodeVetterFeature"
+        "CodeVetterFeature",
+        .product(name: "AppHealth", package: "app-health")
       ]
     ),
     .executableTarget(name: "NativeBridgeBenchmark"),

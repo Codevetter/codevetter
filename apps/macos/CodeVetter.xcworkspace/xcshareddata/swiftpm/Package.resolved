@@ -1,6 +1,15 @@
 {
-  "originHash" : "5d35d4ce666815b670b48f8180db914be45eeef88ba6a4c90bd194292a8de3ed",
+  "originHash" : "c66317d0d2d0f81314107bc074cf0bd9fb77af645285ea89871d64fb4c56d18d",
   "pins" : [
+    {
+      "identity" : "app-health",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/sass-maker/app-health",
+      "state" : {
+        "revision" : "5f8ef9e65f2e799ac66dc5ee5931820392fdcc7e",
+        "version" : "0.1.0"
+      }
+    },
     {
       "identity" : "sparkle",
       "kind" : "remoteSourceControl",
