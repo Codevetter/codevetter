@@ -2,7 +2,7 @@
 
 import { spawnSync, execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { copyFileSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -20,7 +20,6 @@ const galleryTemplate = resolve(
 );
 
 export const nativeOwnerReviewRenders = Object.freeze([
-  ['CODEVETTER_USAGE_SCREENSHOT_PATH', 'usage.png'],
   ['CODEVETTER_UNPACK_SCREENSHOT_PATH', 'repo-unpack.png'],
   ['CODEVETTER_UNPACK_QUERY_DESK_SCREENSHOT_PATH', 'repository-query-desk.png'],
   ['CODEVETTER_UNPACK_QUERY_SCREENSHOT_PATH', 'repository-query-evidence-workbench.png'],
@@ -76,12 +75,20 @@ export function buildOwnerReviewManifest(entries, renderedAt = new Date()) {
   };
 }
 
+export function buildOwnerReviewGallery(entries) {
+  const renderedPaths = new Set(entries.map((entry) => entry.path));
+  return readFileSync(galleryTemplate, 'utf8').replace(
+    /^[ \t]*<article data-render="([^"]+)"[^\n]*\n/gm,
+    (card, path) => (renderedPaths.has(path) ? card : '')
+  );
+}
+
 export function finalizeOwnerReview(outputRoot = defaultOutputRoot) {
   const root = resolve(outputRoot);
   const entries = nativeOwnerReviewRenders.map(([, path]) => artifact(join(root, path), path));
   const manifest = buildOwnerReviewManifest(entries);
   writeFileSync(join(root, 'owner-review-manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`);
-  copyFileSync(galleryTemplate, join(root, 'gallery.html'));
+  writeFileSync(join(root, 'gallery.html'), buildOwnerReviewGallery(entries));
   return manifest;
 }
 
