@@ -168,53 +168,6 @@
       "next_step": "Refresh launch, settled RSS, responsiveness, energy, and long-session evidence on the exact current package with owner-approved foreground qualification."
     },
     {
-      "id": "evidence.local_usage",
-      "name": "Local agent usage",
-      "purpose": "Inspect local token, cache, cost, model, and session evidence without conflating it with cloud quota telemetry.",
-      "stage": "current",
-      "surfaces": {
-        "ui": {
-          "availability": "available",
-          "authority": "read",
-          "entrypoints": [
-            "Native Usage (ccusage plus separate indexed Devin history)"
-          ]
-        },
-        "cli": {
-          "availability": "available",
-          "authority": "read",
-          "entrypoints": [
-            "codevetter usage"
-          ]
-        },
-        "agent": {
-          "availability": "planned",
-          "authority": "none",
-          "entrypoints": []
-        }
-      },
-      "underlying_tools": [
-        {
-          "name": "ccusage 20.0.20",
-          "role": "Normalizes offline Claude, Codex, and Grok local usage logs",
-          "requirement": "bundled pinned sidecar"
-        },
-        {
-          "name": "CodeVetter Rust core",
-          "role": "Owns provider boundaries, ccusage normalization, separate SQLite Devin history, caching, and stale/unavailable states",
-          "requirement": "bundled"
-        }
-      ],
-      "data_boundary": "Local agent logs, optional read-only imported Codex roots, and indexed Devin sessions from the existing SQLite database; no provider credential or network access.",
-      "qualification": "partial",
-      "limitations": [
-        "Indexed Devin sessions, generated/cache tokens, cost, and model rows follow 1w, 30d, 90d, and all-time windows through a separate Rust projection and are never included in ccusage totals.",
-        "Live provider quotas remain separate telemetry and are never inferred from local spend.",
-        "Native 1w, 30d, 90d, and all-time selection keeps ccusage chart, totals, models, and sessions aligned while the separate Devin desk follows the same selected window."
-      ],
-      "next_step": "Migrate live provider telemetry as a credential-safe separate projection, then expose the bounded report through scoped MCP."
-    },
-    {
       "id": "usage.history_roots",
       "name": "Additional Codex history roots",
       "purpose": "Restore Codex sessions stored outside the active CODEX_HOME without reading or deleting transcript content during configuration.",
@@ -224,7 +177,7 @@
           "availability": "available",
           "authority": "read_execute",
           "entrypoints": [
-            "Native Usage settings"
+            "Native History settings"
           ]
         },
         "cli": {
@@ -252,10 +205,10 @@
       "limitations": [
         "The active CODEX_HOME remains automatic and is not duplicated in the additional-root receipt.",
         "A selected sessions or archived_sessions directory is normalized to its containing Codex home.",
-        "Reconciliation remains a separate explicit Usage action.",
+        "Root configuration does not run a transcript reconciliation or general usage scan.",
         "Agent and MCP surfaces receive no local history-root authority."
       ],
-      "next_step": "Keep local history-root mutation out of agent authority and preserve the bounded receipt as usage importers evolve."
+      "next_step": "Keep local history-root mutation out of agent authority and preserve the bounded archive receipt."
     },
     {
       "id": "configuration.native_settings",
@@ -441,7 +394,7 @@
           "availability": "available",
           "authority": "read_execute",
           "entrypoints": [
-            "Native Usage settings"
+            "Native History settings"
           ]
         },
         "cli": {

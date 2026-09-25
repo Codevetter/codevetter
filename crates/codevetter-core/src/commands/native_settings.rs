@@ -67,13 +67,6 @@ const ROLES: &[(&str, &str)] = &[
 ];
 const CONCURRENCY: &[(&str, &str)] =
     &[("1", "1"), ("2", "2"), ("3", "3"), ("5", "5"), ("10", "10")];
-const TRAY_CADENCE: &[(&str, &str)] = &[
-    ("manual", "Manual only"),
-    ("60", "Every minute"),
-    ("120", "Every 2 minutes"),
-    ("300", "Every 5 minutes"),
-    ("900", "Every 15 minutes"),
-];
 const ISLAND_VOLUME: &[(&str, &str)] = &[("0.5", "Quiet"), ("0.8", "Balanced"), ("1", "Full")];
 const ISLAND_PACE: &[(&str, &str)] =
     &[("0.4", "Measured"), ("0.48", "Balanced"), ("0.56", "Quick")];
@@ -207,24 +200,6 @@ const DEFINITIONS: &[NativeSettingDefinition] = &[
         EMPTY_OPTIONS,
     ),
     definition(
-        "notify_quota_thresholds",
-        "notifications",
-        "Provider Quota Thresholds",
-        "Notify only from observed provider-window telemetry.",
-        NativeSettingKind::Toggle,
-        "true",
-        EMPTY_OPTIONS,
-    ),
-    definition(
-        "notify_session_usage_thresholds",
-        "notifications",
-        "Session Usage Thresholds",
-        "Notify from indexed session context estimates when enabled.",
-        NativeSettingKind::Toggle,
-        "false",
-        EMPTY_OPTIONS,
-    ),
-    definition(
         "notification_sound",
         "notifications",
         "Notification Sounds",
@@ -232,15 +207,6 @@ const DEFINITIONS: &[NativeSettingDefinition] = &[
         NativeSettingKind::Toggle,
         "true",
         EMPTY_OPTIONS,
-    ),
-    definition(
-        "tray_refresh_cadence_secs",
-        "notifications",
-        "Menu Bar Refresh Cadence",
-        "Polling cadence for observed live-provider usage.",
-        NativeSettingKind::Choice,
-        "300",
-        TRAY_CADENCE,
     ),
     definition(
         "native_agent_island_enabled",

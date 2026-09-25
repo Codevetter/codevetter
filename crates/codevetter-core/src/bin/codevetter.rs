@@ -24,7 +24,6 @@ use codevetter_core::commands::local_check::{
     LocalCheckInput, LocalCheckPreflightReceipt, LocalCheckReceipt, LocalCheckStatus,
     LocalCheckTarget, LocalCheckVerdict,
 };
-use codevetter_core::commands::local_usage::{get_headless_local_usage_report, LocalUsageReport};
 use codevetter_core::commands::mcp_access::{
     run_mcp_settings_operation, McpSettingsOperation, McpSettingsReceipt,
 };
@@ -40,9 +39,6 @@ use codevetter_core::commands::ops_status::{OpsBillingStatus, OpsWebhookStatus};
 use codevetter_core::commands::performance_bridge::{
     run_headless_performance, PerformanceAdapter, PerformanceOperation, PerformanceRunInput,
     PerformanceRunReceipt,
-};
-use codevetter_core::commands::provider_quota::{
-    collect_provider_quotas, ProviderQuotaReceipt, ProviderQuotaSelection,
 };
 use codevetter_core::commands::qa_workspace::{
     run_qa_workspace_headless, QaTargetPreset, QaWorkspaceMutation, QaWorkspaceReceipt,
@@ -115,8 +111,6 @@ Usage:
   codevetter watcher --operation <list|enable|disable|poll|retry|runs> [options] [--json]
   codevetter performance --operation <plan|diagnose|verify-paired|inspect> [options] [--json]
   codevetter scope --consumer <testing|performance> (--flow <text> | --change <range-or-pr> | --codebase) [--repo <path>] [--json]
-  codevetter usage [--timezone <iana>] [--refresh] [--json]
-  codevetter quota [--provider <all|claude|codex>] [--json]
   codevetter ops [--window-days <7|30|90>] [--json]
   codevetter unpack [--operation <list|inspect|scan|compare|export|query|query-worker>] [--repo <path>] [--limit <n>] [--report-id <id>] [--json]
   codevetter qa --operation <inspect|save-workflow|delete-workflow|save-target|delete-target> --repo <path> [options] [--json]
@@ -174,9 +168,6 @@ Options:
   --name <name>             Optional exact performance workload name
   --request-id <id>         Optional stable performance request id
   --subject-run-id <id>     Recorded performance run id for inspect
-  --timezone <iana>          Usage reporting timezone (default: UTC)
-  --refresh                  Bypass the in-process usage cache
-  --provider <name>          Quota provider: all, claude, or codex (default: all)
   --window-days <n>          Ops aggregate window: 7, 30, or 90 (default: 30)
   --report-id <id>           Inspect one stored Repo Unpack snapshot
   --operation <name>        Repo Unpack operation: list, inspect, scan, compare, export, query, or internal query-worker
@@ -291,19 +282,6 @@ struct PerformanceArguments {
 #[derive(Debug, Clone, PartialEq, Eq)]
 struct ScopeArguments {
     input: EvidenceScopeInput,
-    output: OutputMode,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-struct UsageArguments {
-    timezone: Option<String>,
-    refresh: bool,
-    output: OutputMode,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-struct QuotaArguments {
-    provider: ProviderQuotaSelection,
     output: OutputMode,
 }
 
@@ -537,8 +515,6 @@ enum CliCommand {
     Runs(RunsArguments),
     Performance(PerformanceArguments),
     Scope(ScopeArguments),
-    Usage(UsageArguments),
-    Quota(QuotaArguments),
     Ops(OpsArguments),
     Unpack(UnpackArguments),
     Settings(SettingsArguments),
@@ -649,8 +625,6 @@ async fn run() -> Result<i32, String> {
         CliCommand::Runs(arguments) => run_runs(arguments),
         CliCommand::Performance(arguments) => run_performance(arguments).await,
         CliCommand::Scope(arguments) => run_scope(arguments).await,
-        CliCommand::Usage(arguments) => run_usage(arguments).await,
-        CliCommand::Quota(arguments) => run_quota(arguments),
         CliCommand::Ops(arguments) => run_ops(arguments),
         CliCommand::Unpack(arguments) => run_unpack(arguments),
         CliCommand::Settings(arguments) => run_settings(arguments),
@@ -1608,53 +1582,6 @@ fn run_qa(arguments: QaArguments) -> Result<i32, String> {
     Ok(0)
 }
 
-async fn run_usage(arguments: UsageArguments) -> Result<i32, String> {
-    let connection = open_read_only_app_database()?;
-    let report = get_headless_local_usage_report(
-        connection.as_ref(),
-        arguments.refresh,
-        arguments.timezone.as_deref(),
-    )
-    .await?;
-    match arguments.output {
-        OutputMode::Json => println!(
-            "{}",
-            serde_json::to_string(&report)
-                .map_err(|error| format!("serialize local usage report: {error}"))?
-        ),
-        OutputMode::Human => print!("{}", render_human_usage(&report)),
-    }
-    Ok(match report.status.as_str() {
-        "ready" => 0,
-        "stale" => 1,
-        _ => 2,
-    })
-}
-
-fn run_quota(arguments: QuotaArguments) -> Result<i32, String> {
-    let receipt = collect_provider_quotas(arguments.provider);
-    match arguments.output {
-        OutputMode::Json => println!(
-            "{}",
-            serde_json::to_string(&receipt)
-                .map_err(|error| format!("serialize provider quota receipt: {error}"))?
-        ),
-        OutputMode::Human => print!("{}", render_human_quota(&receipt)),
-    }
-    let ready = receipt
-        .providers
-        .iter()
-        .filter(|provider| provider.status == "ready")
-        .count();
-    Ok(if ready == receipt.providers.len() {
-        0
-    } else if ready > 0 {
-        1
-    } else {
-        2
-    })
-}
-
 #[derive(serde::Serialize)]
 struct UnpackHistoryReceipt {
     schema_version: &'static str,
@@ -2008,123 +1935,6 @@ fn render_human_runs(history: &RunHistoryReceipt) -> String {
     output
 }
 
-fn render_human_usage(report: &LocalUsageReport) -> String {
-    let mut output = format!(
-        "Local usage · {} {} · {}\nstatus: {}{}\nagents: {}\ntokens: {} total · {} generated · {} cache read\ncost: ${:.2}\nperiods: {} daily · {} weekly · {} monthly · {} sessions\nsource: {}\n",
-        report.provenance.engine,
-        report.provenance.version,
-        report.provenance.timezone,
-        report.status,
-        if report.stale { " (stale)" } else { "" },
-        if report.provenance.detected_agents.is_empty() {
-            "none".into()
-        } else {
-            report.provenance.detected_agents.join(", ")
-        },
-        report.totals.total_tokens,
-        report.totals.generated_tokens(),
-        report.totals.cache_read_tokens,
-        report.totals.cost_usd,
-        report.daily.len(),
-        report.weekly.len(),
-        report.monthly.len(),
-        report.sessions.len(),
-        if report.provenance.source_fingerprint.is_empty() {
-            "unavailable"
-        } else {
-            &report.provenance.source_fingerprint
-        },
-    );
-    output.push_str("boundary: Claude, Codex, and Grok are accounted by ccusage; Devin and live provider quotas are separate.\n");
-    if let Some(devin) = &report.devin {
-        output.push_str(&format!(
-            "devin: {} · {} sessions · {} generated · {} cache read · ${:.2} · all-time separate source\n",
-            devin.status,
-            devin.sessions,
-            devin.generated_tokens,
-            devin.cache_read_tokens,
-            devin.cost_usd,
-        ));
-        if !devin.windows.is_empty() {
-            output.push_str("devin windows:");
-            for window in &devin.windows {
-                output.push_str(&format!(
-                    " {} {} sessions / {} generated / ${:.2};",
-                    window.window, window.sessions, window.generated_tokens, window.cost_usd
-                ));
-            }
-            output.push('\n');
-        }
-    }
-    if let Some(error) = &report.error {
-        output.push_str(&format!("error [{}]: {}\n", error.category, error.message));
-    }
-    if !report.provenance.excluded_agents.is_empty() {
-        output.push_str(&format!(
-            "excluded: {}\n",
-            report.provenance.excluded_agents.join(", ")
-        ));
-    }
-    output
-}
-
-fn render_human_quota(receipt: &ProviderQuotaReceipt) -> String {
-    let mut output = format!(
-        "Provider quota · {}\nsource boundary: provider-reported limits; never inferred from local spend\n",
-        receipt.generated_at
-    );
-    for provider in &receipt.providers {
-        output.push_str(&format!(
-            "{}: {}{} · {}\n",
-            provider.provider,
-            provider.status,
-            provider
-                .plan
-                .as_deref()
-                .map(|plan| format!(" ({plan})"))
-                .unwrap_or_default(),
-            provider.source
-        ));
-        for window in &provider.windows {
-            let reset = window
-                .reset_description
-                .as_deref()
-                .map(|value| format!(" · resets {value}"))
-                .or_else(|| {
-                    window
-                        .resets_at_unix
-                        .map(|value| format!(" · resets at {value}"))
-                })
-                .unwrap_or_default();
-            output.push_str(&format!(
-                "  {}: {:.0}% remaining · {:.0}% used{}\n",
-                window.label, window.remaining_percent, window.used_percent, reset
-            ));
-        }
-        if let Some(credits) = &provider.credits {
-            let amount = match (credits.used_amount, credits.limit_amount) {
-                (Some(used), Some(limit)) => format!(" · ${used:.2} / ${limit:.2} spent"),
-                _ => String::new(),
-            };
-            output.push_str(&format!(
-                "  credits: {}% remaining{}\n",
-                credits
-                    .remaining_percent
-                    .map(|value| format!("{value:.0}"))
-                    .unwrap_or_else(|| "unknown".to_string()),
-                amount
-            ));
-        }
-        if let Some(count) = provider.reset_credits {
-            output.push_str(&format!("  full reset credits: {count}\n"));
-        }
-        if let Some(message) = &provider.message {
-            output.push_str(&format!("  {message}\n"));
-        }
-    }
-    output
-}
-
 fn render_human_unpack_history(receipt: &UnpackHistoryReceipt) -> String {
     if !receipt.database_available {
         return "No CodeVetter database is available. No stored Repo Unpack snapshots were changed.\n"
@@ -2373,8 +2183,6 @@ fn parse_arguments(
         "runs" => return parse_runs(arguments),
         "performance" => return parse_performance(arguments, cwd),
         "scope" => return parse_scope(arguments, cwd),
-        "usage" => return parse_usage(arguments),
-        "quota" => return parse_quota(arguments),
         "ops" => return parse_ops(arguments),
         "unpack" => return parse_unpack(arguments),
         "settings" => return parse_settings(arguments),
@@ -3143,43 +2951,6 @@ fn parse_retention(mut arguments: impl Iterator<Item = String>) -> Result<CliCom
         vacuum,
         output,
     }))
-}
-
-fn parse_usage(mut arguments: impl Iterator<Item = String>) -> Result<CliCommand, String> {
-    let mut timezone = None;
-    let mut refresh = false;
-    let mut output = OutputMode::Human;
-    while let Some(argument) = arguments.next() {
-        match argument.as_str() {
-            "--timezone" => timezone = Some(required_value(&mut arguments, "--timezone")?),
-            "--refresh" => refresh = true,
-            "--json" => output = OutputMode::Json,
-            "--help" | "-h" => return Ok(CliCommand::Help),
-            _ => return Err(format!("unknown usage argument `{argument}`")),
-        }
-    }
-    Ok(CliCommand::Usage(UsageArguments {
-        timezone,
-        refresh,
-        output,
-    }))
-}
-
-fn parse_quota(mut arguments: impl Iterator<Item = String>) -> Result<CliCommand, String> {
-    let mut provider = ProviderQuotaSelection::All;
-    let mut output = OutputMode::Human;
-    while let Some(argument) = arguments.next() {
-        match argument.as_str() {
-            "--provider" => {
-                provider =
-                    ProviderQuotaSelection::parse(&required_value(&mut arguments, "--provider")?)?;
-            }
-            "--json" => output = OutputMode::Json,
-            "--help" | "-h" => return Ok(CliCommand::Help),
-            _ => return Err(format!("unknown quota argument `{argument}`")),
-        }
-    }
-    Ok(CliCommand::Quota(QuotaArguments { provider, output }))
 }
 
 fn parse_ops(mut arguments: impl Iterator<Item = String>) -> Result<CliCommand, String> {

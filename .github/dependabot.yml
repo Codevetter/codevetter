@@ -9,10 +9,6 @@ updates:
     cooldown:
       default-days: 7
     groups:
-      ccusage-runtime:
-        patterns:
-          - ccusage
-          - '@ccusage/*'
       # react and react-dom assert at runtime that they resolve to the exact
       # same version, so they have to move in one PR. Bumping react alone
       # leaves react-dom behind in the lockfile and every desktop test dies
@@ -39,5 +35,4 @@ updates:
           - version-update:semver-major
     labels:
       - dependencies
-      - ccusage
     open-pull-requests-limit: 5

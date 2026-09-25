@@ -51,6 +51,11 @@ separately approved safety design justify renewed investment.
 - v1.14.3 includes the post-v1.14.2 code-health and native qualification
   repairs. Subsequent documentation-only bookkeeping does not imply a newer
   desktop release; release truth remains the published `v1.14.3` tag.
+- Unreleased source proposes retiring the general Usage workspace, provider
+  allowance checks, `codevetter usage`/`quota`, and the bundled `ccusage`
+  sidecar. ContextDaddy owns general agent usage. Per-verification token and
+  cost receipts and CodeVetter's History recovery remain. This proposal has
+  not been published in a desktop release.
 - Maintenance is limited to core verification reliability, regressions,
   security, dependency hygiene, and evidence requested by real users. New
   product surfaces require an explicit change in the investment decision.
@@ -58,7 +63,8 @@ separately approved safety design justify renewed investment.
 ## Dependencies
 
 External:
-- Bundled `ccusage` 20.0.20 sidecar — local, offline Claude/Codex/Grok usage accounting; exact updates are opened weekly and remain qualification-gated.
+- Published v1.14.3 bundles `ccusage` 20.0.20 for local Claude/Codex/Grok usage
+  accounting; the unreleased source proposal above removes that sidecar.
 - Installed and authenticated Codex or Claude CLI for Work conversations; provider account policy remains external to CodeVetter.
 - GitHub Releases + GitHub Actions — `auto-release.yml` cuts a `v<version>` release on native `Shared.xcconfig` version bumps; `release.yml` signs, notarizes, qualifies, and uploads the SwiftUI app, DMG, ZIP, and Sparkle `appcast.xml`.
 - Cloudflare Pages — hosts the landing page (`codevetter` project, codevetter.com).

@@ -57,7 +57,6 @@ pnpm core:build
 pnpm core:test
 pnpm core:prepare-cli
 pnpm core:prepare-mcp
-pnpm core:prepare-ccusage
 pnpm core:qualify-cli
 ```
 

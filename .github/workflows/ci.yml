@@ -112,11 +112,10 @@ jobs:
           pnpm test:corpus-contracts
           pnpm test:retrieval
           pnpm test:core-tools
-      - name: Prepare CLI, MCP, and ccusage companions
+      - name: Prepare CLI and MCP companions
         run: |
           pnpm core:prepare-mcp
           pnpm core:prepare-cli
-          pnpm core:prepare-ccusage
           pnpm core:qualify-cli
       - name: Rust core, CLI, and MCP contracts
         run: |

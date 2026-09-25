@@ -61,7 +61,7 @@ Confirm:
 - expected short version and build;
 - Developer ID signature;
 - notarization staple and Gatekeeper acceptance;
-- bundled `codevetter`, `codevetter-mcp`, and ccusage companions;
+- bundled `codevetter` and `codevetter-mcp` companions;
 - existing stable records remain available.
 
 Avoid foreground launch automation on the operator's active desktop. Hosted
