@@ -38,24 +38,24 @@ separately approved safety design justify renewed investment.
 
 ## Current shipped state
 
-- **v1.14.3 is the current published desktop release.** The protected release
-  workflow published the arm64 DMG, ZIP, and Sparkle appcast on 2026-09-22.
-  Usage coherence (#296), Review/Explore (#285), and unavailable-performance
-  classification (#276) are closed. See
+- **v1.15.0 is the current published desktop release.** The protected release
+  workflow published on 2026-09-25 with the
+  [arm64 DMG, ZIP, and Sparkle appcast](https://github.com/Codevetter/codevetter/releases/tag/v1.15.0).
+  General agent Usage is retired in favor of ContextDaddy; Usage coherence (#296),
+  Review/Explore (#285), and unavailable-performance classification (#276) are
+  closed. See
   [surface behavior](docs/product/surfaces.md).
 - Review/Explore supports GitHub URL import, pinned Git source and diffs,
   in-process Rust navigation, virtual source windows, indexed search,
   TypeScript semantic definitions/references, and source-linked Unpack and
   evidence. VoiceOver expansion remains intentionally deferred and is not a
   release blocker.
-- v1.14.3 includes the post-v1.14.2 code-health and native qualification
-  repairs. Subsequent documentation-only bookkeeping does not imply a newer
-  desktop release; release truth remains the published `v1.14.3` tag.
-- The proposed v1.15.0 release candidate retires the general Usage workspace,
+- v1.14.3 included the post-v1.14.2 code-health and native qualification
+  repairs. The v1.15.0 release retires the general Usage workspace,
   provider allowance checks, `codevetter usage`/`quota`, and the bundled
   `ccusage` sidecar. Retired CLI commands return a migration message pointing to
   ContextDaddy. Per-verification token and cost receipts and CodeVetter's
-  History recovery remain. This candidate has not been published or installed.
+  History recovery remain.
 - Maintenance is limited to core verification reliability, regressions,
   security, dependency hygiene, and evidence requested by real users. New
   product surfaces require an explicit change in the investment decision.
@@ -63,9 +63,9 @@ separately approved safety design justify renewed investment.
 ## Dependencies
 
 External:
-- Published v1.14.3 bundles `ccusage` 20.0.20 for local Claude/Codex/Grok usage
-  accounting; the unreleased v1.15.0 candidate removes that sidecar.
-- Installed and authenticated Codex or Claude CLI for Work conversations; provider account policy remains external to CodeVetter.
+- Published v1.15.0 does not bundle `ccusage`; the previous v1.14.3 release
+  included it for local Claude/Codex/Grok usage accounting.
+- Installed and authenticated Codex or Claude CLI for opt-in agent-backed verification; provider account policy remains external to CodeVetter.
 - GitHub Releases + GitHub Actions — `auto-release.yml` cuts a `v<version>` release on native `Shared.xcconfig` version bumps; `release.yml` signs, notarizes, qualifies, and uploads the SwiftUI app, DMG, ZIP, and Sparkle `appcast.xml`.
 - Cloudflare Pages — hosts the landing page (`codevetter` project, codevetter.com).
 - Optional `ast-grep` on PATH for structural evidence matches (no required runtime dependency).
@@ -793,7 +793,7 @@ Internal (fleet):
   explicit and historical debt tracked in GitHub Issues.
 - Local-first native macOS binary: SwiftUI/AppKit presentation, Rust-owned
   verification and SQLite, no WebView and no server.
-- Published v1.14.3 still has the general Usage workspace. The v1.15.0 candidate presents Explore, Review, Testing, Performance, Runs, and Settings; the retired Usage route is kept only for decoding legacy deep links and is not navigable. Explore contains Unpack, source navigation, graph, and history. Existing local session/work-item records and backend lifecycle code remain available for separately reviewed cleanup.
+- Published v1.15.0 presents Explore, Review, Testing, Performance, Runs, and Settings; the retired Usage route is kept only for decoding legacy deep links and is not navigable. Explore contains Unpack, source navigation, graph, and history. Existing local session/work-item records and backend lifecycle code remain available for separately reviewed cleanup. The previous v1.14.3 release still had the general Usage workspace.
 - Testing and Performance now share a local deterministic scope planner for a human-described function/flow, an exact PR or Git change, or a bounded whole-codebase portfolio. Every plan exposes its revision, dirty state, concrete adapters/targets, uncovered paths, and limitations and requires confirmation before execution; human text is discovery input and is never run as a command.
 - Risk-tiered CLI review: trivial single-pass → lite product/agent passes → full sensitive path with security, product, agent specialist passes, coordinator, and dedup metadata.
 
