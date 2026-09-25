@@ -99,7 +99,7 @@ node scripts/check-docs.mjs   # Validate docs (links, frontmatter, structure)
 - **Three synchronized surfaces**: SwiftUI, CLI, and MCP consume the same versioned Rust-owned receipt schemas. Do not fork business rules into the UI.
 - **DB is `rusqlite`, not `@tauri-apps/plugin-sql`.** Do not re-add `plugin-sql` (removed in the 2026-07-11 desloppification sweep). See `docs/architecture/data-model.md`.
 - **Single package manager: pnpm.** Do not reintroduce `package-lock.json` — dual-lockfile drift broke Cloudflare Pages in May 2026. See `docs/knowledge/failed-approaches.md`.
-- **Nav (6 sections)**: Usage, Repo Unpack, Review, Testing, Performance, Settings. Full surface map in `docs/product/surfaces.md`.
+- **Nav (6 sections)**: Explore, Review, Testing, Performance, Runs, Settings. Full surface map in `docs/product/surfaces.md`.
 - **GH Actions**: `ci.yml` (native + Rust + automation), `auto-release.yml` → `release.yml` (signed/notarized native app), `deploy-landing.yml`, `weekly.yml`, and `docs.yml`. See `docs/operations/`.
 - Husky pre-commit runs the staged secret scan when available; pre-push runs lint + secret scan.
 
