@@ -37,6 +37,7 @@ Engineers evaluating or shipping coding-agent changes who need executable eviden
 - FAQ: https://codevetter.com/faq — Common questions about local verification and provider boundaries
 - Changelog: https://codevetter.com/changelog — Verified shipped outcomes
 - Privacy: https://codevetter.com/privacy — Local-first data handling
+- Inspiration: https://codevetter.com/inspiration — Source-linked notes on the tools and ideas studied while building CodeVetter
 
 ## Current availability
 
@@ -80,6 +81,7 @@ Engineers evaluating or shipping coding-agent changes who need executable eviden
 - https://codevetter.com/verification-evidence-bundle.md
 - https://codevetter.com/verify-ai-generated-code.md
 - https://codevetter.com/articles.md
+- https://codevetter.com/inspiration.md
 - https://codevetter.com/articles/agent-evaluation-vs-tests-vs-code-review.md
 - https://codevetter.com/articles/coding-agent-evidence-receipt-spec.md
 - https://codevetter.com/articles/verifying-ai-code-changes-beyond-code-review.md

@@ -184,6 +184,279 @@
       "description": "Index of editorial articles on execution-backed agent verification"
     },
     {
+      "id": "inspiration",
+      "url": "https://codevetter.com/inspiration",
+      "md": "https://codevetter.com/inspiration.md",
+      "kind": "static",
+      "description": "Source-linked index of tools that shaped CodeVetter"
+    },
+    {
+      "id": "inspiration-aider",
+      "url": "https://codevetter.com/inspiration/aider",
+      "md": "https://codevetter.com/inspiration/aider.md",
+      "kind": "static",
+      "description": "Aider — a CodeVetter inspiration note"
+    },
+    {
+      "id": "inspiration-greptile",
+      "url": "https://codevetter.com/inspiration/greptile",
+      "md": "https://codevetter.com/inspiration/greptile.md",
+      "kind": "static",
+      "description": "Greptile — a CodeVetter inspiration note"
+    },
+    {
+      "id": "inspiration-coderabbit",
+      "url": "https://codevetter.com/inspiration/coderabbit",
+      "md": "https://codevetter.com/inspiration/coderabbit.md",
+      "kind": "static",
+      "description": "CodeRabbit — a CodeVetter inspiration note"
+    },
+    {
+      "id": "inspiration-qodo",
+      "url": "https://codevetter.com/inspiration/qodo",
+      "md": "https://codevetter.com/inspiration/qodo.md",
+      "kind": "static",
+      "description": "Qodo / PR-Agent — a CodeVetter inspiration note"
+    },
+    {
+      "id": "inspiration-ellipsis",
+      "url": "https://codevetter.com/inspiration/ellipsis",
+      "md": "https://codevetter.com/inspiration/ellipsis.md",
+      "kind": "static",
+      "description": "Ellipsis — a CodeVetter inspiration note"
+    },
+    {
+      "id": "inspiration-sourcery",
+      "url": "https://codevetter.com/inspiration/sourcery",
+      "md": "https://codevetter.com/inspiration/sourcery.md",
+      "kind": "static",
+      "description": "Sourcery — a CodeVetter inspiration note"
+    },
+    {
+      "id": "inspiration-bito",
+      "url": "https://codevetter.com/inspiration/bito",
+      "md": "https://codevetter.com/inspiration/bito.md",
+      "kind": "static",
+      "description": "Bito — a CodeVetter inspiration note"
+    },
+    {
+      "id": "inspiration-graphite",
+      "url": "https://codevetter.com/inspiration/graphite",
+      "md": "https://codevetter.com/inspiration/graphite.md",
+      "kind": "static",
+      "description": "Graphite Agent — a CodeVetter inspiration note"
+    },
+    {
+      "id": "inspiration-panto",
+      "url": "https://codevetter.com/inspiration/panto",
+      "md": "https://codevetter.com/inspiration/panto.md",
+      "kind": "static",
+      "description": "Panto AI — a CodeVetter inspiration note"
+    },
+    {
+      "id": "inspiration-github-copilot",
+      "url": "https://codevetter.com/inspiration/github-copilot",
+      "md": "https://codevetter.com/inspiration/github-copilot.md",
+      "kind": "static",
+      "description": "GitHub Copilot code review — a CodeVetter inspiration note"
+    },
+    {
+      "id": "inspiration-deepwiki",
+      "url": "https://codevetter.com/inspiration/deepwiki",
+      "md": "https://codevetter.com/inspiration/deepwiki.md",
+      "kind": "static",
+      "description": "DeepWiki — a CodeVetter inspiration note"
+    },
+    {
+      "id": "inspiration-sourcegraph",
+      "url": "https://codevetter.com/inspiration/sourcegraph",
+      "md": "https://codevetter.com/inspiration/sourcegraph.md",
+      "kind": "static",
+      "description": "Sourcegraph — a CodeVetter inspiration note"
+    },
+    {
+      "id": "inspiration-augment-code",
+      "url": "https://codevetter.com/inspiration/augment-code",
+      "md": "https://codevetter.com/inspiration/augment-code.md",
+      "kind": "static",
+      "description": "Augment Code — a CodeVetter inspiration note"
+    },
+    {
+      "id": "inspiration-arbor",
+      "url": "https://codevetter.com/inspiration/arbor",
+      "md": "https://codevetter.com/inspiration/arbor.md",
+      "kind": "static",
+      "description": "Arbor — a CodeVetter inspiration note"
+    },
+    {
+      "id": "inspiration-logicstamp",
+      "url": "https://codevetter.com/inspiration/logicstamp",
+      "md": "https://codevetter.com/inspiration/logicstamp.md",
+      "kind": "static",
+      "description": "LogicStamp Context — a CodeVetter inspiration note"
+    },
+    {
+      "id": "inspiration-repomix",
+      "url": "https://codevetter.com/inspiration/repomix",
+      "md": "https://codevetter.com/inspiration/repomix.md",
+      "kind": "static",
+      "description": "Repomix — a CodeVetter inspiration note"
+    },
+    {
+      "id": "inspiration-swimm",
+      "url": "https://codevetter.com/inspiration/swimm",
+      "md": "https://codevetter.com/inspiration/swimm.md",
+      "kind": "static",
+      "description": "Swimm — a CodeVetter inspiration note"
+    },
+    {
+      "id": "inspiration-google-code-wiki",
+      "url": "https://codevetter.com/inspiration/google-code-wiki",
+      "md": "https://codevetter.com/inspiration/google-code-wiki.md",
+      "kind": "static",
+      "description": "Google Code Wiki — a CodeVetter inspiration note"
+    },
+    {
+      "id": "inspiration-opendeepwiki",
+      "url": "https://codevetter.com/inspiration/opendeepwiki",
+      "md": "https://codevetter.com/inspiration/opendeepwiki.md",
+      "kind": "static",
+      "description": "OpenDeepWiki — a CodeVetter inspiration note"
+    },
+    {
+      "id": "inspiration-claude-code",
+      "url": "https://codevetter.com/inspiration/claude-code",
+      "md": "https://codevetter.com/inspiration/claude-code.md",
+      "kind": "static",
+      "description": "Claude Code — a CodeVetter inspiration note"
+    },
+    {
+      "id": "inspiration-codex",
+      "url": "https://codevetter.com/inspiration/codex",
+      "md": "https://codevetter.com/inspiration/codex.md",
+      "kind": "static",
+      "description": "OpenAI Codex — a CodeVetter inspiration note"
+    },
+    {
+      "id": "inspiration-cursor",
+      "url": "https://codevetter.com/inspiration/cursor",
+      "md": "https://codevetter.com/inspiration/cursor.md",
+      "kind": "static",
+      "description": "Cursor — a CodeVetter inspiration note"
+    },
+    {
+      "id": "inspiration-windsurf",
+      "url": "https://codevetter.com/inspiration/windsurf",
+      "md": "https://codevetter.com/inspiration/windsurf.md",
+      "kind": "static",
+      "description": "Windsurf — a CodeVetter inspiration note"
+    },
+    {
+      "id": "inspiration-continue",
+      "url": "https://codevetter.com/inspiration/continue",
+      "md": "https://codevetter.com/inspiration/continue.md",
+      "kind": "static",
+      "description": "Continue — a CodeVetter inspiration note"
+    },
+    {
+      "id": "inspiration-cline",
+      "url": "https://codevetter.com/inspiration/cline",
+      "md": "https://codevetter.com/inspiration/cline.md",
+      "kind": "static",
+      "description": "Cline — a CodeVetter inspiration note"
+    },
+    {
+      "id": "inspiration-gemini-cli",
+      "url": "https://codevetter.com/inspiration/gemini-cli",
+      "md": "https://codevetter.com/inspiration/gemini-cli.md",
+      "kind": "static",
+      "description": "Gemini CLI — a CodeVetter inspiration note"
+    },
+    {
+      "id": "inspiration-tree-sitter",
+      "url": "https://codevetter.com/inspiration/tree-sitter",
+      "md": "https://codevetter.com/inspiration/tree-sitter.md",
+      "kind": "static",
+      "description": "Tree-sitter — a CodeVetter inspiration note"
+    },
+    {
+      "id": "inspiration-ast-grep",
+      "url": "https://codevetter.com/inspiration/ast-grep",
+      "md": "https://codevetter.com/inspiration/ast-grep.md",
+      "kind": "static",
+      "description": "ast-grep — a CodeVetter inspiration note"
+    },
+    {
+      "id": "inspiration-semgrep",
+      "url": "https://codevetter.com/inspiration/semgrep",
+      "md": "https://codevetter.com/inspiration/semgrep.md",
+      "kind": "static",
+      "description": "Semgrep — a CodeVetter inspiration note"
+    },
+    {
+      "id": "inspiration-codeql",
+      "url": "https://codevetter.com/inspiration/codeql",
+      "md": "https://codevetter.com/inspiration/codeql.md",
+      "kind": "static",
+      "description": "CodeQL — a CodeVetter inspiration note"
+    },
+    {
+      "id": "inspiration-ripgrep",
+      "url": "https://codevetter.com/inspiration/ripgrep",
+      "md": "https://codevetter.com/inspiration/ripgrep.md",
+      "kind": "static",
+      "description": "ripgrep — a CodeVetter inspiration note"
+    },
+    {
+      "id": "inspiration-gitnexus",
+      "url": "https://codevetter.com/inspiration/gitnexus",
+      "md": "https://codevetter.com/inspiration/gitnexus.md",
+      "kind": "static",
+      "description": "GitNexus — a CodeVetter inspiration note"
+    },
+    {
+      "id": "inspiration-gitoxide",
+      "url": "https://codevetter.com/inspiration/gitoxide",
+      "md": "https://codevetter.com/inspiration/gitoxide.md",
+      "kind": "static",
+      "description": "gitoxide — a CodeVetter inspiration note"
+    },
+    {
+      "id": "inspiration-scip",
+      "url": "https://codevetter.com/inspiration/scip",
+      "md": "https://codevetter.com/inspiration/scip.md",
+      "kind": "static",
+      "description": "SCIP — a CodeVetter inspiration note"
+    },
+    {
+      "id": "inspiration-codesize",
+      "url": "https://codevetter.com/inspiration/codesize",
+      "md": "https://codevetter.com/inspiration/codesize.md",
+      "kind": "static",
+      "description": "codesize — a CodeVetter inspiration note"
+    },
+    {
+      "id": "inspiration-unsupervised-finder",
+      "url": "https://codevetter.com/inspiration/unsupervised-finder",
+      "md": "https://codevetter.com/inspiration/unsupervised-finder.md",
+      "kind": "static",
+      "description": "Unsupervised Finder — a CodeVetter inspiration note"
+    },
+    {
+      "id": "inspiration-deepwork",
+      "url": "https://codevetter.com/inspiration/deepwork",
+      "md": "https://codevetter.com/inspiration/deepwork.md",
+      "kind": "static",
+      "description": "DeepWork — a CodeVetter inspiration note"
+    },
+    {
+      "id": "inspiration-llm-wiki",
+      "url": "https://codevetter.com/inspiration/llm-wiki",
+      "md": "https://codevetter.com/inspiration/llm-wiki.md",
+      "kind": "static",
+      "description": "Karpathy’s LLM Wiki — a CodeVetter inspiration note"
+    },
+    {
       "id": "article-agent-evaluation-vs-tests-vs-code-review",
       "url": "https://codevetter.com/articles/agent-evaluation-vs-tests-vs-code-review",
       "md": "https://codevetter.com/articles/agent-evaluation-vs-tests-vs-code-review.md",

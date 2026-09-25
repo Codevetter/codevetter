@@ -29,5 +29,6 @@ Engineers evaluating or shipping coding-agent changes who need executable eviden
 - https://codevetter.com/index.md
 - https://codevetter.com/docs.md
 - https://codevetter.com/benchmark.md
+- https://codevetter.com/inspiration.md
 - https://codevetter.com/pricing.md
 - https://codevetter.com/.well-known/ai-catalog.json
