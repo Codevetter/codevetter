@@ -1,24 +1,24 @@
 ---
 title: Surfaces and navigation
-description: The six native macOS sections and their shared CLI and MCP contracts.
+description: The native verification workbench and its shared CLI and MCP contracts.
 sidebar:
   order: 2
 ---
 
 # Surfaces and navigation
 
-The native app uses one persistent macOS split-view shell and six sections.
+The native app uses one persistent macOS split-view shell.
 Every page shares the same header, content width, spacing scale, evidence
 language, loading/empty/error treatment, and keyboard-sized click targets.
 
 | Section | Native source | Primary result |
 |---|---|---|
-| Usage | `PremiumUsageView.swift` | Remaining provider allowance first, then bounded historical usage, then Devin's separate indexed history. Unavailable quota or Devin history is labelled unavailable, never zero. |
 | Explore | `NavigatorWorkspaceView.swift` | Read-only Git source, fuzzy file search, indexed search, declarations, history, and integrated Unpack. |
 | Review | `NavigatorWorkspaceView.swift`, `PremiumWorkbench.swift` | Pinned GitHub/local diffs and exact source links, alongside the existing executable verification and handoff receipts. |
 | Testing | `PremiumTestingView.swift` plus focused testing views | Preview, changed verification, scenarios, differential runs, warm verification, and opt-in PR watchers. |
 | Performance | `PremiumPerformanceView.swift` | Exact local workload, baseline/candidate measurements, limits, cleanup, and optimization verdict. |
-| Settings | `PremiumSettingsView.swift` | Accounts, agents, MCP, rubrics, memories, usage roots, updater/about, and other configuration. |
+| Runs | `PremiumWorkbench.swift` | Verification receipts, source identities, and recorded limitations. |
+| Settings | `PremiumSettingsView.swift` | Accounts, agents, MCP, rubrics, memories, history roots, updater/about, and other configuration. |
 
 The app source lives in
 `apps/macos/CodeVetterPackage/Sources/CodeVetterFeature/`. `ContentView.swift`
@@ -41,7 +41,7 @@ codevetter check --range main...HEAD \
 ```
 
 Supporting commands cover scope resolution, T-Rex testing, performance,
-differential verification, scenario compilation, Repo Unpack, usage,
+differential verification, scenario compilation, Repo Unpack,
 settings, rubrics, memories, MCP readiness, X-Ray export, and isolated fix
 attempts. Run `codevetter --help` for the exact current contract.
 
@@ -49,54 +49,14 @@ MCP remains read-only: it can inspect evidence and prepare bounded review
 context, but it cannot start a review, execute tests, approve a fix, alter
 settings, or publish anything.
 
-## Unified Usage history
+## Agent usage ownership
 
-The Usage refinement tracked in [#290](https://github.com/Codevetter/codevetter/issues/290)
-keeps the existing provider cards and combines history with model composition.
-Model and Project grouping share the same time window, day/week/month buckets,
-and Tokens/Cost/Cache reads selector. A neutral stacked timeline and its exact
-breakdown use one cached projection; selecting a bar or inspection period scopes
-the breakdown. Large histories fold older periods into an explicit Earlier bucket.
-
-Quota accents describe remaining allowance, while the separate even-use pace
-label compares that allowance with time remaining until reset. Saved, expired,
-invalid, and stale values remain neutral rather than asserting live status.
-Local cost is reported/estimated USD, not subscription spend or provider quota.
-
-Optional ccusage Claude project records enrich the canonical daily ledger only
-when attribution reconciles. Missing or inconsistent attribution stays visible
-as Unattributed, including Codex activity; repository identity is never guessed.
-The optional project scan has a five-second bound and cannot invalidate an
-otherwise usable report. This refinement is implemented locally, not released.
-
-## Devin on the Usage desk
-
-Devin is indexed from its own SQLite session history and is never folded into
-the ccusage totals, so it renders as its own panel on the page rather than as a
-diagnostic. The panel follows the same 1w/30d/90d/all-time window selection as
-the ccusage desk.
-
-`DevinUsageSummary.availability(for:)` separates three states the panel must not
-conflate: an unreadable history reads `unavailable`, a readable history with no
-sessions in the window reads `empty`, and anything else reads as activity. Stale
-counters alongside a failed status still read `unavailable`.
-
-## Usage revalidation
-
-Usage keeps itself current while the section is open. `PremiumUsageView`
-starts a poll that lives exactly as long as the visible section, so nothing
-collects in the background after you navigate away.
-
-| Surface | Cadence | Why |
-|---|---|---|
-| Local history (`codevetter usage`) | 60s | Offline `ccusage` scan over agent logs. |
-| Provider allowance (`codevetter quota`) | 60s | Spawns supervised `claude` and `codex` sessions that can take twenty seconds and reach the provider. The cadence is measured from the end of the previous collection. |
-
-Polling suspends while the app is not frontmost and revalidates immediately on
-reactivation, so a backgrounded window never spawns provider sessions the
-operator cannot see. A repeat collection whose `source_fingerprint` matches the
-accepted report keeps that report rather than re-rendering identical data. The
-header Refresh button always forces both reads.
+The general agent-usage dashboard and provider allowance checks have moved to
+ContextDaddy. CodeVetter no longer exposes a Usage workspace or general
+`codevetter usage`/`codevetter quota` commands. Token and cost evidence attached
+to an individual verification run remains in its receipt and Runs ledger.
+CodeVetter's History settings and `history-roots` command are retained for its
+existing local evidence archive and are not a general usage dashboard.
 
 ## Interaction policy
 

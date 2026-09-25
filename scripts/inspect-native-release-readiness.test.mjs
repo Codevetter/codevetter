@@ -17,7 +17,6 @@ function input(overrides = {}) {
       sidecars: [
         { name: 'codevetter', relative_path: 'Contents/MacOS/codevetter' },
         { name: 'codevetter-mcp', relative_path: 'Contents/MacOS/codevetter-mcp' },
-        { name: 'ccusage', relative_path: 'Contents/MacOS/ccusage' },
         {
           name: 'cargo-audit',
           relative_path: 'Contents/Resources/collectors/cargo-audit',

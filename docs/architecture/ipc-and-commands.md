@@ -33,7 +33,7 @@ Rust command implementations live under
 | Review and fixes | `review.rs`, `local_qualification.rs` | Review workbench |
 | Testing and performance | `trex_preview.rs`, `warm_verification*.rs`, `performance_bridge.rs` | Testing and Performance |
 | Repo Unpack | `unpack*.rs`, `structural_graph/`, `graph_trust.rs` | Repo Unpack |
-| Usage and accounts | `local_usage.rs`, `accounts.rs`, `sessions.rs` | Usage and Settings |
+| Accounts | `accounts.rs`, `sessions.rs` | Settings |
 | Settings and rubrics | `preferences.rs`, `rubric_settings.rs`, `setup.rs` | Settings |
 | MCP access | `mcp_access.rs`, `mcp/` | Settings and `codevetter-mcp` |
 | History and memories | `history*.rs`, `agent_memories.rs` | Repo Unpack and Settings |

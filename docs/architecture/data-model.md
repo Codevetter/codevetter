@@ -41,17 +41,10 @@ repairs run as idempotent migrations guarded by feature flags. The groups:
 
 ## Persistence invariants
 
-- **Claude/Codex/Grok Usage accounting is externalized.** The bundled, pinned
-  `ccusage` sidecar reads agent transcripts locally and supplies the Usage
-  chart's Claude/Codex/Grok period, model, session, token-class, and cost data. The
-  desktop caches only a short-lived normalized snapshot; SQLite is not a second
-  canonical usage ledger.
-- **Devin remains explicitly separate.** Upstream `ccusage` cannot access
-  Devin's cloud-side usage, so the chart retains only CodeVetter's existing
-  Devin rows from SQLite, queried independently so a Devin failure cannot hide
-  ccusage data. Provider remaining-usage and quota telemetry is a
-  separate metric family. Claude live quota resolves configured profile files
-  and Keychain candidates by freshest credential expiry.
+- **General agent usage is owned by ContextDaddy.** CodeVetter no longer exposes
+  its historical usage chart or provider allowance checks. Existing local
+  session rows remain for backward-compatible evidence/history reads; per-run
+  token and cost evidence remains attached to verification receipts.
 - **Legacy usage tables are retained, not maintained as production truth.**
   Historical Codex observation/coverage/projection tables remain in existing
   databases for non-destructive compatibility, but startup repair and ledger

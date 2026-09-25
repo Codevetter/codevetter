@@ -111,7 +111,7 @@ runtime correctness. Review prompts receive this context with revision,
 freshness, trust, and limitation metadata.
 
 The same distinction applies to external tools: Gitleaks, cargo-audit,
-cargo-llvm-cov, ccusage, Playwright, Git, and provider CLIs remain separately
+cargo-llvm-cov, Playwright, Git, and provider CLIs remain separately
 identified evidence sources. Tool presence alone is not a passing claim.
 
 ## Security and privacy boundaries
@@ -129,7 +129,7 @@ identified evidence sources. Tool presence alone is not a passing claim.
 ## Distribution
 
 The production application is a sandboxed, hardened native macOS bundle. It
-ships the exact `codevetter`, `codevetter-mcp`, and ccusage companions and
+ships the exact `codevetter` and `codevetter-mcp` companions and
 uses Sparkle for updates.
 
 Publication fails closed unless the exact archive passes Developer ID signing,

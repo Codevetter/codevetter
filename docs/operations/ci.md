@@ -19,7 +19,7 @@ The `verify` job installs locked pnpm dependencies and stable Rust, then runs:
    health gates.
 3. Astro public-indexing build and agent-surface verification.
 4. Hermetic automation, corpus, retrieval, and core-tool contracts.
-5. CLI, MCP, and pinned ccusage companion preparation.
+5. CLI and MCP companion preparation.
 6. Rust library MCP tests, MCP binary and stdio tests, and CLI tests.
 
 The Rust dependency graph contains no Tauri, Wry, WebKit, GTK, or windowing

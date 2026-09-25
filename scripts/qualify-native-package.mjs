@@ -180,7 +180,6 @@ export function qualifyNativePackage(options = parseArguments(process.argv.slice
   const executableSidecars = [
     ['codevetter', join('binaries', `codevetter-${target}`)],
     ['codevetter-mcp', join('binaries', `codevetter-mcp-${target}`)],
-    ['ccusage', join('binaries', `ccusage-${target}`)],
   ].map(([destinationName, preparedPath]) => {
     const source = join(repositoryRoot, 'crates/codevetter-core', preparedPath);
     const destination = join(executableDirectory, destinationName);
@@ -243,15 +242,11 @@ export function qualifyNativePackage(options = parseArguments(process.argv.slice
   const smoke = {
     cli: { exit_code: 0, output: cliHelp.trim().slice(0, 500) },
     mcp: capture(sidecars[1], ['--help']),
-    ccusage: capture(sidecars[2], ['--version']),
-    gitleaks: capture(sidecars[3], ['version']),
-    cargo_audit: capture(sidecars[4], ['--version']),
-    cargo_llvm_cov: capture(sidecars[5], ['llvm-cov', '--version']),
+    gitleaks: capture(sidecars[2], ['version']),
+    cargo_audit: capture(sidecars[3], ['--version']),
+    cargo_llvm_cov: capture(sidecars[4], ['llvm-cov', '--version']),
     runtime: capture(process.execPath, [join(runtimeDestination, 'cli.mjs'), '--help']),
   };
-  if (!smoke.ccusage.output.includes('20.0.20')) {
-    throw new Error(`Unexpected bundled ccusage version: ${smoke.ccusage.output}`);
-  }
   if (!smoke.gitleaks.output.includes('8.30.1')) {
     throw new Error(`Unexpected bundled gitleaks version: ${smoke.gitleaks.output}`);
   }
@@ -365,7 +360,6 @@ function prepareSidecars(target) {
   for (const [script, args] of [
     ['scripts/core-tools/prepare-cli-sidecar.mjs', ['--release']],
     ['scripts/core-tools/prepare-mcp-sidecar.mjs', ['--release']],
-    ['scripts/core-tools/prepare-ccusage-sidecar.mjs', []],
     ['scripts/core-tools/prepare-collector-sidecars.mjs', []],
   ]) {
     run(process.execPath, [join(repositoryRoot, script), ...args], {

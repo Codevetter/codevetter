@@ -30,17 +30,12 @@ final class CodeVetterUITests: XCTestCase {
     app.launch()
     XCTAssertTrue(app.textFields["navigator-github-url"].waitForExistence(timeout: 5))
     for destination in [
-      "Usage", "Explore", "Review", "Testing", "Performance", "Runs", "Settings",
+      "Explore", "Review", "Testing", "Performance", "Runs", "Settings",
     ] {
       XCTAssertTrue(app.buttons[destination].exists, "Missing retained surface: \(destination)")
     }
 
-    app.menuBars.menuBarItems["View"].click()
-    XCTAssertTrue(app.menuItems["Usage"].exists)
-    app.typeKey(.escape, modifierFlags: [])
-    app.typeKey("1", modifierFlags: .command)
-    assertSelected(app.buttons["workbench-section-usage"])
-    XCTAssertTrue(app.buttons["Usage refresh"].waitForExistence(timeout: 5))
+    XCTAssertFalse(app.buttons["Usage"].exists)
 
     app.buttons["Runs"].click()
     assertSelected(app.buttons["Runs"])
@@ -69,7 +64,6 @@ final class CodeVetterUITests: XCTestCase {
     openCommandPaletteWithKeyboard(app, palette: palette)
     let reopenedSearch = app.textFields["command-palette-search"]
     XCTAssertTrue(reopenedSearch.waitForExistence(timeout: 2))
-    reopenedSearch.typeKey(.downArrow, modifierFlags: [])
     reopenedSearch.typeKey(.downArrow, modifierFlags: [])
     reopenedSearch.typeKey(.return, modifierFlags: [])
     XCTAssertTrue(palette.waitForNonExistence(timeout: 3))
@@ -135,50 +129,12 @@ final class CodeVetterUITests: XCTestCase {
   }
 
   @MainActor
-  func testUsageWorkspacePreservesLocalAndLiveProviderBoundaries() throws {
-    let snapshotDirectory = testingRepository.appending(
-      path: "usage-snapshots", directoryHint: .isDirectory)
-    try FileManager.default.createDirectory(
-      at: snapshotDirectory,
-      withIntermediateDirectories: true
-    )
-    let usageJSON =
-      #"{"status":"ready","stale":false,"error":null,"provenance":{"engine":"ccusage","version":"20.0.20","generated_at":"2026-09-04T00:00:00Z","timezone":"UTC","window":"all","detected_agents":["claude","codex"],"excluded_agents":[],"codex_roots":[],"source_fingerprint":"sha256:ui-test","pricing_complete":true,"fallback_models":[],"unpriced_models":[]},"daily":[],"weekly":[],"monthly":[],"sessions":[],"totals":{"input_tokens":1,"cache_creation_tokens":2,"cache_read_tokens":3,"output_tokens":4,"total_tokens":10,"cost_usd":0.25}}"#
-    let quotaJSON =
-      #"{"schema_version":"codevetter.provider-quota/v1","generated_at":"2026-09-04T00:00:00Z","providers":[{"provider":"claude","status":"ready","source":"fixture","checked_at":"2026-09-04T00:00:00Z","plan":"team","windows":[{"id":"current","label":"Current window","used_percent":12,"remaining_percent":88,"window_duration_minutes":null,"resets_at_unix":null,"reset_description":"2:20am"},{"id":"weekly","label":"Weekly window","used_percent":33,"remaining_percent":67,"window_duration_minutes":null,"resets_at_unix":null,"reset_description":"Sep 6 at 5:30pm"}],"credits":null,"reset_credits":null,"message":null},{"provider":"codex","status":"ready","source":"fixture","checked_at":"2026-09-04T00:00:00Z","plan":"pro","windows":[{"id":"codex.primary","label":"Weekly window","used_percent":25,"remaining_percent":75,"window_duration_minutes":10080,"resets_at_unix":null,"reset_description":null}],"credits":null,"reset_credits":null,"message":null}],"limitations":[]}"#
-    try usageJSON.write(
-      to: snapshotDirectory.appending(path: "local-usage.json"),
-      atomically: true,
-      encoding: .utf8
-    )
-    try quotaJSON.write(
-      to: snapshotDirectory.appending(path: "provider-quota.json"),
-      atomically: true,
-      encoding: .utf8
-    )
+  func testRetiredUsageLaunchRouteOpensExplore() throws {
     let app = XCUIApplication()
-    app.launchArguments = [
-      "--ui-test-section", "Usage",
-      "--ui-test-usage-cache", snapshotDirectory.path,
-    ]
+    app.launchArguments = ["--ui-test-section", "Usage"]
     app.launch()
-    XCTAssertTrue(app.buttons["Usage refresh"].waitForExistence(timeout: 5))
-
-    let usageSection = app.buttons["workbench-section-usage"]
-    XCTAssertTrue(usageSection.waitForExistence(timeout: 2))
-    usageSection.click()
-
-    assertSelected(app.buttons["workbench-section-usage"])
-    XCTAssertTrue(app.buttons["Usage refresh"].exists)
-    let claudeAllowance = app.descendants(matching: .any)["provider-allowance-claude"]
-    XCTAssertTrue(
-      claudeAllowance.waitForExistence(timeout: 5),
-      "Claude allowance must restore from the saved snapshot"
-    )
-    XCTAssertTrue(
-      app.descendants(matching: .any)["provider-allowance-codex"].waitForExistence(timeout: 2),
-      "Codex allowance must restore from the same saved snapshot"
-    )
+    assertSelected(app.buttons["Explore"])
+    XCTAssertFalse(app.buttons["Usage"].exists)
   }
 
   @MainActor
@@ -239,7 +195,7 @@ final class CodeVetterUITests: XCTestCase {
     XCTAssertTrue(app.buttons["Refresh general settings"].exists)
     XCTAssertTrue(app.staticTexts["Saved on this Mac"].exists)
     for section in [
-      "General", "Appearance", "Integrations", "Agents", "Agent MCP", "Notifications", "Usage",
+      "General", "Appearance", "Integrations", "Agents", "Agent MCP", "Notifications", "History",
       "Rubrics", "Ops", "Memories", "About",
     ] {
       XCTAssertTrue(app.buttons[section].exists, "Missing settings section: \(section)")

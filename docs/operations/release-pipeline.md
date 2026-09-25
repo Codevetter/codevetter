@@ -17,7 +17,7 @@ apps/macos/Config/Shared.xcconfig version changes on main
   -> auto-release.yml creates the v<version> tag and a DRAFT release,
      dispatches release.yml, and waits for that run
   -> release.yml calls native-production-qualification.yml at that exact tag
-  -> Xcode Release build + Rust/ccusage companions
+  -> Xcode Release build + Rust companions
   -> Developer ID signing + hardened runtime + notarization + stapling
   -> isolated incumbent-to-native upgrade, relaunch, data, and rollback proof
   -> Sparkle archive and EdDSA appcast verification

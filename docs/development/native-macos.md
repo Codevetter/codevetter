@@ -64,21 +64,17 @@ visible model/session rows. This measures canonical JSON decoding and native
 host rendering, not ccusage process startup, filesystem scanning,
 window-server frame pacing, or interactive scrolling.
 
-The 30 ms decode and 50 ms render limits remain the local/reference Usage
-budgets. GitHub's current `xcode-27` 3-core hosted runner applies an explicit
-1.5× envelope to those same checks; every benchmark line records the scale and
-effective limits. This keeps hosted scheduling and runner-class variance from
-silently redefining the workstation target while retaining a deterministic CI
-ceiling.
+The historical Usage rendering gate was retired with the general agent-usage
+dashboard. Current native performance gates cover the remaining verification
+workspaces and receipts.
 
 Additional Codex history recovery is checked at
-`evidence/verification/native-history-roots-2026-09-02.md`. Native Usage
+`evidence/verification/native-history-roots-2026-09-02.md`. Native History
 settings and `codevetter history-roots` share one Rust-owned bounded receipt.
 Selected `sessions` or `archived_sessions` directories normalize to their
 canonical Codex home; unrelated directories, malformed paths, duplicates, and
 more than 16 roots fail closed. Configuration reports availability but never
-reads or deletes transcript content, and reconciliation remains a separate
-explicit Usage action.
+reads or deletes transcript content; general usage now belongs to ContextDaddy.
 
 Native memory inspection is checked at
 `evidence/verification/native-memories-2026-09-02.md`. Native Settings and
@@ -151,7 +147,7 @@ Read-only MCP retains no execution authority.
 `pnpm native:package:qualify` consumes an XcodeBuildMCP-produced Release app;
 it does not invoke Xcode itself. The qualifier reuses the existing release
 sidecar builders, stages a new bundle under `artifacts/native-package`, embeds
-`codevetter`, `codevetter-mcp`, `ccusage`, the runtime performance capsule, and
+`codevetter`, `codevetter-mcp`, the runtime performance capsule, and
 Sparkle, then verifies hardened signatures and emits ZIP/DMG archives plus a
 machine-readable receipt. The visible app remains `CodeVetter.app`, while its
 host executable is `CodeVetterNative` so the lowercase `codevetter` CLI remains
@@ -357,11 +353,8 @@ does not write a system or application preference.
   retains the detached worktree, supervises the agent, reruns the recorded
   correctness target, re-reviews `WORKTREE`, and requires a separate confirmed
   discard. No native or CLI merge path exists.
-- Local usage invokes `codevetter usage`, which reuses the Tauri Rust service
-  and opens the existing SQLite database read-only only when it is present.
-  Ready, stale, and unavailable reports remain inspectable only when exit 0, 1,
-  or 2 agrees. ccusage accounts for Claude, Codex, and Grok; Devin and live
-  provider quotas remain explicitly separate and are not inferred by Swift.
+- General agent usage and provider allowances are now ContextDaddy's concern.
+  CodeVetter retains token and cost evidence only within verification receipts.
 - Repo Unpack history invokes `codevetter unpack`, which opens the existing
   SQLite database read-only and projects stored snapshot identities plus a
   Rust-trimmed inventory. Swift does not query SQLite, recompute graph/history

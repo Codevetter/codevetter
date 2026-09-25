@@ -193,47 +193,6 @@ pub fn capability_registry() -> CapabilityRegistry {
                 "Refresh launch, settled RSS, responsiveness, energy, and long-session evidence on the exact current package with owner-approved foreground qualification.",
             ),
             capability(
-                "evidence.local_usage",
-                "Local agent usage",
-                "Inspect local token, cache, cost, model, and session evidence without conflating it with cloud quota telemetry.",
-                CapabilityStage::Current,
-                surfaces(
-                    projection(
-                        Availability::Available,
-                        Authority::Read,
-                        &[
-                            "Native Usage (ccusage plus separate indexed Devin history)",
-                        ],
-                    ),
-                    projection(
-                        Availability::Available,
-                        Authority::Read,
-                        &["codevetter usage"],
-                    ),
-                    projection(Availability::Planned, Authority::None, &[]),
-                ),
-                &[
-                    tool(
-                        "ccusage 20.0.20",
-                        "Normalizes offline Claude, Codex, and Grok local usage logs",
-                        "bundled pinned sidecar",
-                    ),
-                    tool(
-                        "CodeVetter Rust core",
-                        "Owns provider boundaries, ccusage normalization, separate SQLite Devin history, caching, and stale/unavailable states",
-                        "bundled",
-                    ),
-                ],
-                "Local agent logs, optional read-only imported Codex roots, and indexed Devin sessions from the existing SQLite database; no provider credential or network access.",
-                Qualification::Partial,
-                &[
-                    "Indexed Devin sessions, generated/cache tokens, cost, and model rows follow 1w, 30d, 90d, and all-time windows through a separate Rust projection and are never included in ccusage totals.",
-                    "Live provider quotas remain separate telemetry and are never inferred from local spend.",
-                    "Native 1w, 30d, 90d, and all-time selection keeps ccusage chart, totals, models, and sessions aligned while the separate Devin desk follows the same selected window.",
-                ],
-                "Migrate live provider telemetry as a credential-safe separate projection, then expose the bounded report through scoped MCP.",
-            ),
-            capability(
                 "usage.history_roots",
                 "Additional Codex history roots",
                 "Restore Codex sessions stored outside the active CODEX_HOME without reading or deleting transcript content during configuration.",
@@ -242,7 +201,7 @@ pub fn capability_registry() -> CapabilityRegistry {
                     projection(
                         Availability::Available,
                         Authority::ReadExecute,
-                        &["Native Usage settings"],
+                        &["Native History settings"],
                     ),
                     projection(
                         Availability::Available,
@@ -261,10 +220,10 @@ pub fn capability_registry() -> CapabilityRegistry {
                 &[
                     "The active CODEX_HOME remains automatic and is not duplicated in the additional-root receipt.",
                     "A selected sessions or archived_sessions directory is normalized to its containing Codex home.",
-                    "Reconciliation remains a separate explicit Usage action.",
+                    "Root configuration does not run a transcript reconciliation or general usage scan.",
                     "Agent and MCP surfaces receive no local history-root authority.",
                 ],
-                "Keep local history-root mutation out of agent authority and preserve the bounded receipt as usage importers evolve.",
+                "Keep local history-root mutation out of agent authority and preserve the bounded archive receipt.",
             ),
             capability(
                 "configuration.native_settings",
@@ -409,7 +368,7 @@ pub fn capability_registry() -> CapabilityRegistry {
                     projection(
                         Availability::Available,
                         Authority::ReadExecute,
-                        &["Native Usage settings"],
+                        &["Native History settings"],
                     ),
                     projection(
                         Availability::Available,

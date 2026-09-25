@@ -61,7 +61,7 @@ limitations are in the [tracked evidence](https://github.com/Codevetter/codevett
 
 **MIT**, and the core scanner's license is unchanged. Fully offline: no DB, no
 network, rules embedded or from `.gitleaks.toml`. Emits SARIF. Static Go binary,
-same integration shape as the existing `ccusage` sidecar.
+the same bounded sidecar integration shape used by the native package.
 
 One licensing nuance worth stating precisely, because it is widely misreported:
 the commercial relicensing applies **only to `gitleaks/gitleaks-action` v2.0.0+**

@@ -25,7 +25,6 @@ Every entry declares:
 | Local verification and review | Read and execute | Read and execute | Persisted receipts read-only; local fix requires explicit CLI consent |
 | Runtime preview and QA | Read and execute | Read and execute | Scope and saved-workflow inspection only |
 | Performance verification | Read and execute | Read and execute | Scope inspection only |
-| Local Claude, Codex, Grok, and Devin usage evidence | Read | Read | Not exposed |
 | Additional Codex history roots | Read and configure | Read and configure | Not exposed |
 | Repository snapshot and exports | Read and execute | Read and execute | Stored-index queries only |
 | Structural graph and history | Read | Read | Repository-scoped read-only tools |
@@ -42,7 +41,6 @@ Every entry declares:
 | Git | Exact revision, diff, history, and isolated worktrees | Selected repository only |
 | Tree-sitter | Syntax-aware repository graph | Navigation evidence, not runtime proof |
 | Claude and Codex CLIs | Independent model review or explicit fix attempt | Optional local provider tools |
-| ccusage 20.0.20 | Offline Claude, Codex, and Grok accounting | Bundled and pinned; not cloud quota |
 | Playwright | Explicit browser journey evidence | Admitted project or bundled runtime |
 | Gitleaks 8.30.1 | Secret-pattern evidence | Bounded selected change; raw secrets are not retained |
 | cargo-audit 0.22.2 | Offline Rust advisory evidence | Pinned RustSec snapshot |
@@ -58,8 +56,8 @@ decisions, prerequisites, and qualification criteria stay visible.
 - Hardened execution isolation with Apple container tooling, after read-only
   mount planning, no-network attestation, cancellation, bounded output, and
   real-workload regression evidence pass.
-- Credential-safe live provider quota telemetry, separate from local token and
-  cost accounting.
+- General agent usage and provider allowance are owned by ContextDaddy. Per-run
+  token and cost evidence remains part of CodeVetter verification receipts.
 - Bounded external-collector receipt inspection in native UI and MCP without
   granting collector execution to agents.
 - A live Agent Island helper only as a separately scoped side quest; it has no

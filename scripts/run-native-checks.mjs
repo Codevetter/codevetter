@@ -10,7 +10,6 @@ const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const nativePerformanceGateTests = [
   'hundredRunLedgerDecodesAndRendersWithinTheNativeGate',
   'largeUnpackProjectionDecodesAndRendersWithinTheNativeGate',
-  'largeUsageReportDecodesAndRendersWithinTheNativeGate',
   'hundredRowPerformanceReceiptDecodesAndRendersWithinTheNativeGate',
   'hundredJourneyTestingReceiptDecodesAndRendersWithinTheNativeGate',
 ];

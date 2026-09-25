@@ -43,7 +43,6 @@ export function evaluateNativeReleaseReadiness(input) {
   const requiredCompanions = [
     'cargo-audit:Contents/Resources/collectors/cargo-audit',
     'cargo-llvm-cov:Contents/Resources/collectors/cargo-llvm-cov',
-    'ccusage:Contents/MacOS/ccusage',
     'codevetter:Contents/MacOS/codevetter',
     'codevetter-mcp:Contents/MacOS/codevetter-mcp',
     'gitleaks:Contents/Resources/collectors/gitleaks',

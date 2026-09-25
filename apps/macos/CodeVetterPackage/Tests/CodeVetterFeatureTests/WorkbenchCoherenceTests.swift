@@ -7,6 +7,13 @@ import Testing
 
 @MainActor
 @Suite struct WorkbenchCoherenceTests {
+  @Test func generalUsageIsNotANavigableWorkspace() {
+    #expect(!WorkbenchSection.navigationSections.contains(.usage))
+    #expect(WorkbenchSection.navigationSections.map(\.rawValue) == [
+      "Explore", "Review", "Testing", "Performance", "Runs", "Settings",
+    ])
+  }
+
   private func model() -> WorkbenchModel {
     // Never read the operator's data or invoke a real verification command.
     WorkbenchModel(

@@ -23,7 +23,7 @@ public struct EvidenceSidebarView: View {
       .padding(.top, 14)
       .padding(.bottom, 18)
 
-      navigationGroup("Workspace", sections: [.usage, .repository])
+      navigationGroup("Workspace", sections: [.repository])
       navigationGroup("Verification", sections: [.review, .testing, .performance])
         .padding(.top, 12)
       navigationGroup("Evidence", sections: [.runs])
@@ -115,10 +115,9 @@ public struct EvidenceWorkbenchView: View {
         VerifyView(model: model)
       case .usage:
         EmptyWorkbenchView(
-          title: "Usage",
-          message:
-            "Local agent usage, cost, quota, model, and activity views will transfer here without changing their provider boundaries.",
-          icon: "chart.bar.xaxis"
+          title: "Agent usage moved to ContextDaddy",
+          message: "CodeVetter keeps token and cost evidence for verification runs. ContextDaddy owns the general agent usage dashboard.",
+          icon: "arrow.up.right.square"
         )
       case .runs:
         EmptyWorkbenchView(
