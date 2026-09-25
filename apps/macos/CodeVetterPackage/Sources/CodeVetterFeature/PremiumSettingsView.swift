@@ -884,7 +884,7 @@ struct PremiumSettingsView: View {
           PremiumFieldLabel("CODEX HISTORY RECOVERY")
           Text("Additional Codex homes").font(.system(size: 15, weight: .semibold))
           Text(
-            "Restore sessions outside the active CODEX_HOME. Rust normalizes, bounds, and deduplicates roots before Usage or reconciliation can consume them."
+            "Restore sessions outside the active CODEX_HOME. Rust normalizes, bounds, and deduplicates roots for local evidence recovery."
           )
           .font(.system(size: 10))
           .foregroundStyle(.secondary)
@@ -973,7 +973,7 @@ struct PremiumSettingsView: View {
       }
 
       Label(
-        "Adding or removing a root never reads or deletes transcript content. Reconcile from Usage when ready.",
+        "Adding or removing a root never reads or deletes transcript content. Reconcile the local evidence archive separately when ready.",
         systemImage: "lock.shield.fill"
       )
       .font(.system(size: 10))

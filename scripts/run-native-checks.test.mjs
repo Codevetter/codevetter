@@ -45,7 +45,7 @@ test('native automation defaults to the non-activating background lane', () => {
     desktopIdleApproved: false,
   });
   const commands = nativeCheckCommands(parsed);
-  assert.equal(commands.length, 7);
+  assert.equal(commands.length, 6);
   assert.ok(commands.every((command) => command.backgroundSafe));
   assert.ok(
     commands.every(
@@ -56,7 +56,7 @@ test('native automation defaults to the non-activating background lane', () => {
     packagePath: 'apps/macos/CodeVetterPackage',
     parallel: false,
   });
-  const performanceCommands = commands.slice(1, 6);
+  const performanceCommands = commands.slice(1, 5);
   assert.ok(
     performanceCommands.every(
       (command) => JSON.parse(command.arguments[3]).configuration === 'Release'
@@ -67,7 +67,6 @@ test('native automation defaults to the non-activating background lane', () => {
     [
       'hundredRunLedgerDecodesAndRendersWithinTheNativeGate',
       'largeUnpackProjectionDecodesAndRendersWithinTheNativeGate',
-      'largeUsageReportDecodesAndRendersWithinTheNativeGate',
       'hundredRowPerformanceReceiptDecodesAndRendersWithinTheNativeGate',
       'hundredJourneyTestingReceiptDecodesAndRendersWithinTheNativeGate',
     ]
@@ -168,7 +167,7 @@ test('full qualification keeps background checks before the foreground lane', ()
   );
   assert.deepEqual(
     commands.map((command) => command.backgroundSafe),
-    [true, true, true, true, true, true, true, false]
+    [true, true, true, true, true, true, false]
   );
 });
 
