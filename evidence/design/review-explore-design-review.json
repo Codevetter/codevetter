@@ -1,0 +1,112 @@
+{
+  "$schema": "fleet.design-review.v1",
+  "version": 1,
+  "project": "codevetter",
+  "target": "Native Review and Explore",
+  "surfaceMode": "read",
+  "mode": "preserve",
+  "register": "product",
+  "context": {
+    "product": "PRODUCT.md",
+    "design": "DESIGN.md"
+  },
+  "direction": {
+    "references": [
+      "https://px0.ai/#why"
+    ],
+    "probes": [],
+    "selected": "existing-design",
+    "approval": "not-required",
+    "before": "evidence/design/native-acceptance-2026-09-01/review-findings.png",
+    "library": {
+      "strategy": "upstream-first",
+      "primary": "existing-project-system",
+      "sources": [],
+      "runtime": "existing",
+      "customReplacement": {
+        "used": false,
+        "authorization": "not-required",
+        "reason": ""
+      }
+    },
+    "contract": {
+      "purpose": "CodeVetter helps developers verify agent-authored changes through reproducible execution evidence and exact source navigation.",
+      "purposeSource": "PRODUCT.md; owner PRD in GitHub issue #285",
+      "canonicalPurpose": "CodeVetter determines whether a coding agent completed a software task correctly using reproducible execution evidence.",
+      "purposeAlignment": "match",
+      "driftNote": "",
+      "audience": "Developers and technical owners reviewing agent changes in unfamiliar repositories",
+      "job": "Paste a GitHub URL, inspect exact source or diff, follow architecture and evidence locations",
+      "thesis": "Preserve the Evidence Bench and put pinned source at the center of a compact native workbench",
+      "system": "Existing true-black/light native palette, bronze focus, 12-point monospace source, hairline pane separators, compact native controls",
+      "signature": "Persistent commit and blob identity connect every source window to its evidence",
+      "risk": "A dedicated AppKit source plane trades editor features for bounded viewport rendering; keep it read-only and qualify accessibility separately"
+    }
+  },
+  "evidence": {
+    "screenshots": [
+      {
+        "width": 390,
+        "path": "artifacts/navigator-review/landing-390.png"
+      },
+      {
+        "width": 768,
+        "path": "artifacts/navigator-review/landing-768.png"
+      },
+      {
+        "width": 1440,
+        "path": "artifacts/navigator-review/explore-1440.png"
+      }
+    ],
+    "projectCheck": {
+      "command": "pnpm navigator:test; XcodeBuildMCP swift-package test; XcodeBuildMCP macos build (Debug)",
+      "status": "pass"
+    },
+    "critique": {
+      "score": 33,
+      "maximum": 40
+    },
+    "audit": {
+      "score": 17,
+      "maximum": 20
+    },
+    "unresolved": {
+      "p0": 0,
+      "p1": 0
+    },
+    "detector": {
+      "posture": "advisory",
+      "findings": [
+        "Native window qualification uses 980, 1280 and 1440 points. 390 and 768 captures test the isolated import surface, not a supported macOS window size.",
+        "Impeccable is not installed; native layout critique, contrast inspection, offscreen captures and build/tests were used.",
+        "Foreground keyboard and VoiceOver interaction remains unqualified under repository idle-screen rules."
+      ]
+    },
+    "comprehension": {
+      "status": "not-applicable",
+      "reviewer": "",
+      "answers": {
+        "product": "",
+        "audience": "",
+        "value": "",
+        "mechanism": "",
+        "proof": "",
+        "nextAction": ""
+      },
+      "purposeScore": {
+        "product": 0,
+        "audience": 0,
+        "value": 0,
+        "mechanism": 0,
+        "proof": 0,
+        "nextAction": 0,
+        "total": 0
+      },
+      "mismatches": []
+    }
+  },
+  "ownerFeedback": {
+    "decision": "agent-selected",
+    "note": "The agent selected the direction; no owner approval was required."
+  }
+}
