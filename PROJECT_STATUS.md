@@ -1,6 +1,6 @@
 # Project Status
 
-Last updated: 2026-09-23
+Last updated: 2026-09-25
 
 ## Why / What
 
@@ -51,11 +51,11 @@ separately approved safety design justify renewed investment.
 - v1.14.3 includes the post-v1.14.2 code-health and native qualification
   repairs. Subsequent documentation-only bookkeeping does not imply a newer
   desktop release; release truth remains the published `v1.14.3` tag.
-- Unreleased source proposes retiring the general Usage workspace, provider
-  allowance checks, `codevetter usage`/`quota`, and the bundled `ccusage`
-  sidecar. ContextDaddy owns general agent usage. Per-verification token and
-  cost receipts and CodeVetter's History recovery remain. This proposal has
-  not been published in a desktop release.
+- The proposed v1.15.0 release candidate retires the general Usage workspace,
+  provider allowance checks, `codevetter usage`/`quota`, and the bundled
+  `ccusage` sidecar. Retired CLI commands return a migration message pointing to
+  ContextDaddy. Per-verification token and cost receipts and CodeVetter's
+  History recovery remain. This candidate has not been published or installed.
 - Maintenance is limited to core verification reliability, regressions,
   security, dependency hygiene, and evidence requested by real users. New
   product surfaces require an explicit change in the investment decision.
@@ -64,7 +64,7 @@ separately approved safety design justify renewed investment.
 
 External:
 - Published v1.14.3 bundles `ccusage` 20.0.20 for local Claude/Codex/Grok usage
-  accounting; the unreleased source proposal above removes that sidecar.
+  accounting; the unreleased v1.15.0 candidate removes that sidecar.
 - Installed and authenticated Codex or Claude CLI for Work conversations; provider account policy remains external to CodeVetter.
 - GitHub Releases + GitHub Actions — `auto-release.yml` cuts a `v<version>` release on native `Shared.xcconfig` version bumps; `release.yml` signs, notarizes, qualifies, and uploads the SwiftUI app, DMG, ZIP, and Sparkle `appcast.xml`.
 - Cloudflare Pages — hosts the landing page (`codevetter` project, codevetter.com).
@@ -793,7 +793,7 @@ Internal (fleet):
   explicit and historical debt tracked in GitHub Issues.
 - Local-first native macOS binary: SwiftUI/AppKit presentation, Rust-owned
   verification and SQLite, no WebView and no server.
-- Five-surface nav: Usage, Repo Unpack, Review, Testing, Performance. Repo contains Unpack, Activity, Graph, Inventory, Analysis, Handoff, and past snapshots; Settings is an integrated utility hosting Ops, Memories, Rubrics, Agent MCP, and preferences. Retired Work/Board routes redirect to Usage while their local records and backend lifecycle code remain available for separately reviewed cleanup.
+- Published v1.14.3 still has the general Usage workspace. The v1.15.0 candidate presents Explore, Review, Testing, Performance, Runs, and Settings; the retired Usage route is kept only for decoding legacy deep links and is not navigable. Explore contains Unpack, source navigation, graph, and history. Existing local session/work-item records and backend lifecycle code remain available for separately reviewed cleanup.
 - Testing and Performance now share a local deterministic scope planner for a human-described function/flow, an exact PR or Git change, or a bounded whole-codebase portfolio. Every plan exposes its revision, dirty state, concrete adapters/targets, uncovered paths, and limitations and requires confirmation before execution; human text is discovery input and is never run as a command.
 - Risk-tiered CLI review: trivial single-pass → lite product/agent passes → full sensitive path with security, product, agent specialist passes, coordinator, and dedup metadata.
 
