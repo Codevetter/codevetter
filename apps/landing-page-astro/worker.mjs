@@ -378,6 +378,19 @@ export default {
     const url = new URL(request.url);
     const pathname = url.pathname;
 
+    // Older Repo Unpack canonicals used underscored section keys, while the
+    // generated routes use hyphens. Redirect only when the target exists.
+    const legacySection =
+      (request.method === 'GET' || request.method === 'HEAD') &&
+      pathname.match(/^\/unpack\/[^/]+\/([^/]*_[^/]*)$/);
+    if (legacySection) {
+      const target = new URL(url);
+      target.pathname =
+        pathname.slice(0, -legacySection[1].length) + legacySection[1].replaceAll('_', '-');
+      const targetResponse = await env.ASSETS.fetch(new Request(target, { method: 'HEAD' }));
+      if (targetResponse.ok) return Response.redirect(target, 301);
+    }
+
     // /openapi.json — serve the spec directly.
     if (pathname === '/openapi.json' || pathname === '/openapi.yaml') {
       return serveOpenApiSpec();
