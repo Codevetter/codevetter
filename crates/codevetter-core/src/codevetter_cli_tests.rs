@@ -741,8 +741,14 @@ fn runs_parser_and_human_output_are_bounded() {
 #[test]
 fn general_agent_usage_commands_are_retired() {
     let cwd = Path::new("/tmp/widget");
-    assert!(parse_arguments(["usage".into()], cwd).is_err());
-    assert!(parse_arguments(["quota".into()], cwd).is_err());
+    for command in ["usage", "quota"] {
+        let error = match parse_arguments([command.into()], cwd) {
+            Ok(_) => panic!("{command} should be retired"),
+            Err(error) => error,
+        };
+        assert!(error.contains("Use ContextDaddy"));
+        assert!(error.contains("token and cost evidence for verification runs"));
+    }
     assert!(!HELP.contains("codevetter usage"));
     assert!(!HELP.contains("codevetter quota"));
 }
