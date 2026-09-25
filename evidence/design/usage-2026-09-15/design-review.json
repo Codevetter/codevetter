@@ -1,0 +1,127 @@
+{
+  "$schema": "fleet.design-review.v1",
+  "version": 1,
+  "project": "codevetter",
+  "target": "Usage allowance and unified history",
+  "surfaceMode": "operate",
+  "mode": "overhaul",
+  "register": "product",
+  "context": {
+    "product": "PRODUCT.md",
+    "design": "DESIGN.md"
+  },
+  "direction": {
+    "references": [
+      "PRODUCT.md",
+      "DESIGN.md"
+    ],
+    "probes": [
+      {
+        "id": "A-refined",
+        "path": "evidence/design/usage-2026-09-15/direction-A-refined.png"
+      },
+      {
+        "id": "B",
+        "path": "evidence/design/usage-2026-09-15/direction-B.png"
+      },
+      {
+        "id": "C",
+        "path": "evidence/design/usage-2026-09-15/direction-C.png"
+      }
+    ],
+    "selected": "A-refined",
+    "approval": "approved",
+    "before": "evidence/design/native-acceptance-2026-09-01/usage.png",
+    "library": {
+      "strategy": "upstream-first",
+      "primary": "existing-project-system",
+      "sources": [],
+      "runtime": "existing",
+      "customReplacement": {
+        "used": false,
+        "authorization": "not-required",
+        "reason": ""
+      }
+    },
+    "contract": {
+      "purpose": "CodeVetter helps developers verify agent changes using reproducible execution evidence.",
+      "purposeSource": "PRODUCT.md; approved Usage refinement in issue #290",
+      "canonicalPurpose": "CodeVetter determines whether a coding agent completed a software task correctly using reproducible execution evidence.",
+      "purposeAlignment": "match",
+      "driftNote": "Site Health has no purposeContract; its portfolio boundary agrees. Usage remains bounded side work.",
+      "audience": "The operator managing coding-agent usage",
+      "job": "Compare remaining allowance and model/project token and cost history under shared filters",
+      "thesis": "Preserve provider cards and merge history with composition in one quiet timeline",
+      "system": "Existing native sans, ink/light evidence planes, neutral model series, bronze selection, small written quota status accents",
+      "signature": "Exact filtered values reconcile to the same timeline; provider quota is distinct from local cost",
+      "risk": "Provider-dependent project attribution must remain explicit with an Unattributed group"
+    }
+  },
+  "evidence": {
+    "screenshots": [
+      {
+        "width": 390,
+        "path": "evidence/design/usage-2026-09-15/history-390.png"
+      },
+      {
+        "width": 768,
+        "path": "evidence/design/usage-2026-09-15/history-768.png"
+      },
+      {
+        "width": 1440,
+        "path": "evidence/design/usage-2026-09-15/history-1440.png"
+      }
+    ],
+    "projectCheck": {
+      "command": "pnpm test:native:background; cargo test --manifest-path crates/codevetter-core/Cargo.toml local_usage --lib; node scripts/check-docs.mjs",
+      "status": "pass"
+    },
+    "critique": {
+      "score": 33,
+      "maximum": 40
+    },
+    "audit": {
+      "score": 17,
+      "maximum": 20
+    },
+    "unresolved": {
+      "p0": 0,
+      "p1": 0
+    },
+    "detector": {
+      "posture": "advisory",
+      "findings": [
+        "Manual native fallback critique and audit; Impeccable is not installed. See evidence/design/usage-2026-09-15/review.md for scoring and limits.",
+        "390/768 captures qualify only the isolated history component. Whole-app captures cover 980/1280/1440 points in both appearances.",
+        "No foreground interaction qualification or installed-app changes; fixture screenshots are not live account data.",
+        "Project attribution is partial; Codex remains Unattributed. Hosted render performance stays within the unchanged gate."
+      ]
+    },
+    "comprehension": {
+      "status": "not-applicable",
+      "reviewer": "",
+      "answers": {
+        "product": "",
+        "audience": "",
+        "value": "",
+        "mechanism": "",
+        "proof": "",
+        "nextAction": ""
+      },
+      "purposeScore": {
+        "product": 0,
+        "audience": 0,
+        "value": 0,
+        "mechanism": 0,
+        "proof": 0,
+        "nextAction": 0,
+        "total": 0
+      },
+      "mismatches": []
+    }
+  },
+  "ownerFeedback": {
+    "decision": "keep",
+    "note": "Owner selected refined A: Looks good. Ensure you do not make the UI worse."
+  }
+}

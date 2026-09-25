@@ -1,0 +1,115 @@
+{
+  "$schema": "fleet.design-review.v1",
+  "version": 1,
+  "project": "codevetter",
+  "target": "Review branch/base selection and scope-bound setup",
+  "surfaceMode": "operate",
+  "mode": "preserve",
+  "register": "product",
+  "context": {
+    "product": "PRODUCT.md",
+    "design": "DESIGN.md"
+  },
+  "direction": {
+    "references": [
+      "PRODUCT.md",
+      "DESIGN.md"
+    ],
+    "probes": [],
+    "selected": "existing-native-review",
+    "approval": "not-required",
+    "before": "evidence/design/native-acceptance-2026-09-01/review-intent.png",
+    "library": {
+      "strategy": "upstream-first",
+      "primary": "existing-project-system",
+      "sources": [],
+      "runtime": "existing",
+      "customReplacement": {
+        "used": false,
+        "authorization": "not-required",
+        "reason": ""
+      }
+    },
+    "contract": {
+      "purpose": "CodeVetter helps developers verify agent changes using reproducible execution evidence.",
+      "purposeSource": "PRODUCT.md; owner-requested Review workflow repair in issue #285",
+      "canonicalPurpose": "CodeVetter determines whether a coding agent completed a software task correctly using reproducible execution evidence.",
+      "purposeAlignment": "match",
+      "driftNote": "Site Health has no purposeContract; its portfolio boundary agrees. Usage remains bounded side work.",
+      "audience": "The operator managing coding-agent usage",
+      "job": "Choose a branch and base, inspect the exact diff, then start an explicit scope-bound review",
+      "thesis": "Keep the existing source workbench and expose comparison controls directly above its diff",
+      "system": "Existing native pickers, compact chrome, source layout and restrained semantic colors",
+      "signature": "Displayed merge-base/head becomes the locked verification input",
+      "risk": "Do not silently substitute a stale range or execute against an unrelated checkout"
+    }
+  },
+  "evidence": {
+    "screenshots": [
+      {
+        "width": 390,
+        "path": "evidence/design/review-scope-2026-09-15/scope-controls-390.png"
+      },
+      {
+        "width": 768,
+        "path": "evidence/design/review-scope-2026-09-15/scope-controls-768.png"
+      },
+      {
+        "width": 1440,
+        "path": "evidence/design/review-scope-2026-09-15/scope-controls-1440.png"
+      }
+    ],
+    "projectCheck": {
+      "command": "XcodeBuildMCP swift-package test (109 passing); cargo test branch_picker; cargo clippy --all-targets",
+      "status": "pass"
+    },
+    "critique": {
+      "score": 34,
+      "maximum": 40
+    },
+    "audit": {
+      "score": 17,
+      "maximum": 20
+    },
+    "unresolved": {
+      "p0": 0,
+      "p1": 0
+    },
+    "detector": {
+      "posture": "advisory",
+      "findings": [
+        "Manual native fallback review, not Impeccable output; see evidence/design/review-scope-2026-09-15/review.md.",
+        "Native full-window checks use 980/1280/1440 points in both appearances; 390/768 isolate the comparison control.",
+        "The before image is the historical verification-setup visual reference, not a pixel baseline of the pre-repair navigator.",
+        "No foreground interaction or end-to-end agent execution in this invocation. Uncommitted changes are browse-only for the existing committed-source verification engine.",
+        "First broader suite hit known Usage render variance: 51.655 ms vs unchanged 50 ms; final results recorded separately."
+      ]
+    },
+    "comprehension": {
+      "status": "not-applicable",
+      "reviewer": "",
+      "answers": {
+        "product": "",
+        "audience": "",
+        "value": "",
+        "mechanism": "",
+        "proof": "",
+        "nextAction": ""
+      },
+      "purposeScore": {
+        "product": 0,
+        "audience": 0,
+        "value": 0,
+        "mechanism": 0,
+        "proof": 0,
+        "nextAction": 0,
+        "total": 0
+      },
+      "mismatches": []
+    }
+  },
+  "ownerFeedback": {
+    "decision": "keep",
+    "note": "Preserve existing design. Owner requested the specific dropdown and review-entry repair: fix thing please. No visual overhaul."
+  }
+}
