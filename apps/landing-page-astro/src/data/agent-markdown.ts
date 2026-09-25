@@ -6,6 +6,7 @@ import unpackPairs from '@/data/unpack-pairs.json';
 import docsIndexSource from '../../../../docs/index.md?raw';
 import { verificationContent } from '@/data/verification-content';
 import { articlesContent } from '@/data/articles-content';
+import { inspirations, researchSources } from '@/data/inspirations';
 import { currentReleaseUrl, publishedRelease, updateSummary } from '@/data/release';
 import { privacyMarkdownBody, privacyPolicy } from '@/data/privacy';
 import {
@@ -267,6 +268,44 @@ ${Object.values(articlesContent)
   .map((article) => `- [${article.title}](${SITE_URL}${article.path}) — ${article.description}`)
   .join('\n')}`
 );
+
+staticPages.inspiration = page(
+  'Tools that shaped CodeVetter',
+  '/inspiration',
+  `A source-linked ledger of products and open-source tools whose work informed CodeVetter's research and design. Inclusion is independent appreciation, not endorsement, affiliation, code reuse, or feature parity.
+
+${inspirations.map((item) => `- [${item.name}](${SITE_URL}/inspiration/${item.slug}) — ${item.idea} (${item.relation.toLowerCase()})`).join('\n')}
+
+The [wider research archive](https://github.com/Codevetter/codevetter/blob/main/docs/knowledge/codebase-context-tools-landscape.md) also names surveyed alternatives that did not yield a specific product lesson.`
+);
+
+for (const item of inspirations) {
+  const research = researchSources[item.research];
+  staticPages[`inspiration/${item.slug}`] = page(
+    `${item.name} — tools that shaped CodeVetter`,
+    `/inspiration/${item.slug}`,
+    `${item.idea}
+
+## What we admire
+
+${item.admiration}
+
+## The principle that stayed
+
+${item.lesson}
+
+## Where CodeVetter stands
+
+${item.codevetter}
+
+## Sources
+
+- [${item.source.label}](${item.source.url}) — the creator's own source
+- [${research.label}](${research.url}) — the CodeVetter project record
+
+This is independent appreciation, not endorsement, partnership, code reuse, or feature parity.`
+  );
+}
 
 for (const content of Object.values(verificationContent)) {
   staticPages[content.path.replace(/^\//, '')] = page(
