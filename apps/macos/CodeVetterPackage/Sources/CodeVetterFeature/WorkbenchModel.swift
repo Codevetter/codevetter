@@ -1,14 +1,6 @@
 import Foundation
 import Observation
 
-private struct UsageProjectionCacheKey: Hashable {
-  let agents: String
-  let window: String
-  let scale: String
-  let grouping: UsageGrouping
-  let metric: UsageMetric
-}
-
 public enum WorkbenchSection: String, CaseIterable, Hashable, Identifiable, Sendable {
   case usage = "Usage"
   case repository = "Explore"
@@ -19,6 +11,9 @@ public enum WorkbenchSection: String, CaseIterable, Hashable, Identifiable, Send
   case settings = "Settings"
 
   public var id: String { rawValue }
+
+  /// The retired Usage case remains decodable for legacy deep links, but is not a destination.
+  public static var navigationSections: [Self] { allCases.filter { $0 != .usage } }
 
   public var systemImage: String {
     switch self {
@@ -190,32 +185,6 @@ public final class WorkbenchModel {
   public var performanceScopeLoading = false
   public var performanceScopeIssue: String?
   var performancePlanScopeFingerprint: String?
-  public var usageReport: LocalUsageReport? {
-    didSet {
-      usageProjectionCache.removeAll(keepingCapacity: true)
-      usageProjectionReferenceDate = Date()
-    }
-  }
-  public var usageReportJSON = ""
-  public var providerQuotaReceipt: ProviderQuotaReceipt?
-  public var providerQuotaLoading = false
-  public var providerQuotaIssue: String?
-  public var usageScale: UsageScale = .day
-  public var usageGrouping: UsageGrouping {
-    get { usageDimension == .model ? .model : .project }
-    set { usageDimension = newValue == .model ? .model : .project }
-  }
-  public var usageWindow: UsageWindow = .thirtyDays
-  /// Unified history card controls — shared by the chart and the ranked
-  /// breakdown so both always describe the same filtered evidence.
-  public var usageDimension: UsageDimension = .model
-  public var usageMetric: UsageHistoryMetric = .tokens
-  public var usageSelectedAgents: Set<String> = []
-  public var usageTimezone = TimeZone.current.identifier
-  public var usageLoading = false
-  public var usageIssue: String?
-  public private(set) var usageShowingSavedSnapshot = false
-  public private(set) var providerQuotaShowingSavedSnapshot = false
   public var unpackSnapshots: [UnpackSnapshotSummary] = []
   public var selectedUnpackSnapshotID: String?
   public var unpackSnapshot: UnpackSnapshotRecord?
@@ -281,7 +250,6 @@ public final class WorkbenchModel {
 
   private let runner: CodeVetterProcessRunner
   private let repositoryAccessStore: RepositoryAccessStore?
-  private let usageSnapshotStore: UsageSnapshotStore
   private var runTask: Task<Void, Never>?
   private var activeReviewRequestID: String?
   private var reviewPlanFingerprint: String?
@@ -301,24 +269,6 @@ public final class WorkbenchModel {
   private var performanceTask: Task<Void, Never>?
   private var testingScopeTask: Task<Void, Never>?
   private var performanceScopeTask: Task<Void, Never>?
-  private var usageTask: Task<Void, Never>?
-  private var providerQuotaTask: Task<Void, Never>?
-  private var usageSnapshotRestoreTask: Task<RestoredUsageSnapshots, Never>?
-  private var usageSnapshotsRestored = false
-  public private(set) var usageLastLoadedAt: Date?
-  private var providerQuotaLastLoadedAt: Date?
-  /// Local agent-log usage is an offline `ccusage` scan, so it can revalidate often.
-  @ObservationIgnored public var usageAutoRefreshInterval: TimeInterval = 60
-  /// Provider allowance spawns supervised `claude` and `codex` sessions that can take
-  /// twenty seconds and reach the provider. The cadence is measured from the end of the
-  /// previous collection, and polling suspends while the app is not frontmost, so this
-  /// only runs while an operator is actually reading the page.
-  @ObservationIgnored public var providerQuotaAutoRefreshInterval: TimeInterval = 60
-  @ObservationIgnored public var usageAutoRefreshTick: TimeInterval = 5
-  @ObservationIgnored private var usageAutoRefreshSuspended = false
-  @ObservationIgnored private var usageProjectionCache:
-    [UsageProjectionCacheKey: UsageViewProjection] = [:]
-  @ObservationIgnored private var usageProjectionReferenceDate = Date()
   private var unpackTask: Task<Void, Never>?
   private var repositoryQueryWarmTask: Task<Void, Never>?
   private var repositoryQueryTask: Task<Void, Never>?
@@ -336,12 +286,10 @@ public final class WorkbenchModel {
 
   public init(
     runner: CodeVetterProcessRunner = CodeVetterProcessRunner(),
-    repositoryAccessStore: RepositoryAccessStore? = nil,
-    usageSnapshotStore: UsageSnapshotStore = UsageSnapshotStore()
+    repositoryAccessStore: RepositoryAccessStore? = nil
   ) {
     self.runner = runner
     self.repositoryAccessStore = repositoryAccessStore
-    self.usageSnapshotStore = usageSnapshotStore
     do {
       registry = try CapabilityRegistry.bundled()
       registryIssue = nil
@@ -396,7 +344,7 @@ public final class WorkbenchModel {
   public var isBusy: Bool {
     verificationState == .planning || verificationState == .running
       || testingState == .running
-      || performanceState == .planning || performanceState == .running || usageLoading
+      || performanceState == .planning || performanceState == .running
       || unpackLoading || repositoryQueryLoading || repositoryQueryDetailLoading
       || onboardingLoading || settingsLoading
       || !settingsSavingKeys.isEmpty
@@ -2038,224 +1986,6 @@ public final class WorkbenchModel {
     performanceState = .ready
     performanceStatusMessage =
       "Ready to inspect another exact workload before project code executes."
-  }
-
-  public func restoreUsageSnapshots() async {
-    guard !usageSnapshotsRestored else { return }
-    let restoreTask: Task<RestoredUsageSnapshots, Never>
-    if let usageSnapshotRestoreTask {
-      restoreTask = usageSnapshotRestoreTask
-    } else {
-      let store = usageSnapshotStore
-      let task = Task.detached(priority: .utility) {
-        store.restore()
-      }
-      usageSnapshotRestoreTask = task
-      restoreTask = task
-    }
-
-    let snapshots = await restoreTask.value
-    guard !Task.isCancelled else { return }
-    if usageReport == nil, let report = snapshots.usageReport {
-      usageReport = report
-      usageReportJSON = snapshots.usageReportJSON
-      usageLastLoadedAt = snapshots.usageSavedAt
-      usageShowingSavedSnapshot = true
-      let detected = Set(report.provenance.detectedAgents)
-      usageSelectedAgents = detected
-    }
-    if providerQuotaReceipt == nil, let receipt = snapshots.providerQuota {
-      providerQuotaReceipt = receipt
-      providerQuotaLastLoadedAt = snapshots.providerQuotaSavedAt
-      providerQuotaShowingSavedSnapshot = true
-    }
-    usageSnapshotsRestored = true
-    usageSnapshotRestoreTask = nil
-  }
-
-  public func prepareUsage() async {
-    await restoreUsageSnapshots()
-    refreshUsageIfStale()
-  }
-
-  /// Collects whichever usage surface has outlived its cadence. Both reads are
-  /// independently gated, so the slow provider allowance never delays local history.
-  public func refreshUsageIfStale(now: Date = Date()) {
-    if usageReport == nil
-      || usageReport?.provenance.timezone != usageTimezone
-      || needsUsageRefresh(loadedAt: usageLastLoadedAt, now: now, interval: usageAutoRefreshInterval)
-    {
-      loadUsage()
-    }
-    if providerQuotaReceipt == nil
-      || needsUsageRefresh(
-        loadedAt: providerQuotaLastLoadedAt,
-        now: now,
-        interval: providerQuotaAutoRefreshInterval
-      )
-    {
-      loadProviderQuota()
-    }
-  }
-
-  /// Drives the Usage section's automatic revalidation. The caller owns the lifetime:
-  /// SwiftUI cancels this with the view, so the poll never outlives the visible section.
-  public func runUsageAutoRefresh() async {
-    while !Task.isCancelled {
-      do {
-        try await Task.sleep(for: .seconds(usageAutoRefreshTick))
-      } catch {
-        return
-      }
-      guard !Task.isCancelled else { return }
-      guard !usageAutoRefreshSuspended else { continue }
-      refreshUsageIfStale()
-    }
-  }
-
-  /// Suspends polling while the app is not frontmost so background windows never
-  /// spawn provider sessions the operator cannot see.
-  public func setUsageAutoRefreshSuspended(_ suspended: Bool) {
-    usageAutoRefreshSuspended = suspended
-  }
-
-  public func usageWindowBecameActive() {
-    usageAutoRefreshSuspended = false
-    refreshUsageIfStale()
-  }
-
-  public func warmUsage() async {
-    await restoreUsageSnapshots()
-    if usageReport == nil {
-      loadUsage()
-    }
-    if providerQuotaReceipt == nil {
-      loadProviderQuota()
-    }
-  }
-
-  public func loadUsage(refresh: Bool = false) {
-    guard !usageLoading else { return }
-    usageLoading = true
-    usageIssue = nil
-    usageTask = Task { [weak self] in
-      guard let self else { return }
-      defer {
-        usageLoading = false
-        usageTask = nil
-      }
-      do {
-        let result = try await runner.runUsage(timezone: usageTimezone, refresh: refresh)
-        guard !Task.isCancelled else { return }
-        usageLastLoadedAt = Date()
-        usageShowingSavedSnapshot = false
-        // A repeat collection over unchanged agent logs carries the same source
-        // fingerprint. Keeping the accepted report avoids discarding the projection
-        // cache and re-rendering the whole section underneath the reader.
-        let fingerprint = result.report.provenance.sourceFingerprint
-        if !fingerprint.isEmpty,
-          fingerprint == usageReport?.provenance.sourceFingerprint,
-          result.report.provenance.timezone == usageReport?.provenance.timezone,
-          result.report.status == usageReport?.status
-        {
-          return
-        }
-        usageReport = result.report
-        usageReportJSON = result.rawJSON
-        let detected = Set(result.report.provenance.detectedAgents)
-        usageSelectedAgents.formIntersection(detected)
-        if usageSelectedAgents.isEmpty {
-          usageSelectedAgents = detected
-        }
-        let store = usageSnapshotStore
-        let rawJSON = result.rawJSON
-        Task.detached(priority: .utility) {
-          try? store.saveUsage(rawJSON: rawJSON)
-        }
-      } catch is CancellationError {
-        // Navigation may cancel this bounded read without changing the last accepted report.
-      } catch {
-        usageIssue = error.localizedDescription
-      }
-    }
-  }
-
-  public func loadProviderQuota() {
-    guard !providerQuotaLoading else { return }
-    providerQuotaLoading = true
-    providerQuotaIssue = nil
-    providerQuotaTask = Task { [weak self] in
-      guard let self else { return }
-      defer {
-        providerQuotaLoading = false
-        providerQuotaTask = nil
-      }
-      do {
-        let runner = self.runner
-        let collection = Task.detached(priority: .utility) {
-          try await runner.runProviderQuota()
-        }
-        let receipt = try await withTaskCancellationHandler {
-          try await collection.value
-        } onCancel: {
-          collection.cancel()
-        }
-        guard !Task.isCancelled else { return }
-        providerQuotaReceipt = receipt
-        providerQuotaLastLoadedAt = Date()
-        providerQuotaShowingSavedSnapshot = false
-        let store = usageSnapshotStore
-        Task.detached(priority: .utility) {
-          try? store.saveProviderQuota(receipt)
-        }
-      } catch is CancellationError {
-        // Navigation may cancel this bounded read without changing the last accepted receipt.
-      } catch {
-        providerQuotaIssue = error.localizedDescription
-      }
-    }
-  }
-
-  private func needsUsageRefresh(loadedAt: Date?, now: Date, interval: TimeInterval) -> Bool {
-    guard let loadedAt else { return true }
-    let age = now.timeIntervalSince(loadedAt)
-    return age < 0 || age >= interval
-  }
-
-  public func toggleUsageAgent(_ agent: String) {
-    if usageSelectedAgents.contains(agent) {
-      guard usageSelectedAgents.count > 1 else { return }
-      usageSelectedAgents.remove(agent)
-    } else {
-      usageSelectedAgents.insert(agent)
-    }
-  }
-
-  func usageProjection(for report: LocalUsageReport) -> UsageViewProjection {
-    let key = UsageProjectionCacheKey(
-      agents: usageSelectedAgents.sorted().joined(separator: "\u{0}"),
-      window: usageWindow.rawValue,
-      scale: usageScale.rawValue,
-      grouping: usageGrouping,
-      metric: usageMetric
-    )
-    if let cached = usageProjectionCache[key] {
-      return cached
-    }
-    let projection = UsageViewProjection(
-      report: report,
-      selectedAgents: usageSelectedAgents,
-      window: usageWindow,
-      scale: usageScale,
-      referenceDate: usageProjectionReferenceDate,
-      grouping: usageGrouping,
-      metric: usageMetric
-    )
-    if usageProjectionCache.count >= 32 {
-      usageProjectionCache.removeAll(keepingCapacity: true)
-    }
-    usageProjectionCache[key] = projection
-    return projection
   }
 
   public func loadUnpackSnapshots() {

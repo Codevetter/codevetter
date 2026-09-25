@@ -503,23 +503,9 @@ func renderTrexWatcher(_ model: WorkbenchModel) {
 }
 
 @MainActor
-func renderPerformance(_ model: WorkbenchModel) {
+func renderWorkbench(_ model: WorkbenchModel) {
   autoreleasepool {
     let host = NSHostingView(rootView: PremiumWorkbenchRootView(model: model))
-    host.appearance = NSAppearance(named: .darkAqua)
-    host.frame = NSRect(x: 0, y: 0, width: 980, height: 640)
-    host.layoutSubtreeIfNeeded()
-    host.displayIfNeeded()
-  }
-}
-
-@MainActor
-func renderUsage(_ model: WorkbenchModel) {
-  autoreleasepool {
-    // The gate measures the already-loaded Usage surface. Repeatedly mounting
-    // the production lifecycle would start collectors and auto-refresh tasks in
-    // every sample, contradicting the gate's documented render-only boundary.
-    let host = NSHostingView(rootView: PremiumUsageView(model: model, startsUsageLifecycle: false))
     host.appearance = NSAppearance(named: .darkAqua)
     host.frame = NSRect(x: 0, y: 0, width: 980, height: 640)
     host.layoutSubtreeIfNeeded()
@@ -637,15 +623,6 @@ func captureUnpackQuery(
     throw CocoaError(.fileWriteUnknown)
   }
   try data.write(to: destination, options: .atomic)
-}
-
-@MainActor
-func captureUsage(
-  _ model: WorkbenchModel,
-  at destination: URL,
-  appearance: NSAppearance.Name
-) throws {
-  try captureWorkbench(model, at: destination, appearance: appearance)
 }
 
 @MainActor
@@ -1190,24 +1167,8 @@ func nativeSettingsFixtureReceipt(
       "toggle", "false", []
     ),
     (
-      "notify_quota_thresholds", "notifications", "Provider Quota Thresholds",
-      "Observed provider-window telemetry only.", "toggle", "true", []
-    ),
-    (
-      "notify_session_usage_thresholds", "notifications", "Session Usage Thresholds",
-      "Indexed session estimates when enabled.", "toggle", "false", []
-    ),
-    (
       "notification_sound", "notifications", "Notification Sounds", "Play a local tone.",
       "toggle", "true", []
-    ),
-    (
-      "tray_refresh_cadence_secs", "notifications", "Menu Bar Refresh Cadence",
-      "Polling cadence for observed live usage.", "choice", "300",
-      [
-        ["value": "manual", "label": "Manual only"],
-        ["value": "300", "label": "Every 5 minutes"],
-      ]
     ),
     (
       "native_agent_island_enabled", "agent_island", "Native Agent Island",
@@ -1670,61 +1631,6 @@ func trexWatcherFixture(operation: String) -> String {
   return """
     {"schema_version":1,"operation":"\(operation)","watcher":{"repo_path":"/fixture/repo","interval_secs":300,"enabled":true,"base_branch":"main","last_polled_at":"2026-09-01 00:05:00","last_error":null,"created_at":"2026-09-01 00:00:00"},"watchers":[],"runs":[{"id":"watcher-run-fixture","repo_path":"/fixture/repo","pr_number":42,"head_sha":"\(headA)","verdict":"APPROVE","confidence":0.97,"summary":"Checkout and receipt journeys passed in the isolated PR worktree.","status_state":"success","status_error":null,"duration_ms":1842,"ran_at":"2026-09-01T00:05:02Z"},{"id":"watcher-run-limited","repo_path":"/fixture/repo","pr_number":39,"head_sha":"\(headB)","verdict":"NEEDS_REVIEW","confidence":0.61,"summary":"Runtime checks completed, but one browser observation needs maintainer review.","status_state":"pending","status_error":"GitHub status remained pending while evidence was retained.","duration_ms":2310,"ran_at":"2026-09-01T00:02:00Z"}],"inspected_prs":4,"skipped_unchanged":2,"message":"Inspected 4 open PR(s); completed 2 new run(s); skipped 2 unchanged."}
     """
-}
-
-func usagePeriod(
-  _ period: String,
-  agent: String,
-  generated: UInt64,
-  model: String
-) -> LocalUsagePeriod {
-  let totals = localUsageTotals(generated)
-  let modelUsage = LocalUsageModel(model: model, totals: totals, fallback: false, priced: true)
-  return LocalUsagePeriod(
-    period: period,
-    totals: totals,
-    agents: [LocalUsageAgent(agent: agent, totals: totals, models: [modelUsage])],
-    models: [modelUsage]
-  )
-}
-
-func usageSession(
-  _ id: String,
-  agent: String,
-  activity: String?,
-  project: String? = nil
-) -> LocalUsageSession {
-  LocalUsageSession(
-    sessionID: id,
-    agent: agent,
-    lastActivity: activity,
-    project: project,
-    reasoningOutputTokens: 0,
-    totals: localUsageTotals(10),
-    models: []
-  )
-}
-
-func localUsageTotals(_ generated: UInt64) -> LocalUsageTotals {
-  LocalUsageTotals(
-    inputTokens: generated / 2,
-    cacheCreationTokens: generated / 4,
-    cacheReadTokens: generated * 2,
-    outputTokens: generated - generated / 2 - generated / 4,
-    totalTokens: generated * 3,
-    costUSD: Double(generated) / 100_000
-  )
-}
-
-func usageTotals(_ generated: UInt64) -> [String: Any] {
-  [
-    "input_tokens": generated / 2,
-    "cache_creation_tokens": generated / 4,
-    "cache_read_tokens": generated * 2,
-    "output_tokens": generated / 4,
-    "total_tokens": generated * 3,
-    "cost_usd": Double(generated) / 100_000,
-  ]
 }
 
 @Test

@@ -9,8 +9,9 @@ struct PremiumCommandPaletteView: View {
 
   private var matches: [WorkbenchSection] {
     let needle = query.trimmingCharacters(in: .whitespacesAndNewlines)
-    guard !needle.isEmpty else { return WorkbenchSection.allCases }
-    return WorkbenchSection.allCases.filter {
+    let sections = WorkbenchSection.navigationSections
+    guard !needle.isEmpty else { return sections }
+    return sections.filter {
       $0.rawValue.localizedCaseInsensitiveContains(needle)
     }
   }
@@ -55,7 +56,7 @@ struct PremiumCommandPaletteView: View {
             ContentUnavailableView(
               "No matching workspace",
               systemImage: "magnifyingglass",
-              description: Text("Try Usage, Review, Testing, Performance, Runs, or Settings.")
+              description: Text("Try Explore, Review, Testing, Performance, Runs, or Settings.")
             )
             .frame(minHeight: 220)
           } else {
@@ -144,7 +145,7 @@ struct PremiumCommandPaletteView: View {
 
   private func sectionPurpose(_ section: WorkbenchSection) -> String {
     switch section {
-    case .usage: "Inspect local provider usage without inventing quota truth"
+    case .usage: "Agent usage is now in ContextDaddy"
     case .repository: "Browse exact source, search code, and unpack repository structure"
     case .review: "Plan and inspect execution-backed change verification"
     case .testing: "Exercise changed behavior and preserve runtime evidence"

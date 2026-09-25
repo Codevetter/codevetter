@@ -6,20 +6,10 @@ import SwiftUI
 @MainActor
 final class CodeVetterAppDelegate: NSObject, NSApplicationDelegate {
   private static let retainedDelegate = CodeVetterAppDelegate()
-  private lazy var model = WorkbenchModel(
-    repositoryAccessStore: RepositoryAccessStore.standard,
-    usageSnapshotStore: usageSnapshotStore
-  )
+  private lazy var model = WorkbenchModel(repositoryAccessStore: RepositoryAccessStore.standard)
   private let updater = NativeUpdaterController()
   private let appHealth = CodeVetterAppHealth()
   private var windowController: NSWindowController?
-
-  private var usageSnapshotStore: UsageSnapshotStore {
-    guard let path = launchValue(after: "--ui-test-usage-cache") else {
-      return UsageSnapshotStore()
-    }
-    return UsageSnapshotStore(directory: URL(fileURLWithPath: path, isDirectory: true))
-  }
 
   static func main() {
     let application = NSApplication.shared
@@ -70,7 +60,7 @@ final class CodeVetterAppDelegate: NSObject, NSApplicationDelegate {
     if let sectionName = launchValue(after: "--ui-test-section"),
       let section = WorkbenchSection.allCases.first(where: { $0.rawValue == sectionName })
     {
-      model.section = section
+      model.section = section == .usage ? .repository : section
     }
   }
 
@@ -188,7 +178,7 @@ final class CodeVetterAppDelegate: NSObject, NSApplicationDelegate {
     viewMenu.addItem(
       makeMenuItem("Command Palette…", action: #selector(showCommandPalette), key: "k"))
     viewMenu.addItem(.separator())
-    for (index, section) in WorkbenchSection.allCases.enumerated() {
+    for (index, section) in WorkbenchSection.navigationSections.enumerated() {
       let item = makeMenuItem(
         section.rawValue, action: #selector(showSection(_:)), key: String(index + 1))
       item.tag = index
@@ -229,7 +219,7 @@ final class CodeVetterAppDelegate: NSObject, NSApplicationDelegate {
   }
 
   @objc private func showSection(_ sender: NSMenuItem) {
-    guard WorkbenchSection.allCases.indices.contains(sender.tag) else { return }
-    model.section = WorkbenchSection.allCases[sender.tag]
+    guard WorkbenchSection.navigationSections.indices.contains(sender.tag) else { return }
+    model.section = WorkbenchSection.navigationSections[sender.tag]
   }
 }

@@ -26,7 +26,11 @@ public struct PremiumWorkbenchRootView: View {
       PremiumTopBar(model: model)
       switch model.section {
       case .usage:
-        PremiumUsageView(model: model)
+        ContentUnavailableView(
+          "Agent usage moved to ContextDaddy",
+          systemImage: "arrow.up.right.square",
+          description: Text("CodeVetter keeps usage evidence for verification runs. Open ContextDaddy for general agent usage and allowances.")
+        )
       case .repository:
         NavigatorWorkspaceView(model: model, mode: .explore)
       case .review:
@@ -63,12 +67,7 @@ public struct PremiumWorkbenchRootView: View {
     .task {
       model.loadOnboarding()
     }
-    .task {
-      await model.warmUsage()
-    }
     .task(id: model.section) {
-      // Usage owns its own preparation and revalidation inside PremiumUsageView so the
-      // poll lives exactly as long as the visible section.
       if model.section == .repository, model.unpackSnapshots.isEmpty {
         model.loadUnpackSnapshots()
       } else if model.section == .settings, model.settingsReceipt == nil {
@@ -604,7 +603,7 @@ private enum PremiumTopBarMetrics {
   static let fullNavigationWidth = navigationWidth(showLabels: true)
 
   private static func navigationWidth(showLabels: Bool) -> CGFloat {
-    WorkbenchSection.allCases.reduce(0) { width, section in
+    WorkbenchSection.navigationSections.reduce(0) { width, section in
       let iconWidth = NSImage(
         systemSymbolName: section.systemImage, accessibilityDescription: nil
       )?.withSymbolConfiguration(symbolConfiguration)?.size.width ?? 11
@@ -616,7 +615,7 @@ private enum PremiumTopBarMetrics {
       let buttonWidth = max(
         PremiumPageLayout.navigationControlHeight, contentWidth + horizontalPadding)
       return width + buttonWidth
-    } + CGFloat(max(WorkbenchSection.allCases.count - 1, 0)) * 3
+    } + CGFloat(max(WorkbenchSection.navigationSections.count - 1, 0)) * 3
   }
 }
 
@@ -669,7 +668,7 @@ private struct PremiumTopBar: View {
 
   private func navigation(showLabels: Bool) -> some View {
     HStack(spacing: 3) {
-      ForEach(WorkbenchSection.allCases) { section in
+      ForEach(WorkbenchSection.navigationSections) { section in
         let showsLabel = workbenchNavigationShowsLabel(
           for: section,
           selectedSection: model.section,
