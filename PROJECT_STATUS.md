@@ -793,7 +793,7 @@ Internal (fleet):
   explicit and historical debt tracked in GitHub Issues.
 - Local-first native macOS binary: SwiftUI/AppKit presentation, Rust-owned
   verification and SQLite, no WebView and no server.
-- Five-surface nav: Usage, Repo Unpack, Review, Testing, Performance. Repo contains Unpack, Activity, Graph, Inventory, Analysis, Handoff, and past snapshots; Settings is an integrated utility hosting Ops, Memories, Rubrics, Agent MCP, and preferences. Retired Work/Board routes redirect to Usage while their local records and backend lifecycle code remain available for separately reviewed cleanup.
+- Published v1.14.3 still has the general Usage workspace. The v1.15.0 candidate presents Explore, Review, Testing, Performance, Runs, and Settings; the retired Usage route is kept only for decoding legacy deep links and is not navigable. Explore contains Unpack, source navigation, graph, and history. Existing local session/work-item records and backend lifecycle code remain available for separately reviewed cleanup.
 - Testing and Performance now share a local deterministic scope planner for a human-described function/flow, an exact PR or Git change, or a bounded whole-codebase portfolio. Every plan exposes its revision, dirty state, concrete adapters/targets, uncovered paths, and limitations and requires confirmation before execution; human text is discovery input and is never run as a command.
 - Risk-tiered CLI review: trivial single-pass → lite product/agent passes → full sensitive path with security, product, agent specialist passes, coordinator, and dedup metadata.
 
