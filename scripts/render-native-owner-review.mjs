@@ -49,8 +49,6 @@ export const nativeOwnerReviewRenders = Object.freeze([
   ['CODEVETTER_HISTORY_ROOTS_LIGHT_SCREENSHOT_PATH', 'settings-history-roots-light.png'],
   ['CODEVETTER_MEMORIES_SCREENSHOT_PATH', 'settings-memories.png'],
   ['CODEVETTER_MEMORIES_LIGHT_SCREENSHOT_PATH', 'settings-memories-light.png'],
-  ['CODEVETTER_AGENT_ISLAND_SETTINGS_SCREENSHOT_PATH', 'settings-agent-island.png'],
-  ['CODEVETTER_AGENT_ISLAND_SETTINGS_LIGHT_SCREENSHOT_PATH', 'settings-agent-island-light.png'],
   ['CODEVETTER_OPS_SETTINGS_SCREENSHOT_PATH', 'settings-ops.png'],
   ['CODEVETTER_OPS_SETTINGS_LIGHT_SCREENSHOT_PATH', 'settings-ops-light.png'],
   ['CODEVETTER_ONBOARDING_SCREENSHOT_PATH', 'onboarding-purpose.png'],

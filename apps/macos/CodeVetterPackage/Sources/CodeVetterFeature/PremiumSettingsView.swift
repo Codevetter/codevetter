@@ -209,7 +209,7 @@ struct PremiumSettingsView: View {
   private var settingsGroups: [(String, [NativeSettingsSection])] {
     [
       ("Product", [.general, .appearance, .notifications, .usage]),
-      ("Agents", [.agents, .agentIsland, .rubrics, .memories]),
+      ("Agents", [.agents, .rubrics, .memories]),
       ("Connections", [.integrations, .capabilities, .mcp]),
       ("System", [.ops, .about]),
     ]
@@ -253,8 +253,6 @@ struct PremiumSettingsView: View {
             rubricPanel
           } else if model.settingsSection == .memories {
             memoryPanel
-          } else if model.settingsSection == .agentIsland {
-            agentIslandPanel
           } else if model.settingsSection == .ops {
             opsPanel
           } else if model.settingsSection == .about {
@@ -389,79 +387,6 @@ struct PremiumSettingsView: View {
     .overlay { RoundedRectangle(cornerRadius: 14).stroke(EvidenceStyle.separator) }
     .accessibilityElement(children: .contain)
     .accessibilityIdentifier("settings-capabilities")
-  }
-
-  private var agentIslandPanel: some View {
-    VStack(alignment: .leading, spacing: 14) {
-      HStack(alignment: .center, spacing: 18) {
-        VStack(alignment: .leading, spacing: 7) {
-          PremiumFieldLabel("PRESENTATION CONTRACT")
-          Text("A calm status surface, not another agent runtime")
-            .font(.system(size: 15, weight: .semibold))
-          Text(
-            "These preferences are shared with the retained supervised helper. The new Evidence Workbench does not yet launch it, read transcripts, or action provider requests."
-          )
-          .font(.system(size: 10))
-          .foregroundStyle(.secondary)
-          .fixedSize(horizontal: false, vertical: true)
-          HStack(spacing: 7) {
-            StatusPill(
-              label: agentIslandEnabled ? "Preference enabled" : "Off by default",
-              color: agentIslandEnabled ? EvidenceStyle.success : EvidenceStyle.warning
-            )
-            StatusPill(label: "Runtime transfer pending", color: EvidenceStyle.warning)
-          }
-        }
-        Spacer(minLength: 18)
-        VStack(spacing: 8) {
-          HStack(spacing: 7) {
-            Circle().fill(EvidenceStyle.amber).frame(width: 7, height: 7)
-            Text("CODEX · REVIEW READY")
-              .font(.system(size: 10, weight: .bold, design: .monospaced))
-              .foregroundStyle(Color.white.opacity(0.86))
-            Text("+2")
-              .font(.system(size: 10, weight: .bold, design: .monospaced))
-              .foregroundStyle(EvidenceStyle.amber)
-          }
-          .padding(.horizontal, 13)
-          .frame(height: 30)
-          .background(Color.black, in: Capsule())
-          .overlay { Capsule().stroke(EvidenceStyle.amber.opacity(0.32)) }
-          Text("Non-activating preview · no live session content")
-            .font(.system(size: 10, design: .monospaced))
-            .foregroundStyle(.secondary)
-        }
-      }
-      .padding(18)
-      .background(EvidenceStyle.inspector, in: RoundedRectangle(cornerRadius: 14))
-      .overlay { RoundedRectangle(cornerRadius: 14).stroke(EvidenceStyle.separator) }
-
-      VStack(spacing: 0) {
-        ForEach(Array(settings(in: .agentIsland).enumerated()), id: \.element.id) {
-          index, setting in
-          NativeSettingRow(
-            setting: setting,
-            saving: model.settingsSavingKeys.contains(setting.key),
-            save: { model.saveNativeSetting(key: setting.key, value: $0) }
-          )
-          if index < settings(in: .agentIsland).count - 1 {
-            Rectangle().fill(EvidenceStyle.separator).frame(height: 1)
-          }
-        }
-      }
-      .background(EvidenceStyle.surface, in: RoundedRectangle(cornerRadius: 14))
-      .overlay { RoundedRectangle(cornerRadius: 14).stroke(EvidenceStyle.separator) }
-
-      HStack(alignment: .top, spacing: 10) {
-        Image(systemName: "lock.shield.fill").foregroundStyle(EvidenceStyle.success)
-        Text(
-          "Swift receives preference labels and values only. Session identities, prompts, output, commands, paths, provider responses, and credentials are excluded from this settings receipt."
-        )
-        .font(.system(size: 10))
-        .foregroundStyle(.secondary)
-      }
-      .padding(.horizontal, 4)
-    }
   }
 
   private var usagePanel: some View {
@@ -1454,6 +1379,10 @@ struct PremiumSettingsView: View {
     return String("\(normalized)-copy".prefix(64))
   }
 
+  private var updaterConfiguration: NativeUpdaterConfiguration {
+    NativeUpdaterConfiguration()
+  }
+
   private var aboutPanel: some View {
     VStack(alignment: .leading, spacing: 14) {
       HStack(alignment: .center, spacing: 16) {
@@ -1468,7 +1397,10 @@ struct PremiumSettingsView: View {
         Button("Welcome tour") { model.presentOnboarding() }
           .buttonStyle(.bordered)
           .accessibilityLabel("Open the CodeVetter welcome tour")
-        StatusPill(label: "Native preview", color: EvidenceStyle.amber)
+        StatusPill(
+          label: updaterConfiguration.productionBundle ? "Production build" : "Native preview",
+          color: updaterConfiguration.productionBundle ? EvidenceStyle.success : EvidenceStyle.amber
+        )
       }
       .padding(18)
       .background(EvidenceStyle.surface, in: RoundedRectangle(cornerRadius: 14))
@@ -1492,10 +1424,15 @@ struct PremiumSettingsView: View {
       HStack(alignment: .top, spacing: 12) {
         VStack(alignment: .leading, spacing: 8) {
           PremiumFieldLabel("UPDATES")
-          Text("Sparkle 2.9.6 selected · preview disabled")
+          Text(
+            updaterConfiguration.ready
+              ? "Sparkle update feed configured" : "Updates unavailable in this build"
+          )
             .font(.system(size: 11, weight: .semibold))
           Text(
-            "The updater stays off unless the production bundle has an HTTPS appcast and a real EdDSA public key. Preview builds fail closed."
+            updaterConfiguration.ready
+              ? "Use CodeVetter → Check for Updates… Automatic checks and downloads follow your Sparkle preferences."
+              : updaterConfiguration.status
           )
           .font(.system(size: 10))
           .foregroundStyle(.secondary)
@@ -1893,11 +1830,6 @@ struct PremiumSettingsView: View {
   private var sectionStatusColor: Color {
     if model.settingsSection == .agentIsland { return EvidenceStyle.warning }
     return sectionIsLive ? EvidenceStyle.success : EvidenceStyle.warning
-  }
-
-  private var agentIslandEnabled: Bool {
-    settings(in: .agentIsland)
-      .first(where: { $0.key == "native_agent_island_enabled" })?.value == "true"
   }
 
   private var sectionDescription: String {

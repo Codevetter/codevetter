@@ -9,10 +9,10 @@ import {
   ownerReviewEnvironment,
 } from './render-native-owner-review.mjs';
 
-test('owner-review render contract contains 35 unique environment and image identities', () => {
-  assert.equal(nativeOwnerReviewRenders.length, 35);
-  assert.equal(new Set(nativeOwnerReviewRenders.map(([key]) => key)).size, 35);
-  assert.equal(new Set(nativeOwnerReviewRenders.map(([, path]) => path)).size, 35);
+test('owner-review render contract contains 33 unique environment and image identities', () => {
+  assert.equal(nativeOwnerReviewRenders.length, 33);
+  assert.equal(new Set(nativeOwnerReviewRenders.map(([key]) => key)).size, 33);
+  assert.equal(new Set(nativeOwnerReviewRenders.map(([, path]) => path)).size, 33);
 });
 
 test('owner-review render contract matches the checked manifest identities', () => {
@@ -22,7 +22,12 @@ test('owner-review render contract matches the checked manifest identities', () 
   assert.deepEqual(
     nativeOwnerReviewRenders.map(([, path]) => path).toSorted(),
     manifest.entries
-      .filter((entry) => entry.path !== 'usage.png')
+      .filter(
+        (entry) =>
+          !['usage.png', 'settings-agent-island.png', 'settings-agent-island-light.png'].includes(
+            entry.path
+          )
+      )
       .map((entry) => entry.path)
       .toSorted()
   );
@@ -30,7 +35,7 @@ test('owner-review render contract matches the checked manifest identities', () 
 
 test('owner-review environment resolves every render under the requested output root', () => {
   const environment = ownerReviewEnvironment('/fixture/review');
-  assert.equal(Object.keys(environment).length, 35);
+  assert.equal(Object.keys(environment).length, 33);
   assert.equal(environment.CODEVETTER_USAGE_SCREENSHOT_PATH, undefined);
   assert.equal(
     environment.CODEVETTER_OPS_SETTINGS_LIGHT_SCREENSHOT_PATH,

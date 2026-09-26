@@ -2572,31 +2572,6 @@ func nativeSettingsProjectionRendersInBothAppearances() throws {
 
 @MainActor
 @Test
-func nativeAgentIslandSettingsRenderSharedConfigurationWithoutRuntimeAuthority() throws {
-  let model = WorkbenchModel()
-  model.section = .settings
-  model.settingsSection = .agentIsland
-  model.settingsReceipt = try JSONDecoder().decode(
-    NativeSettingsReceipt.self,
-    from: nativeSettingsFixtureReceipt()
-  )
-
-  for _ in 0..<5 { renderSettings(model) }
-
-  if let screenshotPath = ProcessInfo.processInfo.environment[
-    "CODEVETTER_AGENT_ISLAND_SETTINGS_SCREENSHOT_PATH"
-  ] {
-    try captureSettings(model, at: URL(fileURLWithPath: screenshotPath), appearance: .darkAqua)
-  }
-  if let screenshotPath = ProcessInfo.processInfo.environment[
-    "CODEVETTER_AGENT_ISLAND_SETTINGS_LIGHT_SCREENSHOT_PATH"
-  ] {
-    try captureSettings(model, at: URL(fileURLWithPath: screenshotPath), appearance: .aqua)
-  }
-}
-
-@MainActor
-@Test
 func nativeOpsSettingsRenderAggregateEvidenceWithoutCredentials() throws {
   let model = WorkbenchModel()
   model.section = .settings
