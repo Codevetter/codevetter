@@ -24,11 +24,12 @@ test('benchmark entry points declare the catalog CTA event', async () => {
 test('the browser logger sends the selected data-log event', async () => {
   const listeners = new Map();
   const requests = [];
+  const tracked = [];
   const document = {
     visibilityState: 'visible',
     addEventListener: (name, callback) => listeners.set(name, callback),
   };
-  const window = { addEventListener() {} };
+  const window = { addEventListener() {}, appHealth: { track: (event) => tracked.push(event) } };
   const context = {
     document,
     window,
@@ -55,6 +56,7 @@ test('the browser logger sends the selected data-log event', async () => {
   const payload = JSON.parse(requests[0].options.body);
   assert.equal(payload.logs[0].event, 'benchmark_opened');
   assert.equal(payload.logs[0].props.page, '/benchmark');
+  assert.deepEqual(tracked, ['benchmark_opened']);
 });
 
 test('newsletter markup and hosted loader require an explicit project key', async () => {
