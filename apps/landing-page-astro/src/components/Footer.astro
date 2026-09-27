@@ -2,6 +2,8 @@
 import Icon from './Icon.astro';
 import GitHubIcon from './GitHubIcon.astro';
 
+const newsletterProjectKey = import.meta.env.PUBLIC_SAASMAKER_NEWSLETTER_KEY?.trim();
+
 const cols = [
   {
     label: 'Product',
@@ -103,6 +105,19 @@ const year = new Date().getFullYear();
       </div>
     ))}
   </div>
+
+  {newsletterProjectKey && (
+    <div class="max-w-7xl mx-auto px-6 mt-12">
+      <saas-maker-newsletter-capture
+        product-name="CodeVetter"
+        project-key={newsletterProjectKey}
+        source="codevetter-footer"
+        kind="newsletter"
+        privacy-url="https://codevetter.com/privacy"
+        theme="dark"
+      ></saas-maker-newsletter-capture>
+    </div>
+  )}
 
   <div class="max-w-7xl mx-auto px-6 mt-16 pt-8 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-6 text-xs text-gray-400 font-medium">
     <div class="flex items-center gap-6">

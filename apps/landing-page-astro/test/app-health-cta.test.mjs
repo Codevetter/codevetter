@@ -56,3 +56,15 @@ test('the browser logger sends the selected data-log event', async () => {
   assert.equal(payload.logs[0].event, 'benchmark_opened');
   assert.equal(payload.logs[0].props.page, '/benchmark');
 });
+
+test('newsletter markup and hosted loader require an explicit project key', async () => {
+  const footer = await readFile(new URL('../src/components/Footer.astro', import.meta.url), 'utf8');
+  const layout = await readFile(new URL('../src/layouts/Layout.astro', import.meta.url), 'utf8');
+
+  assert.match(footer, /import\.meta\.env\.PUBLIC_SAASMAKER_NEWSLETTER_KEY\?\.trim\(\)/u);
+  assert.match(footer, /\{newsletterProjectKey && \(/u);
+  assert.match(footer, /project-key=\{newsletterProjectKey\}/u);
+  assert.match(layout, /\{newsletterProjectKey && \(/u);
+  assert.match(layout, /https:\/\/sassmaker\.com\/newsletter-capture\.js/u);
+  assert.doesNotMatch(`${footer}\n${layout}`, /pk_(?:example|test)/u);
+});

@@ -1,6 +1,8 @@
 ---
 import '@/styles/globals.css';
 
+const newsletterProjectKey = import.meta.env.PUBLIC_SAASMAKER_NEWSLETTER_KEY?.trim();
+
 interface Props {
   title?: string;
   description?: string;
@@ -108,6 +110,13 @@ const OG_IMAGE = `${SITE_URL}/og-image.png`;
 </head>
   <body>
     <slot />
+    {newsletterProjectKey && (
+      <script
+        is:inline
+        type="module"
+        src="https://sassmaker.com/newsletter-capture.js"
+      ></script>
+    )}
     <portfolio-project-strip current-project="codevetter"></portfolio-project-strip>
     <script
       is:inline

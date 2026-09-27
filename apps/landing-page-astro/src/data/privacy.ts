@@ -48,7 +48,7 @@ const privacyProviderList = PROVIDERS.join(', ');
 const privacyProviderSentence = `When you run a review, CodeVetter sends your code + the review prompt to whichever provider (${privacyProviderList}) you've picked. Their privacy policy applies.`;
 
 /** ISO date shown on both surfaces. Bump it whenever the text below changes. */
-const privacyLastUpdated = '2026-09-06';
+const privacyLastUpdated = '2026-09-28';
 
 /** The `Last updated:` line rendered at the top of both surfaces. */
 const privacyLastUpdatedLine = `Last updated: ${privacyLastUpdated}.`;
@@ -96,6 +96,12 @@ export const privacyPolicy = {
       heading: 'Public website analytics',
       paragraphs: [
         'The public codevetter.com marketing and benchmark pages use PostHog and Microsoft Clarity to understand page visits and interactions. Those pages have no repository upload or CodeVetter account surface. This does not add telemetry to the desktop application.',
+      ],
+    },
+    {
+      heading: 'Optional product updates',
+      paragraphs: [
+        'If you enter your email in the optional product-updates form and give consent, the SaaS Maker subscription service stores your address and consent record to manage that subscription. The form sends your address to SaaS Maker; CodeVetter does not receive it through App Health or link it to desktop-app activity. The form is optional, and the desktop application does not include it.',
       ],
     },
     {
