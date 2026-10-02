@@ -654,6 +654,15 @@ fn resolve_headless_cli_path() -> Result<PathBuf, String> {
     }
     let executable = std::env::current_exe()
         .map_err(|error| format!("Could not resolve the CodeVetter executable: {error}"))?;
+    resolve_packaged_cli_path(&executable)
+}
+
+fn resolve_packaged_cli_path(executable: &Path) -> Result<PathBuf, String> {
+    // macOS launchers can be symlinks outside the app bundle. Locate resources
+    // beside the actual executable, not beside the user's launcher.
+    let executable = executable
+        .canonicalize()
+        .map_err(|error| format!("Could not resolve the CodeVetter executable: {error}"))?;
     let bundled = executable
         .parent()
         .and_then(Path::parent)
@@ -799,6 +808,50 @@ fn elapsed_ms(started: Instant) -> u64 {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn packaged_performance_lookup_uses_bundle_resources() {
+        let fixture = tempfile::tempdir().unwrap();
+        let contents = fixture.path().join("CodeVetter.app/Contents");
+        let executable = contents.join("MacOS/codevetter");
+        let runtime = contents.join("Resources/runtime-failure-capsule/cli.mjs");
+        std::fs::create_dir_all(executable.parent().unwrap()).unwrap();
+        std::fs::create_dir_all(runtime.parent().unwrap()).unwrap();
+        std::fs::write(&executable, b"fixture executable, never launched").unwrap();
+        assert_eq!(
+            resolve_packaged_cli_path(&executable).unwrap_err(),
+            "The packaged local performance runtime is unavailable"
+        );
+        std::fs::write(&runtime, b"fixture runtime, never executed").unwrap();
+        assert_eq!(
+            resolve_packaged_cli_path(&executable).unwrap(),
+            runtime.canonicalize().unwrap()
+        );
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn packaged_performance_lookup_resolves_launcher_symlink() {
+        let fixture = tempfile::tempdir().unwrap();
+        let contents = fixture.path().join("CodeVetter.app/Contents");
+        let executable = contents.join("MacOS/codevetter");
+        let runtime = contents.join("Resources/runtime-failure-capsule/cli.mjs");
+        std::fs::create_dir_all(executable.parent().unwrap()).unwrap();
+        std::fs::create_dir_all(runtime.parent().unwrap()).unwrap();
+        std::fs::write(&executable, b"fixture executable, never launched").unwrap();
+        std::fs::write(&runtime, b"fixture runtime, never executed").unwrap();
+        let launcher = fixture.path().join("codevetter");
+        std::os::unix::fs::symlink(&executable, &launcher).unwrap();
+        assert_eq!(
+            resolve_packaged_cli_path(&launcher).unwrap(),
+            runtime.canonicalize().unwrap()
+        );
+        let dangling = fixture.path().join("dangling-launcher");
+        std::os::unix::fs::symlink(fixture.path().join("missing"), &dangling).unwrap();
+        assert!(resolve_packaged_cli_path(&dangling)
+            .unwrap_err()
+            .starts_with("Could not resolve the CodeVetter executable:"));
+    }
 
     fn input(repo: &Path) -> PerformanceRunInput {
         PerformanceRunInput {
