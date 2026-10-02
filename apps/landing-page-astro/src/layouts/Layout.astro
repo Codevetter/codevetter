@@ -7,6 +7,7 @@ interface Props {
   title?: string;
   description?: string;
   path?: string;
+  noIndex?: boolean;
 }
 
 const SITE_URL = 'https://codevetter.com';
@@ -15,6 +16,7 @@ const {
   title = 'CodeVetter — Execution-backed agent verification',
   description = 'Verify coding-agent changes with executable checks, inspectable evidence, explicit limitations, and a measurable verdict.',
   path = '/',
+  noIndex = false,
 } = Astro.props;
 
 // Clamp meta description to 70–160 chars for SEO best practice.
@@ -69,14 +71,14 @@ const OG_IMAGE = `${SITE_URL}/og-image.png`;
     <meta name="application-name" content="CodeVetter" />
     <meta name="keywords" content="coding agent verification, AI code verification, executable evidence, agent evaluation, software verification, local developer tool, verification receipt" />
     <meta name="author" content="CodeVetter" />
-    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <meta name="robots" content={noIndex ? "noindex, nofollow" : "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"} />
 
-    <link rel="canonical" href={canonical} />
-    <link rel="alternate" type="text/markdown" href={markdownAlternate} />
+    {!noIndex && <link rel="canonical" href={canonical} />}
+    {!noIndex && <link rel="alternate" type="text/markdown" href={markdownAlternate} />}
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 
     <meta property="og:type" content="website" />
-    <meta property="og:url" content={canonical} />
+    {!noIndex && <meta property="og:url" content={canonical} />}
     <meta property="og:site_name" content="CodeVetter" />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={clampedDescription} />

@@ -678,8 +678,11 @@ func captureReview(
   let host = NSHostingView(rootView: PremiumWorkbenchRootView(model: model))
   host.appearance = NSAppearance(named: appearance)
   host.frame = NSRect(x: 0, y: 0, width: 1_280, height: 800)
-  host.layoutSubtreeIfNeeded()
-  host.displayIfNeeded()
+  for _ in 0..<3 {
+    host.layoutSubtreeIfNeeded()
+    host.displayIfNeeded()
+    RunLoop.current.run(until: Date(timeIntervalSinceNow: 0.03))
+  }
   guard let bitmap = host.bitmapImageRepForCachingDisplay(in: host.bounds) else {
     throw CocoaError(.fileWriteUnknown)
   }
