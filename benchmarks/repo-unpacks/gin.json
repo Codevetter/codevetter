@@ -1,0 +1,3818 @@
+{
+  "schema_version": "codevetter.repo-unpack-corpus/v1",
+  "repo": "gin-gonic/gin",
+  "slug": "gin",
+  "codevetter_version": "codevetter 1.15.0",
+  "collected_at": "2026-10-02T18:07:18.362Z",
+  "last_commit": {
+    "sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+    "date": "2026-09-29",
+    "subject": "docs: fix SecureJSON default prefix and default-binding example output (#4861)"
+  },
+  "scan": {
+    "schema_version": "codevetter.unpack-scan/v1",
+    "report_id": "7ed4fe69-4287-45c0-9ffb-15cc697dae03",
+    "status": "scan_only",
+    "created_at": "2026-10-02T18:07:18.344039+00:00",
+    "inventory": {
+      "repo_path": "[local clone path omitted from public export]",
+      "repo_name": "gin",
+      "commit_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+      "branch": "master",
+      "remote_url": "https://github.com/gin-gonic/gin.git",
+      "files_scanned": 130,
+      "files_skipped": 0,
+      "bytes_scanned": 885190,
+      "max_files_hit": false,
+      "estimated_total_files": null,
+      "languages": [
+        {
+          "language": "Go",
+          "files": 99,
+          "bytes": 704438
+        },
+        {
+          "language": "Markdown",
+          "files": 9,
+          "bytes": 151339
+        },
+        {
+          "language": "YAML",
+          "files": 11,
+          "bytes": 12677
+        }
+      ],
+      "manifests": [
+        {
+          "path": "go.mod",
+          "kind": "go.mod",
+          "name": "github.com/gin-gonic/gin",
+          "version": null,
+          "dependencies": [],
+          "scripts": []
+        }
+      ],
+      "entrypoints": [
+        {
+          "path": "README.md",
+          "kind": "docs",
+          "reason": "Repository readme"
+        },
+        {
+          "path": ".github/workflows/gin.yml",
+          "kind": "config",
+          "reason": "GitHub Actions workflow"
+        },
+        {
+          "path": ".github/workflows/goreleaser.yml",
+          "kind": "config",
+          "reason": "GitHub Actions workflow"
+        },
+        {
+          "path": ".github/workflows/codeql.yml",
+          "kind": "config",
+          "reason": "GitHub Actions workflow"
+        },
+        {
+          "path": ".github/workflows/trivy-scan.yml",
+          "kind": "config",
+          "reason": "GitHub Actions workflow"
+        }
+      ],
+      "top_level_dirs": [
+        {
+          "path": "binding",
+          "file_count": 30,
+          "bytes": 134553
+        },
+        {
+          "path": "render",
+          "file_count": 17,
+          "bytes": 42628
+        },
+        {
+          "path": ".github",
+          "file_count": 9,
+          "bytes": 9873
+        },
+        {
+          "path": "testdata",
+          "file_count": 7,
+          "bytes": 11555
+        },
+        {
+          "path": "codec",
+          "file_count": 5,
+          "bytes": 5697
+        },
+        {
+          "path": "internal",
+          "file_count": 4,
+          "bytes": 4785
+        },
+        {
+          "path": "ginS",
+          "file_count": 3,
+          "bytes": 12273
+        },
+        {
+          "path": "docs",
+          "file_count": 1,
+          "bytes": 70475
+        },
+        {
+          "path": "examples",
+          "file_count": 1,
+          "bytes": 144
+        }
+      ],
+      "docs": [
+        {
+          "path": "CONTRIBUTING.md",
+          "bytes": 2106,
+          "preview": "# Contributing\n\nWe welcome both issue reports and pull requests! Please follow these guidelines to help maintainers respond effectively.\n\n## Issues\n\n- **Before opening a new issue:**\n  - Use the search tool to check for existing issues or feature requests.\n  - Review existing issues and provide feedback or react to them.\n  - Use English for all communications — it is the language all maintainers read and write.\n  - For questions, configuration or deployment problems, please use the [Discussions Forum](https://github.com/gin-gonic/gin/discussions).\n  - For bug reports involving sensitive security issues, email <appleboy.tw@gmail.com> instead of posting publicly.\n\n- **Reporting a bug:**\n  - Please provide a clear description of your issue, and a minimal reproducible code example if possible.\n  - Include the Gin version (or commit reference), Go version, and operating system.\n  - Indicate whether you can reproduce the bug and describe steps to do so.\n  - Attach relevant logs per [Logging Documentation](https://docs.gitea.com/administration/logging-config#collecting-logs-for-help).\n\n- **Feature requests:**\n  - Before opening a request, check that a similar idea hasn’t already been suggested.\n  - Clearly describe your proposed feature and its benefits.\n\n_For API Documentation, User Guides, and more, see:_\n\n- [Go.dev API Documentation](https://pkg.go.dev/github.com/gin-gonic/gin)\n- [Gin User Guides](https://gin-gonic.com/)\n- [Discussions Forum](https://github.com/gin-gonic/gin/discussions)\n\n## Pull Requests\n\nPlease ensure your pull request meets the following requirements:\n\n- Open your pull request against the `master` branch.\n- Your pull request should have no more than two commits — squash them if necessary.\n- All tests pass in available continuous integration systems (e.g., GitHub Actions).\n- Add or modify tests to cover your code changes.\n- If your pull request introduces a new feature, document it in [`docs/doc.md`](docs/doc.md), not in the README.\n- Follow the checklist in the [Pull Request Template](.github/PULL_REQUEST_TEMPLATE.md).\n\nThank you for contributing!\n"
+        },
+        {
+          "path": "README.md",
+          "bytes": 11827,
+          "preview": "# Gin Web Framework\n\n<img align=\"right\" width=\"159px\" src=\"https://raw.githubusercontent.com/gin-gonic/logo/master/color.png\">\n\n[![Build Status](https://github.com/gin-gonic/gin/actions/workflows/gin.yml/badge.svg?branch=master)](https://github.com/gin-gonic/gin/actions/workflows/gin.yml)\n[![Trivy Security Scan](https://github.com/gin-gonic/gin/actions/workflows/trivy-scan.yml/badge.svg)](https://github.com/gin-gonic/gin/actions/workflows/trivy-scan.yml)\n[![codecov](https://codecov.io/gh/gin-gonic/gin/branch/master/graph/badge.svg)](https://codecov.io/gh/gin-gonic/gin)\n[![Go Report Card](https://goreportcard.com/badge/github.com/gin-gonic/gin)](https://goreportcard.com/report/github.com/gin-gonic/gin)\n[![Go Reference](https://pkg.go.dev/badge/github.com/gin-gonic/gin?status.svg)](https://pkg.go.dev/github.com/gin-gonic/gin?tab=doc)\n[![Sourcegraph](https://sourcegraph.com/github.com/gin-gonic/gin/-/badge.svg)](https://sourcegraph.com/github.com/gin-gonic/gin?badge)\n[![Open Source Helpers](https://www.codetriage.com/gin-gonic/gin/badges/users.svg)](https://www.codetriage.com/gin-gonic/gin)\n[![Release](https://img.shields.io/github/release/gin-gonic/gin.svg?style=flat-square)](https://github.com/gin-gonic/gin/releases)\n\n## 📰 Gin 1.12.0 is now available!\n\nWe're excited to announce the release of **[Gin 1.12.0](https://gin-gonic.com/en/blog/news/gin-1-12-0-release-announcement/)**! This release brings new features, performance improvements, and important bug fixes. Check out the [release announcement](https://gin-gonic.com/en/blog/news/gin-1-12-0-release-announcement/) on our official blog for the full details.\n\n---\n\nGin is a high-performance HTTP web framework written in [Go](https://go.dev/). It provides a Martini-like API but with significantly better performance—up to 40 times faster—thanks to [httprouter](https://github.com/julienschmidt/httprouter). Gin is designed for building REST APIs, web applications, and microservices where speed and developer productivity are essential.\n\n**Why choose Gin?**\n\nGin combines the simplicity of Express.js-style routing with Go's performance characteristics, making it ideal for:\n\n- Building high-throughput REST APIs\n- Developing microservices that need to handle many concurrent requests\n- Creating web applications that require fast response times\n- Prototyping web services quickly with minimal boilerplate\n\n**Gin's key features:**\n\n- **Zero allocation router** - Extremely memory-efficient routing with no heap allocations\n- **High performance** - Benchmarks show superior speed compared to other Go web frameworks\n- **Middleware support** - Extensible middleware system for authentication, logging, CORS, etc.\n- **Crash-free** - Built-in recovery middleware prevents panics from crashing your server\n- **JSON validation** - Automatic request/response JSON binding and validation\n- **Route grouping** - Organize related routes and apply common middleware\n- **Error management** - Centralized error handling and logging\n- **Built-in rendering** - Support for JSON, XML, HTML templates, and more\n- **Extensible** - Large ecosystem of community middleware and plugins\n\n## Getting Started\n\n### Prerequisites\n\n- **Go version**: Gin requires [Go](https://go.dev/) version [1.26](https://go.dev/doc/devel/release#go1.26.0) or above\n- **Basic Go knowledge**: Familiarity with Go syntax and package management is helpful\n\n### Installation\n\nWith [Go's module support](https://go.dev/wiki/Modules#how-to-use-modules), simply import Gin in your code and Go will automatically fetch it during build:\n\n```go\nimport \"github.com/gin-gonic/gin\"\n```\n\n### Your First Gin Application\n\nHere's a complete example that demonstrates Gin's simplicity:\n\n```go\npackage main\n\nimport (\n  \"log\"\n  \"net/http\"\n\n  \"github.com/gin-gonic/gin\"\n)\n\nfunc main() {\n  // Create a Gin router with default middleware (logger and recovery)\n  r := gin.Default()\n\n  // Define a simple GET endpoint\n  r.GET(\"/ping\", func(c *gin.Context) {\n    // Return JSON response\n    c.JSON(http.StatusOK, gin.H{\n      \"message\": \"pong\",\n    })\n  })\n\n  // Start server on port 8080 (default)\n  // Server will listen on 0.0.0.0:8080 (localhost:8080 on Windows)\n  if err := r.Run(); err != nil {\n    log.Fatalf(\"failed to run server: %v\", err)\n  }\n}\n```\n\n**Running the application:**\n\n1. Save the code above as `main.go`\n2. Run the application:\n\n   ```sh\n   go run main.go\n   ```\n\n3. Open your browser and visit [`http://localhost:8080/ping`](http://localhost:8080/ping)\n4. You should see: `{\"message\":\"pong\"}`\n\n**What this example demonstrates:**\n\n- Creating a Gin router with default middleware\n- Defining HTTP endpoints with simple handler functions\n- Returning JSON responses\n- Starting an HTTP server\n\n### Next Steps\n\nAfter running your first Gin application, explore these resources to learn more:\n\n#### 📚 Learning Resources\n\n- **[Gin Quick Start Guide](docs/doc.md)** - Comprehensive tutorial with API examples and build configurations\n- **[Example Repository](https://github.com/gin-gonic/examples)** - Ready-to-run examples demonstrating various Gin use cases:\n  - REST API development\n  - Authentication & middleware\n  - File uploads and downloads\n  - WebSocket connections\n  - Template rendering\n\n## 📖 Documentation\n\n### API Reference\n\n- **[Go.dev API Documentation](https://pkg.go.dev/github.com/gin-gonic/gin)** - Complete API reference with examples\n\n### User Guides\n\nThe comprehensive documentation is available on [gin-gonic.com](https://gin-gonic.com) in multiple languages:\n\n- [English](https://gin-gonic.com/en/docs/) | [简体中文](https://gin-gonic.com/zh-cn/docs/) | [繁體中文](https://gin-gonic.com/zh-tw/docs/)\n- [日本語](https://gin-gonic.com/ja/docs/) | [한국어](https://gin-gonic.com/ko-kr/docs/) | [Español](https://gin-gonic.com/es/docs/)\n- [Turkish](https://gin-gonic.com/tr/docs/) | [Persian](https://gin-gonic.com/fa/docs/) | [Português](https://gin-gonic.com/pt/docs/)\n- [Russian](https://gin-gonic.com/ru/docs/) | [Indonesian](https://gin-gonic.com/id/docs/)\n\n### Official Tutorials\n\n- [Go.dev Tutorial: Developing a RESTful API with Go and Gin](https://go.dev/doc/tutorial/web-service-gin)\n\n## ⚡ Performance Benchmarks\n\nGin demonstrates exceptional performance compared to other Go web frameworks. It uses a custom version of [HttpRouter](https://github.com/julienschmidt/httprouter) for maximum efficiency. [View detailed benchmarks →](/BENCHMARKS.md)\n\n**Gin vs. Other Go Frameworks** (GitHub API routing benchmark):\n\n| Benchmark name                 |       (1) |             (2) |          (3) |             (4) |\n| ------------------------------ | --------: | --------------: | -----------: | --------------: |\n| BenchmarkGin_GithubAll         | **43550** | **27364 ns/op** |   **0 B/op** | **0 allocs/op** |\n| BenchmarkAce_GithubAll         |     40543 |     29670 ns/op |       0 B/op |     0 allocs/op |\n| BenchmarkAero_GithubAll        |     57632 |     20648 ns/op |       0 B/op |     0 allocs/op |\n| BenchmarkBear_GithubAll        |      9234 |    216179 ns/op |   86448 B/op |   943 allocs/op |\n| BenchmarkBeego_GithubAll       |      7407 |    243496 ns/op |   71456 B/op |   609 allocs/op |\n| BenchmarkBone_GithubAll        |       420 |   2922835 ns/op |  720160 B/op |  8620 allocs/op |\n| BenchmarkChi_GithubAll         |      7620 |    238331 ns/op |   87696 B/op |   609 allocs/op |\n| BenchmarkDenco_GithubAll       |     18355 |     64494 ns/op |   20224 B/op |   167 allocs/op |\n| BenchmarkEcho_GithubAll        |     31251 |     38479 ns/op |       0 B/op |     0 allocs/op |\n| BenchmarkGocraftWeb_GithubAll  |      4117 |    300062 ns/op |  131656 B/op |  1686 allocs/op |\n| BenchmarkGoji_GithubAll        |      3274 |    416158 ns/op |   56112 B/op |   334 allocs/op |\n| BenchmarkGojiv2_GithubAll      |      1402 |    870518 ns/op |  352720 B/op |  4321 allocs/op |\n| BenchmarkGoJsonRest_GithubAll  |      2976 |    401507 ns/op |  134371 B/op |  2737 allocs/op |\n| BenchmarkGoRestful_GithubAll   |       410 |   2913158 ns/op |  910144 B/op |  2938 allocs/op |\n| BenchmarkGorillaMux_GithubAll  |       346 |   3384987 ns/op |  251650 B/op |  1994 allocs/op |\n| BenchmarkGowwwRouter_Gith"
+        },
+        {
+          "path": "docs/doc.md",
+          "bytes": 70475,
+          "preview": "# Gin Quick Start\n\n## Contents\n\n- [Build Tags](#build-tags)\n  - [Build with json replacement](#build-with-json-replacement)\n  - [Build without MsgPack rendering feature](#build-without-msgpack-rendering-feature)\n- [Routing](#routing)\n  - [Using GET, POST, PUT, PATCH, DELETE and OPTIONS](#using-get-post-put-patch-delete-and-options)\n  - [Using the QUERY method](#using-the-query-method)\n  - [Parameters in path](#parameters-in-path)\n  - [Querystring parameters](#querystring-parameters)\n  - [Multipart/Urlencoded Form](#multiparturlencoded-form)\n  - [Another example: query + post form](#another-example-query--post-form)\n  - [Map as querystring or postform parameters](#map-as-querystring-or-postform-parameters)\n  - [Upload files](#upload-files)\n    - [Single file](#single-file)\n    - [Multiple files](#multiple-files)\n  - [Grouping routes](#grouping-routes)\n  - [Redirects](#redirects)\n- [Middleware](#middleware)\n  - [Blank Gin without middleware by default](#blank-gin-without-middleware-by-default)\n  - [Using middleware](#using-middleware)\n  - [Custom Middleware](#custom-middleware)\n  - [Custom Recovery behavior](#custom-recovery-behavior)\n  - [Using BasicAuth() middleware](#using-basicauth-middleware)\n  - [Goroutines inside a middleware](#goroutines-inside-a-middleware)\n- [Logging](#logging)\n  - [How to write log file](#how-to-write-log-file)\n  - [Custom Log Format](#custom-log-format)\n  - [Skip logging](#skip-logging)\n  - [Controlling Log output coloring](#controlling-log-output-coloring)\n  - [Avoid logging query strings](#avoid-logging-query-strings)\n  - [Define format for the log of routes](#define-format-for-the-log-of-routes)\n- [Request Binding & Validation](#request-binding--validation)\n  - [Model binding and validation](#model-binding-and-validation)\n  - [Custom Validators](#custom-validators)\n  - [Only Bind Query String](#only-bind-query-string)\n  - [Bind Query String or Post Data](#bind-query-string-or-post-data)\n  - [Bind default value if none provided](#bind-default-value-if-none-provided)\n    - [Collection format for arrays](#collection-format-for-arrays)\n  - [Bind Uri](#bind-uri)\n  - [Bind custom unmarshaler](#bind-custom-unmarshaler)\n  - [Bind Header](#bind-header)\n  - [Bind HTML checkboxes](#bind-html-checkboxes)\n  - [Multipart/Urlencoded binding](#multiparturlencoded-binding)\n  - [Bind form-data request with custom struct](#bind-form-data-request-with-custom-struct)\n  - [Try to bind body into different structs](#try-to-bind-body-into-different-structs)\n  - [Bind form-data request with custom struct and custom tag](#bind-form-data-request-with-custom-struct-and-custom-tag)\n- [Response Rendering](#response-rendering)\n  - [XML, JSON, YAML, TOML and ProtoBuf rendering](#xml-json-yaml-toml-and-protobuf-rendering)\n    - [SecureJSON](#securejson)\n    - [JSONP](#jsonp)\n    - [AsciiJSON](#asciijson)\n    - [PureJSON](#purejson)\n  - [Serving static files](#serving-static-files)\n  - [Serving data from file](#serving-data-from-file)\n  - [Serving data from reader](#serving-data-from-reader)\n  - [HTML rendering](#html-rendering)\n    - [Custom Template renderer](#custom-template-renderer)\n    - [Custom Delimiters](#custom-delimiters)\n    - [Custom Template Funcs](#custom-template-funcs)\n  - [Multitemplate](#multitemplate)\n  - [Build a single binary with templates](#build-a-single-binary-with-templates)\n- [Server Configuration](#server-configuration)\n  - [Custom HTTP configuration](#custom-http-configuration)\n  - [Custom json codec at runtime](#custom-json-codec-at-runtime)\n  - [Support Let's Encrypt](#support-lets-encrypt)\n  - [Run multiple service using Gin](#run-multiple-service-using-gin)\n  - [Graceful shutdown or restart](#graceful-shutdown-or-restart)\n    - [Third-party packages](#third-party-packages)\n    - [Manually](#manually)\n  - [http2 server push](#http2-server-push)\n  - [Set and get a cookie](#set-and-get-a-cookie)\n  - [Don't trust all proxies](#dont-trust-all-proxies)\n- [Testing](#testing)\n\nYou can find a number of ready-to-run examples at [Gin examples repository](https://github.com/gin-gonic/examples).\n\n## Build tags\n\n### Build with json replacement\n\nGin uses `encoding/json` as the default JSON package but you can change it by building from other tags.\n\n[jsoniter](https://github.com/json-iterator/go)\n\n```sh\ngo build -tags=jsoniter .\n```\n\n[go-json](https://github.com/goccy/go-json)\n\n```sh\ngo build -tags=go_json .\n```\n\n[sonic](https://github.com/bytedance/sonic)\n\n```sh\ngo build -tags=sonic .\n```\n\n### Build without `MsgPack` rendering feature\n\nGin enables `MsgPack` rendering feature by default. But you can disable this feature by specifying `nomsgpack` build tag.\n\n```sh\ngo build -tags=nomsgpack .\n```\n\nThis is useful to reduce the binary size of executable files. See the [detail information](https://github.com/gin-gonic/gin/pull/1852).\n\n## Routing\n\n> Learn how to define routes, handle parameters, and organize endpoints.\n\n### Using GET, POST, PUT, PATCH, DELETE and OPTIONS\n\n```go\nfunc main() {\n  // Creates a gin router with default middleware:\n  // logger and recovery (crash-free) middleware\n  router := gin.Default()\n\n  router.GET(\"/someGet\", getting)\n  router.POST(\"/somePost\", posting)\n  router.PUT(\"/somePut\", putting)\n  router.DELETE(\"/someDelete\", deleting)\n  router.PATCH(\"/somePatch\", patching)\n  router.HEAD(\"/someHead\", head)\n  router.OPTIONS(\"/someOptions\", options)\n\n  // By default, it serves on :8080 unless a\n  // PORT environment variable was defined.\n  router.Run()\n  // router.Run(\":3000\") for a hard coded port\n}\n```\n\n### Using the QUERY method\n\n`QUERY` is the safe and idempotent method defined by [RFC 10008](https://www.rfc-editor.org/info/rfc10008/). It carries its query in the request body, so you can send a query that is too large or too structured for a URL without turning it into a `POST`.\n\n```go\nfunc main() {\n  router := gin.Default()\n\n  router.QUERY(\"/search\", func(c *gin.Context) {\n    var query struct {\n      Term string `json:\"term\"`\n    }\n    if err := c.ShouldBindJSON(&query); err != nil {\n      c.JSON(http.StatusBadRequest, gin.H{\"error\": err.Error()})\n      return\n    }\n    c.JSON(http.StatusOK, gin.H{\"term\": query.Term})\n  })\n\n  router.Run()\n}\n```\n\nUse the `gin.MethodQuery` constant wherever an HTTP method name is expected, for example when building a request in a test:\n\n```go\nreq := httptest.NewRequest(gin.MethodQuery, \"/search\", body)\n```\n\nTwo things to keep in mind:\n\n- `router.Any` does not register `QUERY`, so existing catch-all routes keep matching exactly the methods they matched before. Use `router.QUERY` or `router.Match([]string{gin.MethodQuery, http.MethodPost}, ...)` when you want it.\n- `QUERY` is not part of the `gin.IRoutes` interface. `*gin.Engine` and `*gin.RouterGroup` expose it directly; if you only hold an `IRoutes` value, assert to `gin.IQueryRoutes` first.\n\n```go\nif q, ok := routes.(gin.IQueryRoutes); ok {\n  q.QUERY(\"/search\", searching)\n}\n```\n\n### Parameters in path\n\n```go\nfunc main() {\n  router := gin.Default()\n\n  // This handler will match /user/john but will not match /user/ or /user\n  router.GET(\"/user/:name\", func(c *gin.Context) {\n    name := c.Param(\"name\")\n    c.String(http.StatusOK, \"Hello %s\", name)\n  })\n\n  // However, this one will match /user/john/ and also /user/john/send\n  // If no other routers match /user/john, it will redirect to /user/john/\n  router.GET(\"/user/:name/*action\", func(c *gin.Context) {\n    name := c.Param(\"name\")\n    action := c.Param(\"action\")\n    message := name + \" is \" + action\n    c.String(http.StatusOK, message)\n  })\n\n  // For each matched request Context will hold the route definition\n  router.POST(\"/user/:name/*action\", func(c *gin.Context) {\n    b := c.FullPath() == \"/user/:name/*action\" // true\n    c.String(http.StatusOK, \"%t\", b)\n  })\n\n  // This handler will add a new router for /user/groups.\n  // Exact routes are resolved before param routes, regardless of the order they were defined.\n  // Routes starting with /user/groups are never interpreted as /user/:name/... routes\n  router.GET(\"/user/groups\", func(c *gin.Context) {\n    c.String(http.StatusOK, \"The available groups are [...]\")\n  })\n\n  router.Run(\":8080\")\n}\n```\n\n### Querystring parameters\n\n"
+        }
+      ],
+      "config_files": [],
+      "stack_tags": [
+        "GitHub Actions",
+        "Go"
+      ],
+      "workspace_units": [
+        {
+          "path": ".",
+          "name": "github.com/gin-gonic/gin",
+          "kind": "workspace",
+          "manifest_path": "go.mod",
+          "build_system": "go.mod",
+          "file_count": 130,
+          "languages": [
+            {
+              "language": "Go",
+              "files": 99,
+              "bytes": 704438
+            },
+            {
+              "language": "YAML",
+              "files": 11,
+              "bytes": 12677
+            },
+            {
+              "language": "Markdown",
+              "files": 9,
+              "bytes": 151339
+            }
+          ],
+          "scripts": [],
+          "entrypoints": [
+            ".github/workflows/codeql.yml",
+            ".github/workflows/gin.yml",
+            ".github/workflows/goreleaser.yml",
+            ".github/workflows/trivy-scan.yml",
+            "README.md"
+          ],
+          "test_files": [
+            "auth_test.go",
+            "benchmarks_test.go",
+            "binding/binding_msgpack_test.go",
+            "binding/binding_test.go",
+            "binding/default_validator_benchmark_test.go",
+            "binding/default_validator_test.go",
+            "binding/form_mapping_benchmark_test.go",
+            "binding/form_mapping_test.go"
+          ],
+          "tags": [
+            "Go",
+            "Markdown",
+            "YAML",
+            "tests"
+          ]
+        }
+      ],
+      "qa_readiness": {
+        "score": 0,
+        "status": "missing",
+        "summary": "Repo does not expose enough local browser QA structure for a reliable Synthetic QA workflow yet.",
+        "signals": [
+          {
+            "id": "browser_runner",
+            "label": "Browser runner",
+            "status": "missing",
+            "detail": "No Playwright, Cypress, or browser runner config was found.",
+            "sources": []
+          },
+          {
+            "id": "user_flow_specs",
+            "label": "User-flow specs",
+            "status": "missing",
+            "detail": "No e2e/playwright/cypress spec files were found.",
+            "sources": []
+          },
+          {
+            "id": "local_app_command",
+            "label": "Local app command",
+            "status": "missing",
+            "detail": "No obvious package script for starting the app locally was found.",
+            "sources": []
+          },
+          {
+            "id": "qa_script",
+            "label": "QA script",
+            "status": "missing",
+            "detail": "No explicit QA/e2e/browser test script was found.",
+            "sources": []
+          },
+          {
+            "id": "artifact_trail",
+            "label": "Artifact trail",
+            "status": "missing",
+            "detail": "No browser QA artifacts or artifact-capable runner were found.",
+            "sources": []
+          },
+          {
+            "id": "targetable_routes",
+            "label": "Targetable surfaces",
+            "status": "missing",
+            "detail": "No obvious web entrypoint or route file was found.",
+            "sources": []
+          }
+        ],
+        "suggested_flows": []
+      },
+      "repo_graph": {
+        "schema_version": 2,
+        "nodes": [
+          {
+            "id": "file:github-pull-request-template-md",
+            "kind": "file",
+            "label": ".github/PULL_REQUEST_TEMPLATE.md",
+            "path": ".github/PULL_REQUEST_TEMPLATE.md",
+            "detail": "source marker candidate",
+            "sources": [
+              ".github/PULL_REQUEST_TEMPLATE.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:github-workflows-codeql-yml",
+            "kind": "file",
+            "label": ".github/workflows/codeql.yml",
+            "path": ".github/workflows/codeql.yml",
+            "detail": "workspace entrypoint",
+            "sources": [
+              ".github/workflows/codeql.yml"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:github-workflows-gin-yml",
+            "kind": "file",
+            "label": ".github/workflows/gin.yml",
+            "path": ".github/workflows/gin.yml",
+            "detail": "workspace entrypoint",
+            "sources": [
+              ".github/workflows/gin.yml"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:github-workflows-goreleaser-yml",
+            "kind": "file",
+            "label": ".github/workflows/goreleaser.yml",
+            "path": ".github/workflows/goreleaser.yml",
+            "detail": "workspace entrypoint",
+            "sources": [
+              ".github/workflows/goreleaser.yml"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:github-workflows-trivy-scan-yml",
+            "kind": "file",
+            "label": ".github/workflows/trivy-scan.yml",
+            "path": ".github/workflows/trivy-scan.yml",
+            "detail": "workspace entrypoint",
+            "sources": [
+              ".github/workflows/trivy-scan.yml"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:benchmarks-md",
+            "kind": "file",
+            "label": "BENCHMARKS.md",
+            "path": "BENCHMARKS.md",
+            "detail": "source marker candidate",
+            "sources": [
+              "BENCHMARKS.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:changelog-md",
+            "kind": "file",
+            "label": "CHANGELOG.md",
+            "path": "CHANGELOG.md",
+            "detail": "source marker candidate",
+            "sources": [
+              "CHANGELOG.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:code-of-conduct-md",
+            "kind": "file",
+            "label": "CODE_OF_CONDUCT.md",
+            "path": "CODE_OF_CONDUCT.md",
+            "detail": "source marker candidate",
+            "sources": [
+              "CODE_OF_CONDUCT.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:contributing-md",
+            "kind": "file",
+            "label": "CONTRIBUTING.md",
+            "path": "CONTRIBUTING.md",
+            "detail": "source marker candidate",
+            "sources": [
+              "CONTRIBUTING.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:makefile",
+            "kind": "file",
+            "label": "Makefile",
+            "path": "Makefile",
+            "detail": "source marker candidate",
+            "sources": [
+              "Makefile"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:readme-md",
+            "kind": "file",
+            "label": "README.md",
+            "path": "README.md",
+            "detail": "workspace entrypoint",
+            "sources": [
+              "README.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:docs-doc-md",
+            "kind": "file",
+            "label": "docs/doc.md",
+            "path": "docs/doc.md",
+            "detail": "source marker candidate",
+            "sources": [
+              "docs/doc.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:examples-readme-md",
+            "kind": "file",
+            "label": "examples/README.md",
+            "path": "examples/README.md",
+            "detail": "source marker candidate",
+            "sources": [
+              "examples/README.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:gins-readme-md",
+            "kind": "file",
+            "label": "ginS/README.md",
+            "path": "ginS/README.md",
+            "detail": "source marker candidate",
+            "sources": [
+              "ginS/README.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "package:go-mod",
+            "kind": "package",
+            "label": "github.com/gin-gonic/gin",
+            "path": "go.mod",
+            "detail": "go.mod manifest",
+            "sources": [
+              "go.mod"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:auth-test-go",
+            "kind": "test",
+            "label": "auth_test.go",
+            "path": "auth_test.go",
+            "detail": "workspace test/spec file",
+            "sources": [
+              "auth_test.go"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:benchmarks-test-go",
+            "kind": "test",
+            "label": "benchmarks_test.go",
+            "path": "benchmarks_test.go",
+            "detail": "workspace test/spec file",
+            "sources": [
+              "benchmarks_test.go"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:binding-binding-msgpack-test-go",
+            "kind": "test",
+            "label": "binding/binding_msgpack_test.go",
+            "path": "binding/binding_msgpack_test.go",
+            "detail": "workspace test/spec file",
+            "sources": [
+              "binding/binding_msgpack_test.go"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:binding-binding-test-go",
+            "kind": "test",
+            "label": "binding/binding_test.go",
+            "path": "binding/binding_test.go",
+            "detail": "workspace test/spec file",
+            "sources": [
+              "binding/binding_test.go"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:binding-default-validator-benchmark-test-go",
+            "kind": "test",
+            "label": "binding/default_validator_benchmark_test.go",
+            "path": "binding/default_validator_benchmark_test.go",
+            "detail": "workspace test/spec file",
+            "sources": [
+              "binding/default_validator_benchmark_test.go"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:binding-default-validator-test-go",
+            "kind": "test",
+            "label": "binding/default_validator_test.go",
+            "path": "binding/default_validator_test.go",
+            "detail": "workspace test/spec file",
+            "sources": [
+              "binding/default_validator_test.go"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "workspace:",
+            "kind": "workspace_unit",
+            "label": "github.com/gin-gonic/gin",
+            "path": null,
+            "detail": "workspace | 130 files | 99 Go, 11 YAML, 9 Markdown",
+            "sources": [
+              ".github/workflows/codeql.yml",
+              ".github/workflows/gin.yml",
+              "auth_test.go",
+              "benchmarks_test.go",
+              "go.mod"
+            ],
+            "source_location": null,
+            "community": null
+          }
+        ],
+        "edges": [
+          {
+            "from": "workspace:",
+            "to": "package:go-mod",
+            "kind": "defines",
+            "evidence": "workspace unit owns this manifest",
+            "sources": [
+              "go.mod"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "file:github-workflows-codeql-yml",
+            "kind": "entrypoint",
+            "evidence": "entrypoint belongs to this workspace unit",
+            "sources": [
+              ".github/workflows/codeql.yml"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "file:github-workflows-gin-yml",
+            "kind": "entrypoint",
+            "evidence": "entrypoint belongs to this workspace unit",
+            "sources": [
+              ".github/workflows/gin.yml"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "file:github-workflows-goreleaser-yml",
+            "kind": "entrypoint",
+            "evidence": "entrypoint belongs to this workspace unit",
+            "sources": [
+              ".github/workflows/goreleaser.yml"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "file:github-workflows-trivy-scan-yml",
+            "kind": "entrypoint",
+            "evidence": "entrypoint belongs to this workspace unit",
+            "sources": [
+              ".github/workflows/trivy-scan.yml"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "file:readme-md",
+            "kind": "entrypoint",
+            "evidence": "entrypoint belongs to this workspace unit",
+            "sources": [
+              "README.md"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "test:auth-test-go",
+            "kind": "tests",
+            "evidence": "test file belongs to this workspace unit",
+            "sources": [
+              "auth_test.go"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "test:benchmarks-test-go",
+            "kind": "tests",
+            "evidence": "test file belongs to this workspace unit",
+            "sources": [
+              "benchmarks_test.go"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "test:binding-binding-msgpack-test-go",
+            "kind": "tests",
+            "evidence": "test file belongs to this workspace unit",
+            "sources": [
+              "binding/binding_msgpack_test.go"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "test:binding-binding-test-go",
+            "kind": "tests",
+            "evidence": "test file belongs to this workspace unit",
+            "sources": [
+              "binding/binding_test.go"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "test:binding-default-validator-benchmark-test-go",
+            "kind": "tests",
+            "evidence": "test file belongs to this workspace unit",
+            "sources": [
+              "binding/default_validator_benchmark_test.go"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "test:binding-default-validator-test-go",
+            "kind": "tests",
+            "evidence": "test file belongs to this workspace unit",
+            "sources": [
+              "binding/default_validator_test.go"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          }
+        ],
+        "truncated": false
+      },
+      "history_brief": {
+        "schema_version": 2,
+        "summary": "Local history brief captured 12 recent commits, 0 decision markers, 0 test hints, and 8 co-change clusters for Repo Unpacked. Treat commit subjects as leads and rely on cited files for durable constraints.",
+        "recent_commits": [
+          {
+            "sha": "43fe48e8a0f4",
+            "date": "2026-09-29",
+            "subject": "docs: fix SecureJSON default prefix and default-binding example output (#4861)",
+            "files": [
+              "docs/doc.md"
+            ]
+          },
+          {
+            "sha": "1bd0ecf2d3e0",
+            "date": "2026-09-25",
+            "subject": "fix(context): load Keys under the mutex in Copy (#4854)",
+            "files": []
+          },
+          {
+            "sha": "3b08cd7235bd",
+            "date": "2026-09-19",
+            "subject": "fix: reset skipped-nodes stack on getValue entry to prevent slice overflow panic [#4818] (#4819)",
+            "files": []
+          },
+          {
+            "sha": "d8f2d588d757",
+            "date": "2026-09-19",
+            "subject": "fix(engine): add default ReadHeaderTimeout to http.Server in Run methods (#4800)",
+            "files": []
+          },
+          {
+            "sha": "8ad9f9cbeab4",
+            "date": "2026-09-19",
+            "subject": "docs: fix the graceful shutdown example (#4809)",
+            "files": [
+              "docs/doc.md"
+            ]
+          },
+          {
+            "sha": "b1f77cf53615",
+            "date": "2026-09-19",
+            "subject": "feat(gin): add support for the HTTP QUERY method (RFC 10008) (#4806)",
+            "files": [
+              "docs/doc.md"
+            ]
+          },
+          {
+            "sha": "05b14df992a3",
+            "date": "2026-09-19",
+            "subject": "chore(deps): bump github.com/stretchr/testify to v1.12.1 (#4822)",
+            "files": []
+          },
+          {
+            "sha": "e318c6add8f9",
+            "date": "2026-09-19",
+            "subject": "docs: align function comments with names (#4814)",
+            "files": []
+          },
+          {
+            "sha": "3329b63aa7c0",
+            "date": "2026-09-19",
+            "subject": "ci(codecov): fix stale comparison base and invalid config (#4823)",
+            "files": [
+              ".github/workflows/gin.yml",
+              "codecov.yml"
+            ]
+          },
+          {
+            "sha": "5c6a15f8f956",
+            "date": "2026-09-16",
+            "subject": "fix(context): handle missing HTML renderer (#4805)",
+            "files": []
+          },
+          {
+            "sha": "bc141b4dbf90",
+            "date": "2026-09-16",
+            "subject": "fix(deps)!: patch x/crypto vulnerabilities (#4832)",
+            "files": [
+              ".github/workflows/gin.yml",
+              "README.md"
+            ]
+          },
+          {
+            "sha": "b52df1fe7773",
+            "date": "2026-09-16",
+            "subject": "docs: document panic conditions in Handle, StaticFS, and Bind (#4797)",
+            "files": []
+          }
+        ],
+        "decisions": [],
+        "test_hints": [],
+        "temporal_couplings": [
+          {
+            "files": [
+              ".github/workflows/gin.yml",
+              ".github/workflows/trivy-scan.yml"
+            ],
+            "commit_count": 4,
+            "last_commit": "00cfe5aac260",
+            "reason": "These files changed together in 4 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              ".github/workflows/gin.yml",
+              "README.md"
+            ],
+            "commit_count": 3,
+            "last_commit": "bc141b4dbf90",
+            "reason": "These files changed together in 3 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              ".github/workflows/codeql.yml",
+              ".github/workflows/gin.yml"
+            ],
+            "commit_count": 2,
+            "last_commit": "00cfe5aac260",
+            "reason": "These files changed together in 2 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              ".github/workflows/codeql.yml",
+              ".github/workflows/goreleaser.yml"
+            ],
+            "commit_count": 2,
+            "last_commit": "00cfe5aac260",
+            "reason": "These files changed together in 2 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              ".github/workflows/codeql.yml",
+              ".github/workflows/trivy-scan.yml"
+            ],
+            "commit_count": 2,
+            "last_commit": "00cfe5aac260",
+            "reason": "These files changed together in 2 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              ".github/workflows/gin.yml",
+              ".github/workflows/goreleaser.yml"
+            ],
+            "commit_count": 2,
+            "last_commit": "00cfe5aac260",
+            "reason": "These files changed together in 2 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              ".github/workflows/gin.yml",
+              "codecov.yml"
+            ],
+            "commit_count": 2,
+            "last_commit": "3329b63aa7c0",
+            "reason": "These files changed together in 2 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              ".github/workflows/goreleaser.yml",
+              ".github/workflows/trivy-scan.yml"
+            ],
+            "commit_count": 2,
+            "last_commit": "00cfe5aac260",
+            "reason": "These files changed together in 2 recent commits; inspect both when either side moves."
+          }
+        ],
+        "graph": {
+          "schema_version": 2,
+          "nodes": [
+            {
+              "id": "commit:05b14df992a3",
+              "kind": "commit",
+              "label": "chore(deps): bump github.com/stretchr/testify to v1.12.1 (#4822)",
+              "path": null,
+              "detail": "2026-09-19",
+              "citations": [
+                "git:05b14df992a3"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:1bd0ecf2d3e0",
+              "kind": "commit",
+              "label": "fix(context): load Keys under the mutex in Copy (#4854)",
+              "path": null,
+              "detail": "2026-09-25",
+              "citations": [
+                "git:1bd0ecf2d3e0"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:3329b63aa7c0",
+              "kind": "commit",
+              "label": "ci(codecov): fix stale comparison base and invalid config (#4823)",
+              "path": null,
+              "detail": "2026-09-19",
+              "citations": [
+                "git:3329b63aa7c0"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:3b08cd7235bd",
+              "kind": "commit",
+              "label": "fix: reset skipped-nodes stack on getValue entry to prevent slice overflow panic [#4818] (#4819)",
+              "path": null,
+              "detail": "2026-09-19",
+              "citations": [
+                "git:3b08cd7235bd"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:43fe48e8a0f4",
+              "kind": "commit",
+              "label": "docs: fix SecureJSON default prefix and default-binding example output (#4861)",
+              "path": null,
+              "detail": "2026-09-29",
+              "citations": [
+                "git:43fe48e8a0f4"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:5c6a15f8f956",
+              "kind": "commit",
+              "label": "fix(context): handle missing HTML renderer (#4805)",
+              "path": null,
+              "detail": "2026-09-16",
+              "citations": [
+                "git:5c6a15f8f956"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:8ad9f9cbeab4",
+              "kind": "commit",
+              "label": "docs: fix the graceful shutdown example (#4809)",
+              "path": null,
+              "detail": "2026-09-19",
+              "citations": [
+                "git:8ad9f9cbeab4"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:b1f77cf53615",
+              "kind": "commit",
+              "label": "feat(gin): add support for the HTTP QUERY method (RFC 10008) (#4806)",
+              "path": null,
+              "detail": "2026-09-19",
+              "citations": [
+                "git:b1f77cf53615"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:b52df1fe7773",
+              "kind": "commit",
+              "label": "docs: document panic conditions in Handle, StaticFS, and Bind (#4797)",
+              "path": null,
+              "detail": "2026-09-16",
+              "citations": [
+                "git:b52df1fe7773"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:bc141b4dbf90",
+              "kind": "commit",
+              "label": "fix(deps)!: patch x/crypto vulnerabilities (#4832)",
+              "path": null,
+              "detail": "2026-09-16",
+              "citations": [
+                "git:bc141b4dbf90"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:d8f2d588d757",
+              "kind": "commit",
+              "label": "fix(engine): add default ReadHeaderTimeout to http.Server in Run methods (#4800)",
+              "path": null,
+              "detail": "2026-09-19",
+              "citations": [
+                "git:d8f2d588d757"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:e318c6add8f9",
+              "kind": "commit",
+              "label": "docs: align function comments with names (#4814)",
+              "path": null,
+              "detail": "2026-09-19",
+              "citations": [
+                "git:e318c6add8f9"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:-github-workflows-codeql-yml",
+              "kind": "file",
+              "label": ".github/workflows/codeql.yml",
+              "path": ".github/workflows/codeql.yml",
+              "detail": "Recent co-change lead",
+              "citations": [
+                ".github/workflows/codeql.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:-github-workflows-gin-yml",
+              "kind": "file",
+              "label": ".github/workflows/gin.yml",
+              "path": ".github/workflows/gin.yml",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                ".github/workflows/gin.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:-github-workflows-goreleaser-yml",
+              "kind": "file",
+              "label": ".github/workflows/goreleaser.yml",
+              "path": ".github/workflows/goreleaser.yml",
+              "detail": "Recent co-change lead",
+              "citations": [
+                ".github/workflows/goreleaser.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:-github-workflows-trivy-scan-yml",
+              "kind": "file",
+              "label": ".github/workflows/trivy-scan.yml",
+              "path": ".github/workflows/trivy-scan.yml",
+              "detail": "Recent co-change lead",
+              "citations": [
+                ".github/workflows/trivy-scan.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:codecov-yml",
+              "kind": "file",
+              "label": "codecov.yml",
+              "path": "codecov.yml",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "codecov.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:docs-doc-md",
+              "kind": "file",
+              "label": "docs/doc.md",
+              "path": "docs/doc.md",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "docs/doc.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:readme-md",
+              "kind": "file",
+              "label": "README.md",
+              "path": "README.md",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "README.md"
+              ],
+              "trust": "git_observed"
+            }
+          ],
+          "edges": [
+            {
+              "from": "commit:3329b63aa7c0",
+              "to": "file:-github-workflows-gin-yml",
+              "kind": "changed",
+              "evidence": "3329b63aa7c0 changed this file",
+              "citations": [
+                "git:3329b63aa7c0",
+                ".github/workflows/gin.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:3329b63aa7c0",
+              "to": "file:codecov-yml",
+              "kind": "changed",
+              "evidence": "3329b63aa7c0 changed this file",
+              "citations": [
+                "git:3329b63aa7c0",
+                "codecov.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:43fe48e8a0f4",
+              "to": "file:docs-doc-md",
+              "kind": "changed",
+              "evidence": "43fe48e8a0f4 changed this file",
+              "citations": [
+                "git:43fe48e8a0f4",
+                "docs/doc.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:8ad9f9cbeab4",
+              "to": "file:docs-doc-md",
+              "kind": "changed",
+              "evidence": "8ad9f9cbeab4 changed this file",
+              "citations": [
+                "git:8ad9f9cbeab4",
+                "docs/doc.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:b1f77cf53615",
+              "to": "file:docs-doc-md",
+              "kind": "changed",
+              "evidence": "b1f77cf53615 changed this file",
+              "citations": [
+                "git:b1f77cf53615",
+                "docs/doc.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:bc141b4dbf90",
+              "to": "file:-github-workflows-gin-yml",
+              "kind": "changed",
+              "evidence": "bc141b4dbf90 changed this file",
+              "citations": [
+                "git:bc141b4dbf90",
+                ".github/workflows/gin.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:bc141b4dbf90",
+              "to": "file:readme-md",
+              "kind": "changed",
+              "evidence": "bc141b4dbf90 changed this file",
+              "citations": [
+                "git:bc141b4dbf90",
+                "README.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "file:-github-workflows-codeql-yml",
+              "to": "file:-github-workflows-gin-yml",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 2 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:00cfe5aac260"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:-github-workflows-codeql-yml",
+              "to": "file:-github-workflows-goreleaser-yml",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 2 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:00cfe5aac260"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:-github-workflows-codeql-yml",
+              "to": "file:-github-workflows-trivy-scan-yml",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 2 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:00cfe5aac260"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:-github-workflows-gin-yml",
+              "to": "file:-github-workflows-goreleaser-yml",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 2 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:00cfe5aac260"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:-github-workflows-gin-yml",
+              "to": "file:-github-workflows-trivy-scan-yml",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 4 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:00cfe5aac260"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:-github-workflows-gin-yml",
+              "to": "file:codecov-yml",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 2 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:3329b63aa7c0"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:-github-workflows-gin-yml",
+              "to": "file:readme-md",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 3 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:bc141b4dbf90"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:-github-workflows-goreleaser-yml",
+              "to": "file:-github-workflows-trivy-scan-yml",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 2 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:00cfe5aac260"
+              ],
+              "trust": "navigation_lead"
+            }
+          ],
+          "truncated": false
+        },
+        "sources": [
+          ".github/workflows/gin.yml",
+          ".github/workflows/trivy-scan.yml",
+          "README.md",
+          ".github/workflows/codeql.yml",
+          ".github/workflows/goreleaser.yml",
+          "codecov.yml",
+          "go.mod"
+        ],
+        "truncated": false
+      },
+      "repo_health": {
+        "schema_version": 1,
+        "summary": "Deterministic scan scored 96 source files across simple size, churn, structural, test-adjacency, and performance-risk signals. 8 hotspots surfaced; average score is 8.7/10. Treat these as review leads, not proof of a bug.",
+        "average_score": 8.7,
+        "hotspot_count": 8,
+        "files_analyzed": 96,
+        "files_with_test_signal": 0,
+        "top_files": [
+          {
+            "path": "githubapi_test.go",
+            "score": 5.7,
+            "bucket": "hotspot",
+            "lines": 476,
+            "bytes": 17383,
+            "churn": 476,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "476 lines in one source file; changes here may be harder to review.",
+                "sources": [
+                  "githubapi_test.go"
+                ]
+              },
+              {
+                "id": "long_block",
+                "label": "Long function/block",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "A brace-delimited block spans roughly 262 lines; consider extracting a helper when touching it.",
+                "sources": [
+                  "githubapi_test.go"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 476 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "githubapi_test.go"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "githubapi_test.go"
+                ]
+              },
+              {
+                "id": "io_in_loop",
+                "label": "I/O inside loop",
+                "dimension": "performance",
+                "severity": "medium",
+                "detail": "Loop-shaped code appears near filesystem, subprocess, database, or network I/O; inspect for N+1 or repeated setup work.",
+                "sources": [
+                  "githubapi_test.go"
+                ]
+              },
+              {
+                "id": "io_boundary",
+                "label": "I/O or process boundary",
+                "dimension": "defect",
+                "severity": "low",
+                "detail": "File touches filesystem, network, database, or subprocess boundaries; changes need concrete runtime proof.",
+                "sources": [
+                  "githubapi_test.go"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow.",
+              "Hoist repeated I/O or batch loop work where behavior allows."
+            ]
+          },
+          {
+            "path": "context_test.go",
+            "score": 5.9,
+            "bucket": "hotspot",
+            "lines": 1591,
+            "bytes": 120522,
+            "churn": 4071,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "high",
+                "detail": "1591 lines in one source file; inspect whether the module hides multiple responsibilities.",
+                "sources": [
+                  "context_test.go"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 4071 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "context_test.go"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "context_test.go"
+                ]
+              },
+              {
+                "id": "io_in_loop",
+                "label": "I/O inside loop",
+                "dimension": "performance",
+                "severity": "medium",
+                "detail": "Loop-shaped code appears near filesystem, subprocess, database, or network I/O; inspect for N+1 or repeated setup work.",
+                "sources": [
+                  "context_test.go"
+                ]
+              },
+              {
+                "id": "io_boundary",
+                "label": "I/O or process boundary",
+                "dimension": "defect",
+                "severity": "low",
+                "detail": "File touches filesystem, network, database, or subprocess boundaries; changes need concrete runtime proof.",
+                "sources": [
+                  "context_test.go"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow.",
+              "Hoist repeated I/O or batch loop work where behavior allows."
+            ]
+          },
+          {
+            "path": "gin_test.go",
+            "score": 5.9,
+            "bucket": "hotspot",
+            "lines": 1197,
+            "bytes": 29526,
+            "churn": 1197,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "high",
+                "detail": "1197 lines in one source file; inspect whether the module hides multiple responsibilities.",
+                "sources": [
+                  "gin_test.go"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 1197 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "gin_test.go"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "gin_test.go"
+                ]
+              },
+              {
+                "id": "io_in_loop",
+                "label": "I/O inside loop",
+                "dimension": "performance",
+                "severity": "medium",
+                "detail": "Loop-shaped code appears near filesystem, subprocess, database, or network I/O; inspect for N+1 or repeated setup work.",
+                "sources": [
+                  "gin_test.go"
+                ]
+              },
+              {
+                "id": "io_boundary",
+                "label": "I/O or process boundary",
+                "dimension": "defect",
+                "severity": "low",
+                "detail": "File touches filesystem, network, database, or subprocess boundaries; changes need concrete runtime proof.",
+                "sources": [
+                  "gin_test.go"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow.",
+              "Hoist repeated I/O or batch loop work where behavior allows."
+            ]
+          },
+          {
+            "path": "routes_test.go",
+            "score": 5.9,
+            "bucket": "hotspot",
+            "lines": 943,
+            "bytes": 30083,
+            "churn": 961,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "high",
+                "detail": "943 lines in one source file; inspect whether the module hides multiple responsibilities.",
+                "sources": [
+                  "routes_test.go"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 961 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "routes_test.go"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "routes_test.go"
+                ]
+              },
+              {
+                "id": "io_in_loop",
+                "label": "I/O inside loop",
+                "dimension": "performance",
+                "severity": "medium",
+                "detail": "Loop-shaped code appears near filesystem, subprocess, database, or network I/O; inspect for N+1 or repeated setup work.",
+                "sources": [
+                  "routes_test.go"
+                ]
+              },
+              {
+                "id": "io_boundary",
+                "label": "I/O or process boundary",
+                "dimension": "defect",
+                "severity": "low",
+                "detail": "File touches filesystem, network, database, or subprocess boundaries; changes need concrete runtime proof.",
+                "sources": [
+                  "routes_test.go"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow.",
+              "Hoist repeated I/O or batch loop work where behavior allows."
+            ]
+          },
+          {
+            "path": "tree_test.go",
+            "score": 6.2,
+            "bucket": "hotspot",
+            "lines": 1113,
+            "bytes": 35988,
+            "churn": 1113,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "high",
+                "detail": "1113 lines in one source file; inspect whether the module hides multiple responsibilities.",
+                "sources": [
+                  "tree_test.go"
+                ]
+              },
+              {
+                "id": "long_block",
+                "label": "Long function/block",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "A brace-delimited block spans roughly 186 lines; consider extracting a helper when touching it.",
+                "sources": [
+                  "tree_test.go"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 1113 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "tree_test.go"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "tree_test.go"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow."
+            ]
+          },
+          {
+            "path": "tree.go",
+            "score": 6.2,
+            "bucket": "hotspot",
+            "lines": 958,
+            "bytes": 24922,
+            "churn": 966,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "high",
+                "detail": "958 lines in one source file; inspect whether the module hides multiple responsibilities.",
+                "sources": [
+                  "tree.go"
+                ]
+              },
+              {
+                "id": "long_block",
+                "label": "Long function/block",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "A brace-delimited block spans roughly 256 lines; consider extracting a helper when touching it.",
+                "sources": [
+                  "tree.go"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 966 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "tree.go"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "tree.go"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow."
+            ]
+          },
+          {
+            "path": "gin.go",
+            "score": 6.4,
+            "bucket": "hotspot",
+            "lines": 861,
+            "bytes": 28663,
+            "churn": 871,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "861 lines in one source file; changes here may be harder to review.",
+                "sources": [
+                  "gin.go"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 871 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "gin.go"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "gin.go"
+                ]
+              },
+              {
+                "id": "io_in_loop",
+                "label": "I/O inside loop",
+                "dimension": "performance",
+                "severity": "medium",
+                "detail": "Loop-shaped code appears near filesystem, subprocess, database, or network I/O; inspect for N+1 or repeated setup work.",
+                "sources": [
+                  "gin.go"
+                ]
+              },
+              {
+                "id": "io_boundary",
+                "label": "I/O or process boundary",
+                "dimension": "defect",
+                "severity": "low",
+                "detail": "File touches filesystem, network, database, or subprocess boundaries; changes need concrete runtime proof.",
+                "sources": [
+                  "gin.go"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Hoist repeated I/O or batch loop work where behavior allows."
+            ]
+          },
+          {
+            "path": "gin_integration_test.go",
+            "score": 6.4,
+            "bucket": "hotspot",
+            "lines": 608,
+            "bytes": 23592,
+            "churn": 608,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "608 lines in one source file; changes here may be harder to review.",
+                "sources": [
+                  "gin_integration_test.go"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 608 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "gin_integration_test.go"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "gin_integration_test.go"
+                ]
+              },
+              {
+                "id": "io_in_loop",
+                "label": "I/O inside loop",
+                "dimension": "performance",
+                "severity": "medium",
+                "detail": "Loop-shaped code appears near filesystem, subprocess, database, or network I/O; inspect for N+1 or repeated setup work.",
+                "sources": [
+                  "gin_integration_test.go"
+                ]
+              },
+              {
+                "id": "io_boundary",
+                "label": "I/O or process boundary",
+                "dimension": "defect",
+                "severity": "low",
+                "detail": "File touches filesystem, network, database, or subprocess boundaries; changes need concrete runtime proof.",
+                "sources": [
+                  "gin_integration_test.go"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Hoist repeated I/O or batch loop work where behavior allows."
+            ]
+          },
+          {
+            "path": "context.go",
+            "score": 6.6,
+            "bucket": "watch",
+            "lines": 1543,
+            "bytes": 48336,
+            "churn": 1559,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "high",
+                "detail": "1543 lines in one source file; inspect whether the module hides multiple responsibilities.",
+                "sources": [
+                  "context.go"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 1559 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "context.go"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "context.go"
+                ]
+              },
+              {
+                "id": "io_boundary",
+                "label": "I/O or process boundary",
+                "dimension": "defect",
+                "severity": "low",
+                "detail": "File touches filesystem, network, database, or subprocess boundaries; changes need concrete runtime proof.",
+                "sources": [
+                  "context.go"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow."
+            ]
+          },
+          {
+            "path": "binding/binding_test.go",
+            "score": 6.6,
+            "bucket": "watch",
+            "lines": 1434,
+            "bytes": 39518,
+            "churn": 1434,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "high",
+                "detail": "1434 lines in one source file; inspect whether the module hides multiple responsibilities.",
+                "sources": [
+                  "binding/binding_test.go"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 1434 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "binding/binding_test.go"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "binding/binding_test.go"
+                ]
+              },
+              {
+                "id": "io_boundary",
+                "label": "I/O or process boundary",
+                "dimension": "defect",
+                "severity": "low",
+                "detail": "File touches filesystem, network, database, or subprocess boundaries; changes need concrete runtime proof.",
+                "sources": [
+                  "binding/binding_test.go"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow."
+            ]
+          },
+          {
+            "path": "binding/form_mapping_test.go",
+            "score": 6.9,
+            "bucket": "watch",
+            "lines": 1146,
+            "bytes": 34152,
+            "churn": 1146,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "high",
+                "detail": "1146 lines in one source file; inspect whether the module hides multiple responsibilities.",
+                "sources": [
+                  "binding/form_mapping_test.go"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 1146 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "binding/form_mapping_test.go"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "binding/form_mapping_test.go"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow."
+            ]
+          },
+          {
+            "path": "render/render_test.go",
+            "score": 7.1,
+            "bucket": "watch",
+            "lines": 817,
+            "bytes": 21203,
+            "churn": 861,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "817 lines in one source file; changes here may be harder to review.",
+                "sources": [
+                  "render/render_test.go"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 861 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "render/render_test.go"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "render/render_test.go"
+                ]
+              },
+              {
+                "id": "io_boundary",
+                "label": "I/O or process boundary",
+                "dimension": "defect",
+                "severity": "low",
+                "detail": "File touches filesystem, network, database, or subprocess boundaries; changes need concrete runtime proof.",
+                "sources": [
+                  "render/render_test.go"
+                ]
+              }
+            ],
+            "refactoring_targets": []
+          }
+        ],
+        "truncated": true
+      },
+      "all_files": [],
+      "ignored_dirs": [
+        ".git"
+      ],
+      "coverage": {
+        "schema_version": 1,
+        "strategy": "full_walk",
+        "sampled_files": 130,
+        "total_files": null,
+        "sample_percent": null,
+        "languages": [
+          {
+            "language": "Go",
+            "files": 99,
+            "bytes": 704438
+          },
+          {
+            "language": "YAML",
+            "files": 11,
+            "bytes": 12677
+          },
+          {
+            "language": "Markdown",
+            "files": 9,
+            "bytes": 151339
+          }
+        ],
+        "top_level_dirs": [
+          {
+            "path": "binding",
+            "file_count": 30,
+            "bytes": 134553
+          },
+          {
+            "path": "render",
+            "file_count": 17,
+            "bytes": 42628
+          },
+          {
+            "path": ".github",
+            "file_count": 9,
+            "bytes": 9873
+          },
+          {
+            "path": "testdata",
+            "file_count": 7,
+            "bytes": 11555
+          },
+          {
+            "path": "codec",
+            "file_count": 5,
+            "bytes": 5697
+          },
+          {
+            "path": "internal",
+            "file_count": 4,
+            "bytes": 4785
+          },
+          {
+            "path": "ginS",
+            "file_count": 3,
+            "bytes": 12273
+          },
+          {
+            "path": "docs",
+            "file_count": 1,
+            "bytes": 70475
+          },
+          {
+            "path": "examples",
+            "file_count": 1,
+            "bytes": 144
+          }
+        ],
+        "notes": [
+          "Full local walk covered the repo within the scan cap."
+        ]
+      },
+      "all_files_capped": false,
+      "dir_tree_preview": {
+        "name": "",
+        "path": "",
+        "is_dir": true,
+        "file_count": 130,
+        "children": [
+          {
+            "name": ".github",
+            "path": ".github",
+            "is_dir": true,
+            "file_count": 9,
+            "children": [
+              {
+                "name": "ISSUE_TEMPLATE",
+                "path": ".github/ISSUE_TEMPLATE",
+                "is_dir": true,
+                "file_count": 3,
+                "children": [
+                  {
+                    "name": "bug-report.yaml",
+                    "path": ".github/ISSUE_TEMPLATE/bug-report.yaml",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "config.yml",
+                    "path": ".github/ISSUE_TEMPLATE/config.yml",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "feature-request.yaml",
+                    "path": ".github/ISSUE_TEMPLATE/feature-request.yaml",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "workflows",
+                "path": ".github/workflows",
+                "is_dir": true,
+                "file_count": 4,
+                "children": [
+                  {
+                    "name": "codeql.yml",
+                    "path": ".github/workflows/codeql.yml",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "gin.yml",
+                    "path": ".github/workflows/gin.yml",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "goreleaser.yml",
+                    "path": ".github/workflows/goreleaser.yml",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "trivy-scan.yml",
+                    "path": ".github/workflows/trivy-scan.yml",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "PULL_REQUEST_TEMPLATE.md",
+                "path": ".github/PULL_REQUEST_TEMPLATE.md",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "dependabot.yml",
+                "path": ".github/dependabot.yml",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "binding",
+            "path": "binding",
+            "is_dir": true,
+            "file_count": 30,
+            "children": [
+              {
+                "name": "binding.go",
+                "path": "binding/binding.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "binding_msgpack_test.go",
+                "path": "binding/binding_msgpack_test.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "binding_nomsgpack.go",
+                "path": "binding/binding_nomsgpack.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "binding_test.go",
+                "path": "binding/binding_test.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "bson.go",
+                "path": "binding/bson.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "default_validator.go",
+                "path": "binding/default_validator.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "default_validator_benchmark_test.go",
+                "path": "binding/default_validator_benchmark_test.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "default_validator_test.go",
+                "path": "binding/default_validator_test.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "form.go",
+                "path": "binding/form.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "form_mapping.go",
+                "path": "binding/form_mapping.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "form_mapping_benchmark_test.go",
+                "path": "binding/form_mapping_benchmark_test.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "form_mapping_test.go",
+                "path": "binding/form_mapping_test.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "header.go",
+                "path": "binding/header.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "json.go",
+                "path": "binding/json.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "json_test.go",
+                "path": "binding/json_test.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "msgpack.go",
+                "path": "binding/msgpack.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "msgpack_test.go",
+                "path": "binding/msgpack_test.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "multipart_form_mapping.go",
+                "path": "binding/multipart_form_mapping.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "multipart_form_mapping_test.go",
+                "path": "binding/multipart_form_mapping_test.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "plain.go",
+                "path": "binding/plain.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "protobuf.go",
+                "path": "binding/protobuf.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "query.go",
+                "path": "binding/query.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "toml.go",
+                "path": "binding/toml.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "toml_test.go",
+                "path": "binding/toml_test.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "uri.go",
+                "path": "binding/uri.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "validate_test.go",
+                "path": "binding/validate_test.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "xml.go",
+                "path": "binding/xml.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "xml_test.go",
+                "path": "binding/xml_test.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "yaml.go",
+                "path": "binding/yaml.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "yaml_test.go",
+                "path": "binding/yaml_test.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "codec",
+            "path": "codec",
+            "is_dir": true,
+            "file_count": 5,
+            "children": [
+              {
+                "name": "json",
+                "path": "codec/json",
+                "is_dir": true,
+                "file_count": 5,
+                "children": [
+                  {
+                    "name": "api.go",
+                    "path": "codec/json/api.go",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "go_json.go",
+                    "path": "codec/json/go_json.go",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "json.go",
+                    "path": "codec/json/json.go",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "jsoniter.go",
+                    "path": "codec/json/jsoniter.go",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "sonic.go",
+                    "path": "codec/json/sonic.go",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "docs",
+            "path": "docs",
+            "is_dir": true,
+            "file_count": 1,
+            "children": [
+              {
+                "name": "doc.md",
+                "path": "docs/doc.md",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "examples",
+            "path": "examples",
+            "is_dir": true,
+            "file_count": 1,
+            "children": [
+              {
+                "name": "README.md",
+                "path": "examples/README.md",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "ginS",
+            "path": "ginS",
+            "is_dir": true,
+            "file_count": 3,
+            "children": [
+              {
+                "name": "README.md",
+                "path": "ginS/README.md",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "gins.go",
+                "path": "ginS/gins.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "gins_test.go",
+                "path": "ginS/gins_test.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "internal",
+            "path": "internal",
+            "is_dir": true,
+            "file_count": 4,
+            "children": [
+              {
+                "name": "bytesconv",
+                "path": "internal/bytesconv",
+                "is_dir": true,
+                "file_count": 2,
+                "children": [
+                  {
+                    "name": "bytesconv.go",
+                    "path": "internal/bytesconv/bytesconv.go",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "bytesconv_test.go",
+                    "path": "internal/bytesconv/bytesconv_test.go",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "fs",
+                "path": "internal/fs",
+                "is_dir": true,
+                "file_count": 2,
+                "children": [
+                  {
+                    "name": "fs.go",
+                    "path": "internal/fs/fs.go",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "fs_test.go",
+                    "path": "internal/fs/fs_test.go",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "render",
+            "path": "render",
+            "is_dir": true,
+            "file_count": 17,
+            "children": [
+              {
+                "name": "bson.go",
+                "path": "render/bson.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "data.go",
+                "path": "render/data.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "html.go",
+                "path": "render/html.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "json.go",
+                "path": "render/json.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "msgpack.go",
+                "path": "render/msgpack.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "pdf.go",
+                "path": "render/pdf.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "protobuf.go",
+                "path": "render/protobuf.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "reader.go",
+                "path": "render/reader.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "reader_test.go",
+                "path": "render/reader_test.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "redirect.go",
+                "path": "render/redirect.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "render.go",
+                "path": "render/render.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "render_msgpack_test.go",
+                "path": "render/render_msgpack_test.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "render_test.go",
+                "path": "render/render_test.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "text.go",
+                "path": "render/text.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "toml.go",
+                "path": "render/toml.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "xml.go",
+                "path": "render/xml.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "yaml.go",
+                "path": "render/yaml.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "testdata",
+            "path": "testdata",
+            "is_dir": true,
+            "file_count": 7,
+            "children": [
+              {
+                "name": "certificate",
+                "path": "testdata/certificate",
+                "is_dir": true,
+                "file_count": 2,
+                "children": [
+                  {
+                    "name": "cert.pem",
+                    "path": "testdata/certificate/cert.pem",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "key.pem",
+                    "path": "testdata/certificate/key.pem",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "protoexample",
+                "path": "testdata/protoexample",
+                "is_dir": true,
+                "file_count": 2,
+                "children": [
+                  {
+                    "name": "test.pb.go",
+                    "path": "testdata/protoexample/test.pb.go",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "test.proto",
+                    "path": "testdata/protoexample/test.proto",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "template",
+                "path": "testdata/template",
+                "is_dir": true,
+                "file_count": 2,
+                "children": [
+                  {
+                    "name": "hello.tmpl",
+                    "path": "testdata/template/hello.tmpl",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "raw.tmpl",
+                    "path": "testdata/template/raw.tmpl",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "test_file.txt",
+                "path": "testdata/test_file.txt",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": ".gitignore",
+            "path": ".gitignore",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": ".golangci.yml",
+            "path": ".golangci.yml",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": ".goreleaser.yaml",
+            "path": ".goreleaser.yaml",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "BENCHMARKS.md",
+            "path": "BENCHMARKS.md",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "CHANGELOG.md",
+            "path": "CHANGELOG.md",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "CODE_OF_CONDUCT.md",
+            "path": "CODE_OF_CONDUCT.md",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "CONTRIBUTING.md",
+            "path": "CONTRIBUTING.md",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "LICENSE",
+            "path": "LICENSE",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "Makefile",
+            "path": "Makefile",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "README.md",
+            "path": "README.md",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "auth.go",
+            "path": "auth.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "auth_test.go",
+            "path": "auth_test.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "benchmarks_test.go",
+            "path": "benchmarks_test.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "codecov.yml",
+            "path": "codecov.yml",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "context.go",
+            "path": "context.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "context_appengine.go",
+            "path": "context_appengine.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "context_file_test.go",
+            "path": "context_file_test.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "context_test.go",
+            "path": "context_test.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "debug.go",
+            "path": "debug.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "debug_test.go",
+            "path": "debug_test.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "deprecated.go",
+            "path": "deprecated.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "deprecated_test.go",
+            "path": "deprecated_test.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "doc.go",
+            "path": "doc.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "errors.go",
+            "path": "errors.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "errors_test.go",
+            "path": "errors_test.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "fs.go",
+            "path": "fs.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "fs_test.go",
+            "path": "fs_test.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "gin.go",
+            "path": "gin.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "gin_integration_test.go",
+            "path": "gin_integration_test.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "gin_test.go",
+            "path": "gin_test.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "githubapi_test.go",
+            "path": "githubapi_test.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "go.mod",
+            "path": "go.mod",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "go.sum",
+            "path": "go.sum",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "logger.go",
+            "path": "logger.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "logger_test.go",
+            "path": "logger_test.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "middleware_test.go",
+            "path": "middleware_test.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "mode.go",
+            "path": "mode.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "mode_test.go",
+            "path": "mode_test.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "path.go",
+            "path": "path.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "path_test.go",
+            "path": "path_test.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "recovery.go",
+            "path": "recovery.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "recovery_test.go",
+            "path": "recovery_test.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "response_writer.go",
+            "path": "response_writer.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "response_writer_test.go",
+            "path": "response_writer_test.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "routergroup.go",
+            "path": "routergroup.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "routergroup_test.go",
+            "path": "routergroup_test.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "routes_test.go",
+            "path": "routes_test.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "test_helpers.go",
+            "path": "test_helpers.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "tree.go",
+            "path": "tree.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "tree_test.go",
+            "path": "tree_test.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "utils.go",
+            "path": "utils.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "utils_test.go",
+            "path": "utils_test.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "version.go",
+            "path": "version.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          }
+        ]
+      }
+    },
+    "profiles": [
+      {
+        "stage": "full_scan",
+        "total_ms": 48204,
+        "peak_rss_bytes": 28459008,
+        "steps": [
+          {
+            "id": "git_metadata",
+            "label": "Git metadata",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "file_walk",
+            "label": "Parallel file walk",
+            "ms": 216,
+            "pct": 0.4480955937266617
+          },
+          {
+            "id": "languages",
+            "label": "Language breakdown",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "manifests",
+            "label": "Manifest parsing",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "docs",
+            "label": "Doc previews",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "aggregates",
+            "label": "Dirs, configs, stack tags",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "entrypoints",
+            "label": "Entrypoints, workspace units & QA readiness",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "source_previews",
+            "label": "Source preview cache",
+            "ms": 22,
+            "pct": 0.04563936602771554
+          },
+          {
+            "id": "repo_graph",
+            "label": "Deterministic graph scan",
+            "ms": 1,
+            "pct": 0.002074516637623434
+          },
+          {
+            "id": "history",
+            "label": "Git history & decision scan",
+            "ms": 62,
+            "pct": 0.1286200315326529
+          },
+          {
+            "id": "repo_health",
+            "label": "Deterministic health scoring",
+            "ms": 47900,
+            "pct": 99.36934694216248
+          },
+          {
+            "id": "dir_tree",
+            "label": "Directory tree preview",
+            "ms": 0,
+            "pct": 0
+          }
+        ]
+      },
+      {
+        "stage": "local_scan_persist",
+        "total_ms": 0,
+        "peak_rss_bytes": 28459008,
+        "steps": [
+          {
+            "id": "serialize",
+            "label": "JSON serialize (inventory → SQLite)",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "db_insert",
+            "label": "SQLite insert",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "touch_project",
+            "label": "Update repo project metadata",
+            "ms": 0,
+            "pct": 0
+          }
+        ]
+      }
+    ]
+  },
+  "report": {
+    "overview": "Gin is a Go HTTP framework for developers building APIs, web applications, and microservices. Applications construct an Engine, register routes and middleware, bind requests into Go values, and render responses through a request-scoped Context. Its distinctive implementation combines per-method routing trees, pooled contexts, interchangeable JSON codecs, and net/http integration; this brief examines commit 43fe48e8a0f44af783116cdb010725e6bb50255f through source inspection only.",
+    "agent_prompt": "You are onboarding to github.com/gin-gonic/gin at commit 43fe48e8a0f44af783116cdb010725e6bb50255f. Treat this as a Go HTTP framework library whose consumers supply executable applications, route handlers, and application persistence. The module declares Go 1.26.0. Begin with go.mod, gin.go, routergroup.go, context.go, tree.go, response_writer.go, and the smallest relevant package and test files. Read CONTRIBUTING.md for repository conventions and docs/doc.md for documented public behavior.\n\nUnderstand the request lifecycle before changing it. New constructs an Engine with a root RouterGroup, method trees, proxy configuration, and a sync.Pool allocator. Default adds Logger and Recovery. RouterGroup.handle computes a prefixed path, copies group middleware into the route chain, and calls Engine.addRoute. ServeHTTP normalizes route trees once, obtains and resets a pooled Context, dispatches through handleHTTPRequest and node.getValue, executes Context.Next, and returns the context to the pool. Matching sets Params and FullPath. Misses can redirect, produce an optional 405 with Allow, or execute the 404 chain. Context.Abort stops pending handlers but does not return from the current function. Response status is staged until headers or body are written.\n\nFor input work, follow Context.ShouldBind or MustBindWith into binding.Default, the selected binder, and validation. GET selects Form regardless of content type. JSON uses codec/json.API and then the default validator, which uses binding tags. ShouldBind returns errors without committing a response; MustBindWith aborts with 413 for a propagated http.MaxBytesError and otherwise 400. Codec behavior can affect that distinction. ShouldBindBodyWith caches an io.ReadAll result under BodyBytesKey for repeated decoding. Read both binding/binding.go and binding/binding_nomsgpack.go when changing shared binding APIs.\n\nFor output work, trace Context.Render into render.Render and response_writer.go. Render errors enter Context.Errors and abort the chain; they do not automatically choose a replacement status. HTML rendering has separate debug and production implementations. Static files use http.FileSystem, and uploaded-file persistence uses FormFile followed by SaveUploadedFile. Upload destinations are caller-controlled paths; the helper creates directories and creates or truncates the destination file. Review filename handling and body limits at the consuming application boundary.\n\nPreserve compatibility traps: QUERY is available through IQueryRoutes but excluded from IRoutes and Any; route insertion is explicitly not concurrency-safe; retained goroutine contexts require Copy, whose map values and Request remain shared references. Configure mutable codec and binding globals before serving. Review trusted proxies and TrustedPlatform before relying on ClientIP. Logging includes query strings by default, while recovery request dumps mask only Authorization.\n\nTests and CI were inspected, not executed, in the originating brief. The inspected inventory is bounded and does not establish exhaustive coverage or passing results. Under a read-only assignment, use only permitted source reads and searches, prefix shell commands with rtk proxy, and do not execute tests, builds, scripts, network calls, or inspect credentials. If later authorized to verify changes, start with the relevant named Go tests, then inspect Makefile and the GitHub Actions matrix before broader checks. Make test selects gin, ginS, binding, and render rather than every package. Distinguish source observations, hypotheses, and measured outcomes, and cite exact tracked files and relevant line anchors.",
+    "system_map": {
+      "summary": "Gin is delivered as a Go library embedded in consumer applications. Engine owns routing configuration and pooled request contexts, while binding and render packages implement input and output boundaries. Network serving delegates to net/http or the HTTP/3 integration. Framework state is primarily in memory, with explicit filesystem helpers rather than an application database layer.",
+      "claims": [
+        {
+          "claim": "The module is github.com/gin-gonic/gin, declares Go 1.26.0, and directly depends on validator/v10, SSE, QUIC, serialization libraries, and testify.",
+          "sources": [
+            "go.mod#L1-L20"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New creates a middleware-free Engine; Default calls New and attaches Logger and Recovery before applying OptionFunc values.",
+          "sources": [
+            "gin.go#L215-L255"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Engine embeds RouterGroup and owns HTML rendering, fallback chains, sync.Pool, method trees, parameter capacities, and trusted-proxy configuration.",
+          "sources": [
+            "gin.go#L97-L104",
+            "gin.go#L188-L202"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Routing uses methodTree roots and node records carrying path fragments, child indices, wildcard type, handler chains, and full route paths.",
+          "sources": [
+            "tree.go#L45-L59",
+            "tree.go#L90-L108"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Binding and rendering are separate interfaces: Binding consumes an HTTP request into a caller-owned value, while Render writes to an http.ResponseWriter.",
+          "sources": [
+            "binding/binding.go#L29-L49",
+            "render/render.go#L9-L15"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Engine implements ServeHTTP; Handler optionally wraps it with h2c, and serving helpers support HTTP, TLS, Unix sockets, file descriptors, QUIC, and supplied listeners.",
+          "sources": [
+            "gin.go#L257-L264",
+            "gin.go#L560-L582",
+            "gin.go#L585-L704"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Request Keys and Errors belong to Context; explicit persistence is exposed through SaveUploadedFile, which copies an uploaded stream to a caller-selected filesystem destination.",
+          "sources": [
+            "context.go#L75-L92",
+            "context.go#L733-L767"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Release configuration skips binary builds; tag-triggered GitHub Actions invokes GoReleaser and requests module reindexing, while the test workflow invokes make test.",
+          "sources": [
+            ".goreleaser.yaml#L1-L7",
+            ".github/workflows/goreleaser.yml#L3-L36",
+            ".github/workflows/gin.yml#L80-L87"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "feature_catalog": {
+      "summary": "The public surface centers on route registration, middleware, request binding, and response rendering. Applications can serve templates and files, accept uploads, stream events, and manage cookies. Authentication and observability helpers ship alongside the core routing API. These are framework capabilities; the inspected routes in documentation and tests are examples supplied by consumers.",
+      "claims": [
+        {
+          "claim": "RouterGroup supports method shortcuts, custom uppercase methods through Handle, grouped prefixes and middleware, Any, and multi-method Match registration.",
+          "sources": [
+            "routergroup.go#L31-L55",
+            "routergroup.go#L88-L134",
+            "routergroup.go#L194-L200"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "QUERY has a separate IQueryRoutes interface to preserve IRoutes compatibility; Any retains nine existing methods and excludes QUERY.",
+          "sources": [
+            "routergroup.go#L14-L28",
+            "routergroup.go#L58-L72",
+            "routes_test.go#L113-L141"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Input binding supports JSON, XML, forms, query, multipart, protobuf, MessagePack, YAML, URI, headers, plain bodies, TOML, and BSON, with automatic method/content-type selection.",
+          "sources": [
+            "binding/binding.go#L74-L119"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Context offers JSON variants, XML, PDF byte responses, YAML, TOML, protobuf, BSON, strings, and redirects; MessagePack rendering is compiled only without nomsgpack.",
+          "sources": [
+            "context.go#L1234-L1316",
+            "render/msgpack.go#L5-L42"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "HTML templates can load from globs, explicit files, or http.FileSystem patterns, with configurable delimiters and template functions.",
+          "sources": [
+            "gin.go#L281-L284",
+            "gin.go#L293-L345"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "StaticFile and StaticFS register GET and HEAD routes; Context additionally exposes uploaded-file extraction, multipart access, filesystem saving, and attachment responses.",
+          "sources": [
+            "routergroup.go#L203-L253",
+            "context.go#L707-L767",
+            "context.go#L1361-L1369"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "SSEvent renders gin-contrib/sse events, Stream repeatedly invokes a callback and flushes, and Negotiate selects supported formats or aborts with 406.",
+          "sources": [
+            "context.go#L1372-L1396",
+            "context.go#L1417-L1450"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Built-in helpers cover Basic and proxy authentication, configurable request logging, panic recovery, and cookie creation with caller-selected security attributes.",
+          "sources": [
+            "auth.go#L44-L73",
+            "auth.go#L96-L115",
+            "logger.go#L39-L58",
+            "recovery.go#L34-L49",
+            "context.go#L1151-L1184"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "data_flow": {
+      "summary": "HTTP requests enter through Engine.ServeHTTP and acquire reusable framework state. Route lookup transfers path parameters and handler chains into Context; binders transform request data into application values. Renderers serialize those values through a response wrapper that tracks commitment and byte counts. Uploads and logging cross separate filesystem and writer boundaries.",
+      "claims": [
+        {
+          "claim": "ServeHTTP gets a Context from Engine.pool, resets its writer and request state, dispatches the request, and returns the Context to the pool after dispatch completes normally.",
+          "sources": [
+            "gin.go#L691-L704",
+            "context.go#L103-L118"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "handleHTTPRequest chooses EscapedPath before RawPath, optionally cleans extra slashes, then selects the tree matching Request.Method.",
+          "sources": [
+            "gin.go#L719-L744"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "node.getValue stores named and catch-all parameters, optionally applies url.QueryUnescape, and returns handlers and fullPath that dispatch installs on Context.",
+          "sources": [
+            "tree.go#L505-L529",
+            "tree.go#L557-L587",
+            "gin.go#L744-L752"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "ShouldBind selects binding.Default and delegates to Bind; JSON constructs a codec decoder, applies optional number/unknown-field policies, decodes, and validates the destination.",
+          "sources": [
+            "context.go#L860-L863",
+            "context.go#L939-L943",
+            "binding/json.go#L44-L55"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Form binding parses request values and maps them reflectively; mapping skips '-' tags and non-anonymous unexported fields, traverses structs, and allocates pointers only when populated.",
+          "sources": [
+            "binding/form.go#L24-L35",
+            "binding/form_mapping.go#L84-L135"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "ShouldBindBodyWith reads the body into bytes once, stores it under BodyBytesKey in Context.Keys, and passes the cached bytes to subsequent BindBody calls.",
+          "sources": [
+            "context.go#L945-L965",
+            "context.go#L103-L114"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Context.Render stages status and delegates output; JSON marshals through json.API, and responseWriter.Write commits headers before writing and accumulating byte counts.",
+          "sources": [
+            "context.go#L1201-L1214",
+            "render/json.go#L66-L75",
+            "response_writer.go#L67-L88"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Uploads flow from ParseMultipartForm to a FileHeader and io.Copy into os.Create(dst); request logging separately emits final status, size, client IP, private errors, and optionally query strings to its configured writer.",
+          "sources": [
+            "context.go#L707-L718",
+            "context.go#L733-L767",
+            "logger.go#L295-L312"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "behavior_traces": {
+      "summary": "Three principal flows were followed through implementation: server startup and request dispatch, JSON binding and response serialization, and multipart upload persistence. Additional traces cover authentication, route misses, panic recovery, and static files. Ordering and branch behavior below come from source reads rather than runtime execution.",
+      "claims": [
+        {
+          "claim": "Startup: mode.init reads GIN_MODE and calls SetMode; Default calls New, installs Logger/Recovery, and With applies options. Unspecified mode becomes test when test.v exists, otherwise debug.",
+          "sources": [
+            "mode.go#L52-L77",
+            "gin.go#L249-L255",
+            "gin.go#L370-L376"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Registration and listening: GET reaches RouterGroup.handle → calculateAbsolutePath → combineHandlers → Engine.addRoute → node.addRoute; Run updates trees, resolves explicit address or PORT/:8080, builds http.Server, and calls ListenAndServe.",
+          "sources": [
+            "routergroup.go#L110-L115",
+            "gin.go#L387-L408",
+            "gin.go#L566-L581",
+            "utils.go#L148-L160"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Successful dispatch: ServeHTTP → writer.reset → Context.reset → handleHTTPRequest → node.getValue → Context.Next → WriteHeaderNow → pool.Put; the matching chain receives Params and FullPath before execution.",
+          "sources": [
+            "gin.go#L691-L704",
+            "gin.go#L742-L753",
+            "context.go#L197-L204"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "JSON action: ShouldBindWith → jsonBinding.Bind → decodeJSON → decoder.Decode → validate → defaultValidator.ValidateStruct; a handler's JSON response then reaches Context.Render → render.JSON.Render → WriteJSON → writer.Write.",
+          "sources": [
+            "context.go#L939-L943",
+            "binding/json.go#L33-L55",
+            "binding/default_validator.go#L46-L81",
+            "render/json.go#L56-L75"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Upload persistence: FormFile conditionally parses multipart using Engine.MaxMultipartMemory, obtains and closes the initial file handle, then SaveUploadedFile opens the FileHeader, creates directories, conditionally chmods a newly created destination directory, creates the output, and copies bytes.",
+          "sources": [
+            "context.go#L707-L718",
+            "context.go#L727-L767"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Basic authentication: BasicAuth → BasicAuthForRealm → processAccounts precomputes headers; request-time searchCredential compares credentials, then either sets AuthUserKey or writes a challenge and aborts with 401.",
+          "sources": [
+            "auth.go#L32-L93",
+            "context.go#L222-L225"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Route miss: dispatch first considers enabled redirects; with HandleMethodNotAllowed it searches other method trees and emits Allow plus 405, otherwise installs allNoRoute and calls serveError for 404.",
+          "sources": [
+            "gin.go#L755-L788",
+            "gin.go#L793-L801"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Recovery wraps c.Next in a deferred recover; broken connections attach an error and abort, while other panics invoke the configured recovery callback. StaticFS separately opens the requested file, switches to noRoute on open failure, or delegates to a prefix-stripped FileServer.",
+          "sources": [
+            "recovery.go#L58-L91",
+            "recovery.go#L109-L115",
+            "routergroup.go#L256-L278"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "testing_signals": {
+      "summary": "Tests and CI were inspected, not executed; test existence does not establish a passing result. The inspected tests use Go testing, httptest, and testify, with both recorder-based unit checks and live-listener integration cases. Coverage includes routing regressions, binding, rendering, upload permissions, and recovery sanitization. Inspection is bounded, and workflow selection leaves material limits on what its configured test command exercises.",
+      "claims": [
+        {
+          "claim": "The inspected integration and rendering suites import Go testing, net/http/httptest, and testify assert/require; docs demonstrate recorder-based HTTP testing.",
+          "sources": [
+            "gin_integration_test.go#L7-L25",
+            "render/render_test.go#L7-L23",
+            "docs/doc.md#L2685-L2705"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "QUERY tests inspect JSON-body handling, exclusion from Any, and registration through an IQueryRoutes assertion; issue #4818 has a multi-tree miss regression expecting 404 without panic.",
+          "sources": [
+            "routes_test.go#L92-L141",
+            "routes_test.go#L854-L879"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Upload tests assert requested permissions for newly created directories, error behavior for unsuitable directory permissions, and preservation of permissions on an existing directory.",
+          "sources": [
+            "context_test.go#L236-L274",
+            "context_test.go#L277-L313"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "JSON tests cover struct/map body decoding and a replacement json.API used by both binding and PureJSON; rendering tests check HTML escaping, content type, and unsupported-value errors.",
+          "sources": [
+            "binding/json_test.go#L22-L63",
+            "render/render_test.go#L26-L48"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Recovery dump tests check Authorization masking for standard, lowercase, and mixed-case headers plus requests without Authorization; those inspected cases do not test Cookie or Proxy-Authorization masking.",
+          "sources": [
+            "recovery_test.go#L303-L362"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The inspected RunQUIC test starts QUIC but checks its response using testRequest, whose transport is http.Transport; this case does not establish an HTTP/3 client round trip.",
+          "sources": [
+            "gin_integration_test.go#L283-L296",
+            "gin_integration_test.go#L28-L39"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "make test selects packages ending in gin, ginS, binding, or render and merges coverage; internal/fs tests exist outside that selection. Its shell checks output text for failures rather than directly propagating each go test exit status.",
+          "sources": [
+            "Makefile#L7-L35",
+            "internal/fs/fs_test.go#L21-L48"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CI gates testing on golangci-lint and configures Ubuntu/macOS, Go 1.26/1.27, default/nomsgpack/sonic/go_json/race runs and Codecov upload; separate CodeQL and Trivy workflows configure security analysis. These definitions were inspected without retrieving execution results.",
+          "sources": [
+            ".github/workflows/gin.yml#L15-L47",
+            ".github/workflows/gin.yml#L80-L87",
+            ".github/workflows/codeql.yml#L28-L49",
+            ".github/workflows/trivy-scan.yml#L29-L56"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "risk_map": {
+      "summary": "The main source-observed security boundaries are forwarded identity, request logging, body buffering, and caller-controlled filesystem operations. Routing and global codec configuration also require careful lifecycle management. The observations below describe contracts and review hotspots, not confirmed vulnerabilities. Runtime exploitability, operational severity, and exhaustive test coverage were not established.",
+      "claims": [
+        {
+          "claim": "New trusts all IPv4/IPv6 proxies by default; ClientIP accepts forwarded headers when the peer is trusted, and a nonempty TrustedPlatform header is returned before CIDR checking.",
+          "sources": [
+            "gin.go#L227-L240",
+            "context.go#L997-L1044",
+            "docs/doc.md#L2591-L2599"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Recovery's request dump masks only Authorization; debug panic and broken-connection logging can retain other headers and the request target. Logger also includes RawQuery unless SkipQueryString is enabled.",
+          "sources": [
+            "recovery.go#L70-L78",
+            "recovery.go#L94-L106",
+            "logger.go#L51-L54",
+            "logger.go#L306-L312"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "SaveUploadedFile uses caller-supplied dst with MkdirAll and os.Create, without a root-confinement check in this helper; documentation explicitly warns against trusting file.Filename.",
+          "sources": [
+            "context.go#L733-L767",
+            "docs/doc.md#L321-L336"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "ShouldBindBodyWith buffers via io.ReadAll without setting a local size cap; multipart parsing uses memory thresholds, and the request-size test explicitly supplies http.MaxBytesReader.",
+          "sources": [
+            "context.go#L950-L964",
+            "context.go#L707-L724",
+            "binding/form.go#L12-L28",
+            "context_test.go#L2335-L2345"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "node.addRoute is explicitly not concurrency-safe, while ServeHTTP reuses pooled Contexts; Copy detaches the response writer but shallowly clones Keys values and retains the Request pointer.",
+          "sources": [
+            "tree.go#L133-L143",
+            "gin.go#L691-L704",
+            "context.go#L120-L145"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Run, RunTLS, and RunListener apply ReadHeaderTimeout, but the inspected RunUnix server supplies only Handler and RunQUIC delegates server construction to http3.ListenAndServeQUIC.",
+          "sources": [
+            "gin.go#L176-L180",
+            "gin.go#L618-L629",
+            "gin.go#L657-L687"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "MustBindWith's 413 branch depends on propagation of http.MaxBytesError; source comments identify codec differences, and the test expects 400 specifically for go-json.",
+          "sources": [
+            "context.go#L832-L845",
+            "context_test.go#L2323-L2350"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Basic authentication retains base64 credential headers in middleware memory and compares them directly; transport encryption and cookie Secure/HttpOnly settings are separate caller-controlled boundaries.",
+          "sources": [
+            "auth.go#L32-L41",
+            "auth.go#L76-L93",
+            "gin.go#L585-L606",
+            "context.go#L1158-L1171"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "extension_points": {
+      "summary": "Gin exposes extension seams through functions and small interfaces rather than a dynamic plugin loader in the inspected core. Middleware, route groups, binders, validators, renderers, codecs, and filesystem implementations provide distinct customization boundaries. Configuration includes both per-Engine options and process-global values. Compatibility constraints affect how new methods and build-tag variants should be introduced.",
+      "claims": [
+        {
+          "claim": "HandlerFunc and HandlersChain are the middleware seam; RouterGroup.Use appends handlers, and combineHandlers copies group and route chains while enforcing the abort-index limit.",
+          "sources": [
+            "gin.go#L57-L64",
+            "routergroup.go#L88-L101",
+            "routergroup.go#L281-L287"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "OptionFunc receives an Engine, and With applies supplied functions in order; constructors accept these options for per-instance customization.",
+          "sources": [
+            "gin.go#L60-L61",
+            "gin.go#L215-L255",
+            "gin.go#L370-L376"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Handle accepts custom uppercase methods, Match registers explicit method lists, and IQueryRoutes illustrates adding a capability without expanding the existing IRoutes interface.",
+          "sources": [
+            "routergroup.go#L58-L72",
+            "routergroup.go#L117-L134",
+            "routergroup.go#L194-L200"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Custom Binding and BindingBody implementations plug into ShouldBindWith and ShouldBindBodyWith; BindingUri provides a separate map-based path-parameter contract.",
+          "sources": [
+            "binding/binding.go#L29-L49",
+            "context.go#L931-L964"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "binding.Validator is replaceable through StructValidator, and the default validator's Engine exposes validator.Validate for registering custom field or struct validations.",
+          "sources": [
+            "binding/binding.go#L51-L72",
+            "binding/default_validator.go#L84-L97"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "MapFormWithTag supports alternate mapping tags; BindUnmarshaler.UnmarshalParam and parser=encoding.TextUnmarshaler support custom form/query value conversion.",
+          "sources": [
+            "binding/form_mapping.go#L40-L42",
+            "binding/form_mapping.go#L174-L208"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "json.API accepts a Core implementing marshal/unmarshal and decoder/encoder factories; documentation directs assignment before engine startup, and the default implementation wraps encoding/json.",
+          "sources": [
+            "codec/json/api.go#L9-L19",
+            "codec/json/json.go#L14-L40",
+            "docs/doc.md#L2163-L2169"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Custom Render and HTMLRender implementations, http.FileSystem values, LogFormatter/Skipper callbacks, and RecoveryFunc callbacks extend output, storage access, logging, and panic handling.",
+          "sources": [
+            "render/render.go#L9-L15",
+            "render/html.go#L23-L27",
+            "routergroup.go#L240-L258",
+            "logger.go#L39-L65",
+            "recovery.go#L31-L49"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_handoff": {
+      "summary": "Begin changes at the relevant public API and follow its ownership boundaries into implementation and tests. Preserve response commitment, pooled-context lifetime, route-registration timing, and build-tag compatibility. Tests and CI were inspected, not executed, and this bounded brief supplies no passing results or measured performance claims. Future verification commands below are guidance for an authorized execution phase, not actions performed during this investigation.",
+      "claims": [
+        {
+          "claim": "Read constructors, route-chain construction, dispatch, and Context reset/Next together before changing routing or middleware; their shared indices and pooled state determine execution behavior.",
+          "sources": [
+            "gin.go#L215-L255",
+            "routergroup.go#L110-L115",
+            "gin.go#L691-L753",
+            "context.go#L103-L118",
+            "context.go#L197-L217"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Preserve QUERY outside IRoutes and Any unless intentionally changing compatibility; corresponding tests document both contracts.",
+          "sources": [
+            "routergroup.go#L23-L28",
+            "routergroup.go#L58-L72",
+            "routes_test.go#L113-L141"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Inspect both binding.go and binding_nomsgpack.go for shared binding changes: build-tag alternatives duplicate interfaces, globals, and dispatch logic, with differing binder variable declarations.",
+          "sources": [
+            "binding/binding.go#L29-L119",
+            "binding/binding_nomsgpack.go#L27-L113"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Keep ShouldBind error-return behavior distinct from MustBindWith's committed 400/413 behavior; Render errors are recorded and abort the chain without automatically replacing status.",
+          "sources": [
+            "context.go#L832-L863",
+            "context.go#L1201-L1214",
+            "response_writer.go#L67-L88"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "For upload changes, retain the existing-directory permission contract and distinguish optional directory permissions from output-file creation; review caller destination handling alongside filename guidance.",
+          "sources": [
+            "context.go#L727-L767",
+            "context_test.go#L277-L313",
+            "docs/doc.md#L321-L336"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Use relevant named Go tests first when execution is authorized; inspect make test's four-package filter before relying on it for internal-package changes. Tests and CI here were inspected, not executed.",
+          "sources": [
+            "routes_test.go#L92-L141",
+            "context_test.go#L236-L274",
+            "Makefile#L7-L35",
+            "internal/fs/fs_test.go#L21-L48",
+            ".github/workflows/gin.yml#L80-L87"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Configure replacement json.API before serving and restore global codec state in tests, as TestCustomJsonCodec does; ginS wrappers share a lazily initialized singleton Engine.",
+          "sources": [
+            "docs/doc.md#L2163-L2169",
+            "binding/json_test.go#L40-L47",
+            "ginS/gins.go#L15-L17",
+            "ginS/gins.go#L55-L72"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Contribution guidance asks for tests covering changes and new-feature documentation in docs/doc.md; inspect the configured CI tag/race matrix and lint exclusions rather than assuming one default test run covers every variant.",
+          "sources": [
+            "CONTRIBUTING.md#L30-L39",
+            ".github/workflows/gin.yml#L37-L47",
+            ".golangci.yml#L19-L61"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    }
+  },
+  "analysis": {
+    "agent": "codex",
+    "model": "cli:codex",
+    "runtime_ms": 343346,
+    "cost_usd": null,
+    "collected_at": "2026-10-02T18:13:03.118518+00:00",
+    "source_commit_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+    "citation_validation": {
+      "status": "passed",
+      "claim_count": 64,
+      "path_and_line_bounds": true,
+      "semantic_correctness_established": false
+    },
+    "runtime_verification": {
+      "tests_executed": false,
+      "upstream_code_executed": false
+    },
+    "source_review": {
+      "status": "reviewed_bounded",
+      "all_claim_text_screened": true,
+      "independently_source_checked_claim_count": 28,
+      "private_review_receipt_sha256": "2d7efdbec05bdb5f975ab0d8191f9c1cacaed530c65c267da6318076cc45c1df",
+      "full_semantic_correctness_established": false
+    }
+  },
+  "public_export": {
+    "private_original_record_sha256": "dd953711797ca3bb177bd5f07cfbf90bd35a7a240bab7a4cfeb8fbf016da1fe5",
+    "omitted_local_fields": [
+      "scan.inventory.repo_path"
+    ],
+    "original_record_retained_privately": true,
+    "note": "Public corpus projection; embedded scan omits the local clone path. Hash identifies the original corpus record, not raw CLI stdout."
+  }
+}
