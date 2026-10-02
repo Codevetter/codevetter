@@ -81,7 +81,7 @@ checks pinned Git identity and tracked file/line citations. Valid citations do
 not establish semantic correctness. Reading upstream tests or CI does not
 establish that either was executed; the public pages disclose that boundary.
 
-The [October 2026 expansion evidence](../../evidence/verification/repo-unpack-expansion-2026-10-02.md)
+The [October 2026 expansion evidence](https://github.com/Codevetter/codevetter/blob/main/evidence/verification/repo-unpack-expansion-2026-10-02.md)
 records bounded source review, corrections, invocation identities and timing
 limits. Local preparation and public deployment remain separate states in
 [#350](https://github.com/Codevetter/codevetter/issues/350).

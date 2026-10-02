@@ -13,10 +13,10 @@ Selection does not authorize every execution mode in the skill.
 
 | Skill | Use it for |
 | --- | --- |
-| [codevetter-review](../../skills/codevetter-review/SKILL.md) | Exact agent change, acceptance binding, preflight and qualified review evidence. |
-| [codevetter-testing](../../skills/codevetter-testing/SKILL.md) | Failure reproduction and changed browser/API behavior with explicit coverage. |
-| [codevetter-performance](../../skills/codevetter-performance/SKILL.md) | Workload planning, bounded diagnosis and paired optimization verification. |
-| [codevetter-evaluate](../../skills/codevetter-evaluate/SKILL.md) | Whether these flows improve agent outcomes enough to justify their overhead. |
+| [codevetter-review](https://github.com/Codevetter/codevetter/blob/main/skills/codevetter-review/SKILL.md) | Exact agent change, acceptance binding, preflight and qualified review evidence. |
+| [codevetter-testing](https://github.com/Codevetter/codevetter/blob/main/skills/codevetter-testing/SKILL.md) | Failure reproduction and changed browser/API behavior with explicit coverage. |
+| [codevetter-performance](https://github.com/Codevetter/codevetter/blob/main/skills/codevetter-performance/SKILL.md) | Workload planning, bounded diagnosis and paired optimization verification. |
+| [codevetter-evaluate](https://github.com/Codevetter/codevetter/blob/main/skills/codevetter-evaluate/SKILL.md) | Whether these flows improve agent outcomes enough to justify their overhead. |
 
 The tracked sources live in `skills/`. User-level installation uses
 links to those sources; an existing unrelated skill must never be overwritten.
@@ -29,7 +29,7 @@ The `agents/openai.yaml` files keep implicit invocation enabled.
 
 ## Invocation evidence
 
-The shared [recorder](../../skills/codevetter-evaluate/scripts/invoke.py)
+The shared [recorder](https://github.com/Codevetter/codevetter/blob/main/skills/codevetter-evaluate/scripts/invoke.py)
 launches the existing installed CLI without a shell. It resolves a launcher
 symlink to the executable before launching, so bundled runtime resource lookup
 works. It does not patch the installed application or change its permissions.
@@ -125,7 +125,7 @@ are summarized as `unrecognized` rather than retaining arbitrary values.
 Every recorded invocation needs a closing assessment: `helped`, `did_not_help`,
 `inconclusive`, or `blocked`. Explain what it contributed, what the agent did
 with the result, or why it added no useful result. The maintained
-[use-and-log procedure](../../skills/codevetter-evaluate/references/usage-loop.md)
+[use-and-log procedure](https://github.com/Codevetter/codevetter/blob/main/skills/codevetter-evaluate/references/usage-loop.md)
 owns the exact command and outcome meanings.
 
 ```bash
@@ -165,7 +165,7 @@ MCP, publishing, deployment, cleanup or secret-reading authority.
 
 ## Evaluate the value
 
-The [evaluation protocol](../../skills/codevetter-evaluate/references/value-protocol.md)
+The [evaluation protocol](https://github.com/Codevetter/codevetter/blob/main/skills/codevetter-evaluate/references/value-protocol.md)
 compares the same agent with and without one CodeVetter flow under matched
 source, task, runtime and total attempt/time budgets. It uses independently
 adjudicated review outcomes, hidden acceptance checks and canonical paired
@@ -181,10 +181,10 @@ planned Runs dashboard.
 skillification and value-dashboard work. The dashboard is not implemented; the owner requested plain evidence of value
 before further visual work. The usefulness log operates without a dashboard. Current evidence and
 limits are recorded in the
-[value baseline](../../evidence/verification/codevetter-value-baseline-2026-10-02.md).
-The completed [Fleet performance trial](../../evidence/performance/fleet-performance-skill-trial-2026-10-02.md)
+[value baseline](https://github.com/Codevetter/codevetter/blob/main/evidence/verification/codevetter-value-baseline-2026-10-02.md).
+The completed [Fleet performance trial](https://github.com/Codevetter/codevetter/blob/main/evidence/performance/fleet-performance-skill-trial-2026-10-02.md)
 records all 43 project outcomes, including blockers and a disputed source
-recommendation. The [testing-speed study](../../evidence/performance/testing-speed-study-2026-10-02.md)
+recommendation. The [testing-speed study](https://github.com/Codevetter/codevetter/blob/main/evidence/performance/testing-speed-study-2026-10-02.md)
 prioritizes measured experiments; neither report establishes agent productivity.
 
 ## Qualification

@@ -483,7 +483,7 @@
     },
     {
       "path": "docs/architecture/repo-unpacked.md",
-      "sha256": "72f8d136d90635b738ef5dc051690ee63c335e61e56917044992c3b4c273b3b7"
+      "sha256": "d303b8d469b8395049180a67cd91045d2d7cc9e765b92018702d4f46db877459"
     },
     {
       "path": "apps/landing-page-astro/src/data/unpack-reports.json",
@@ -734,5 +734,9 @@
     "commits_scanned": 2,
     "unignored_findings": 0,
     "report_private_relative_path": "artifacts/publication-gitleaks-post-classification.json"
+  },
+  "publication_link_correction": {
+    "scope": "Repository evidence and skill files outside docs use GitHub source links rather than nonexistent rendered pages.",
+    "docs_validator": "Blume validate on the patched publication candidate passed after correcting 11 links; eight asset links remain explicitly unchecked because no public directory exists."
   }
 }
