@@ -457,3 +457,29 @@ fn decode_position_cursor<T: DeserializeOwned>(
         .transpose()
         .map(Option::flatten)
 }
+
+pub(super) fn dispatch_invocation_list(
+    connection: &Connection,
+    repo_path: &str,
+    current_head: &str,
+    current_tags_fingerprint: Option<&str>,
+    source: Option<&crate::commands::invocation_ledger::InvocationLedgerSource>,
+    arguments: Map<String, Value>,
+) -> Result<CanonicalResponse, String> {
+    let receipt = crate::mcp::invocations::invocation_list(source, repo_path, arguments)?;
+    let graph = StructuralGraphReadService::new_with_current_head(
+        connection,
+        repo_path,
+        Some(current_head.into()),
+    );
+    let history = HistoryReadService::new_with_current_head(
+        connection,
+        PathBuf::from(repo_path),
+        current_head.into(),
+    )?;
+    Ok(CanonicalResponse {
+        data: json!({"operation": "invocation_list", "data": receipt}),
+        graph_status: graph.status_with_current_head(Some(current_head.into()))?,
+        history_status: history.status_with_tag_fingerprint(current_tags_fingerprint)?,
+    })
+}

@@ -94,7 +94,12 @@ fn stdio_boundary_is_json_only_scoped_and_paginated() {
         "jsonrpc": "2.0", "id": 2, "method": "tools/list", "params": {}
     }));
     let tool_definitions = tools["result"]["tools"].as_array().expect("tools");
-    assert_eq!(tool_definitions.len(), 28);
+    assert_eq!(tool_definitions.len(), 29);
+    assert!(tool_definitions.iter().any(|tool| {
+        tool["name"] == "invocation_list"
+            && tool["inputSchema"]["additionalProperties"] == false
+            && tool["annotations"]["readOnlyHint"] == true
+    }));
     assert!(tool_definitions.iter().any(|tool| {
         tool["name"] == "capability_catalog" && tool["inputSchema"]["additionalProperties"] == false
     }));
@@ -513,6 +518,99 @@ fn stdio_pipelines_concurrent_requests_and_exits_cleanly_on_eof() {
     sidecar.close();
 }
 
+#[test]
+fn invocation_stdio_preserves_validated_command_and_scoped_failure_accounting() {
+    let fixture = McpFixture::new();
+    let ledger = fixture.root.path().join("invocation-ledger");
+    fs::create_dir(&ledger).unwrap();
+    // Canonicalize only this explicitly created trusted fixture, never attack paths.
+    let ledger = ledger.canonicalize().unwrap();
+    for n in 1..=5 {
+        let id = format!("00000000-0000-4000-8000-{n:012}");
+        let dir = ledger.join(&id);
+        fs::create_dir(&dir).unwrap();
+        let mut record = json!({"schema_version":"codevetter.skill-invocation/v1",
+            "invocation_id":id, "skill":"codevetter-testing", "repo_path":fixture.repo_path,
+            "command":if n == 1 {"scope"} else {"check"},
+            "started_at":"2026-10-02T12:00:00Z", "state":"failed", "cli_exit_code":1,
+            "raw_args":["PRIVATE_SENTINEL"], "stderr":"PRIVATE_SENTINEL"});
+        if n == 3 {
+            record["repo_path"] = json!("/synthetic/other");
+            record["schema_version"] = json!("unsupported");
+        } else if n == 4 {
+            record.as_object_mut().unwrap().remove("repo_path");
+        } else if n == 5 {
+            record["schema_version"] = json!("unsupported");
+        }
+        fs::write(
+            dir.join("invocation.json"),
+            serde_json::to_vec(&record).unwrap(),
+        )
+        .unwrap();
+    }
+    let mut sidecar =
+        McpProcess::spawn_with_ledger(&fixture.database, fixture.repo_id, Some(&ledger));
+    let initialized = sidecar.request(json!({"jsonrpc":"2.0", "id":1, "method":"initialize",
+        "params":{"protocolVersion":"2025-11-25", "capabilities":{},
+            "clientInfo":{"name":"invocation-fixture", "version":"1"}}}));
+    assert_eq!(initialized["result"]["protocolVersion"], "2025-11-25");
+    sidecar.notify(json!({"jsonrpc":"2.0", "method":"notifications/initialized"}));
+    let tools = sidecar.request(json!({"jsonrpc":"2.0", "id":2, "method":"tools/list"}));
+    assert!(tools["result"]["tools"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .any(|tool| tool["name"] == "invocation_list"));
+    for (request_id, offset, command) in [(3, 0, "check"), (4, 1, "scope")] {
+        let response = sidecar.call_tool(
+            request_id,
+            "invocation_list",
+            json!({"state":"failed", "offset":offset, "limit":1}),
+        );
+        assert_ne!(response["result"]["isError"], true, "{response}");
+        let data = &response["result"]["structuredContent"]["data"]["data"];
+        assert_eq!(data["schema_version"], "codevetter.invocation-events/v1");
+        assert_eq!(data["total"], 2);
+        assert_eq!(data["unreadable_records"], 1);
+        assert_eq!(data["unattributed_records"], 1);
+        assert_eq!(data["evidence_origin"], "synthetic_fixture");
+        assert_eq!(data["invocations"][0]["command"], command);
+        assert_eq!(
+            data["invocations"][0]["command_provenance"],
+            "invocation_metadata"
+        );
+        assert_eq!(data["invocations"][0]["state"], "failed");
+        assert_eq!(data["invocations"][0]["cli_exit_code"], 1);
+        assert!(data["invocations"][0].get("repo_path").is_none());
+        assert_eq!(
+            data["unattributed_ingestion_issues"][0]["code"],
+            "unknown_repository_identity"
+        );
+        assert!(data["unattributed_ingestion_issues"][0]["invocation_id"].is_null());
+        assert!(!response.to_string().contains("PRIVATE_SENTINEL"));
+        assert!(!response.to_string().contains(&fixture.repo_path));
+    }
+    for (request_id, args) in [
+        (5, json!({"repo_path":"/synthetic/other"})),
+        (6, json!({"ledger":"/ignored"})),
+        (7, json!({"limit":101})),
+    ] {
+        let response = sidecar.call_tool(request_id, "invocation_list", args);
+        assert_eq!(response["error"]["code"], -32602, "{response}");
+        assert!(response.get("result").is_none());
+    }
+    let empty = sidecar.call_tool(8, "invocation_list", json!({"offset":2, "limit":1}));
+    assert_eq!(
+        empty["result"]["structuredContent"]["data"]["data"]["total"],
+        2
+    );
+    assert_eq!(
+        empty["result"]["structuredContent"]["data"]["data"]["invocations"],
+        json!([])
+    );
+    sidecar.close();
+}
+
 struct McpFixture {
     root: tempfile::TempDir,
     repo_path: String,
@@ -625,6 +723,19 @@ struct McpProcess {
 
 impl McpProcess {
     fn spawn(database: &std::path::Path, repo_id: &str) -> Self {
+        Self::spawn_with_ledger(database, repo_id, None)
+    }
+
+    fn spawn_with_ledger(database: &Path, repo_id: &str, ledger: Option<&Path>) -> Self {
+        let ledger_args = ledger
+            .map(|path| {
+                vec![
+                    "--invocation-ledger".to_string(),
+                    path.to_string_lossy().into_owned(),
+                    "--invocation-ledger-fixture".to_string(),
+                ]
+            })
+            .unwrap_or_default();
         let mut child = Command::new(env!("CARGO_BIN_EXE_codevetter-mcp"))
             .args([
                 "--database",
@@ -632,6 +743,7 @@ impl McpProcess {
                 "--repo-id",
                 repo_id,
             ])
+            .args(ledger_args)
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
             .stderr(Stdio::piped())

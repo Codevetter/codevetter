@@ -125,6 +125,7 @@ Usage:
   codevetter collect --range <base..head> --collector <name> [--collector <name> ...] [--rust-manifest <path>] [--rust-test <name>] [--advisory-db <path>] [--repo <path>] [--json]
   codevetter capabilities [--json | --schema]
   codevetter runs [--repo <path>] [--limit <n>] [--json]
+  codevetter runs --ledger <path> [--fixture] [--repo <recorded-path>] [--task-id <uuid>] [--skill <skill>] [--state <state>] [--assessment <outcome>] [--offset <n>] [--limit <n>] [--json]
   codevetter fix-packet --run-id <id> [--finding <id> ...] [--json]
   codevetter fix --operation execute --run-id <id> --finding <id> [--finding <id> ...] --agent <name> --confirm-run [--timeout-ms <n>] [--json]
   codevetter fix --operation inspect --attempt-id <id> [--json]
@@ -271,6 +272,10 @@ struct RunsArguments {
     repo_path: Option<PathBuf>,
     limit: usize,
     output: OutputMode,
+    ledger: Option<PathBuf>,
+    offset: usize,
+    filter: codevetter_core::commands::invocation_events::InvocationFilter,
+    fixture: bool,
 }
 
 #[derive(Debug, Clone)]
@@ -1890,6 +1895,54 @@ fn run_capabilities(output: OutputMode) -> Result<i32, String> {
 }
 
 fn run_runs(arguments: RunsArguments) -> Result<i32, String> {
+    if let Some(path) = arguments.ledger {
+        use codevetter_core::commands::invocation_ledger::{
+            read_invocation_ledger, InvocationLedgerSource,
+        };
+        let mut filter = arguments.filter;
+        filter.repo_path = arguments
+            .repo_path
+            .map(|path| path.to_string_lossy().into_owned());
+        let receipt = read_invocation_ledger(
+            &InvocationLedgerSource {
+                path,
+                synthetic_fixture: arguments.fixture,
+            },
+            &filter,
+            arguments.offset,
+            arguments.limit,
+        )?;
+        match arguments.output {
+            OutputMode::Json => println!(
+                "{}",
+                serde_json::to_string_pretty(&receipt)
+                    .map_err(|_| "serialize invocation ledger")?
+            ),
+            OutputMode::Human => {
+                println!(
+                    "Invocations: {} ({}); unreadable records: {}",
+                    receipt.projection.total,
+                    receipt.evidence_origin,
+                    receipt.projection.unreadable_records
+                );
+                for event in receipt.projection.invocations {
+                    println!(
+                        "{} {} {} {} {}",
+                        event.invocation_id,
+                        event.skill,
+                        event.command,
+                        event.state,
+                        event.assessment
+                    );
+                }
+                println!(
+                    "Independent benefit: unknown; ingestion issues: {}",
+                    receipt.ingestion_issues.len()
+                );
+            }
+        }
+        return Ok(0);
+    }
     let repo_path = arguments
         .repo_path
         .map(|path| {
@@ -3717,10 +3770,40 @@ fn parse_runs(mut arguments: impl Iterator<Item = String>) -> Result<CliCommand,
     let mut repo_path = None;
     let mut limit = 20usize;
     let mut output = OutputMode::Human;
+    let mut ledger = None;
+    let mut offset = 0usize;
+    let mut filter = codevetter_core::commands::invocation_events::InvocationFilter::default();
+    let mut fixture = false;
+    let mut ledger_options = false;
     while let Some(argument) = arguments.next() {
         match argument.as_str() {
             "--repo" => repo_path = Some(PathBuf::from(required_value(&mut arguments, "--repo")?)),
             "--limit" => limit = parse_number(&mut arguments, "--limit")?,
+            "--ledger" => ledger = Some(PathBuf::from(required_value(&mut arguments, "--ledger")?)),
+            "--offset" => {
+                offset = parse_number(&mut arguments, "--offset")?;
+                ledger_options = true;
+            }
+            "--task-id" => {
+                filter.task_id = Some(required_value(&mut arguments, "--task-id")?);
+                ledger_options = true;
+            }
+            "--skill" => {
+                filter.skill = Some(required_value(&mut arguments, "--skill")?);
+                ledger_options = true;
+            }
+            "--state" => {
+                filter.state = Some(required_value(&mut arguments, "--state")?);
+                ledger_options = true;
+            }
+            "--assessment" => {
+                filter.assessment = Some(required_value(&mut arguments, "--assessment")?);
+                ledger_options = true;
+            }
+            "--fixture" => {
+                fixture = true;
+                ledger_options = true;
+            }
             "--json" => output = OutputMode::Json,
             "--help" | "-h" => return Ok(CliCommand::Help),
             _ => return Err(format!("unknown runs argument `{argument}`")),
@@ -3729,10 +3812,17 @@ fn parse_runs(mut arguments: impl Iterator<Item = String>) -> Result<CliCommand,
     if !(1..=100).contains(&limit) {
         return Err("--limit must be between 1 and 100".into());
     }
+    if ledger.is_none() && ledger_options {
+        return Err("invocation filters, offset and fixture require --ledger".into());
+    }
     Ok(CliCommand::Runs(RunsArguments {
         repo_path,
         limit,
         output,
+        ledger,
+        offset,
+        filter,
+        fixture,
     }))
 }
 

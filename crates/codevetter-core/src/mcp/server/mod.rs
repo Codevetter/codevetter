@@ -101,6 +101,7 @@ use tools::*;
 #[derive(Debug, Clone)]
 pub struct CodeVetterMcpServer {
     database_path: PathBuf,
+    invocation_ledger: Option<crate::commands::invocation_ledger::InvocationLedgerSource>,
     repo_id: String,
     repo_path: PathBuf,
     session_id: String,
@@ -122,6 +123,15 @@ struct RepositoryFreshness {
 }
 
 impl CodeVetterMcpServer {
+    /// Ledger access is configured by the local server owner, never by tool arguments.
+    pub fn with_invocation_ledger(
+        mut self,
+        source: crate::commands::invocation_ledger::InvocationLedgerSource,
+    ) -> Self {
+        self.invocation_ledger = Some(source);
+        self
+    }
+
     pub fn new(database_path: PathBuf, repo_id: String) -> Result<Self, String> {
         let connection = open_read_only(&database_path)?;
         let scope = require_enabled_scope(&connection, &repo_id)?;
@@ -131,6 +141,7 @@ impl CodeVetterMcpServer {
             .ok_or_else(|| "Release history is not built for this repository".to_string())?;
         Ok(Self {
             database_path,
+            invocation_ledger: None,
             repo_id,
             repo_path,
             session_id: Uuid::new_v4().to_string(),
@@ -166,6 +177,7 @@ impl CodeVetterMcpServer {
 
     async fn execute_tool(&self, name: String, arguments: Map<String, Value>) -> CallToolResult {
         let database_path = self.database_path.clone();
+        let invocation_ledger = self.invocation_ledger.clone();
         let repo_id = self.repo_id.clone();
         let session_id = self.session_id.clone();
         let repo_path = self.repo_path.clone();
@@ -186,15 +198,26 @@ impl CodeVetterMcpServer {
                     let connection = open_read_only(&database_path)?;
                     let _ = interrupt_sender.send(connection.get_interrupt_handle());
                     let scope = require_enabled_scope(&connection, &repo_id)?;
-                    let outcome = dispatch_tool(
-                        &connection,
-                        &scope.repo_path,
-                        &freshness.head,
-                        freshness.tags_fingerprint.as_deref(),
-                        &repo_id,
-                        &name,
-                        arguments,
-                    )?;
+                    let outcome = if name == "invocation_list" {
+                        dispatch_invocation_list(
+                            &connection,
+                            &scope.repo_path,
+                            &freshness.head,
+                            freshness.tags_fingerprint.as_deref(),
+                            invocation_ledger.as_ref(),
+                            arguments,
+                        )?
+                    } else {
+                        dispatch_tool(
+                            &connection,
+                            &scope.repo_path,
+                            &freshness.head,
+                            freshness.tags_fingerprint.as_deref(),
+                            &repo_id,
+                            &name,
+                            arguments,
+                        )?
+                    };
                     build_envelope(&repo_id, outcome)
                 });
                 await_interruptible_query(

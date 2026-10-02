@@ -9,6 +9,56 @@ const OMITTED: &str = "[redacted]";
 
 pub fn sanitize_response(mut value: Value) -> Result<Value, String> {
     sanitize_value(None, &mut value);
+    check_response_size(value)
+}
+
+/// Preserve only the validated enum at the invocation envelope's exact path.
+/// All other command fields still pass through the ordinary removal policy.
+pub(crate) fn sanitize_invocation_response(mut value: Value) -> Result<Value, String> {
+    let commands: Vec<Option<String>> = if value.pointer("/data/operation")
+        == Some(&Value::from("invocation_list"))
+        && value.pointer("/data/data/schema_version")
+            == Some(&Value::from("codevetter.invocation-events/v1"))
+    {
+        value
+            .pointer("/data/data/invocations")
+            .and_then(Value::as_array)
+            .map(|events| {
+                events
+                    .iter()
+                    .map(|event| {
+                        event
+                            .get("command")
+                            .and_then(Value::as_str)
+                            .filter(|command| {
+                                event["source_schema_version"] == "codevetter.skill-invocation/v1"
+                                    && event["command_provenance"] == "invocation_metadata"
+                                    && crate::commands::invocation_events::SUPPORTED_COMMANDS
+                                        .contains(command)
+                            })
+                            .map(str::to_owned)
+                    })
+                    .collect()
+            })
+            .unwrap_or_default()
+    } else {
+        Vec::new()
+    };
+    sanitize_value(None, &mut value);
+    if let Some(events) = value
+        .pointer_mut("/data/data/invocations")
+        .and_then(Value::as_array_mut)
+    {
+        for (event, command) in events.iter_mut().zip(commands) {
+            if let (Some(map), Some(command)) = (event.as_object_mut(), command) {
+                map.insert("command".into(), Value::String(command));
+            }
+        }
+    }
+    check_response_size(value)
+}
+
+fn check_response_size(value: Value) -> Result<Value, String> {
     let bytes =
         serde_json::to_vec(&value).map_err(|error| format!("Serialize MCP response: {error}"))?;
     if bytes.len() > MAX_RESPONSE_BYTES {
