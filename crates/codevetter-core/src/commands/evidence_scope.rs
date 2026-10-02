@@ -5,6 +5,7 @@
 //! it never executes the phrase or accepts an arbitrary command.
 
 use std::collections::BTreeSet;
+use std::io::Read;
 use std::path::{Component, Path, PathBuf};
 use std::process::Stdio;
 
@@ -13,6 +14,7 @@ use sha2::{Digest, Sha256};
 use tokio::io::AsyncReadExt;
 use tokio::process::Command;
 
+use super::structural_graph::language::SupportedLanguage;
 use super::trex_preview::resolve_scope_change;
 
 const MAX_GIT_OUTPUT_BYTES: u64 = 2 * 1024 * 1024;
@@ -340,10 +342,23 @@ fn discover_targets(root: &Path, files: &[String]) -> Vec<DiscoveredTarget> {
     let mut remaining_bytes = MAX_CONTENT_BYTES;
     let mut targets = Vec::new();
     for path in files {
-        let Some(classification) = classify_target(path, has_vitest, has_playwright) else {
+        let Some(mut classification) = classify_target(path, has_vitest, has_playwright) else {
             continue;
         };
         let content = bounded_file_text(root, path, &mut remaining_bytes);
+        let lower = path.to_ascii_lowercase();
+        if classification.0 != "go-test"
+            && classification.0 != "playwright"
+            && !lower.ends_with(".ts")
+            && !lower.ends_with(".tsx")
+        {
+            match javascript_runner(path, &content) {
+                Ok(Some(adapter)) => classification.0 = adapter,
+                Ok(None) => {}
+                // Conflicting runners or invalid syntax cannot support a closed choice.
+                Err(()) => continue,
+            }
+        }
         targets.push(DiscoveredTarget {
             adapter: classification.0.to_string(),
             target: path.clone(),
@@ -366,6 +381,73 @@ fn discover_targets(root: &Path, files: &[String]) -> Vec<DiscoveredTarget> {
         }
     }
     targets
+}
+
+fn javascript_runner(path: &str, content: &str) -> Result<Option<&'static str>, ()> {
+    let language = SupportedLanguage::from_path(Path::new(path)).ok_or(())?;
+    let mut parser = tree_sitter::Parser::new();
+    parser
+        .set_language(&language.tree_sitter_language())
+        .map_err(|_| ())?;
+    let tree = parser.parse(content, None).ok_or(())?;
+    if tree.root_node().has_error() {
+        return Err(());
+    }
+    let mut runner = None;
+    let mut cursor = tree.walk();
+    loop {
+        let node = cursor.node();
+        if let Some(source) = runner_module_source(node, content) {
+            let adapter = match source {
+                "'node:test'" | "\"node:test\"" => Some("node-test"),
+                "'vitest'" | "\"vitest\"" => Some("vitest"),
+                "'@playwright/test'" | "\"@playwright/test\"" => Some("playwright"),
+                _ => None,
+            };
+            if let Some(adapter) = adapter {
+                if runner.is_some_and(|previous| previous != adapter) {
+                    return Err(());
+                }
+                runner = Some(adapter);
+            }
+        }
+        if cursor.goto_first_child() {
+            continue;
+        }
+        while !cursor.goto_next_sibling() {
+            if !cursor.goto_parent() {
+                return Ok(runner);
+            }
+        }
+    }
+}
+
+fn runner_module_source<'a>(node: tree_sitter::Node<'_>, content: &'a str) -> Option<&'a str> {
+    let source = match node.kind() {
+        "import_statement" => node.child_by_field_name("source")?,
+        "call_expression" => {
+            let function = node.child_by_field_name("function")?;
+            if function.kind() != "identifier"
+                || function.utf8_text(content.as_bytes()).ok()? != "require"
+            {
+                return None;
+            }
+            let arguments = node.child_by_field_name("arguments")?;
+            let mut cursor = arguments.walk();
+            let mut arguments = arguments
+                .named_children(&mut cursor)
+                .filter(|child| child.kind() != "comment");
+            let source = arguments.next()?;
+            if arguments.next().is_some() {
+                return None;
+            }
+            source
+        }
+        _ => return None,
+    };
+    (source.kind() == "string")
+        .then(|| source.utf8_text(content.as_bytes()).ok())
+        .flatten()
 }
 
 fn classify_target(
@@ -420,10 +502,40 @@ fn bounded_file_text(root: &Path, relative: &str, remaining: &mut u64) -> String
     if !metadata.is_file() || metadata.len() > MAX_FILE_BYTES || metadata.len() > *remaining {
         return String::new();
     }
-    let Ok(bytes) = std::fs::read(path) else {
+    let Ok(file) = std::fs::File::open(path) else {
         return String::new();
     };
-    *remaining = remaining.saturating_sub(bytes.len() as u64);
+    bounded_reader_text(file, remaining)
+}
+
+// Accepted aggregate payload is bounded by the initial remaining budget. Every
+// consumed byte (including rejected content and probes) debits that budget;
+// at most one exhausted-budget sentinel byte can exceed it. This is not a
+// strict cumulative-I/O or allocator-overhead bound.
+fn bounded_reader_text(reader: impl Read, remaining: &mut u64) -> String {
+    if *remaining == 0 {
+        return String::new();
+    }
+    let cap = MAX_FILE_BYTES.min(*remaining);
+    let mut reader = reader.take(cap + 1);
+    let mut bytes = vec![0; (cap + 1) as usize];
+    let mut consumed = 0;
+    while consumed < bytes.len() {
+        match reader.read(&mut bytes[consumed..]) {
+            Ok(0) => break,
+            Ok(count) => {
+                consumed += count;
+                *remaining = remaining.saturating_sub(count as u64);
+            }
+            Err(error) if error.kind() == std::io::ErrorKind::Interrupted => continue,
+            Err(_) => return String::new(),
+        }
+    }
+    if consumed as u64 > cap {
+        return String::new();
+    }
+    bytes.truncate(consumed);
+    bytes.shrink_to_fit();
     String::from_utf8(bytes).unwrap_or_default()
 }
 
@@ -698,6 +810,297 @@ mod tests {
                 .success());
         }
         repo
+    }
+
+    #[test]
+    fn mixed_runner_discovery_prefers_explicit_node_import_over_root_vitest_config() {
+        let repo = tempfile::tempdir().unwrap();
+        let fixtures = [
+            ("vitest.config.mjs", "export default {};"),
+            (
+                "node.test.mjs",
+                "import test from 'node:test'; test('owned smoke', () => {});",
+            ),
+            (
+                "vitest.test.mjs",
+                "import { test } from 'vitest'; test('owned smoke', () => {});",
+            ),
+        ];
+        for (path, content) in fixtures {
+            std::fs::write(repo.path().join(path), content).unwrap();
+        }
+        let files = fixtures
+            .iter()
+            .map(|(path, _)| path.to_string())
+            .collect::<Vec<_>>();
+        let candidates = score_targets(
+            EvidenceScopeKind::Codebase,
+            None,
+            &[],
+            discover_targets(repo.path(), &files),
+        );
+        assert_eq!(
+            candidates
+                .iter()
+                .map(|candidate| (candidate.adapter.as_str(), candidate.target.as_str()))
+                .collect::<Vec<_>>(),
+            vec![
+                ("node-test", "node.test.mjs"),
+                ("vitest", "vitest.test.mjs")
+            ],
+        );
+    }
+
+    #[test]
+    fn discovers_runner_syntax_without_literal_decoys_and_preserves_fallbacks() {
+        let repo = tempfile::tempdir().unwrap();
+        let fixtures = [
+            (
+                "node-import.test.mjs",
+                "import { test as ownedTest } from \"node:test\";",
+                Some("node-test"),
+            ),
+            (
+                "node-require.test.mjs",
+                "const test = require(/* owned */ 'node:test');",
+                Some("node-test"),
+            ),
+            (
+                "vitest-import.test.mjs",
+                "import { test } from 'vitest';",
+                Some("vitest"),
+            ),
+            (
+                "vitest-require.test.mjs",
+                "const { test } = require(\"vitest\");",
+                Some("vitest"),
+            ),
+            (
+                "node-decoys.test.mjs",
+                r#"import test from 'node:test';
+// import { test } from 'vitest';
+/* require('vitest'); */
+const text = "import { test } from 'vitest'";
+const template = `require('vitest')`;
+"#,
+                Some("node-test"),
+            ),
+            (
+                "vitest-decoys.test.mjs",
+                r#"import { test } from 'vitest';
+// import test from 'node:test';
+/* require('node:test'); */
+const text = "import test from 'node:test'";
+const template = `require('node:test')`;
+"#,
+                Some("vitest"),
+            ),
+            (
+                "fallback.test.mjs",
+                r#"// import test from 'node:test';
+/* require('vitest'); */
+const text = "import test from 'node:test'";
+const template = `import { test } from 'vitest'`;
+const object = { require() {} }; object.require('node:test');
+require(runnerName); require(`node:test`);
+"#,
+                None,
+            ),
+            (
+                "ordinary.test.ts",
+                "const count: number = 1;",
+                Some("vitest"),
+            ),
+            ("ordinary.test.tsx", "const view = <div />;", Some("vitest")),
+            (
+                "typed-node.test.ts",
+                "import test from 'node:test'; const count: number = 1;",
+                Some("vitest"),
+            ),
+            (
+                "assert-vitest.test.mjs",
+                "import assert from 'node:assert/strict'; import {test} from 'vitest';",
+                Some("vitest"),
+            ),
+            (
+                "node-cjs.test.cjs",
+                "const test = require('node:test');",
+                Some("node-test"),
+            ),
+            (
+                "node-js.test.js",
+                "import test from 'node:test';",
+                Some("node-test"),
+            ),
+            (
+                "assert-only.test.mjs",
+                "import assert from 'node:assert/strict';",
+                None,
+            ),
+            (
+                "e2e/node.spec.mjs",
+                "import test from 'node:test';",
+                Some("playwright"),
+            ),
+            (
+                "typed-node.test.tsx",
+                "import test from 'node:test'; const view = <div />;",
+                Some("vitest"),
+            ),
+            (
+                "e2e/ordinary.spec.ts",
+                "test('owned', () => {});",
+                Some("playwright"),
+            ),
+            (
+                "explicit-playwright.spec.mjs",
+                "import { test } from '@playwright/test';",
+                Some("playwright"),
+            ),
+        ];
+        for (path, content, _) in fixtures {
+            let target = repo.path().join(path);
+            std::fs::create_dir_all(target.parent().unwrap()).unwrap();
+            std::fs::write(target, content).unwrap();
+        }
+        for has_vitest in [false, true] {
+            let mut files = fixtures
+                .iter()
+                .map(|(path, _, _)| path.to_string())
+                .collect::<Vec<_>>();
+            files.push("playwright.config.ts".into());
+            if has_vitest {
+                files.push("vitest.config.mjs".into());
+            }
+            let candidates = score_targets(
+                EvidenceScopeKind::Codebase,
+                None,
+                &[],
+                discover_targets(repo.path(), &files),
+            );
+            assert_eq!(candidates.len(), fixtures.len());
+            for (path, _, expected) in fixtures {
+                let candidate = candidates
+                    .iter()
+                    .find(|candidate| candidate.target == path)
+                    .unwrap();
+                assert_eq!(
+                    candidate.adapter,
+                    expected.unwrap_or(if has_vitest { "vitest" } else { "node-test" }),
+                    "{path}, root Vitest config: {has_vitest}"
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn uncertain_runner_evidence_is_not_discovered_as_a_confident_candidate() {
+        let repo = tempfile::tempdir().unwrap();
+        for content in [
+            "import test from 'node:test'; import { it } from 'vitest';",
+            "const test = require('node:test'); const { it } = require('vitest');",
+            "import test from 'node:test",
+            "import test from 'node:test'; const unfinished = (",
+            "require('vitest'",
+        ] {
+            std::fs::write(repo.path().join("uncertain.test.mjs"), content).unwrap();
+            let candidates = score_targets(
+                EvidenceScopeKind::Codebase,
+                None,
+                &[],
+                discover_targets(
+                    repo.path(),
+                    &["vitest.config.mjs".into(), "uncertain.test.mjs".into()],
+                ),
+            );
+            assert!(candidates.is_empty(), "{content}");
+        }
+    }
+
+    #[test]
+    fn bounded_reader_accepts_valid_content_and_debits_bytes() {
+        let mut remaining = 20;
+        assert_eq!(
+            bounded_reader_text(
+                std::io::Cursor::new("coupon total".as_bytes().to_vec()),
+                &mut remaining
+            ),
+            "coupon total"
+        );
+        assert_eq!(remaining, 8);
+    }
+
+    #[test]
+    fn bounded_reader_accepts_exact_file_cap_and_rejects_oversize() {
+        for length in [MAX_FILE_BYTES, MAX_FILE_BYTES + 1, MAX_FILE_BYTES + 100] {
+            let mut reader = std::io::Cursor::new(vec![b'a'; length as usize]);
+            let mut remaining = MAX_CONTENT_BYTES;
+            let content = bounded_reader_text(&mut reader, &mut remaining);
+            let consumed = length.min(MAX_FILE_BYTES + 1);
+            assert_eq!(reader.position(), consumed);
+            assert_eq!(remaining, MAX_CONTENT_BYTES - consumed);
+            if length == MAX_FILE_BYTES {
+                assert_eq!(content, "a".repeat(MAX_FILE_BYTES as usize));
+            } else {
+                assert!(content.is_empty());
+            }
+        }
+    }
+
+    #[test]
+    fn bounded_reader_does_not_read_with_exhausted_budget() {
+        let mut reader = std::io::Cursor::new(b"unread".to_vec());
+        let mut remaining = 0;
+        assert!(bounded_reader_text(&mut reader, &mut remaining).is_empty());
+        assert_eq!(reader.position(), 0);
+        assert_eq!(remaining, 0);
+    }
+
+    #[test]
+    fn bounded_reader_enforces_remaining_budget_with_one_sentinel() {
+        let mut remaining = 3;
+        assert_eq!(
+            bounded_reader_text(std::io::Cursor::new(b"abc".to_vec()), &mut remaining),
+            "abc"
+        );
+        assert_eq!(remaining, 0);
+
+        let mut reader = std::io::Cursor::new(b"abcdef".to_vec());
+        let mut remaining = 3;
+        assert!(bounded_reader_text(&mut reader, &mut remaining).is_empty());
+        assert_eq!(reader.position(), 4);
+        assert_eq!(remaining, 0);
+        assert!(bounded_reader_text(&mut reader, &mut remaining).is_empty());
+        assert_eq!(reader.position(), 4);
+    }
+
+    #[test]
+    fn bounded_reader_debits_invalid_utf8() {
+        let mut remaining = 10;
+        assert!(
+            bounded_reader_text(std::io::Cursor::new(vec![b'a', 0xff]), &mut remaining).is_empty()
+        );
+        assert_eq!(remaining, 8);
+    }
+
+    #[test]
+    fn bounded_reader_debits_partial_reads_before_failure() {
+        struct FailingReader(std::io::Cursor<Vec<u8>>);
+
+        impl Read for FailingReader {
+            fn read(&mut self, buffer: &mut [u8]) -> std::io::Result<usize> {
+                if self.0.position() == 3 {
+                    return Err(std::io::Error::other("synthetic read failure"));
+                }
+                let length = buffer.len().min(3);
+                Read::read(&mut self.0, &mut buffer[..length])
+            }
+        }
+
+        let reader = FailingReader(std::io::Cursor::new(b"abcdef".to_vec()));
+        let mut remaining = 10;
+        assert!(bounded_reader_text(reader, &mut remaining).is_empty());
+        assert_eq!(remaining, 7);
     }
 
     #[test]
