@@ -12,7 +12,7 @@ Twenty-six remaining findings are noncredentials: 21 public pinned Git commit id
 
 ## Validation and limitations
 
-The receipt retains ten passing publication checks: 21 Node automation contracts and 36 Python recorder tests, the bounded corpus admission gate, lint, docs, all 100 pinned citation checks, landing and docs builds, merged internal-link checks, public indexing contracts and whitespace validation. Lint retains its explicit oversized-evidence warning. The final Fiber preview omission preserves report and analysis bytes and needs a repeated generated-output check, recorded separately.
+The receipt retains ten passing publication checks: 21 Node automation contracts and 36 Python recorder tests, the bounded corpus admission gate, lint, docs, all 100 pinned citation checks, landing and docs builds, merged internal-link checks, public indexing contracts and whitespace validation. Lint retains its explicit oversized-evidence warning. The final Fiber preview omission preserves report and analysis bytes and passed four additional final export checks: the batch gate, landing rebuild, docs merge and public indexing contracts.
 
 The temporary shared dependency symlink failed Blume compilation. An isolated offline frozen-lockfile installation of the existing 980 docs packages fixed the local build. No dependency version or lockfile changed.
 

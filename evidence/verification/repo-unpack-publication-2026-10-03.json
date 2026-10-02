@@ -505,7 +505,8 @@
   "last_preview_delta": {
     "slug": "fiber",
     "report_analysis_and_pin_unchanged": true,
-    "rebuild_required": true
+    "rebuild_required": false,
+    "requalified": true
   },
   "immutable_gitleaks_false_positive_classifications": [
     {
@@ -630,5 +631,108 @@
     "invocation_duration_ms": 113,
     "context_capture_ms": 101,
     "independently_verified": false
+  },
+  "final_export_checks": [
+    {
+      "name": "publication-final-batch-gate",
+      "argv": [
+        "node",
+        "scripts/check-change-size.mjs"
+      ],
+      "started_at": "2026-10-02T21:16:52.897331+00:00",
+      "finished_at": "2026-10-02T21:16:55.722766+00:00",
+      "runtime_ms": 2825,
+      "exit_code": 0,
+      "streams": {
+        "stdout": {
+          "private_relative_path": "artifacts/publication/final-export/batch-gate.stdout.log",
+          "sha256": "fff9962b7f4fc270d33db752e6868d15b6d919a3ec5ea006576f00bb41bef0a8",
+          "bytes": 132
+        },
+        "stderr": {
+          "private_relative_path": "artifacts/publication/final-export/batch-gate.stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        }
+      }
+    },
+    {
+      "name": "publication-final-astro-build",
+      "argv": [
+        "/opt/homebrew/bin/pnpm",
+        "--dir",
+        "apps/landing-page-astro",
+        "run",
+        "build"
+      ],
+      "started_at": "2026-10-02T21:16:55.722923+00:00",
+      "finished_at": "2026-10-02T21:16:59.486169+00:00",
+      "runtime_ms": 3763,
+      "exit_code": 0,
+      "streams": {
+        "stdout": {
+          "private_relative_path": "artifacts/publication/final-export/astro-build.stdout.log",
+          "sha256": "af4480f904387cf82c199f80a9cdb0537cc412bd3255ff5a819361d0d4d28c77",
+          "bytes": 205976
+        },
+        "stderr": {
+          "private_relative_path": "artifacts/publication/final-export/astro-build.stderr.log",
+          "sha256": "4b47767564330d03f2a82c2b4c63e3fbef366ac67863408dbbb44a58f79b4800",
+          "bytes": 191
+        }
+      }
+    },
+    {
+      "name": "publication-final-merge-docs",
+      "argv": [
+        "node",
+        "scripts/merge-landing-docs.mjs"
+      ],
+      "started_at": "2026-10-02T21:16:59.486429+00:00",
+      "finished_at": "2026-10-02T21:16:59.729135+00:00",
+      "runtime_ms": 243,
+      "exit_code": 0,
+      "streams": {
+        "stdout": {
+          "private_relative_path": "artifacts/publication/final-export/merge-docs.stdout.log",
+          "sha256": "8ceb104bc1e874ebe316ae25c0d11eb1c6b09d29855a031e5206d49603edf2bb",
+          "bytes": 145
+        },
+        "stderr": {
+          "private_relative_path": "artifacts/publication/final-export/merge-docs.stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        }
+      }
+    },
+    {
+      "name": "publication-final-agent-contracts",
+      "argv": [
+        "node",
+        "apps/landing-page-astro/scripts/verify-agent-surfaces.mjs"
+      ],
+      "started_at": "2026-10-02T21:16:59.729308+00:00",
+      "finished_at": "2026-10-02T21:17:00.093928+00:00",
+      "runtime_ms": 365,
+      "exit_code": 0,
+      "streams": {
+        "stdout": {
+          "private_relative_path": "artifacts/publication/final-export/agent-contracts.stdout.log",
+          "sha256": "4d964bdc397892e00c28025ba30a6a2aaeb1c1d6901c17bc07160e014673b712",
+          "bytes": 377
+        },
+        "stderr": {
+          "private_relative_path": "artifacts/publication/final-export/agent-contracts.stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        }
+      }
+    }
+  ],
+  "gitleaks_post_classification": {
+    "exit_code": 0,
+    "commits_scanned": 2,
+    "unignored_findings": 0,
+    "report_private_relative_path": "artifacts/publication-gitleaks-post-classification.json"
   }
 }
