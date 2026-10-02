@@ -329,9 +329,29 @@ async function fetchWithApiFallback(url, request, pathname, env) {
   return response;
 }
 
-function handleAgentFriendly404(response, request, pathname) {
+async function handleAgentFriendly404(response, request, pathname, env) {
   if (response.status !== 404 || pathname.startsWith('/api/')) return null;
   if (wantsMarkdown(request)) return markdown404(pathname);
+  // Asset bindings return an empty 404 for unknown paths even when the
+  // directory contains a custom 404.html. Fetch its canonical extensionless
+  // route explicitly; HTML handling maps /404 to /404.html without the
+  // .html-to-extensionless redirect that a direct /404.html request gets.
+  const notFoundUrl = new URL('/404', request.url);
+  const notFoundPage = await env.ASSETS.fetch(
+    new Request(notFoundUrl, { method: request.method === 'HEAD' ? 'HEAD' : 'GET' })
+  );
+  const pageHeaders = new Headers(notFoundPage.headers);
+  pageHeaders.set('vary', 'Accept, Accept-Encoding');
+  pageHeaders.set('x-edge-cache', 'WORKER-ASSETS');
+  if (
+    notFoundPage.status === 200 &&
+    (pageHeaders.get('content-type') || '').includes('text/html')
+  ) {
+    return new Response(request.method === 'HEAD' ? null : notFoundPage.body, {
+      status: 404,
+      headers: pageHeaders,
+    });
+  }
   const headers = new Headers(response.headers);
   headers.set('vary', 'Accept, Accept-Encoding');
   return new Response(response.body, { status: 404, headers });
@@ -421,7 +441,7 @@ export default {
 
     // Agent-friendly 404: return a markdown recovery body for unknown paths
     // when the client asks for markdown, or a plain 404 for HTML clients.
-    const notFoundResponse = handleAgentFriendly404(response, request, pathname);
+    const notFoundResponse = await handleAgentFriendly404(response, request, pathname, env);
     if (notFoundResponse) return notFoundResponse;
 
     return applyResponseHeaders(response, pathname);
