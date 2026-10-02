@@ -456,10 +456,13 @@ func nativeReviewReceiptPromotesQualifiedFindingsAboveRawJSON() throws {
 
   let model = WorkbenchModel()
   model.section = .review
+  model.navigator.showVerification = true
   model.repositoryPath = "/fixture/repo"
   model.receipt = receipt
   model.receiptJSON = String(decoding: payload, as: UTF8.self)
   model.verificationState = .limited
+  #expect(model.navigator.showVerification)
+  #expect(receipt.reviewFindings.contains { $0.title == "Checkout total uses the stale subtotal" })
   renderReview(model)
   if let screenshotPath = ProcessInfo.processInfo.environment[
     "CODEVETTER_REVIEW_FINDINGS_SCREENSHOT_PATH"
@@ -491,10 +494,12 @@ func nativeCrossReviewReceiptShowsIndependentProvenanceAndDisagreement() throws 
 
   let model = WorkbenchModel()
   model.section = .review
+  model.navigator.showVerification = true
   model.repositoryPath = "/fixture/repo"
   model.receipt = receipt
   model.receiptJSON = String(decoding: payload, as: UTF8.self)
   model.verificationState = .limited
+  #expect(model.navigator.showVerification)
   renderReview(model)
   if let screenshotPath = ProcessInfo.processInfo.environment[
     "CODEVETTER_CROSS_REVIEW_SCREENSHOT_PATH"
