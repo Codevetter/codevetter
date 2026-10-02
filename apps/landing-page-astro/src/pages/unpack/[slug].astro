@@ -39,8 +39,12 @@ const { report } = Astro.props;
         <p class="meta analysis">
           Deep analysis by <code>{report.analysis.model}</code> via the {report.analysis.agent} CLI
           on {report.analysis.collected_at.slice(0, 10)} (
-          {Math.round(report.analysis.runtime_ms / 1000)}s) — every claim below cites the source
-          files it was read from.
+          {typeof report.analysis.runtime_ms === 'number' && Number.isFinite(report.analysis.runtime_ms)
+            ? `${Math.round(report.analysis.runtime_ms / 1000)}s`
+            : 'runtime not recorded'}) — every claim below links to its cited source files.
+          {'runtime_verification' in report.analysis &&
+            report.analysis.runtime_verification?.upstream_code_executed === false &&
+            ' Source inspection; upstream code and tests were not executed.'}
         </p>
       )}
     </header>
@@ -91,7 +95,7 @@ const { report } = Astro.props;
                             .split('#')[0]
                             .split('/')
                             .map(encodeURIComponent)
-                            .join('/')}${s.includes('#L') ? `#L${s.split('#L')[1]}` : ''}`}
+                            .join('/')}${s.includes('#L') ? `#L${s.split('#L')[1].replace(/-(\d+)$/, '-L$1')}` : ''}`}
                         >
                           {s}
                         </a>
@@ -239,7 +243,7 @@ const { report } = Astro.props;
       {report.codevetterVersion.replace('codevetter ', '')} against commit{' '}
       <code>{report.commit.sha.slice(0, 10)}</code> ({report.commit.date}). It is a structural map —
       not a review, not a security audit, and not reviewed by the upstream maintainers. Deeper
-      claim-cited analysis sections will appear here as the unpack pipeline matures.{' '}
+      analysis sections, where present, link claims to the pinned source.{' '}
       <a href="/download">Run Repo Unpack on your own repository.</a>
     </aside>
   </main>

@@ -1,0 +1,3207 @@
+{
+  "schema_version": "codevetter.repo-unpack-corpus/v1",
+  "repo": "pydantic/pydantic-settings",
+  "slug": "pydantic-settings",
+  "codevetter_version": "codevetter 1.15.0",
+  "collected_at": "2026-10-02T17:26:10.764Z",
+  "last_commit": {
+    "sha": "5927b441848c330853eac74c82358bc283cd3640",
+    "date": "2026-10-02",
+    "subject": "Fix empty JSON arrays in CLI list arguments (#994)"
+  },
+  "scan": {
+    "schema_version": "codevetter.unpack-scan/v1",
+    "report_id": "77cc06bf-29d9-4c07-8454-63466bada701",
+    "status": "scan_only",
+    "created_at": "2026-10-02T17:26:10.760076+00:00",
+    "inventory": {
+      "repo_path": "[local clone path omitted from public export]",
+      "repo_name": "pydantic-settings",
+      "commit_sha": "5927b441848c330853eac74c82358bc283cd3640",
+      "branch": "main",
+      "remote_url": "https://github.com/pydantic/pydantic-settings.git",
+      "files_scanned": 55,
+      "files_skipped": 2,
+      "bytes_scanned": 899212,
+      "max_files_hit": false,
+      "estimated_total_files": null,
+      "languages": [
+        {
+          "language": "Python",
+          "files": 37,
+          "bytes": 754550
+        },
+        {
+          "language": "Markdown",
+          "files": 2,
+          "bytes": 124827
+        },
+        {
+          "language": "YAML",
+          "files": 6,
+          "bytes": 9011
+        },
+        {
+          "language": "TOML",
+          "files": 1,
+          "bytes": 6297
+        },
+        {
+          "language": "CSS",
+          "files": 2,
+          "bytes": 1620
+        },
+        {
+          "language": "HTML",
+          "files": 1,
+          "bytes": 267
+        },
+        {
+          "language": "JSON",
+          "files": 1,
+          "bytes": 19
+        }
+      ],
+      "manifests": [
+        {
+          "path": "pyproject.toml",
+          "kind": "pyproject.toml",
+          "name": "pydantic-settings",
+          "version": null,
+          "dependencies": [
+            "yaml",
+            "toml",
+            "azure-key-vault",
+            "aws-secrets-manager",
+            "aws-systems-manager",
+            "gcp-secret-manager",
+            "google-cloud-secret-manager>=2.23.1\"",
+            "]"
+          ],
+          "scripts": []
+        }
+      ],
+      "entrypoints": [
+        {
+          "path": "README.md",
+          "kind": "docs",
+          "reason": "Repository readme"
+        },
+        {
+          "path": ".github/workflows/ci.yml",
+          "kind": "config",
+          "reason": "GitHub Actions workflow"
+        }
+      ],
+      "top_level_dirs": [
+        {
+          "path": "pydantic_settings",
+          "file_count": 23,
+          "bytes": 270575
+        },
+        {
+          "path": "tests",
+          "file_count": 16,
+          "bytes": 483994
+        },
+        {
+          "path": "docs",
+          "file_count": 5,
+          "bytes": 125759
+        },
+        {
+          "path": ".github",
+          "file_count": 3,
+          "bytes": 6732
+        }
+      ],
+      "docs": [
+        {
+          "path": "README.md",
+          "bytes": 1557,
+          "preview": "# pydantic-settings\n\n[![CI](https://github.com/pydantic/pydantic-settings/actions/workflows/ci.yml/badge.svg?event=push)](https://github.com/pydantic/pydantic-settings/actions/workflows/ci.yml?query=branch%3Amain)\n[![Coverage](https://codecov.io/gh/pydantic/pydantic-settings/branch/main/graph/badge.svg)](https://codecov.io/gh/pydantic/pydantic-settings)\n[![pypi](https://img.shields.io/pypi/v/pydantic-settings.svg)](https://pypi.python.org/pypi/pydantic-settings)\n[![license](https://img.shields.io/github/license/pydantic/pydantic-settings.svg)](https://github.com/pydantic/pydantic-settings/blob/main/LICENSE)\n[![downloads](https://static.pepy.tech/badge/pydantic-settings/month)](https://pepy.tech/project/pydantic-settings)\n[![versions](https://img.shields.io/pypi/pyversions/pydantic-settings.svg)](https://github.com/pydantic/pydantic-settings)\n\nSettings management using Pydantic.\n\nSee [documentation](https://pydantic.dev/docs/validation/latest/concepts/pydantic_settings/) for more details.\n\n## Part of the Pydantic Stack\n\nThe Pydantic Stack is everything you need to ship production-grade AI agents:\n\n- [Pydantic AI](https://pydantic.dev/pydantic-ai?utm_source=github&utm_medium=readme&utm_campaign=pydantic-settings) - Type-safe agent framework\n- [Pydantic Logfire](https://pydantic.dev/logfire?utm_source=github&utm_medium=readme&utm_campaign=pydantic-settings) - AI-first, full-stack observability\n- [Logfire AI Gateway](https://pydantic.dev/ai-gateway?utm_source=github&utm_medium=readme&utm_campaign=pydantic-settings) - Unified LLM proxy\n"
+        },
+        {
+          "path": "docs/index.md",
+          "bytes": 123270,
+          "preview": "## Installation\n\nInstallation is as simple as:\n\n```bash\npip install pydantic-settings\n```\n\n## Usage\n\nIf you create a model that inherits from `BaseSettings`, the model initialiser will attempt to determine\nthe values of any fields not passed as keyword arguments by reading from the environment. (Default values\nwill still be used if the matching environment variable is not set.)\n\nThis makes it easy to:\n\n* Create a clearly-defined, type-hinted application configuration class\n* Automatically read modifications to the configuration from environment variables\n* Manually override specific settings in the initialiser where desired (e.g. in unit tests)\n\nFor example:\n\n```py\nfrom collections.abc import Callable\nfrom typing import Any\n\nfrom pydantic import (\n    AliasChoices,\n    AmqpDsn,\n    BaseModel,\n    Field,\n    ImportString,\n    PostgresDsn,\n    RedisDsn,\n)\n\nfrom pydantic_settings import BaseSettings, SettingsConfigDict\n\n\nclass SubModel(BaseModel):\n    foo: str = 'bar'\n    apple: int = 1\n\n\nclass Settings(BaseSettings):\n    auth_key: str = Field(validation_alias='my_auth_key')  # (1)!\n\n    api_key: str = Field(alias='my_api_key')  # (2)!\n\n    redis_dsn: RedisDsn = Field(\n        'redis://user:pass@localhost:6379/1',\n        validation_alias=AliasChoices('service_redis_dsn', 'redis_url'),  # (3)!\n    )\n    pg_dsn: PostgresDsn = 'postgres://user:pass@localhost:5432/foobar'\n    amqp_dsn: AmqpDsn = 'amqp://user:pass@localhost:5672/'\n\n    special_function: ImportString[Callable[[Any], Any]] = 'math.cos'  # (4)!\n\n    # to override domains:\n    # export my_prefix_domains='[\"foo.com\", \"bar.com\"]'\n    domains: set[str] = set()\n\n    # to override more_settings:\n    # export my_prefix_more_settings='{\"foo\": \"x\", \"apple\": 1}'\n    more_settings: SubModel = SubModel()\n\n    model_config = SettingsConfigDict(env_prefix='my_prefix_')  # (5)!\n\n\nprint(Settings().model_dump())\n\"\"\"\n{\n    'auth_key': 'xxx',\n    'api_key': 'xxx',\n    'redis_dsn': RedisDsn('redis://user:pass@localhost:6379/1'),\n    'pg_dsn': PostgresDsn('postgres://user:pass@localhost:5432/foobar'),\n    'amqp_dsn': AmqpDsn('amqp://user:pass@localhost:5672/'),\n    'special_function': math.cos,\n    'domains': set(),\n    'more_settings': {'foo': 'bar', 'apple': 1},\n}\n\"\"\"\n```\n\n1. The environment variable name is overridden using `validation_alias`. In this case, the environment variable\n   `my_auth_key` will be read instead of `auth_key`.\n\n    Check the [`Field` documentation](fields.md) for more information.\n\n2. The environment variable name is overridden using `alias`. In this case, the environment variable\n   `my_api_key` will be used for both validation and serialization instead of `api_key`.\n\n    Check the [`Field` documentation](fields.md#field-aliases) for more information.\n\n3. The [`AliasChoices`][pydantic.AliasChoices] class allows you to have multiple environment variable names for a single field.\n   The first environment variable that is found will be used.\n\n    Check the [documentation on alias choices](alias.md#aliaspath-and-aliaschoices) for more information.\n\n4. The [`ImportString`][pydantic.types.ImportString] class allows you to import an object from a string.\n   In this case, the environment variable `special_function` will be read and the function [`math.cos`][] will be imported.\n\n5. The `env_prefix` config setting allows you to set a prefix for all environment variables.\n\n    Check the [Environment variable names documentation](#environment-variable-names) for more information.\n\n## Validation of default values\n\nUnlike pydantic `BaseModel`, default values of `BaseSettings` fields are validated by default.\nYou can disable this behaviour by setting `validate_default=False` either in `model_config`\nor on field level by `Field(validate_default=False)`:\n\n```py\nfrom pydantic import Field\n\nfrom pydantic_settings import BaseSettings, SettingsConfigDict\n\n\nclass Settings(BaseSettings):\n    model_config = SettingsConfigDict(validate_default=False)\n\n    # default won't be validated\n    foo: int = 'test'\n\n\nprint(Settings())\n#> foo='test'\n\n\nclass Settings1(BaseSettings):\n    # default won't be validated\n    foo: int = Field('test', validate_default=False)\n\n\nprint(Settings1())\n#> foo='test'\n```\n\nCheck the [validation of default values](fields.md#validate-default-values) for more information.\n\n## Environment variable names\n\nBy default, the environment variable name is the same as the field name.\n\nYou can change the prefix for all environment variables by setting the `env_prefix` config setting,\nor via the `_env_prefix` keyword argument on instantiation:\n\n```py\nfrom pydantic_settings import BaseSettings, SettingsConfigDict\n\n\nclass Settings(BaseSettings):\n    model_config = SettingsConfigDict(env_prefix='my_prefix_')\n\n    auth_key: str = 'xxx'  # will be read from `my_prefix_auth_key`\n```\n\n!!! note\n    The default `env_prefix` is `''` (empty string). `env_prefix` is not only for env settings but also for\n    dotenv files, secrets, and other sources.\n\nIf you want to change the environment variable name for a single field, you can use an alias.\n\nThere are two ways to do this:\n\n* Using `Field(alias=...)` (see `api_key` above)\n* Using `Field(validation_alias=...)` (see `auth_key` above)\n\nCheck the [`Field` aliases documentation](fields.md#field-aliases) for more information about aliases.\n\n!!! note\n    By default, setting an alias on a nested model field *narrows* which environment variables can reach it: its\n    sub-fields are then looked up using only that alias as the prefix, in every source. The field's own name\n    is not accepted as a lookup prefix unless `populate_by_name=True` (or `validate_by_name=True`) is enabled,\n    including for dotenv files and other non-env sources.\n\n    This matters most when sources disagree on naming. If a higher-priority source uses the alias and a\n    lower-priority one uses the field name, only the alias-based values are found — the others were never\n    associated with the field, so there is nothing to merge and the lower-priority values appear to be\n    ignored. What happens to them depends on `extra`: with the default `extra='forbid'` an unmatched dotenv\n    entry is kept as an extra input and raises a `ValidationError`, while a plain environment variable is\n    simply not picked up; with `extra='ignore'` both are dropped silently.\n\n    To accept both spellings, widen the set of accepted names — either globally with `populate_by_name=True`\n    (or `validate_by_name=True`), or per field with [`AliasChoices`][pydantic.AliasChoices]. Both let\n    mixed-naming sources merge:\n\n    ```py\n    import os\n    from pathlib import Path\n\n    from pydantic import BaseModel, Field\n\n    from pydantic_settings import BaseSettings, SettingsConfigDict\n\n\n    class SubModel(BaseModel):\n        var1: str | None = None\n        var2: str | None = None\n\n\n    class Settings(BaseSettings):\n        model_config = SettingsConfigDict(env_nested_delimiter='_', populate_by_name=True)\n        submodel: SubModel | None = Field(alias='SUB', default=None)\n\n\n    dotenv_file = Path('example.env')\n    dotenv_file.write_text(\"SUBMODEL_VAR2='var2 from dotenv'\")\n    os.environ['SUB_VAR1'] = 'var1 from env'\n\n    print(Settings(_env_file=dotenv_file).model_dump())\n    #> {'submodel': {'var1': 'var1 from env', 'var2': 'var2 from dotenv'}}\n    dotenv_file.unlink(missing_ok=True)\n    del os.environ['SUB_VAR1']\n    ```\n\n    `AliasChoices` is often the better fit when only some fields need both spellings — for example a\n    configuration file that spells section names out in full alongside abbreviated environment variables.\n    It states per field exactly which names are accepted, instead of accepting every field name globally,\n    and lets you opt each nesting level into both spellings independently:\n\n    ```py\n    import os\n    from pathlib import Path\n\n    from pydantic import AliasChoices, BaseModel, Field\n\n    from pydantic_settings import BaseSettings, SettingsConfigDict\n\n\n    class SubModel(BaseModel):\n        var1: str | None = None\n        var2: str | None = None\n\n\n    class Settings(BaseSettings):\n        model_config = SettingsConfigDict(env_nested_delimiter='_')\n        submodel: SubModel | Non"
+        }
+      ],
+      "config_files": [],
+      "stack_tags": [
+        "GitHub Actions",
+        "Python"
+      ],
+      "workspace_units": [
+        {
+          "path": ".",
+          "name": "pydantic-settings",
+          "kind": "workspace",
+          "manifest_path": "pyproject.toml",
+          "build_system": "pyproject.toml",
+          "file_count": 55,
+          "languages": [
+            {
+              "language": "Python",
+              "files": 37,
+              "bytes": 754550
+            },
+            {
+              "language": "YAML",
+              "files": 6,
+              "bytes": 9011
+            },
+            {
+              "language": "Markdown",
+              "files": 2,
+              "bytes": 124827
+            },
+            {
+              "language": "CSS",
+              "files": 2,
+              "bytes": 1620
+            },
+            {
+              "language": "TOML",
+              "files": 1,
+              "bytes": 6297
+            }
+          ],
+          "scripts": [],
+          "entrypoints": [
+            ".github/workflows/ci.yml",
+            "README.md"
+          ],
+          "test_files": [],
+          "tags": [
+            "Markdown",
+            "Python",
+            "YAML"
+          ]
+        }
+      ],
+      "qa_readiness": {
+        "score": 0,
+        "status": "missing",
+        "summary": "Repo does not expose enough local browser QA structure for a reliable Synthetic QA workflow yet.",
+        "signals": [
+          {
+            "id": "browser_runner",
+            "label": "Browser runner",
+            "status": "missing",
+            "detail": "No Playwright, Cypress, or browser runner config was found.",
+            "sources": []
+          },
+          {
+            "id": "user_flow_specs",
+            "label": "User-flow specs",
+            "status": "missing",
+            "detail": "No e2e/playwright/cypress spec files were found.",
+            "sources": []
+          },
+          {
+            "id": "local_app_command",
+            "label": "Local app command",
+            "status": "missing",
+            "detail": "No obvious package script for starting the app locally was found.",
+            "sources": []
+          },
+          {
+            "id": "qa_script",
+            "label": "QA script",
+            "status": "missing",
+            "detail": "No explicit QA/e2e/browser test script was found.",
+            "sources": []
+          },
+          {
+            "id": "artifact_trail",
+            "label": "Artifact trail",
+            "status": "missing",
+            "detail": "No browser QA artifacts or artifact-capable runner were found.",
+            "sources": []
+          },
+          {
+            "id": "targetable_routes",
+            "label": "Targetable surfaces",
+            "status": "missing",
+            "detail": "No obvious web entrypoint or route file was found.",
+            "sources": []
+          }
+        ],
+        "suggested_flows": []
+      },
+      "repo_graph": {
+        "schema_version": 2,
+        "nodes": [
+          {
+            "id": "file:github-workflows-ci-yml",
+            "kind": "file",
+            "label": ".github/workflows/ci.yml",
+            "path": ".github/workflows/ci.yml",
+            "detail": "workspace entrypoint",
+            "sources": [
+              ".github/workflows/ci.yml"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:makefile",
+            "kind": "file",
+            "label": "Makefile",
+            "path": "Makefile",
+            "detail": "source marker candidate",
+            "sources": [
+              "Makefile"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:readme-md",
+            "kind": "file",
+            "label": "README.md",
+            "path": "README.md",
+            "detail": "workspace entrypoint",
+            "sources": [
+              "README.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:docs-index-md",
+            "kind": "file",
+            "label": "docs/index.md",
+            "path": "docs/index.md",
+            "detail": "source marker candidate",
+            "sources": [
+              "docs/index.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "package:pyproject-toml",
+            "kind": "package",
+            "label": "pydantic-settings",
+            "path": "pyproject.toml",
+            "detail": "pyproject.toml manifest",
+            "sources": [
+              "pyproject.toml"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-conftest-py",
+            "kind": "test",
+            "label": "tests/conftest.py",
+            "path": "tests/conftest.py",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/conftest.py"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-example-test-config-json",
+            "kind": "test",
+            "label": "tests/example_test_config.json",
+            "path": "tests/example_test_config.json",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/example_test_config.json"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-test-docs-py",
+            "kind": "test",
+            "label": "tests/test_docs.py",
+            "path": "tests/test_docs.py",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/test_docs.py"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-test-precedence-and-merging-py",
+            "kind": "test",
+            "label": "tests/test_precedence_and_merging.py",
+            "path": "tests/test_precedence_and_merging.py",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/test_precedence_and_merging.py"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-test-settings-py",
+            "kind": "test",
+            "label": "tests/test_settings.py",
+            "path": "tests/test_settings.py",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/test_settings.py"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-test-source-aws-secrets-manager-py",
+            "kind": "test",
+            "label": "tests/test_source_aws_secrets_manager.py",
+            "path": "tests/test_source_aws_secrets_manager.py",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/test_source_aws_secrets_manager.py"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-test-source-aws-systems-manager-py",
+            "kind": "test",
+            "label": "tests/test_source_aws_systems_manager.py",
+            "path": "tests/test_source_aws_systems_manager.py",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/test_source_aws_systems_manager.py"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-test-source-azure-key-vault-py",
+            "kind": "test",
+            "label": "tests/test_source_azure_key_vault.py",
+            "path": "tests/test_source_azure_key_vault.py",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/test_source_azure_key_vault.py"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-test-source-cli-py",
+            "kind": "test",
+            "label": "tests/test_source_cli.py",
+            "path": "tests/test_source_cli.py",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/test_source_cli.py"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-test-source-gcp-secret-manager-py",
+            "kind": "test",
+            "label": "tests/test_source_gcp_secret_manager.py",
+            "path": "tests/test_source_gcp_secret_manager.py",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/test_source_gcp_secret_manager.py"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-test-source-json-py",
+            "kind": "test",
+            "label": "tests/test_source_json.py",
+            "path": "tests/test_source_json.py",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/test_source_json.py"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-test-source-nested-secrets-py",
+            "kind": "test",
+            "label": "tests/test_source_nested_secrets.py",
+            "path": "tests/test_source_nested_secrets.py",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/test_source_nested_secrets.py"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-test-source-pyproject-toml-py",
+            "kind": "test",
+            "label": "tests/test_source_pyproject_toml.py",
+            "path": "tests/test_source_pyproject_toml.py",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/test_source_pyproject_toml.py"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-test-source-toml-py",
+            "kind": "test",
+            "label": "tests/test_source_toml.py",
+            "path": "tests/test_source_toml.py",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/test_source_toml.py"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-test-source-yaml-py",
+            "kind": "test",
+            "label": "tests/test_source_yaml.py",
+            "path": "tests/test_source_yaml.py",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/test_source_yaml.py"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-test-utils-py",
+            "kind": "test",
+            "label": "tests/test_utils.py",
+            "path": "tests/test_utils.py",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/test_utils.py"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "workspace:",
+            "kind": "workspace_unit",
+            "label": "pydantic-settings",
+            "path": null,
+            "detail": "workspace | 55 files | 37 Python, 6 YAML, 2 Markdown",
+            "sources": [
+              ".github/workflows/ci.yml",
+              "README.md",
+              "pyproject.toml"
+            ],
+            "source_location": null,
+            "community": null
+          }
+        ],
+        "edges": [
+          {
+            "from": "workspace:",
+            "to": "package:pyproject-toml",
+            "kind": "defines",
+            "evidence": "workspace unit owns this manifest",
+            "sources": [
+              "pyproject.toml"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "file:github-workflows-ci-yml",
+            "kind": "entrypoint",
+            "evidence": "entrypoint belongs to this workspace unit",
+            "sources": [
+              ".github/workflows/ci.yml"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "file:readme-md",
+            "kind": "entrypoint",
+            "evidence": "entrypoint belongs to this workspace unit",
+            "sources": [
+              "README.md"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          }
+        ],
+        "truncated": false
+      },
+      "history_brief": {
+        "schema_version": 2,
+        "summary": "Local history brief captured 12 recent commits, 0 decision markers, 12 test hints, and 2 co-change clusters for Repo Unpacked. Treat commit subjects as leads and rely on cited files for durable constraints.",
+        "recent_commits": [
+          {
+            "sha": "5927b441848c",
+            "date": "2026-10-02",
+            "subject": "Fix empty JSON arrays in CLI list arguments (#994)",
+            "files": [
+              "docs/index.md"
+            ]
+          },
+          {
+            "sha": "a6d68139a18a",
+            "date": "2026-10-02",
+            "subject": "Honor `secrets_case_sensitive` on Windows by overriding `_load_env_vars` (#1001)",
+            "files": [
+              "docs/index.md"
+            ]
+          },
+          {
+            "sha": "6daf93d844ac",
+            "date": "2026-10-02",
+            "subject": "Fix `CliApp.serialize` for models with `CliUnknownArgs` fields (#992)",
+            "files": []
+          },
+          {
+            "sha": "aabb8698424c",
+            "date": "2026-10-02",
+            "subject": "build(deps): bump the python-packages group with 3 updates (#999)",
+            "files": []
+          },
+          {
+            "sha": "d41a298d3fa3",
+            "date": "2026-10-01",
+            "subject": "build(deps): bump astral-sh/setup-uv from 10.0.1 to 10.2.0 in the github-actions group (#998)",
+            "files": [
+              ".github/workflows/ci.yml"
+            ]
+          },
+          {
+            "sha": "fcbdeeb9d3e4",
+            "date": "2026-09-28",
+            "subject": "Fix Path.is_mount type-checking error on win32 platform (#982)",
+            "files": []
+          },
+          {
+            "sha": "02cb9ae93994",
+            "date": "2026-09-25",
+            "subject": "Preserve CliSubCommand alias case with case_sensitive=False (#989)",
+            "files": []
+          },
+          {
+            "sha": "8d1a8af5cb44",
+            "date": "2026-09-25",
+            "subject": "Make `CliApp.serialize` output parseable for enum and non-JSON values (#988)",
+            "files": []
+          },
+          {
+            "sha": "79eff6ab4080",
+            "date": "2026-09-25",
+            "subject": "Preserve explicit None values in CLI serialization (#981)",
+            "files": []
+          },
+          {
+            "sha": "f76e5984f38d",
+            "date": "2026-09-25",
+            "subject": "build(deps): bump the python-packages group with 2 updates (#990)",
+            "files": []
+          },
+          {
+            "sha": "cc9172c52913",
+            "date": "2026-09-23",
+            "subject": "docs: clarify extra validation for environment variables (#986)",
+            "files": [
+              "docs/index.md"
+            ]
+          },
+          {
+            "sha": "a2ec1da4d1b9",
+            "date": "2026-09-23",
+            "subject": "fix: bare AliasPath complexity keyed off name length, not path length (#980)",
+            "files": []
+          }
+        ],
+        "decisions": [],
+        "test_hints": [
+          {
+            "path": "tests/test_source_nested_secrets.py",
+            "reason": "test/spec file anchors expected behavior"
+          },
+          {
+            "path": "tests/test_utils.py",
+            "reason": "test/spec file anchors expected behavior"
+          },
+          {
+            "path": "tests/conftest.py",
+            "reason": "test/spec file anchors expected behavior"
+          },
+          {
+            "path": "tests/test_source_azure_key_vault.py",
+            "reason": "test/spec file anchors expected behavior"
+          },
+          {
+            "path": "tests/test_docs.py",
+            "reason": "test/spec file anchors expected behavior"
+          },
+          {
+            "path": "tests/test_source_gcp_secret_manager.py",
+            "reason": "test/spec file anchors expected behavior"
+          },
+          {
+            "path": "tests/test_source_cli.py",
+            "reason": "test/spec file anchors expected behavior"
+          },
+          {
+            "path": "tests/test_source_aws_systems_manager.py",
+            "reason": "test/spec file anchors expected behavior"
+          },
+          {
+            "path": "tests/test_source_toml.py",
+            "reason": "test/spec file anchors expected behavior"
+          },
+          {
+            "path": "tests/test_source_json.py",
+            "reason": "test/spec file anchors expected behavior"
+          },
+          {
+            "path": "tests/test_precedence_and_merging.py",
+            "reason": "test/spec file anchors expected behavior"
+          },
+          {
+            "path": "tests/example_test_config.json",
+            "reason": "test/spec file anchors expected behavior"
+          }
+        ],
+        "temporal_couplings": [
+          {
+            "files": [
+              "docs/index.md",
+              "pyproject.toml"
+            ],
+            "commit_count": 3,
+            "last_commit": "53df0b5196a2",
+            "reason": "These files changed together in 3 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              ".github/workflows/ci.yml",
+              "pyproject.toml"
+            ],
+            "commit_count": 2,
+            "last_commit": "d357d7bf3183",
+            "reason": "These files changed together in 2 recent commits; inspect both when either side moves."
+          }
+        ],
+        "graph": {
+          "schema_version": 2,
+          "nodes": [
+            {
+              "id": "commit:02cb9ae93994",
+              "kind": "commit",
+              "label": "Preserve CliSubCommand alias case with case_sensitive=False (#989)",
+              "path": null,
+              "detail": "2026-09-25",
+              "citations": [
+                "git:02cb9ae93994"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:5927b441848c",
+              "kind": "commit",
+              "label": "Fix empty JSON arrays in CLI list arguments (#994)",
+              "path": null,
+              "detail": "2026-10-02",
+              "citations": [
+                "git:5927b441848c"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:6daf93d844ac",
+              "kind": "commit",
+              "label": "Fix `CliApp.serialize` for models with `CliUnknownArgs` fields (#992)",
+              "path": null,
+              "detail": "2026-10-02",
+              "citations": [
+                "git:6daf93d844ac"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:79eff6ab4080",
+              "kind": "commit",
+              "label": "Preserve explicit None values in CLI serialization (#981)",
+              "path": null,
+              "detail": "2026-09-25",
+              "citations": [
+                "git:79eff6ab4080"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:8d1a8af5cb44",
+              "kind": "commit",
+              "label": "Make `CliApp.serialize` output parseable for enum and non-JSON values (#988)",
+              "path": null,
+              "detail": "2026-09-25",
+              "citations": [
+                "git:8d1a8af5cb44"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:a2ec1da4d1b9",
+              "kind": "commit",
+              "label": "fix: bare AliasPath complexity keyed off name length, not path length (#980)",
+              "path": null,
+              "detail": "2026-09-23",
+              "citations": [
+                "git:a2ec1da4d1b9"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:a6d68139a18a",
+              "kind": "commit",
+              "label": "Honor `secrets_case_sensitive` on Windows by overriding `_load_env_vars` (#1001)",
+              "path": null,
+              "detail": "2026-10-02",
+              "citations": [
+                "git:a6d68139a18a"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:aabb8698424c",
+              "kind": "commit",
+              "label": "build(deps): bump the python-packages group with 3 updates (#999)",
+              "path": null,
+              "detail": "2026-10-02",
+              "citations": [
+                "git:aabb8698424c"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:cc9172c52913",
+              "kind": "commit",
+              "label": "docs: clarify extra validation for environment variables (#986)",
+              "path": null,
+              "detail": "2026-09-23",
+              "citations": [
+                "git:cc9172c52913"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:d41a298d3fa3",
+              "kind": "commit",
+              "label": "build(deps): bump astral-sh/setup-uv from 10.0.1 to 10.2.0 in the github-actions group (#998)",
+              "path": null,
+              "detail": "2026-10-01",
+              "citations": [
+                "git:d41a298d3fa3"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:f76e5984f38d",
+              "kind": "commit",
+              "label": "build(deps): bump the python-packages group with 2 updates (#990)",
+              "path": null,
+              "detail": "2026-09-25",
+              "citations": [
+                "git:f76e5984f38d"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:fcbdeeb9d3e4",
+              "kind": "commit",
+              "label": "Fix Path.is_mount type-checking error on win32 platform (#982)",
+              "path": null,
+              "detail": "2026-09-28",
+              "citations": [
+                "git:fcbdeeb9d3e4"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:-github-workflows-ci-yml",
+              "kind": "file",
+              "label": ".github/workflows/ci.yml",
+              "path": ".github/workflows/ci.yml",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                ".github/workflows/ci.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:docs-index-md",
+              "kind": "file",
+              "label": "docs/index.md",
+              "path": "docs/index.md",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "docs/index.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:pyproject-toml",
+              "kind": "file",
+              "label": "pyproject.toml",
+              "path": "pyproject.toml",
+              "detail": "Recent co-change lead",
+              "citations": [
+                "pyproject.toml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:tests-conftest-py",
+              "kind": "file",
+              "label": "tests/conftest.py",
+              "path": "tests/conftest.py",
+              "detail": "Verification source",
+              "citations": [
+                "tests/conftest.py"
+              ],
+              "trust": "source_backed"
+            },
+            {
+              "id": "file:tests-example-test-config-json",
+              "kind": "file",
+              "label": "tests/example_test_config.json",
+              "path": "tests/example_test_config.json",
+              "detail": "Verification source",
+              "citations": [
+                "tests/example_test_config.json"
+              ],
+              "trust": "source_backed"
+            },
+            {
+              "id": "file:tests-test-docs-py",
+              "kind": "file",
+              "label": "tests/test_docs.py",
+              "path": "tests/test_docs.py",
+              "detail": "Verification source",
+              "citations": [
+                "tests/test_docs.py"
+              ],
+              "trust": "source_backed"
+            },
+            {
+              "id": "file:tests-test-precedence-and-merging-py",
+              "kind": "file",
+              "label": "tests/test_precedence_and_merging.py",
+              "path": "tests/test_precedence_and_merging.py",
+              "detail": "Verification source",
+              "citations": [
+                "tests/test_precedence_and_merging.py"
+              ],
+              "trust": "source_backed"
+            },
+            {
+              "id": "file:tests-test-source-aws-systems-manager-py",
+              "kind": "file",
+              "label": "tests/test_source_aws_systems_manager.py",
+              "path": "tests/test_source_aws_systems_manager.py",
+              "detail": "Verification source",
+              "citations": [
+                "tests/test_source_aws_systems_manager.py"
+              ],
+              "trust": "source_backed"
+            },
+            {
+              "id": "file:tests-test-source-azure-key-vault-py",
+              "kind": "file",
+              "label": "tests/test_source_azure_key_vault.py",
+              "path": "tests/test_source_azure_key_vault.py",
+              "detail": "Verification source",
+              "citations": [
+                "tests/test_source_azure_key_vault.py"
+              ],
+              "trust": "source_backed"
+            },
+            {
+              "id": "file:tests-test-source-cli-py",
+              "kind": "file",
+              "label": "tests/test_source_cli.py",
+              "path": "tests/test_source_cli.py",
+              "detail": "Verification source",
+              "citations": [
+                "tests/test_source_cli.py"
+              ],
+              "trust": "source_backed"
+            },
+            {
+              "id": "file:tests-test-source-gcp-secret-manager-py",
+              "kind": "file",
+              "label": "tests/test_source_gcp_secret_manager.py",
+              "path": "tests/test_source_gcp_secret_manager.py",
+              "detail": "Verification source",
+              "citations": [
+                "tests/test_source_gcp_secret_manager.py"
+              ],
+              "trust": "source_backed"
+            },
+            {
+              "id": "file:tests-test-source-json-py",
+              "kind": "file",
+              "label": "tests/test_source_json.py",
+              "path": "tests/test_source_json.py",
+              "detail": "Verification source",
+              "citations": [
+                "tests/test_source_json.py"
+              ],
+              "trust": "source_backed"
+            },
+            {
+              "id": "file:tests-test-source-nested-secrets-py",
+              "kind": "file",
+              "label": "tests/test_source_nested_secrets.py",
+              "path": "tests/test_source_nested_secrets.py",
+              "detail": "Verification source",
+              "citations": [
+                "tests/test_source_nested_secrets.py"
+              ],
+              "trust": "source_backed"
+            },
+            {
+              "id": "file:tests-test-source-toml-py",
+              "kind": "file",
+              "label": "tests/test_source_toml.py",
+              "path": "tests/test_source_toml.py",
+              "detail": "Verification source",
+              "citations": [
+                "tests/test_source_toml.py"
+              ],
+              "trust": "source_backed"
+            },
+            {
+              "id": "file:tests-test-utils-py",
+              "kind": "file",
+              "label": "tests/test_utils.py",
+              "path": "tests/test_utils.py",
+              "detail": "Verification source",
+              "citations": [
+                "tests/test_utils.py"
+              ],
+              "trust": "source_backed"
+            },
+            {
+              "id": "test:tests-conftest-py-test-spec-file-anchors-expected-behavior",
+              "kind": "test",
+              "label": "test/spec file anchors expected behavior",
+              "path": "tests/conftest.py",
+              "detail": "Likely verification lead",
+              "citations": [
+                "tests/conftest.py"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "id": "test:tests-example-test-config-json-test-spec-file-anchors-expected-behavior",
+              "kind": "test",
+              "label": "test/spec file anchors expected behavior",
+              "path": "tests/example_test_config.json",
+              "detail": "Likely verification lead",
+              "citations": [
+                "tests/example_test_config.json"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "id": "test:tests-test-docs-py-test-spec-file-anchors-expected-behavior",
+              "kind": "test",
+              "label": "test/spec file anchors expected behavior",
+              "path": "tests/test_docs.py",
+              "detail": "Likely verification lead",
+              "citations": [
+                "tests/test_docs.py"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "id": "test:tests-test-precedence-and-merging-py-test-spec-file-anchors-expected-behavior",
+              "kind": "test",
+              "label": "test/spec file anchors expected behavior",
+              "path": "tests/test_precedence_and_merging.py",
+              "detail": "Likely verification lead",
+              "citations": [
+                "tests/test_precedence_and_merging.py"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "id": "test:tests-test-source-aws-systems-manager-py-test-spec-file-anchors-expected-behavior",
+              "kind": "test",
+              "label": "test/spec file anchors expected behavior",
+              "path": "tests/test_source_aws_systems_manager.py",
+              "detail": "Likely verification lead",
+              "citations": [
+                "tests/test_source_aws_systems_manager.py"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "id": "test:tests-test-source-azure-key-vault-py-test-spec-file-anchors-expected-behavior",
+              "kind": "test",
+              "label": "test/spec file anchors expected behavior",
+              "path": "tests/test_source_azure_key_vault.py",
+              "detail": "Likely verification lead",
+              "citations": [
+                "tests/test_source_azure_key_vault.py"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "id": "test:tests-test-source-cli-py-test-spec-file-anchors-expected-behavior",
+              "kind": "test",
+              "label": "test/spec file anchors expected behavior",
+              "path": "tests/test_source_cli.py",
+              "detail": "Likely verification lead",
+              "citations": [
+                "tests/test_source_cli.py"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "id": "test:tests-test-source-gcp-secret-manager-py-test-spec-file-anchors-expected-behavior",
+              "kind": "test",
+              "label": "test/spec file anchors expected behavior",
+              "path": "tests/test_source_gcp_secret_manager.py",
+              "detail": "Likely verification lead",
+              "citations": [
+                "tests/test_source_gcp_secret_manager.py"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "id": "test:tests-test-source-json-py-test-spec-file-anchors-expected-behavior",
+              "kind": "test",
+              "label": "test/spec file anchors expected behavior",
+              "path": "tests/test_source_json.py",
+              "detail": "Likely verification lead",
+              "citations": [
+                "tests/test_source_json.py"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "id": "test:tests-test-source-nested-secrets-py-test-spec-file-anchors-expected-behavior",
+              "kind": "test",
+              "label": "test/spec file anchors expected behavior",
+              "path": "tests/test_source_nested_secrets.py",
+              "detail": "Likely verification lead",
+              "citations": [
+                "tests/test_source_nested_secrets.py"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "id": "test:tests-test-source-toml-py-test-spec-file-anchors-expected-behavior",
+              "kind": "test",
+              "label": "test/spec file anchors expected behavior",
+              "path": "tests/test_source_toml.py",
+              "detail": "Likely verification lead",
+              "citations": [
+                "tests/test_source_toml.py"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "id": "test:tests-test-utils-py-test-spec-file-anchors-expected-behavior",
+              "kind": "test",
+              "label": "test/spec file anchors expected behavior",
+              "path": "tests/test_utils.py",
+              "detail": "Likely verification lead",
+              "citations": [
+                "tests/test_utils.py"
+              ],
+              "trust": "navigation_lead"
+            }
+          ],
+          "edges": [
+            {
+              "from": "commit:5927b441848c",
+              "to": "file:docs-index-md",
+              "kind": "changed",
+              "evidence": "5927b441848c changed this file",
+              "citations": [
+                "git:5927b441848c",
+                "docs/index.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:a6d68139a18a",
+              "to": "file:docs-index-md",
+              "kind": "changed",
+              "evidence": "a6d68139a18a changed this file",
+              "citations": [
+                "git:a6d68139a18a",
+                "docs/index.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:cc9172c52913",
+              "to": "file:docs-index-md",
+              "kind": "changed",
+              "evidence": "cc9172c52913 changed this file",
+              "citations": [
+                "git:cc9172c52913",
+                "docs/index.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:d41a298d3fa3",
+              "to": "file:-github-workflows-ci-yml",
+              "kind": "changed",
+              "evidence": "d41a298d3fa3 changed this file",
+              "citations": [
+                "git:d41a298d3fa3",
+                ".github/workflows/ci.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "file:-github-workflows-ci-yml",
+              "to": "file:pyproject-toml",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 2 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:d357d7bf3183"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:docs-index-md",
+              "to": "file:pyproject-toml",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 3 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:53df0b5196a2"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:tests-conftest-py",
+              "to": "test:tests-conftest-py-test-spec-file-anchors-expected-behavior",
+              "kind": "verified_by",
+              "evidence": "test/spec file anchors expected behavior",
+              "citations": [
+                "tests/conftest.py"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:tests-example-test-config-json",
+              "to": "test:tests-example-test-config-json-test-spec-file-anchors-expected-behavior",
+              "kind": "verified_by",
+              "evidence": "test/spec file anchors expected behavior",
+              "citations": [
+                "tests/example_test_config.json"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:tests-test-docs-py",
+              "to": "test:tests-test-docs-py-test-spec-file-anchors-expected-behavior",
+              "kind": "verified_by",
+              "evidence": "test/spec file anchors expected behavior",
+              "citations": [
+                "tests/test_docs.py"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:tests-test-precedence-and-merging-py",
+              "to": "test:tests-test-precedence-and-merging-py-test-spec-file-anchors-expected-behavior",
+              "kind": "verified_by",
+              "evidence": "test/spec file anchors expected behavior",
+              "citations": [
+                "tests/test_precedence_and_merging.py"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:tests-test-source-aws-systems-manager-py",
+              "to": "test:tests-test-source-aws-systems-manager-py-test-spec-file-anchors-expected-behavior",
+              "kind": "verified_by",
+              "evidence": "test/spec file anchors expected behavior",
+              "citations": [
+                "tests/test_source_aws_systems_manager.py"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:tests-test-source-azure-key-vault-py",
+              "to": "test:tests-test-source-azure-key-vault-py-test-spec-file-anchors-expected-behavior",
+              "kind": "verified_by",
+              "evidence": "test/spec file anchors expected behavior",
+              "citations": [
+                "tests/test_source_azure_key_vault.py"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:tests-test-source-cli-py",
+              "to": "test:tests-test-source-cli-py-test-spec-file-anchors-expected-behavior",
+              "kind": "verified_by",
+              "evidence": "test/spec file anchors expected behavior",
+              "citations": [
+                "tests/test_source_cli.py"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:tests-test-source-gcp-secret-manager-py",
+              "to": "test:tests-test-source-gcp-secret-manager-py-test-spec-file-anchors-expected-behavior",
+              "kind": "verified_by",
+              "evidence": "test/spec file anchors expected behavior",
+              "citations": [
+                "tests/test_source_gcp_secret_manager.py"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:tests-test-source-json-py",
+              "to": "test:tests-test-source-json-py-test-spec-file-anchors-expected-behavior",
+              "kind": "verified_by",
+              "evidence": "test/spec file anchors expected behavior",
+              "citations": [
+                "tests/test_source_json.py"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:tests-test-source-nested-secrets-py",
+              "to": "test:tests-test-source-nested-secrets-py-test-spec-file-anchors-expected-behavior",
+              "kind": "verified_by",
+              "evidence": "test/spec file anchors expected behavior",
+              "citations": [
+                "tests/test_source_nested_secrets.py"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:tests-test-source-toml-py",
+              "to": "test:tests-test-source-toml-py-test-spec-file-anchors-expected-behavior",
+              "kind": "verified_by",
+              "evidence": "test/spec file anchors expected behavior",
+              "citations": [
+                "tests/test_source_toml.py"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:tests-test-utils-py",
+              "to": "test:tests-test-utils-py-test-spec-file-anchors-expected-behavior",
+              "kind": "verified_by",
+              "evidence": "test/spec file anchors expected behavior",
+              "citations": [
+                "tests/test_utils.py"
+              ],
+              "trust": "navigation_lead"
+            }
+          ],
+          "truncated": false
+        },
+        "sources": [
+          "tests/test_source_nested_secrets.py",
+          "tests/test_utils.py",
+          "tests/conftest.py",
+          "tests/test_source_azure_key_vault.py",
+          "tests/test_docs.py",
+          "tests/test_source_gcp_secret_manager.py",
+          "tests/test_source_cli.py",
+          "tests/test_source_aws_systems_manager.py",
+          "tests/test_source_toml.py",
+          "tests/test_source_json.py",
+          "tests/test_precedence_and_merging.py",
+          "tests/example_test_config.json",
+          "docs/index.md",
+          "pyproject.toml",
+          ".github/workflows/ci.yml"
+        ],
+        "truncated": true
+      },
+      "repo_health": {
+        "schema_version": 1,
+        "summary": "Deterministic scan scored 20 source files across simple size, churn, structural, test-adjacency, and performance-risk signals. 3 hotspots surfaced; average score is 7.7/10. Treat these as review leads, not proof of a bug.",
+        "average_score": 7.7,
+        "hotspot_count": 3,
+        "files_analyzed": 20,
+        "files_with_test_signal": 0,
+        "top_files": [
+          {
+            "path": "pydantic_settings/sources/providers/cli.py",
+            "score": 5.7,
+            "bucket": "hotspot",
+            "lines": 1067,
+            "bytes": 83148,
+            "churn": 1940,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "high",
+                "detail": "1067 lines in one source file; inspect whether the module hides multiple responsibilities.",
+                "sources": [
+                  "pydantic_settings/sources/providers/cli.py"
+                ]
+              },
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 18; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "pydantic_settings/sources/providers/cli.py"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 1940 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "pydantic_settings/sources/providers/cli.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "pydantic_settings/sources/providers/cli.py"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow.",
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "pydantic_settings/main.py",
+            "score": 5.7,
+            "bucket": "hotspot",
+            "lines": 1011,
+            "bytes": 51547,
+            "churn": 1100,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "high",
+                "detail": "1011 lines in one source file; inspect whether the module hides multiple responsibilities.",
+                "sources": [
+                  "pydantic_settings/main.py"
+                ]
+              },
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 14; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "pydantic_settings/main.py"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 1100 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "pydantic_settings/main.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "pydantic_settings/main.py"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow.",
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "pydantic_settings/sources/base.py",
+            "score": 6.2,
+            "bucket": "hotspot",
+            "lines": 644,
+            "bytes": 26955,
+            "churn": 662,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "644 lines in one source file; changes here may be harder to review.",
+                "sources": [
+                  "pydantic_settings/sources/base.py"
+                ]
+              },
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 16; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "pydantic_settings/sources/base.py"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 662 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "pydantic_settings/sources/base.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "pydantic_settings/sources/base.py"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "pydantic_settings/sources/utils.py",
+            "score": 6.9,
+            "bucket": "watch",
+            "lines": 423,
+            "bytes": 16863,
+            "churn": 449,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 12; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "pydantic_settings/sources/utils.py"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 449 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "pydantic_settings/sources/utils.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "pydantic_settings/sources/utils.py"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "pydantic_settings/sources/providers/env.py",
+            "score": 6.9,
+            "bucket": "watch",
+            "lines": 386,
+            "bytes": 16473,
+            "churn": 398,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 14; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "pydantic_settings/sources/providers/env.py"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 398 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "pydantic_settings/sources/providers/env.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "pydantic_settings/sources/providers/env.py"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "pydantic_settings/sources/providers/gcp.py",
+            "score": 6.9,
+            "bucket": "watch",
+            "lines": 353,
+            "bytes": 15618,
+            "churn": 359,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 14; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "pydantic_settings/sources/providers/gcp.py"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 359 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "pydantic_settings/sources/providers/gcp.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "pydantic_settings/sources/providers/gcp.py"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "pydantic_settings/sources/providers/dotenv.py",
+            "score": 6.9,
+            "bucket": "watch",
+            "lines": 218,
+            "bytes": 9119,
+            "churn": 246,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 16; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "pydantic_settings/sources/providers/dotenv.py"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 246 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "pydantic_settings/sources/providers/dotenv.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "pydantic_settings/sources/providers/dotenv.py"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "pydantic_settings/sources/providers/azure.py",
+            "score": 7.4,
+            "bucket": "watch",
+            "lines": 161,
+            "bytes": 5637,
+            "churn": 167,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 10; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "pydantic_settings/sources/providers/azure.py"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "Moderate churn",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "Recent git history shows 167 changed lines in this file; it is a change hotspot.",
+                "sources": [
+                  "pydantic_settings/sources/providers/azure.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "pydantic_settings/sources/providers/azure.py"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "pydantic_settings/sources/providers/yaml.py",
+            "score": 7.4,
+            "bucket": "watch",
+            "lines": 147,
+            "bytes": 5963,
+            "churn": 167,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 10; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "pydantic_settings/sources/providers/yaml.py"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "Moderate churn",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "Recent git history shows 167 changed lines in this file; it is a change hotspot.",
+                "sources": [
+                  "pydantic_settings/sources/providers/yaml.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "pydantic_settings/sources/providers/yaml.py"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "pydantic_settings/sources/providers/aws.py",
+            "score": 7.4,
+            "bucket": "watch",
+            "lines": 158,
+            "bytes": 5328,
+            "churn": 158,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 8; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "pydantic_settings/sources/providers/aws.py"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "Moderate churn",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "Recent git history shows 158 changed lines in this file; it is a change hotspot.",
+                "sources": [
+                  "pydantic_settings/sources/providers/aws.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "pydantic_settings/sources/providers/aws.py"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "pydantic_settings/sources/providers/toml.py",
+            "score": 7.4,
+            "bucket": "watch",
+            "lines": 98,
+            "bytes": 3304,
+            "churn": 104,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 10; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "pydantic_settings/sources/providers/toml.py"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "Moderate churn",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "Recent git history shows 104 changed lines in this file; it is a change hotspot.",
+                "sources": [
+                  "pydantic_settings/sources/providers/toml.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "pydantic_settings/sources/providers/toml.py"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "pydantic_settings/sources/providers/pyproject.py",
+            "score": 7.4,
+            "bucket": "watch",
+            "lines": 64,
+            "bytes": 2154,
+            "churn": 66,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 10; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "pydantic_settings/sources/providers/pyproject.py"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "Moderate churn",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "Recent git history shows 66 changed lines in this file; it is a change hotspot.",
+                "sources": [
+                  "pydantic_settings/sources/providers/pyproject.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "pydantic_settings/sources/providers/pyproject.py"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          }
+        ],
+        "truncated": false
+      },
+      "all_files": [],
+      "ignored_dirs": [
+        ".git"
+      ],
+      "coverage": {
+        "schema_version": 1,
+        "strategy": "full_walk",
+        "sampled_files": 55,
+        "total_files": null,
+        "sample_percent": null,
+        "languages": [
+          {
+            "language": "Python",
+            "files": 37,
+            "bytes": 754550
+          },
+          {
+            "language": "YAML",
+            "files": 6,
+            "bytes": 9011
+          },
+          {
+            "language": "CSS",
+            "files": 2,
+            "bytes": 1620
+          },
+          {
+            "language": "Markdown",
+            "files": 2,
+            "bytes": 124827
+          },
+          {
+            "language": "HTML",
+            "files": 1,
+            "bytes": 267
+          },
+          {
+            "language": "JSON",
+            "files": 1,
+            "bytes": 19
+          },
+          {
+            "language": "TOML",
+            "files": 1,
+            "bytes": 6297
+          }
+        ],
+        "top_level_dirs": [
+          {
+            "path": "pydantic_settings",
+            "file_count": 23,
+            "bytes": 270575
+          },
+          {
+            "path": "tests",
+            "file_count": 16,
+            "bytes": 483994
+          },
+          {
+            "path": "docs",
+            "file_count": 5,
+            "bytes": 125759
+          },
+          {
+            "path": ".github",
+            "file_count": 3,
+            "bytes": 6732
+          }
+        ],
+        "notes": [
+          "Full local walk covered the repo within the scan cap."
+        ]
+      },
+      "all_files_capped": false,
+      "dir_tree_preview": {
+        "name": "",
+        "path": "",
+        "is_dir": true,
+        "file_count": 55,
+        "children": [
+          {
+            "name": ".github",
+            "path": ".github",
+            "is_dir": true,
+            "file_count": 3,
+            "children": [
+              {
+                "name": "workflows",
+                "path": ".github/workflows",
+                "is_dir": true,
+                "file_count": 1,
+                "children": [
+                  {
+                    "name": "ci.yml",
+                    "path": ".github/workflows/ci.yml",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "FUNDING.yml",
+                "path": ".github/FUNDING.yml",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "dependabot.yml",
+                "path": ".github/dependabot.yml",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "docs",
+            "path": "docs",
+            "is_dir": true,
+            "file_count": 5,
+            "children": [
+              {
+                "name": "extra",
+                "path": "docs/extra",
+                "is_dir": true,
+                "file_count": 2,
+                "children": [
+                  {
+                    "name": "terminal.css",
+                    "path": "docs/extra/terminal.css",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "tweaks.css",
+                    "path": "docs/extra/tweaks.css",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "theme",
+                "path": "docs/theme",
+                "is_dir": true,
+                "file_count": 1,
+                "children": [
+                  {
+                    "name": "main.html",
+                    "path": "docs/theme/main.html",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "index.md",
+                "path": "docs/index.md",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "logo-white.svg",
+                "path": "docs/logo-white.svg",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "pydantic_settings",
+            "path": "pydantic_settings",
+            "is_dir": true,
+            "file_count": 23,
+            "children": [
+              {
+                "name": "sources",
+                "path": "pydantic_settings/sources",
+                "is_dir": true,
+                "file_count": 17,
+                "children": [
+                  {
+                    "name": "providers",
+                    "path": "pydantic_settings/sources/providers",
+                    "is_dir": true,
+                    "file_count": 13,
+                    "children": [
+                      {
+                        "name": "__init__.py",
+                        "path": "pydantic_settings/sources/providers/__init__.py",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "aws.py",
+                        "path": "pydantic_settings/sources/providers/aws.py",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "azure.py",
+                        "path": "pydantic_settings/sources/providers/azure.py",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "cli.py",
+                        "path": "pydantic_settings/sources/providers/cli.py",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "dotenv.py",
+                        "path": "pydantic_settings/sources/providers/dotenv.py",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "env.py",
+                        "path": "pydantic_settings/sources/providers/env.py",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "gcp.py",
+                        "path": "pydantic_settings/sources/providers/gcp.py",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "json.py",
+                        "path": "pydantic_settings/sources/providers/json.py",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "nested_secrets.py",
+                        "path": "pydantic_settings/sources/providers/nested_secrets.py",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "pyproject.py",
+                        "path": "pydantic_settings/sources/providers/pyproject.py",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "secrets.py",
+                        "path": "pydantic_settings/sources/providers/secrets.py",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "toml.py",
+                        "path": "pydantic_settings/sources/providers/toml.py",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "yaml.py",
+                        "path": "pydantic_settings/sources/providers/yaml.py",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": "__init__.py",
+                    "path": "pydantic_settings/sources/__init__.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "base.py",
+                    "path": "pydantic_settings/sources/base.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "types.py",
+                    "path": "pydantic_settings/sources/types.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "utils.py",
+                    "path": "pydantic_settings/sources/utils.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "__init__.py",
+                "path": "pydantic_settings/__init__.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "exceptions.py",
+                "path": "pydantic_settings/exceptions.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "main.py",
+                "path": "pydantic_settings/main.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "py.typed",
+                "path": "pydantic_settings/py.typed",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "utils.py",
+                "path": "pydantic_settings/utils.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "version.py",
+                "path": "pydantic_settings/version.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "tests",
+            "path": "tests",
+            "is_dir": true,
+            "file_count": 16,
+            "children": [
+              {
+                "name": "conftest.py",
+                "path": "tests/conftest.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "example_test_config.json",
+                "path": "tests/example_test_config.json",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "test_docs.py",
+                "path": "tests/test_docs.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "test_precedence_and_merging.py",
+                "path": "tests/test_precedence_and_merging.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "test_settings.py",
+                "path": "tests/test_settings.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "test_source_aws_secrets_manager.py",
+                "path": "tests/test_source_aws_secrets_manager.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "test_source_aws_systems_manager.py",
+                "path": "tests/test_source_aws_systems_manager.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "test_source_azure_key_vault.py",
+                "path": "tests/test_source_azure_key_vault.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "test_source_cli.py",
+                "path": "tests/test_source_cli.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "test_source_gcp_secret_manager.py",
+                "path": "tests/test_source_gcp_secret_manager.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "test_source_json.py",
+                "path": "tests/test_source_json.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "test_source_nested_secrets.py",
+                "path": "tests/test_source_nested_secrets.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "test_source_pyproject_toml.py",
+                "path": "tests/test_source_pyproject_toml.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "test_source_toml.py",
+                "path": "tests/test_source_toml.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "test_source_yaml.py",
+                "path": "tests/test_source_yaml.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "test_utils.py",
+                "path": "tests/test_utils.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": ".gitignore",
+            "path": ".gitignore",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": ".pre-commit-config.yaml",
+            "path": ".pre-commit-config.yaml",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": ".yamlfmt.yaml",
+            "path": ".yamlfmt.yaml",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "LICENSE",
+            "path": "LICENSE",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "Makefile",
+            "path": "Makefile",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "README.md",
+            "path": "README.md",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "mkdocs.yml",
+            "path": "mkdocs.yml",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "pyproject.toml",
+            "path": "pyproject.toml",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          }
+        ]
+      }
+    },
+    "profiles": [
+      {
+        "stage": "full_scan",
+        "total_ms": 40654,
+        "peak_rss_bytes": 28704768,
+        "steps": [
+          {
+            "id": "git_metadata",
+            "label": "Git metadata",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "file_walk",
+            "label": "Parallel file walk",
+            "ms": 7,
+            "pct": 0.01721847788655483
+          },
+          {
+            "id": "languages",
+            "label": "Language breakdown",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "manifests",
+            "label": "Manifest parsing",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "docs",
+            "label": "Doc previews",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "aggregates",
+            "label": "Dirs, configs, stack tags",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "entrypoints",
+            "label": "Entrypoints, workspace units & QA readiness",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "source_previews",
+            "label": "Source preview cache",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "repo_graph",
+            "label": "Deterministic graph scan",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "history",
+            "label": "Git history & decision scan",
+            "ms": 16,
+            "pct": 0.039356520883553896
+          },
+          {
+            "id": "repo_health",
+            "label": "Deterministic health scoring",
+            "ms": 40629,
+            "pct": 99.93850543611946
+          },
+          {
+            "id": "dir_tree",
+            "label": "Directory tree preview",
+            "ms": 0,
+            "pct": 0
+          }
+        ]
+      },
+      {
+        "stage": "local_scan_persist",
+        "total_ms": 0,
+        "peak_rss_bytes": 28934144,
+        "steps": [
+          {
+            "id": "serialize",
+            "label": "JSON serialize (inventory → SQLite)",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "db_insert",
+            "label": "SQLite insert",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "touch_project",
+            "label": "Update repo project metadata",
+            "ms": 0,
+            "pct": 0
+          }
+        ]
+      }
+    ]
+  },
+  "report": {
+    "overview": "pydantic-settings is a Python library for developers who want application configuration expressed as typed Pydantic models. It combines constructor arguments, environment variables, dotenv files, secret files, optional configuration files, and cloud secret providers through an ordered source pipeline, then delegates validation to Pydantic. The same model definitions can generate command-line interfaces with subcommands, help, argument serialization, and synchronous or asynchronous command handlers.",
+    "agent_prompt": "Onboard to pydantic-settings at commit 5927b441848c330853eac74c82358bc283cd3640. Treat this brief as a source-backed starting point, with bounded inspection rather than exhaustive coverage. Tests and CI were inspected, not executed; their existence and configured coverage thresholds do not establish passing results. During read-only investigation, prefix shell commands with rtk proxy, inspect public tracked source only, and avoid executing repository code, installing dependencies, making network calls, writing files, or reading actual dotenv files, credentials, keys, or secrets.\n\nStart with pyproject.toml, Makefile, .github/workflows/ci.yml, pydantic_settings/__init__.py, and the relevant portions of docs/index.md. This is an importable Python library built with Hatchling, supporting Python 3.10 and newer and Pydantic 2.7 or newer. The repository uses uv for development workflows. Public APIs include BaseSettings, SettingsConfigDict, CliApp, source classes, and CLI annotation helpers.\n\nTrace BaseSettings.__init__ through _settings_init_sources, settings_customise_sources, _settings_build_values, and finally BaseModel validation. Sources are ordered highest priority first. The normal order is constructor arguments, environment, dotenv, secret files, then defaults; an automatically added CLI source is prepended. Each source returns a dictionary, and deep_update(source_state, state) preserves earlier values while allowing later sources to supply missing nested keys. Source constructors can already perform I/O before the merge loop starts. Configuration-file and cloud sources require explicit insertion through settings_customise_sources.\n\nRead sources/base.py and providers/env.py before changing aliases, nesting, decoding, or precedence. InitSettingsSource normalizes matched constructor keys to preferred aliases. Environment sources combine validation aliases, env_prefix_target, case normalization, JSON decoding, delimiter expansion, and optional strict coercion. Nested environment values override corresponding keys in a top-level JSON mapping. NoDecode, ForceDecode, and enable_decoding control decoding. Preserve the difference between an omitted dotenv override and _env_file=None, which disables dotenv loading.\n\nFor CLI work, read CliApp in main.py and providers/cli.py together. CliSettingsSource builds an argparse-compatible parser from model fields and converts parsed arguments into environment-style mappings. CliApp.run handles BaseSettings, BaseModel, and Pydantic dataclasses; run_subcommand selects annotated child models. A root command handler may be absent, while a selected subcommand handler is required. Async handlers use asyncio.run, or a joined worker thread when a loop already runs. Serialization reuses parser metadata and emits unknown arguments last.\n\nFor secrets work, inspect the specific provider and matching tests. Flat secret files and nested secrets have different traversal protections. NestedSecretsSettingsSource confines resolved paths and limits directory size. AWS performs eager SDK reads; GCP defers project resolution until current_state is available. GCP access errors can become None and permit fallback. PYDANTIC_SETTINGS_DEBUG logs source dictionaries before validation and can expose sensitive values. settings_cached returns a shared instance per exact class and process; clearing does not invalidate existing references.\n\nWhen execution is separately authorized, start with focused pytest selections for the changed behavior, then use existing make lint, make mypy, and make test workflows as appropriate. Read precedence regressions, CLI round-trip tests, cache concurrency tests, provider mocks, and nested-secret symlink tests before editing their corresponding paths. Report observed results separately from source expectations and hypotheses.",
+    "system_map": {
+      "summary": "The runtime is an importable Python package whose primary boundary is model construction. BaseSettings orchestrates source selection and merging, while source modules own input acquisition and preparation. CLI execution adds parser and command-dispatch boundaries around the same settings machinery. Packaging, development checks, documentation rendering, and tagged releases are configured separately.",
+      "claims": [
+        {
+          "claim": "The package initializer exposes BaseSettings, SettingsConfigDict, CliApp, source providers, CLI annotations, decoding markers, and version metadata as the public import surface.",
+          "sources": [
+            "pydantic_settings/__init__.py#L1-L34",
+            "pydantic_settings/__init__.py#L36-L74"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "BaseSettings subclasses Pydantic BaseModel; its constructor prepares sources, merges their mappings, and passes the result to BaseModel.__init__ for validation.",
+          "sources": [
+            "pydantic_settings/main.py#L152-L159",
+            "pydantic_settings/main.py#L249-L286"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "PydanticBaseSettingsSource defines the dictionary-producing source contract, field acquisition/preparation hooks, and access to prior aggregate and per-source state.",
+          "sources": [
+            "pydantic_settings/sources/base.py#L106-L158",
+            "pydantic_settings/sources/base.py#L173-L212"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Environment, dotenv, and flat secret sources are built into construction; JSON, TOML, YAML, pyproject, nested secrets, and cloud integrations are additional source classes selected through customization.",
+          "sources": [
+            "pydantic_settings/main.py#L461-L516",
+            "pydantic_settings/main.py#L664-L691",
+            "pydantic_settings/__init__.py#L3-L32"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Runtime retention includes a process-local settings cache keyed by exact model class and separate per-class construction locks; source mappings and merge state otherwise belong to settings resolution.",
+          "sources": [
+            "pydantic_settings/main.py#L51-L53",
+            "pydantic_settings/main.py#L288-L327",
+            "pydantic_settings/main.py#L556-L572"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Hatchling builds the distribution and reads its dynamic version from version.py; the manifest requires Python >=3.10, Pydantic >=2.7.0, python-dotenv, typing-extensions, and typing-inspection.",
+          "sources": [
+            "pyproject.toml#L1-L6",
+            "pyproject.toml#L41-L48"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Optional extras supply YAML, TOML, Azure, AWS, and GCP dependencies; Makefile development commands use uv for installation, Ruff lint/format checks, mypy, and pytest under coverage.",
+          "sources": [
+            "pyproject.toml#L50-L58",
+            "Makefile#L4-L29"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Documentation uses strict MkDocs Material configuration; the inspected CI publishes a built package to PyPI only for tags after its aggregate check succeeds, using a release environment and OIDC permission.",
+          "sources": [
+            "mkdocs.yml#L1-L8",
+            "mkdocs.yml#L40-L55",
+            ".github/workflows/ci.yml#L163-L194"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "feature_catalog": {
+      "summary": "The user-facing surface is primarily Python APIs plus model-generated command-line behavior. Configuration features cover precedence, aliases, nested values, decoding, files, and secrets. Optional cloud sources adapt remote secret stores to model fields. Reloading, shared caching, diagnostic logging, help generation, and CLI serialization round out the operational APIs.",
+      "claims": [
+        {
+          "claim": "SettingsConfigDict and constructor overrides configure case sensitivity, environment prefixes and prefix targets, empty-value filtering, nested delimiters/split limits, null strings, and enum parsing.",
+          "sources": [
+            "pydantic_settings/main.py#L56-L68",
+            "pydantic_settings/main.py#L215-L228",
+            "pydantic_settings/main.py#L388-L415"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Complex environment values support JSON decoding and nested-key overrides; NoDecode, ForceDecode, and enable_decoding control decoding, while nested_model_default_partial_update can contribute model/dataclass default mappings.",
+          "sources": [
+            "pydantic_settings/sources/providers/env.py#L136-L162",
+            "pydantic_settings/sources/base.py#L190-L208",
+            "pydantic_settings/sources/base.py#L279-L295"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Dotenv loading supports multiple files, encoding, bounded parent-directory discovery, and only_existing or match_prefix filtering; explicit _env_file=None disables loading.",
+          "sources": [
+            "pydantic_settings/main.py#L168-L173",
+            "pydantic_settings/sources/providers/dotenv.py#L100-L144"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "JSON, TOML, and YAML sources accept multiple paths or packaged Traversable resources and optional deep merging; TOML selects tuple-based tables, YAML selects dotted sections, and pyproject defaults to tool.pydantic-settings.",
+          "sources": [
+            "pydantic_settings/sources/types.py#L36-L43",
+            "pydantic_settings/sources/base.py#L215-L235",
+            "pydantic_settings/sources/providers/toml.py#L53-L71",
+            "pydantic_settings/sources/providers/yaml.py#L41-L79",
+            "pydantic_settings/sources/providers/pyproject.py#L28-L37"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Flat secrets load field-matched UTF-8 files from ordered directories; nested secrets additionally support directory-shaped nesting, separate prefix/case rules, missing-directory policies, and a default 16 MiB size limit.",
+          "sources": [
+            "pydantic_settings/sources/providers/secrets.py#L121-L137",
+            "pydantic_settings/sources/providers/nested_secrets.py#L19-L95"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Cloud integrations include AWS Secrets Manager with optional VersionId, recursive decrypted AWS SSM parameters, Azure enabled-secret lookup and name conversion, and GCP project resolution plus per-field SecretVersion metadata.",
+          "sources": [
+            "pydantic_settings/sources/providers/aws.py#L76-L89",
+            "pydantic_settings/sources/providers/aws.py#L132-L149",
+            "pydantic_settings/sources/providers/azure.py#L60-L97",
+            "pydantic_settings/sources/providers/gcp.py#L238-L265"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CLI models support subcommands, positional and variadic arguments, dual/toggle/explicit boolean flags, unknown-argument capture, suppression, shortcuts, kebab-case naming, mutually exclusive groups, and customizable parser methods.",
+          "sources": [
+            "pydantic_settings/sources/providers/cli.py#L302-L313",
+            "pydantic_settings/sources/providers/cli.py#L368-L394",
+            "pydantic_settings/sources/providers/cli.py#L961-L976",
+            "pydantic_settings/sources/providers/cli.py#L1238-L1284"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Operational APIs include settings_cached/settings_clear_cache, documented in-place __init__ reloading, PYDANTIC_SETTINGS_DEBUG source diagnostics, and CliApp run, run_subcommand, serialize, format_help, and print_help.",
+          "sources": [
+            "pydantic_settings/main.py#L288-L327",
+            "docs/index.md#L3652-L3684",
+            "pydantic_settings/main.py#L591-L603",
+            "pydantic_settings/main.py#L967-L1068"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "data_flow": {
+      "summary": "Inputs become dictionaries before final Pydantic validation. Constructor inputs and field aliases are normalized so source values can merge under compatible keys. Environment-shaped providers share decoding and nested expansion, whereas structured files parse into mappings first. The pipeline retains intermediate source dictionaries for dependent sources and optional diagnostics, then produces a validated model.",
+      "claims": [
+        {
+          "claim": "_settings_init_sources resolves explicit constructor controls against model_config, with ENV_FILE_SENTINEL preserving the distinction between omitted dotenv configuration and an explicit None.",
+          "sources": [
+            "pydantic_settings/main.py#L388-L415",
+            "pydantic_settings/sources/types.py#L47-L50"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "InitSettingsSource matches constructor keys using configured case rules and alias preference, writes matched values under canonical preferred aliases, removes duplicate matches, and retains unmatched extras.",
+          "sources": [
+            "pydantic_settings/sources/base.py#L323-L372"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "EnvSettingsSource snapshots os.environ during initialization; parse_env_vars normalizes names, optionally drops empty strings, and marks configured null strings with EnvNoneType.",
+          "sources": [
+            "pydantic_settings/sources/providers/env.py#L75-L94",
+            "pydantic_settings/sources/utils.py#L60-L78"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Field acquisition searches extracted environment names in order; preparation decodes complex values and deep-merges delimiter-expanded nested values over a decoded top-level mapping.",
+          "sources": [
+            "pydantic_settings/sources/providers/env.py#L109-L158",
+            "pydantic_settings/sources/providers/env.py#L285-L302"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Structured file sources call ConfigFileSourceMixin._read_files, skip non-files, merge later file mappings over earlier ones shallowly or deeply, then feed the result through InitSettingsSource.",
+          "sources": [
+            "pydantic_settings/sources/base.py#L215-L235",
+            "pydantic_settings/sources/providers/json.py#L36-L55",
+            "pydantic_settings/sources/providers/toml.py#L61-L78"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CLI parsing produces a namespace or dictionary, resolves repeated values and selected subcommands, marks unselected subcommands as null, and converts the result into env_vars for inherited environment-style preparation.",
+          "sources": [
+            "pydantic_settings/sources/providers/cli.py#L559-L575",
+            "pydantic_settings/sources/providers/cli.py#L602-L620",
+            "pydantic_settings/sources/providers/cli.py#L638-L668"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Before each source call, _settings_build_values supplies current_state and settings_sources_data; it records the source result and applies deep_update(source_state, state), giving previously merged sources priority.",
+          "sources": [
+            "pydantic_settings/main.py#L556-L572",
+            "pydantic_settings/sources/base.py#L118-L144"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "After merging, unchanged default-source values are removed, optional debug output is emitted, original constructor key names are restored, and BaseModel.__init__ validates the resulting mapping.",
+          "sources": [
+            "pydantic_settings/main.py#L574-L585",
+            "pydantic_settings/main.py#L618-L649",
+            "pydantic_settings/main.py#L286-L286"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "behavior_traces": {
+      "summary": "The inspected flows cover ordinary construction, CLI command execution, file-backed secrets, cloud-backed secrets, caching, and serialization. Their execution order explains when I/O happens and which state a source can observe. File and cloud paths load configuration into models; the shown flows do not persist model changes back to their input stores. Cache reuse retains validated instances within the process.",
+      "claims": [
+        {
+          "claim": "Construction flow: BaseSettings.__init__ → _settings_init_sources → built-in source constructors → settings_customise_sources → _settings_build_values → BaseModel.__init__; sources normally run init, environment, dotenv, flat secrets, defaults.",
+          "sources": [
+            "pydantic_settings/main.py#L249-L286",
+            "pydantic_settings/main.py#L329-L351",
+            "pydantic_settings/main.py#L461-L516",
+            "pydantic_settings/main.py#L556-L585"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Nested environment flow: EnvSettingsSource._load_env_vars → parse_env_vars → inherited __call__ → get_field_value → prepare_field_value → decode_complex_value/explode_env_vars; nested entries override overlapping decoded JSON keys before model validation.",
+          "sources": [
+            "pydantic_settings/sources/providers/env.py#L84-L94",
+            "pydantic_settings/sources/base.py#L600-L634",
+            "pydantic_settings/sources/providers/env.py#L109-L158",
+            "pydantic_settings/sources/base.py#L190-L208"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Dotenv flow: DotEnvSettingsSource initialization invokes its _load_env_vars override → _read_env_files → _resolve_config_file → dotenv_values → parse_env_vars; later files replace earlier keys, then __call__ applies field extraction and extra-variable filtering.",
+          "sources": [
+            "pydantic_settings/sources/providers/dotenv.py#L59-L86",
+            "pydantic_settings/sources/providers/dotenv.py#L100-L144",
+            "pydantic_settings/sources/utils.py#L81-L97"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Flat-secret flow: SecretsSettingsSource.__call__ expands configured directories, warns for missing paths, rejects existing non-directories, then inherited field traversal calls get_field_value → find_case_path → UTF-8 read_text().strip(); later directories are searched first.",
+          "sources": [
+            "pydantic_settings/sources/providers/secrets.py#L56-L104",
+            "pydantic_settings/sources/providers/secrets.py#L121-L137",
+            "pydantic_settings/sources/base.py#L600-L634"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CLI flow: CliApp.run checks the model type → _settings_init_sources creates/connects CliSettingsSource → arguments load into env_vars → sources merge and validate → _run_cli_cmd invokes the root handler if present; a handler calling run_subcommand selects the annotated child and requires its handler.",
+          "sources": [
+            "pydantic_settings/main.py#L857-L903",
+            "pydantic_settings/sources/providers/cli.py#L487-L518",
+            "pydantic_settings/main.py#L941-L964",
+            "pydantic_settings/sources/base.py#L83-L103"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "GCP flow: source construction initially returns an empty environment mapping; the merge loop supplies current_state → source.__call__ → _load_env_vars → _resolve_gcp_project → GoogleSecretManagerMapping → field lookup → access_secret_version, using explicit project, prior-source project, then auth defaults.",
+          "sources": [
+            "pydantic_settings/main.py#L560-L566",
+            "pydantic_settings/sources/providers/gcp.py#L202-L222",
+            "pydantic_settings/sources/providers/gcp.py#L275-L342",
+            "pydantic_settings/sources/providers/gcp.py#L113-L148"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Cache flow: settings_cached checks the guarded class cache, obtains a per-class lock, double-checks the entry, constructs cls() outside the global guard, and stores it; settings_clear_cache removes only the exact class entry and cannot revoke held or in-flight references.",
+          "sources": [
+            "pydantic_settings/main.py#L288-L327",
+            "tests/test_settings.py#L121-L154"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Serialization flow: CliApp.serialize builds a CliSettingsSource → _serialized_args walks model fields and parser metadata → _serialize_value converts enums/containers → _flatten_serialized_args orders optional/positional segments, subcommands, and finally verbatim unknown arguments.",
+          "sources": [
+            "pydantic_settings/main.py#L1008-L1015",
+            "pydantic_settings/sources/providers/cli.py#L1629-L1674",
+            "pydantic_settings/sources/providers/cli.py#L1689-L1728"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "testing_signals": {
+      "summary": "Tests and CI were inspected, not executed, so this report contains no passing-test or measured-coverage result. Pytest tests cover precedence, aliases, CLI execution and round trips, caching, files, and mocked cloud behavior. CI specifies a cross-platform Python matrix and combined coverage gates. Inspection is bounded, and mocked providers, platform skips, and coverage exclusions limit what those checks establish.",
+      "claims": [
+        {
+          "claim": "Pytest discovers tests under tests, treats warnings as errors with explicit exceptions, and is run by make test through uv run coverage run -m pytest --durations=10; these commands were inspected, not executed.",
+          "sources": [
+            "pyproject.toml#L77-L94",
+            "Makefile#L27-L29"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "test_precedence_and_merging.py asserts init > environment > dotenv > secrets > defaults, nested merge preservation, and custom environment-first ordering with AliasChoices/AliasGenerator.",
+          "sources": [
+            "tests/test_precedence_and_merging.py#L27-L81",
+            "tests/test_precedence_and_merging.py#L84-L120",
+            "tests/test_precedence_and_merging.py#L123-L165"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Cache tests assert identity reuse, exact-class invalidation, single construction across eight threads, cross-thread nested loading, concurrent unrelated classes, collection after clearing, and retry after failed validation.",
+          "sources": [
+            "tests/test_settings.py#L121-L176",
+            "tests/test_settings.py#L179-L258"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CLI tests exercise subcommand dispatch and alternate handlers, async handlers with and without a running loop, worker-thread exception propagation, and serialize/parse round trips for list and dictionary styles.",
+          "sources": [
+            "tests/test_source_cli.py#L3246-L3328",
+            "tests/test_source_cli.py#L4126-L4161"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Nested-secret regressions assert external directory/file symlinks do not populate settings; JSON tests distinguish shallow/deep multi-file merging, and fixtures simulate non-UTF-8 default decoding.",
+          "sources": [
+            "tests/test_source_nested_secrets.py#L201-L256",
+            "tests/test_source_json.py#L136-L165",
+            "tests/conftest.py#L75-L104"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Inspected AWS tests use moto and optional-dependency skips, while Azure and GCP tests mock SDK operations; these fixtures establish intended local behavior without demonstrating live IAM, endpoint, or service compatibility.",
+          "sources": [
+            "tests/test_source_aws_secrets_manager.py#L38-L89",
+            "tests/test_source_aws_systems_manager.py#L34-L44",
+            "tests/test_source_azure_key_vault.py#L26-L78",
+            "tests/test_source_gcp_secret_manager.py#L28-L84"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Documentation examples use pytest-examples for linting and execution expectations, but skip unsupported platforms/implementations, honor per-example skip/version requirements, and can mark expected failures.",
+          "sources": [
+            "tests/test_docs.py#L16-L23",
+            "tests/test_docs.py#L61-L95",
+            "tests/test_docs.py#L100-L120"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Inspected CI specifies Python 3.10–3.14 across Linux/macOS/Windows, repeats tests after uninstalling PyYAML, combines branch coverage, and requires 98% overall/100% library coverage; configured exclusions and matrix aggregation prevent interpreting these gates as exhaustive single-platform verification.",
+          "sources": [
+            ".github/workflows/ci.yml#L40-L84",
+            ".github/workflows/ci.yml#L113-L146",
+            "pyproject.toml#L97-L129"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "risk_map": {
+      "summary": "The sensitive boundaries are configuration acquisition, secret retrieval, diagnostic output, shared caches, and command invocation. Findings below are source observations or explicitly labeled hypotheses, not confirmed vulnerabilities. Several paths intentionally read outside the repository or communicate through cloud SDKs. Tests document some protections and failure policies, but this inspection supplies no runtime security verification.",
+      "claims": [
+        {
+          "claim": "PYDANTIC_SETTINGS_DEBUG plus DEBUG logging emits reprs of complete source dictionaries before model validation; the implementation and documentation explicitly warn that environment, dotenv, and secret values can appear.",
+          "sources": [
+            "pydantic_settings/main.py#L574-L603",
+            "pydantic_settings/utils.py#L9-L14",
+            "docs/index.md#L3452-L3455"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Configured file paths can expand home directories or point outside the repository; dotenv discovery can search cwd parents and accepts FIFOs, making path trust and potentially blocking reads application concerns.",
+          "sources": [
+            "pydantic_settings/sources/base.py#L222-L230",
+            "pydantic_settings/sources/utils.py#L81-L97",
+            "pydantic_settings/sources/providers/dotenv.py#L110-L116"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Flat SecretsSettingsSource searches directory entries then uses is_file/read_text without the resolved-root confinement implemented by NestedSecretsSettingsSource; the two APIs therefore provide different symlink-handling boundaries.",
+          "sources": [
+            "pydantic_settings/sources/providers/secrets.py#L101-L104",
+            "pydantic_settings/sources/providers/secrets.py#L121-L137",
+            "pydantic_settings/sources/providers/nested_secrets.py#L181-L205"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Nested secrets share a confined, cycle-guarded iterator between size accounting and loading, but those operations occur separately; a concurrently mutable secret tree could change between validation and reading, a source-derived race hypothesis requiring runtime investigation.",
+          "sources": [
+            "pydantic_settings/sources/providers/nested_secrets.py#L144-L159",
+            "pydantic_settings/sources/providers/nested_secrets.py#L181-L213"
+          ],
+          "kind": "inference"
+        },
+        {
+          "claim": "GCP value acquisition catches broad exceptions and returns None for many access failures; tests explicitly expect PermissionDenied to become None, allowing lower-priority sources/defaults or final missing-field validation to determine the result.",
+          "sources": [
+            "pydantic_settings/sources/providers/gcp.py#L113-L148",
+            "tests/test_source_gcp_secret_manager.py#L132-L160",
+            "pydantic_settings/sources/base.py#L619-L634"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "AWS SDK calls accept caller-selected endpoint URLs, SSM requests recursive decrypted parameters, Azure takes a supplied credential, and GCP can invoke google.auth.default; these are network and authentication boundaries delegated to optional SDKs.",
+          "sources": [
+            "pydantic_settings/sources/providers/aws.py#L47-L63",
+            "pydantic_settings/sources/providers/aws.py#L118-L136",
+            "pydantic_settings/sources/providers/azure.py#L139-L146",
+            "pydantic_settings/sources/providers/gcp.py#L294-L317"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "settings_cached returns a shared mutable object per class/process, retains old values until clearing, and does not invalidate existing references; even frozen models can contain mutable collections shared across callers.",
+          "sources": [
+            "pydantic_settings/main.py#L288-L327",
+            "docs/index.md#L3727-L3739"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Core and CLI code import private Pydantic internals; settings I/O is synchronous, and async CLI handlers invoked inside an existing loop run in a worker thread followed by join, so the public call remains blocking.",
+          "sources": [
+            "pydantic_settings/main.py#L15-L20",
+            "pydantic_settings/sources/providers/cli.py#L41-L46",
+            "pydantic_settings/main.py#L784-L818",
+            "docs/index.md#L3747-L3751"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "extension_points": {
+      "summary": "Customization centers on explicit source composition rather than automatic plugin discovery. Sources can reuse field preparation and observe higher-priority state. CLI extensions use model metadata and an argparse-compatible adapter surface. File readers, cloud-client injection, validation hooks, and public exports provide additional concrete places to extend behavior.",
+      "claims": [
+        {
+          "claim": "Override settings_customise_sources to add, remove, or reorder dictionary-producing sources; its tuple establishes highest-first priority, and the orchestrator appends DefaultSettingsSource afterward.",
+          "sources": [
+            "pydantic_settings/main.py#L329-L351",
+            "pydantic_settings/main.py#L509-L516",
+            "docs/index.md#L3457-L3469"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Subclass PydanticBaseSettingsSource and implement get_field_value/__call__; inherited prepare_field_value, field_is_complex, and decode_complex_value supply reusable conversion hooks.",
+          "sources": [
+            "pydantic_settings/sources/base.py#L146-L212"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Dependent sources can read current_state and settings_sources_data populated immediately before __call__; GCP project resolution is an implemented example of consuming prior-source state.",
+          "sources": [
+            "pydantic_settings/sources/base.py#L118-L144",
+            "pydantic_settings/main.py#L560-L563",
+            "pydantic_settings/sources/providers/gcp.py#L285-L305"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New structured-file providers can combine ConfigFileSourceMixin with InitSettingsSource and implement _read_file, retaining shared multi-file ordering, optional deep merging, and alias normalization.",
+          "sources": [
+            "pydantic_settings/sources/base.py#L215-L239",
+            "pydantic_settings/sources/providers/json.py#L23-L55"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CliSettingsSource accepts an external root_parser and injectable parse/add/group/subparser/help methods; adapters must honor argparse-compatible signatures, and external parsers cannot request case-insensitive matching.",
+          "sources": [
+            "pydantic_settings/sources/providers/cli.py#L320-L324",
+            "pydantic_settings/sources/providers/cli.py#L387-L394",
+            "pydantic_settings/sources/providers/cli.py#L472-L474",
+            "pydantic_settings/sources/providers/cli.py#L980-L1008"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CLI Annotated helpers and CliMutuallyExclusiveGroup extend model-driven parser generation; _CliArg and _parser_map connect field metadata to argument destinations, subcommand models, and serialization.",
+          "sources": [
+            "pydantic_settings/sources/providers/cli.py#L92-L93",
+            "pydantic_settings/sources/providers/cli.py#L160-L188",
+            "pydantic_settings/sources/providers/cli.py#L302-L313",
+            "pydantic_settings/sources/providers/cli.py#L1689-L1703"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CliApp accepts an alternate cli_cmd_method_name, while Pydantic validators can transform or check the model after settings acquisition; inspected tests exercise alternate command dispatch and an after-model validator.",
+          "sources": [
+            "pydantic_settings/main.py#L823-L830",
+            "pydantic_settings/main.py#L777-L818",
+            "tests/test_source_cli.py#L3273-L3291",
+            "tests/test_settings.py#L185-L195"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "GCP supports prebuilt secret_client injection and SecretVersion field metadata; adding public APIs or provider dependencies also involves the explicit package exports and optional-extras manifest.",
+          "sources": [
+            "pydantic_settings/sources/providers/gcp.py#L163-L174",
+            "pydantic_settings/sources/providers/gcp.py#L238-L265",
+            "pydantic_settings/__init__.py#L36-L72",
+            "pyproject.toml#L50-L58"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_handoff": {
+      "summary": "Begin changes at the source boundary responsible for the behavior and read its matching tests. Precedence, aliases, decoding, source-construction timing, and shared-state lifetime are the main cross-module contracts. Tests and CI were inspected, not executed; the suggested commands are future checks requiring execution authorization. This brief is bounded source inspection and supplies no passing results or confirmed vulnerabilities.",
+      "claims": [
+        {
+          "claim": "Read main.py source orchestration, sources/base.py contracts, and providers/env.py preparation before modifying settings resolution; changes there affect every environment-derived provider and final model construction.",
+          "sources": [
+            "pydantic_settings/main.py#L461-L585",
+            "pydantic_settings/sources/base.py#L600-L634",
+            "pydantic_settings/sources/providers/env.py#L119-L162"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Preserve highest-first source order and deep_update(source_state, state); use precedence and alias regressions to assess changes rather than assuming later sources overwrite earlier ones.",
+          "sources": [
+            "pydantic_settings/main.py#L560-L575",
+            "tests/test_precedence_and_merging.py#L84-L120",
+            "tests/test_precedence_and_merging.py#L123-L165"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Distinguish configuring a file source from enabling it: setting json_file/toml_file/yaml_file alone does not insert the source, and _settings_warn_unused_config_keys warns when the corresponding source is absent.",
+          "sources": [
+            "pydantic_settings/main.py#L509-L516",
+            "pydantic_settings/main.py#L664-L680"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Preserve ENV_FILE_SENTINEL versus None, platform-specific environment case handling, and explicit UTF-8 reads; these encode observable configuration and portability contracts.",
+          "sources": [
+            "pydantic_settings/sources/types.py#L47-L50",
+            "pydantic_settings/sources/providers/env.py#L86-L94",
+            "pydantic_settings/sources/providers/json.py#L45-L55",
+            "tests/conftest.py#L75-L104"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "For CLI changes, inspect main.py and providers/cli.py together with dispatch and round-trip tests; root handlers are optional in code, child handlers are required, and unknown serialized arguments must remain last.",
+          "sources": [
+            "pydantic_settings/main.py#L777-L782",
+            "pydantic_settings/main.py#L896-L902",
+            "pydantic_settings/main.py#L960-L964",
+            "pydantic_settings/sources/providers/cli.py#L1658-L1674",
+            "tests/test_source_cli.py#L4126-L4161"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Keep source initialization timing explicit: environment loading occurs in its constructor, AWS reads during inherited initialization, and GCP deliberately waits for __call__ so previous sources can provide its project.",
+          "sources": [
+            "pydantic_settings/sources/providers/env.py#L84-L94",
+            "pydantic_settings/sources/providers/aws.py#L61-L85",
+            "pydantic_settings/sources/providers/gcp.py#L319-L342"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Tests and CI were inspected, not executed. When authorized, start with focused pytest cases in the affected test file, then use repository make lint, make mypy, and make test; CI's combined coverage gates are configuration evidence rather than current results.",
+          "sources": [
+            "Makefile#L18-L29",
+            "pyproject.toml#L88-L94",
+            ".github/workflows/ci.yml#L136-L146"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Maintain Ruff's Python 3.10 target, 120-character lines and single-quote formatting, strict mypy checks, and shared InitState warning deduplication; unresolved field definitions direct users to model_rebuild rather than silently assuming annotations are complete.",
+          "sources": [
+            "pyproject.toml#L136-L138",
+            "pyproject.toml#L172-L192",
+            "pydantic_settings/main.py#L461-L471",
+            "pydantic_settings/sources/utils.py#L36-L56"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    }
+  },
+  "analysis": {
+    "agent": "codex",
+    "model": "cli:codex",
+    "runtime_ms": 366469,
+    "cost_usd": null,
+    "collected_at": "2026-10-02T17:35:42.198686+00:00",
+    "source_commit_sha": "5927b441848c330853eac74c82358bc283cd3640",
+    "citation_validation": {
+      "status": "passed",
+      "claim_count": 64,
+      "path_and_line_bounds": true,
+      "semantic_correctness_established": false
+    },
+    "runtime_verification": {
+      "tests_executed": false,
+      "upstream_code_executed": false
+    },
+    "source_review": {
+      "status": "reviewed_bounded",
+      "all_claim_text_screened": true,
+      "independently_source_checked_claim_count": 58,
+      "private_review_receipt_sha256": "1094278b136701103d44dea8741519be8f6d6e18534c21cbcb1441f0d028c4e7",
+      "full_semantic_correctness_established": false
+    }
+  },
+  "public_export": {
+    "private_original_record_sha256": "72d22fd7a1fcc6000111830a8d5ee7599d4214b003fce7abf9605bd24ed02656",
+    "omitted_local_fields": [
+      "scan.inventory.repo_path"
+    ],
+    "original_record_retained_privately": true,
+    "note": "Public corpus projection; embedded scan omits the local clone path. Hash identifies the original corpus record, not raw CLI stdout."
+  }
+}

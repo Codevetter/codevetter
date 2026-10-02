@@ -4,6 +4,7 @@ import { spawnSync } from 'node:child_process';
 import { lstatSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { assessUnpackBatch } from './check-unpack-batch.mjs';
 
 const standardLimits = Object.freeze({
   changedFiles: 40,
@@ -27,7 +28,7 @@ function git(args) {
   return spawnSync('git', args, { cwd: repositoryRoot, encoding: 'utf8' });
 }
 
-function measureNumstat(args) {
+function measureNumstat(args, excluded = new Set()) {
   const result = git(['diff', '--numstat', ...args, comparisonBase, '--']);
   if (result.status !== 0) throw new Error(result.stderr.trim() || 'git diff failed');
   return result.stdout
@@ -35,7 +36,8 @@ function measureNumstat(args) {
     .filter(Boolean)
     .reduce(
       (totals, line) => {
-        const [added, removed] = line.split('\t');
+        const [added, removed, file] = line.split('\t');
+        if (excluded.has(file)) return totals;
         const additions = /^\d+$/.test(added) ? Number(added) : 0;
         const deletions = /^\d+$/.test(removed) ? Number(removed) : 0;
         return {
@@ -49,10 +51,10 @@ function measureNumstat(args) {
     );
 }
 
-function countUntracked() {
+function countUntracked(excluded = new Set()) {
   const result = git(['ls-files', '--others', '--exclude-standard']);
   if (result.status !== 0) throw new Error(result.stderr.trim() || 'git ls-files failed');
-  const files = result.stdout.split('\n').filter(Boolean);
+  const files = result.stdout.split('\n').filter((file) => file && !excluded.has(file));
   return files.reduce(
     (totals, file) => {
       const absolute = path.join(repositoryRoot, file);
@@ -163,6 +165,29 @@ try {
     );
     process.exit(0);
   }
+
+  const changed = git(['diff', '--name-only', '--no-renames', comparisonBase, '--']);
+  if (changed.status !== 0) throw new Error(changed.stderr.trim());
+  const batch = assessUnpackBatch(repositoryRoot, comparisonBase, [
+    ...changed.stdout.split('\n').filter(Boolean),
+    ...untracked.files,
+  ]);
+  if (batch.passed) {
+    const excluded = new Set(batch.artifacts);
+    const source = addUntracked(
+      measureNumstat(['--no-renames', '--diff-filter=ACDMR'], excluded),
+      countUntracked(excluded)
+    );
+    if (Object.entries(standardLimits).every(([metric, limit]) => source[metric] <= limit)) {
+      console.log(
+        `Change-size gate: PASS qualified corpus (${batch.additions} additions, ${batch.bytes} artifact bytes; source ${source.changedFiles} files, ${source.addedLines} additions, ${source.grossLines} gross lines)`
+      );
+      process.exit(0);
+    }
+  }
+  console.error(
+    `Corpus batch exception: ${batch.passed ? 'source changes exceed standard limits' : batch.reason}`
+  );
 
   const retirement = retirementAssessment(untracked);
   if (retirement.passed) {

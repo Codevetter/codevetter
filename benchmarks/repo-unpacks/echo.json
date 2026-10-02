@@ -1,0 +1,4081 @@
+{
+  "schema_version": "codevetter.repo-unpack-corpus/v1",
+  "repo": "labstack/echo",
+  "slug": "echo",
+  "codevetter_version": "codevetter 1.15.0",
+  "collected_at": "2026-10-02T18:13:08.927Z",
+  "last_commit": {
+    "sha": "99c395d846e079d4cffd29de9298d1dd829e8b04",
+    "date": "2026-10-01",
+    "subject": "ci: rename the test workflow to ci.yml (#3141)"
+  },
+  "scan": {
+    "schema_version": "codevetter.unpack-scan/v1",
+    "report_id": "adeb23ad-ef04-488e-8b2d-cc9e58e6c32c",
+    "status": "scan_only",
+    "created_at": "2026-10-02T18:13:08.920430+00:00",
+    "inventory": {
+      "repo_path": "[local clone path omitted from public export]",
+      "repo_name": "echo",
+      "commit_sha": "99c395d846e079d4cffd29de9298d1dd829e8b04",
+      "branch": "master",
+      "remote_url": "https://github.com/labstack/echo.git",
+      "files_scanned": 139,
+      "files_skipped": 2,
+      "bytes_scanned": 1461423,
+      "max_files_hit": false,
+      "estimated_total_files": null,
+      "languages": [
+        {
+          "language": "Go",
+          "files": 108,
+          "bytes": 1311728
+        },
+        {
+          "language": "Markdown",
+          "files": 10,
+          "bytes": 109687
+        },
+        {
+          "language": "YAML",
+          "files": 5,
+          "bytes": 9593
+        },
+        {
+          "language": "JSON",
+          "files": 2,
+          "bytes": 3077
+        },
+        {
+          "language": "HTML",
+          "files": 2,
+          "bytes": 244
+        }
+      ],
+      "manifests": [
+        {
+          "path": "go.mod",
+          "kind": "go.mod",
+          "name": "github.com/labstack/echo/v5",
+          "version": null,
+          "dependencies": [],
+          "scripts": []
+        }
+      ],
+      "entrypoints": [
+        {
+          "path": "README.md",
+          "kind": "docs",
+          "reason": "Repository readme"
+        },
+        {
+          "path": "CLAUDE.md",
+          "kind": "docs",
+          "reason": "Claude instructions"
+        },
+        {
+          "path": ".github/workflows/checks.yml",
+          "kind": "config",
+          "reason": "GitHub Actions workflow"
+        },
+        {
+          "path": ".github/workflows/ci.yml",
+          "kind": "config",
+          "reason": "GitHub Actions workflow"
+        }
+      ],
+      "top_level_dirs": [
+        {
+          "path": "middleware",
+          "file_count": 53,
+          "bytes": 470755
+        },
+        {
+          "path": "echotest",
+          "file_count": 7,
+          "bytes": 11889
+        },
+        {
+          "path": "_fixture",
+          "file_count": 6,
+          "bytes": 5825
+        },
+        {
+          "path": ".github",
+          "file_count": 4,
+          "bytes": 9615
+        }
+      ],
+      "docs": [
+        {
+          "path": "CLAUDE.md",
+          "bytes": 3132,
+          "preview": "# CLAUDE.md\n\nThis file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.\n\n## About This Project\n\nEcho is a high performance, minimalist Go web framework. This is the main repository for Echo v5, which is available as a Go module at `github.com/labstack/echo/v5`.\n\n## Development Commands\n\nThe project uses a Makefile for common development tasks:\n\n- `make check` - Run linting, vetting, and race condition tests (default target)\n- `make init` - Install required linting tools (golint, staticcheck)\n- `make lint` - Run staticcheck and golint\n- `make vet` - Run go vet\n- `make test` - Run short tests\n- `make race` - Run tests with race detector\n- `make benchmark` - Run benchmarks\n\nExample commands for development:\n```bash\n# Setup development environment\nmake init\n\n# Run all checks (lint, vet, race)\nmake check\n\n# Run specific tests\ngo test ./middleware/...\ngo test -race ./...\n\n# Run benchmarks\nmake benchmark\n```\n\n## Code Architecture\n\n### Core Components\n\n**Echo Instance (`echo.go`)**\n- The `Echo` struct is the top-level framework instance\n- Contains router, middleware stacks, and server configuration\n- Not goroutine-safe for mutations after server start\n\n**Context (`context.go`)**\n- The `Context` struct represents HTTP request/response context\n- Provides methods for request/response handling, path parameters, data binding\n- Core abstraction for request processing\n\n**Router (`router.go`)**\n- Radix tree-based HTTP router with smart route prioritization\n- Supports static routes, parameterized routes (`/users/:id`), and wildcard routes (`/static/*`)\n- Each HTTP method has its own routing tree\n\n**Middleware (`middleware/`)**\n- Extensive middleware system with 50+ built-in middlewares\n- Middleware can be applied at Echo, Group, or individual route level\n- Common middleware: Logger, Recover, CORS, JWT, Rate Limiting, etc.\n\n### Key Patterns\n\n**Middleware Chain**\n- Pre-middleware runs before routing\n- Regular middleware runs after routing but before handlers\n- Middleware functions have signature `func(next echo.HandlerFunc) echo.HandlerFunc`\n\n**Route Groups**\n- Routes can be grouped with common prefixes and middleware\n- Groups support nested sub-groups\n- Defined in `group.go`\n\n**Data Binding**\n- Automatic binding of request data (JSON, XML, form) to Go structs\n- Implemented in `binder.go` with support for custom binders\n\n**Error Handling**\n- Centralized error handling via `HTTPErrorHandler`\n- Automatic panic recovery with stack traces\n\n## File Organization\n\n- Root directory: Core Echo functionality (echo.go, context.go, router.go, etc.)\n- `middleware/`: All built-in middleware implementations\n- `_test/`: Test fixtures and utilities\n- `_fixture/`: Test data files\n\n## Code Style\n\n- Go code uses tabs for indentation (per .editorconfig)\n- Follows standard Go conventions and formatting\n- Uses gofmt, golint, and staticcheck for code quality\n\n## Testing\n\n- Standard Go testing with `testing` package\n- Tests include unit tests, integration tests, and benchmarks\n- Race condition testing is required (`make race`)\n- Test files follow `*_test.go` naming convention"
+        },
+        {
+          "path": "README.md",
+          "bytes": 10806,
+          "preview": "[![Latest release](https://img.shields.io/github/v/release/labstack/echo?style=flat-square&label=release&color=00afd1)](https://github.com/labstack/echo/releases)\n[![Last commit](https://img.shields.io/github/last-commit/labstack/echo/master?style=flat-square)](https://github.com/labstack/echo/commits/master)\n[![Sourcegraph](https://sourcegraph.com/github.com/labstack/echo/-/badge.svg?style=flat-square)](https://sourcegraph.com/github.com/labstack/echo?badge)\n[![GoDoc](https://img.shields.io/badge/go-documentation-blue.svg?style=flat-square)](https://pkg.go.dev/github.com/labstack/echo/v5)\n[![Go Report Card](https://goreportcard.com/badge/github.com/labstack/echo?style=flat-square)](https://goreportcard.com/report/github.com/labstack/echo)\n[![GitHub Workflow Status (with event)](https://img.shields.io/github/actions/workflow/status/labstack/echo/ci.yml?style=flat-square)](https://github.com/labstack/echo/actions)\n[![Codecov](https://img.shields.io/codecov/c/github/labstack/echo.svg?style=flat-square)](https://codecov.io/gh/labstack/echo)\n[![Forum](https://img.shields.io/badge/community-forum-00afd1.svg?style=flat-square)](https://github.com/labstack/echo/discussions)\n[![Twitter](https://img.shields.io/badge/twitter-@labstack-55acee.svg?style=flat-square)](https://twitter.com/labstack)\n[![License](https://img.shields.io/badge/license-mit-blue.svg?style=flat-square)](https://raw.githubusercontent.com/labstack/echo/master/LICENSE)\n\n## Echo\n\nHigh performance, extensible, minimalist Go web framework.\n\nEcho is built on Go's standard `net/http` — and interoperates with it via `echo.WrapHandler` / `echo.WrapMiddleware` — adding the parts the standard library leaves to you: a fast radix-tree router, request binding (with a pluggable validator), a deep middleware ecosystem, and centralized error handling. Actively maintained, with `v5` as the current release line (see badges above for the latest version and most recent commit).\n\n* [Official website](https://echo.labstack.com)\n* [Quick start](https://echo.labstack.com/docs/quick-start)\n* [Middlewares](https://echo.labstack.com/docs/category/middleware)\n\nHelp and questions: [Github Discussions](https://github.com/labstack/echo/discussions)\n\n### Feature Overview\n\n- Optimized HTTP router which smartly prioritize routes\n- Build robust and scalable RESTful APIs\n- Group APIs\n- Extensible middleware framework\n- Define middleware at root, group or route level\n- Data binding for JSON, XML and form payload\n- Handy functions to send variety of HTTP responses\n- Centralized HTTP error handling\n- Template rendering with any template engine\n- Define your format for the logger\n- Highly customizable\n- Automatic TLS via Let’s Encrypt\n- HTTP/2 support\n\n## Sponsors\n\n<div>\n  <a href=\"https://blacksmith.sh\" style=\"display: inline-flex; align-items: center; gap: 10px\">\n    <img src=\"https://github.com/useblacksmith.png?size=56\" height=\"28px\" alt=\"Blacksmith logo\"></img>\n  <b>Blacksmith – faster, drop-in GitHub Actions runners</b>\n    </a>\n</div>\n<br/>\n<div>\n  <a href=\"https://encore.dev\" style=\"display: inline-flex; align-items: center; gap: 10px\">\n    <img src=\"https://user-images.githubusercontent.com/78424526/214602214-52e0483a-b5fc-4d4c-b03e-0b7b23e012df.svg\" height=\"28px\" alt=\"encore icon\"></img>\n  <b>Encore – the platform for building Go-based cloud backends</b>\n    </a>\n</div>\n<br/>\n<div>\n  <a href=\"https://github.com/gravitycarbon\" style=\"display: inline-flex; align-items: center; gap: 10px\">\n    <img src=\"https://github.com/gravitycarbon.png?size=56\" height=\"28px\" alt=\"Gravity Carbon logo\"></img>\n  <b>Gravity Carbon</b>\n    </a>\n</div>\n<br/>\n\nClick [here](https://github.com/sponsors/labstack) for more information on sponsorship.\n\n## [Guide](https://echo.labstack.com/guide)\n\n### Supported Echo versions\n\n- Latest major version of Echo is `v5` as of 2026-01-18.\n  - See [API_CHANGES_V5.md](./API_CHANGES_V5.md) for public API changes between `v4` and `v5`, notes on upgrading.\n- Echo `v4` is supported with **security** updates and **bug** fixes until **2026-12-31**\n\nSee [ROADMAP.md](./ROADMAP.md) for where Echo is heading and the version support policy.\n\n### Installation\n\n```sh\n// go get github.com/labstack/echo/{version}\ngo get github.com/labstack/echo/v5\n```\n\nLatest version of Echo supports last four Go major [releases](https://go.dev/doc/devel/release) and might work with\nolder versions.\n\n### Example\n\n```go\npackage main\n\nimport (\n  \"github.com/labstack/echo/v5\"\n  \"github.com/labstack/echo/v5/middleware\"\n  \"log/slog\"\n  \"net/http\"\n)\n\nfunc main() {\n  // Echo instance\n  e := echo.New()\n\n  // Middleware\n  e.Use(middleware.RequestLogger()) // use the RequestLogger middleware with slog logger\n  e.Use(middleware.Recover())       // recover panics as errors for proper error handling\n\n  // Routes\n  e.GET(\"/\", hello)\n\n  // Start server\n  if err := e.Start(\":8080\"); err != nil {\n    slog.Error(\"failed to start server\", \"error\", err)\n  }\n}\n\n// Handler\nfunc hello(c *echo.Context) error {\n  return c.String(http.StatusOK, \"Hello, World!\")\n}\n```\n\n# Official middleware repositories\n\nFollowing list of middleware is maintained by Echo team.\n\n| Repository                                                                               | Description                                                                                                                                                  |\n|------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------|\n| [github.com/labstack/echo-jwt](https://github.com/labstack/echo-jwt)                     | [JWT](https://github.com/golang-jwt/jwt) middleware                                                                                                          | \n| [github.com/labstack/echo-contrib](https://github.com/labstack/echo-contrib)             | [casbin](https://github.com/casbin/casbin), [gorilla/sessions](https://github.com/gorilla/sessions), [pprof](https://pkg.go.dev/net/http/pprof)) middlewares | \n| [github.com/labstack/echo-otel](https://github.com/labstack/echo-otel)                   | [OpenTelemetry](https://opentelemetry.io/) middleware for tracing and metrics                                                                                |\n| [github.com/labstack/echo-prometheus](https://github.com/labstack/echo-prometheus)       | [Prometheus](https://github.com/prometheus/client_golang/) middleware for Echo                                                                               |\n\n# Third-party middleware repositories\n\nBe careful when adding 3rd party middleware. Echo teams does not have time or manpower to guarantee safety and quality\nof middlewares in this list.\n\n| Repository                                                                                           | Description                                                                                                                                                                                              |\n|------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|\n| [oapi-codegen/oapi-codegen](https://github.com/oapi-codegen/oapi-codegen)                            | Automatically generate RESTful API documentation with [OpenAPI](https://swagger.io/specification/) Client and Server Code Generator                                                                      |\n| [github.com/swaggo/echo-swagger](https://github.com/swaggo/echo-swagger)                             | Automatically generate RESTful API documentation with [Swagger](https://swagger.io/) 2.0.                                                                                                                |\n| [github.com/ziflex/lecho](https://github.com/ziflex/lecho)                                           | ["
+        }
+      ],
+      "config_files": [],
+      "stack_tags": [
+        "GitHub Actions",
+        "Go"
+      ],
+      "workspace_units": [
+        {
+          "path": ".",
+          "name": "github.com/labstack/echo/v5",
+          "kind": "workspace",
+          "manifest_path": "go.mod",
+          "build_system": "go.mod",
+          "file_count": 139,
+          "languages": [
+            {
+              "language": "Go",
+              "files": 108,
+              "bytes": 1311728
+            },
+            {
+              "language": "Markdown",
+              "files": 10,
+              "bytes": 109687
+            },
+            {
+              "language": "YAML",
+              "files": 5,
+              "bytes": 9593
+            },
+            {
+              "language": "JSON",
+              "files": 2,
+              "bytes": 3077
+            },
+            {
+              "language": "HTML",
+              "files": 2,
+              "bytes": 244
+            }
+          ],
+          "scripts": [],
+          "entrypoints": [
+            ".github/workflows/checks.yml",
+            ".github/workflows/ci.yml",
+            "CLAUDE.md",
+            "README.md"
+          ],
+          "test_files": [
+            "bind_cache_test.go",
+            "bind_field_error_test.go",
+            "bind_test.go",
+            "binder_error_response_test.go",
+            "binder_external_test.go",
+            "binder_generic_test.go",
+            "binder_test.go",
+            "context_generic_test.go"
+          ],
+          "tags": [
+            "Go",
+            "Markdown",
+            "YAML",
+            "tests"
+          ]
+        }
+      ],
+      "qa_readiness": {
+        "score": 0,
+        "status": "missing",
+        "summary": "Repo does not expose enough local browser QA structure for a reliable Synthetic QA workflow yet.",
+        "signals": [
+          {
+            "id": "browser_runner",
+            "label": "Browser runner",
+            "status": "missing",
+            "detail": "No Playwright, Cypress, or browser runner config was found.",
+            "sources": []
+          },
+          {
+            "id": "user_flow_specs",
+            "label": "User-flow specs",
+            "status": "missing",
+            "detail": "No e2e/playwright/cypress spec files were found.",
+            "sources": []
+          },
+          {
+            "id": "local_app_command",
+            "label": "Local app command",
+            "status": "missing",
+            "detail": "No obvious package script for starting the app locally was found.",
+            "sources": []
+          },
+          {
+            "id": "qa_script",
+            "label": "QA script",
+            "status": "missing",
+            "detail": "No explicit QA/e2e/browser test script was found.",
+            "sources": []
+          },
+          {
+            "id": "artifact_trail",
+            "label": "Artifact trail",
+            "status": "missing",
+            "detail": "No browser QA artifacts or artifact-capable runner were found.",
+            "sources": []
+          },
+          {
+            "id": "targetable_routes",
+            "label": "Targetable surfaces",
+            "status": "missing",
+            "detail": "No obvious web entrypoint or route file was found.",
+            "sources": []
+          }
+        ],
+        "suggested_flows": []
+      },
+      "repo_graph": {
+        "schema_version": 2,
+        "nodes": [
+          {
+            "id": "file:github-issue-template-md",
+            "kind": "file",
+            "label": ".github/ISSUE_TEMPLATE.md",
+            "path": ".github/ISSUE_TEMPLATE.md",
+            "detail": "source marker candidate",
+            "sources": [
+              ".github/ISSUE_TEMPLATE.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:github-workflows-checks-yml",
+            "kind": "file",
+            "label": ".github/workflows/checks.yml",
+            "path": ".github/workflows/checks.yml",
+            "detail": "workspace entrypoint",
+            "sources": [
+              ".github/workflows/checks.yml"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:github-workflows-ci-yml",
+            "kind": "file",
+            "label": ".github/workflows/ci.yml",
+            "path": ".github/workflows/ci.yml",
+            "detail": "workspace entrypoint",
+            "sources": [
+              ".github/workflows/ci.yml"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:api-changes-v5-md",
+            "kind": "file",
+            "label": "API_CHANGES_V5.md",
+            "path": "API_CHANGES_V5.md",
+            "detail": "source marker candidate",
+            "sources": [
+              "API_CHANGES_V5.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:changelog-md",
+            "kind": "file",
+            "label": "CHANGELOG.md",
+            "path": "CHANGELOG.md",
+            "detail": "source marker candidate",
+            "sources": [
+              "CHANGELOG.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:claude-md",
+            "kind": "file",
+            "label": "CLAUDE.md",
+            "path": "CLAUDE.md",
+            "detail": "workspace entrypoint",
+            "sources": [
+              "CLAUDE.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:makefile",
+            "kind": "file",
+            "label": "Makefile",
+            "path": "Makefile",
+            "detail": "source marker candidate",
+            "sources": [
+              "Makefile"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:readme-md",
+            "kind": "file",
+            "label": "README.md",
+            "path": "README.md",
+            "detail": "workspace entrypoint",
+            "sources": [
+              "README.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:roadmap-md",
+            "kind": "file",
+            "label": "ROADMAP.md",
+            "path": "ROADMAP.md",
+            "detail": "source marker candidate",
+            "sources": [
+              "ROADMAP.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:security-md",
+            "kind": "file",
+            "label": "SECURITY.md",
+            "path": "SECURITY.md",
+            "detail": "source marker candidate",
+            "sources": [
+              "SECURITY.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:fixture-fixture-readme-md",
+            "kind": "file",
+            "label": "_fixture/_fixture/README.md",
+            "path": "_fixture/_fixture/README.md",
+            "detail": "source marker candidate",
+            "sources": [
+              "_fixture/_fixture/README.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:fixture-certs-readme-md",
+            "kind": "file",
+            "label": "_fixture/certs/README.md",
+            "path": "_fixture/certs/README.md",
+            "detail": "source marker candidate",
+            "sources": [
+              "_fixture/certs/README.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:middleware-development-md",
+            "kind": "file",
+            "label": "middleware/DEVELOPMENT.md",
+            "path": "middleware/DEVELOPMENT.md",
+            "detail": "source marker candidate",
+            "sources": [
+              "middleware/DEVELOPMENT.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "package:go-mod",
+            "kind": "package",
+            "label": "github.com/labstack/echo/v5",
+            "path": "go.mod",
+            "detail": "go.mod manifest",
+            "sources": [
+              "go.mod"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:bind-cache-test-go",
+            "kind": "test",
+            "label": "bind_cache_test.go",
+            "path": "bind_cache_test.go",
+            "detail": "workspace test/spec file",
+            "sources": [
+              "bind_cache_test.go"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:bind-field-error-test-go",
+            "kind": "test",
+            "label": "bind_field_error_test.go",
+            "path": "bind_field_error_test.go",
+            "detail": "workspace test/spec file",
+            "sources": [
+              "bind_field_error_test.go"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:bind-test-go",
+            "kind": "test",
+            "label": "bind_test.go",
+            "path": "bind_test.go",
+            "detail": "workspace test/spec file",
+            "sources": [
+              "bind_test.go"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:binder-error-response-test-go",
+            "kind": "test",
+            "label": "binder_error_response_test.go",
+            "path": "binder_error_response_test.go",
+            "detail": "workspace test/spec file",
+            "sources": [
+              "binder_error_response_test.go"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:binder-external-test-go",
+            "kind": "test",
+            "label": "binder_external_test.go",
+            "path": "binder_external_test.go",
+            "detail": "workspace test/spec file",
+            "sources": [
+              "binder_external_test.go"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:binder-generic-test-go",
+            "kind": "test",
+            "label": "binder_generic_test.go",
+            "path": "binder_generic_test.go",
+            "detail": "workspace test/spec file",
+            "sources": [
+              "binder_generic_test.go"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "workspace:",
+            "kind": "workspace_unit",
+            "label": "github.com/labstack/echo/v5",
+            "path": null,
+            "detail": "workspace | 139 files | 108 Go, 10 Markdown, 5 YAML",
+            "sources": [
+              ".github/workflows/checks.yml",
+              ".github/workflows/ci.yml",
+              "bind_cache_test.go",
+              "bind_field_error_test.go",
+              "go.mod"
+            ],
+            "source_location": null,
+            "community": null
+          }
+        ],
+        "edges": [
+          {
+            "from": "workspace:",
+            "to": "package:go-mod",
+            "kind": "defines",
+            "evidence": "workspace unit owns this manifest",
+            "sources": [
+              "go.mod"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "file:claude-md",
+            "kind": "entrypoint",
+            "evidence": "entrypoint belongs to this workspace unit",
+            "sources": [
+              "CLAUDE.md"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "file:github-workflows-checks-yml",
+            "kind": "entrypoint",
+            "evidence": "entrypoint belongs to this workspace unit",
+            "sources": [
+              ".github/workflows/checks.yml"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "file:github-workflows-ci-yml",
+            "kind": "entrypoint",
+            "evidence": "entrypoint belongs to this workspace unit",
+            "sources": [
+              ".github/workflows/ci.yml"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "file:readme-md",
+            "kind": "entrypoint",
+            "evidence": "entrypoint belongs to this workspace unit",
+            "sources": [
+              "README.md"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "test:bind-cache-test-go",
+            "kind": "tests",
+            "evidence": "test file belongs to this workspace unit",
+            "sources": [
+              "bind_cache_test.go"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "test:bind-field-error-test-go",
+            "kind": "tests",
+            "evidence": "test file belongs to this workspace unit",
+            "sources": [
+              "bind_field_error_test.go"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "test:bind-test-go",
+            "kind": "tests",
+            "evidence": "test file belongs to this workspace unit",
+            "sources": [
+              "bind_test.go"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "test:binder-error-response-test-go",
+            "kind": "tests",
+            "evidence": "test file belongs to this workspace unit",
+            "sources": [
+              "binder_error_response_test.go"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "test:binder-external-test-go",
+            "kind": "tests",
+            "evidence": "test file belongs to this workspace unit",
+            "sources": [
+              "binder_external_test.go"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "test:binder-generic-test-go",
+            "kind": "tests",
+            "evidence": "test file belongs to this workspace unit",
+            "sources": [
+              "binder_generic_test.go"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          }
+        ],
+        "truncated": false
+      },
+      "history_brief": {
+        "schema_version": 2,
+        "summary": "Local history brief captured 12 recent commits, 0 decision markers, 0 test hints, and 8 co-change clusters for Repo Unpacked. Treat commit subjects as leads and rely on cited files for durable constraints.",
+        "recent_commits": [
+          {
+            "sha": "99c395d846e0",
+            "date": "2026-10-01",
+            "subject": "ci: rename the test workflow to ci.yml (#3141)",
+            "files": [
+              ".github/workflows/checks.yml",
+              ".github/workflows/ci.yml",
+              "README.md"
+            ]
+          },
+          {
+            "sha": "e6b10d9e8f13",
+            "date": "2026-10-01",
+            "subject": "ci: keep the Go build cache current (#3139)",
+            "files": [
+              ".github/workflows/checks.yml",
+              ".github/workflows/echo.yml"
+            ]
+          },
+          {
+            "sha": "680772f742b8",
+            "date": "2026-10-01",
+            "subject": "ci: run benchmark comparison on pull requests only, and shorten it (#3140)",
+            "files": [
+              ".github/workflows/checks.yml",
+              ".github/workflows/echo.yml"
+            ]
+          },
+          {
+            "sha": "af07b69b44c0",
+            "date": "2026-09-29",
+            "subject": "fix(router): share route syntax across routing operations (#3133)",
+            "files": []
+          },
+          {
+            "sha": "eadbef28df3b",
+            "date": "2026-09-30",
+            "subject": "fix(router): keep escaped colon and parameter routes reachable (#3113)",
+            "files": []
+          },
+          {
+            "sha": "b59b347c95f7",
+            "date": "2026-09-30",
+            "subject": "fix(middleware): prevent BodyLimit bypass (#3087)",
+            "files": []
+          },
+          {
+            "sha": "bc4028f1d7cc",
+            "date": "2026-09-29",
+            "subject": "static: harden dot-segment check for backslashes, test non-validating custom fs.FS (#3129)",
+            "files": []
+          },
+          {
+            "sha": "ba97b3f4a978",
+            "date": "2026-09-29",
+            "subject": "docs: add Blacksmith to sponsors (#3126)",
+            "files": [
+              "README.md"
+            ]
+          },
+          {
+            "sha": "9ab9a0907af2",
+            "date": "2026-09-28",
+            "subject": "docs: link the OpenTelemetry middleware at labstack/echo-otel (#3124)",
+            "files": [
+              "README.md"
+            ]
+          },
+          {
+            "sha": "5196b9b0ad8f",
+            "date": "2026-09-27",
+            "subject": "chore: add funding.json manifest (#3122)",
+            "files": [
+              "funding.json"
+            ]
+          },
+          {
+            "sha": "53e7e5c7df23",
+            "date": "2026-09-27",
+            "subject": "docs(readme): add Gravity Carbon to sponsors (#3121)",
+            "files": [
+              "README.md"
+            ]
+          },
+          {
+            "sha": "fc410094b2f3",
+            "date": "2026-09-27",
+            "subject": "Merge commit from fork",
+            "files": [
+              "CHANGELOG.md"
+            ]
+          }
+        ],
+        "decisions": [],
+        "test_hints": [],
+        "temporal_couplings": [
+          {
+            "files": [
+              ".github/workflows/checks.yml",
+              ".github/workflows/echo.yml"
+            ],
+            "commit_count": 4,
+            "last_commit": "e6b10d9e8f13",
+            "reason": "These files changed together in 4 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              ".github/stale.yml",
+              "README.md"
+            ],
+            "commit_count": 2,
+            "last_commit": "b790a02dfbb9",
+            "reason": "These files changed together in 2 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              ".github/stale.yml",
+              "SECURITY.md"
+            ],
+            "commit_count": 2,
+            "last_commit": "b790a02dfbb9",
+            "reason": "These files changed together in 2 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              ".github/workflows/checks.yml",
+              "README.md"
+            ],
+            "commit_count": 2,
+            "last_commit": "99c395d846e0",
+            "reason": "These files changed together in 2 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              ".github/workflows/docs.yml",
+              "docs/examples/README.md"
+            ],
+            "commit_count": 2,
+            "last_commit": "e804f422d2b0",
+            "reason": "These files changed together in 2 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              ".github/workflows/docs.yml",
+              "docs/examples/REFERENCE_TRIAL.md"
+            ],
+            "commit_count": 2,
+            "last_commit": "e804f422d2b0",
+            "reason": "These files changed together in 2 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              "README.md",
+              "SECURITY.md"
+            ],
+            "commit_count": 2,
+            "last_commit": "b790a02dfbb9",
+            "reason": "These files changed together in 2 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              "docs/examples/README.md",
+              "docs/examples/REFERENCE_TRIAL.md"
+            ],
+            "commit_count": 2,
+            "last_commit": "e804f422d2b0",
+            "reason": "These files changed together in 2 recent commits; inspect both when either side moves."
+          }
+        ],
+        "graph": {
+          "schema_version": 2,
+          "nodes": [
+            {
+              "id": "commit:5196b9b0ad8f",
+              "kind": "commit",
+              "label": "chore: add funding.json manifest (#3122)",
+              "path": null,
+              "detail": "2026-09-27",
+              "citations": [
+                "git:5196b9b0ad8f"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:53e7e5c7df23",
+              "kind": "commit",
+              "label": "docs(readme): add Gravity Carbon to sponsors (#3121)",
+              "path": null,
+              "detail": "2026-09-27",
+              "citations": [
+                "git:53e7e5c7df23"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:680772f742b8",
+              "kind": "commit",
+              "label": "ci: run benchmark comparison on pull requests only, and shorten it (#3140)",
+              "path": null,
+              "detail": "2026-10-01",
+              "citations": [
+                "git:680772f742b8"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:99c395d846e0",
+              "kind": "commit",
+              "label": "ci: rename the test workflow to ci.yml (#3141)",
+              "path": null,
+              "detail": "2026-10-01",
+              "citations": [
+                "git:99c395d846e0"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:9ab9a0907af2",
+              "kind": "commit",
+              "label": "docs: link the OpenTelemetry middleware at labstack/echo-otel (#3124)",
+              "path": null,
+              "detail": "2026-09-28",
+              "citations": [
+                "git:9ab9a0907af2"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:af07b69b44c0",
+              "kind": "commit",
+              "label": "fix(router): share route syntax across routing operations (#3133)",
+              "path": null,
+              "detail": "2026-09-29",
+              "citations": [
+                "git:af07b69b44c0"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:b59b347c95f7",
+              "kind": "commit",
+              "label": "fix(middleware): prevent BodyLimit bypass (#3087)",
+              "path": null,
+              "detail": "2026-09-30",
+              "citations": [
+                "git:b59b347c95f7"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:ba97b3f4a978",
+              "kind": "commit",
+              "label": "docs: add Blacksmith to sponsors (#3126)",
+              "path": null,
+              "detail": "2026-09-29",
+              "citations": [
+                "git:ba97b3f4a978"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:bc4028f1d7cc",
+              "kind": "commit",
+              "label": "static: harden dot-segment check for backslashes, test non-validating custom fs.FS (#3129)",
+              "path": null,
+              "detail": "2026-09-29",
+              "citations": [
+                "git:bc4028f1d7cc"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:e6b10d9e8f13",
+              "kind": "commit",
+              "label": "ci: keep the Go build cache current (#3139)",
+              "path": null,
+              "detail": "2026-10-01",
+              "citations": [
+                "git:e6b10d9e8f13"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:eadbef28df3b",
+              "kind": "commit",
+              "label": "fix(router): keep escaped colon and parameter routes reachable (#3113)",
+              "path": null,
+              "detail": "2026-09-30",
+              "citations": [
+                "git:eadbef28df3b"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:fc410094b2f3",
+              "kind": "commit",
+              "label": "Merge commit from fork",
+              "path": null,
+              "detail": "2026-09-27",
+              "citations": [
+                "git:fc410094b2f3"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:-github-stale-yml",
+              "kind": "file",
+              "label": ".github/stale.yml",
+              "path": ".github/stale.yml",
+              "detail": "Recent co-change lead",
+              "citations": [
+                ".github/stale.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:-github-workflows-checks-yml",
+              "kind": "file",
+              "label": ".github/workflows/checks.yml",
+              "path": ".github/workflows/checks.yml",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                ".github/workflows/checks.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:-github-workflows-ci-yml",
+              "kind": "file",
+              "label": ".github/workflows/ci.yml",
+              "path": ".github/workflows/ci.yml",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                ".github/workflows/ci.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:-github-workflows-docs-yml",
+              "kind": "file",
+              "label": ".github/workflows/docs.yml",
+              "path": ".github/workflows/docs.yml",
+              "detail": "Recent co-change lead",
+              "citations": [
+                ".github/workflows/docs.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:-github-workflows-echo-yml",
+              "kind": "file",
+              "label": ".github/workflows/echo.yml",
+              "path": ".github/workflows/echo.yml",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                ".github/workflows/echo.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:changelog-md",
+              "kind": "file",
+              "label": "CHANGELOG.md",
+              "path": "CHANGELOG.md",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "CHANGELOG.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:docs-examples-readme-md",
+              "kind": "file",
+              "label": "docs/examples/README.md",
+              "path": "docs/examples/README.md",
+              "detail": "Recent co-change lead",
+              "citations": [
+                "docs/examples/README.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:docs-examples-reference-trial-md",
+              "kind": "file",
+              "label": "docs/examples/REFERENCE_TRIAL.md",
+              "path": "docs/examples/REFERENCE_TRIAL.md",
+              "detail": "Recent co-change lead",
+              "citations": [
+                "docs/examples/REFERENCE_TRIAL.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:funding-json",
+              "kind": "file",
+              "label": "funding.json",
+              "path": "funding.json",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "funding.json"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:readme-md",
+              "kind": "file",
+              "label": "README.md",
+              "path": "README.md",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "README.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:security-md",
+              "kind": "file",
+              "label": "SECURITY.md",
+              "path": "SECURITY.md",
+              "detail": "Recent co-change lead",
+              "citations": [
+                "SECURITY.md"
+              ],
+              "trust": "git_observed"
+            }
+          ],
+          "edges": [
+            {
+              "from": "commit:5196b9b0ad8f",
+              "to": "file:funding-json",
+              "kind": "changed",
+              "evidence": "5196b9b0ad8f changed this file",
+              "citations": [
+                "git:5196b9b0ad8f",
+                "funding.json"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:53e7e5c7df23",
+              "to": "file:readme-md",
+              "kind": "changed",
+              "evidence": "53e7e5c7df23 changed this file",
+              "citations": [
+                "git:53e7e5c7df23",
+                "README.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:680772f742b8",
+              "to": "file:-github-workflows-checks-yml",
+              "kind": "changed",
+              "evidence": "680772f742b8 changed this file",
+              "citations": [
+                "git:680772f742b8",
+                ".github/workflows/checks.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:680772f742b8",
+              "to": "file:-github-workflows-echo-yml",
+              "kind": "changed",
+              "evidence": "680772f742b8 changed this file",
+              "citations": [
+                "git:680772f742b8",
+                ".github/workflows/echo.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:99c395d846e0",
+              "to": "file:-github-workflows-checks-yml",
+              "kind": "changed",
+              "evidence": "99c395d846e0 changed this file",
+              "citations": [
+                "git:99c395d846e0",
+                ".github/workflows/checks.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:99c395d846e0",
+              "to": "file:-github-workflows-ci-yml",
+              "kind": "changed",
+              "evidence": "99c395d846e0 changed this file",
+              "citations": [
+                "git:99c395d846e0",
+                ".github/workflows/ci.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:99c395d846e0",
+              "to": "file:readme-md",
+              "kind": "changed",
+              "evidence": "99c395d846e0 changed this file",
+              "citations": [
+                "git:99c395d846e0",
+                "README.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:9ab9a0907af2",
+              "to": "file:readme-md",
+              "kind": "changed",
+              "evidence": "9ab9a0907af2 changed this file",
+              "citations": [
+                "git:9ab9a0907af2",
+                "README.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:ba97b3f4a978",
+              "to": "file:readme-md",
+              "kind": "changed",
+              "evidence": "ba97b3f4a978 changed this file",
+              "citations": [
+                "git:ba97b3f4a978",
+                "README.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:e6b10d9e8f13",
+              "to": "file:-github-workflows-checks-yml",
+              "kind": "changed",
+              "evidence": "e6b10d9e8f13 changed this file",
+              "citations": [
+                "git:e6b10d9e8f13",
+                ".github/workflows/checks.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:e6b10d9e8f13",
+              "to": "file:-github-workflows-echo-yml",
+              "kind": "changed",
+              "evidence": "e6b10d9e8f13 changed this file",
+              "citations": [
+                "git:e6b10d9e8f13",
+                ".github/workflows/echo.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:fc410094b2f3",
+              "to": "file:changelog-md",
+              "kind": "changed",
+              "evidence": "fc410094b2f3 changed this file",
+              "citations": [
+                "git:fc410094b2f3",
+                "CHANGELOG.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "file:-github-stale-yml",
+              "to": "file:readme-md",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 2 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:b790a02dfbb9"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:-github-stale-yml",
+              "to": "file:security-md",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 2 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:b790a02dfbb9"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:-github-workflows-checks-yml",
+              "to": "file:-github-workflows-echo-yml",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 4 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:e6b10d9e8f13"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:-github-workflows-checks-yml",
+              "to": "file:readme-md",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 2 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:99c395d846e0"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:-github-workflows-docs-yml",
+              "to": "file:docs-examples-readme-md",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 2 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:e804f422d2b0"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:-github-workflows-docs-yml",
+              "to": "file:docs-examples-reference-trial-md",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 2 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:e804f422d2b0"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:docs-examples-readme-md",
+              "to": "file:docs-examples-reference-trial-md",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 2 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:e804f422d2b0"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:readme-md",
+              "to": "file:security-md",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 2 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:b790a02dfbb9"
+              ],
+              "trust": "navigation_lead"
+            }
+          ],
+          "truncated": false
+        },
+        "sources": [
+          ".github/workflows/checks.yml",
+          ".github/workflows/echo.yml",
+          ".github/stale.yml",
+          "README.md",
+          "SECURITY.md",
+          ".github/workflows/docs.yml",
+          "docs/examples/README.md",
+          "docs/examples/REFERENCE_TRIAL.md",
+          "go.mod"
+        ],
+        "truncated": false
+      },
+      "repo_health": {
+        "schema_version": 1,
+        "summary": "Deterministic scan scored 96 source files across simple size, churn, structural, test-adjacency, and performance-risk signals. 19 hotspots surfaced; average score is 7.5/10. Treat these as review leads, not proof of a bug.",
+        "average_score": 7.5,
+        "hotspot_count": 19,
+        "files_analyzed": 96,
+        "files_with_test_signal": 0,
+        "top_files": [
+          {
+            "path": "router_test.go",
+            "score": 5.2,
+            "bucket": "hotspot",
+            "lines": 1544,
+            "bytes": 108011,
+            "churn": 3759,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "high",
+                "detail": "1544 lines in one source file; inspect whether the module hides multiple responsibilities.",
+                "sources": [
+                  "router_test.go"
+                ]
+              },
+              {
+                "id": "long_block",
+                "label": "Long function/block",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "A brace-delimited block spans roughly 312 lines; consider extracting a helper when touching it.",
+                "sources": [
+                  "router_test.go"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 3759 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "router_test.go"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "router_test.go"
+                ]
+              },
+              {
+                "id": "io_in_loop",
+                "label": "I/O inside loop",
+                "dimension": "performance",
+                "severity": "medium",
+                "detail": "Loop-shaped code appears near filesystem, subprocess, database, or network I/O; inspect for N+1 or repeated setup work.",
+                "sources": [
+                  "router_test.go"
+                ]
+              },
+              {
+                "id": "io_boundary",
+                "label": "I/O or process boundary",
+                "dimension": "defect",
+                "severity": "low",
+                "detail": "File touches filesystem, network, database, or subprocess boundaries; changes need concrete runtime proof.",
+                "sources": [
+                  "router_test.go"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow.",
+              "Hoist repeated I/O or batch loop work where behavior allows."
+            ]
+          },
+          {
+            "path": "echo_test.go",
+            "score": 5.2,
+            "bucket": "hotspot",
+            "lines": 1680,
+            "bytes": 58201,
+            "churn": 1998,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "high",
+                "detail": "1680 lines in one source file; inspect whether the module hides multiple responsibilities.",
+                "sources": [
+                  "echo_test.go"
+                ]
+              },
+              {
+                "id": "long_block",
+                "label": "Long function/block",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "A brace-delimited block spans roughly 224 lines; consider extracting a helper when touching it.",
+                "sources": [
+                  "echo_test.go"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 1998 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "echo_test.go"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "echo_test.go"
+                ]
+              },
+              {
+                "id": "io_in_loop",
+                "label": "I/O inside loop",
+                "dimension": "performance",
+                "severity": "medium",
+                "detail": "Loop-shaped code appears near filesystem, subprocess, database, or network I/O; inspect for N+1 or repeated setup work.",
+                "sources": [
+                  "echo_test.go"
+                ]
+              },
+              {
+                "id": "io_boundary",
+                "label": "I/O or process boundary",
+                "dimension": "defect",
+                "severity": "low",
+                "detail": "File touches filesystem, network, database, or subprocess boundaries; changes need concrete runtime proof.",
+                "sources": [
+                  "echo_test.go"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow.",
+              "Hoist repeated I/O or batch loop work where behavior allows."
+            ]
+          },
+          {
+            "path": "context_test.go",
+            "score": 5.2,
+            "bucket": "hotspot",
+            "lines": 1695,
+            "bytes": 45335,
+            "churn": 1709,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "high",
+                "detail": "1695 lines in one source file; inspect whether the module hides multiple responsibilities.",
+                "sources": [
+                  "context_test.go"
+                ]
+              },
+              {
+                "id": "long_block",
+                "label": "Long function/block",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "A brace-delimited block spans roughly 254 lines; consider extracting a helper when touching it.",
+                "sources": [
+                  "context_test.go"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 1709 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "context_test.go"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "context_test.go"
+                ]
+              },
+              {
+                "id": "io_in_loop",
+                "label": "I/O inside loop",
+                "dimension": "performance",
+                "severity": "medium",
+                "detail": "Loop-shaped code appears near filesystem, subprocess, database, or network I/O; inspect for N+1 or repeated setup work.",
+                "sources": [
+                  "context_test.go"
+                ]
+              },
+              {
+                "id": "io_boundary",
+                "label": "I/O or process boundary",
+                "dimension": "defect",
+                "severity": "low",
+                "detail": "File touches filesystem, network, database, or subprocess boundaries; changes need concrete runtime proof.",
+                "sources": [
+                  "context_test.go"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow.",
+              "Hoist repeated I/O or batch loop work where behavior allows."
+            ]
+          },
+          {
+            "path": "bind_test.go",
+            "score": 5.2,
+            "bucket": "hotspot",
+            "lines": 1568,
+            "bytes": 53387,
+            "churn": 1700,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "high",
+                "detail": "1568 lines in one source file; inspect whether the module hides multiple responsibilities.",
+                "sources": [
+                  "bind_test.go"
+                ]
+              },
+              {
+                "id": "long_block",
+                "label": "Long function/block",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "A brace-delimited block spans roughly 190 lines; consider extracting a helper when touching it.",
+                "sources": [
+                  "bind_test.go"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 1700 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "bind_test.go"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "bind_test.go"
+                ]
+              },
+              {
+                "id": "io_in_loop",
+                "label": "I/O inside loop",
+                "dimension": "performance",
+                "severity": "medium",
+                "detail": "Loop-shaped code appears near filesystem, subprocess, database, or network I/O; inspect for N+1 or repeated setup work.",
+                "sources": [
+                  "bind_test.go"
+                ]
+              },
+              {
+                "id": "io_boundary",
+                "label": "I/O or process boundary",
+                "dimension": "defect",
+                "severity": "low",
+                "detail": "File touches filesystem, network, database, or subprocess boundaries; changes need concrete runtime proof.",
+                "sources": [
+                  "bind_test.go"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow.",
+              "Hoist repeated I/O or batch loop work where behavior allows."
+            ]
+          },
+          {
+            "path": "group_test.go",
+            "score": 5.2,
+            "bucket": "hotspot",
+            "lines": 1012,
+            "bytes": 30271,
+            "churn": 1058,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "high",
+                "detail": "1012 lines in one source file; inspect whether the module hides multiple responsibilities.",
+                "sources": [
+                  "group_test.go"
+                ]
+              },
+              {
+                "id": "long_block",
+                "label": "Long function/block",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "A brace-delimited block spans roughly 183 lines; consider extracting a helper when touching it.",
+                "sources": [
+                  "group_test.go"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 1058 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "group_test.go"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "group_test.go"
+                ]
+              },
+              {
+                "id": "io_in_loop",
+                "label": "I/O inside loop",
+                "dimension": "performance",
+                "severity": "medium",
+                "detail": "Loop-shaped code appears near filesystem, subprocess, database, or network I/O; inspect for N+1 or repeated setup work.",
+                "sources": [
+                  "group_test.go"
+                ]
+              },
+              {
+                "id": "io_boundary",
+                "label": "I/O or process boundary",
+                "dimension": "defect",
+                "severity": "low",
+                "detail": "File touches filesystem, network, database, or subprocess boundaries; changes need concrete runtime proof.",
+                "sources": [
+                  "group_test.go"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow.",
+              "Hoist repeated I/O or batch loop work where behavior allows."
+            ]
+          },
+          {
+            "path": "middleware/static_test.go",
+            "score": 5.7,
+            "bucket": "hotspot",
+            "lines": 887,
+            "bytes": 29536,
+            "churn": 935,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "887 lines in one source file; changes here may be harder to review.",
+                "sources": [
+                  "middleware/static_test.go"
+                ]
+              },
+              {
+                "id": "long_block",
+                "label": "Long function/block",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "A brace-delimited block spans roughly 235 lines; consider extracting a helper when touching it.",
+                "sources": [
+                  "middleware/static_test.go"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 935 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "middleware/static_test.go"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "middleware/static_test.go"
+                ]
+              },
+              {
+                "id": "io_in_loop",
+                "label": "I/O inside loop",
+                "dimension": "performance",
+                "severity": "medium",
+                "detail": "Loop-shaped code appears near filesystem, subprocess, database, or network I/O; inspect for N+1 or repeated setup work.",
+                "sources": [
+                  "middleware/static_test.go"
+                ]
+              },
+              {
+                "id": "io_boundary",
+                "label": "I/O or process boundary",
+                "dimension": "defect",
+                "severity": "low",
+                "detail": "File touches filesystem, network, database, or subprocess boundaries; changes need concrete runtime proof.",
+                "sources": [
+                  "middleware/static_test.go"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow.",
+              "Hoist repeated I/O or batch loop work where behavior allows."
+            ]
+          },
+          {
+            "path": "middleware/csrf_test.go",
+            "score": 5.7,
+            "bucket": "hotspot",
+            "lines": 883,
+            "bytes": 25799,
+            "churn": 883,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "883 lines in one source file; changes here may be harder to review.",
+                "sources": [
+                  "middleware/csrf_test.go"
+                ]
+              },
+              {
+                "id": "long_block",
+                "label": "Long function/block",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "A brace-delimited block spans roughly 349 lines; consider extracting a helper when touching it.",
+                "sources": [
+                  "middleware/csrf_test.go"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 883 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "middleware/csrf_test.go"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "middleware/csrf_test.go"
+                ]
+              },
+              {
+                "id": "io_in_loop",
+                "label": "I/O inside loop",
+                "dimension": "performance",
+                "severity": "medium",
+                "detail": "Loop-shaped code appears near filesystem, subprocess, database, or network I/O; inspect for N+1 or repeated setup work.",
+                "sources": [
+                  "middleware/csrf_test.go"
+                ]
+              },
+              {
+                "id": "io_boundary",
+                "label": "I/O or process boundary",
+                "dimension": "defect",
+                "severity": "low",
+                "detail": "File touches filesystem, network, database, or subprocess boundaries; changes need concrete runtime proof.",
+                "sources": [
+                  "middleware/csrf_test.go"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow.",
+              "Hoist repeated I/O or batch loop work where behavior allows."
+            ]
+          },
+          {
+            "path": "middleware/cors_test.go",
+            "score": 5.7,
+            "bucket": "hotspot",
+            "lines": 722,
+            "bytes": 24553,
+            "churn": 728,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "722 lines in one source file; changes here may be harder to review.",
+                "sources": [
+                  "middleware/cors_test.go"
+                ]
+              },
+              {
+                "id": "long_block",
+                "label": "Long function/block",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "A brace-delimited block spans roughly 265 lines; consider extracting a helper when touching it.",
+                "sources": [
+                  "middleware/cors_test.go"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 728 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "middleware/cors_test.go"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "middleware/cors_test.go"
+                ]
+              },
+              {
+                "id": "io_in_loop",
+                "label": "I/O inside loop",
+                "dimension": "performance",
+                "severity": "medium",
+                "detail": "Loop-shaped code appears near filesystem, subprocess, database, or network I/O; inspect for N+1 or repeated setup work.",
+                "sources": [
+                  "middleware/cors_test.go"
+                ]
+              },
+              {
+                "id": "io_boundary",
+                "label": "I/O or process boundary",
+                "dimension": "defect",
+                "severity": "low",
+                "detail": "File touches filesystem, network, database, or subprocess boundaries; changes need concrete runtime proof.",
+                "sources": [
+                  "middleware/cors_test.go"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow.",
+              "Hoist repeated I/O or batch loop work where behavior allows."
+            ]
+          },
+          {
+            "path": "binder_test.go",
+            "score": 5.9,
+            "bucket": "hotspot",
+            "lines": 1708,
+            "bytes": 95170,
+            "churn": 3252,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "high",
+                "detail": "1708 lines in one source file; inspect whether the module hides multiple responsibilities.",
+                "sources": [
+                  "binder_test.go"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 3252 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "binder_test.go"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "binder_test.go"
+                ]
+              },
+              {
+                "id": "io_in_loop",
+                "label": "I/O inside loop",
+                "dimension": "performance",
+                "severity": "medium",
+                "detail": "Loop-shaped code appears near filesystem, subprocess, database, or network I/O; inspect for N+1 or repeated setup work.",
+                "sources": [
+                  "binder_test.go"
+                ]
+              },
+              {
+                "id": "io_boundary",
+                "label": "I/O or process boundary",
+                "dimension": "defect",
+                "severity": "low",
+                "detail": "File touches filesystem, network, database, or subprocess boundaries; changes need concrete runtime proof.",
+                "sources": [
+                  "binder_test.go"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow.",
+              "Hoist repeated I/O or batch loop work where behavior allows."
+            ]
+          },
+          {
+            "path": "binder_generic_test.go",
+            "score": 5.9,
+            "bucket": "hotspot",
+            "lines": 1616,
+            "bytes": 37215,
+            "churn": 1616,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "high",
+                "detail": "1616 lines in one source file; inspect whether the module hides multiple responsibilities.",
+                "sources": [
+                  "binder_generic_test.go"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 1616 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "binder_generic_test.go"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "binder_generic_test.go"
+                ]
+              },
+              {
+                "id": "io_in_loop",
+                "label": "I/O inside loop",
+                "dimension": "performance",
+                "severity": "medium",
+                "detail": "Loop-shaped code appears near filesystem, subprocess, database, or network I/O; inspect for N+1 or repeated setup work.",
+                "sources": [
+                  "binder_generic_test.go"
+                ]
+              },
+              {
+                "id": "io_boundary",
+                "label": "I/O or process boundary",
+                "dimension": "defect",
+                "severity": "low",
+                "detail": "File touches filesystem, network, database, or subprocess boundaries; changes need concrete runtime proof.",
+                "sources": [
+                  "binder_generic_test.go"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow.",
+              "Hoist repeated I/O or batch loop work where behavior allows."
+            ]
+          },
+          {
+            "path": "middleware/proxy_test.go",
+            "score": 5.9,
+            "bucket": "hotspot",
+            "lines": 1354,
+            "bytes": 37231,
+            "churn": 1358,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "high",
+                "detail": "1354 lines in one source file; inspect whether the module hides multiple responsibilities.",
+                "sources": [
+                  "middleware/proxy_test.go"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 1358 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "middleware/proxy_test.go"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "middleware/proxy_test.go"
+                ]
+              },
+              {
+                "id": "io_in_loop",
+                "label": "I/O inside loop",
+                "dimension": "performance",
+                "severity": "medium",
+                "detail": "Loop-shaped code appears near filesystem, subprocess, database, or network I/O; inspect for N+1 or repeated setup work.",
+                "sources": [
+                  "middleware/proxy_test.go"
+                ]
+              },
+              {
+                "id": "io_boundary",
+                "label": "I/O or process boundary",
+                "dimension": "defect",
+                "severity": "low",
+                "detail": "File touches filesystem, network, database, or subprocess boundaries; changes need concrete runtime proof.",
+                "sources": [
+                  "middleware/proxy_test.go"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow.",
+              "Hoist repeated I/O or batch loop work where behavior allows."
+            ]
+          },
+          {
+            "path": "echo.go",
+            "score": 5.9,
+            "bucket": "hotspot",
+            "lines": 1057,
+            "bytes": 41444,
+            "churn": 1091,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "high",
+                "detail": "1057 lines in one source file; inspect whether the module hides multiple responsibilities.",
+                "sources": [
+                  "echo.go"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 1091 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "echo.go"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "echo.go"
+                ]
+              },
+              {
+                "id": "io_in_loop",
+                "label": "I/O inside loop",
+                "dimension": "performance",
+                "severity": "medium",
+                "detail": "Loop-shaped code appears near filesystem, subprocess, database, or network I/O; inspect for N+1 or repeated setup work.",
+                "sources": [
+                  "echo.go"
+                ]
+              },
+              {
+                "id": "io_boundary",
+                "label": "I/O or process boundary",
+                "dimension": "defect",
+                "severity": "low",
+                "detail": "File touches filesystem, network, database, or subprocess boundaries; changes need concrete runtime proof.",
+                "sources": [
+                  "echo.go"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow.",
+              "Hoist repeated I/O or batch loop work where behavior allows."
+            ]
+          }
+        ],
+        "truncated": true
+      },
+      "all_files": [],
+      "ignored_dirs": [
+        ".git",
+        "_fixture/dist",
+        "middleware/testdata/dist"
+      ],
+      "coverage": {
+        "schema_version": 1,
+        "strategy": "full_walk",
+        "sampled_files": 139,
+        "total_files": null,
+        "sample_percent": null,
+        "languages": [
+          {
+            "language": "Go",
+            "files": 108,
+            "bytes": 1311728
+          },
+          {
+            "language": "Markdown",
+            "files": 10,
+            "bytes": 109687
+          },
+          {
+            "language": "YAML",
+            "files": 5,
+            "bytes": 9593
+          },
+          {
+            "language": "HTML",
+            "files": 2,
+            "bytes": 244
+          },
+          {
+            "language": "JSON",
+            "files": 2,
+            "bytes": 3077
+          }
+        ],
+        "top_level_dirs": [
+          {
+            "path": "middleware",
+            "file_count": 53,
+            "bytes": 470755
+          },
+          {
+            "path": "echotest",
+            "file_count": 7,
+            "bytes": 11889
+          },
+          {
+            "path": "_fixture",
+            "file_count": 6,
+            "bytes": 5825
+          },
+          {
+            "path": ".github",
+            "file_count": 4,
+            "bytes": 9615
+          }
+        ],
+        "notes": [
+          "Full local walk covered the repo within the scan cap."
+        ]
+      },
+      "all_files_capped": false,
+      "dir_tree_preview": {
+        "name": "",
+        "path": "",
+        "is_dir": true,
+        "file_count": 139,
+        "children": [
+          {
+            "name": ".github",
+            "path": ".github",
+            "is_dir": true,
+            "file_count": 4,
+            "children": [
+              {
+                "name": "workflows",
+                "path": ".github/workflows",
+                "is_dir": true,
+                "file_count": 2,
+                "children": [
+                  {
+                    "name": "checks.yml",
+                    "path": ".github/workflows/checks.yml",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "ci.yml",
+                    "path": ".github/workflows/ci.yml",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "FUNDING.yml",
+                "path": ".github/FUNDING.yml",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "ISSUE_TEMPLATE.md",
+                "path": ".github/ISSUE_TEMPLATE.md",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "_fixture",
+            "path": "_fixture",
+            "is_dir": true,
+            "file_count": 6,
+            "children": [
+              {
+                "name": "_fixture",
+                "path": "_fixture/_fixture",
+                "is_dir": true,
+                "file_count": 1,
+                "children": [
+                  {
+                    "name": "README.md",
+                    "path": "_fixture/_fixture/README.md",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "certs",
+                "path": "_fixture/certs",
+                "is_dir": true,
+                "file_count": 3,
+                "children": [
+                  {
+                    "name": "README.md",
+                    "path": "_fixture/certs/README.md",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "cert.pem",
+                    "path": "_fixture/certs/cert.pem",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "key.pem",
+                    "path": "_fixture/certs/key.pem",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "folder",
+                "path": "_fixture/folder",
+                "is_dir": true,
+                "file_count": 1,
+                "children": [
+                  {
+                    "name": "index.html",
+                    "path": "_fixture/folder/index.html",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "index.html",
+                "path": "_fixture/index.html",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "echotest",
+            "path": "echotest",
+            "is_dir": true,
+            "file_count": 7,
+            "children": [
+              {
+                "name": "testdata",
+                "path": "echotest/testdata",
+                "is_dir": true,
+                "file_count": 1,
+                "children": [
+                  {
+                    "name": "test.json",
+                    "path": "echotest/testdata/test.json",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "context.go",
+                "path": "echotest/context.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "context_external_test.go",
+                "path": "echotest/context_external_test.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "context_test.go",
+                "path": "echotest/context_test.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "reader.go",
+                "path": "echotest/reader.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "reader_external_test.go",
+                "path": "echotest/reader_external_test.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "reader_test.go",
+                "path": "echotest/reader_test.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "middleware",
+            "path": "middleware",
+            "is_dir": true,
+            "file_count": 53,
+            "children": [
+              {
+                "name": "testdata",
+                "path": "middleware/testdata",
+                "is_dir": true,
+                "file_count": 1,
+                "children": [
+                  {
+                    "name": "private.txt",
+                    "path": "middleware/testdata/private.txt",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "DEVELOPMENT.md",
+                "path": "middleware/DEVELOPMENT.md",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "basic_auth.go",
+                "path": "middleware/basic_auth.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "basic_auth_test.go",
+                "path": "middleware/basic_auth_test.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "body_dump.go",
+                "path": "middleware/body_dump.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "body_dump_test.go",
+                "path": "middleware/body_dump_test.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "body_limit.go",
+                "path": "middleware/body_limit.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "body_limit_test.go",
+                "path": "middleware/body_limit_test.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "compress.go",
+                "path": "middleware/compress.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "compress_test.go",
+                "path": "middleware/compress_test.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "context_timeout.go",
+                "path": "middleware/context_timeout.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "context_timeout_test.go",
+                "path": "middleware/context_timeout_test.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "cors.go",
+                "path": "middleware/cors.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "cors_test.go",
+                "path": "middleware/cors_test.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "csrf.go",
+                "path": "middleware/csrf.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "csrf_test.go",
+                "path": "middleware/csrf_test.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "decompress.go",
+                "path": "middleware/decompress.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "decompress_test.go",
+                "path": "middleware/decompress_test.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "extractor.go",
+                "path": "middleware/extractor.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "extractor_test.go",
+                "path": "middleware/extractor_test.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "key_auth.go",
+                "path": "middleware/key_auth.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "key_auth_test.go",
+                "path": "middleware/key_auth_test.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "method_override.go",
+                "path": "middleware/method_override.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "method_override_test.go",
+                "path": "middleware/method_override_test.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "middleware.go",
+                "path": "middleware/middleware.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "middleware_test.go",
+                "path": "middleware/middleware_test.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "proxy.go",
+                "path": "middleware/proxy.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "proxy_test.go",
+                "path": "middleware/proxy_test.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "randomstring_bench_test.go",
+                "path": "middleware/randomstring_bench_test.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "randomstring_concurrent_test.go",
+                "path": "middleware/randomstring_concurrent_test.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "rate_limiter.go",
+                "path": "middleware/rate_limiter.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "rate_limiter_context_test.go",
+                "path": "middleware/rate_limiter_context_test.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "rate_limiter_test.go",
+                "path": "middleware/rate_limiter_test.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "recover.go",
+                "path": "middleware/recover.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "recover_test.go",
+                "path": "middleware/recover_test.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "redirect.go",
+                "path": "middleware/redirect.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "redirect_test.go",
+                "path": "middleware/redirect_test.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "request_id.go",
+                "path": "middleware/request_id.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "request_id_test.go",
+                "path": "middleware/request_id_test.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "request_logger.go",
+                "path": "middleware/request_logger.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "request_logger_test.go",
+                "path": "middleware/request_logger_test.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "rewrite.go",
+                "path": "middleware/rewrite.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "rewrite_test.go",
+                "path": "middleware/rewrite_test.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "secure.go",
+                "path": "middleware/secure.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "secure_test.go",
+                "path": "middleware/secure_test.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "slash.go",
+                "path": "middleware/slash.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "slash_test.go",
+                "path": "middleware/slash_test.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "static.go",
+                "path": "middleware/static.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "static_other.go",
+                "path": "middleware/static_other.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "static_percent_test.go",
+                "path": "middleware/static_percent_test.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "static_test.go",
+                "path": "middleware/static_test.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "util.go",
+                "path": "middleware/util.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "util_test.go",
+                "path": "middleware/util_test.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": ".editorconfig",
+            "path": ".editorconfig",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": ".gitattributes",
+            "path": ".gitattributes",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": ".gitignore",
+            "path": ".gitignore",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": ".golangci.yaml",
+            "path": ".golangci.yaml",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "API_CHANGES_V5.md",
+            "path": "API_CHANGES_V5.md",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "CHANGELOG.md",
+            "path": "CHANGELOG.md",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "CLAUDE.md",
+            "path": "CLAUDE.md",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "LICENSE",
+            "path": "LICENSE",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "Makefile",
+            "path": "Makefile",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "README.md",
+            "path": "README.md",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "ROADMAP.md",
+            "path": "ROADMAP.md",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "SECURITY.md",
+            "path": "SECURITY.md",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "bind.go",
+            "path": "bind.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "bind_cache_test.go",
+            "path": "bind_cache_test.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "bind_field_error_test.go",
+            "path": "bind_field_error_test.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "bind_test.go",
+            "path": "bind_test.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "binder.go",
+            "path": "binder.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "binder_error_response_test.go",
+            "path": "binder_error_response_test.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "binder_external_test.go",
+            "path": "binder_external_test.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "binder_generic.go",
+            "path": "binder_generic.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "binder_generic_test.go",
+            "path": "binder_generic_test.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "binder_test.go",
+            "path": "binder_test.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "codecov.yml",
+            "path": "codecov.yml",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "context.go",
+            "path": "context.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "context_generic.go",
+            "path": "context_generic.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "context_generic_test.go",
+            "path": "context_generic_test.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "context_test.go",
+            "path": "context_test.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "dispatch_pool_test.go",
+            "path": "dispatch_pool_test.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "echo.go",
+            "path": "echo.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "echo_test.go",
+            "path": "echo_test.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "funding.json",
+            "path": "funding.json",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "go.mod",
+            "path": "go.mod",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "go.sum",
+            "path": "go.sum",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "group.go",
+            "path": "group.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "group_method_handling_test.go",
+            "path": "group_method_handling_test.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "group_test.go",
+            "path": "group_test.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "httperror.go",
+            "path": "httperror.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "httperror_external_test.go",
+            "path": "httperror_external_test.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "httperror_test.go",
+            "path": "httperror_test.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "ip.go",
+            "path": "ip.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "ip_test.go",
+            "path": "ip_test.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "json.go",
+            "path": "json.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "json_test.go",
+            "path": "json_test.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "llms-full.txt",
+            "path": "llms-full.txt",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "llms.txt",
+            "path": "llms.txt",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "perf_bench_test.go",
+            "path": "perf_bench_test.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "query_fastpath_test.go",
+            "path": "query_fastpath_test.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "renderer.go",
+            "path": "renderer.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "renderer_test.go",
+            "path": "renderer_test.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "response.go",
+            "path": "response.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "response_test.go",
+            "path": "response_test.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "rfc9457.go",
+            "path": "rfc9457.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "rfc9457_test.go",
+            "path": "rfc9457_test.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "route.go",
+            "path": "route.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "route_path.go",
+            "path": "route_path.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "route_syntax_test.go",
+            "path": "route_syntax_test.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "route_test.go",
+            "path": "route_test.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "router.go",
+            "path": "router.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "router_concurrent.go",
+            "path": "router_concurrent.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "router_concurrent_test.go",
+            "path": "router_concurrent_test.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "router_test.go",
+            "path": "router_test.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "scheme.go",
+            "path": "scheme.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "scheme_test.go",
+            "path": "scheme_test.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "server.go",
+            "path": "server.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "server_test.go",
+            "path": "server_test.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "static_encoded_separator_test.go",
+            "path": "static_encoded_separator_test.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "version.go",
+            "path": "version.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "vhost.go",
+            "path": "vhost.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "vhost_test.go",
+            "path": "vhost_test.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          }
+        ]
+      }
+    },
+    "profiles": [
+      {
+        "stage": "full_scan",
+        "total_ms": 37485,
+        "peak_rss_bytes": 29884416,
+        "steps": [
+          {
+            "id": "git_metadata",
+            "label": "Git metadata",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "file_walk",
+            "label": "Parallel file walk",
+            "ms": 8,
+            "pct": 0.02134187008136588
+          },
+          {
+            "id": "languages",
+            "label": "Language breakdown",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "manifests",
+            "label": "Manifest parsing",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "docs",
+            "label": "Doc previews",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "aggregates",
+            "label": "Dirs, configs, stack tags",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "entrypoints",
+            "label": "Entrypoints, workspace units & QA readiness",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "source_previews",
+            "label": "Source preview cache",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "repo_graph",
+            "label": "Deterministic graph scan",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "history",
+            "label": "Git history & decision scan",
+            "ms": 729,
+            "pct": 1.9447779111644656
+          },
+          {
+            "id": "repo_health",
+            "label": "Deterministic health scoring",
+            "ms": 36744,
+            "pct": 98.02320928371348
+          },
+          {
+            "id": "dir_tree",
+            "label": "Directory tree preview",
+            "ms": 0,
+            "pct": 0
+          }
+        ]
+      },
+      {
+        "stage": "local_scan_persist",
+        "total_ms": 6,
+        "peak_rss_bytes": 30130176,
+        "steps": [
+          {
+            "id": "serialize",
+            "label": "JSON serialize (inventory → SQLite)",
+            "ms": 2,
+            "pct": 33.33333333333333
+          },
+          {
+            "id": "db_insert",
+            "label": "SQLite insert",
+            "ms": 3,
+            "pct": 50
+          },
+          {
+            "id": "touch_project",
+            "label": "Update repo project metadata",
+            "ms": 0,
+            "pct": 0
+          }
+        ]
+      }
+    ]
+  },
+  "report": {
+    "overview": "Echo v5 is a Go HTTP framework for developers building APIs, web applications, static-file services, and reverse proxies. It combines a radix-tree router, pooled request contexts, configurable binding and serialization, centralized error handling, and composable middleware around Go’s net/http interfaces. This brief investigates commit 99c395d846e079d4cffd29de9298d1dd829e8b04 through public source reads, including startup, request processing, static-file serving, proxying, and rate-limit state; no repository code or tests were executed.",
+    "agent_prompt": "You are onboarding to labstack/echo at commit 99c395d846e079d4cffd29de9298d1dd829e8b04. Treat it as the github.com/labstack/echo/v5 Go library, with Go 1.25.0 declared in go.mod. Its users build their own applications around Echo; the README main function is an example, not a repository application entrypoint.\n\nStart by reading echo.go, context.go, router.go, route_path.go, route.go, bind.go, json.go, response.go, and server.go. Read the relevant neighboring tests before changing behavior. Consult README.md and API_CHANGES_V5.md for intended public APIs, but verify documentation against implementation: CLAUDE.md contains stale descriptions, including separate routing trees per method and bundled JWT middleware.\n\nUnderstand the execution order. New initializes the default router, binder, serializer, filesystem, error handler, and context pool. Use and Pre compile reusable middleware chains through buildRouterChains. ServeHTTP obtains a pooled Context, calls Reset, runs pre-middleware when configured, routes the request, invokes global middleware and the selected route chain, and sends returned errors to HTTPErrorHandler. Context.Reset clears request-local state while retaining reusable allocations. Do not retain pooled contexts beyond request completion. Echo configuration and ordinary router mutations belong before serving; NewConcurrentRouter provides locking for router operations, not arbitrary Echo field changes.\n\nBinding has deliberate precedence: path values first, query values only for GET, DELETE, HEAD, and QUERY, then the body. Headers require explicit BindHeaders. JSON bodies are fully buffered and decoded with json.Unmarshal; the 64 KiB pool-retention threshold is not an input-size limit. Validation requires an explicitly configured Validator and a separate Validate call. JSON responses delay status commitment until serialization writes; preserve response-wrapper Unwrap behavior and the nested JSON writer guard.\n\nFor filesystem work, inspect both Echo.StaticDirectoryHandler and middleware.StaticConfig.ToMiddleware. Preserve agreement between router path interpretation and file lookup, including encoded separators, dot segments, backslashes, group prefixes, and HTML5 fallback. The default filesystem starts at the process working directory; configured roots may point elsewhere. For proxy changes, inspect ProxyBalancer, proxyHTTP, proxyRaw, forwarding-header rewriting, retries, and connection ownership. For rate limiting, distinguish request-local Context data from process-local visitor state and the optional RateLimiterStoreContext interface.\n\nMiddleware extensions should implement config.ToMiddleware with validation errors, retain Skipper behavior, and return request errors through the chain. Authentication comparison belongs to application validators. KeyAuth continuation requires ContinueOnIgnoredError when its error callback returns nil. BodyDump currently truncates the body delivered downstream when MaxRequestBytes is exceeded; its tests explicitly encode that behavior.\n\nTests and CI were inspected, not executed, and inspection was bounded. If a later task authorizes execution, start with targeted Go tests, then use the relevant package suite and race checks. CI specifies go test -race with atomic coverage across three operating systems and Go 1.25–1.27. Verify the Makefile package prefix before using it: it names the unversioned module while go.mod declares /v5. Do not interpret existing tests, advisory benchmark jobs, or source-level risk observations as passing results, measured improvements, or confirmed vulnerabilities.",
+    "system_map": {
+      "summary": "The repository provides an embeddable HTTP framework, with application startup illustrated in the README. The core package owns routing, request contexts, binding, responses, and server helpers; middleware supplies optional request policies and transports. State examined here consists of route registries, reusable pools, request-local maps, and an in-memory rate limiter. Deployment remains the consuming application's responsibility through net/http or StartConfig.",
+      "claims": [
+        {
+          "claim": "go.mod declares github.com/labstack/echo/v5 and Go 1.25.0, with direct requirements on testify, x/net, and x/time; the README example imports the library, registers GET /, and starts an application-owned server.",
+          "sources": [
+            "go.mod#L1-L16",
+            "README.md#L86-L119"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Echo aggregates replaceable Binder, Renderer, Validator, JSONSerializer, IPExtractor, SchemeExtractor, HTTPErrorHandler, and Router components, alongside route hooks, slog logging, middleware chains, and a context pool.",
+          "sources": [
+            "echo.go#L69-L119",
+            "echo.go#L259-L316"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New installs DefaultBinder, DefaultJSONSerializer, a working-directory filesystem, an overwrite-enabled DefaultRouter, DefaultHTTPErrorHandler(false), and a context-pool factory before compiling dispatch chains.",
+          "sources": [
+            "echo.go#L400-L424"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "DefaultRouter owns one radix-tree root whose nodes carry method handlers, plus a Routes registry; Add parses patterns and inserts static, parameter, and wildcard nodes. This differs from CLAUDE.md's description of separate trees per method.",
+          "sources": [
+            "router.go#L59-L75",
+            "router.go#L506-L582",
+            "CLAUDE.md#L51-L54"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Context owns the request, response wrappers, cached query values, route metadata, path values, handler, logger, and request-local store. Reset clears these transient values while retaining the store allocation and path-value capacity.",
+          "sources": [
+            "context.go#L63-L91",
+            "context.go#L108-L156"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Global and pre-routing middleware chains are compiled by buildRouterChains; route middleware is compiled during DefaultRouter.Add. Group.AddRoute combines group middleware with route definitions before registration.",
+          "sources": [
+            "echo.go#L427-L443",
+            "router.go#L520-L534",
+            "group.go#L205-L212"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "StartConfig creates a standard http.Server and listener, supports custom listeners and TLS configuration, and coordinates context-triggered graceful shutdown. StartTLS loads certificate inputs through fs.FS or accepts bytes, then defaults to TLS 1.2 minimum and h2 negotiation.",
+          "sources": [
+            "server.go#L25-L60",
+            "server.go#L71-L96",
+            "server.go#L100-L167",
+            "server.go#L181-L200"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Development automation includes Makefile lint/vet/race targets, a CI race-and-coverage matrix, and a separate checks workflow for golint, staticcheck, and govulncheck. The Makefile's unversioned package prefix differs from the /v5 module declaration.",
+          "sources": [
+            "Makefile#L1-L25",
+            "go.mod#L1-L3",
+            ".github/workflows/ci.yml#L38-L82",
+            ".github/workflows/checks.yml#L70-L84"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "feature_catalog": {
+      "summary": "Echo exposes developer-facing APIs rather than a fixed collection of application screens or business routes. Its features cover routing, input conversion, output formats, static content, security policies, traffic management, and observability. Middleware is explicitly installed by consuming applications, and configuration factories allow customization. The catalog below groups the inspected capabilities; the investigation is bounded rather than exhaustive.",
+      "claims": [
+        {
+          "claim": "Routing supports HTTP method helpers including QUERY, custom method registration, Any/Match, fallback routes, nested groups, and named route reversal. NewVirtualHostHandler dispatches exact request Host matches to separate Echo instances, falling back to its own routes.",
+          "sources": [
+            "echo.go#L534-L626",
+            "group.go#L137-L143",
+            "route.go#L82-L136",
+            "vhost.go#L8-L19"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Input APIs bind path, query, header, JSON, XML, URL-encoded form, and multipart data. ValueBinder provides fluent source-specific conversion with fail-fast or accumulated errors, while generic PathParam/QueryParam helpers distinguish missing values from empty values.",
+          "sources": [
+            "bind.go#L43-L140",
+            "binder.go#L112-L223",
+            "binder_generic.go#L48-L122"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Context supports HTML, text, JSON, validated JSONP, XML, blobs, streaming, attachments, inline files, redirects, and empty responses; Render delegates to a configured template renderer. Error output can use the default JSON handler or RFC 9457 Problem Details.",
+          "sources": [
+            "context.go#L474-L506",
+            "context.go#L509-L610",
+            "context.go#L637-L768",
+            "rfc9457.go#L49-L64",
+            "echo.go#L458-L517"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Static and StaticFS register filesystem-backed GET routes; File/FileFS expose individual files. Static middleware additionally offers configurable index files, directory browsing, group-base handling, and HTML5 index fallback restricted to router-level 404 errors.",
+          "sources": [
+            "echo.go#L629-L652",
+            "echo.go#L705-L731",
+            "middleware/static.go#L24-L84",
+            "middleware/static.go#L278-L335"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Security middleware includes callback-driven BasicAuth and KeyAuth, CSRF protection using fetch metadata or cookie/token comparison, configured CORS origins, and Secure headers such as CSP and HSTS. CORS rejects wildcard origins with credentials unless custom origin logic is supplied.",
+          "sources": [
+            "middleware/basic_auth.go#L97-L155",
+            "middleware/key_auth.go#L138-L204",
+            "middleware/csrf.go#L168-L259",
+            "middleware/csrf.go#L264-L310",
+            "middleware/cors.go#L171-L189",
+            "middleware/secure.go#L127-L151"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Traffic APIs provide token-bucket rate limiting with custom stores and response headers, reverse proxying with random or round-robin balancing, retries, rewrites, custom transports, response modification, and WebSocket forwarding. StartConfig supplies HTTP/TLS listener and shutdown controls.",
+          "sources": [
+            "middleware/rate_limiter.go#L124-L165",
+            "middleware/rate_limiter.go#L263-L300",
+            "middleware/proxy.go#L29-L104",
+            "middleware/proxy.go#L370-L411",
+            "server.go#L25-L60"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Request transformation middleware includes method override, wildcard/regex rewrites, trailing-slash normalization, and HTTPS/www redirects. Payload middleware supplies configurable gzip responses, gzip request decompression with a default 100 MiB expansion limit, BodyLimit, and cooperative ContextTimeout handling.",
+          "sources": [
+            "middleware/method_override.go#L35-L78",
+            "middleware/rewrite.go#L14-L34",
+            "middleware/slash.go#L25-L76",
+            "middleware/slash.go#L102-L141",
+            "middleware/redirect.go#L33-L80",
+            "middleware/redirect.go#L104-L145",
+            "middleware/compress.go#L24-L65",
+            "middleware/decompress.go#L24-L62",
+            "middleware/body_limit.go#L49-L76",
+            "middleware/context_timeout.go#L38-L70"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "RequestLogger offers selectable request/response fields and a default slog callback; RequestID propagates or generates an ID in response headers. BodyDump calls an application callback with payloads and handler errors, while Recover converts ordinary panics into returned errors and rethrows http.ErrAbortHandler.",
+          "sources": [
+            "middleware/request_logger.go#L128-L177",
+            "middleware/request_logger.go#L394-L425",
+            "middleware/request_id.go#L53-L71",
+            "middleware/body_dump.go#L111-L141",
+            "middleware/recover.go#L68-L85"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "data_flow": {
+      "summary": "Incoming net/http requests enter a pooled Context and acquire route metadata before reaching the selected handler chain. Parsing and binding move request-controlled values into application-owned targets, while serializers and response wrappers govern output commitment. File serving reads from configured filesystems and proxying crosses an upstream network boundary. Request-local state is cleared between uses; rate-limit visitor state survives requests only within its store instance.",
+      "claims": [
+        {
+          "claim": "ServeHTTP delegates to serveHTTPFunc; the default serveHTTP obtains a Context from sync.Pool, resets it with the incoming request/writer, resolves a handler directly or through preChain, and returns the Context to the pool after error handling.",
+          "sources": [
+            "echo.go#L822-L847",
+            "context.go#L140-L156"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "DefaultRouter.Route selects its matching path from URL.Path and conditionally RawPath, captures parameter values, resolves matched or fallback handlers, and writes RouteInfo, PathValues, Context.Path, and request.Pattern before returning the handler.",
+          "sources": [
+            "router.go#L916-L941",
+            "router.go#L1131-L1194",
+            "context.go#L294-L315"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "QueryParam scans RawQuery without creating a map unless QueryParams has already populated the cache. It decodes percent escapes and plus signs, skips malformed or semicolon-containing pairs, and returns the first valid matching value.",
+          "sources": [
+            "context.go#L318-L350",
+            "context.go#L364-L370"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Context.Bind delegates to Echo.Binder. DefaultBinder applies path values, optionally query values for GET/DELETE/HEAD/QUERY, then Content-Type-driven body binding; later sources can overwrite earlier values, and header binding is a separate operation.",
+          "sources": [
+            "context.go#L457-L460",
+            "bind.go#L68-L105",
+            "bind.go#L116-L140"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "DefaultJSONSerializer.Deserialize reads the complete body into a reset pooled buffer, calls json.Unmarshal, and retains only buffers at or below 64 KiB capacity. Status-coded read errors survive; other read or decode failures become wrapped 400 errors.",
+          "sources": [
+            "json.go#L22-L24",
+            "json.go#L47-L65"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Context.JSON installs a delayedStatusWriter around the current response and restores it afterward; serialization's first write commits the proposed status. Response then records commitment, byte count, and before/after callbacks, while the default error handler skips already committed responses.",
+          "sources": [
+            "context.go#L568-L587",
+            "response.go#L50-L76",
+            "response.go#L143-L157",
+            "echo.go#L465-L469"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "StaticDirectoryHandler validates request and wildcard paths before optional unescaping, checks the configured filesystem, redirects directory URLs lacking a slash, and delegates to fsFile. fsFile opens content or index.html and requires io.ReadSeeker for http.ServeContent.",
+          "sources": [
+            "echo.go#L665-L702",
+            "context.go#L704-L729"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "RateLimiter extracts an identifier and delegates to AllowContext when available, otherwise Allow. Its memory store updates a mutex-protected visitor map and token bucket across requests, periodically deleting stale entries; Context.Set data is separately cleared by Reset.",
+          "sources": [
+            "middleware/rate_limiter.go#L149-L164",
+            "middleware/rate_limiter.go#L269-L300",
+            "middleware/rate_limiter.go#L307-L314",
+            "context.go#L140-L147"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "behavior_traces": {
+      "summary": "The following traces follow source execution order through concrete framework flows. Startup proceeds from construction and registration into listener creation and shutdown coordination. A bound API request proceeds through dispatch, input conversion, and output serialization. Static-file delivery, proxy requests, and rate-limit decisions expose additional filesystem, network, and state boundaries.",
+      "claims": [
+        {
+          "claim": "Startup configuration: New → NewRouter → contextPool.New installation → buildRouterChains; GET → Add → Echo.add → optional OnAddRoute → Router.Add. Registration also raises contextPathParamAllocSize when a route needs more parameters.",
+          "sources": [
+            "echo.go#L400-L443",
+            "echo.go#L541-L545",
+            "echo.go#L739-L773"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Server startup and stop: Echo.Start → signal.NotifyContext → StartConfig.Start → start → Listen → optional tls.NewListener → BeforeServeFunc → server.Serve. Context cancellation triggers gracefulShutdown → server.Shutdown with a default ten-second timeout; http.ErrServerClosed is suppressed.",
+          "sources": [
+            "echo.go#L870-L874",
+            "server.go#L63-L65",
+            "server.go#L119-L167",
+            "server.go#L181-L200"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Request dispatch: ServeHTTP → serveHTTP → Context.Reset → preChain when registered → Router.Route → global chain → dispatch → route handler. applyMiddleware wraps in reverse registration order so the first registered middleware enters first; returned errors reach HTTPErrorHandler.",
+          "sources": [
+            "echo.go#L430-L443",
+            "echo.go#L828-L846",
+            "echo.go#L911-L915"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Bound API input: handler calls Context.Bind → DefaultBinder.Bind → BindPathValues → method-conditional BindQueryParams → BindBody. JSON bodies call JSONSerializer.Deserialize; unsupported nonempty body media types return 415. Validation occurs only if the handler separately calls Context.Validate.",
+          "sources": [
+            "context.go#L459-L469",
+            "bind.go#L68-L105",
+            "bind.go#L127-L140",
+            "json.go#L47-L65"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "API output/error: Context.JSON → json → DefaultJSONSerializer.Serialize → delayedStatusWriter.Write → Response.WriteHeader/Write. On a returned error, DefaultHTTPErrorHandler checks commitment, extracts HTTPStatusCoder, chooses JSON payload shape, and sends NoContent instead of JSON for HEAD.",
+          "sources": [
+            "context.go#L568-L592",
+            "json.go#L28-L33",
+            "response.go#L149-L157",
+            "echo.go#L465-L517"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Static file delivery: Echo.Static → MustSubFS → GET wildcard registration → StaticDirectoryHandler. At request time the handler rejects unclean paths, optionally unescapes and rechecks them, runs fs.Stat, redirects directories when needed, then fsFile opens the file/index and calls http.ServeContent.",
+          "sources": [
+            "echo.go#L629-L637",
+            "echo.go#L665-L702",
+            "echo.go#L976-L981",
+            "context.go#L704-L729"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Proxy action: ProxyConfig.ToMiddleware → rewriteURL → overwrite IP/scheme headers → Balancer.Next → store selected target → proxyHTTP or proxyRaw. HTTP errors are stored under _error; retries require remaining RetryCount and RetryFilter approval, while missing targets immediately return 502.",
+          "sources": [
+            "middleware/proxy.go#L337-L411",
+            "middleware/proxy.go#L424-L450"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Rate-limit state: RateLimiter middleware → IdentifierExtractor → RateLimiterMemoryStore.AllowContext → allow → lookup/create Visitor → update lastSeen → optional cleanupStaleVisitors → AllowN → setRateLimitHeaders. Denial invokes DenyHandler, which defaults to a wrapped 429; the visitor map is process-local memory.",
+          "sources": [
+            "middleware/rate_limiter.go#L60-L72",
+            "middleware/rate_limiter.go#L149-L164",
+            "middleware/rate_limiter.go#L263-L314"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "testing_signals": {
+      "summary": "Tests and CI were inspected, not executed; their existence establishes intended checks, not passing results. The examined tests use Go testing, httptest, testify assertions, and filesystem fixtures. They target dispatch/pool invariants, JSON parsing, static security regressions, concurrency, lifecycle behavior, proxying, and rate-limit headers. Inspection is bounded and does not establish exhaustive coverage, deployment correctness, or measured performance.",
+      "claims": [
+        {
+          "claim": "Tests use testing, httptest, and testify/assert; echotest.ContextConfig constructs request bodies, headers, route metadata, and recorders. ServeWithHandler invokes a handler directly and applies an error handler, so that helper alone does not exercise router/global middleware dispatch.",
+          "sources": [
+            "dispatch_pool_test.go#L6-L12",
+            "echotest/context.go#L80-L106",
+            "echotest/context.go#L137-L183"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CI specifies Go 1.25, 1.26, and 1.27 on Ubuntu, macOS, and Windows, running go test -race with atomic coverage. Coverage uploads are limited to the latest configured Go on Ubuntu and do not fail CI on upload errors; Codecov config permits a one-percent status threshold.",
+          "sources": [
+            ".github/workflows/ci.yml#L38-L45",
+            ".github/workflows/ci.yml#L81-L98",
+            "codecov.yml#L1-L11"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The checks workflow installs and runs golint, staticcheck, and govulncheck using @latest. Separately, .golangci.yaml enables revive, disables errcheck, and excludes test files; these workflow steps do not invoke golangci-lint.",
+          "sources": [
+            ".github/workflows/checks.yml#L70-L84",
+            ".golangci.yaml#L1-L24"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "dispatch_pool_test.go guards store clearing, JSON status across Reset, nested JSON writer behavior, and Pre/Use execution for 404, 405, and OPTIONS. Query fast-path tests compare malformed escapes, repeated keys, empty values, Unicode, and semicolon segments against url.ParseQuery.",
+          "sources": [
+            "dispatch_pool_test.go#L14-L51",
+            "dispatch_pool_test.go#L70-L100",
+            "query_fastpath_test.go#L32-L66"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "JSON tests reject trailing objects/garbage, alternate large and small payloads, exercise pooled decoding in 64 goroutines, decode a body above the pool-retention cap, and check read failures. These inspect parser/pool behavior rather than proving endpoint request-size limits.",
+          "sources": [
+            "json_test.go#L118-L174",
+            "json_test.go#L177-L215",
+            "json.go#L43-L46"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Static regression tests combine guarded routes with fstest.MapFS and assert no protected content appears for encoded slash, backslash, or double-encoding variants. Group-mounted StaticFS receives separate encoded-separator cases; these fixtures do not establish behavior for every custom filesystem.",
+          "sources": [
+            "static_encoded_separator_test.go#L12-L79",
+            "static_encoded_separator_test.go#L83-L122"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Inspected tests include concurrent route metadata reads during additions, graceful-shutdown completion/deadline branches, and preference for AllowContext plus 429/rate-limit headers. These are concrete concurrency/lifecycle contracts, with no execution result supplied by this investigation.",
+          "sources": [
+            "router_concurrent_test.go#L295-L355",
+            "server_test.go#L132-L225",
+            "middleware/rate_limiter_context_test.go#L38-L88"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Proxy tests arrange reachable and unreachable targets plus retry filters and a WebSocket echo exchange; CSRF tests cover fetch-metadata allow/block branches. PR benchmark CI compares base/current checkouts with eight 100 ms samples and advisory benchstat output, which provides no measured speedup in this report.",
+          "sources": [
+            "middleware/proxy_test.go#L637-L677",
+            "middleware/proxy_test.go#L1081-L1118",
+            "middleware/csrf_test.go#L535-L608",
+            ".github/workflows/ci.yml#L100-L142"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "risk_map": {
+      "summary": "These findings describe source-level boundaries and fragile behavior, not confirmed vulnerabilities. Most security decisions are configured by applications through middleware, validators, trust policies, and filesystem roots. Pool reuse and response commitment couple changes in dispatch, serialization, logging, and error handling. One connection-lifecycle concern is explicitly a hypothesis requiring focused verification.",
+      "claims": [
+        {
+          "claim": "Static serving defaults to no path unescaping and rejects dot/empty segments, but explicitly enabling decoding can still make encoded separators resolve beyond route-based guards. Filesystem root selection is also significant: defaultFS sub-root construction accepts configured absolute or parent-relative roots outside the initial working directory.",
+          "sources": [
+            "echo.go#L322-L345",
+            "echo.go#L657-L690",
+            "echo.go#L953-L967",
+            "middleware/static.go#L60-L80"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "JSON deserialization buffers the full body before decoding; the 64 KiB cap only controls pool retention. Request-size enforcement depends on separately installed BodyLimit or MaxBytesReader, while decompression has its own configurable expansion limit that can be disabled.",
+          "sources": [
+            "json.go#L22-L24",
+            "json.go#L43-L65",
+            "middleware/body_limit.go#L63-L74",
+            "middleware/decompress.go#L24-L29"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "BodyDump's request cap changes downstream input: it reads only the prefix, drains the remainder, and replaces Request.Body with the captured prefix. TestBodyDump_RequestExceedsLimit explicitly expects this truncation; payload callbacks also receive raw content that application logging must handle appropriately.",
+          "sources": [
+            "middleware/body_dump.go#L97-L113",
+            "middleware/body_dump.go#L136-L139",
+            "middleware/body_dump_test.go#L255-L284"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Forwarded identity and scheme depend on trust configuration: direct-peer IP is the default, but LegacyIPExtractor and LegacySchemeExtractor retain header-trusting behavior. Scheme extraction trusts private/loopback/link-local peers by default and requires trusted proxies to overwrite forwarding headers.",
+          "sources": [
+            "ip.go#L113-L120",
+            "ip.go#L269-L279",
+            "scheme.go#L32-L57"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "BasicAuth and KeyAuth delegate secure credential comparison to application validators. KeyAuth can deliberately continue after rejected/missing credentials when ErrorHandler returns nil and ContinueOnIgnoredError is enabled, so downstream authorization must account for that configured public-access branch.",
+          "sources": [
+            "middleware/basic_auth.go#L41-L46",
+            "middleware/key_auth.go#L57-L70",
+            "middleware/key_auth.go#L187-L202"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Echo fields and DefaultRouter mutations are documented as unsafe during serving; concurrentRouter locks router operations only. serveHTTP returns Context to the pool after processing, and Reset clears its state, making escaped Context references and arbitrary runtime configuration changes important review boundaries.",
+          "sources": [
+            "echo.go#L64-L68",
+            "router_concurrent.go#L21-L46",
+            "echo.go#L828-L846",
+            "context.go#L140-L156"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Hypothesis: proxyRaw may retain hijacked connections when one io.Copy direction finishes but the other remains blocked, because it waits for both results before deferred connection closes run. The inspected WebSocket test verifies a normal echo exchange rather than this asymmetric-close scenario.",
+          "sources": [
+            "middleware/proxy.go#L145-L178",
+            "middleware/proxy_test.go#L1081-L1118"
+          ],
+          "kind": "inference"
+        },
+        {
+          "claim": "Onboarding/tooling descriptions drift from implementation: CLAUDE.md lists separate method trees and bundled JWT middleware, README lists JWT externally, and Makefile uses an unversioned package prefix. These discrepancies can misdirect edits or checks; no Makefile failure was executed or confirmed.",
+          "sources": [
+            "CLAUDE.md#L51-L59",
+            "router.go#L62-L75",
+            "README.md#L121-L129",
+            "Makefile#L1-L2",
+            "go.mod#L1-L3"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "extension_points": {
+      "summary": "Extension is primarily through Go interfaces, handler factories, and callbacks. Router replacement has an explicit context-population contract, while middleware factories offer configurable request policies. Binding, rendering, serialization, errors, proxying, and rate limiting each expose narrower integration boundaries. There is no need to alter the core dispatch path for most application-specific behavior described here.",
+      "claims": [
+        {
+          "claim": "Config.Router accepts implementations of Add, Remove, Routes, and Route; Route must initialize Context route/path values. NewConcurrentRouter wraps an implementation with read/write locks and returns cloned route metadata for callers.",
+          "sources": [
+            "echo.go#L270-L273",
+            "router.go#L23-L46",
+            "router_concurrent.go#L7-L46"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Route carries method, path, name, handler, and middleware, and AddRoute returns registration errors rather than panicking like Add. OnAddRoute runs before Router.Add and can reject registration; RouteInfo and Routes provide reversal and metadata lookup.",
+          "sources": [
+            "route.go#L15-L44",
+            "route.go#L82-L150",
+            "echo.go#L734-L771"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "MiddlewareFunc transforms HandlerFunc, and MiddlewareConfigurator.ToMiddleware can return configuration errors. Applications can attach middleware through Pre, Use, groups, or routes; middleware development guidance recommends returning request errors through the chain.",
+          "sources": [
+            "echo.go#L130-L139",
+            "echo.go#L525-L535",
+            "group.go#L205-L212",
+            "middleware/DEVELOPMENT.md#L5-L10"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Binder.Bind is replaceable, BindUnmarshaler supports custom parameter conversion, and ValueBinder exposes ValueFunc, ValuesFunc, ErrorFunc, and CustomFunc. Reflection metadata caches explicitly couple the four source tags to tagName and bindMetaFor.",
+          "sources": [
+            "bind.go#L20-L40",
+            "bind.go#L143-L175",
+            "bind.go#L187-L204",
+            "binder.go#L112-L119",
+            "binder.go#L226-L251"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Config allows custom JSONSerializer, Renderer, and Validator implementations. Context delegates Bind/Validate/Render to configured services, reports absent validator/renderer registrations, and buffers rendered templates before sending output.",
+          "sources": [
+            "echo.go#L285-L303",
+            "echo.go#L121-L144",
+            "context.go#L459-L489"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "HTTPErrorHandler is an assignable callback; the default recognizes HTTPStatusCoder and status-bearing json.Marshaler implementations. ProblemDetailsHTTPErrorHandler additionally accepts ProblemErrorer, while BindingError.MarshalJSON supplies structured field/message output.",
+          "sources": [
+            "echo.go#L127-L128",
+            "echo.go#L472-L507",
+            "rfc9457.go#L43-L64",
+            "binder.go#L94-L109"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "ProxyBalancer exposes AddTarget, RemoveTarget, and Next(Context); ProxyConfig accepts RetryFilter, ErrorHandler, Transport, ModifyResponse, and rewrite maps. Next can replace the Context request, which proxy execution rereads before upstream forwarding.",
+          "sources": [
+            "middleware/proxy.go#L37-L89",
+            "middleware/proxy.go#L99-L104",
+            "middleware/proxy.go#L389-L398"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "RateLimiterStore supplies Allow, with optional AllowContext for response-aware decisions; IdentifierExtractor and denial/error handlers are configurable. IPExtractor and SchemeExtractor separately let applications adapt request identity and transport interpretation to their proxy topology.",
+          "sources": [
+            "middleware/rate_limiter.go#L24-L48",
+            "middleware/rate_limiter.go#L149-L164",
+            "echo.go#L305-L316"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_handoff": {
+      "summary": "Begin with implementation and nearby tests, then use documentation to understand intended public compatibility. Tests and CI were inspected, not executed; future executable verification requires authorization outside this read-only investigation. Keep edits focused on the relevant interface or middleware and preserve cross-file dispatch, pooling, path, and response invariants. The inventory and test inspection are bounded, and risk observations must not be promoted into confirmed findings without verification.",
+      "claims": [
+        {
+          "claim": "Use the /v5 import path and pointer Context handlers, with slog logging and Context-first callback signatures. The migration document describes these API changes, and current HandlerFunc/Binder declarations substantiate them.",
+          "sources": [
+            "go.mod#L1-L3",
+            "API_CHANGES_V5.md#L9-L25",
+            "echo.go#L127-L134",
+            "bind.go#L20-L23"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "For dispatch changes, read New, buildRouterChains, serveHTTP, Context.Reset, and dispatch_pool_test.go together. Preserve Pre-before-routing, Use-after-routing, fallback-handler middleware execution, store clearing, and nested JSON writer behavior.",
+          "sources": [
+            "echo.go#L400-L443",
+            "echo.go#L828-L846",
+            "context.go#L140-L156",
+            "dispatch_pool_test.go#L14-L100"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "For route syntax changes, inspect route_path.go, DefaultRouter.Add/Route, and RouteInfo.Reverse together: walkRoutePath is shared by registration and URL reversal, including escaped colons and inline verbs.",
+          "sources": [
+            "route_path.go#L8-L64",
+            "router.go#L536-L575",
+            "router.go#L1119-L1128",
+            "route.go#L82-L108"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "For static-file changes, review both core StaticDirectoryHandler and Static middleware, plus encoded-separator regressions. Preserve path validation before and after optional decoding and the distinction between router-level 404 fallback and errors from matched handlers.",
+          "sources": [
+            "echo.go#L665-L702",
+            "middleware/static.go#L224-L254",
+            "middleware/static.go#L284-L305",
+            "static_encoded_separator_test.go#L12-L79"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "For binding changes, preserve source precedence and method restrictions, explicit header binding, and separation of Bind from Validate. Changes to reflection source tags require synchronized metadata fields, tagName dispatch, and bindMetaFor extraction.",
+          "sources": [
+            "bind.go#L116-L175",
+            "bind.go#L187-L204",
+            "context.go#L459-L469"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "For response wrappers, implement Unwrap so UnwrapResponse can reach Echo.Response, preserve delayed JSON commitment, and account for RequestLogger's default HandleError=true committing errors before outer middleware returns. Avoid assuming a returned error can replace an already sent response.",
+          "sources": [
+            "response.go#L121-L130",
+            "context.go#L568-L587",
+            "middleware/request_logger.go#L394-L410",
+            "echo.go#L458-L469"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "If later execution is authorized, start with targeted tests in the changed package, then expand to package tests and go test -race ./... as appropriate. CI's inspected baseline uses race detection and atomic coverage; verify Makefile's package discovery before trusting make test or make race.",
+          "sources": [
+            "CLAUDE.md#L29-L34",
+            ".github/workflows/ci.yml#L81-L82",
+            "Makefile#L1-L2",
+            "Makefile#L18-L25",
+            "go.mod#L1-L3"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Prefer config.ToMiddleware for new middleware validation and return request errors rather than swallowing them. Before altering BodyDump or proxyRaw, read their current downstream-input and connection-ownership behavior plus relevant tests; existing assertions describe intended behavior, not results of this investigation.",
+          "sources": [
+            "middleware/DEVELOPMENT.md#L5-L10",
+            "middleware/body_dump.go#L97-L113",
+            "middleware/body_dump_test.go#L279-L284",
+            "middleware/proxy.go#L145-L178"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    }
+  },
+  "analysis": {
+    "agent": "codex",
+    "model": "cli:codex",
+    "runtime_ms": 479695,
+    "cost_usd": null,
+    "collected_at": "2026-10-02T18:28:23.864584+00:00",
+    "source_commit_sha": "99c395d846e079d4cffd29de9298d1dd829e8b04",
+    "citation_validation": {
+      "status": "passed",
+      "claim_count": 64,
+      "path_and_line_bounds": true,
+      "semantic_correctness_established": false
+    },
+    "runtime_verification": {
+      "tests_executed": false,
+      "upstream_code_executed": false
+    },
+    "source_review": {
+      "status": "reviewed_bounded",
+      "all_claim_text_screened": true,
+      "independently_source_checked_claim_count": 61,
+      "private_review_receipt_sha256": "77d3ad676c80733569b482726a0f3a50656559aa2a855960ac52c0642f6579e1",
+      "full_semantic_correctness_established": false
+    }
+  },
+  "public_export": {
+    "private_original_record_sha256": "2d4dd73b36509d191eec66aef13e5d536fad930dac958643ef7d2cc2b4f4e602",
+    "omitted_local_fields": [
+      "scan.inventory.repo_path"
+    ],
+    "original_record_retained_privately": true,
+    "note": "Public corpus projection; embedded scan omits the local clone path. Hash identifies the original corpus record, not raw CLI stdout."
+  }
+}

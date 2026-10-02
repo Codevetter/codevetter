@@ -68,6 +68,24 @@ cannot scan, synthesize, export, mutate files, or refresh the index.
 - Delta parsing is bounded and tied to an exact Git range.
 - Missing or stale graph/history evidence fails closed.
 
+## Public source-analysis corpus
+
+The public `/unpack/` pages use the versioned records under
+`benchmarks/repo-unpacks/`, projected by `scripts/sync-unpack-pages.mjs`.
+Collection and optional agent synthesis are separate stages:
+`scripts/collect-unpack-repo.mjs` can reuse a clean retained clone, while
+`scripts/analyze-unpack-repo.mjs` constructs the source-analysis prompt.
+
+`scripts/verify-unpack-claims.mjs --strict --clones <directory> --slug <slug>`
+checks pinned Git identity and tracked file/line citations. Valid citations do
+not establish semantic correctness. Reading upstream tests or CI does not
+establish that either was executed; the public pages disclose that boundary.
+
+The [October 2026 expansion evidence](../../evidence/verification/repo-unpack-expansion-2026-10-02.md)
+records bounded source review, corrections, invocation identities and timing
+limits. Local preparation and public deployment remain separate states in
+[#350](https://github.com/Codevetter/codevetter/issues/350).
+
 ## Key implementation
 
 - `crates/codevetter-core/src/commands/unpack.rs` — scan and persistence.
