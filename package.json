@@ -6,6 +6,8 @@
     "apps/*"
   ],
   "scripts": {
+    "skills:install": "node scripts/install-agent-skills.mjs",
+    "test:agent-skills": "node --test scripts/install-agent-skills.test.mjs",
     "brand:generate": "node scripts/generate-brand-assets.mjs",
     "bench:public": "node scripts/run-public-benchmark.mjs",
     "bench:cross-review": "node scripts/run-cross-review-benchmark.mjs",

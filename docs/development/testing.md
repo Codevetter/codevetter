@@ -91,6 +91,11 @@ that exact base before running them.
 
 ## Evidence interpretation
 
+The dated [testing-speed study](../../evidence/performance/testing-speed-study-2026-10-02.md)
+uses the Fleet skill trial to prioritize startup, selection, reuse, and evidence
+collection experiments. Its recommendations are unimplemented and require
+paired validation; they do not change these qualification requirements.
+
 - A unit test proves its contract, not a production release.
 - A local package may be ad-hoc signed; shipping requires Developer ID and
   notarization receipts.

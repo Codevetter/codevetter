@@ -134,3 +134,7 @@ below point at the files in the repo on GitHub.
 
 Tracked in [`STATUS.md`](https://github.com/Codevetter/codevetter/blob/main/STATUS.md) under "Unresolved questions".
 Do not invent answers in docs; mark gaps explicitly.
+
+## Agent workflows
+
+- [Agent workflow skills](development/agent-skills.md) — review, testing, performance and value evaluation.
