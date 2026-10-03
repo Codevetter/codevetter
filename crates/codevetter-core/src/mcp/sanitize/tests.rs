@@ -78,3 +78,55 @@ fn redacts_absolute_paths_embedded_in_text() {
     assert_eq!(value["windows"], OMITTED);
     assert_eq!(value["relative"], "Build failed at src/main.rs:12");
 }
+
+#[test]
+fn invocation_command_exception_is_path_schema_provenance_and_enum_bound() {
+    let event = json!({"source_schema_version":"codevetter.skill-invocation/v1",
+        "command_provenance":"invocation_metadata", "command":"scope",
+        "nested":{"command":"scope"}, "repo_path":"/private/repo"});
+    let envelope = json!({"command":"scope", "data":{"operation":"invocation_list",
+        "data":{"schema_version":"codevetter.invocation-events/v1", "invocations":[event]}}});
+    let sanitized = sanitize_invocation_response(envelope.clone()).unwrap();
+    assert_eq!(
+        sanitized["data"]["data"]["invocations"][0]["command"],
+        "scope"
+    );
+    assert!(sanitized.get("command").is_none());
+    assert!(sanitized["data"]["data"]["invocations"][0]["nested"]
+        .get("command")
+        .is_none());
+    assert!(sanitized["data"]["data"]["invocations"][0]
+        .get("repo_path")
+        .is_none());
+    assert!(
+        sanitize_response(envelope.clone()).unwrap()["data"]["data"]["invocations"][0]
+            .get("command")
+            .is_none()
+    );
+    for (pointer, invalid) in [
+        ("/data/operation", json!("other")),
+        ("/data/data/schema_version", json!("other")),
+        (
+            "/data/data/invocations/0/source_schema_version",
+            json!("other"),
+        ),
+        (
+            "/data/data/invocations/0/command_provenance",
+            json!("untrusted"),
+        ),
+        (
+            "/data/data/invocations/0/command",
+            json!("scope --raw PRIVATE_SENTINEL"),
+        ),
+    ] {
+        let mut value = envelope.clone();
+        *value.pointer_mut(pointer).unwrap() = invalid;
+        let sanitized = sanitize_invocation_response(value).unwrap();
+        assert!(
+            sanitized["data"]["data"]["invocations"][0]
+                .get("command")
+                .is_none(),
+            "{pointer}"
+        );
+    }
+}

@@ -31,6 +31,8 @@ pub mod history_read;
 pub mod history_roots;
 pub mod history_summary_graph;
 pub mod intel;
+pub mod invocation_events;
+pub mod invocation_ledger;
 pub mod local_check;
 pub mod local_qualification;
 pub mod managed_work;
