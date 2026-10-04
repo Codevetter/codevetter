@@ -1,0 +1,4327 @@
+{
+  "schema_version": "codevetter.repo-unpack-corpus/v1",
+  "repo": "testing-library/react-testing-library",
+  "slug": "react-testing-library",
+  "codevetter_version": "codevetter 1.15.0",
+  "collected_at": "2026-10-02T15:40:08.796Z",
+  "last_commit": {
+    "sha": "20ce75f2907ca0e5c5a8ae595c0e9a4e368c7800",
+    "date": "2026-08-27",
+    "subject": "fix: Avoid act() re-entrant when dispatching events (#1468)"
+  },
+  "scan": {
+    "schema_version": "codevetter.unpack-scan/v1",
+    "report_id": "8dc43621-286e-4e39-b7e4-97e7bf496bf8",
+    "status": "scan_only",
+    "created_at": "2026-10-02T15:40:08.790222+00:00",
+    "inventory": {
+      "repo_path": "[local clone path omitted from public export]",
+      "repo_name": "react-testing-library",
+      "commit_sha": "20ce75f2907ca0e5c5a8ae595c0e9a4e368c7800",
+      "branch": "main",
+      "remote_url": "https://github.com/testing-library/react-testing-library.git",
+      "files_scanned": 65,
+      "files_skipped": 3,
+      "bytes_scanned": 391817,
+      "max_files_hit": false,
+      "estimated_total_files": null,
+      "languages": [
+        {
+          "language": "Markdown",
+          "files": 12,
+          "bytes": 100458
+        },
+        {
+          "language": "JavaScript",
+          "files": 31,
+          "bytes": 83933
+        },
+        {
+          "language": "TypeScript",
+          "files": 4,
+          "bytes": 20135
+        },
+        {
+          "language": "YAML",
+          "files": 3,
+          "bytes": 5817
+        },
+        {
+          "language": "JSON",
+          "files": 4,
+          "bytes": 4887
+        }
+      ],
+      "manifests": [
+        {
+          "path": "package.json",
+          "kind": "package.json",
+          "name": "@testing-library/react",
+          "version": "0.0.0-semantically-released",
+          "dependencies": [
+            "@babel/runtime",
+            "@testing-library/dom",
+            "@testing-library/jest-dom",
+            "@types/react",
+            "@types/react-dom",
+            "chalk",
+            "dotenv-cli",
+            "jest-diff",
+            "kcd-scripts",
+            "npm-run-all2",
+            "react",
+            "react-dom",
+            "rimraf",
+            "typescript"
+          ],
+          "scripts": [
+            "build",
+            "build:bundle:main",
+            "build:bundle:pure",
+            "build:main",
+            "format",
+            "install:csb",
+            "lint",
+            "prebuild",
+            "setup",
+            "test",
+            "test:update",
+            "typecheck",
+            "validate"
+          ]
+        }
+      ],
+      "entrypoints": [
+        {
+          "path": "README.md",
+          "kind": "docs",
+          "reason": "Repository readme"
+        },
+        {
+          "path": ".github/workflows/release.yml",
+          "kind": "config",
+          "reason": "GitHub Actions workflow"
+        },
+        {
+          "path": ".github/workflows/validate.yml",
+          "kind": "config",
+          "reason": "GitHub Actions workflow"
+        },
+        {
+          "path": "package.json",
+          "kind": "config",
+          "reason": "npm scripts: build, build:bundle:main, build:bundle:pure, build:main, format, install:csb, lint, prebuild"
+        }
+      ],
+      "top_level_dirs": [
+        {
+          "path": "src",
+          "file_count": 23,
+          "bytes": 64780
+        },
+        {
+          "path": ".github",
+          "file_count": 7,
+          "bytes": 14429
+        },
+        {
+          "path": "other",
+          "file_count": 5,
+          "bytes": 143048
+        },
+        {
+          "path": "types",
+          "file_count": 4,
+          "bytes": 20288
+        },
+        {
+          "path": "tests",
+          "file_count": 4,
+          "bytes": 18611
+        },
+        {
+          "path": ".codesandbox",
+          "file_count": 1,
+          "bytes": 130
+        }
+      ],
+      "docs": [
+        {
+          "path": "CONTRIBUTING.md",
+          "bytes": 2210,
+          "preview": "# Contributing\n\nThanks for being willing to contribute!\n\n**Working on your first Pull Request?** You can learn how from this _free_\nseries [How to Contribute to an Open Source Project on GitHub][egghead]\n\n## Project setup\n\n1.  Fork and clone the repo\n2.  Run `npm run setup -s` to install dependencies and run validation\n3.  Create a branch for your PR with `git checkout -b pr/your-branch-name`\n\n> Tip: Keep your `main` branch pointing at the original repository and make pull\n> requests from branches on your fork. To do this, run:\n>\n> ```\n> git remote add upstream https://github.com/testing-library/react-testing-library.git\n> git fetch upstream\n> git branch --set-upstream-to=upstream/main main\n> ```\n>\n> This will add the original repository as a \"remote\" called \"upstream,\" Then\n> fetch the git information from that remote, then set your local `main` branch\n> to use the upstream main branch whenever you run `git pull`. Then you can make\n> all of your pull request branches based on this `main` branch. Whenever you\n> want to update your version of `main`, do a regular `git pull`.\n\n## Committing and Pushing changes\n\nPlease make sure to run the tests before you commit your changes. You can run\n`npm run test:update` which will update any snapshots that need updating. Make\nsure to include those changes (if they exist) in your commit.\n\n### Update Typings\n\nIf your PR introduced some changes in the API, you are more than welcome to\nmodify the TypeScript type definition to reflect those changes. Just modify the\n`/types/index.d.ts` file accordingly. If you have never seen TypeScript\ndefinitions before, you can read more about it in its\n[documentation pages](https://www.typescriptlang.org/docs/handbook/declaration-files/introduction.html).\nThough this library itself is not written in TypeScript we use\n[dtslint](https://github.com/microsoft/dtslint) to lint our typings.\n\n## Help needed\n\nPlease checkout the [the open issues][issues]\n\nAlso, please watch the repo and respond to questions/bug reports/feature\nrequests! Thanks!\n\n[egghead]:\n  https://egghead.io/courses/how-to-contribute-to-an-open-source-project-on-github\n[issues]: https://github.com/testing-library/react-testing-library/issues\n"
+        },
+        {
+          "path": "README.md",
+          "bytes": 78902,
+          "preview": "<div align=\"center\">\n<h1>React Testing Library</h1>\n\n<a href=\"https://www.emojione.com/emoji/1f410\">\n  <img\n    height=\"80\"\n    width=\"80\"\n    alt=\"goat\"\n    src=\"https://raw.githubusercontent.com/testing-library/react-testing-library/main/other/goat.png\"\n  />\n</a>\n\n<p>Simple and complete React DOM testing utilities that encourage good testing\npractices.</p>\n\n<br />\n\n[**Read The Docs**](https://testing-library.com/react) |\n[Edit the docs](https://github.com/testing-library/testing-library-docs)\n\n<br />\n</div>\n\n<hr />\n\n<!-- prettier-ignore-start -->\n[![Build Status][build-badge]][build]\n[![Code Coverage][coverage-badge]][coverage]\n[![version][version-badge]][package]\n[![downloads][downloads-badge]][npmtrends]\n[![MIT License][license-badge]][license]\n[![All Contributors][all-contributors-badge]](#contributors)\n[![PRs Welcome][prs-badge]][prs]\n[![Code of Conduct][coc-badge]][coc]\n[![Discord][discord-badge]][discord]\n\n[![Watch on GitHub][github-watch-badge]][github-watch]\n[![Star on GitHub][github-star-badge]][github-star]\n[![Tweet][twitter-badge]][twitter]\n<!-- prettier-ignore-end -->\n\n<div align=\"center\">\n  <a href=\"https://testingjavascript.com\">\n    <img\n      width=\"500\"\n      alt=\"TestingJavaScript.com Learn the smart, efficient way to test any JavaScript application.\"\n      src=\"https://raw.githubusercontent.com/testing-library/react-testing-library/main/other/testingjavascript.jpg\"\n    />\n  </a>\n</div>\n\n## Table of Contents\n\n<!-- START doctoc generated TOC please keep comment here to allow auto update -->\n<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->\n\n- [The problem](#the-problem)\n- [The solution](#the-solution)\n- [Installation](#installation)\n  - [Suppressing unnecessary warnings on React DOM 16.8](#suppressing-unnecessary-warnings-on-react-dom-168)\n- [Examples](#examples)\n  - [Basic Example](#basic-example)\n  - [Complex Example](#complex-example)\n  - [More Examples](#more-examples)\n- [Hooks](#hooks)\n- [Guiding Principles](#guiding-principles)\n- [Docs](#docs)\n- [Issues](#issues)\n  - [🐛 Bugs](#-bugs)\n  - [💡 Feature Requests](#-feature-requests)\n  - [❓ Questions](#-questions)\n- [Contributors](#contributors)\n- [LICENSE](#license)\n\n<!-- END doctoc generated TOC please keep comment here to allow auto update -->\n\n## The problem\n\nYou want to write maintainable tests for your React components. As a part of\nthis goal, you want your tests to avoid including implementation details of your\ncomponents and rather focus on making your tests give you the confidence for\nwhich they are intended. As part of this, you want your testbase to be\nmaintainable in the long run so refactors of your components (changes to\nimplementation but not functionality) don't break your tests and slow you and\nyour team down.\n\n## The solution\n\nThe `React Testing Library` is a very lightweight solution for testing React\ncomponents. It provides light utility functions on top of `react-dom` and\n`react-dom/test-utils`, in a way that encourages better testing practices. Its\nprimary guiding principle is:\n\n> [The more your tests resemble the way your software is used, the more\n> confidence they can give you.][guiding-principle]\n\n## Installation\n\nThis module is distributed via [npm][npm] which is bundled with [node][node] and\nshould be installed as one of your project's `devDependencies`.  \nStarting from RTL version 16, you'll also need to install\n`@testing-library/dom`:\n\n```\nnpm install --save-dev @testing-library/react @testing-library/dom\n```\n\nor\n\nfor installation via [yarn][yarn]\n\n```\nyarn add --dev @testing-library/react @testing-library/dom\n```\n\nThis library has `peerDependencies` listings for `react`, `react-dom` and\nstarting from RTL version 16 also `@testing-library/dom`.\n\n_React Testing Library versions 13+ require React v18. If your project uses an\nolder version of React, be sure to install version 12:_\n\n```\nnpm install --save-dev @testing-library/react@12\n\n\nyarn add --dev @testing-library/react@12\n```\n\nYou may also be interested in installing `@testing-library/jest-dom` so you can\nuse [the custom jest matchers](https://github.com/testing-library/jest-dom).\n\n> [**Docs**](https://testing-library.com/react)\n\n### Suppressing unnecessary warnings on React DOM 16.8\n\nThere is a known compatibility issue with React DOM 16.8 where you will see the\nfollowing warning:\n\n```\nWarning: An update to ComponentName inside a test was not wrapped in act(...).\n```\n\nIf you cannot upgrade to React DOM 16.9, you may suppress the warnings by adding\nthe following snippet to your test configuration\n([learn more](https://github.com/testing-library/react-testing-library/issues/281)):\n\n```js\n// this is just a little hack to silence a warning that we'll get until we\n// upgrade to 16.9. See also: https://github.com/facebook/react/pull/14853\nconst originalError = console.error\nbeforeAll(() => {\n  console.error = (...args) => {\n    if (/Warning.*not wrapped in act/.test(args[0])) {\n      return\n    }\n    originalError.call(console, ...args)\n  }\n})\n\nafterAll(() => {\n  console.error = originalError\n})\n```\n\n## Examples\n\n### Basic Example\n\n```jsx\n// hidden-message.js\nimport * as React from 'react'\n\n// NOTE: React Testing Library works well with React Hooks and classes.\n// Your tests will be the same regardless of how you write your components.\nfunction HiddenMessage({children}) {\n  const [showMessage, setShowMessage] = React.useState(false)\n  return (\n    <div>\n      <label htmlFor=\"toggle\">Show Message</label>\n      <input\n        id=\"toggle\"\n        type=\"checkbox\"\n        onChange={e => setShowMessage(e.target.checked)}\n        checked={showMessage}\n      />\n      {showMessage ? children : null}\n    </div>\n  )\n}\n\nexport default HiddenMessage\n```\n\n```jsx\n// __tests__/hidden-message.js\n// these imports are something you'd normally configure Jest to import for you\n// automatically. Learn more in the setup docs: https://testing-library.com/docs/react-testing-library/setup#cleanup\nimport '@testing-library/jest-dom'\n// NOTE: jest-dom adds handy assertions to Jest and is recommended, but not required\n\nimport * as React from 'react'\nimport {render, fireEvent, screen} from '@testing-library/react'\nimport HiddenMessage from '../hidden-message'\n\ntest('shows the children when the checkbox is checked', () => {\n  const testMessage = 'Test Message'\n  render(<HiddenMessage>{testMessage}</HiddenMessage>)\n\n  // query* functions will return the element or null if it cannot be found\n  // get* functions will return the element or throw an error if it cannot be found\n  expect(screen.queryByText(testMessage)).toBeNull()\n\n  // the queries can accept a regex to make your selectors more resilient to content tweaks and changes.\n  fireEvent.click(screen.getByLabelText(/show/i))\n\n  // .toBeInTheDocument() is an assertion that comes from jest-dom\n  // otherwise you could use .toBeDefined()\n  expect(screen.getByText(testMessage)).toBeInTheDocument()\n})\n```\n\n### Complex Example\n\n```jsx\n// login.js\nimport * as React from 'react'\n\nfunction Login() {\n  const [state, setState] = React.useReducer((s, a) => ({...s, ...a}), {\n    resolved: false,\n    loading: false,\n    error: null,\n  })\n\n  function handleSubmit(event) {\n    event.preventDefault()\n    const {usernameInput, passwordInput} = event.target.elements\n\n    setState({loading: true, resolved: false, error: null})\n\n    window\n      .fetch('/api/login', {\n        method: 'POST',\n        headers: {'Content-Type': 'application/json'},\n        body: JSON.stringify({\n          username: usernameInput.value,\n          password: passwordInput.value,\n        }),\n      })\n      .then(r => r.json().then(data => (r.ok ? data : Promise.reject(data))))\n      .then(\n        user => {\n          setState({loading: false, resolved: true, error: null})\n          window.localStorage.setItem('token', user.token)\n        },\n        error => {\n          setState({loading: false, resolved: false, error: error.message})\n        },\n      )\n  }\n\n  return (\n    <div>\n      <form onSubmit={handleSubmit}>\n        <div>\n          <label htmlFor=\"usernameInput\">Username</label>\n          <input id=\"usernameInput\" />\n        </div>\n        <div>\n          <label htmlFor=\"passwordInput\">"
+        }
+      ],
+      "config_files": [
+        "jest.config.js",
+        "tsconfig.json"
+      ],
+      "stack_tags": [
+        "GitHub Actions",
+        "React"
+      ],
+      "workspace_units": [
+        {
+          "path": ".",
+          "name": "@testing-library/react",
+          "kind": "workspace",
+          "manifest_path": "package.json",
+          "build_system": "package.json",
+          "file_count": 65,
+          "languages": [
+            {
+              "language": "JavaScript",
+              "files": 31,
+              "bytes": 83933
+            },
+            {
+              "language": "Markdown",
+              "files": 12,
+              "bytes": 100458
+            },
+            {
+              "language": "TypeScript",
+              "files": 4,
+              "bytes": 20135
+            },
+            {
+              "language": "JSON",
+              "files": 4,
+              "bytes": 4887
+            },
+            {
+              "language": "YAML",
+              "files": 3,
+              "bytes": 5817
+            }
+          ],
+          "scripts": [
+            "build",
+            "build:bundle:main",
+            "build:bundle:pure",
+            "build:main",
+            "format",
+            "install:csb",
+            "lint",
+            "prebuild",
+            "setup",
+            "test",
+            "test:update",
+            "typecheck"
+          ],
+          "entrypoints": [
+            ".github/workflows/release.yml",
+            ".github/workflows/validate.yml",
+            "README.md",
+            "package.json"
+          ],
+          "test_files": [
+            "src/__tests__/__snapshots__/render.js.snap",
+            "src/__tests__/act.js",
+            "src/__tests__/auto-cleanup-skip.js",
+            "src/__tests__/auto-cleanup.js",
+            "src/__tests__/cleanup.js",
+            "src/__tests__/config.js",
+            "src/__tests__/debug.js",
+            "src/__tests__/end-to-end.js"
+          ],
+          "tags": [
+            "JavaScript",
+            "Markdown",
+            "React",
+            "TypeScript",
+            "tests"
+          ]
+        }
+      ],
+      "qa_readiness": {
+        "score": 0,
+        "status": "missing",
+        "summary": "Repo does not expose enough local browser QA structure for a reliable Synthetic QA workflow yet.",
+        "signals": [
+          {
+            "id": "browser_runner",
+            "label": "Browser runner",
+            "status": "missing",
+            "detail": "No Playwright, Cypress, or browser runner config was found.",
+            "sources": []
+          },
+          {
+            "id": "user_flow_specs",
+            "label": "User-flow specs",
+            "status": "missing",
+            "detail": "No e2e/playwright/cypress spec files were found.",
+            "sources": []
+          },
+          {
+            "id": "local_app_command",
+            "label": "Local app command",
+            "status": "missing",
+            "detail": "No obvious package script for starting the app locally was found.",
+            "sources": []
+          },
+          {
+            "id": "qa_script",
+            "label": "QA script",
+            "status": "missing",
+            "detail": "No explicit QA/e2e/browser test script was found.",
+            "sources": []
+          },
+          {
+            "id": "artifact_trail",
+            "label": "Artifact trail",
+            "status": "missing",
+            "detail": "No browser QA artifacts or artifact-capable runner were found.",
+            "sources": []
+          },
+          {
+            "id": "targetable_routes",
+            "label": "Targetable surfaces",
+            "status": "missing",
+            "detail": "No obvious web entrypoint or route file was found.",
+            "sources": []
+          }
+        ],
+        "suggested_flows": []
+      },
+      "repo_graph": {
+        "schema_version": 2,
+        "nodes": [
+          {
+            "id": "file:github-issue-template-md",
+            "kind": "file",
+            "label": ".github/ISSUE_TEMPLATE.md",
+            "path": ".github/ISSUE_TEMPLATE.md",
+            "detail": "source marker candidate",
+            "sources": [
+              ".github/ISSUE_TEMPLATE.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:github-issue-template-bug-report-md",
+            "kind": "file",
+            "label": ".github/ISSUE_TEMPLATE/Bug_Report.md",
+            "path": ".github/ISSUE_TEMPLATE/Bug_Report.md",
+            "detail": "source marker candidate",
+            "sources": [
+              ".github/ISSUE_TEMPLATE/Bug_Report.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:github-issue-template-feature-request-md",
+            "kind": "file",
+            "label": ".github/ISSUE_TEMPLATE/Feature_Request.md",
+            "path": ".github/ISSUE_TEMPLATE/Feature_Request.md",
+            "detail": "source marker candidate",
+            "sources": [
+              ".github/ISSUE_TEMPLATE/Feature_Request.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:github-issue-template-question-md",
+            "kind": "file",
+            "label": ".github/ISSUE_TEMPLATE/Question.md",
+            "path": ".github/ISSUE_TEMPLATE/Question.md",
+            "detail": "source marker candidate",
+            "sources": [
+              ".github/ISSUE_TEMPLATE/Question.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:github-pull-request-template-md",
+            "kind": "file",
+            "label": ".github/PULL_REQUEST_TEMPLATE.md",
+            "path": ".github/PULL_REQUEST_TEMPLATE.md",
+            "detail": "source marker candidate",
+            "sources": [
+              ".github/PULL_REQUEST_TEMPLATE.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:github-workflows-release-yml",
+            "kind": "file",
+            "label": ".github/workflows/release.yml",
+            "path": ".github/workflows/release.yml",
+            "detail": "workspace entrypoint",
+            "sources": [
+              ".github/workflows/release.yml"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:github-workflows-validate-yml",
+            "kind": "file",
+            "label": ".github/workflows/validate.yml",
+            "path": ".github/workflows/validate.yml",
+            "detail": "workspace entrypoint",
+            "sources": [
+              ".github/workflows/validate.yml"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:huskyrc-js",
+            "kind": "file",
+            "label": ".huskyrc.js",
+            "path": ".huskyrc.js",
+            "detail": "source marker candidate",
+            "sources": [
+              ".huskyrc.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:prettierrc-js",
+            "kind": "file",
+            "label": ".prettierrc.js",
+            "path": ".prettierrc.js",
+            "detail": "source marker candidate",
+            "sources": [
+              ".prettierrc.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:changelog-md",
+            "kind": "file",
+            "label": "CHANGELOG.md",
+            "path": "CHANGELOG.md",
+            "detail": "source marker candidate",
+            "sources": [
+              "CHANGELOG.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:code-of-conduct-md",
+            "kind": "file",
+            "label": "CODE_OF_CONDUCT.md",
+            "path": "CODE_OF_CONDUCT.md",
+            "detail": "source marker candidate",
+            "sources": [
+              "CODE_OF_CONDUCT.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:contributing-md",
+            "kind": "file",
+            "label": "CONTRIBUTING.md",
+            "path": "CONTRIBUTING.md",
+            "detail": "source marker candidate",
+            "sources": [
+              "CONTRIBUTING.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:readme-md",
+            "kind": "file",
+            "label": "README.md",
+            "path": "README.md",
+            "detail": "workspace entrypoint",
+            "sources": [
+              "README.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:dont-cleanup-after-each-js",
+            "kind": "file",
+            "label": "dont-cleanup-after-each.js",
+            "path": "dont-cleanup-after-each.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "dont-cleanup-after-each.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:jest-config-js",
+            "kind": "file",
+            "label": "jest.config.js",
+            "path": "jest.config.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "jest.config.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:other-maintaining-md",
+            "kind": "file",
+            "label": "other/MAINTAINING.md",
+            "path": "other/MAINTAINING.md",
+            "detail": "source marker candidate",
+            "sources": [
+              "other/MAINTAINING.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:other-users-md",
+            "kind": "file",
+            "label": "other/USERS.md",
+            "path": "other/USERS.md",
+            "detail": "source marker candidate",
+            "sources": [
+              "other/USERS.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:other-manual-releases-md",
+            "kind": "file",
+            "label": "other/manual-releases.md",
+            "path": "other/manual-releases.md",
+            "detail": "source marker candidate",
+            "sources": [
+              "other/manual-releases.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:package-json",
+            "kind": "file",
+            "label": "package.json",
+            "path": "package.json",
+            "detail": "workspace entrypoint",
+            "sources": [
+              "package.json"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:pure-d-ts",
+            "kind": "file",
+            "label": "pure.d.ts",
+            "path": "pure.d.ts",
+            "detail": "source marker candidate",
+            "sources": [
+              "pure.d.ts"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:pure-js",
+            "kind": "file",
+            "label": "pure.js",
+            "path": "pure.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "pure.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:src-mocks-axios-js",
+            "kind": "file",
+            "label": "src/__mocks__/axios.js",
+            "path": "src/__mocks__/axios.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "src/__mocks__/axios.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:src-tests-act-js",
+            "kind": "file",
+            "label": "src/__tests__/act.js",
+            "path": "src/__tests__/act.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "src/__tests__/act.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:src-tests-auto-cleanup-skip-js",
+            "kind": "file",
+            "label": "src/__tests__/auto-cleanup-skip.js",
+            "path": "src/__tests__/auto-cleanup-skip.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "src/__tests__/auto-cleanup-skip.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:src-tests-auto-cleanup-js",
+            "kind": "file",
+            "label": "src/__tests__/auto-cleanup.js",
+            "path": "src/__tests__/auto-cleanup.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "src/__tests__/auto-cleanup.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:src-tests-cleanup-js",
+            "kind": "file",
+            "label": "src/__tests__/cleanup.js",
+            "path": "src/__tests__/cleanup.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "src/__tests__/cleanup.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:src-tests-config-js",
+            "kind": "file",
+            "label": "src/__tests__/config.js",
+            "path": "src/__tests__/config.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "src/__tests__/config.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:src-tests-debug-js",
+            "kind": "file",
+            "label": "src/__tests__/debug.js",
+            "path": "src/__tests__/debug.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "src/__tests__/debug.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:src-tests-end-to-end-js",
+            "kind": "file",
+            "label": "src/__tests__/end-to-end.js",
+            "path": "src/__tests__/end-to-end.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "src/__tests__/end-to-end.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:src-tests-error-handlers-js",
+            "kind": "file",
+            "label": "src/__tests__/error-handlers.js",
+            "path": "src/__tests__/error-handlers.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "src/__tests__/error-handlers.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:src-tests-event-wrapper-nesting-js",
+            "kind": "file",
+            "label": "src/__tests__/event-wrapper-nesting.js",
+            "path": "src/__tests__/event-wrapper-nesting.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "src/__tests__/event-wrapper-nesting.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:src-tests-events-js",
+            "kind": "file",
+            "label": "src/__tests__/events.js",
+            "path": "src/__tests__/events.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "src/__tests__/events.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:src-tests-multi-base-js",
+            "kind": "file",
+            "label": "src/__tests__/multi-base.js",
+            "path": "src/__tests__/multi-base.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "src/__tests__/multi-base.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:src-tests-new-act-js",
+            "kind": "file",
+            "label": "src/__tests__/new-act.js",
+            "path": "src/__tests__/new-act.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "src/__tests__/new-act.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:src-tests-render-js",
+            "kind": "file",
+            "label": "src/__tests__/render.js",
+            "path": "src/__tests__/render.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "src/__tests__/render.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:src-tests-renderhook-js",
+            "kind": "file",
+            "label": "src/__tests__/renderHook.js",
+            "path": "src/__tests__/renderHook.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "src/__tests__/renderHook.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:src-tests-rerender-js",
+            "kind": "file",
+            "label": "src/__tests__/rerender.js",
+            "path": "src/__tests__/rerender.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "src/__tests__/rerender.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:src-tests-stopwatch-js",
+            "kind": "file",
+            "label": "src/__tests__/stopwatch.js",
+            "path": "src/__tests__/stopwatch.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "src/__tests__/stopwatch.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:src-act-compat-js",
+            "kind": "file",
+            "label": "src/act-compat.js",
+            "path": "src/act-compat.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "src/act-compat.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:src-config-js",
+            "kind": "file",
+            "label": "src/config.js",
+            "path": "src/config.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "src/config.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:src-fire-event-js",
+            "kind": "file",
+            "label": "src/fire-event.js",
+            "path": "src/fire-event.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "src/fire-event.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:src-index-js",
+            "kind": "file",
+            "label": "src/index.js",
+            "path": "src/index.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "src/index.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:src-pure-js",
+            "kind": "file",
+            "label": "src/pure.js",
+            "path": "src/pure.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "src/pure.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:tests-failonunexpectedconsolecalls-js",
+            "kind": "file",
+            "label": "tests/failOnUnexpectedConsoleCalls.js",
+            "path": "tests/failOnUnexpectedConsoleCalls.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "tests/failOnUnexpectedConsoleCalls.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:tests-setup-env-js",
+            "kind": "file",
+            "label": "tests/setup-env.js",
+            "path": "tests/setup-env.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "tests/setup-env.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:tests-shouldignoreconsoleerror-js",
+            "kind": "file",
+            "label": "tests/shouldIgnoreConsoleError.js",
+            "path": "tests/shouldIgnoreConsoleError.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "tests/shouldIgnoreConsoleError.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:tests-towarndev-js",
+            "kind": "file",
+            "label": "tests/toWarnDev.js",
+            "path": "tests/toWarnDev.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "tests/toWarnDev.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:types-index-d-ts",
+            "kind": "file",
+            "label": "types/index.d.ts",
+            "path": "types/index.d.ts",
+            "detail": "source marker candidate",
+            "sources": [
+              "types/index.d.ts"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:types-pure-d-ts",
+            "kind": "file",
+            "label": "types/pure.d.ts",
+            "path": "types/pure.d.ts",
+            "detail": "source marker candidate",
+            "sources": [
+              "types/pure.d.ts"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:types-test-tsx",
+            "kind": "file",
+            "label": "types/test.tsx",
+            "path": "types/test.tsx",
+            "detail": "source marker candidate",
+            "sources": [
+              "types/test.tsx"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "package:package-json",
+            "kind": "package",
+            "label": "@testing-library/react",
+            "path": "package.json",
+            "detail": "package.json manifest",
+            "sources": [
+              "package.json"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "script:package-json-build",
+            "kind": "script",
+            "label": "build",
+            "path": "package.json",
+            "detail": "package script",
+            "sources": [
+              "package.json"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "script:package-json-build-bundle-main",
+            "kind": "script",
+            "label": "build:bundle:main",
+            "path": "package.json",
+            "detail": "package script",
+            "sources": [
+              "package.json"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "script:package-json-build-bundle-pure",
+            "kind": "script",
+            "label": "build:bundle:pure",
+            "path": "package.json",
+            "detail": "package script",
+            "sources": [
+              "package.json"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "script:package-json-build-main",
+            "kind": "script",
+            "label": "build:main",
+            "path": "package.json",
+            "detail": "package script",
+            "sources": [
+              "package.json"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "script:package-json-format",
+            "kind": "script",
+            "label": "format",
+            "path": "package.json",
+            "detail": "package script",
+            "sources": [
+              "package.json"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "script:package-json-install-csb",
+            "kind": "script",
+            "label": "install:csb",
+            "path": "package.json",
+            "detail": "package script",
+            "sources": [
+              "package.json"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "script:package-json-lint",
+            "kind": "script",
+            "label": "lint",
+            "path": "package.json",
+            "detail": "package script",
+            "sources": [
+              "package.json"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "script:package-json-prebuild",
+            "kind": "script",
+            "label": "prebuild",
+            "path": "package.json",
+            "detail": "package script",
+            "sources": [
+              "package.json"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "script:package-json-setup",
+            "kind": "script",
+            "label": "setup",
+            "path": "package.json",
+            "detail": "package script",
+            "sources": [
+              "package.json"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "script:package-json-test",
+            "kind": "script",
+            "label": "test",
+            "path": "package.json",
+            "detail": "package script",
+            "sources": [
+              "package.json"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "script:package-json-test-update",
+            "kind": "script",
+            "label": "test:update",
+            "path": "package.json",
+            "detail": "package script",
+            "sources": [
+              "package.json"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "script:package-json-typecheck",
+            "kind": "script",
+            "label": "typecheck",
+            "path": "package.json",
+            "detail": "package script",
+            "sources": [
+              "package.json"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "script:package-json-validate",
+            "kind": "script",
+            "label": "validate",
+            "path": "package.json",
+            "detail": "package script",
+            "sources": [
+              "package.json"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:src-tests-snapshots-render-js-snap",
+            "kind": "test",
+            "label": "src/__tests__/__snapshots__/render.js.snap",
+            "path": "src/__tests__/__snapshots__/render.js.snap",
+            "detail": "workspace test/spec file",
+            "sources": [
+              "src/__tests__/__snapshots__/render.js.snap"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:src-tests-act-js",
+            "kind": "test",
+            "label": "src/__tests__/act.js",
+            "path": "src/__tests__/act.js",
+            "detail": "workspace test/spec file",
+            "sources": [
+              "src/__tests__/act.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:src-tests-auto-cleanup-skip-js",
+            "kind": "test",
+            "label": "src/__tests__/auto-cleanup-skip.js",
+            "path": "src/__tests__/auto-cleanup-skip.js",
+            "detail": "workspace test/spec file",
+            "sources": [
+              "src/__tests__/auto-cleanup-skip.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:src-tests-auto-cleanup-js",
+            "kind": "test",
+            "label": "src/__tests__/auto-cleanup.js",
+            "path": "src/__tests__/auto-cleanup.js",
+            "detail": "workspace test/spec file",
+            "sources": [
+              "src/__tests__/auto-cleanup.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:src-tests-cleanup-js",
+            "kind": "test",
+            "label": "src/__tests__/cleanup.js",
+            "path": "src/__tests__/cleanup.js",
+            "detail": "workspace test/spec file",
+            "sources": [
+              "src/__tests__/cleanup.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:src-tests-config-js",
+            "kind": "test",
+            "label": "src/__tests__/config.js",
+            "path": "src/__tests__/config.js",
+            "detail": "workspace test/spec file",
+            "sources": [
+              "src/__tests__/config.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-failonunexpectedconsolecalls-js",
+            "kind": "test",
+            "label": "tests/failOnUnexpectedConsoleCalls.js",
+            "path": "tests/failOnUnexpectedConsoleCalls.js",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/failOnUnexpectedConsoleCalls.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-setup-env-js",
+            "kind": "test",
+            "label": "tests/setup-env.js",
+            "path": "tests/setup-env.js",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/setup-env.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-shouldignoreconsoleerror-js",
+            "kind": "test",
+            "label": "tests/shouldIgnoreConsoleError.js",
+            "path": "tests/shouldIgnoreConsoleError.js",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/shouldIgnoreConsoleError.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-towarndev-js",
+            "kind": "test",
+            "label": "tests/toWarnDev.js",
+            "path": "tests/toWarnDev.js",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/toWarnDev.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "workspace:",
+            "kind": "workspace_unit",
+            "label": "@testing-library/react",
+            "path": null,
+            "detail": "workspace | 65 files | 31 JavaScript, 12 Markdown, 4 TypeScript",
+            "sources": [
+              ".github/workflows/release.yml",
+              ".github/workflows/validate.yml",
+              "package.json",
+              "src/__tests__/__snapshots__/render.js.snap",
+              "src/__tests__/act.js"
+            ],
+            "source_location": null,
+            "community": null
+          }
+        ],
+        "edges": [
+          {
+            "from": "package:package-json",
+            "to": "script:package-json-build",
+            "kind": "defines",
+            "evidence": "package.json defines npm script `build`",
+            "sources": [
+              "package.json"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "package:package-json",
+            "to": "script:package-json-build-bundle-main",
+            "kind": "defines",
+            "evidence": "package.json defines npm script `build:bundle:main`",
+            "sources": [
+              "package.json"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "package:package-json",
+            "to": "script:package-json-build-bundle-pure",
+            "kind": "defines",
+            "evidence": "package.json defines npm script `build:bundle:pure`",
+            "sources": [
+              "package.json"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "package:package-json",
+            "to": "script:package-json-build-main",
+            "kind": "defines",
+            "evidence": "package.json defines npm script `build:main`",
+            "sources": [
+              "package.json"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "package:package-json",
+            "to": "script:package-json-format",
+            "kind": "defines",
+            "evidence": "package.json defines npm script `format`",
+            "sources": [
+              "package.json"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "package:package-json",
+            "to": "script:package-json-install-csb",
+            "kind": "defines",
+            "evidence": "package.json defines npm script `install:csb`",
+            "sources": [
+              "package.json"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "package:package-json",
+            "to": "script:package-json-lint",
+            "kind": "defines",
+            "evidence": "package.json defines npm script `lint`",
+            "sources": [
+              "package.json"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "package:package-json",
+            "to": "script:package-json-prebuild",
+            "kind": "defines",
+            "evidence": "package.json defines npm script `prebuild`",
+            "sources": [
+              "package.json"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "package:package-json",
+            "to": "script:package-json-setup",
+            "kind": "defines",
+            "evidence": "package.json defines npm script `setup`",
+            "sources": [
+              "package.json"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "package:package-json",
+            "to": "script:package-json-test",
+            "kind": "defines",
+            "evidence": "package.json defines npm script `test`",
+            "sources": [
+              "package.json"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "package:package-json",
+            "to": "script:package-json-test-update",
+            "kind": "defines",
+            "evidence": "package.json defines npm script `test:update`",
+            "sources": [
+              "package.json"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "package:package-json",
+            "to": "script:package-json-typecheck",
+            "kind": "defines",
+            "evidence": "package.json defines npm script `typecheck`",
+            "sources": [
+              "package.json"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "package:package-json",
+            "to": "script:package-json-validate",
+            "kind": "defines",
+            "evidence": "package.json defines npm script `validate`",
+            "sources": [
+              "package.json"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "package:package-json",
+            "kind": "defines",
+            "evidence": "workspace unit owns this manifest",
+            "sources": [
+              "package.json"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "file:github-workflows-release-yml",
+            "kind": "entrypoint",
+            "evidence": "entrypoint belongs to this workspace unit",
+            "sources": [
+              ".github/workflows/release.yml"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "file:github-workflows-validate-yml",
+            "kind": "entrypoint",
+            "evidence": "entrypoint belongs to this workspace unit",
+            "sources": [
+              ".github/workflows/validate.yml"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "file:package-json",
+            "kind": "entrypoint",
+            "evidence": "entrypoint belongs to this workspace unit",
+            "sources": [
+              "package.json"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "file:readme-md",
+            "kind": "entrypoint",
+            "evidence": "entrypoint belongs to this workspace unit",
+            "sources": [
+              "README.md"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "test:src-tests-act-js",
+            "kind": "tests",
+            "evidence": "test file belongs to this workspace unit",
+            "sources": [
+              "src/__tests__/act.js"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "test:src-tests-auto-cleanup-js",
+            "kind": "tests",
+            "evidence": "test file belongs to this workspace unit",
+            "sources": [
+              "src/__tests__/auto-cleanup.js"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "test:src-tests-auto-cleanup-skip-js",
+            "kind": "tests",
+            "evidence": "test file belongs to this workspace unit",
+            "sources": [
+              "src/__tests__/auto-cleanup-skip.js"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "test:src-tests-cleanup-js",
+            "kind": "tests",
+            "evidence": "test file belongs to this workspace unit",
+            "sources": [
+              "src/__tests__/cleanup.js"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "test:src-tests-config-js",
+            "kind": "tests",
+            "evidence": "test file belongs to this workspace unit",
+            "sources": [
+              "src/__tests__/config.js"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "test:src-tests-snapshots-render-js-snap",
+            "kind": "tests",
+            "evidence": "test file belongs to this workspace unit",
+            "sources": [
+              "src/__tests__/__snapshots__/render.js.snap"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          }
+        ],
+        "truncated": false
+      },
+      "history_brief": {
+        "schema_version": 2,
+        "summary": "Local history brief captured 12 recent commits, 0 decision markers, 8 test hints, and 8 co-change clusters for Repo Unpacked. Treat commit subjects as leads and rely on cited files for durable constraints.",
+        "recent_commits": [
+          {
+            "sha": "20ce75f2907c",
+            "date": "2026-08-28",
+            "subject": "fix: Avoid act() re-entrant when dispatching events (#1468)",
+            "files": [
+              "package.json",
+              "src/__tests__/event-wrapper-nesting.js",
+              "src/pure.js"
+            ]
+          },
+          {
+            "sha": "be9d81d91314",
+            "date": "2026-04-02",
+            "subject": "docs: fix typos in comments and types (#1446)",
+            "files": [
+              "src/pure.js",
+              "types/test.tsx"
+            ]
+          },
+          {
+            "sha": "f32bd1b033d5",
+            "date": "2026-01-19",
+            "subject": "fix: Update 'onCaughtError' type inference in 'RenderOptions' to work with React v19 (#1438)",
+            "files": [
+              "types/index.d.ts",
+              "types/test.tsx"
+            ]
+          },
+          {
+            "sha": "a2d37ffa09d8",
+            "date": "2025-12-15",
+            "subject": "fix: Switch to trusted publishing (#1437)",
+            "files": []
+          },
+          {
+            "sha": "cd6a175a2806",
+            "date": "2025-12-13",
+            "subject": "chore: fix action permissions (#1436)",
+            "files": [
+              ".github/workflows/release.yml"
+            ]
+          },
+          {
+            "sha": "22b8c280f4d4",
+            "date": "2025-12-13",
+            "subject": "chore: fix release (#1435)",
+            "files": [
+              ".github/workflows/release.yml",
+              ".github/workflows/validate.yml"
+            ]
+          },
+          {
+            "sha": "d996673698dc",
+            "date": "2025-12-13",
+            "subject": "chore: new release workflow (#1434)",
+            "files": [
+              ".github/workflows/release.yml"
+            ]
+          },
+          {
+            "sha": "205ce1756d33",
+            "date": "2025-12-13",
+            "subject": "chore: fix typo in jest.config.js (#1427)",
+            "files": [
+              "jest.config.js"
+            ]
+          },
+          {
+            "sha": "aba574074b7b",
+            "date": "2025-11-05",
+            "subject": "[test] Fix tests for `react@experimental` (#1424)",
+            "files": [
+              "src/__tests__/rerender.js"
+            ]
+          },
+          {
+            "sha": "590bc18a7f24",
+            "date": "2025-11-05",
+            "subject": "[test] Fix `npm run typecheck` (#1423)",
+            "files": [
+              "package.json",
+              "tsconfig.json"
+            ]
+          },
+          {
+            "sha": "1c931a6c0309",
+            "date": "2025-08-07",
+            "subject": "chore(deps): use `npm-run-all2` (#1411)",
+            "files": [
+              "package.json"
+            ]
+          },
+          {
+            "sha": "9fc6a75d74bb",
+            "date": "2025-04-02",
+            "subject": "feat: add bernardobelchior as a contributor for code, and doc (#1391)",
+            "files": [
+              "README.md"
+            ]
+          }
+        ],
+        "decisions": [],
+        "test_hints": [
+          {
+            "path": "package.json",
+            "reason": "package script `lint` is a likely verification command"
+          },
+          {
+            "path": "package.json",
+            "reason": "package script `test` is a likely verification command"
+          },
+          {
+            "path": "package.json",
+            "reason": "package script `test:update` is a likely verification command"
+          },
+          {
+            "path": "package.json",
+            "reason": "package script `typecheck` is a likely verification command"
+          },
+          {
+            "path": "tests/shouldIgnoreConsoleError.js",
+            "reason": "test/spec file anchors expected behavior"
+          },
+          {
+            "path": "tests/failOnUnexpectedConsoleCalls.js",
+            "reason": "test/spec file anchors expected behavior"
+          },
+          {
+            "path": "tests/setup-env.js",
+            "reason": "test/spec file anchors expected behavior"
+          },
+          {
+            "path": "tests/toWarnDev.js",
+            "reason": "test/spec file anchors expected behavior"
+          }
+        ],
+        "temporal_couplings": [
+          {
+            "files": [
+              "types/index.d.ts",
+              "types/test.tsx"
+            ],
+            "commit_count": 8,
+            "last_commit": "f32bd1b033d5",
+            "reason": "These files changed together in 8 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              "src/__tests__/render.js",
+              "src/__tests__/renderHook.js"
+            ],
+            "commit_count": 4,
+            "last_commit": "8782f3be71eb",
+            "reason": "These files changed together in 4 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              "src/__tests__/render.js",
+              "src/pure.js"
+            ],
+            "commit_count": 4,
+            "last_commit": "8782f3be71eb",
+            "reason": "These files changed together in 4 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              "src/pure.js",
+              "types/index.d.ts"
+            ],
+            "commit_count": 4,
+            "last_commit": "8782f3be71eb",
+            "reason": "These files changed together in 4 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              "src/__tests__/render.js",
+              "types/index.d.ts"
+            ],
+            "commit_count": 3,
+            "last_commit": "8782f3be71eb",
+            "reason": "These files changed together in 3 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              "src/__tests__/renderHook.js",
+              "src/pure.js"
+            ],
+            "commit_count": 3,
+            "last_commit": "8782f3be71eb",
+            "reason": "These files changed together in 3 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              "src/pure.js",
+              "types/test.tsx"
+            ],
+            "commit_count": 3,
+            "last_commit": "be9d81d91314",
+            "reason": "These files changed together in 3 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              "jest.config.js",
+              "src/__tests__/render.js"
+            ],
+            "commit_count": 2,
+            "last_commit": "9c4a46d5b992",
+            "reason": "These files changed together in 2 recent commits; inspect both when either side moves."
+          }
+        ],
+        "graph": {
+          "schema_version": 2,
+          "nodes": [
+            {
+              "id": "commit:1c931a6c0309",
+              "kind": "commit",
+              "label": "chore(deps): use `npm-run-all2` (#1411)",
+              "path": null,
+              "detail": "2025-08-07",
+              "citations": [
+                "git:1c931a6c0309"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:205ce1756d33",
+              "kind": "commit",
+              "label": "chore: fix typo in jest.config.js (#1427)",
+              "path": null,
+              "detail": "2025-12-13",
+              "citations": [
+                "git:205ce1756d33"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:20ce75f2907c",
+              "kind": "commit",
+              "label": "fix: Avoid act() re-entrant when dispatching events (#1468)",
+              "path": null,
+              "detail": "2026-08-28",
+              "citations": [
+                "git:20ce75f2907c"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:22b8c280f4d4",
+              "kind": "commit",
+              "label": "chore: fix release (#1435)",
+              "path": null,
+              "detail": "2025-12-13",
+              "citations": [
+                "git:22b8c280f4d4"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:590bc18a7f24",
+              "kind": "commit",
+              "label": "[test] Fix `npm run typecheck` (#1423)",
+              "path": null,
+              "detail": "2025-11-05",
+              "citations": [
+                "git:590bc18a7f24"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:9fc6a75d74bb",
+              "kind": "commit",
+              "label": "feat: add bernardobelchior as a contributor for code, and doc (#1391)",
+              "path": null,
+              "detail": "2025-04-02",
+              "citations": [
+                "git:9fc6a75d74bb"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:a2d37ffa09d8",
+              "kind": "commit",
+              "label": "fix: Switch to trusted publishing (#1437)",
+              "path": null,
+              "detail": "2025-12-15",
+              "citations": [
+                "git:a2d37ffa09d8"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:aba574074b7b",
+              "kind": "commit",
+              "label": "[test] Fix tests for `react@experimental` (#1424)",
+              "path": null,
+              "detail": "2025-11-05",
+              "citations": [
+                "git:aba574074b7b"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:be9d81d91314",
+              "kind": "commit",
+              "label": "docs: fix typos in comments and types (#1446)",
+              "path": null,
+              "detail": "2026-04-02",
+              "citations": [
+                "git:be9d81d91314"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:cd6a175a2806",
+              "kind": "commit",
+              "label": "chore: fix action permissions (#1436)",
+              "path": null,
+              "detail": "2025-12-13",
+              "citations": [
+                "git:cd6a175a2806"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:d996673698dc",
+              "kind": "commit",
+              "label": "chore: new release workflow (#1434)",
+              "path": null,
+              "detail": "2025-12-13",
+              "citations": [
+                "git:d996673698dc"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:f32bd1b033d5",
+              "kind": "commit",
+              "label": "fix: Update 'onCaughtError' type inference in 'RenderOptions' to work with React v19 (#1438)",
+              "path": null,
+              "detail": "2026-01-19",
+              "citations": [
+                "git:f32bd1b033d5"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:-github-workflows-release-yml",
+              "kind": "file",
+              "label": ".github/workflows/release.yml",
+              "path": ".github/workflows/release.yml",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                ".github/workflows/release.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:-github-workflows-validate-yml",
+              "kind": "file",
+              "label": ".github/workflows/validate.yml",
+              "path": ".github/workflows/validate.yml",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                ".github/workflows/validate.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:jest-config-js",
+              "kind": "file",
+              "label": "jest.config.js",
+              "path": "jest.config.js",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "jest.config.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:package-json",
+              "kind": "file",
+              "label": "package.json",
+              "path": "package.json",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "package.json"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:readme-md",
+              "kind": "file",
+              "label": "README.md",
+              "path": "README.md",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "README.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:src---tests---event-wrapper-nesting-js",
+              "kind": "file",
+              "label": "src/__tests__/event-wrapper-nesting.js",
+              "path": "src/__tests__/event-wrapper-nesting.js",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "src/__tests__/event-wrapper-nesting.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:src---tests---render-js",
+              "kind": "file",
+              "label": "src/__tests__/render.js",
+              "path": "src/__tests__/render.js",
+              "detail": "Recent co-change lead",
+              "citations": [
+                "src/__tests__/render.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:src---tests---renderhook-js",
+              "kind": "file",
+              "label": "src/__tests__/renderHook.js",
+              "path": "src/__tests__/renderHook.js",
+              "detail": "Recent co-change lead",
+              "citations": [
+                "src/__tests__/renderHook.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:src---tests---rerender-js",
+              "kind": "file",
+              "label": "src/__tests__/rerender.js",
+              "path": "src/__tests__/rerender.js",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "src/__tests__/rerender.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:src-pure-js",
+              "kind": "file",
+              "label": "src/pure.js",
+              "path": "src/pure.js",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "src/pure.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:tests-failonunexpectedconsolecalls-js",
+              "kind": "file",
+              "label": "tests/failOnUnexpectedConsoleCalls.js",
+              "path": "tests/failOnUnexpectedConsoleCalls.js",
+              "detail": "Verification source",
+              "citations": [
+                "tests/failOnUnexpectedConsoleCalls.js"
+              ],
+              "trust": "source_backed"
+            },
+            {
+              "id": "file:tests-setup-env-js",
+              "kind": "file",
+              "label": "tests/setup-env.js",
+              "path": "tests/setup-env.js",
+              "detail": "Verification source",
+              "citations": [
+                "tests/setup-env.js"
+              ],
+              "trust": "source_backed"
+            },
+            {
+              "id": "file:tests-shouldignoreconsoleerror-js",
+              "kind": "file",
+              "label": "tests/shouldIgnoreConsoleError.js",
+              "path": "tests/shouldIgnoreConsoleError.js",
+              "detail": "Verification source",
+              "citations": [
+                "tests/shouldIgnoreConsoleError.js"
+              ],
+              "trust": "source_backed"
+            },
+            {
+              "id": "file:tests-towarndev-js",
+              "kind": "file",
+              "label": "tests/toWarnDev.js",
+              "path": "tests/toWarnDev.js",
+              "detail": "Verification source",
+              "citations": [
+                "tests/toWarnDev.js"
+              ],
+              "trust": "source_backed"
+            },
+            {
+              "id": "file:tsconfig-json",
+              "kind": "file",
+              "label": "tsconfig.json",
+              "path": "tsconfig.json",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "tsconfig.json"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:types-index-d-ts",
+              "kind": "file",
+              "label": "types/index.d.ts",
+              "path": "types/index.d.ts",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "types/index.d.ts"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:types-test-tsx",
+              "kind": "file",
+              "label": "types/test.tsx",
+              "path": "types/test.tsx",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "types/test.tsx"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "test:package-json-package-script--lint--is-a-likely-verification-command",
+              "kind": "test",
+              "label": "package script `lint` is a likely verification command",
+              "path": "package.json",
+              "detail": "Likely verification lead",
+              "citations": [
+                "package.json"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "id": "test:package-json-package-script--test--is-a-likely-verification-command",
+              "kind": "test",
+              "label": "package script `test` is a likely verification command",
+              "path": "package.json",
+              "detail": "Likely verification lead",
+              "citations": [
+                "package.json"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "id": "test:package-json-package-script--test-update--is-a-likely-verification-command",
+              "kind": "test",
+              "label": "package script `test:update` is a likely verification command",
+              "path": "package.json",
+              "detail": "Likely verification lead",
+              "citations": [
+                "package.json"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "id": "test:package-json-package-script--typecheck--is-a-likely-verification-command",
+              "kind": "test",
+              "label": "package script `typecheck` is a likely verification command",
+              "path": "package.json",
+              "detail": "Likely verification lead",
+              "citations": [
+                "package.json"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "id": "test:tests-failonunexpectedconsolecalls-js-test-spec-file-anchors-expected-behavior",
+              "kind": "test",
+              "label": "test/spec file anchors expected behavior",
+              "path": "tests/failOnUnexpectedConsoleCalls.js",
+              "detail": "Likely verification lead",
+              "citations": [
+                "tests/failOnUnexpectedConsoleCalls.js"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "id": "test:tests-setup-env-js-test-spec-file-anchors-expected-behavior",
+              "kind": "test",
+              "label": "test/spec file anchors expected behavior",
+              "path": "tests/setup-env.js",
+              "detail": "Likely verification lead",
+              "citations": [
+                "tests/setup-env.js"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "id": "test:tests-shouldignoreconsoleerror-js-test-spec-file-anchors-expected-behavior",
+              "kind": "test",
+              "label": "test/spec file anchors expected behavior",
+              "path": "tests/shouldIgnoreConsoleError.js",
+              "detail": "Likely verification lead",
+              "citations": [
+                "tests/shouldIgnoreConsoleError.js"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "id": "test:tests-towarndev-js-test-spec-file-anchors-expected-behavior",
+              "kind": "test",
+              "label": "test/spec file anchors expected behavior",
+              "path": "tests/toWarnDev.js",
+              "detail": "Likely verification lead",
+              "citations": [
+                "tests/toWarnDev.js"
+              ],
+              "trust": "navigation_lead"
+            }
+          ],
+          "edges": [
+            {
+              "from": "commit:1c931a6c0309",
+              "to": "file:package-json",
+              "kind": "changed",
+              "evidence": "1c931a6c0309 changed this file",
+              "citations": [
+                "git:1c931a6c0309",
+                "package.json"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:205ce1756d33",
+              "to": "file:jest-config-js",
+              "kind": "changed",
+              "evidence": "205ce1756d33 changed this file",
+              "citations": [
+                "git:205ce1756d33",
+                "jest.config.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:20ce75f2907c",
+              "to": "file:package-json",
+              "kind": "changed",
+              "evidence": "20ce75f2907c changed this file",
+              "citations": [
+                "git:20ce75f2907c",
+                "package.json"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:20ce75f2907c",
+              "to": "file:src---tests---event-wrapper-nesting-js",
+              "kind": "changed",
+              "evidence": "20ce75f2907c changed this file",
+              "citations": [
+                "git:20ce75f2907c",
+                "src/__tests__/event-wrapper-nesting.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:20ce75f2907c",
+              "to": "file:src-pure-js",
+              "kind": "changed",
+              "evidence": "20ce75f2907c changed this file",
+              "citations": [
+                "git:20ce75f2907c",
+                "src/pure.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:22b8c280f4d4",
+              "to": "file:-github-workflows-release-yml",
+              "kind": "changed",
+              "evidence": "22b8c280f4d4 changed this file",
+              "citations": [
+                "git:22b8c280f4d4",
+                ".github/workflows/release.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:22b8c280f4d4",
+              "to": "file:-github-workflows-validate-yml",
+              "kind": "changed",
+              "evidence": "22b8c280f4d4 changed this file",
+              "citations": [
+                "git:22b8c280f4d4",
+                ".github/workflows/validate.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:590bc18a7f24",
+              "to": "file:package-json",
+              "kind": "changed",
+              "evidence": "590bc18a7f24 changed this file",
+              "citations": [
+                "git:590bc18a7f24",
+                "package.json"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:590bc18a7f24",
+              "to": "file:tsconfig-json",
+              "kind": "changed",
+              "evidence": "590bc18a7f24 changed this file",
+              "citations": [
+                "git:590bc18a7f24",
+                "tsconfig.json"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:9fc6a75d74bb",
+              "to": "file:readme-md",
+              "kind": "changed",
+              "evidence": "9fc6a75d74bb changed this file",
+              "citations": [
+                "git:9fc6a75d74bb",
+                "README.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:aba574074b7b",
+              "to": "file:src---tests---rerender-js",
+              "kind": "changed",
+              "evidence": "aba574074b7b changed this file",
+              "citations": [
+                "git:aba574074b7b",
+                "src/__tests__/rerender.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:be9d81d91314",
+              "to": "file:src-pure-js",
+              "kind": "changed",
+              "evidence": "be9d81d91314 changed this file",
+              "citations": [
+                "git:be9d81d91314",
+                "src/pure.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:be9d81d91314",
+              "to": "file:types-test-tsx",
+              "kind": "changed",
+              "evidence": "be9d81d91314 changed this file",
+              "citations": [
+                "git:be9d81d91314",
+                "types/test.tsx"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:cd6a175a2806",
+              "to": "file:-github-workflows-release-yml",
+              "kind": "changed",
+              "evidence": "cd6a175a2806 changed this file",
+              "citations": [
+                "git:cd6a175a2806",
+                ".github/workflows/release.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:d996673698dc",
+              "to": "file:-github-workflows-release-yml",
+              "kind": "changed",
+              "evidence": "d996673698dc changed this file",
+              "citations": [
+                "git:d996673698dc",
+                ".github/workflows/release.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:f32bd1b033d5",
+              "to": "file:types-index-d-ts",
+              "kind": "changed",
+              "evidence": "f32bd1b033d5 changed this file",
+              "citations": [
+                "git:f32bd1b033d5",
+                "types/index.d.ts"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:f32bd1b033d5",
+              "to": "file:types-test-tsx",
+              "kind": "changed",
+              "evidence": "f32bd1b033d5 changed this file",
+              "citations": [
+                "git:f32bd1b033d5",
+                "types/test.tsx"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "file:jest-config-js",
+              "to": "file:src---tests---render-js",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 2 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:9c4a46d5b992"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:package-json",
+              "to": "test:package-json-package-script--lint--is-a-likely-verification-command",
+              "kind": "verified_by",
+              "evidence": "package script `lint` is a likely verification command",
+              "citations": [
+                "package.json"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:package-json",
+              "to": "test:package-json-package-script--test--is-a-likely-verification-command",
+              "kind": "verified_by",
+              "evidence": "package script `test` is a likely verification command",
+              "citations": [
+                "package.json"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:package-json",
+              "to": "test:package-json-package-script--test-update--is-a-likely-verification-command",
+              "kind": "verified_by",
+              "evidence": "package script `test:update` is a likely verification command",
+              "citations": [
+                "package.json"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:package-json",
+              "to": "test:package-json-package-script--typecheck--is-a-likely-verification-command",
+              "kind": "verified_by",
+              "evidence": "package script `typecheck` is a likely verification command",
+              "citations": [
+                "package.json"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:src---tests---render-js",
+              "to": "file:src---tests---renderhook-js",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 4 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:8782f3be71eb"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:src---tests---render-js",
+              "to": "file:src-pure-js",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 4 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:8782f3be71eb"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:src---tests---render-js",
+              "to": "file:types-index-d-ts",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 3 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:8782f3be71eb"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:src---tests---renderhook-js",
+              "to": "file:src-pure-js",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 3 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:8782f3be71eb"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:src-pure-js",
+              "to": "file:types-index-d-ts",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 4 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:8782f3be71eb"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:src-pure-js",
+              "to": "file:types-test-tsx",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 3 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:be9d81d91314"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:tests-failonunexpectedconsolecalls-js",
+              "to": "test:tests-failonunexpectedconsolecalls-js-test-spec-file-anchors-expected-behavior",
+              "kind": "verified_by",
+              "evidence": "test/spec file anchors expected behavior",
+              "citations": [
+                "tests/failOnUnexpectedConsoleCalls.js"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:tests-setup-env-js",
+              "to": "test:tests-setup-env-js-test-spec-file-anchors-expected-behavior",
+              "kind": "verified_by",
+              "evidence": "test/spec file anchors expected behavior",
+              "citations": [
+                "tests/setup-env.js"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:tests-shouldignoreconsoleerror-js",
+              "to": "test:tests-shouldignoreconsoleerror-js-test-spec-file-anchors-expected-behavior",
+              "kind": "verified_by",
+              "evidence": "test/spec file anchors expected behavior",
+              "citations": [
+                "tests/shouldIgnoreConsoleError.js"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:tests-towarndev-js",
+              "to": "test:tests-towarndev-js-test-spec-file-anchors-expected-behavior",
+              "kind": "verified_by",
+              "evidence": "test/spec file anchors expected behavior",
+              "citations": [
+                "tests/toWarnDev.js"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:types-index-d-ts",
+              "to": "file:types-test-tsx",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 8 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:f32bd1b033d5"
+              ],
+              "trust": "navigation_lead"
+            }
+          ],
+          "truncated": false
+        },
+        "sources": [
+          "package.json",
+          "tests/shouldIgnoreConsoleError.js",
+          "tests/failOnUnexpectedConsoleCalls.js",
+          "tests/setup-env.js",
+          "tests/toWarnDev.js",
+          "types/index.d.ts",
+          "types/test.tsx",
+          "src/__tests__/render.js",
+          "src/__tests__/renderHook.js",
+          "src/pure.js",
+          "jest.config.js"
+        ],
+        "truncated": false
+      },
+      "repo_health": {
+        "schema_version": 1,
+        "summary": "Deterministic scan scored 31 source files across simple size, churn, structural, test-adjacency, and performance-risk signals. 0 hotspots surfaced; average score is 8.9/10. Treat these as review leads, not proof of a bug.",
+        "average_score": 8.9,
+        "hotspot_count": 0,
+        "files_analyzed": 31,
+        "files_with_test_signal": 0,
+        "top_files": [
+          {
+            "path": "src/__tests__/render.js",
+            "score": 6.7,
+            "bucket": "watch",
+            "lines": 299,
+            "bytes": 8772,
+            "churn": 639,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "Maximum indentation depth is about 6; inspect branch-heavy paths before risky edits.",
+                "sources": [
+                  "src/__tests__/render.js"
+                ]
+              },
+              {
+                "id": "long_block",
+                "label": "Long function/block",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "A brace-delimited block spans roughly 288 lines; consider extracting a helper when touching it.",
+                "sources": [
+                  "src/__tests__/render.js"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 639 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "src/__tests__/render.js"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "src/__tests__/render.js"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow.",
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "src/__tests__/end-to-end.js",
+            "score": 6.9,
+            "bucket": "watch",
+            "lines": 234,
+            "bytes": 6944,
+            "churn": 236,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 9; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "src/__tests__/end-to-end.js"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 236 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "src/__tests__/end-to-end.js"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "src/__tests__/end-to-end.js"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "src/__tests__/events.js",
+            "score": 7.4,
+            "bucket": "watch",
+            "lines": 256,
+            "bytes": 5678,
+            "churn": 256,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "Maximum indentation depth is about 7; inspect branch-heavy paths before risky edits.",
+                "sources": [
+                  "src/__tests__/events.js"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 256 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "src/__tests__/events.js"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "src/__tests__/events.js"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "src/act-compat.js",
+            "score": 7.4,
+            "bucket": "watch",
+            "lines": 91,
+            "bytes": 2527,
+            "churn": 99,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 8; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "src/act-compat.js"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "Moderate churn",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "Recent git history shows 99 changed lines in this file; it is a change hotspot.",
+                "sources": [
+                  "src/act-compat.js"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "src/act-compat.js"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "src/__tests__/renderHook.js",
+            "score": 7.9,
+            "bucket": "watch",
+            "lines": 141,
+            "bytes": 3917,
+            "churn": 179,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "Maximum indentation depth is about 6; inspect branch-heavy paths before risky edits.",
+                "sources": [
+                  "src/__tests__/renderHook.js"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "Moderate churn",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "Recent git history shows 179 changed lines in this file; it is a change hotspot.",
+                "sources": [
+                  "src/__tests__/renderHook.js"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "src/__tests__/renderHook.js"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "src/__tests__/cleanup.js",
+            "score": 7.9,
+            "bucket": "watch",
+            "lines": 126,
+            "bytes": 3023,
+            "churn": 126,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "Maximum indentation depth is about 6; inspect branch-heavy paths before risky edits.",
+                "sources": [
+                  "src/__tests__/cleanup.js"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "Moderate churn",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "Recent git history shows 126 changed lines in this file; it is a change hotspot.",
+                "sources": [
+                  "src/__tests__/cleanup.js"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "src/__tests__/cleanup.js"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "types/index.d.ts",
+            "score": 8.1,
+            "bucket": "healthy",
+            "lines": 287,
+            "bytes": 10408,
+            "churn": 529,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 529 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "types/index.d.ts"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "types/index.d.ts"
+                ]
+              }
+            ],
+            "refactoring_targets": []
+          },
+          {
+            "path": "src/pure.js",
+            "score": 8.1,
+            "bucket": "healthy",
+            "lines": 373,
+            "bytes": 10132,
+            "churn": 429,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 429 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "src/pure.js"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "src/pure.js"
+                ]
+              }
+            ],
+            "refactoring_targets": []
+          },
+          {
+            "path": "types/test.tsx",
+            "score": 8.1,
+            "bucket": "healthy",
+            "lines": 328,
+            "bytes": 9679,
+            "churn": 358,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 358 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "types/test.tsx"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "types/test.tsx"
+                ]
+              }
+            ],
+            "refactoring_targets": []
+          },
+          {
+            "path": "src/__tests__/error-handlers.js",
+            "score": 8.1,
+            "bucket": "healthy",
+            "lines": 183,
+            "bytes": 4561,
+            "churn": 183,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 183 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "src/__tests__/error-handlers.js"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "src/__tests__/error-handlers.js"
+                ]
+              }
+            ],
+            "refactoring_targets": []
+          },
+          {
+            "path": "src/__tests__/rerender.js",
+            "score": 8.6,
+            "bucket": "healthy",
+            "lines": 99,
+            "bytes": 2576,
+            "churn": 157,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "churn_hotspot",
+                "label": "Moderate churn",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "Recent git history shows 157 changed lines in this file; it is a change hotspot.",
+                "sources": [
+                  "src/__tests__/rerender.js"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "src/__tests__/rerender.js"
+                ]
+              }
+            ],
+            "refactoring_targets": []
+          },
+          {
+            "path": "src/__tests__/new-act.js",
+            "score": 8.6,
+            "bucket": "healthy",
+            "lines": 79,
+            "bytes": 1653,
+            "churn": 89,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "churn_hotspot",
+                "label": "Moderate churn",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "Recent git history shows 89 changed lines in this file; it is a change hotspot.",
+                "sources": [
+                  "src/__tests__/new-act.js"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "src/__tests__/new-act.js"
+                ]
+              }
+            ],
+            "refactoring_targets": []
+          }
+        ],
+        "truncated": false
+      },
+      "all_files": [],
+      "ignored_dirs": [
+        ".git"
+      ],
+      "coverage": {
+        "schema_version": 1,
+        "strategy": "full_walk",
+        "sampled_files": 65,
+        "total_files": null,
+        "sample_percent": null,
+        "languages": [
+          {
+            "language": "JavaScript",
+            "files": 31,
+            "bytes": 83933
+          },
+          {
+            "language": "Markdown",
+            "files": 12,
+            "bytes": 100458
+          },
+          {
+            "language": "JSON",
+            "files": 4,
+            "bytes": 4887
+          },
+          {
+            "language": "TypeScript",
+            "files": 4,
+            "bytes": 20135
+          },
+          {
+            "language": "YAML",
+            "files": 3,
+            "bytes": 5817
+          }
+        ],
+        "top_level_dirs": [
+          {
+            "path": "src",
+            "file_count": 23,
+            "bytes": 64780
+          },
+          {
+            "path": ".github",
+            "file_count": 7,
+            "bytes": 14429
+          },
+          {
+            "path": "other",
+            "file_count": 5,
+            "bytes": 143048
+          },
+          {
+            "path": "tests",
+            "file_count": 4,
+            "bytes": 18611
+          },
+          {
+            "path": "types",
+            "file_count": 4,
+            "bytes": 20288
+          },
+          {
+            "path": ".codesandbox",
+            "file_count": 1,
+            "bytes": 130
+          }
+        ],
+        "notes": [
+          "Full local walk covered the repo within the scan cap."
+        ]
+      },
+      "all_files_capped": false,
+      "dir_tree_preview": {
+        "name": "",
+        "path": "",
+        "is_dir": true,
+        "file_count": 65,
+        "children": [
+          {
+            "name": ".codesandbox",
+            "path": ".codesandbox",
+            "is_dir": true,
+            "file_count": 1,
+            "children": [
+              {
+                "name": "ci.json",
+                "path": ".codesandbox/ci.json",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": ".github",
+            "path": ".github",
+            "is_dir": true,
+            "file_count": 7,
+            "children": [
+              {
+                "name": "ISSUE_TEMPLATE",
+                "path": ".github/ISSUE_TEMPLATE",
+                "is_dir": true,
+                "file_count": 3,
+                "children": [
+                  {
+                    "name": "Bug_Report.md",
+                    "path": ".github/ISSUE_TEMPLATE/Bug_Report.md",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "Feature_Request.md",
+                    "path": ".github/ISSUE_TEMPLATE/Feature_Request.md",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "Question.md",
+                    "path": ".github/ISSUE_TEMPLATE/Question.md",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "workflows",
+                "path": ".github/workflows",
+                "is_dir": true,
+                "file_count": 2,
+                "children": [
+                  {
+                    "name": "release.yml",
+                    "path": ".github/workflows/release.yml",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "validate.yml",
+                    "path": ".github/workflows/validate.yml",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "ISSUE_TEMPLATE.md",
+                "path": ".github/ISSUE_TEMPLATE.md",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "PULL_REQUEST_TEMPLATE.md",
+                "path": ".github/PULL_REQUEST_TEMPLATE.md",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "other",
+            "path": "other",
+            "is_dir": true,
+            "file_count": 5,
+            "children": [
+              {
+                "name": "design files",
+                "path": "other/design files",
+                "is_dir": true,
+                "file_count": 2,
+                "children": [
+                  {
+                    "name": "README.txt",
+                    "path": "other/design files/README.txt",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "cheat-sheet.afpub",
+                    "path": "other/design files/cheat-sheet.afpub",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "MAINTAINING.md",
+                "path": "other/MAINTAINING.md",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "USERS.md",
+                "path": "other/USERS.md",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "manual-releases.md",
+                "path": "other/manual-releases.md",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "src",
+            "path": "src",
+            "is_dir": true,
+            "file_count": 23,
+            "children": [
+              {
+                "name": "__mocks__",
+                "path": "src/__mocks__",
+                "is_dir": true,
+                "file_count": 1,
+                "children": [
+                  {
+                    "name": "axios.js",
+                    "path": "src/__mocks__/axios.js",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "__tests__",
+                "path": "src/__tests__",
+                "is_dir": true,
+                "file_count": 17,
+                "children": [
+                  {
+                    "name": "__snapshots__",
+                    "path": "src/__tests__/__snapshots__",
+                    "is_dir": true,
+                    "file_count": 1,
+                    "children": [
+                      {
+                        "name": "render.js.snap",
+                        "path": "src/__tests__/__snapshots__/render.js.snap",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": "act.js",
+                    "path": "src/__tests__/act.js",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "auto-cleanup-skip.js",
+                    "path": "src/__tests__/auto-cleanup-skip.js",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "auto-cleanup.js",
+                    "path": "src/__tests__/auto-cleanup.js",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "cleanup.js",
+                    "path": "src/__tests__/cleanup.js",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "config.js",
+                    "path": "src/__tests__/config.js",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "debug.js",
+                    "path": "src/__tests__/debug.js",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "end-to-end.js",
+                    "path": "src/__tests__/end-to-end.js",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "error-handlers.js",
+                    "path": "src/__tests__/error-handlers.js",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "event-wrapper-nesting.js",
+                    "path": "src/__tests__/event-wrapper-nesting.js",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "events.js",
+                    "path": "src/__tests__/events.js",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "multi-base.js",
+                    "path": "src/__tests__/multi-base.js",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "new-act.js",
+                    "path": "src/__tests__/new-act.js",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "render.js",
+                    "path": "src/__tests__/render.js",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "renderHook.js",
+                    "path": "src/__tests__/renderHook.js",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "rerender.js",
+                    "path": "src/__tests__/rerender.js",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "stopwatch.js",
+                    "path": "src/__tests__/stopwatch.js",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "act-compat.js",
+                "path": "src/act-compat.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "config.js",
+                "path": "src/config.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "fire-event.js",
+                "path": "src/fire-event.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "index.js",
+                "path": "src/index.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "pure.js",
+                "path": "src/pure.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "tests",
+            "path": "tests",
+            "is_dir": true,
+            "file_count": 4,
+            "children": [
+              {
+                "name": "failOnUnexpectedConsoleCalls.js",
+                "path": "tests/failOnUnexpectedConsoleCalls.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "setup-env.js",
+                "path": "tests/setup-env.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "shouldIgnoreConsoleError.js",
+                "path": "tests/shouldIgnoreConsoleError.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "toWarnDev.js",
+                "path": "tests/toWarnDev.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "types",
+            "path": "types",
+            "is_dir": true,
+            "file_count": 4,
+            "children": [
+              {
+                "name": "index.d.ts",
+                "path": "types/index.d.ts",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "pure.d.ts",
+                "path": "types/pure.d.ts",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "test.tsx",
+                "path": "types/test.tsx",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "tsconfig.json",
+                "path": "types/tsconfig.json",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": ".all-contributorsrc",
+            "path": ".all-contributorsrc",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": ".bundle.main.env",
+            "path": ".bundle.main.env",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": ".bundle.pure.env",
+            "path": ".bundle.pure.env",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": ".gitattributes",
+            "path": ".gitattributes",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": ".gitignore",
+            "path": ".gitignore",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": ".huskyrc.js",
+            "path": ".huskyrc.js",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": ".npmrc",
+            "path": ".npmrc",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": ".prettierignore",
+            "path": ".prettierignore",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": ".prettierrc.js",
+            "path": ".prettierrc.js",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "CHANGELOG.md",
+            "path": "CHANGELOG.md",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "CODE_OF_CONDUCT.md",
+            "path": "CODE_OF_CONDUCT.md",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "CONTRIBUTING.md",
+            "path": "CONTRIBUTING.md",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "LICENSE",
+            "path": "LICENSE",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "README.md",
+            "path": "README.md",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "codecov.yml",
+            "path": "codecov.yml",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "dont-cleanup-after-each.js",
+            "path": "dont-cleanup-after-each.js",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "jest.config.js",
+            "path": "jest.config.js",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "package.json",
+            "path": "package.json",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "pure.d.ts",
+            "path": "pure.d.ts",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "pure.js",
+            "path": "pure.js",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "tsconfig.json",
+            "path": "tsconfig.json",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          }
+        ]
+      }
+    },
+    "profiles": [
+      {
+        "stage": "full_scan",
+        "total_ms": 37756,
+        "peak_rss_bytes": 28770304,
+        "steps": [
+          {
+            "id": "git_metadata",
+            "label": "Git metadata",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "file_walk",
+            "label": "Parallel file walk",
+            "ms": 12,
+            "pct": 0.031783027863121094
+          },
+          {
+            "id": "languages",
+            "label": "Language breakdown",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "manifests",
+            "label": "Manifest parsing",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "docs",
+            "label": "Doc previews",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "aggregates",
+            "label": "Dirs, configs, stack tags",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "entrypoints",
+            "label": "Entrypoints, workspace units & QA readiness",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "source_previews",
+            "label": "Source preview cache",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "repo_graph",
+            "label": "Deterministic graph scan",
+            "ms": 1,
+            "pct": 0.002648585655260091
+          },
+          {
+            "id": "history",
+            "label": "Git history & decision scan",
+            "ms": 29,
+            "pct": 0.07680898400254264
+          },
+          {
+            "id": "repo_health",
+            "label": "Deterministic health scoring",
+            "ms": 37711,
+            "pct": 99.8808136455133
+          },
+          {
+            "id": "dir_tree",
+            "label": "Directory tree preview",
+            "ms": 0,
+            "pct": 0
+          }
+        ]
+      },
+      {
+        "stage": "local_scan_persist",
+        "total_ms": 3,
+        "peak_rss_bytes": 29065216,
+        "steps": [
+          {
+            "id": "serialize",
+            "label": "JSON serialize (inventory → SQLite)",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "db_insert",
+            "label": "SQLite insert",
+            "ms": 3,
+            "pct": 100
+          },
+          {
+            "id": "touch_project",
+            "label": "Update repo project metadata",
+            "ms": 0,
+            "pct": 0
+          }
+        ]
+      }
+    ]
+  },
+  "report": {
+    "overview": "React Testing Library is a developer testing library that renders React components into a DOM and exposes queries and interaction helpers shaped around observable user behavior. At commit 20ce75f2907ca0e5c5a8ae595c0e9a4e368c7800, its small JavaScript runtime adapts React 18/19 roots, act scheduling, hydration, hook rendering, and cleanup while delegating DOM queries to @testing-library/dom. It ships npm entrypoints and handwritten TypeScript declarations; this brief is based on read-only inspection of runtime files, tests, documentation, configuration, and workflows.",
+    "agent_prompt": "You are onboarding to @testing-library/react at commit 20ce75f2907ca0e5c5a8ae595c0e9a4e368c7800. Treat repository evidence as authoritative and verify changes against the actual checkout. This is a React DOM testing library for developers, with a JavaScript implementation and handwritten TypeScript declarations. Its public design favors DOM nodes and user-observable behavior over component instances.\n\nStart with package.json, src/index.js, src/pure.js, src/act-compat.js, src/config.js, src/fire-event.js, and types/index.d.ts. Read the corresponding tests before proposing changes. The normal entrypoint registers cleanup with afterEach or teardown when available, unless RTL_SKIP_AUTO_CLEANUP is truthy. It also manages the suite-level React act environment. The pure entrypoint avoids that registration, but importing its implementation still configures DOM Testing Library wrappers.\n\nTrace render from option validation through container creation, root selection, registration, renderRoot, and getQueriesForElement. Concurrent roots use createRoot or hydrateRoot; legacy roots use older ReactDOM methods and are rejected when those methods are unavailable. A Set and array jointly track mounted containers and roots. Repeated render calls reuse the registered root. Rerender preserves the wrapper and root, while cleanup unmounts registered roots and only removes containers directly parented by document.body. There is no durable storage in this lifecycle.\n\nUnderstand scheduling before editing interactions or asynchronous behavior. act-compat prefers React.act and otherwise uses react-dom/test-utils.act. It restores IS_REACT_ACT_ENVIRONMENT across synchronous completion, exceptions, and awaited thenables. The DOM asyncWrapper temporarily disables that flag and drains microtasks through a zero-delay timer, advancing Jest fake timers when detected. The eventWrapper guards nested calls. fire-event forwards DOM helpers and adds React-specific mouse, pointer, selection, and focus sequences.\n\nRead renderHook as another consumer of render: it stores callback output into result.current in an effect and forwards rerender props to its internal component. Keep API changes synchronized with types/index.d.ts and types/test.tsx. Custom queries and provider wrappers are the principal consumer extension points.\n\nTests live in src/__tests__; tests/setup-env.js installs jest-dom matchers and console-warning enforcement. Inspect render, cleanup, act, event-wrapper-nesting, end-to-end, error-handlers, config, and renderHook tests for relevant contracts. CI spans Node 18/24 and React 18.x/latest/canary/experimental, but non-latest jobs allow failure. Existing tests and CI were inspected, not executed; their existence proves neither passing results nor exhaustive coverage. In this read-only assignment, prefix shell reads with rtk proxy, do not execute repository code or network calls, and never read secrets or environment files. Future authorized implementation should use focused existing test scripts first and clearly distinguish executed validation from source inspection.",
+    "system_map": {
+      "summary": "The runtime is a library loaded into a consumer's test process and DOM environment. React owns rendering, DOM Testing Library owns query machinery, and this repository supplies lifecycle and scheduling adapters. Distribution and release are described by package scripts and GitHub workflows.",
+      "claims": [
+        {
+          "claim": "The package advertises dist/index.js as main, an ESM bundle as module, types/index.d.ts as declarations, and Node >=18.",
+          "sources": [
+            "package.json#L2-L10"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "src/index.js adds runner lifecycle hooks and then re-exports src/pure.js; the published pure.js shim instead requires dist/pure.",
+          "sources": [
+            "src/index.js#L9-L41",
+            "pure.js#L1-L2"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "src/pure.js is the orchestration module: it imports React, both ReactDOM APIs, DOM query utilities, act compatibility, event adaptation, and configuration.",
+          "sources": [
+            "src/pure.js#L1-L14",
+            "src/pure.js#L369-L371"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Root adapters provide a common hydrate/render/unmount interface over ReactDOMClient and legacy ReactDOM methods.",
+          "sources": [
+            "src/pure.js#L102-L163"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Lifecycle storage consists of module-local mountedContainers and mountedRootEntries; cleanup clears both after unmounting.",
+          "sources": [
+            "src/pure.js#L79-L88",
+            "src/pure.js#L317-L328"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "React and ReactDOM 18 or 19 and DOM Testing Library 10 are peer integrations; @babel/runtime is the declared production dependency.",
+          "sources": [
+            "package.json#L47-L49",
+            "package.json#L65-L79"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Build runs three parallel kcd-scripts targets; test, lint, validate, and typecheck are package scripts, with typecheck invoking tsc against the root config.",
+          "sources": [
+            "package.json#L11-L24",
+            "tsconfig.json#L33-L44"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Release builds npm artifacts after validation and invokes semantic-release 25 only for pushes in the upstream repository; the package includes dist, shims, and declaration files.",
+          "sources": [
+            "package.json#L26-L32",
+            ".github/workflows/release.yml#L81-L115"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "feature_catalog": {
+      "summary": "The user-facing surface is an API for test authors. It supports rendering, updating, hydration, hooks, interactions, diagnostics, and test isolation. DOM Testing Library exports broaden that surface without duplicating query implementations here.",
+      "claims": [
+        {
+          "claim": "render accepts React UI and returns container, baseElement, bound queries, debug, rerender, unmount, and asFragment.",
+          "sources": [
+            "src/pure.js#L197-L235",
+            "types/index.d.ts#L28-L47"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Custom container and baseElement options control mounting and query scope; without either, render creates a div under document.body.",
+          "sources": [
+            "src/pure.js#L238-L275",
+            "src/__tests__/multi-base.js#L18-L38"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "hydrate attaches React to existing markup, while legacyRoot selects older rendering APIs only when ReactDOM.render exists.",
+          "sources": [
+            "src/pure.js#L114-L129",
+            "src/pure.js#L253-L265",
+            "src/__tests__/render.js#L179-L201"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "wrapper supplies a surrounding component, and reactStrictMode can be configured globally or overridden per render.",
+          "sources": [
+            "src/pure.js#L90-L100",
+            "types/index.d.ts#L152-L163"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "renderHook exposes a stable result ref, rerender, and unmount, with initialProps passed to the hook callback.",
+          "sources": [
+            "src/pure.js#L330-L366",
+            "types/index.d.ts#L184-L204"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "fireEvent forwards DOM event helpers and adds React-specific enter/leave, selection, and focus/blur event sequences; act is also publicly exported.",
+          "sources": [
+            "src/fire-event.js#L7-L67",
+            "src/pure.js#L369-L371"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Consumers receive DOM Testing Library exports, including screen and asynchronous query utilities used in the integration tests.",
+          "sources": [
+            "src/pure.js#L369-L371",
+            "src/__tests__/end-to-end.js#L1-L7",
+            "src/__tests__/end-to-end.js#L55-L74"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "cleanup is public and normally registered automatically; consumers can choose the pure entrypoint or load dont-cleanup-after-each.js to control teardown themselves.",
+          "sources": [
+            "src/index.js#L4-L23",
+            "dont-cleanup-after-each.js#L1-L1",
+            "pure.js#L1-L2",
+            "src/pure.js#L371-L371"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "data_flow": {
+      "summary": "React nodes and render options enter the root orchestration layer, then become DOM content and query-bound results. Configuration and scheduling state are shared within the loaded modules and test global. Hook output and snapshots are transient outputs rather than durable persistence.",
+      "claims": [
+        {
+          "claim": "render rejects a supplied onUncaughtError and unsupported legacyRoot before defaulting baseElement or allocating a container.",
+          "sources": [
+            "src/pure.js#L238-L275"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "A new container selects a root factory and records the root in both tracking structures; a known container retrieves its existing root by scanning mountedRootEntries.",
+          "sources": [
+            "src/pure.js#L277-L304"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "UI is first wrapped in the optional wrapper component, then optionally enclosed in StrictMode, before rendering or hydration inside act.",
+          "sources": [
+            "src/pure.js#L90-L100",
+            "src/pure.js#L177-L195"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "onCaughtError and onRecoverableError flow into createRoot or hydrateRoot at root creation; they are not supplied anew when an existing root is reused.",
+          "sources": [
+            "src/pure.js#L114-L129",
+            "src/pure.js#L279-L303"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Queries bind to baseElement, whereas asFragment serializes container.innerHTML into a DocumentFragment and debug formats its selected element through prettyDOM.",
+          "sources": [
+            "src/pure.js#L197-L205",
+            "src/pure.js#L222-L235"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "configure evaluates functional deltas against merged configuration, forwards non-reactStrictMode fields to DOM Testing Library, and assigns reactStrictMode in RTL's local config.",
+          "sources": [
+            "src/config.js#L10-L31"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "renderHook computes pendingResult during TestComponent rendering, publishes it to result.current in useEffect, and passes new rerender arguments as renderCallbackProps.",
+          "sources": [
+            "src/pure.js#L343-L366"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "cleanup unmounts roots inside act, removes only containers directly under document.body, and clears in-memory tracking; custom parent elements remain outside that removal boundary.",
+          "sources": [
+            "src/pure.js#L317-L328",
+            "src/__tests__/multi-base.js#L5-L16"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "behavior_traces": {
+      "summary": "The inspected flows cover import setup, component lifecycle, hydration, events, async queries, and hooks. Each trace follows runtime functions and relevant test usage rather than assuming behavior from filenames. These walks were read from source and were not executed.",
+      "claims": [
+        {
+          "claim": "Startup: pure-module evaluation installs DOM timer/async/event wrappers; index.js then checks RTL_SKIP_AUTO_CLEANUP, registers afterEach or teardown, and registers beforeAll/afterAll act-environment management when both hooks exist.",
+          "sources": [
+            "src/pure.js#L32-L77",
+            "src/index.js#L9-L38"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Initial render: render validates options → defaults to document.body → appends a div → createConcurrentRoot calls createRoot → tracking is populated → renderRoot calls root.render inside act → query helpers are returned.",
+          "sources": [
+            "src/pure.js#L125-L144",
+            "src/pure.js#L253-L294",
+            "src/pure.js#L306-L314",
+            "src/pure.js#L177-L235"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Update and teardown: result.rerender calls renderRoot with the captured root, wrapper, and scope; result.unmount calls root.unmount in act; cleanup later walks registered roots and clears their tracking.",
+          "sources": [
+            "src/pure.js#L206-L220",
+            "src/pure.js#L317-L328",
+            "src/__tests__/rerender.js#L20-L26"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Hydration: render with hydrate:true creates a concurrent root through act(hydrateRoot); renderRoot subsequently calls the adapter's no-op hydrate, and rerender later uses root.render. The hydration test then clicks the existing button and asserts updated text.",
+          "sources": [
+            "src/pure.js#L114-L144",
+            "src/pure.js#L177-L195",
+            "src/pure.js#L211-L218",
+            "src/__tests__/render.js#L189-L200"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Interaction: fireEvent.click forwards to the DOM helper; the configured eventWrapper runs its callback inside act, but nested wrapper invocations execute directly. The nesting regression dispatches input from an effect and checks both updates and act warnings.",
+          "sources": [
+            "src/fire-event.js#L7-L11",
+            "src/pure.js#L62-L75",
+            "src/__tests__/event-wrapper-nesting.js#L6-L25",
+            "src/__tests__/event-wrapper-nesting.js#L41-L51"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Async query: a fixture effect schedules a promise or timer update → the test awaits waitFor/findBy → asyncWrapper disables the act flag, awaits its callback, drains microtasks via setTimeout(0), advances detected Jest fake timers, and restores the prior flag in finally.",
+          "sources": [
+            "src/__tests__/end-to-end.js#L19-L42",
+            "src/__tests__/end-to-end.js#L55-L74",
+            "src/pure.js#L39-L60"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Hook flow: renderHook extracts initialProps → render mounts TestComponent → renderCallback computes output → useEffect writes result.current → returned rerender calls baseRerender with new props, while unmount is inherited from render.",
+          "sources": [
+            "src/pure.js#L330-L366",
+            "src/__tests__/renderHook.js#L10-L50"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Explicit act: withGlobalActEnvironment saves the prior flag and enables it; synchronous callbacks restore immediately, object thenables restore on resolution/rejection, and synchronous exceptions restore before rethrow.",
+          "sources": [
+            "src/act-compat.js#L36-L79",
+            "src/__tests__/act.js#L47-L69"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "testing_signals": {
+      "summary": "Tests and CI were inspected, not executed; no passing result or measured coverage is asserted. Jest suites in src/__tests__ exercise DOM behavior, scheduling, cleanup, hooks, and React-version branches, while types/test.tsx supplies declaration checks. The inspected inventory is bounded, and several tests or configuration branches explicitly limit what can be concluded.",
+      "claims": [
+        {
+          "claim": "Jest configuration extends kcd-scripts/config, and tests/setup-env.js installs jest-dom assertions, console-call enforcement, TextEncoder, and a worker_threads MessageChannel.",
+          "sources": [
+            "jest.config.js#L1-L19",
+            "tests/setup-env.js#L1-L9"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Rendering tests assert portals, fragment snapshots, wrapper composition, StrictMode effects, repeated-container rendering, hydration interactivity, and version-gated legacy behavior.",
+          "sources": [
+            "src/__tests__/render.js#L34-L90",
+            "src/__tests__/render.js#L93-L160",
+            "src/__tests__/render.js#L163-L219",
+            "src/__tests__/render.js#L222-L263"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Cleanup suites test automatic cleanup and its skip switch, effect teardown, detached containers, non-flushing of microtasks, and preservation of missing-act warnings.",
+          "sources": [
+            "src/__tests__/auto-cleanup.js#L4-L13",
+            "src/__tests__/auto-cleanup-skip.js#L3-L18",
+            "src/__tests__/cleanup.js#L25-L42",
+            "src/__tests__/cleanup.js#L58-L125"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Event tests generate React-handler and native-listener cases from an event table; a separate regression asserts nested eventWrapper behavior and absence of act warnings.",
+          "sources": [
+            "src/__tests__/events.js#L147-L205",
+            "src/__tests__/event-wrapper-nesting.js#L41-L54"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Async integration tests exercise waitForElementToBeRemoved, waitFor, and findBy across real, legacy fake, and modern fake timers, including long promise chains; their loaders simulate data rather than contacting a server.",
+          "sources": [
+            "src/__tests__/end-to-end.js#L4-L27",
+            "src/__tests__/end-to-end.js#L55-L74",
+            "src/__tests__/end-to-end.js#L78-L124",
+            "src/__tests__/end-to-end.js#L139-L162"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Hook tests assert committed output, rerender props, providers, and version-gated legacy roots; renderHook's recoverable-error test accepts the option but contains a TODO instead of triggering recovery.",
+          "sources": [
+            "src/__tests__/renderHook.js#L10-L68",
+            "src/__tests__/renderHook.js#L70-L113",
+            "src/__tests__/error-handlers.js#L170-L183"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "types/test.tsx checks render/query/config/hook usage and container inference; root typecheck includes types with strict and exactOptionalPropertyTypes enabled, but onCaughtError's cross-version fixture uses @ts-ignore.",
+          "sources": [
+            "types/test.tsx#L5-L49",
+            "types/test.tsx#L215-L263",
+            "types/test.tsx#L266-L289",
+            "tsconfig.json#L21-L44"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "PR CI spans Node 18/24 and React 18.x/latest/canary/experimental, permits non-latest failures, and uploads coverage. Jest relaxes per-job core thresholds while Codecov specifies a 100% project target for selected flags.",
+          "sources": [
+            ".github/workflows/validate.yml#L14-L22",
+            ".github/workflows/validate.yml#L53-L61",
+            "jest.config.js#L4-L17",
+            "codecov.yml#L1-L18"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "risk_map": {
+      "summary": "The main source-observed risks concern shared state, lifecycle boundaries, compatibility, and validation strength. Security-sensitive authority appears in release automation; the inspected core runtime operates on the test DOM and callbacks rather than implementing authentication or transport. These observations and labeled hypotheses are not confirmed vulnerabilities or whole-repository absence claims.",
+      "claims": [
+        {
+          "claim": "Even the pure implementation changes shared DOM Testing Library configuration at import time and writes IS_REACT_ACT_ENVIRONMENT during operations; selecting pure only avoids index.js lifecycle registration.",
+          "sources": [
+            "src/pure.js#L32-L77",
+            "src/act-compat.js#L28-L39",
+            "src/index.js#L9-L38"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "RTL_SKIP_AUTO_CLEANUP is tested by truthiness rather than equality with 'true', and the same guard disables both cleanup registration and suite-level act-environment hooks.",
+          "sources": [
+            "src/index.js#L9-L38",
+            "src/__tests__/auto-cleanup-skip.js#L3-L18"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "configure assigns reactStrictMode even when a delta omits it, replacing the previous value with undefined; the inspected config suite does not assert retention after a DOM-only delta.",
+          "sources": [
+            "src/config.js#L24-L31",
+            "src/__tests__/config.js#L19-L66"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The Set and array must remain synchronized; result.unmount does not deregister its root, and a later render on that container selects the stored root. This is a lifecycle hotspot, not a demonstrated failure in this inspection.",
+          "sources": [
+            "src/pure.js#L79-L88",
+            "src/pure.js#L206-L210",
+            "src/pure.js#L279-L303"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Async scheduling depends on Jest-specific timer markers and a zero-delay timer to drain microtasks; global flag restoration for asynchronous act is tied to consuming its returned thenable.",
+          "sources": [
+            "src/pure.js#L16-L27",
+            "src/pure.js#L39-L60",
+            "src/act-compat.js#L54-L69"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "debug sends formatted DOM to console.log, while asFragment reparses container.innerHTML without a sanitization step. Hypothesis: sensitive fixture content can enter logs or snapshots; these helpers are not a content-security boundary.",
+          "sources": [
+            "src/pure.js#L200-L205",
+            "src/pure.js#L222-L232",
+            "src/__tests__/render.js#L78-L90"
+          ],
+          "kind": "inference"
+        },
+        {
+          "claim": "README authentication and localStorage code is an example application, while inspected async test loaders return synthetic promises. Treating those as shipped authentication, persistence, or real-network coverage would misstate the library boundary.",
+          "sources": [
+            "README.md#L224-L259",
+            "src/__tests__/end-to-end.js#L19-L27",
+            "src/__tests__/end-to-end.js#L93-L97",
+            "src/pure.js#L369-L371"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Release automation grants OIDC and repository write permissions, consumes workflow secret references, and installs without a lockfile; non-latest React validation jobs allow failure. These are consequential release boundaries, with no credential values read or exploit established.",
+          "sources": [
+            ".github/workflows/release.yml#L25-L32",
+            ".github/workflows/release.yml#L73-L85",
+            ".github/workflows/release.yml#L95-L117"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "extension_points": {
+      "summary": "Consumer extension primarily happens through render options and configuration rather than a plugin registry. The root adapters and event forwarding also provide internal seams for compatibility work. Public additions need coordinated runtime exports, declarations, and behavioral tests.",
+      "claims": [
+        {
+          "claim": "RenderOptions.queries accepts a custom query set, and renderRoot binds it through getQueriesForElement; custom sets replace defaults unless the caller merges them.",
+          "sources": [
+            "types/index.d.ts#L147-L151",
+            "src/pure.js#L234-L235"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "RenderResult maps each supplied query key to BoundFunction, preserving custom-query typing through the generic render overload.",
+          "sources": [
+            "types/index.d.ts#L28-L47",
+            "types/index.d.ts#L171-L182"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "wrapper is the documented seam for reusable render helpers that install providers; renderHook passes it through the same render pipeline.",
+          "sources": [
+            "types/index.d.ts#L152-L158",
+            "src/pure.js#L355-L358",
+            "src/__tests__/renderHook.js#L53-L68"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "configure accepts object or functional deltas and forwards DOM options, supporting changes such as testIdAttribute alongside RTL strict mode.",
+          "sources": [
+            "src/config.js#L17-L31",
+            "src/__tests__/config.js#L19-L64"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "createConcurrentRoot and createLegacyRoot are internal factories with the same lifecycle methods; render chooses between them via legacyRoot.",
+          "sources": [
+            "src/pure.js#L132-L163",
+            "src/pure.js#L279-L288"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "fireEvent copies every enumerable DOM helper at module load, then overrides selected helpers; new React event adaptations belong beside those explicit sequences.",
+          "sources": [
+            "src/fire-event.js#L7-L35",
+            "src/fire-event.js#L38-L67"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "onCaughtError and onRecoverableError are root-creation callback seams, with onCaughtError typed conditionally against installed ReactDOM RootOptions; onUncaughtError is deliberately excluded.",
+          "sources": [
+            "types/index.d.ts#L122-L145",
+            "src/pure.js#L114-L129",
+            "src/pure.js#L253-L257"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The pure import lets alternative runners own cleanup scheduling while retaining the public API; its declaration forwarding chain ends at the same types/index.d.ts surface.",
+          "sources": [
+            "src/index.js#L4-L8",
+            "pure.js#L1-L2",
+            "pure.d.ts#L1-L1",
+            "types/pure.d.ts#L1-L1"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_handoff": {
+      "summary": "Begin edits at the runtime/type boundary and read the focused behavioral suite before changing contracts. Existing scripts and workflow definitions describe intended validation, but tests and CI were inspected, not executed during this assignment. The investigation is bounded and supplies neither passing results nor exhaustive security or coverage conclusions.",
+      "claims": [
+        {
+          "claim": "For lifecycle work, first read index.js, pure.js, and act-compat.js together: runner registration, root ownership, and React's global act flag cross module boundaries.",
+          "sources": [
+            "src/index.js#L9-L38",
+            "src/pure.js#L277-L328",
+            "src/act-compat.js#L36-L79"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Keep public API edits paired with types/index.d.ts and types/test.tsx; CONTRIBUTING identifies handwritten declarations as the API update location.",
+          "sources": [
+            "CONTRIBUTING.md#L35-L43",
+            "types/index.d.ts#L171-L182",
+            "types/test.tsx#L215-L263"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "For an authorized implementation, start with the relevant src/__tests__ suite through npm test, then use typecheck or validate as needed; those commands were only inspected here.",
+          "sources": [
+            "package.json#L21-L24",
+            "src/__tests__/render.js#L12-L32",
+            "src/__tests__/renderHook.js#L10-L22"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Preserve React 18/19 branches and version-gated assertions; a successful latest-only run would not establish legacy-root compatibility.",
+          "sources": [
+            "package.json#L65-L70",
+            "src/__tests__/render.js#L6-L10",
+            "src/__tests__/render.js#L222-L263"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Tests changing global configuration capture and restore it; tests mocking console must respect the harness's unexpected-call and teardown checks.",
+          "sources": [
+            "src/__tests__/config.js#L3-L17",
+            "tests/failOnUnexpectedConsoleCalls.js#L58-L93",
+            "tests/failOnUnexpectedConsoleCalls.js#L124-L129"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Use actual scripts as authority over older documentation: CONTRIBUTING mentions dtslint, while package.json's explicit typecheck invokes tsc and the root config includes types without emitting output.",
+          "sources": [
+            "CONTRIBUTING.md#L35-L43",
+            "package.json#L23-L24",
+            "tsconfig.json#L41-L44"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Inspect package-manager context before installing: package.json declares Yarn 1.22.22, while contribution setup and CI use npm, and CI explicitly disables lockfile use.",
+          "sources": [
+            "package.json#L116-L116",
+            "CONTRIBUTING.md#L8-L12",
+            ".github/workflows/validate.yml#L33-L36"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Treat release automation as a separate authority boundary: configured branch pushes can trigger publication, and maintainer documentation warns that BREAKING CHANGE commit text drives major releases.",
+          "sources": [
+            ".github/workflows/release.yml#L2-L13",
+            ".github/workflows/release.yml#L81-L115",
+            "other/MAINTAINING.md#L49-L63"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    }
+  },
+  "analysis": {
+    "agent": "codex",
+    "model": "cli:codex",
+    "runtime_ms": 268231,
+    "cost_usd": null,
+    "collected_at": "2026-10-02T15:46:35.528452+00:00",
+    "source_commit_sha": "20ce75f2907ca0e5c5a8ae595c0e9a4e368c7800",
+    "citation_validation": {
+      "status": "passed",
+      "claim_count": 64,
+      "path_and_line_bounds": true,
+      "semantic_correctness_established": false
+    },
+    "runtime_verification": {
+      "tests_executed": false,
+      "upstream_code_executed": false
+    },
+    "source_review": {
+      "status": "reviewed_bounded",
+      "all_claim_text_screened": true,
+      "independently_source_checked_claim_count": 53,
+      "private_review_receipt_sha256": "355de25a98df73ade29cb64264380d6afc785d90a89ab333b2687ebb8a40d533",
+      "full_semantic_correctness_established": false
+    }
+  },
+  "public_export": {
+    "private_original_record_sha256": "f53adeab1f25b594d7dd434e791ad7839163884999e90fd37e21873b8b9a2fa6",
+    "omitted_local_fields": [
+      "scan.inventory.repo_path"
+    ],
+    "original_record_retained_privately": true,
+    "note": "Public corpus projection; embedded scan omits the local clone path. Hash identifies the original corpus record, not raw CLI stdout."
+  }
+}

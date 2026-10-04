@@ -1,0 +1,3430 @@
+{
+  "schema_version": "codevetter.repo-unpack-corpus/v1",
+  "repo": "gotestyourself/gotestsum",
+  "slug": "gotestsum",
+  "codevetter_version": "codevetter 1.15.0",
+  "collected_at": "2026-10-02T16:27:57.125Z",
+  "last_commit": {
+    "sha": "3cf14356a16c7931cfeacd7dfee585527618df3d",
+    "date": "2026-04-14",
+    "subject": "Merge pull request #563 from alexandear-org/refactor/remove-unused-go-version"
+  },
+  "scan": {
+    "schema_version": "codevetter.unpack-scan/v1",
+    "report_id": "bd17a5ae-6152-45de-84e5-3a3e987a0298",
+    "status": "scan_only",
+    "created_at": "2026-10-02T16:27:57.118047+00:00",
+    "inventory": {
+      "repo_path": "[local clone path omitted from public export]",
+      "repo_name": "gotestsum",
+      "commit_sha": "3cf14356a16c7931cfeacd7dfee585527618df3d",
+      "branch": "main",
+      "remote_url": "https://github.com/gotestyourself/gotestsum.git",
+      "files_scanned": 164,
+      "files_skipped": 0,
+      "bytes_scanned": 783979,
+      "max_files_hit": false,
+      "estimated_total_files": null,
+      "languages": [
+        {
+          "language": "Go",
+          "files": 67,
+          "bytes": 225543
+        },
+        {
+          "language": "Markdown",
+          "files": 2,
+          "bytes": 20058
+        },
+        {
+          "language": "YAML",
+          "files": 5,
+          "bytes": 6088
+        },
+        {
+          "language": "HTML",
+          "files": 1,
+          "bytes": 91
+        }
+      ],
+      "manifests": [
+        {
+          "path": "go.mod",
+          "kind": "go.mod",
+          "name": "gotest.tools/gotestsum",
+          "version": null,
+          "dependencies": [],
+          "scripts": []
+        }
+      ],
+      "entrypoints": [
+        {
+          "path": "README.md",
+          "kind": "docs",
+          "reason": "Repository readme"
+        }
+      ],
+      "top_level_dirs": [
+        {
+          "path": "testjson",
+          "file_count": 72,
+          "bytes": 482220
+        },
+        {
+          "path": "cmd",
+          "file_count": 43,
+          "bytes": 171879
+        },
+        {
+          "path": "internal",
+          "file_count": 26,
+          "bytes": 78594
+        },
+        {
+          "path": "contrib",
+          "file_count": 8,
+          "bytes": 4912
+        },
+        {
+          "path": ".project",
+          "file_count": 4,
+          "bytes": 3970
+        },
+        {
+          "path": ".github",
+          "file_count": 2,
+          "bytes": 912
+        },
+        {
+          "path": ".circleci",
+          "file_count": 1,
+          "bytes": 2898
+        }
+      ],
+      "docs": [
+        {
+          "path": "README.md",
+          "bytes": 18951,
+          "preview": "# gotestsum\n\n`gotestsum` runs tests using `go test -json`, prints formatted test output, and a summary of the test run.\nIt is designed to work well for both local development, and for automation like CI.\n`gotestsum` is [used by](#who-uses-gotestsum) some of the most popular Go projects.\n\n## Install\n\nDownload a binary from [releases](https://github.com/gotestyourself/gotestsum/releases), or build from\nsource with `go install gotest.tools/gotestsum@latest`. To run without installing use\n`go run gotest.tools/gotestsum@latest`.\n\n## Documentation\n\n**Core features**\n- Change the [test output format](#output-format), from compact to verbose with color highlighting.\n- Print a [summary](#summary) of the test run after running all the tests.\n- Use any [`go test` flag](#custom-go-test-command),\n  run a script with [`--raw-command`](#custom-go-test-command),\n  or [run a compiled test binary](#executing-a-compiled-test-binary).\n\n**CI and Automation**\n- [`--junitfile`](#junit-xml-output) - write a JUnit XML file for integration with CI systems.\n- [`--jsonfile`](#json-file-output) - write all the [test2json](https://pkg.go.dev/cmd/test2json) input received by `gotestsum` to a file. The file\n  can be used as input to [`gotestsum tool slowest`](#finding-and-skipping-slow-tests), or as a way to\n  store the full verbose output of tests when less verbose output is printed to stdout using a compact [`--format`](#output-format).\n- [`--rerun-fails`](#re-running-failed-tests) - run failed (possibly flaky) tests again to avoid re-running the\n  entire suite. Re-running individual tests can save significant time when working with flaky test suites.\n\n**Local Development**\n- [`--watch`](#run-tests-when-a-file-is-saved) - every time a `.go` file is saved run the tests for the package that changed.\n- [`--post-run-command`](#post-run-command) - run a command after the tests, can be used for desktop notification of the test run.\n- [`gotestsum tool slowest`](#finding-and-skipping-slow-tests) - find the slowest tests, or automatically update the source code of\n  the slowest tests to add a conditional `t.Skip` statements. This statement allows you to skip the slowest tests using `gotestsum -- -short ./...`.\n\n\n### Output Format\n\nThe `--format` flag or `GOTESTSUM_FORMAT` environment variable set the format that\nis used to print the test names, and possibly test output, as the tests run. Most\noutputs use color to highlight pass, fail, or skip.\n\nThe `--format-icons` flag changes the icons used by `pkgname` and `testdox` formats.\nYou can set the `GOTESTSUM_FORMAT_ICONS` environment variable, instead of the flag.\nThe nerdfonts icons requires a font from [Nerd Fonts](https://www.nerdfonts.com/).\n\nCommonly used formats (see `--help` for a full list):\n\n * `dots` - print a character for each test.\n * `pkgname` (default) - print a line for each package.\n * `testname` - print a line for each test and package.\n * `testdox` - print a sentence for each test using [gotestdox](https://github.com/bitfield/gotestdox).\n * `standard-quiet` - the standard `go test` format.\n * `standard-verbose` - the standard `go test -v` format.\n\nHave an idea for a new format?\nPlease [share it on github](https://github.com/gotestyourself/gotestsum/issues/new)!\n\n#### Demo\n\nA demonstration of three `--format` options.\n\n![Demo](https://user-images.githubusercontent.com/442180/182284939-e08a0aa5-4504-4e30-9e88-207ef47f4537.gif)\n<br /><sup>[Source](https://github.com/gotestyourself/gotestsum/tree/readme-demo/scripts)</sup>\n\n### Summary\n\nFollowing the formatted output is a summary of the test run. The summary includes:\n\n * The test output, and elapsed time, for any test that fails or is skipped.\n * The build errors for any package that fails to build.\n * A `DONE` line with a count of tests run, tests skipped, tests failed, package build errors,\n   and the elapsed time including time to build.\n\n   ```\n   DONE 101 tests[, 3 skipped][, 2 failures][, 1 error] in 0.103s\n   ```\n\nTo hide parts of the summary use `--hide-summary section`.\n\n\n**Example: hide skipped tests in the summary**\n```\ngotestsum --hide-summary=skipped\n```\n\n**Example: hide everything except the DONE line**\n```\ngotestsum --hide-summary=skipped,failed,errors,output\n# or\ngotestsum --hide-summary=all\n```\n\n**Example: hide test output in the summary, only print names of failed and skipped tests\nand errors**\n```\ngotestsum --hide-summary=output\n```\n\n### JUnit XML output\n\nWhen the `--junitfile` flag or `GOTESTSUM_JUNITFILE` environment variable are set\nto a file path, `gotestsum` will write a test report, in JUnit XML format, to the file.\nThis file can be used to integrate with CI systems.\n\n```\ngotestsum --junitfile unit-tests.xml\n```\n\nIf the package names in the `testsuite.name` or `testcase.classname` fields do not\nwork with your CI system these values can be customized using the\n`--junitfile-testsuite-name`, or `--junitfile-testcase-classname` flags. These flags\naccept the following values:\n\n* `short` - the base name of the package (the single term specified by the\n  package statement).\n* `relative` - a package path relative to the root of the repository\n* `full` - the full package path (default)\n\n\nNote: If Go is not installed, or the `go` binary is not in `PATH`, the `GOVERSION`\nenvironment variable can be set to remove the \"failed to lookup go version for junit xml\"\nwarning.\n\n### JSON file output\n\nWhen the `--jsonfile` flag or `GOTESTSUM_JSONFILE` environment variable are set\nto a file path, `gotestsum` will write a line-delimited JSON file with all the\n[test2json](https://golang.org/cmd/test2json/#hdr-Output_Format)\noutput that was written by `go test -json`. This file can be used to compare test\nruns, or find flaky tests.\n\n```\ngotestsum --jsonfile test-output.log\n```\n\n### Post Run Command\n\nThe `--post-run-command` flag may be used to execute a command after the\ntest run has completed. The binary will be run with the following environment\nvariables set:\n\n```\nGOTESTSUM_ELAPSED       # test run time in seconds (ex: 2.45s)\nGOTESTSUM_FORMAT        # gotestsum format (ex: pkgname)\nGOTESTSUM_JSONFILE      # path to the jsonfile, empty if no file path was given\nGOTESTSUM_JUNITFILE     # path to the junit.xml file, empty if no file path was given\nTESTS_ERRORS            # number of errors\nTESTS_FAILED            # number of failed tests\nTESTS_SKIPPED           # number of skipped tests\nTESTS_TOTAL             # number of tests run\n```\n\nTo get more details about the test run, such as failure messages or the full list of failed\ntests, run `gotestsum` with either a `--jsonfile` or `--junitfile` and parse the\nfile from the post-run-command. The\n[gotestsum/testjson](https://pkg.go.dev/gotest.tools/gotestsum/testjson?tab=doc)\npackage may be used to parse the JSON file output.\n\n**Example: desktop notifications**\n\nFirst install the example notification command with `go get gotest.tools/gotestsum/contrib/notify`.\nThe command will be downloaded to `$GOPATH/bin` as `notify`. Note that this\nexample `notify` command only works on Linux with `notify-send` and on macOS with\n[terminal-notifer](https://github.com/julienXX/terminal-notifier) installed.\n\nOn Linux, you need to have some \"test-pass\" and \"test-fail\" icons installed in your icon theme.\nSome sample icons can be found in `contrib/notify`, and can be installed with `make install`.\n\nOn Windows, you can install [notify-send.exe](https://github.com/vaskovsky/notify-send)\nbut it does not support custom icons so will have to use the basic \"info\" and \"error\".\n\n```\ngotestsum --post-run-command notify\n```\n\n**Example: command with flags**\n\nPositional arguments or command line flags can be passed to the `--post-run-command` by\nquoting the whole command.\n\n```\ngotestsum --post-run-command \"notify me --date\"\n```\n\n**Example: printing slowest tests**\n\nThe post-run command can be combined with other `gotestsum` commands and tools to provide\na more detailed summary. This example uses `gotestsum tool slowest` to print the\nslowest 10 tests after the summary.\n\n```\ngotestsum \\\n  --jsonfile tmp.json.log \\\n  --post-run-command \"bash -c '\n    echo; echo Slowest tests;\n    gotestsum tool slowest --num 10 --jsonfile tmp.json.log'\"\n```\n\n### Re-runn"
+        }
+      ],
+      "config_files": [],
+      "stack_tags": [
+        "GitHub Actions",
+        "Go"
+      ],
+      "workspace_units": [
+        {
+          "path": ".",
+          "name": "gotest.tools/gotestsum",
+          "kind": "workspace",
+          "manifest_path": "go.mod",
+          "build_system": "go.mod",
+          "file_count": 164,
+          "languages": [
+            {
+              "language": "Go",
+              "files": 67,
+              "bytes": 225543
+            },
+            {
+              "language": "YAML",
+              "files": 5,
+              "bytes": 6088
+            },
+            {
+              "language": "Markdown",
+              "files": 2,
+              "bytes": 20058
+            },
+            {
+              "language": "HTML",
+              "files": 1,
+              "bytes": 91
+            }
+          ],
+          "scripts": [],
+          "entrypoints": [
+            "README.md"
+          ],
+          "test_files": [
+            "cmd/flags_test.go",
+            "cmd/handler_test.go",
+            "cmd/main_e2e_test.go",
+            "cmd/main_test.go",
+            "cmd/rerunfails_test.go",
+            "cmd/testdata/e2e/flaky/flaky_test.go",
+            "cmd/testdata/e2e/ignore_warnings/ignore_warnings_test.go",
+            "cmd/tool/matrix/matrix_test.go"
+          ],
+          "tags": [
+            "Go",
+            "Markdown",
+            "YAML",
+            "tests"
+          ]
+        }
+      ],
+      "qa_readiness": {
+        "score": 0,
+        "status": "missing",
+        "summary": "Repo does not expose enough local browser QA structure for a reliable Synthetic QA workflow yet.",
+        "signals": [
+          {
+            "id": "browser_runner",
+            "label": "Browser runner",
+            "status": "missing",
+            "detail": "No Playwright, Cypress, or browser runner config was found.",
+            "sources": []
+          },
+          {
+            "id": "user_flow_specs",
+            "label": "User-flow specs",
+            "status": "missing",
+            "detail": "No e2e/playwright/cypress spec files were found.",
+            "sources": []
+          },
+          {
+            "id": "local_app_command",
+            "label": "Local app command",
+            "status": "missing",
+            "detail": "No obvious package script for starting the app locally was found.",
+            "sources": []
+          },
+          {
+            "id": "qa_script",
+            "label": "QA script",
+            "status": "missing",
+            "detail": "No explicit QA/e2e/browser test script was found.",
+            "sources": []
+          },
+          {
+            "id": "artifact_trail",
+            "label": "Artifact trail",
+            "status": "missing",
+            "detail": "No browser QA artifacts or artifact-capable runner were found.",
+            "sources": []
+          },
+          {
+            "id": "targetable_routes",
+            "label": "Targetable surfaces",
+            "status": "missing",
+            "detail": "No obvious web entrypoint or route file was found.",
+            "sources": []
+          }
+        ],
+        "suggested_flows": []
+      },
+      "repo_graph": {
+        "schema_version": 2,
+        "nodes": [
+          {
+            "id": "file:project-docs-running-without-go-md",
+            "kind": "file",
+            "label": ".project/docs/running-without-go.md",
+            "path": ".project/docs/running-without-go.md",
+            "detail": "source marker candidate",
+            "sources": [
+              ".project/docs/running-without-go.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:readme-md",
+            "kind": "file",
+            "label": "README.md",
+            "path": "README.md",
+            "detail": "workspace entrypoint",
+            "sources": [
+              "README.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:contrib-notify-makefile",
+            "kind": "file",
+            "label": "contrib/notify/Makefile",
+            "path": "contrib/notify/Makefile",
+            "detail": "source marker candidate",
+            "sources": [
+              "contrib/notify/Makefile"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "package:go-mod",
+            "kind": "package",
+            "label": "gotest.tools/gotestsum",
+            "path": "go.mod",
+            "detail": "go.mod manifest",
+            "sources": [
+              "go.mod"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:cmd-flags-test-go",
+            "kind": "test",
+            "label": "cmd/flags_test.go",
+            "path": "cmd/flags_test.go",
+            "detail": "workspace test/spec file",
+            "sources": [
+              "cmd/flags_test.go"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:cmd-handler-test-go",
+            "kind": "test",
+            "label": "cmd/handler_test.go",
+            "path": "cmd/handler_test.go",
+            "detail": "workspace test/spec file",
+            "sources": [
+              "cmd/handler_test.go"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:cmd-main-e2e-test-go",
+            "kind": "test",
+            "label": "cmd/main_e2e_test.go",
+            "path": "cmd/main_e2e_test.go",
+            "detail": "workspace test/spec file",
+            "sources": [
+              "cmd/main_e2e_test.go"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:cmd-main-test-go",
+            "kind": "test",
+            "label": "cmd/main_test.go",
+            "path": "cmd/main_test.go",
+            "detail": "workspace test/spec file",
+            "sources": [
+              "cmd/main_test.go"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:cmd-rerunfails-test-go",
+            "kind": "test",
+            "label": "cmd/rerunfails_test.go",
+            "path": "cmd/rerunfails_test.go",
+            "detail": "workspace test/spec file",
+            "sources": [
+              "cmd/rerunfails_test.go"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:cmd-testdata-e2e-flaky-flaky-test-go",
+            "kind": "test",
+            "label": "cmd/testdata/e2e/flaky/flaky_test.go",
+            "path": "cmd/testdata/e2e/flaky/flaky_test.go",
+            "detail": "workspace test/spec file",
+            "sources": [
+              "cmd/testdata/e2e/flaky/flaky_test.go"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "workspace:",
+            "kind": "workspace_unit",
+            "label": "gotest.tools/gotestsum",
+            "path": null,
+            "detail": "workspace | 164 files | 67 Go, 5 YAML, 2 Markdown",
+            "sources": [
+              "README.md",
+              "cmd/flags_test.go",
+              "cmd/handler_test.go",
+              "go.mod"
+            ],
+            "source_location": null,
+            "community": null
+          }
+        ],
+        "edges": [
+          {
+            "from": "workspace:",
+            "to": "package:go-mod",
+            "kind": "defines",
+            "evidence": "workspace unit owns this manifest",
+            "sources": [
+              "go.mod"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "file:readme-md",
+            "kind": "entrypoint",
+            "evidence": "entrypoint belongs to this workspace unit",
+            "sources": [
+              "README.md"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "test:cmd-flags-test-go",
+            "kind": "tests",
+            "evidence": "test file belongs to this workspace unit",
+            "sources": [
+              "cmd/flags_test.go"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "test:cmd-handler-test-go",
+            "kind": "tests",
+            "evidence": "test file belongs to this workspace unit",
+            "sources": [
+              "cmd/handler_test.go"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "test:cmd-main-e2e-test-go",
+            "kind": "tests",
+            "evidence": "test file belongs to this workspace unit",
+            "sources": [
+              "cmd/main_e2e_test.go"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "test:cmd-main-test-go",
+            "kind": "tests",
+            "evidence": "test file belongs to this workspace unit",
+            "sources": [
+              "cmd/main_test.go"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "test:cmd-rerunfails-test-go",
+            "kind": "tests",
+            "evidence": "test file belongs to this workspace unit",
+            "sources": [
+              "cmd/rerunfails_test.go"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "test:cmd-testdata-e2e-flaky-flaky-test-go",
+            "kind": "tests",
+            "evidence": "test file belongs to this workspace unit",
+            "sources": [
+              "cmd/testdata/e2e/flaky/flaky_test.go"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          }
+        ],
+        "truncated": false
+      },
+      "history_brief": {
+        "schema_version": 2,
+        "summary": "Local history brief captured 12 recent commits, 0 decision markers, 0 test hints, and 0 co-change clusters for Repo Unpacked. Treat commit subjects as leads and rely on cited files for durable constraints.",
+        "recent_commits": [
+          {
+            "sha": "3cf14356a16c",
+            "date": "2026-04-14",
+            "subject": "Merge pull request #563 from alexandear-org/refactor/remove-unused-go-version",
+            "files": []
+          },
+          {
+            "sha": "c4163c359334",
+            "date": "2026-04-10",
+            "subject": "Remove unused Go version checks and related test data",
+            "files": []
+          },
+          {
+            "sha": "06f60b324991",
+            "date": "2025-09-16",
+            "subject": "Merge pull request #528 from alebcay/configurable-version",
+            "files": []
+          },
+          {
+            "sha": "47842dbc0c69",
+            "date": "2025-09-11",
+            "subject": "Allow version to be configured at build time",
+            "files": []
+          },
+          {
+            "sha": "c4a0df2e75a2",
+            "date": "2025-09-10",
+            "subject": "Merge pull request #526 from gotestyourself/dependabot/go_modules/golang.org/x/sync-0.17.0",
+            "files": []
+          },
+          {
+            "sha": "53b29fa388ef",
+            "date": "2025-09-10",
+            "subject": "Merge pull request #525 from gotestyourself/dependabot/go_modules/golang.org/x/term-0.35.0",
+            "files": []
+          },
+          {
+            "sha": "04f4268aabb7",
+            "date": "2025-09-10",
+            "subject": "Merge pull request #527 from dnephin/update-golangci-lint-v2",
+            "files": []
+          },
+          {
+            "sha": "578cbcc56610",
+            "date": "2025-09-10",
+            "subject": "Merge pull request #522 from noBlubb/feat/add-go-test-attribute-support",
+            "files": []
+          },
+          {
+            "sha": "54d88a5a4324",
+            "date": "2025-09-11",
+            "subject": "Bump golang.org/x/sync from 0.16.0 to 0.17.0",
+            "files": []
+          },
+          {
+            "sha": "186bf04e55ea",
+            "date": "2025-09-11",
+            "subject": "Bump golang.org/x/term from 0.34.0 to 0.35.0",
+            "files": []
+          },
+          {
+            "sha": "77d5f394e741",
+            "date": "2025-09-10",
+            "subject": "Update golangci-lint",
+            "files": [
+              ".circleci/config.yml",
+              ".project/golangci-lint.yml"
+            ]
+          },
+          {
+            "sha": "1f1f8c3bf1e9",
+            "date": "2025-09-10",
+            "subject": "Merge pull request #524 from gotestyourself/dependabot/go_modules/golang.org/x/sys-0.36.0",
+            "files": []
+          }
+        ],
+        "decisions": [],
+        "test_hints": [],
+        "temporal_couplings": [],
+        "graph": {
+          "schema_version": 2,
+          "nodes": [
+            {
+              "id": "commit:04f4268aabb7",
+              "kind": "commit",
+              "label": "Merge pull request #527 from dnephin/update-golangci-lint-v2",
+              "path": null,
+              "detail": "2025-09-10",
+              "citations": [
+                "git:04f4268aabb7"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:06f60b324991",
+              "kind": "commit",
+              "label": "Merge pull request #528 from alebcay/configurable-version",
+              "path": null,
+              "detail": "2025-09-16",
+              "citations": [
+                "git:06f60b324991"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:186bf04e55ea",
+              "kind": "commit",
+              "label": "Bump golang.org/x/term from 0.34.0 to 0.35.0",
+              "path": null,
+              "detail": "2025-09-11",
+              "citations": [
+                "git:186bf04e55ea"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:1f1f8c3bf1e9",
+              "kind": "commit",
+              "label": "Merge pull request #524 from gotestyourself/dependabot/go_modules/golang.org/x/sys-0.36.0",
+              "path": null,
+              "detail": "2025-09-10",
+              "citations": [
+                "git:1f1f8c3bf1e9"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:3cf14356a16c",
+              "kind": "commit",
+              "label": "Merge pull request #563 from alexandear-org/refactor/remove-unused-go-version",
+              "path": null,
+              "detail": "2026-04-14",
+              "citations": [
+                "git:3cf14356a16c"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:47842dbc0c69",
+              "kind": "commit",
+              "label": "Allow version to be configured at build time",
+              "path": null,
+              "detail": "2025-09-11",
+              "citations": [
+                "git:47842dbc0c69"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:53b29fa388ef",
+              "kind": "commit",
+              "label": "Merge pull request #525 from gotestyourself/dependabot/go_modules/golang.org/x/term-0.35.0",
+              "path": null,
+              "detail": "2025-09-10",
+              "citations": [
+                "git:53b29fa388ef"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:54d88a5a4324",
+              "kind": "commit",
+              "label": "Bump golang.org/x/sync from 0.16.0 to 0.17.0",
+              "path": null,
+              "detail": "2025-09-11",
+              "citations": [
+                "git:54d88a5a4324"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:578cbcc56610",
+              "kind": "commit",
+              "label": "Merge pull request #522 from noBlubb/feat/add-go-test-attribute-support",
+              "path": null,
+              "detail": "2025-09-10",
+              "citations": [
+                "git:578cbcc56610"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:77d5f394e741",
+              "kind": "commit",
+              "label": "Update golangci-lint",
+              "path": null,
+              "detail": "2025-09-10",
+              "citations": [
+                "git:77d5f394e741"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:c4163c359334",
+              "kind": "commit",
+              "label": "Remove unused Go version checks and related test data",
+              "path": null,
+              "detail": "2026-04-10",
+              "citations": [
+                "git:c4163c359334"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:c4a0df2e75a2",
+              "kind": "commit",
+              "label": "Merge pull request #526 from gotestyourself/dependabot/go_modules/golang.org/x/sync-0.17.0",
+              "path": null,
+              "detail": "2025-09-10",
+              "citations": [
+                "git:c4a0df2e75a2"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:-circleci-config-yml",
+              "kind": "file",
+              "label": ".circleci/config.yml",
+              "path": ".circleci/config.yml",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                ".circleci/config.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:-project-golangci-lint-yml",
+              "kind": "file",
+              "label": ".project/golangci-lint.yml",
+              "path": ".project/golangci-lint.yml",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                ".project/golangci-lint.yml"
+              ],
+              "trust": "git_observed"
+            }
+          ],
+          "edges": [
+            {
+              "from": "commit:77d5f394e741",
+              "to": "file:-circleci-config-yml",
+              "kind": "changed",
+              "evidence": "77d5f394e741 changed this file",
+              "citations": [
+                "git:77d5f394e741",
+                ".circleci/config.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:77d5f394e741",
+              "to": "file:-project-golangci-lint-yml",
+              "kind": "changed",
+              "evidence": "77d5f394e741 changed this file",
+              "citations": [
+                "git:77d5f394e741",
+                ".project/golangci-lint.yml"
+              ],
+              "trust": "git_observed"
+            }
+          ],
+          "truncated": false
+        },
+        "sources": [
+          "go.mod"
+        ],
+        "truncated": false
+      },
+      "repo_health": {
+        "schema_version": 1,
+        "summary": "Deterministic scan scored 67 source files across simple size, churn, structural, test-adjacency, and performance-risk signals. 0 hotspots surfaced; average score is 9.8/10. Treat these as review leads, not proof of a bug.",
+        "average_score": 9.8,
+        "hotspot_count": 0,
+        "files_analyzed": 67,
+        "files_with_test_signal": 0,
+        "top_files": [
+          {
+            "path": "testjson/execution.go",
+            "score": 6.9,
+            "bucket": "watch",
+            "lines": 917,
+            "bytes": 24698,
+            "churn": 184,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "high",
+                "detail": "917 lines in one source file; inspect whether the module hides multiple responsibilities.",
+                "sources": [
+                  "testjson/execution.go"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 184 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "testjson/execution.go"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "testjson/execution.go"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow."
+            ]
+          },
+          {
+            "path": "testjson/format.go",
+            "score": 7.9,
+            "bucket": "watch",
+            "lines": 515,
+            "bytes": 12915,
+            "churn": 161,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "515 lines in one source file; changes here may be harder to review.",
+                "sources": [
+                  "testjson/format.go"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "Moderate churn",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "Recent git history shows 161 changed lines in this file; it is a change hotspot.",
+                "sources": [
+                  "testjson/format.go"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "testjson/format.go"
+                ]
+              }
+            ],
+            "refactoring_targets": []
+          },
+          {
+            "path": "cmd/main.go",
+            "score": 7.9,
+            "bucket": "watch",
+            "lines": 557,
+            "bytes": 17234,
+            "churn": 87,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "557 lines in one source file; changes here may be harder to review.",
+                "sources": [
+                  "cmd/main.go"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "Moderate churn",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "Recent git history shows 87 changed lines in this file; it is a change hotspot.",
+                "sources": [
+                  "cmd/main.go"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "cmd/main.go"
+                ]
+              }
+            ],
+            "refactoring_targets": []
+          },
+          {
+            "path": "cmd/main_test.go",
+            "score": 7.9,
+            "bucket": "watch",
+            "lines": 552,
+            "bytes": 15939,
+            "churn": 36,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "552 lines in one source file; changes here may be harder to review.",
+                "sources": [
+                  "cmd/main_test.go"
+                ]
+              },
+              {
+                "id": "long_block",
+                "label": "Long function/block",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "A brace-delimited block spans roughly 226 lines; consider extracting a helper when touching it.",
+                "sources": [
+                  "cmd/main_test.go"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "cmd/main_test.go"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow."
+            ]
+          },
+          {
+            "path": "internal/junitxml/report_test.go",
+            "score": 8.6,
+            "bucket": "healthy",
+            "lines": 155,
+            "bytes": 3886,
+            "churn": 113,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "churn_hotspot",
+                "label": "Moderate churn",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "Recent git history shows 113 changed lines in this file; it is a change hotspot.",
+                "sources": [
+                  "internal/junitxml/report_test.go"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "internal/junitxml/report_test.go"
+                ]
+              }
+            ],
+            "refactoring_targets": []
+          },
+          {
+            "path": "cmd/rerunfails_test.go",
+            "score": 8.6,
+            "bucket": "healthy",
+            "lines": 274,
+            "bytes": 6846,
+            "churn": 82,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "churn_hotspot",
+                "label": "Moderate churn",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "Recent git history shows 82 changed lines in this file; it is a change hotspot.",
+                "sources": [
+                  "cmd/rerunfails_test.go"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "cmd/rerunfails_test.go"
+                ]
+              }
+            ],
+            "refactoring_targets": []
+          },
+          {
+            "path": "internal/junitxml/report.go",
+            "score": 8.6,
+            "bucket": "healthy",
+            "lines": 273,
+            "bytes": 7575,
+            "churn": 81,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "churn_hotspot",
+                "label": "Moderate churn",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "Recent git history shows 81 changed lines in this file; it is a change hotspot.",
+                "sources": [
+                  "internal/junitxml/report.go"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "internal/junitxml/report.go"
+                ]
+              }
+            ],
+            "refactoring_targets": []
+          },
+          {
+            "path": "cmd/handler_test.go",
+            "score": 9.3,
+            "bucket": "healthy",
+            "lines": 224,
+            "bytes": 6348,
+            "churn": 56,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "cmd/handler_test.go"
+                ]
+              }
+            ],
+            "refactoring_targets": []
+          },
+          {
+            "path": "cmd/tool/slowest/slowest.go",
+            "score": 9.3,
+            "bucket": "healthy",
+            "lines": 145,
+            "bytes": 4222,
+            "churn": 3,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "Maximum indentation depth is about 6; inspect branch-heavy paths before risky edits.",
+                "sources": [
+                  "cmd/tool/slowest/slowest.go"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "internal/dotwriter/writer_posix.go",
+            "score": 10,
+            "bucket": "healthy",
+            "lines": 65,
+            "bytes": 1391,
+            "churn": 49,
+            "has_test_signal": false,
+            "findings": [],
+            "refactoring_targets": []
+          },
+          {
+            "path": "cmd/main_e2e_test.go",
+            "score": 10,
+            "bucket": "healthy",
+            "lines": 256,
+            "bytes": 6128,
+            "churn": 48,
+            "has_test_signal": false,
+            "findings": [],
+            "refactoring_targets": []
+          },
+          {
+            "path": "internal/filewatcher/watch.go",
+            "score": 10,
+            "bucket": "healthy",
+            "lines": 277,
+            "bytes": 6299,
+            "churn": 35,
+            "has_test_signal": false,
+            "findings": [],
+            "refactoring_targets": []
+          }
+        ],
+        "truncated": false
+      },
+      "all_files": [],
+      "ignored_dirs": [
+        ".git"
+      ],
+      "coverage": {
+        "schema_version": 1,
+        "strategy": "full_walk",
+        "sampled_files": 164,
+        "total_files": null,
+        "sample_percent": null,
+        "languages": [
+          {
+            "language": "Go",
+            "files": 67,
+            "bytes": 225543
+          },
+          {
+            "language": "YAML",
+            "files": 5,
+            "bytes": 6088
+          },
+          {
+            "language": "Markdown",
+            "files": 2,
+            "bytes": 20058
+          },
+          {
+            "language": "HTML",
+            "files": 1,
+            "bytes": 91
+          }
+        ],
+        "top_level_dirs": [
+          {
+            "path": "testjson",
+            "file_count": 72,
+            "bytes": 482220
+          },
+          {
+            "path": "cmd",
+            "file_count": 43,
+            "bytes": 171879
+          },
+          {
+            "path": "internal",
+            "file_count": 26,
+            "bytes": 78594
+          },
+          {
+            "path": "contrib",
+            "file_count": 8,
+            "bytes": 4912
+          },
+          {
+            "path": ".project",
+            "file_count": 4,
+            "bytes": 3970
+          },
+          {
+            "path": ".github",
+            "file_count": 2,
+            "bytes": 912
+          },
+          {
+            "path": ".circleci",
+            "file_count": 1,
+            "bytes": 2898
+          }
+        ],
+        "notes": [
+          "Full local walk covered the repo within the scan cap."
+        ]
+      },
+      "all_files_capped": false,
+      "dir_tree_preview": {
+        "name": "",
+        "path": "",
+        "is_dir": true,
+        "file_count": 164,
+        "children": [
+          {
+            "name": ".circleci",
+            "path": ".circleci",
+            "is_dir": true,
+            "file_count": 1,
+            "children": [
+              {
+                "name": "config.yml",
+                "path": ".circleci/config.yml",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": ".github",
+            "path": ".github",
+            "is_dir": true,
+            "file_count": 2,
+            "children": [
+              {
+                "name": "workflows",
+                "path": ".github/workflows",
+                "is_dir": true,
+                "file_count": 1,
+                "children": [
+                  {
+                    "name": "ci.yaml",
+                    "path": ".github/workflows/ci.yaml",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "dependabot.yml",
+                "path": ".github/dependabot.yml",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": ".project",
+            "path": ".project",
+            "is_dir": true,
+            "file_count": 4,
+            "children": [
+              {
+                "name": "docs",
+                "path": ".project/docs",
+                "is_dir": true,
+                "file_count": 1,
+                "children": [
+                  {
+                    "name": "running-without-go.md",
+                    "path": ".project/docs/running-without-go.md",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "Dockerfile",
+                "path": ".project/Dockerfile",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "golangci-lint.yml",
+                "path": ".project/golangci-lint.yml",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "goreleaser.yml",
+                "path": ".project/goreleaser.yml",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "cmd",
+            "path": "cmd",
+            "is_dir": true,
+            "file_count": 43,
+            "children": [
+              {
+                "name": "internal",
+                "path": "cmd/internal",
+                "is_dir": true,
+                "file_count": 1,
+                "children": [
+                  {
+                    "name": "signalhandlerdriver",
+                    "path": "cmd/internal/signalhandlerdriver",
+                    "is_dir": true,
+                    "file_count": 1,
+                    "children": [
+                      {
+                        "name": "main.go",
+                        "path": "cmd/internal/signalhandlerdriver/main.go",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "name": "testdata",
+                "path": "cmd/testdata",
+                "is_dir": true,
+                "file_count": 25,
+                "children": [
+                  {
+                    "name": "e2e",
+                    "path": "cmd/testdata/e2e",
+                    "is_dir": true,
+                    "file_count": 8,
+                    "children": [
+                      {
+                        "name": "expected",
+                        "path": "cmd/testdata/e2e/expected",
+                        "is_dir": true,
+                        "file_count": 5,
+                        "children": [
+                          {
+                            "name": "TestE2E_RerunFails",
+                            "path": "cmd/testdata/e2e/expected/TestE2E_RerunFails",
+                            "is_dir": true,
+                            "file_count": 3,
+                            "children": [
+                              {
+                                "name": "first_run_has_errors,_abort_rerun",
+                                "path": "cmd/testdata/e2e/expected/TestE2E_RerunFails/first_run_has_errors,_abort_rerun",
+                                "is_dir": false,
+                                "file_count": 1,
+                                "children": []
+                              },
+                              {
+                                "name": "reruns_continues_to_fail",
+                                "path": "cmd/testdata/e2e/expected/TestE2E_RerunFails/reruns_continues_to_fail",
+                                "is_dir": false,
+                                "file_count": 1,
+                                "children": []
+                              },
+                              {
+                                "name": "reruns_until_success",
+                                "path": "cmd/testdata/e2e/expected/TestE2E_RerunFails/reruns_until_success",
+                                "is_dir": false,
+                                "file_count": 1,
+                                "children": []
+                              }
+                            ]
+                          },
+                          {
+                            "name": "TestE2E_IgnoresWarnings",
+                            "path": "cmd/testdata/e2e/expected/TestE2E_IgnoresWarnings",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          },
+                          {
+                            "name": "TestE2E_MaxFails_EndTestRun",
+                            "path": "cmd/testdata/e2e/expected/TestE2E_MaxFails_EndTestRun",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          }
+                        ]
+                      },
+                      {
+                        "name": "flaky",
+                        "path": "cmd/testdata/e2e/flaky",
+                        "is_dir": true,
+                        "file_count": 1,
+                        "children": [
+                          {
+                            "name": "flaky_test.go",
+                            "path": "cmd/testdata/e2e/flaky/flaky_test.go",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          }
+                        ]
+                      },
+                      {
+                        "name": "ignore_warnings",
+                        "path": "cmd/testdata/e2e/ignore_warnings",
+                        "is_dir": true,
+                        "file_count": 2,
+                        "children": [
+                          {
+                            "name": "ignore_warnings.go",
+                            "path": "cmd/testdata/e2e/ignore_warnings/ignore_warnings.go",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          },
+                          {
+                            "name": "ignore_warnings_test.go",
+                            "path": "cmd/testdata/e2e/ignore_warnings/ignore_warnings_test.go",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "name": "expected",
+                    "path": "cmd/testdata/expected",
+                    "is_dir": true,
+                    "file_count": 4,
+                    "children": [
+                      {
+                        "name": "build-fail-expected",
+                        "path": "cmd/testdata/expected/build-fail-expected",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "panic-race-1-summary",
+                        "path": "cmd/testdata/expected/panic-race-1-summary",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "panic-race-2-summary",
+                        "path": "cmd/testdata/expected/panic-race-2-summary",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "setup-fail-expected",
+                        "path": "cmd/testdata/expected/setup-fail-expected",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": "input",
+                    "path": "cmd/testdata/input",
+                    "is_dir": true,
+                    "file_count": 4,
+                    "children": [
+                      {
+                        "name": "go-test-build-failed.out",
+                        "path": "cmd/testdata/input/go-test-build-failed.out",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "go-test-json-panic-race-1.out",
+                        "path": "cmd/testdata/input/go-test-json-panic-race-1.out",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "go-test-json-panic-race-2.out",
+                        "path": "cmd/testdata/input/go-test-json-panic-race-2.out",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "go-test-setup-failed.out",
+                        "path": "cmd/testdata/input/go-test-setup-failed.out",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": "postrunhook",
+                    "path": "cmd/testdata/postrunhook",
+                    "is_dir": true,
+                    "file_count": 1,
+                    "children": [
+                      {
+                        "name": "main.go",
+                        "path": "cmd/testdata/postrunhook/main.go",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": "TestWriteRerunFailsReport-expected",
+                    "path": "cmd/testdata/TestWriteRerunFailsReport-expected",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "TestWriteRerunFailsReport_HandlesMissingActionRunEvents-expected",
+                    "path": "cmd/testdata/TestWriteRerunFailsReport_HandlesMissingActionRunEvents-expected",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "event-handler-missing-test-fail-expected",
+                    "path": "cmd/testdata/event-handler-missing-test-fail-expected",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "expected-jsonfile-timing-events",
+                    "path": "cmd/testdata/expected-jsonfile-timing-events",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "go-test-json-flaky-rerun.out",
+                    "path": "cmd/testdata/go-test-json-flaky-rerun.out",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "go-test-missing-run-events.out",
+                    "path": "cmd/testdata/go-test-missing-run-events.out",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "gotestsum-help-text",
+                    "path": "cmd/testdata/gotestsum-help-text",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "post-run-hook-expected",
+                    "path": "cmd/testdata/post-run-hook-expected",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "tool",
+                "path": "cmd/tool",
+                "is_dir": true,
+                "file_count": 7,
+                "children": [
+                  {
+                    "name": "matrix",
+                    "path": "cmd/tool/matrix",
+                    "is_dir": true,
+                    "file_count": 2,
+                    "children": [
+                      {
+                        "name": "matrix.go",
+                        "path": "cmd/tool/matrix/matrix.go",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "matrix_test.go",
+                        "path": "cmd/tool/matrix/matrix_test.go",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": "slowest",
+                    "path": "cmd/tool/slowest",
+                    "is_dir": true,
+                    "file_count": 5,
+                    "children": [
+                      {
+                        "name": "testdata",
+                        "path": "cmd/tool/slowest/testdata",
+                        "is_dir": true,
+                        "file_count": 1,
+                        "children": [
+                          {
+                            "name": "cmd-flags-help-text",
+                            "path": "cmd/tool/slowest/testdata/cmd-flags-help-text",
+                            "is_dir": false,
+                            "file_count": 1,
+                            "children": []
+                          }
+                        ]
+                      },
+                      {
+                        "name": "ast.go",
+                        "path": "cmd/tool/slowest/ast.go",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "ast_test.go",
+                        "path": "cmd/tool/slowest/ast_test.go",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "slowest.go",
+                        "path": "cmd/tool/slowest/slowest.go",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "slowest_test.go",
+                        "path": "cmd/tool/slowest/slowest_test.go",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "name": "flags.go",
+                "path": "cmd/flags.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "flags_test.go",
+                "path": "cmd/flags_test.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "handler.go",
+                "path": "cmd/handler.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "handler_test.go",
+                "path": "cmd/handler_test.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "main.go",
+                "path": "cmd/main.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "main_e2e_test.go",
+                "path": "cmd/main_e2e_test.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "main_test.go",
+                "path": "cmd/main_test.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "rerunfails.go",
+                "path": "cmd/rerunfails.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "rerunfails_test.go",
+                "path": "cmd/rerunfails_test.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "watch.go",
+                "path": "cmd/watch.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "contrib",
+            "path": "contrib",
+            "is_dir": true,
+            "file_count": 8,
+            "children": [
+              {
+                "name": "notify",
+                "path": "contrib/notify",
+                "is_dir": true,
+                "file_count": 8,
+                "children": [
+                  {
+                    "name": "icons",
+                    "path": "contrib/notify/icons",
+                    "is_dir": true,
+                    "file_count": 3,
+                    "children": [
+                      {
+                        "name": "README.html",
+                        "path": "contrib/notify/icons/README.html",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "test-fail.svg",
+                        "path": "contrib/notify/icons/test-fail.svg",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "test-pass.svg",
+                        "path": "contrib/notify/icons/test-pass.svg",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": ".gitignore",
+                    "path": "contrib/notify/.gitignore",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "Makefile",
+                    "path": "contrib/notify/Makefile",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "notify_darwin.go",
+                    "path": "contrib/notify/notify_darwin.go",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "notify_linux.go",
+                    "path": "contrib/notify/notify_linux.go",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "notify_windows.go",
+                    "path": "contrib/notify/notify_windows.go",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "internal",
+            "path": "internal",
+            "is_dir": true,
+            "file_count": 26,
+            "children": [
+              {
+                "name": "aggregate",
+                "path": "internal/aggregate",
+                "is_dir": true,
+                "file_count": 2,
+                "children": [
+                  {
+                    "name": "slowest.go",
+                    "path": "internal/aggregate/slowest.go",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "slowest_test.go",
+                    "path": "internal/aggregate/slowest_test.go",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "dotwriter",
+                "path": "internal/dotwriter",
+                "is_dir": true,
+                "file_count": 5,
+                "children": [
+                  {
+                    "name": "LICENSE",
+                    "path": "internal/dotwriter/LICENSE",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "README",
+                    "path": "internal/dotwriter/README",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "writer.go",
+                    "path": "internal/dotwriter/writer.go",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "writer_posix.go",
+                    "path": "internal/dotwriter/writer_posix.go",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "writer_windows.go",
+                    "path": "internal/dotwriter/writer_windows.go",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "filewatcher",
+                "path": "internal/filewatcher",
+                "is_dir": true,
+                "file_count": 11,
+                "children": [
+                  {
+                    "name": "term_aix.go",
+                    "path": "internal/filewatcher/term_aix.go",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "term_bsd.go",
+                    "path": "internal/filewatcher/term_bsd.go",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "term_illumos.go",
+                    "path": "internal/filewatcher/term_illumos.go",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "term_linux.go",
+                    "path": "internal/filewatcher/term_linux.go",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "term_unix.go",
+                    "path": "internal/filewatcher/term_unix.go",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "term_windows.go",
+                    "path": "internal/filewatcher/term_windows.go",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "term_zos.go",
+                    "path": "internal/filewatcher/term_zos.go",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "watch.go",
+                    "path": "internal/filewatcher/watch.go",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "watch_test.go",
+                    "path": "internal/filewatcher/watch_test.go",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "watch_unix_test.go",
+                    "path": "internal/filewatcher/watch_unix_test.go",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "watch_unsupported.go",
+                    "path": "internal/filewatcher/watch_unsupported.go",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "junitxml",
+                "path": "internal/junitxml",
+                "is_dir": true,
+                "file_count": 6,
+                "children": [
+                  {
+                    "name": "testdata",
+                    "path": "internal/junitxml/testdata",
+                    "is_dir": true,
+                    "file_count": 4,
+                    "children": [
+                      {
+                        "name": "junitxml-report-hide-skipped-tests.golden",
+                        "path": "internal/junitxml/testdata/junitxml-report-hide-skipped-tests.golden",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "junitxml-report-skip-empty.golden",
+                        "path": "internal/junitxml/testdata/junitxml-report-skip-empty.golden",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "junitxml-report-tc-with-attributes.golden",
+                        "path": "internal/junitxml/testdata/junitxml-report-tc-with-attributes.golden",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "junitxml-report.golden",
+                        "path": "internal/junitxml/testdata/junitxml-report.golden",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": "report.go",
+                    "path": "internal/junitxml/report.go",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "report_test.go",
+                    "path": "internal/junitxml/report_test.go",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "log",
+                "path": "internal/log",
+                "is_dir": true,
+                "file_count": 1,
+                "children": [
+                  {
+                    "name": "log.go",
+                    "path": "internal/log/log.go",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "text",
+                "path": "internal/text",
+                "is_dir": true,
+                "file_count": 1,
+                "children": [
+                  {
+                    "name": "testing.go",
+                    "path": "internal/text/testing.go",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "testjson",
+            "path": "testjson",
+            "is_dir": true,
+            "file_count": 72,
+            "children": [
+              {
+                "name": "internal",
+                "path": "testjson/internal",
+                "is_dir": true,
+                "file_count": 11,
+                "children": [
+                  {
+                    "name": "badmain",
+                    "path": "testjson/internal/badmain",
+                    "is_dir": true,
+                    "file_count": 1,
+                    "children": [
+                      {
+                        "name": "main_test.go",
+                        "path": "testjson/internal/badmain/main_test.go",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": "broken",
+                    "path": "testjson/internal/broken",
+                    "is_dir": true,
+                    "file_count": 1,
+                    "children": [
+                      {
+                        "name": "broken.go",
+                        "path": "testjson/internal/broken/broken.go",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": "empty",
+                    "path": "testjson/internal/empty",
+                    "is_dir": true,
+                    "file_count": 2,
+                    "children": [
+                      {
+                        "name": "empty.go",
+                        "path": "testjson/internal/empty/empty.go",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "empty_test.go",
+                        "path": "testjson/internal/empty/empty_test.go",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": "frenzy",
+                    "path": "testjson/internal/frenzy",
+                    "is_dir": true,
+                    "file_count": 1,
+                    "children": [
+                      {
+                        "name": "frenzy_test.go",
+                        "path": "testjson/internal/frenzy/frenzy_test.go",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": "good",
+                    "path": "testjson/internal/good",
+                    "is_dir": true,
+                    "file_count": 2,
+                    "children": [
+                      {
+                        "name": "good.go",
+                        "path": "testjson/internal/good/good.go",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "good_test.go",
+                        "path": "testjson/internal/good/good_test.go",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": "parallelfails",
+                    "path": "testjson/internal/parallelfails",
+                    "is_dir": true,
+                    "file_count": 1,
+                    "children": [
+                      {
+                        "name": "fails_test.go",
+                        "path": "testjson/internal/parallelfails/fails_test.go",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": "withattributes",
+                    "path": "testjson/internal/withattributes",
+                    "is_dir": true,
+                    "file_count": 1,
+                    "children": [
+                      {
+                        "name": "attrs_test.go",
+                        "path": "testjson/internal/withattributes/attrs_test.go",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": "withfails",
+                    "path": "testjson/internal/withfails",
+                    "is_dir": true,
+                    "file_count": 2,
+                    "children": [
+                      {
+                        "name": "fails_test.go",
+                        "path": "testjson/internal/withfails/fails_test.go",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "timeout_test.go",
+                        "path": "testjson/internal/withfails/timeout_test.go",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "name": "testdata",
+                "path": "testjson/testdata",
+                "is_dir": true,
+                "file_count": 50,
+                "children": [
+                  {
+                    "name": "format",
+                    "path": "testjson/testdata/format",
+                    "is_dir": true,
+                    "file_count": 26,
+                    "children": [
+                      {
+                        "name": "dots-v1.out",
+                        "path": "testjson/testdata/format/dots-v1.out",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "dots-v2.out",
+                        "path": "testjson/testdata/format/dots-v2.out",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "github-actions.out",
+                        "path": "testjson/testdata/format/github-actions.out",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "pkgname-codicons.out",
+                        "path": "testjson/testdata/format/pkgname-codicons.out",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "pkgname-coverage-go1.20.out",
+                        "path": "testjson/testdata/format/pkgname-coverage-go1.20.out",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "pkgname-coverage.out",
+                        "path": "testjson/testdata/format/pkgname-coverage.out",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "pkgname-emoticons.out",
+                        "path": "testjson/testdata/format/pkgname-emoticons.out",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "pkgname-hide-empty.out",
+                        "path": "testjson/testdata/format/pkgname-hide-empty.out",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "pkgname-hivis.out",
+                        "path": "testjson/testdata/format/pkgname-hivis.out",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "pkgname-octicons.out",
+                        "path": "testjson/testdata/format/pkgname-octicons.out",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "pkgname-shuffle.out",
+                        "path": "testjson/testdata/format/pkgname-shuffle.out",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "pkgname-text.out",
+                        "path": "testjson/testdata/format/pkgname-text.out",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "pkgname.out",
+                        "path": "testjson/testdata/format/pkgname.out",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "standard-quiet-coverage-go1.20.out",
+                        "path": "testjson/testdata/format/standard-quiet-coverage-go1.20.out",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "standard-quiet-coverage.out",
+                        "path": "testjson/testdata/format/standard-quiet-coverage.out",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "standard-quiet-shuffle.out",
+                        "path": "testjson/testdata/format/standard-quiet-shuffle.out",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "standard-quiet.out",
+                        "path": "testjson/testdata/format/standard-quiet.out",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "standard-verbose-coverage.out",
+                        "path": "testjson/testdata/format/standard-verbose-coverage.out",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "standard-verbose-shuffle.out",
+                        "path": "testjson/testdata/format/standard-verbose-shuffle.out",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "standard-verbose.out",
+                        "path": "testjson/testdata/format/standard-verbose.out",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "testdox-coverage.out",
+                        "path": "testjson/testdata/format/testdox-coverage.out",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "testdox-shuffle.out",
+                        "path": "testjson/testdata/format/testdox-shuffle.out",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "testdox.out",
+                        "path": "testjson/testdata/format/testdox.out",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "testname-coverage.out",
+                        "path": "testjson/testdata/format/testname-coverage.out",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "testname-shuffle.out",
+                        "path": "testjson/testdata/format/testname-shuffle.out",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "testname.out",
+                        "path": "testjson/testdata/format/testname.out",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": "input",
+                    "path": "testjson/testdata/input",
+                    "is_dir": true,
+                    "file_count": 13,
+                    "children": [
+                      {
+                        "name": "go-test-json-misattributed.out",
+                        "path": "testjson/testdata/input/go-test-json-misattributed.out",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "go-test-json-missing-skip-msg.out",
+                        "path": "testjson/testdata/input/go-test-json-missing-skip-msg.out",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "go-test-json-missing-test-fail.out",
+                        "path": "testjson/testdata/input/go-test-json-missing-test-fail.out",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "go-test-json-with-attributes.out",
+                        "path": "testjson/testdata/input/go-test-json-with-attributes.out",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "go-test-json-with-cover-go1.20.err",
+                        "path": "testjson/testdata/input/go-test-json-with-cover-go1.20.err",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "go-test-json-with-cover-go1.20.out",
+                        "path": "testjson/testdata/input/go-test-json-with-cover-go1.20.out",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "go-test-json-with-cover.err",
+                        "path": "testjson/testdata/input/go-test-json-with-cover.err",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "go-test-json-with-cover.out",
+                        "path": "testjson/testdata/input/go-test-json-with-cover.out",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "go-test-json-with-parallel-fails.out",
+                        "path": "testjson/testdata/input/go-test-json-with-parallel-fails.out",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "go-test-json-with-shuffle.err",
+                        "path": "testjson/testdata/input/go-test-json-with-shuffle.err",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "go-test-json-with-shuffle.out",
+                        "path": "testjson/testdata/input/go-test-json-with-shuffle.out",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "go-test-json.err",
+                        "path": "testjson/testdata/input/go-test-json.err",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "go-test-json.out",
+                        "path": "testjson/testdata/input/go-test-json.out",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": "summary",
+                    "path": "testjson/testdata/summary",
+                    "is_dir": true,
+                    "file_count": 8,
+                    "children": [
+                      {
+                        "name": "bug-missing-skip-message",
+                        "path": "testjson/testdata/summary/bug-missing-skip-message",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "bug-repeated-test-case-output",
+                        "path": "testjson/testdata/summary/bug-repeated-test-case-output",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "misattributed-output",
+                        "path": "testjson/testdata/summary/misattributed-output",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "missing-test-fail-event",
+                        "path": "testjson/testdata/summary/missing-test-fail-event",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "parallel-failures",
+                        "path": "testjson/testdata/summary/parallel-failures",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "root-test-has-subtest-failures",
+                        "path": "testjson/testdata/summary/root-test-has-subtest-failures",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "with-attributes",
+                        "path": "testjson/testdata/summary/with-attributes",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "with-run-id",
+                        "path": "testjson/testdata/summary/with-run-id",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": "go-test-json-missing-test-events.out",
+                    "path": "testjson/testdata/go-test-json-missing-test-events.out",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "go-test-json-with-nonjson-stdout.out",
+                    "path": "testjson/testdata/go-test-json-with-nonjson-stdout.out",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "go-test.err",
+                    "path": "testjson/testdata/go-test.err",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "doc.go",
+                "path": "testjson/doc.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "dotformat.go",
+                "path": "testjson/dotformat.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "dotformat_test.go",
+                "path": "testjson/dotformat_test.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "execution.go",
+                "path": "testjson/execution.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "execution_test.go",
+                "path": "testjson/execution_test.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "format.go",
+                "path": "testjson/format.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "format_test.go",
+                "path": "testjson/format_test.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "pkgpathprefix.go",
+                "path": "testjson/pkgpathprefix.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "pkgpathprefix_test.go",
+                "path": "testjson/pkgpathprefix_test.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "summary.go",
+                "path": "testjson/summary.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "summary_test.go",
+                "path": "testjson/summary_test.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": ".gitignore",
+            "path": ".gitignore",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "LICENSE",
+            "path": "LICENSE",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "NOTICE",
+            "path": "NOTICE",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "README.md",
+            "path": "README.md",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "do",
+            "path": "do",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "go.mod",
+            "path": "go.mod",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "go.sum",
+            "path": "go.sum",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "main.go",
+            "path": "main.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          }
+        ]
+      }
+    },
+    "profiles": [
+      {
+        "stage": "full_scan",
+        "total_ms": 164795,
+        "peak_rss_bytes": 28131328,
+        "steps": [
+          {
+            "id": "git_metadata",
+            "label": "Git metadata",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "file_walk",
+            "label": "Parallel file walk",
+            "ms": 9,
+            "pct": 0.0054613307442580175
+          },
+          {
+            "id": "languages",
+            "label": "Language breakdown",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "manifests",
+            "label": "Manifest parsing",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "docs",
+            "label": "Doc previews",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "aggregates",
+            "label": "Dirs, configs, stack tags",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "entrypoints",
+            "label": "Entrypoints, workspace units & QA readiness",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "source_previews",
+            "label": "Source preview cache",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "repo_graph",
+            "label": "Deterministic graph scan",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "history",
+            "label": "Git history & decision scan",
+            "ms": 4199,
+            "pct": 2.548014199459935
+          },
+          {
+            "id": "repo_health",
+            "label": "Deterministic health scoring",
+            "ms": 160586,
+            "pct": 97.44591765526866
+          },
+          {
+            "id": "dir_tree",
+            "label": "Directory tree preview",
+            "ms": 0,
+            "pct": 0
+          }
+        ]
+      },
+      {
+        "stage": "local_scan_persist",
+        "total_ms": 1,
+        "peak_rss_bytes": 28131328,
+        "steps": [
+          {
+            "id": "serialize",
+            "label": "JSON serialize (inventory → SQLite)",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "db_insert",
+            "label": "SQLite insert",
+            "ms": 1,
+            "pct": 100
+          },
+          {
+            "id": "touch_project",
+            "label": "Update repo project metadata",
+            "ms": 0,
+            "pct": 0
+          }
+        ]
+      }
+    ]
+  },
+  "report": {
+    "overview": "gotestsum is a Go test runner and reporting CLI for local development and CI. It wraps go test -json, turns test events into configurable terminal output and summaries, and exports JSON or JUnit reports. Its distinctive capabilities include targeted failure reruns, file watching with debugger shortcuts, slow-test analysis and source rewriting, and timing-based CI matrix generation.",
+    "agent_prompt": "Investigate gotestsum at commit 3cf14356a16c7931cfeacd7dfee585527618df3d before making changes. This is a Go CLI and reusable testjson package, with module path gotest.tools/gotestsum and a Go 1.24.0 directive. The current brief was produced by reading public tracked source and CI definitions; tests and CI were inspected, not executed. Treat its inventory as bounded investigation, not exhaustive coverage or proof of passing behavior.\n\nStart with README.md, go.mod, main.go, cmd/main.go, cmd/handler.go, and testjson/execution.go. main.go routes ordinary invocations to cmd.Run and tool commands to slowest.Run or matrix.Run. cmd.Run parses non-interspersed flags, handles version and watch branches, then calls run. The normal flow validates options, builds command arguments, starts a subprocess, creates an event handler, scans stdout and stderr concurrently, flushes JSON files, waits for the process, optionally reruns failures, and finishes with summary, JUnit output, and a post-run hook. Preserve child exit-code handling and interrupt forwarding.\n\nExecution owns package state, test instances, output, attributes, timing, and errors. Package-local IDs distinguish repeated test names; RunID distinguishes reruns. ScanTestOutput updates Execution before invoking EventHandler.Event. Its Event and Err callbacks can execute concurrently. Missing terminal events generate artificial failures with no raw JSON, and eventHandler deliberately excludes these from JSON files. Read existing compatibility workarounds before changing output retention, timeout handling, parent/subtest filtering, or panic detection.\n\nFor formatting changes, inspect NewEventFormatter in testjson/format.go and its golden tests. Maintain aliases, icon options, and the GITHUB_ACTIONS=true branch. For reruns, read cmd/rerunfails.go: failures are retried individually with escaped, anchored test-name expressions, shared Execution state, and guards for build errors, unusual exit codes, suspected panics, and optionally data races. A successful rerun does not erase historical failures from the accumulated report.\n\nWatch mode uses internal/filewatcher and cmd/watch.go. It has a separate runSingle implementation without failure reruns; Unix keyboard controls and Windows behavior differ. Slowest analysis reads event logs and aggregates repeated timings by median. Its --skip-stmt branch loads packages and rewrites source files, promotes subtests to root functions, and does not add imports. CI matrix generation uses package elapsed times, an 85th percentile, and greedy bucket placement; estimatedRuntime is an estimate, not measured improvement.\n\nKeep edits narrow and inspect adjacent tests first. In a separately authorized execution task, run the smallest affected package check before broad validation. GitHub Actions builds the binary and runs ./gotestsum -f testname -- ./... -race -count=1 across stable/oldstable Go and Linux, Windows, and macOS. ./do provides build and lint tasks; golden-update tasks write fixtures and require deliberate review. During read-only investigation, execute none of these commands. Prefix shell reads with rtk proxy, avoid secrets and environment files, and cite exact tracked paths with line anchors. Report source observations separately from hypotheses, and never equate test existence with success.",
+    "system_map": {
+      "summary": "The executable is a thin router over the main test-running command and two analysis tools. Test execution crosses a subprocess boundary, while parsing and reporting operate on an in-memory Execution model. Integration centers on terminal output, report files, executable hooks, and filesystem notifications. Build and release definitions describe a portable CLI binary rather than a hosted service.",
+      "claims": [
+        {
+          "claim": "main calls route(os.Args), preserves errors implementing ExitCode(), and exits with status 3 for other command errors.",
+          "sources": [
+            "main.go#L13-L38",
+            "cmd/main.go#L481-L501"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "toolRun dispatches slowest and ci-matrix explicitly; help and ? are handled by both the root router and tool router.",
+          "sources": [
+            "main.go#L28-L38",
+            "main.go#L53-L77"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "cmd.Run owns flag parsing, logging setup, build-version reporting, watch dispatch, and ordinary execution.",
+          "sources": [
+            "cmd/main.go#L24-L50"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The module declares Go 1.24.0 and dependencies for flags, colors, filesystem notifications, shell-like argument splitting, concurrent scanning, and Go package loading.",
+          "sources": [
+            "go.mod#L1-L16"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "testjson exposes ScanTestOutput, ScanConfig, and EventHandler; Execution owns package maps and a separately locked error list.",
+          "sources": [
+            "testjson/doc.go#L2-L20",
+            "testjson/execution.go#L373-L383",
+            "testjson/execution.go#L729-L765"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "cmd's event handler bridges parsed events to terminal formatters and JSON files; final JUnit generation is delegated to internal/junitxml.",
+          "sources": [
+            "cmd/handler.go#L16-L56",
+            "cmd/handler.go#L136-L157"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "./do provides binary, binary-static, lint, and golden-update tasks; GitHub Actions builds the executable and uses it to run the repository with race detection.",
+          "sources": [
+            "do#L6-L22",
+            ".github/workflows/ci.yaml#L23-L28"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "GoReleaser builds CGO-disabled binaries for five operating systems and multiple architectures, embeds cmd.version, and defines checksums; CircleCI publishes on matching version tags.",
+          "sources": [
+            ".project/goreleaser.yml#L9-L24",
+            ".project/goreleaser.yml#L49-L50",
+            ".circleci/config.yml#L16-L21",
+            ".circleci/config.yml#L62-L75"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "feature_catalog": {
+      "summary": "The primary feature is configurable presentation of Go test events with a final failure-oriented summary. Automation features export reports, retry failed tests, limit failures, and invoke external commands. Local workflows include file watching, debugger integration, and desktop notification examples. Two tool commands consume historical event data for slow-test analysis and CI partition planning.",
+      "claims": [
+        {
+          "claim": "NewEventFormatter supports package, test-name, testdox, dots, standard quiet/verbose/JSON, GitHub Actions, debug, and none formats, including compatibility aliases.",
+          "sources": [
+            "testjson/format.go#L423-L454"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "--format-icons selects default, hivis, text, codicons, octicons, or emoticons; --format-hide-empty-pkg applies to supported compact formats, and --no-color controls global color output.",
+          "sources": [
+            "cmd/main.go#L68-L90",
+            "testjson/format.go#L278-L322",
+            "cmd/main.go#L272-L277"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "--hide-summary selectively hides skipped, failed, errors, or output sections; PrintSummary still prints the final test-count and elapsed-time line.",
+          "sources": [
+            "cmd/flags.go#L30-L43",
+            "testjson/summary.go#L67-L89"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "--jsonfile records raw events, --jsonfile-timing-events records terminal events, and --junitfile supports project naming, name/classname formatting, and empty/skipped filtering.",
+          "sources": [
+            "cmd/main.go#L84-L89",
+            "cmd/main.go#L108-L123",
+            "cmd/handler.go#L38-L46"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "--rerun-fails defaults to two reruns when supplied without a value, limits initial failures to ten by default, supports root-test reruns and a report file, and optionally aborts on data races; --max-fails stops scanning at a failure threshold.",
+          "sources": [
+            "cmd/main.go#L105-L106",
+            "cmd/main.go#L125-L137",
+            "cmd/handler.go#L53-L55"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "--raw-command runs a supplied executable instead of prepending go test; documented uses include stdin replay and compiled test binaries through test2json, with GOVERSION available when Go is absent.",
+          "sources": [
+            "cmd/main.go#L350-L366",
+            "README.md#L283-L285",
+            "README.md#L312-L332",
+            ".project/docs/running-without-go.md#L26-L32"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "--watch reruns changed packages, supports screen clearing and per-package working directories, and offers Unix r/d/a/l/u shortcuts; post-run hooks can invoke notification examples backed by platform-specific executables.",
+          "sources": [
+            "cmd/main.go#L97-L104",
+            "internal/filewatcher/term_unix.go#L84-L107",
+            "cmd/watch.go#L45-L59",
+            "README.md#L160-L174"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "tool slowest prints median-based slow-test timings or inserts --skip-stmt into source; tool ci-matrix reads package names from stdin and timing-file globs to emit a GitHub Actions matrix.",
+          "sources": [
+            "cmd/tool/slowest/slowest.go#L118-L133",
+            "internal/aggregate/slowest.go#L10-L39",
+            "cmd/tool/matrix/matrix.go#L60-L71",
+            "cmd/tool/matrix/matrix.go#L92-L109"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "data_flow": {
+      "summary": "Arguments and environment defaults determine the executable, package selectors, formatter, and report destinations. Subprocess stdout supplies JSON events while stderr supplies displayed diagnostics and selected execution errors. Execution accumulates test state before handlers render or persist events. Reports and analysis tools reuse this event model, but raw JSON persistence and synthesized state have different contents.",
+      "claims": [
+        {
+          "claim": "setupFlags disables interspersed parsing; cmd.Run stores remaining arguments for the child, and package selection prioritizes rerun package, --packages, TEST_DIRECTORY, then a supplied default.",
+          "sources": [
+            "cmd/main.go#L24-L34",
+            "cmd/main.go#L62-L64",
+            "cmd/main.go#L390-L400"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "startGoTest connects inherited stdin, captures stdout/stderr pipes, applies an optional child working directory, and starts the executable using exec.CommandContext.",
+          "sources": [
+            "cmd/main.go#L450-L478"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "ScanTestOutput reads stdout and stderr in two errgroup goroutines; readStdout attaches RunID and updates Execution before invoking Handler.Event.",
+          "sources": [
+            "testjson/execution.go#L778-L799",
+            "testjson/execution.go#L810-L833"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Execution routes build-output into errors, package events into Package.addEvent, and named test events into Package.addTestEvent; test instances receive package-local IDs, RunID, timestamps, and attributes.",
+          "sources": [
+            "testjson/execution.go#L385-L414",
+            "testjson/execution.go#L435-L483"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Output is indexed by test ID with package output at ID 0; successful root tests release output, while subtest and skipped-output retention supports attribution workarounds.",
+          "sources": [
+            "testjson/execution.go#L91-L98",
+            "testjson/execution.go#L187-L212",
+            "testjson/execution.go#L243-L251",
+            "testjson/execution.go#L507-L518"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Err receives stderr before filtering; module-download messages, GODEBUG cache messages, and warning-prefixed lines are excluded from Execution.Errors, while other lines are retained.",
+          "sources": [
+            "testjson/execution.go#L841-L891"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "eventHandler writes original JSON bytes before formatting, excludes artificial events with empty bytes, syncs logs before finishRun, and supplies report paths plus execution counts to postRunHook.",
+          "sources": [
+            "cmd/handler.go#L38-L81",
+            "cmd/main.go#L304-L315",
+            "cmd/handler.go#L160-L180"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "ci-matrix scans each matched report into package elapsed times, selects the nearest-rank 85th percentile, greedily assigns packages to the least-loaded bucket, and serializes include entries with estimatedRuntime and package strings.",
+          "sources": [
+            "cmd/tool/matrix/matrix.go#L146-L181",
+            "cmd/tool/matrix/matrix.go#L190-L218",
+            "cmd/tool/matrix/matrix.go#L226-L263"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "behavior_traces": {
+      "summary": "Source inspection followed startup and ordinary execution, targeted reruns, report persistence, watch-triggered execution, and both analysis tools. The normal path separates stream scanning from process waiting and final reporting. Reruns preserve historical Execution state while tracking only current retry failures for continuation. Watch mode follows its own execution path and therefore has different option behavior.",
+      "claims": [
+        {
+          "claim": "Startup follows main → route → cmd.Run → setupFlags → Parse → setupLogging; version requests return early, watch requests call runWatcher, and other requests call run.",
+          "sources": [
+            "main.go#L13-L38",
+            "cmd/main.go#L24-L50"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Ordinary execution follows run → Validate → goTestCmdArgs → startGoTestFn → newEventHandler → ScanTestOutput → Flush → Wait; without arguments it constructs go test -json with ./... unless package selection overrides it.",
+          "sources": [
+            "cmd/main.go#L279-L315",
+            "cmd/main.go#L350-L366",
+            "cmd/main.go#L390-L400"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Malformed stdout normally causes readStdout to fail and stopOnError to cancel the child; ignore mode forwards malformed lines to Err, while FAIL-prefixed bad events are handled by a separate continue branch.",
+          "sources": [
+            "testjson/execution.go#L802-L837",
+            "testjson/execution.go#L894-L907"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "After a failed initial process, run checks hasErrors and the initial failure limit, then rerunFailed filters failures, builds escaped anchored -test.run expressions, starts each retry, scans into shared Execution with a new RunID, and records remaining failures.",
+          "sources": [
+            "cmd/main.go#L317-L335",
+            "cmd/rerunfails.go#L54-L92",
+            "cmd/rerunfails.go#L98-L108",
+            "cmd/rerunfails.go#L128-L156"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Persistence completes through handler.Flush → finishRun → PrintSummary → writeJUnitFile → junitxml.Write → postRunHook; JUnit or hook errors replace the pending process error, otherwise finishRun returns it.",
+          "sources": [
+            "cmd/main.go#L304-L315",
+            "cmd/main.go#L338-L347",
+            "cmd/handler.go#L136-L181",
+            "internal/junitxml/report.go#L95-L100"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Watch execution follows runWatcher → filewatcher.Watch → loadPaths → handleEvent → runTests → watchRuns.run → runSingle; changed .go paths trigger package runs, and watch-chdir sets the child directory and selector ./.",
+          "sources": [
+            "cmd/watch.go#L14-L19",
+            "internal/filewatcher/watch.go#L41-L63",
+            "internal/filewatcher/watch.go#L244-L276",
+            "cmd/watch.go#L45-L95"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Slow-test analysis follows slowest.Run → run → jsonfileReader → ScanTestOutput → aggregate.Slowest; --skip-stmt adds parseSkipStatement → writeTestSkip → packages.Load → rewriteAST → writeFile instead of printing.",
+          "sources": [
+            "cmd/tool/slowest/slowest.go#L15-L25",
+            "cmd/tool/slowest/slowest.go#L104-L144",
+            "cmd/tool/slowest/ast.go#L17-L53",
+            "cmd/tool/slowest/ast.go#L64-L74"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Matrix generation follows matrix.Run → run → readPackages → readTimingReports → packageTiming → packagePercentile → bucketPackages → writeMatrix; fewer than two partitions or an empty timing pattern fails before reading inputs.",
+          "sources": [
+            "cmd/tool/matrix/matrix.go#L20-L31",
+            "cmd/tool/matrix/matrix.go#L80-L109"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "testing_signals": {
+      "summary": "Tests and CI were inspected, not executed; no passing result is asserted. The inspected suite uses Go testing with gotest.tools assertions, golden files, filesystem fixtures, subprocess helpers, and go-cmp. It combines event-log regressions with selected real subprocess and filesystem integration tests. Coverage observations are bounded to the files examined, and platform exclusions or short-mode skips materially limit some paths.",
+      "claims": [
+        {
+          "claim": "cmd's integration suite uses testing, gotest.tools/v3 assert/env/fs/golden/icmd/poll/skip, while event-state tests additionally use go-cmp; these declarations and assertions were inspected only.",
+          "sources": [
+            "cmd/main_e2e_test.go#L3-L20",
+            "testjson/execution_test.go#L3-L14"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "execution_test.go exercises minimal scanning, Stop invocation on handler error, raw-event parsing, synthesized missing failures, non-JSON tolerance, and GODEBUG filtering.",
+          "sources": [
+            "testjson/execution_test.go#L40-L93",
+            "testjson/execution_test.go#L160-L236"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Formatter tests replay stored stdout/stderr through fakeHandler and compare golden output; fixtures are documented as generated from tagged test packages, with coverage, shuffle, panic, and timeout variants.",
+          "sources": [
+            "testjson/format_test.go#L12-L38",
+            "testjson/format_test.go#L66-L85"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "cmd tests cover failure-limit rejection, build-error and panic rerun guards, stdin replay, pre-hook JSON synchronization, and timing-only JSON output; the synchronization test skips Windows.",
+          "sources": [
+            "cmd/main_test.go#L340-L405",
+            "cmd/main_test.go#L412-L479",
+            "cmd/main_test.go#L482-L551"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Rerun integration cases exercise eventual success, continued failure, and build-error aborts; short mode skips them, and the interrupt test skips Windows while asserting exit status 130.",
+          "sources": [
+            "cmd/main_e2e_test.go#L29-L104",
+            "cmd/main_e2e_test.go#L150-L191"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "JUnit tests use deterministic timestamps and GOVERSION for golden comparisons of ordinary output, empty-package filtering, skipped-test filtering, and test attributes.",
+          "sources": [
+            "internal/junitxml/report_test.go#L18-L84"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Unix Watch integration checks filesystem-triggered events and a/r/d/u controls without running actual test subprocesses; matrix tests cover percentile/bucketing and serialized output, while the inspected slowest tests cover help and the preset statement rather than end-to-end rewriting.",
+          "sources": [
+            "internal/filewatcher/watch_unix_test.go#L18-L87",
+            "cmd/tool/matrix/matrix_test.go#L18-L71",
+            "cmd/tool/matrix/matrix_test.go#L176-L221",
+            "cmd/tool/slowest/ast_test.go#L12-L21"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Inspected GitHub Actions runs build plus race-enabled tests across stable/oldstable Go on Linux, Windows, and macOS; CircleCI defines lint and release builds. Their configuration is evidence of intended checks, not executed CI success.",
+          "sources": [
+            ".github/workflows/ci.yaml#L7-L28",
+            ".circleci/config.yml#L47-L75",
+            ".circleci/config.yml#L78-L95"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "risk_map": {
+      "summary": "Security-sensitive boundaries are primarily local executable invocation and user-selected filesystem paths. Source observations identify report truncation, scanner limits, mutable reporting state, and differences between ordinary and watch execution. Release tooling also downloads external programs or scripts. These are source-level observations and explicitly labeled hypotheses, not confirmed vulnerabilities or runtime reproductions.",
+      "claims": [
+        {
+          "claim": "Raw commands, hooks, and Delve execute user-selected or PATH-resolved programs with local process privileges; hooks inherit os.Environ, and commandValue uses shlex.Split without automatically invoking a shell.",
+          "sources": [
+            "cmd/main.go#L450-L457",
+            "cmd/flags.go#L99-L103",
+            "cmd/handler.go#L160-L180",
+            "cmd/watch.go#L125-L138"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "JSON, timing, JUnit, and rerun-report paths are passed to os.Create, which truncates existing files; the inspected writers do not constrain destinations to the repository root.",
+          "sources": [
+            "cmd/handler.go#L118-L141",
+            "cmd/rerunfails.go#L196-L203"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "--skip-stmt rewrites package-loader source paths directly with os.Create, promotes slow subtests to root functions, and does not add imports; earlier file writes can precede a final missing-test error.",
+          "sources": [
+            "cmd/tool/slowest/ast.go#L41-L53",
+            "cmd/tool/slowest/ast.go#L64-L74",
+            "cmd/tool/slowest/ast.go#L117-L138",
+            "cmd/tool/slowest/slowest.go#L83-L84"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Both stream readers use bufio.NewScanner without increasing its token buffer; sufficiently large event or diagnostic lines can therefore terminate scanning with the wrapped scanner error.",
+          "sources": [
+            "testjson/execution.go#L810-L837",
+            "testjson/execution.go#L841-L858"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "JUnit HideSkippedTests mutates each Execution-owned Package by decrementing Total and clearing Skipped; because the hook runs afterward, its TESTS_TOTAL and TESTS_SKIPPED can reflect filtered state rather than the summary printed earlier.",
+          "sources": [
+            "internal/junitxml/report.go#L124-L133",
+            "testjson/execution.go#L561-L564",
+            "cmd/main.go#L338-L345",
+            "cmd/handler.go#L175-L179"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Hypothesis: handler initialization errors deserve process/resource-cleanup review because run starts the child before creating the handler, returns before Wait on initialization failure, and defers handler.Close only after successful creation.",
+          "sources": [
+            "cmd/main.go#L287-L296",
+            "cmd/handler.go#L118-L131"
+          ],
+          "kind": "inference"
+        },
+        {
+          "claim": "Watch runSingle explicitly lacks rerun-fails support and omits IgnoreNonJSONOutputLines and the ordinary signal-derived exit-code branch; Unix Watch tests exclude Windows, whose terminal adapter disables shortcuts.",
+          "sources": [
+            "cmd/watch.go#L62-L95",
+            "cmd/main.go#L297-L315",
+            "internal/filewatcher/watch_unix_test.go#L1-L2",
+            "internal/filewatcher/term_windows.go#L5-L19"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CircleCI verifies the downloaded GoReleaser archive checksum but pipes a remote lint installer into sh; the development Dockerfile also uses a remote installer and defaults to Go 1.18 despite go.mod requiring 1.24.0.",
+          "sources": [
+            ".circleci/config.yml#L35-L42",
+            ".circleci/config.yml#L85-L95",
+            ".project/Dockerfile#L2-L15",
+            "go.mod#L1-L3"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "extension_points": {
+      "summary": "Extension mechanisms are explicit Go interfaces, factories, and command switches. The reusable event parser allows callers to provide readers, callbacks, cancellation, and existing execution state. Reporting and automation extensions fit through formatters, JUnit configuration, and post-run executables. New commands require direct router and help integration.",
+      "claims": [
+        {
+          "claim": "Add a tool command through main.toolRun's dispatch switch and usage text, following the existing Run(name, args) interface used by slowest and matrix.",
+          "sources": [
+            "main.go#L53-L77",
+            "cmd/tool/slowest/slowest.go#L15-L25",
+            "cmd/tool/matrix/matrix.go#L20-L31"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New terminal formats plug into EventFormatter.Format and NewEventFormatter's explicit factory switch; unknown names return nil and become a command error.",
+          "sources": [
+            "testjson/format.go#L404-L454",
+            "cmd/handler.go#L100-L104"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "EventHandler.Event and Err support custom consumers, with an Event error stopping scanning; ScanConfig accepts custom readers, Stop callbacks, RunID, and an existing Execution.",
+          "sources": [
+            "testjson/execution.go#L729-L758",
+            "testjson/execution.go#L802-L805"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "A caller can omit Handler and Stderr for standalone log parsing; ScanTestOutput supplies a no-op handler and empty stderr reader.",
+          "sources": [
+            "testjson/doc.go#L7-L20",
+            "testjson/execution.go#L765-L776"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "JUnit Config accepts FormatFunc callbacks for suite names and testcase classnames, with identity defaults; CLI full/relative/short options adapt these callbacks.",
+          "sources": [
+            "internal/junitxml/report.go#L80-L93",
+            "internal/junitxml/report.go#L153-L163",
+            "cmd/flags.go#L55-L72"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "--post-run-command integrates external automation through argument parsing, output writers, report paths, elapsed time, and TESTS_* counters; notification examples consume those counters.",
+          "sources": [
+            "cmd/flags.go#L90-L114",
+            "cmd/handler.go#L160-L181",
+            "contrib/notify/notify_linux.go#L11-L15",
+            "contrib/notify/notify_linux.go#L50-L56"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "filewatcher.Watch accepts a run(Event) callback, separating filesystem/keyboard event detection from command execution; Event carries package path, appended arguments, and debug mode.",
+          "sources": [
+            "internal/filewatcher/watch.go#L21-L41",
+            "cmd/watch.go#L14-L19"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "ByElapsed accepts a timing-reduction function, slowest supports custom parsed Go statements, and rerunFailsFilter selects either root cases or FilterFailedUnique; these are concrete policy seams for aggregation, rewriting, and retries.",
+          "sources": [
+            "internal/aggregate/slowest.go#L42-L63",
+            "cmd/tool/slowest/ast.go#L77-L93",
+            "cmd/rerunfails.go#L37-L51"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_handoff": {
+      "summary": "Begin with the executable router, command lifecycle, event model, and handler boundaries before changing behavior. Preserve test-instance identity, compatibility workarounds, and distinctions between raw event logs and synthesized failures. Tests and CI were inspected, not executed; future execution requires authorization beyond this read-only investigation. Use the bounded evidence here as navigation, then inspect the affected implementation and adjacent tests.",
+      "claims": [
+        {
+          "claim": "Read README.md, go.mod, main.go, cmd/main.go, cmd/handler.go, and testjson/execution.go first to establish user contracts, toolchain requirements, routing, execution ordering, and event state.",
+          "sources": [
+            "README.md#L15-L34",
+            "go.mod#L1-L16",
+            "main.go#L28-L38",
+            "cmd/main.go#L279-L347"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Keep flag changes aligned with setupFlags, options.Validate, and child argument construction; reruns with forwarded Go arguments require --packages, and -(test.)failfast is rejected.",
+          "sources": [
+            "cmd/main.go#L53-L64",
+            "cmd/main.go#L223-L235",
+            "cmd/main.go#L350-L387"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Preserve ID and RunID semantics for repeated tests and reruns; JSON export uses original event bytes, so synthetic EOF failures appear in state and summaries but are deliberately omitted from JSON files.",
+          "sources": [
+            "testjson/execution.go#L280-L305",
+            "testjson/execution.go#L334-L352",
+            "cmd/handler.go#L59-L68"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Treat EventHandler callbacks as potentially concurrent: ScanTestOutput launches stdout and stderr readers separately, and Execution protects its error list with a mutex.",
+          "sources": [
+            "testjson/execution.go#L785-L791",
+            "testjson/execution.go#L667-L681"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Review both run and runSingle when changing lifecycle or option propagation; watch execution is a documented copy without retry support, and Windows keyboard handling differs from Unix.",
+          "sources": [
+            "cmd/watch.go#L62-L95",
+            "cmd/main.go#L279-L335",
+            "internal/filewatcher/term_windows.go#L5-L19"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "For separately authorized validation, target the affected Go package first, then consider CI's build and ./gotestsum -f testname -- ./... -race -count=1 sequence; this investigation inspected those tests and CI definitions without executing them.",
+          "sources": [
+            ".github/workflows/ci.yaml#L23-L28",
+            "cmd/main_e2e_test.go#L29-L32",
+            "testjson/execution_test.go#L40-L60"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Golden fixtures encode output contracts, and ./do update-golden writes expected results; slowest's --skip-stmt also writes source, so neither belongs in a read-only verification pass.",
+          "sources": [
+            "testjson/format_test.go#L74-L81",
+            "do#L16-L18",
+            "cmd/tool/slowest/ast.go#L64-L74"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Resolve documentation drift from implementation: README lists GOTESTSUM_FORMAT among hook variables, but postRunHook does not explicitly inject it; Docker's default Go version also predates the module directive.",
+          "sources": [
+            "README.md#L139-L151",
+            "cmd/handler.go#L170-L180",
+            ".project/Dockerfile#L2-L3",
+            "go.mod#L1-L3"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    }
+  },
+  "analysis": {
+    "agent": "codex",
+    "model": "cli:codex",
+    "runtime_ms": 314661,
+    "cost_usd": null,
+    "collected_at": "2026-10-02T16:33:12.636418+00:00",
+    "source_commit_sha": "3cf14356a16c7931cfeacd7dfee585527618df3d",
+    "citation_validation": {
+      "status": "passed",
+      "claim_count": 64,
+      "path_and_line_bounds": true,
+      "semantic_correctness_established": false
+    },
+    "runtime_verification": {
+      "tests_executed": false,
+      "upstream_code_executed": false
+    },
+    "source_review": {
+      "status": "reviewed_bounded",
+      "all_claim_text_screened": true,
+      "independently_source_checked_claim_count": 9,
+      "private_review_receipt_sha256": "d3aa4212b2f9a823b0c7081bbeab6d610e403cbae4b6a46867e3447a98cb78eb",
+      "full_semantic_correctness_established": false
+    }
+  },
+  "public_export": {
+    "private_original_record_sha256": "4eb30e14c3c63a208ef7fd7bf25719a6373058b6bb7ae024a14106b774387053",
+    "omitted_local_fields": [
+      "scan.inventory.repo_path"
+    ],
+    "original_record_retained_privately": true,
+    "note": "Public corpus projection; embedded scan omits the local clone path. Hash identifies the original corpus record, not raw CLI stdout."
+  }
+}

@@ -1,0 +1,6 @@
+interface:
+  display_name: "CodeVetter Testing"
+  short_description: "Reproduce failures and verify changed behavior"
+  default_prompt: "Use $codevetter-testing for this repository and preserve the evidence and limitations."
+policy:
+  allow_implicit_invocation: true
