@@ -126,24 +126,24 @@
     "quality:vulnerabilities": "node scripts/run-osv-offline.mjs",
     "quality:workflows": "actionlint",
     "quality:duplication": "node scripts/check-duplication.mjs",
-    "retrieval:discover": "node scripts/context-retrieval/discover-candidates.mjs --registry benchmarks/context-retrieval/candidates.json --fresh-since 2026-02-22"
+    "retrieval:discover": "node scripts/context-retrieval/discover-candidates.mjs --registry benchmarks/context-retrieval/candidates.json --fresh-since 2026-02-22",
+    "test:dependency-security": "node --test scripts/http-cache-security.test.mjs"
   },
   "license": "ISC",
   "lint-staged": {
     "*.{js,mjs,cjs,ts,tsx,json,jsonc}": "biome check --no-errors-on-unmatched"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.5.13",
+    "@biomejs/biome": "^2.5.14",
     "@friedemannsommer/lcov-parser": "8.0.0",
     "@size-limit/file": "13.0.3",
     "fast-xml-parser": "5.11.1",
     "husky": "^9.1.7",
     "jscpd": "5.0.14",
-    "knip": "^6.35.1",
+    "knip": "^6.37.0",
     "lint-staged": "^17.5.0",
     "navigator-typescript": "npm:typescript@7.0.2",
-    "size-limit": "13.0.3",
-    "ultracite": "7.11.1"
+    "size-limit": "13.0.3"
   },
   "optionalDependencies": {
     "@tailwindcss/oxide-linux-x64-gnu": "^4.3.3",
@@ -167,7 +167,11 @@
       "undici": "7.29.1",
       "wrangler>esbuild": "0.28.1",
       "ws": "8.21.3",
-      "devalue": "5.9.4"
+      "devalue": "5.9.4",
+      "http-cache-semantics": "4.3.0"
+    },
+    "patchedDependencies": {
+      "http-cache-semantics@4.3.0": "patches/http-cache-semantics@4.3.0.patch"
     }
   },
   "packageManager": "pnpm@10.33.2"
