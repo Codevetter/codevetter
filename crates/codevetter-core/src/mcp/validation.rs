@@ -81,6 +81,10 @@ pub(crate) fn validate_tool_arguments(
         "change",
         "scope_value",
         "fix_completed_at",
+        "task_id",
+        "skill",
+        "state",
+        "assessment",
     ] {
         if let Some(value) = arguments.get(field) {
             let maximum = match field {
@@ -115,6 +119,7 @@ pub(crate) fn validate_tool_arguments(
             .ok_or_else(|| "'cursor' must be a bounded string".to_string())?;
     }
     validate_integer(arguments, "limit", 1, MAX_PAGE_SIZE)?;
+    validate_integer(arguments, "offset", 0, 1_000_000)?;
     validate_integer(arguments, "depth", 1, MAX_HOPS)?;
 
     if name == "resolve_evidence_scope" {

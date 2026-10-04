@@ -1919,3 +1919,38 @@ fn local_check_output_and_exit_codes_preserve_stage_meaning() {
     assert!(preflight_output.contains("performance target: unavailable"));
     assert!(preflight_output.contains("rerun this command without --preflight"));
 }
+
+#[test]
+fn invocation_runs_parser_requires_explicit_ledger() {
+    let cwd = Path::new("/synthetic");
+    for args in [
+        vec!["runs", "--fixture"],
+        vec!["runs", "--state", "failed"],
+        vec!["runs", "--offset", "1"],
+    ] {
+        assert!(parse_arguments(args.into_iter().map(String::from), cwd).is_err());
+    }
+    let CliCommand::Runs(args) = parse_arguments(
+        [
+            "runs",
+            "--ledger",
+            "/synthetic/ledger",
+            "--fixture",
+            "--state",
+            "failed",
+            "--offset",
+            "2",
+            "--json",
+        ]
+        .into_iter()
+        .map(String::from),
+        cwd,
+    )
+    .unwrap() else {
+        panic!("runs");
+    };
+    assert!(args.fixture);
+    assert_eq!(args.offset, 2);
+    assert_eq!(args.filter.state.as_deref(), Some("failed"));
+    assert_eq!(args.ledger, Some(PathBuf::from("/synthetic/ledger")));
+}

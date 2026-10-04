@@ -12,7 +12,15 @@ async fn main() {
 
 async fn run() -> Result<(), String> {
     let arguments = parse_arguments(std::env::args().skip(1))?;
-    let server = CodeVetterMcpServer::new(arguments.database, arguments.repo_id)?;
+    let mut server = CodeVetterMcpServer::new(arguments.database, arguments.repo_id)?;
+    if let Some(path) = arguments.invocation_ledger {
+        server = server.with_invocation_ledger(
+            codevetter_core::commands::invocation_ledger::InvocationLedgerSource {
+                path,
+                synthetic_fixture: arguments.fixture,
+            },
+        );
+    }
     let service = server
         .serve(rmcp::transport::stdio())
         .await
@@ -28,11 +36,15 @@ async fn run() -> Result<(), String> {
 struct Arguments {
     database: PathBuf,
     repo_id: String,
+    invocation_ledger: Option<PathBuf>,
+    fixture: bool,
 }
 
 fn parse_arguments(arguments: impl IntoIterator<Item = String>) -> Result<Arguments, String> {
     let mut database = None;
     let mut repo_id = None;
+    let mut invocation_ledger = None;
+    let mut fixture = false;
     let mut arguments = arguments.into_iter();
     while let Some(argument) = arguments.next() {
         match argument.as_str() {
@@ -50,16 +62,31 @@ fn parse_arguments(arguments: impl IntoIterator<Item = String>) -> Result<Argume
                         .ok_or_else(|| "--repo-id requires an opaque identity".to_string())?,
                 );
             }
+            "--invocation-ledger" => {
+                invocation_ledger = Some(PathBuf::from(
+                    arguments
+                        .next()
+                        .ok_or("--invocation-ledger requires a path")?,
+                ));
+            }
+            "--invocation-ledger-fixture" => {
+                fixture = true;
+            }
             "--help" | "-h" => {
                 return Err(
-                    "usage: codevetter-mcp --database <codevetter.db> --repo-id <opaque-id>"
+                    "usage: codevetter-mcp --database <codevetter.db> --repo-id <opaque-id> [--invocation-ledger <path>] [--invocation-ledger-fixture]"
                         .to_string(),
                 );
             }
             _ => return Err("Unknown codevetter-mcp argument".to_string()),
         }
     }
+    if fixture && invocation_ledger.is_none() {
+        return Err("--invocation-ledger-fixture requires --invocation-ledger".into());
+    }
     Ok(Arguments {
+        invocation_ledger,
+        fixture,
         database: database.ok_or_else(|| "--database is required".to_string())?,
         repo_id: repo_id.ok_or_else(|| "--repo-id is required".to_string())?,
     })
@@ -80,6 +107,8 @@ mod tests {
             ])
             .expect("arguments"),
             Arguments {
+                invocation_ledger: None,
+                fixture: false,
                 database: PathBuf::from("/tmp/codevetter.db"),
                 repo_id: "repo_0123456789abcdef".to_string(),
             }
