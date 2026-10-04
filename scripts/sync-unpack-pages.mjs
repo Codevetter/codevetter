@@ -208,7 +208,13 @@ for (const file of readdirSync(CORPUS)
   });
 }
 
-writeFileSync(OUT, `${JSON.stringify(reports, null, 2)}\n`, 'utf8');
+function writeOrCheck(file, content) {
+  if (process.argv.includes('--check')) {
+    if (readFileSync(file, 'utf8') !== content) throw new Error(`Stale projection: ${file}`);
+  } else writeFileSync(file, content, 'utf8');
+}
+
+writeOrCheck(OUT, `${JSON.stringify(reports, null, 2)}\n`);
 
 const catalog = JSON.parse(readFileSync(API_AI, 'utf8'));
 const known = new Set(catalog.surfaces.map((s) => s.id));
@@ -277,7 +283,7 @@ for (const pair of pairs) {
   });
 }
 
-writeFileSync(API_AI, `${JSON.stringify(catalog, null, 2)}\n`, 'utf8');
+writeOrCheck(API_AI, `${JSON.stringify(catalog, null, 2)}\n`);
 console.log(
   `unpack-reports.json: ${reports.length} repos; api-ai surfaces: ${catalog.surfaces.length}`
 );

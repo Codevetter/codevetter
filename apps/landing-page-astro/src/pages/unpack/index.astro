@@ -23,8 +23,8 @@ const comparisons = pairs
       <h1>Public codebase unpacks</h1>
       <p>
         Each page unpacks a well-known open-source repository at a pinned commit — deterministic
-        structure and health signals plus, for analyzed repos, claim-cited deep dives where every
-        statement links to the file it was read from. Scan date, engine version, and the upstream
+        structure and health signals plus, for analyzed repos, source analyses whose claims link
+        to cited files. Scan date, engine version, and the upstream
         commit are printed on every page.
       </p>
     </header>
@@ -34,7 +34,7 @@ const comparisons = pairs
           <a href={`/unpack/${r.slug}`}>
             <strong>{r.repo}</strong>
             <span>
-              {r.sections ? 'full analysis' : 'scan · analysis soon'} · {r.stats.filesScanned} files
+              {r.sections ? 'source analysis' : 'scan · analysis soon'} · {r.stats.filesScanned} files
               · {r.languages[0]?.language ?? 'mixed'} · {r.commit.date}
             </span>
           </a>

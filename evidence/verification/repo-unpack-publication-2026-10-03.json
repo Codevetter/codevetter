@@ -1,0 +1,742 @@
+{
+  "schema_version": "codevetter.repo-unpack-publication/v1",
+  "observed_at": "2026-10-02T21:16:13.436281+00:00",
+  "original_qualification": "evidence/verification/repo-unpack-expansion-2026-10-02-checks.json",
+  "prepared_repositories": 185,
+  "new_repositories": 100,
+  "checks": [
+    {
+      "name": "publication-automation",
+      "argv": [
+        "/opt/homebrew/bin/pnpm",
+        "run",
+        "test:automation"
+      ],
+      "started_at": "2026-10-02T21:07:46.746041+00:00",
+      "finished_at": "2026-10-02T21:07:57.927275+00:00",
+      "runtime_ms": 11181,
+      "exit_code": 0,
+      "streams": {
+        "stdout": {
+          "private_relative_path": "artifacts/publication/qualification/automation.stdout.log",
+          "sha256": "51e638571a6405446c883630b004f50be7b3e11b2355d11a87876b2a5a768d5d",
+          "bytes": 2152
+        },
+        "stderr": {
+          "private_relative_path": "artifacts/publication/qualification/automation.stderr.log",
+          "sha256": "622a6d38776689f984890950033feeb4bcde058cef020357c466c9b74af916a7",
+          "bytes": 136
+        }
+      }
+    },
+    {
+      "name": "publication-batch-gate",
+      "argv": [
+        "node",
+        "scripts/check-change-size.mjs"
+      ],
+      "started_at": "2026-10-02T21:07:57.927474+00:00",
+      "finished_at": "2026-10-02T21:08:00.503115+00:00",
+      "runtime_ms": 2576,
+      "exit_code": 0,
+      "streams": {
+        "stdout": {
+          "private_relative_path": "artifacts/publication/qualification/batch-gate.stdout.log",
+          "sha256": "9d2a7eaedcff16331c1b68cbc4badac0839c8fffa80bcd86c20bc8efd86ef3de",
+          "bytes": 131
+        },
+        "stderr": {
+          "private_relative_path": "artifacts/publication/qualification/batch-gate.stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        }
+      }
+    },
+    {
+      "name": "publication-lint",
+      "argv": [
+        "/opt/homebrew/bin/pnpm",
+        "run",
+        "lint"
+      ],
+      "started_at": "2026-10-02T21:08:00.503302+00:00",
+      "finished_at": "2026-10-02T21:08:01.029327+00:00",
+      "runtime_ms": 526,
+      "exit_code": 0,
+      "streams": {
+        "stdout": {
+          "private_relative_path": "artifacts/publication/qualification/lint.stdout.log",
+          "sha256": "20ddcfb60e21c9d55b8ac6ca305421e07e9bb5fb93519ff04e4ff89ae029bd89",
+          "bytes": 156
+        },
+        "stderr": {
+          "private_relative_path": "artifacts/publication/qualification/lint.stderr.log",
+          "sha256": "f59ea23ceeabdebcafe27079f9e29c69a56b48eab5a326074f1adeb9c953ef4c",
+          "bytes": 406
+        }
+      }
+    },
+    {
+      "name": "publication-docs",
+      "argv": [
+        "node",
+        "scripts/check-docs.mjs"
+      ],
+      "started_at": "2026-10-02T21:08:01.029545+00:00",
+      "finished_at": "2026-10-02T21:08:01.112022+00:00",
+      "runtime_ms": 82,
+      "exit_code": 0,
+      "streams": {
+        "stdout": {
+          "private_relative_path": "artifacts/publication/qualification/docs.stdout.log",
+          "sha256": "5709b3ebe2afa05392a6d8050e45aaa01444d3beede98710b41259240abd2390",
+          "bytes": 39
+        },
+        "stderr": {
+          "private_relative_path": "artifacts/publication/qualification/docs.stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        }
+      }
+    },
+    {
+      "name": "publication-strict-citations",
+      "argv": [
+        "node",
+        "scripts/verify-unpack-claims.mjs",
+        "--strict",
+        "--clones",
+        "<retained pinned clones>",
+        "--slug",
+        "hono",
+        "--slug",
+        "fastify",
+        "--slug",
+        "nest",
+        "--slug",
+        "react-router",
+        "--slug",
+        "astro",
+        "--slug",
+        "angular",
+        "--slug",
+        "solid",
+        "--slug",
+        "preact",
+        "--slug",
+        "qwik",
+        "--slug",
+        "nuxt",
+        "--slug",
+        "remix",
+        "--slug",
+        "redwood",
+        "--slug",
+        "blitz",
+        "--slug",
+        "core",
+        "--slug",
+        "elysia",
+        "--slug",
+        "koa",
+        "--slug",
+        "keystone",
+        "--slug",
+        "payload",
+        "--slug",
+        "strapi",
+        "--slug",
+        "meteor",
+        "--slug",
+        "rollup",
+        "--slug",
+        "parcel",
+        "--slug",
+        "rspack",
+        "--slug",
+        "rolldown",
+        "--slug",
+        "swc",
+        "--slug",
+        "oxc",
+        "--slug",
+        "eslint",
+        "--slug",
+        "stylelint",
+        "--slug",
+        "typescript-eslint",
+        "--slug",
+        "babel",
+        "--slug",
+        "postcss",
+        "--slug",
+        "pnpm",
+        "--slug",
+        "berry",
+        "--slug",
+        "cli",
+        "--slug",
+        "lerna",
+        "--slug",
+        "nx",
+        "--slug",
+        "turborepo",
+        "--slug",
+        "rushstack",
+        "--slug",
+        "changesets",
+        "--slug",
+        "semantic-release",
+        "--slug",
+        "vitest",
+        "--slug",
+        "playwright",
+        "--slug",
+        "cypress",
+        "--slug",
+        "jest",
+        "--slug",
+        "react-testing-library",
+        "--slug",
+        "dom-testing-library",
+        "--slug",
+        "msw",
+        "--slug",
+        "ava",
+        "--slug",
+        "mocha",
+        "--slug",
+        "jasmine",
+        "--slug",
+        "chai",
+        "--slug",
+        "puppeteer",
+        "--slug",
+        "webdriverio",
+        "--slug",
+        "storybook",
+        "--slug",
+        "chromatic-cli",
+        "--slug",
+        "pact-js",
+        "--slug",
+        "stryker-js",
+        "--slug",
+        "fast-check",
+        "--slug",
+        "nyc",
+        "--slug",
+        "gotestsum",
+        "--slug",
+        "query",
+        "--slug",
+        "router",
+        "--slug",
+        "table",
+        "--slug",
+        "redux",
+        "--slug",
+        "redux-toolkit",
+        "--slug",
+        "zustand",
+        "--slug",
+        "jotai",
+        "--slug",
+        "valtio",
+        "--slug",
+        "mobx",
+        "--slug",
+        "immer",
+        "--slug",
+        "rxjs",
+        "--slug",
+        "effect",
+        "--slug",
+        "fp-ts",
+        "--slug",
+        "date-fns",
+        "--slug",
+        "dayjs",
+        "--slug",
+        "luxon",
+        "--slug",
+        "motion",
+        "--slug",
+        "remeda",
+        "--slug",
+        "ofetch",
+        "--slug",
+        "got",
+        "--slug",
+        "pydantic",
+        "--slug",
+        "pydantic-settings",
+        "--slug",
+        "werkzeug",
+        "--slug",
+        "starlette",
+        "--slug",
+        "httpx",
+        "--slug",
+        "pytest",
+        "--slug",
+        "poetry",
+        "--slug",
+        "hatch",
+        "--slug",
+        "pip",
+        "--slug",
+        "virtualenv",
+        "--slug",
+        "sqlalchemy",
+        "--slug",
+        "diesel",
+        "--slug",
+        "sea-orm",
+        "--slug",
+        "tokio",
+        "--slug",
+        "axum",
+        "--slug",
+        "actix-web",
+        "--slug",
+        "gin",
+        "--slug",
+        "echo",
+        "--slug",
+        "fiber",
+        "--slug",
+        "cobra"
+      ],
+      "started_at": "2026-10-02T21:08:01.112230+00:00",
+      "finished_at": "2026-10-02T21:10:13.154190+00:00",
+      "runtime_ms": 132042,
+      "exit_code": 0,
+      "streams": {
+        "stdout": {
+          "private_relative_path": "artifacts/publication/qualification/strict-citations.stdout.log",
+          "sha256": "fbcc23920a8a08086f2a20c119d298844a1ae63745d32b5d2ff9df99a36f51bc",
+          "bytes": 7174
+        },
+        "stderr": {
+          "private_relative_path": "artifacts/publication/qualification/strict-citations.stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        }
+      }
+    },
+    {
+      "name": "publication-astro-build",
+      "argv": [
+        "/opt/homebrew/bin/pnpm",
+        "--dir",
+        "apps/landing-page-astro",
+        "run",
+        "build"
+      ],
+      "started_at": "2026-10-02T21:10:13.154543+00:00",
+      "finished_at": "2026-10-02T21:10:16.352531+00:00",
+      "runtime_ms": 3198,
+      "exit_code": 0,
+      "streams": {
+        "stdout": {
+          "private_relative_path": "artifacts/publication/qualification/astro-build.stdout.log",
+          "sha256": "b2e41753b87e810f3d74adae3231193f7ebf5667098d0cbd1216b7eb93ad7e7a",
+          "bytes": 205975
+        },
+        "stderr": {
+          "private_relative_path": "artifacts/publication/qualification/astro-build.stderr.log",
+          "sha256": "517b272843ecdd848a99e41c3015b53b60b8bc6b27915a26a714432722b77ae0",
+          "bytes": 191
+        }
+      }
+    },
+    {
+      "name": "publication-blume-build",
+      "argv": [
+        "/opt/homebrew/bin/pnpm",
+        "--dir",
+        "docs-site",
+        "run",
+        "build"
+      ],
+      "started_at": "2026-10-02T21:10:16.352879+00:00",
+      "finished_at": "2026-10-02T21:10:20.059704+00:00",
+      "runtime_ms": 3707,
+      "exit_code": 0,
+      "streams": {
+        "stdout": {
+          "private_relative_path": "artifacts/publication/qualification/blume-build.stdout.log",
+          "sha256": "36557d9b00fa0481b65b51d42aaa43580bffb30cfc4e008e2fa48332989240ca",
+          "bytes": 18132
+        },
+        "stderr": {
+          "private_relative_path": "artifacts/publication/qualification/blume-build.stderr.log",
+          "sha256": "7cd784f04e167abc005f9400fc51f708fc2dd99fee2bc61d15de8ea7b111fee2",
+          "bytes": 182
+        }
+      }
+    },
+    {
+      "name": "publication-merge-docs",
+      "argv": [
+        "node",
+        "scripts/merge-landing-docs.mjs"
+      ],
+      "started_at": "2026-10-02T21:10:20.060109+00:00",
+      "finished_at": "2026-10-02T21:10:20.246690+00:00",
+      "runtime_ms": 187,
+      "exit_code": 0,
+      "streams": {
+        "stdout": {
+          "private_relative_path": "artifacts/publication/qualification/merge-docs.stdout.log",
+          "sha256": "8ceb104bc1e874ebe316ae25c0d11eb1c6b09d29855a031e5206d49603edf2bb",
+          "bytes": 145
+        },
+        "stderr": {
+          "private_relative_path": "artifacts/publication/qualification/merge-docs.stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        }
+      }
+    },
+    {
+      "name": "publication-agent-contracts",
+      "argv": [
+        "node",
+        "apps/landing-page-astro/scripts/verify-agent-surfaces.mjs"
+      ],
+      "started_at": "2026-10-02T21:10:20.247065+00:00",
+      "finished_at": "2026-10-02T21:10:20.600980+00:00",
+      "runtime_ms": 354,
+      "exit_code": 0,
+      "streams": {
+        "stdout": {
+          "private_relative_path": "artifacts/publication/qualification/agent-contracts.stdout.log",
+          "sha256": "4d964bdc397892e00c28025ba30a6a2aaeb1c1d6901c17bc07160e014673b712",
+          "bytes": 377
+        },
+        "stderr": {
+          "private_relative_path": "artifacts/publication/qualification/agent-contracts.stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        }
+      }
+    },
+    {
+      "name": "publication-diff-check",
+      "argv": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "started_at": "2026-10-02T21:10:20.601367+00:00",
+      "finished_at": "2026-10-02T21:10:20.701062+00:00",
+      "runtime_ms": 100,
+      "exit_code": 0,
+      "streams": {
+        "stdout": {
+          "private_relative_path": "artifacts/publication/qualification/diff-check.stdout.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        },
+        "stderr": {
+          "private_relative_path": "artifacts/publication/qualification/diff-check.stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        }
+      }
+    }
+  ],
+  "source_content": [
+    {
+      "path": "scripts/collect-unpack-repo.mjs",
+      "sha256": "8ad840d62e135927e6968eafdf41c81bd5409ee8d5f3ada8b0749eed33d7ad50"
+    },
+    {
+      "path": "scripts/repo-unpack-corpus.mjs",
+      "sha256": "1bff92dab8244f4bf902b135d102aee49d926d096986ad6bd75abf9393054ae0"
+    },
+    {
+      "path": "scripts/repo-unpack-corpus.test.mjs",
+      "sha256": "0e9826291cf6ad9fdc8bf50f4a5248d2a77bba3c2acb6f7820098b1d1e3d1daa"
+    },
+    {
+      "path": "scripts/verify-unpack-claims.mjs",
+      "sha256": "826e5c85af34f3b3eef1ab3a6239276828fa196ae7ce5fc1c50304bf24fe027b"
+    },
+    {
+      "path": "apps/landing-page-astro/src/data/agent-markdown.ts",
+      "sha256": "fee59ab20d046889a9b13febb7ac76a51c27447c0f229484ae2dd246888c8872"
+    },
+    {
+      "path": "apps/landing-page-astro/src/pages/unpack/[slug].astro",
+      "sha256": "c3955cd3a0465b54502da7f67f64a2534aeb410bcba7a909c3b3fa5b0eb6aec6"
+    },
+    {
+      "path": "apps/landing-page-astro/src/pages/unpack/[slug]/[section].astro",
+      "sha256": "5f1410e7856a0db1557dccedac660690698cfa651bb7e4eb23624bf4dc4d05bd"
+    },
+    {
+      "path": "apps/landing-page-astro/src/pages/unpack/index.astro",
+      "sha256": "5cf4e37139097cfe613e4039806939b19ccbd9ed621d1d4392d1c5185d8203b7"
+    },
+    {
+      "path": "docs/architecture/repo-unpacked.md",
+      "sha256": "d303b8d469b8395049180a67cd91045d2d7cc9e765b92018702d4f46db877459"
+    },
+    {
+      "path": "apps/landing-page-astro/src/data/unpack-reports.json",
+      "sha256": "5a5dcb72ad05e697e9e7010f9b85c80bf52245bfa203e867a0ad3c6773f88e6c"
+    },
+    {
+      "path": "apps/landing-page-astro/public/api-ai.json",
+      "sha256": "d2e721fc334cef8eb42686bd36811c7aeb0a905db15ab9c5dc8d093c075d682b"
+    },
+    {
+      "path": "evidence/verification/repo-unpack-expansion-2026-10-02.json",
+      "sha256": "e5b057f666d58a278ab5748829e1992953e6c38e7b34358bf6a0286f83cf4622"
+    },
+    {
+      "path": "evidence/verification/repo-unpack-expansion-2026-10-02.md",
+      "sha256": "fda15d9ffbe14589abf041c470c212b64ceeaedaa4d9d55c6585aa03a053bb5f"
+    }
+  ],
+  "last_preview_delta": {
+    "slug": "fiber",
+    "report_analysis_and_pin_unchanged": true,
+    "rebuild_required": false,
+    "requalified": true
+  },
+  "immutable_gitleaks_false_positive_classifications": [
+    {
+      "fingerprint": "ef2605fe1ed13c2dc1e0a4a4849777c1cc63dc3c:benchmarks/repo-unpacks/echo.json:sourcegraph-access-token:8",
+      "classification": "Public pinned Git commit identity"
+    },
+    {
+      "fingerprint": "ef2605fe1ed13c2dc1e0a4a4849777c1cc63dc3c:benchmarks/repo-unpacks/echo.json:sourcegraph-access-token:20",
+      "classification": "Public pinned Git commit identity"
+    },
+    {
+      "fingerprint": "ef2605fe1ed13c2dc1e0a4a4849777c1cc63dc3c:benchmarks/repo-unpacks/echo.json:sourcegraph-access-token:3398",
+      "classification": "Public pinned Git commit identity"
+    },
+    {
+      "fingerprint": "ef2605fe1ed13c2dc1e0a4a4849777c1cc63dc3c:benchmarks/repo-unpacks/echo.json:sourcegraph-access-token:4054",
+      "classification": "Public pinned Git commit identity"
+    },
+    {
+      "fingerprint": "ef2605fe1ed13c2dc1e0a4a4849777c1cc63dc3c:benchmarks/repo-unpacks/gin.json:sourcegraph-access-token:8",
+      "classification": "Public pinned Git commit identity"
+    },
+    {
+      "fingerprint": "ef2605fe1ed13c2dc1e0a4a4849777c1cc63dc3c:benchmarks/repo-unpacks/gin.json:sourcegraph-access-token:20",
+      "classification": "Public pinned Git commit identity"
+    },
+    {
+      "fingerprint": "ef2605fe1ed13c2dc1e0a4a4849777c1cc63dc3c:benchmarks/repo-unpacks/gin.json:sourcegraph-access-token:3185",
+      "classification": "Public pinned Git commit identity"
+    },
+    {
+      "fingerprint": "ef2605fe1ed13c2dc1e0a4a4849777c1cc63dc3c:benchmarks/repo-unpacks/gin.json:sourcegraph-access-token:3791",
+      "classification": "Public pinned Git commit identity"
+    },
+    {
+      "fingerprint": "ef2605fe1ed13c2dc1e0a4a4849777c1cc63dc3c:benchmarks/repo-unpacks/fiber.json:sourcegraph-access-token:8",
+      "classification": "Public pinned Git commit identity"
+    },
+    {
+      "fingerprint": "ef2605fe1ed13c2dc1e0a4a4849777c1cc63dc3c:benchmarks/repo-unpacks/fiber.json:sourcegraph-access-token:20",
+      "classification": "Public pinned Git commit identity"
+    },
+    {
+      "fingerprint": "ef2605fe1ed13c2dc1e0a4a4849777c1cc63dc3c:benchmarks/repo-unpacks/fiber.json:sourcegraph-access-token:6878",
+      "classification": "Public pinned Git commit identity"
+    },
+    {
+      "fingerprint": "ef2605fe1ed13c2dc1e0a4a4849777c1cc63dc3c:apps/landing-page-astro/src/data/unpack-reports.json:sourcegraph-access-token:74782",
+      "classification": "Public pinned Git commit identity"
+    },
+    {
+      "fingerprint": "ef2605fe1ed13c2dc1e0a4a4849777c1cc63dc3c:apps/landing-page-astro/src/data/unpack-reports.json:sourcegraph-access-token:76097",
+      "classification": "Public pinned Git commit identity"
+    },
+    {
+      "fingerprint": "ef2605fe1ed13c2dc1e0a4a4849777c1cc63dc3c:apps/landing-page-astro/src/data/unpack-reports.json:sourcegraph-access-token:76431",
+      "classification": "Public pinned Git commit identity"
+    },
+    {
+      "fingerprint": "ef2605fe1ed13c2dc1e0a4a4849777c1cc63dc3c:apps/landing-page-astro/src/data/unpack-reports.json:sourcegraph-access-token:77091",
+      "classification": "Public pinned Git commit identity"
+    },
+    {
+      "fingerprint": "ef2605fe1ed13c2dc1e0a4a4849777c1cc63dc3c:apps/landing-page-astro/src/data/unpack-reports.json:sourcegraph-access-token:78313",
+      "classification": "Public pinned Git commit identity"
+    },
+    {
+      "fingerprint": "ef2605fe1ed13c2dc1e0a4a4849777c1cc63dc3c:apps/landing-page-astro/src/data/unpack-reports.json:sourcegraph-access-token:78700",
+      "classification": "Public pinned Git commit identity"
+    },
+    {
+      "fingerprint": "ef2605fe1ed13c2dc1e0a4a4849777c1cc63dc3c:apps/landing-page-astro/src/data/unpack-reports.json:sourcegraph-access-token:78721",
+      "classification": "Public pinned Git commit identity"
+    },
+    {
+      "fingerprint": "ef2605fe1ed13c2dc1e0a4a4849777c1cc63dc3c:apps/landing-page-astro/src/data/unpack-reports.json:sourcegraph-access-token:79375",
+      "classification": "Public pinned Git commit identity"
+    },
+    {
+      "fingerprint": "ef2605fe1ed13c2dc1e0a4a4849777c1cc63dc3c:apps/landing-page-astro/src/data/unpack-reports.json:sourcegraph-access-token:80204",
+      "classification": "Public pinned Git commit identity"
+    },
+    {
+      "fingerprint": "ef2605fe1ed13c2dc1e0a4a4849777c1cc63dc3c:apps/landing-page-astro/src/data/unpack-reports.json:sourcegraph-access-token:80828",
+      "classification": "Public pinned Git commit identity"
+    },
+    {
+      "fingerprint": "ef2605fe1ed13c2dc1e0a4a4849777c1cc63dc3c:apps/landing-page-astro/src/data/unpack-reports.json:generic-api-key:142395",
+      "classification": "Unchanged n8n prose covered by existing corpus exceptions; projection line shifted"
+    },
+    {
+      "fingerprint": "ef2605fe1ed13c2dc1e0a4a4849777c1cc63dc3c:apps/landing-page-astro/src/data/unpack-reports.json:generic-api-key:142647",
+      "classification": "Unchanged n8n prose covered by existing corpus exceptions; projection line shifted"
+    },
+    {
+      "fingerprint": "ef2605fe1ed13c2dc1e0a4a4849777c1cc63dc3c:evidence/verification/repo-unpack-expansion-2026-10-02-checks.json:generic-api-key:770",
+      "classification": "Independently recomputed SHA256 evidence digest"
+    },
+    {
+      "fingerprint": "ef2605fe1ed13c2dc1e0a4a4849777c1cc63dc3c:evidence/verification/repo-unpack-expansion-2026-10-02.json:generic-api-key:79",
+      "classification": "Independently recomputed SHA256 evidence digest"
+    },
+    {
+      "fingerprint": "ef2605fe1ed13c2dc1e0a4a4849777c1cc63dc3c:evidence/verification/repo-unpack-expansion-2026-10-02.json:generic-api-key:81",
+      "classification": "Independently recomputed SHA256 evidence digest"
+    }
+  ],
+  "raw_preview_fields_omitted": 110,
+  "public_deployment_established": false,
+  "dependency_security_blocker": "https://github.com/Codevetter/codevetter/issues/357",
+  "limits": [
+    "Source inspection does not establish upstream runtime correctness.",
+    "Original qualification hashes remain historical; this receipt binds the publication export.",
+    "Gitleaks exceptions bind individual immutable commit/path/rule/line fingerprints; no rule or file class is disabled.",
+    "Deployment and issue closure require independent remote checks and anonymous route verification."
+  ],
+  "fresh_testing_skill_observation": {
+    "invocation_id": "ac122205-087d-4e8b-9437-da566578169d",
+    "outcome": "did_not_help",
+    "reason": "noise",
+    "receipt_sha256": "c20fb0d0b23146b68a786033b4e4f060d83e11aa49cd561a884ee8fed6c70497",
+    "invocation_duration_ms": 113,
+    "context_capture_ms": 101,
+    "independently_verified": false
+  },
+  "final_export_checks": [
+    {
+      "name": "publication-final-batch-gate",
+      "argv": [
+        "node",
+        "scripts/check-change-size.mjs"
+      ],
+      "started_at": "2026-10-02T21:16:52.897331+00:00",
+      "finished_at": "2026-10-02T21:16:55.722766+00:00",
+      "runtime_ms": 2825,
+      "exit_code": 0,
+      "streams": {
+        "stdout": {
+          "private_relative_path": "artifacts/publication/final-export/batch-gate.stdout.log",
+          "sha256": "fff9962b7f4fc270d33db752e6868d15b6d919a3ec5ea006576f00bb41bef0a8",
+          "bytes": 132
+        },
+        "stderr": {
+          "private_relative_path": "artifacts/publication/final-export/batch-gate.stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        }
+      }
+    },
+    {
+      "name": "publication-final-astro-build",
+      "argv": [
+        "/opt/homebrew/bin/pnpm",
+        "--dir",
+        "apps/landing-page-astro",
+        "run",
+        "build"
+      ],
+      "started_at": "2026-10-02T21:16:55.722923+00:00",
+      "finished_at": "2026-10-02T21:16:59.486169+00:00",
+      "runtime_ms": 3763,
+      "exit_code": 0,
+      "streams": {
+        "stdout": {
+          "private_relative_path": "artifacts/publication/final-export/astro-build.stdout.log",
+          "sha256": "af4480f904387cf82c199f80a9cdb0537cc412bd3255ff5a819361d0d4d28c77",
+          "bytes": 205976
+        },
+        "stderr": {
+          "private_relative_path": "artifacts/publication/final-export/astro-build.stderr.log",
+          "sha256": "4b47767564330d03f2a82c2b4c63e3fbef366ac67863408dbbb44a58f79b4800",
+          "bytes": 191
+        }
+      }
+    },
+    {
+      "name": "publication-final-merge-docs",
+      "argv": [
+        "node",
+        "scripts/merge-landing-docs.mjs"
+      ],
+      "started_at": "2026-10-02T21:16:59.486429+00:00",
+      "finished_at": "2026-10-02T21:16:59.729135+00:00",
+      "runtime_ms": 243,
+      "exit_code": 0,
+      "streams": {
+        "stdout": {
+          "private_relative_path": "artifacts/publication/final-export/merge-docs.stdout.log",
+          "sha256": "8ceb104bc1e874ebe316ae25c0d11eb1c6b09d29855a031e5206d49603edf2bb",
+          "bytes": 145
+        },
+        "stderr": {
+          "private_relative_path": "artifacts/publication/final-export/merge-docs.stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        }
+      }
+    },
+    {
+      "name": "publication-final-agent-contracts",
+      "argv": [
+        "node",
+        "apps/landing-page-astro/scripts/verify-agent-surfaces.mjs"
+      ],
+      "started_at": "2026-10-02T21:16:59.729308+00:00",
+      "finished_at": "2026-10-02T21:17:00.093928+00:00",
+      "runtime_ms": 365,
+      "exit_code": 0,
+      "streams": {
+        "stdout": {
+          "private_relative_path": "artifacts/publication/final-export/agent-contracts.stdout.log",
+          "sha256": "4d964bdc397892e00c28025ba30a6a2aaeb1c1d6901c17bc07160e014673b712",
+          "bytes": 377
+        },
+        "stderr": {
+          "private_relative_path": "artifacts/publication/final-export/agent-contracts.stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        }
+      }
+    }
+  ],
+  "gitleaks_post_classification": {
+    "exit_code": 0,
+    "commits_scanned": 2,
+    "unignored_findings": 0,
+    "report_private_relative_path": "artifacts/publication-gitleaks-post-classification.json"
+  },
+  "publication_link_correction": {
+    "scope": "Repository evidence and skill files outside docs use GitHub source links rather than nonexistent rendered pages.",
+    "docs_validator": "Blume validate on the patched publication candidate passed after correcting 11 links; eight asset links remain explicitly unchecked because no public directory exists."
+  }
+}
