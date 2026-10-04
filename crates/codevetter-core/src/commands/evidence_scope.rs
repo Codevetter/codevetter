@@ -495,17 +495,70 @@ fn bounded_file_text(root: &Path, relative: &str, remaining: &mut u64) -> String
     if *remaining == 0 || !safe_relative(relative) {
         return String::new();
     }
-    let path = root.join(relative);
-    let Ok(metadata) = path.metadata() else {
+    let Some(file) = open_regular_file_beneath(root, relative) else {
+        return String::new();
+    };
+    let Ok(metadata) = file.metadata() else {
         return String::new();
     };
     if !metadata.is_file() || metadata.len() > MAX_FILE_BYTES || metadata.len() > *remaining {
         return String::new();
     }
-    let Ok(file) = std::fs::File::open(path) else {
-        return String::new();
-    };
     bounded_reader_text(file, remaining)
+}
+
+#[cfg(unix)]
+fn open_regular_file_beneath(root: &Path, relative: &str) -> Option<std::fs::File> {
+    use std::ffi::CString;
+    use std::os::fd::{AsRawFd, FromRawFd};
+    use std::os::unix::ffi::OsStrExt;
+
+    fn open_component(
+        directory: &std::fs::File,
+        component: &std::ffi::OsStr,
+        directory_only: bool,
+    ) -> Option<std::fs::File> {
+        let name = CString::new(component.as_bytes()).ok()?;
+        let mut flags = libc::O_RDONLY | libc::O_CLOEXEC | libc::O_NOFOLLOW | libc::O_NONBLOCK;
+        if directory_only {
+            flags |= libc::O_DIRECTORY;
+        }
+        // SAFETY: `directory` owns a live directory descriptor and `name` is
+        // NUL-terminated. The returned descriptor is owned below on success.
+        let descriptor = unsafe { libc::openat(directory.as_raw_fd(), name.as_ptr(), flags) };
+        if descriptor < 0 {
+            return None;
+        }
+        // SAFETY: openat returned a new descriptor, transferred to this File.
+        Some(unsafe { std::fs::File::from_raw_fd(descriptor) })
+    }
+
+    // `root` was canonicalized and validated as the caller-selected Git
+    // repository before resolution. Anchor there, then refuse symlinks in all
+    // repository-relative components so repository content cannot redirect
+    // evidence reads outside the checkout.
+    let mut directory = std::fs::File::open(root).ok()?;
+
+    let mut components = Path::new(relative).components().peekable();
+    while let Some(component) = components.next() {
+        let Component::Normal(name) = component else {
+            return None;
+        };
+        directory = open_component(&directory, name, components.peek().is_some())?;
+    }
+    directory
+        .metadata()
+        .ok()
+        .filter(|metadata| metadata.is_file())?;
+    Some(directory)
+}
+
+// Non-Unix targets currently have no descriptor-relative no-follow reader in
+// this module. Fail closed rather than fall back to a canonicalize-then-open
+// sequence that would reintroduce a symlink race.
+#[cfg(not(unix))]
+fn open_regular_file_beneath(_root: &Path, _relative: &str) -> Option<std::fs::File> {
+    None
 }
 
 // Accepted aggregate payload is bounded by the initial remaining budget. Every
@@ -1101,6 +1154,39 @@ require(runnerName); require(`node:test`);
         let mut remaining = 10;
         assert!(bounded_reader_text(reader, &mut remaining).is_empty());
         assert_eq!(remaining, 7);
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn bounded_file_text_rejects_final_and_parent_symlinks() {
+        use std::os::unix::fs::symlink;
+
+        let fixture = tempfile::tempdir().unwrap();
+        let repo = fixture.path().join("repo");
+        let outside = fixture.path().join("outside");
+        std::fs::create_dir_all(&repo).unwrap();
+        std::fs::create_dir_all(&outside).unwrap();
+        let sentinel = "fabricated-outside-scope-sentinel";
+        std::fs::write(outside.join("source.test.mjs"), sentinel).unwrap();
+        std::fs::write(repo.join("regular.test.mjs"), "owned regular source").unwrap();
+        symlink(
+            outside.join("source.test.mjs"),
+            repo.join("linked.test.mjs"),
+        )
+        .unwrap();
+        symlink(&outside, repo.join("linked-parent")).unwrap();
+
+        let mut remaining = MAX_CONTENT_BYTES;
+        assert_eq!(
+            bounded_file_text(&repo, "regular.test.mjs", &mut remaining),
+            "owned regular source"
+        );
+        let after_regular = remaining;
+        assert!(bounded_file_text(&repo, "linked.test.mjs", &mut remaining).is_empty());
+        assert!(
+            bounded_file_text(&repo, "linked-parent/source.test.mjs", &mut remaining).is_empty()
+        );
+        assert_eq!(remaining, after_regular);
     }
 
     #[test]
