@@ -1,14 +1,8 @@
 diff --git a/index.js b/index.js
 --- a/index.js
 +++ b/index.js
-@@ -395,8 +395,18 @@
-     evaluateRequest(req) {
-         this._assertRequestHasHeaders(req);
- 
--        // In all circumstances, a cache MUST NOT ignore the must-revalidate directive
+@@ -399,1 +399,10 @@
 -        if (this._rescc['must-revalidate']) {
-+        // Request max-stale must not undo storage or response revalidation policy.
-+        // Keep the same shared-cookie opt-in required by maxAge().
 +        if (
 +            this._rescc['must-revalidate'] ||
 +            !this.storable() ||
@@ -19,6 +13,3 @@ diff --git a/index.js b/index.js
 +                    !this._rescc.public && !this._rescc.immutable)
 +            ))
 +        ) {
-             return this._evaluateRequestMissResult(req);
-         }
- 
