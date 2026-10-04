@@ -1,0 +1,4672 @@
+{
+  "schema_version": "codevetter.repo-unpack-corpus/v1",
+  "repo": "chaijs/chai",
+  "slug": "chai",
+  "codevetter_version": "codevetter 1.15.0",
+  "collected_at": "2026-10-02T15:56:11.855Z",
+  "last_commit": {
+    "sha": "d86de2a9519bdd0d89aa64c9fbcc0e880513b153",
+    "date": "2026-09-29",
+    "subject": "chore(deps): update dependency eslint-plugin-jsdoc to v65 (#1865)"
+  },
+  "scan": {
+    "schema_version": "codevetter.unpack-scan/v1",
+    "report_id": "9812775e-9c12-492a-90dd-8df92d8273d8",
+    "status": "scan_only",
+    "created_at": "2026-10-02T15:56:11.851063+00:00",
+    "inventory": {
+      "repo_path": "[local clone path omitted from public export]",
+      "repo_name": "chai",
+      "commit_sha": "d86de2a9519bdd0d89aa64c9fbcc0e880513b153",
+      "branch": "main",
+      "remote_url": "https://github.com/chaijs/chai.git",
+      "files_scanned": 75,
+      "files_skipped": 1,
+      "bytes_scanned": 868147,
+      "max_files_hit": false,
+      "estimated_total_files": null,
+      "languages": [
+        {
+          "language": "JavaScript",
+          "files": 56,
+          "bytes": 772663
+        },
+        {
+          "language": "Markdown",
+          "files": 5,
+          "bytes": 86907
+        },
+        {
+          "language": "YAML",
+          "files": 4,
+          "bytes": 3986
+        },
+        {
+          "language": "JSON",
+          "files": 4,
+          "bytes": 3030
+        },
+        {
+          "language": "TypeScript",
+          "files": 1,
+          "bytes": 243
+        }
+      ],
+      "manifests": [
+        {
+          "path": "package.json",
+          "kind": "package.json",
+          "name": "chai",
+          "version": "0.0.0-development",
+          "dependencies": [
+            "@eslint/js",
+            "@rollup/plugin-commonjs",
+            "@web/dev-server-rollup",
+            "@web/test-runner",
+            "@web/test-runner-playwright",
+            "assertion-error",
+            "c8",
+            "check-error",
+            "deep-eql",
+            "esbuild",
+            "eslint",
+            "eslint-plugin-jsdoc",
+            "globals",
+            "loupe",
+            "mocha",
+            "pathval",
+            "prettier",
+            "typescript"
+          ],
+          "scripts": [
+            "build",
+            "clean",
+            "format",
+            "lint",
+            "lint:format",
+            "lint:js",
+            "lint:types",
+            "prebuild",
+            "pretest",
+            "test",
+            "test-chrome",
+            "test-node"
+          ]
+        }
+      ],
+      "entrypoints": [
+        {
+          "path": "README.md",
+          "kind": "docs",
+          "reason": "Repository readme"
+        },
+        {
+          "path": ".github/workflows/node.js.yml",
+          "kind": "config",
+          "reason": "GitHub Actions workflow"
+        },
+        {
+          "path": ".github/workflows/npm-publish.yml",
+          "kind": "config",
+          "reason": "GitHub Actions workflow"
+        },
+        {
+          "path": ".github/workflows/browsers.yml",
+          "kind": "config",
+          "reason": "GitHub Actions workflow"
+        },
+        {
+          "path": "package.json",
+          "kind": "config",
+          "reason": "npm scripts: build, clean, format, lint, lint:format, lint:js, lint:types, prebuild"
+        }
+      ],
+      "top_level_dirs": [
+        {
+          "path": "lib",
+          "file_count": 33,
+          "bytes": 294971
+        },
+        {
+          "path": "test",
+          "file_count": 20,
+          "bytes": 476589
+        },
+        {
+          "path": ".github",
+          "file_count": 5,
+          "bytes": 4287
+        }
+      ],
+      "docs": [
+        {
+          "path": "CONTRIBUTING.md",
+          "bytes": 10198,
+          "preview": "# Chai Contribution Guidelines\n\nWe like to encourage you to contribute to the Chai.js repository. This should be as easy as possible for you but there are a few things to consider when contributing. The following guidelines for contribution should be followed if you want to submit a pull request or open an issue.\n\nFollowing these guidelines helps to communicate that you respect the time of the developers managing and developing this open source project. In return, they should reciprocate that respect in addressing your issue or assessing patches and features.\n\n#### Table of Contents\n\n- [TLDR;](#tldr)\n- [Contributing](#contributing)\n  - [Bug Reports](#bugs)\n  - [Feature Requests](#features)\n  - [Pull Requests](#pull-requests)\n- [Releasing](#releasing)\n- [Support](#support)\n  - [Resources](#resources)\n  - [Core Contributors](#contributors)\n\n<a name=\"tldr\"></a>\n## TLDR;\n\n- Creating an Issue or Pull Request requires a [GitHub](http://github.com) account.\n- Issue reports should be **clear**, **concise** and **reproducible**. Check to see if your issue has already been resolved in the [master]() branch or already reported in Chai's [GitHub Issue Tracker](https://github.com/chaijs/chai/issues).\n- Pull Requests must adhere to strict [coding style guidelines](https://github.com/chaijs/chai/wiki/Chai-Coding-Style-Guide).\n- In general, avoid submitting PRs for new Assertions without asking core contributors first. More than likely it would be better implemented as a plugin.\n- Additional support is available via the [Google Group](http://groups.google.com/group/chaijs) or on irc.freenode.net#chaijs.\n- **IMPORTANT**: By submitting a patch, you agree to allow the project owner to license your work under the same license as that used by the project.\n\n\n\n<a name=\"contributing\"></a>\n## Contributing\n\nThe issue tracker is the preferred channel for [bug reports](#bugs),\n[feature requests](#features) and [submitting pull\nrequests](#pull-requests), but please respect the following restrictions:\n\n* Please **do not** use the issue tracker for personal support requests (use\n  [Google Group](https://groups.google.com/forum/#!forum/chaijs) or IRC).\n* Please **do not** derail or troll issues. Keep the discussion on topic and\n  respect the opinions of others\n\n<a name=\"bugs\"></a>\n### Bug Reports\n\nA bug is a **demonstrable problem** that is caused by the code in the repository.\n\nGuidelines for bug reports:\n\n1. **Use the GitHub issue search** &mdash; check if the issue has already been reported.\n2. **Check if the issue has been fixed** &mdash; try to reproduce it using the latest `master` or development branch in the repository.\n3. **Isolate the problem** &mdash; create a test case to demonstrate your issue. Provide either a repo, gist, or code sample to demonstrate you problem.\n\nA good bug report shouldn't leave others needing to chase you up for more information. Please try to be as detailed as possible in your report. What is your environment? What steps will reproduce the issue? What browser(s) and/or Node.js versions experience the problem? What would you expect to be the outcome? All these details will help people to fix any potential bugs.\n\nExample:\n\n> Short and descriptive example bug report title\n>\n> A summary of the issue and the browser/OS environment in which it occurs. If suitable, include the steps required to reproduce the bug.\n>\n> 1. This is the first step\n> 2. This is the second step\n> 3. Further steps, etc.\n>\n> `<url>` - a link to the reduced test case OR\n> ```js\n> expect(a).to.equal('a');\n> // code sample\n> ```\n>\n> Any other information you want to share that is relevant to the issue being reported. This might include the lines of code that you have identified as causing the bug, and potential solutions (and your opinions on their merits).\n\n<a name=\"features\"></a>\n### Feature Requests\n\nFeature requests are welcome. But take a moment to find out whether your idea fits with the scope and aims of the project. It's up to *you* to make a strong case to convince the project's developers of the merits of this feature. Please provide as much detail and context as possible.\n\nFurthermore, since Chai.js has a [robust plugin API](http://chaijs.com/guide/plugins/), we encourage you to publish **new Assertions** as plugins. If your feature is an enhancement to an **existing Assertion**, please propose your changes as an issue prior to opening a pull request. If the core Chai.js contributors feel your plugin would be better suited as a core assertion, they will invite you to open a PR in [chaijs/chai](https://github.com/chaijs/chai).\n\n<a name=\"pull-requests\"></a>\n### Pull Requests\n\n- PRs for new core-assertions are advised against.\n- PRs for core-assertion bug fixes are always welcome.\n- PRs for enhancing the interfaces are always welcome.\n- PRs that increase test coverage are always welcome.\n- PRs are scrutinized for coding-style.\n\nGood pull requests - patches, improvements, new features - are a fantastic help. They should remain focused in scope and avoid containing unrelated commits.\n\n**Please ask first** before embarking on any significant pull request (e.g. implementing features, refactoring code), otherwise you risk spending a lot of time working on something that the project's developers might not want to merge into the project.\n\nPlease adhere to the coding conventions used throughout a project (indentation, accurate comments, etc.) and any other requirements (such as test coverage). Please review the [Chai.js Coding Style Guide](https://github.com/chaijs/chai/wiki/Chai-Coding-Style-Guide).\n\nFollow this process if you'd like your work considered for inclusion in the project:\n\n1. [Fork](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo) the project, clone your fork, and configure the remotes:\n\n```bash\n# Clone your fork of the repo into the current directory\ngit clone https://github.com/<your-username>/<repo-name>\n# Navigate to the newly cloned directory\ncd <repo-name>\n# Assign the original repo to a remote called \"upstream\"\ngit remote add upstream https://github.com/<upstream-owner>/<repo-name>\n```\n\n2. If you cloned a while ago, get the latest changes from upstream:\n\n```bash\ngit checkout <dev-branch>\ngit pull upstream <dev-branch>\n```\n\n3. Create a new topic branch (off the main project development branch) to contain your feature, change, or fix:\n\n```bash\ngit checkout -b <topic-branch-name>\n```\n\n4. Commit your changes in logical chunks. Use Git's [interactive rebase](https://help.github.com/articles/interactive-rebase) feature to tidy up your commits before making them public.\n\n5. Run you code to make sure it works. If you're still having problems please try to run `make clean` and then test your code again.\n\n```bash\nnpm test\n# when finished running tests...\ngit checkout chai.js\n```\n\n6. Locally merge (or rebase) the upstream development branch into your topic branch:\n\n```bash\ngit pull [--rebase] upstream <dev-branch>\n```\n\n7. Push your topic branch up to your fork:\n\n```bash\ngit push origin <topic-branch-name>\n```\n\n8. [Open a Pull Request](https://help.github.com/articles/using-pull-requests/) with a clear title and description.\n\n**IMPORTANT**: By submitting a patch, you agree to allow the project owner to license your work under the same license as that used by the project.\n\n<a name=\"releasing\"></a>\n## Releasing\n\nReleases can be **prepared** by anyone with access to the code.\n\nSimply run `make release-major`, `make release-minor`, or `make-release-patch`\nand it will automatically do the following:\n\n - Build chai.js\n - Bump the version numbers across the project\n - Make a commit within git\n\nAll you need to do is push the commit up and make a pull request, one of the core contributors will merge it and publish a release.\n\n### Publishing a Release\n\nAnyone who is a core contributor (see the [Core Contributors Heading in the Readme](https://github.com/chaijs/chai#core-contributors)) can publish a release:\n\n1. Go to the [Releases page on Github](https://github.com/chaijs/chai/releases)\n2. Hit \"Draft a new release\" (if you can't see this, you're not a core contributor!)\n3. Write human-friendly Release Notes based "
+        },
+        {
+          "path": "README.md",
+          "bytes": 6222,
+          "preview": "<h1 align=center>\n  <a href=\"http://chaijs.com\" title=\"Chai Documentation\">\n    <img alt=\"ChaiJS\" src=\"http://chaijs.com/img/chai-logo.png\">\n  </a>\n  <br>\n  chai\n</h1>\n\n<p align=center>\n  Chai is a BDD / TDD assertion library for <a href=\"http://nodejs.org\">node</a> and the browser that can be delightfully paired with any javascript testing framework.\n</p>\n\n<p align=center>\n  <a href=\"https://www.npmjs.com/package/chai\">\n    <img\n      alt=\"downloads:?\"\n      src=\"https://img.shields.io/npm/dm/chai.svg?style=flat-square\"\n    />\n  </a>\n  <a href=\"https://www.npmjs.com/package/chai\">\n    <img\n      alt=\"node:?\"\n      src=\"https://img.shields.io/badge/node-%3E=18.0-blue.svg?style=flat-square\"\n    />\n  </a>\n  <br/>\n  <a href=\"https://chai-slack.herokuapp.com/\">\n    <img\n      alt=\"Join the Slack chat\"\n      src=\"https://img.shields.io/badge/slack-join%20chat-E2206F.svg?style=flat-square\"\n    />\n  </a>\n  <a href=\"https://gitter.im/chaijs/chai\">\n    <img\n      alt=\"Join the Gitter chat\"\n      src=\"https://img.shields.io/badge/gitter-join%20chat-D0104D.svg?style=flat-square\"\n    />\n  </a>\n  <a href=\"https://opencollective.com/chaijs\">\n    <img\n      alt=\"OpenCollective Backers\"\n      src=\"https://opencollective.com/chaijs/backers/badge.svg?style=flat-square\"\n    />\n  </a>\n</p>\n\nFor more information or to download plugins, view the [documentation](http://chaijs.com).\n\n## What is Chai?\n\nChai is an _assertion library_, similar to Node's built-in `assert`. It makes testing much easier by giving you lots of assertions you can run against your code.\n\n## Installation\n\n### Node.js\n\n`chai` is available on [npm](http://npmjs.org). To install it, type:\n\n    $ npm install --save-dev chai\n\n### Browsers\n\nYou can also use it within the browser; install via npm and use the `index.js` file found within the download. For example:\n\n```html\n<script src=\"./node_modules/chai/index.js\" type=\"module\"></script>\n```\n\n## Usage\n\nImport the library in your code, and then pick one of the styles you'd like to use - either `assert`, `expect` or `should`:\n\n```js\nimport { assert } from 'chai';  // Using Assert style\nimport { expect } from 'chai';  // Using Expect style\nimport { should } from 'chai';  // Using Should style\n```\n\n### Register the chai testing style globally\n\n```js\nimport 'chai/register-assert';  // Using Assert style\nimport 'chai/register-expect';  // Using Expect style\nimport 'chai/register-should';  // Using Should style\n```\n\n### Import assertion styles as local variables\n\n```js\nimport { assert } from 'chai';  // Using Assert style\nimport { expect } from 'chai';  // Using Expect style\nimport { should } from 'chai';  // Using Should style\nshould();  // Modifies `Object.prototype`\n\nimport { expect, use } from 'chai';  // Creates local variables `expect` and `use`; useful for plugin use\n```\n\n### Usage with Mocha\n\n```bash\nmocha spec.js --require chai/register-assert.js  # Using Assert style\nmocha spec.js --require chai/register-expect.js  # Using Expect style\nmocha spec.js --require chai/register-should.js  # Using Should style\n```\n\n[Read more about these styles in our docs](http://chaijs.com/guide/styles/).\n\n## Plugins\n\nChai offers a robust Plugin architecture for extending Chai's assertions and interfaces.\n\n- Need a plugin? View the [official plugin list](http://chaijs.com/plugins).\n- Want to build a plugin? Read the [plugin api documentation](http://chaijs.com/guide/plugins/).\n- Have a plugin and want it listed? Simply add the following keywords to your package.json:\n  -  `chai-plugin`\n  -  `browser` if your plugin works in the browser as well as Node.js\n  -  `browser-only` if your plugin does not work with Node.js\n\n### Related Projects\n\n- [chaijs / chai-docs](https://github.com/chaijs/chai-docs): The chaijs.com website source code.\n- [chaijs / assertion-error](https://github.com/chaijs/assertion-error): Custom `Error` constructor thrown upon an assertion failing.\n- [chaijs / deep-eql](https://github.com/chaijs/deep-eql): Improved deep equality testing for Node.js and the browser.\n- [chaijs / check-error](https://github.com/chaijs/check-error): Error comparison and information related utility for Node.js and the browser.\n- [chaijs / loupe](https://github.com/chaijs/loupe): Inspect utility for Node.js and browsers.\n- [chaijs / pathval](https://github.com/chaijs/pathval): Object value retrieval given a string path.\n\n### Contributing\n\nThank you very much for considering to contribute!\n\nPlease make sure you follow our [Code Of Conduct](https://github.com/chaijs/chai/blob/master/CODE_OF_CONDUCT.md) and we also strongly recommend reading our [Contributing Guide](https://github.com/chaijs/chai/blob/master/CONTRIBUTING.md).\n\nHere are a few issues other contributors frequently ran into when opening pull requests:\n\n- Please do not commit changes to the `chai.js` build. We do it once per release.\n- Before pushing your commits, please make sure you [rebase](https://github.com/chaijs/chai/blob/master/CONTRIBUTING.md#pull-requests) them.\n\n### Contributors\n\nPlease see the full\n[Contributors Graph](https://github.com/chaijs/chai/graphs/contributors) for our\nlist of contributors.\n\n### Core Contributors\n\nFeel free to reach out to any of the core contributors with your questions or\nconcerns. We will do our best to respond in a timely manner.\n\n[![Keith Cirkel](https://avatars3.githubusercontent.com/u/118266?v=3&s=50)](https://github.com/keithamus)\n[![James Garbutt](https://avatars3.githubusercontent.com/u/5677153?v=3&s=50)](https://github.com/43081j)\n[![Kristján Oddsson](https://avatars3.githubusercontent.com/u/318208?v=3&s=50)](https://github.com/koddsson)\n\n### Core Contributor Alumni\n\nThis project would not be what it is without the contributions from our prior\ncore contributors, for whom we are forever grateful:\n\n[![Jake Luer](https://avatars3.githubusercontent.com/u/58988?v=3&s=50)](https://github.com/logicalparadox)\n[![Veselin Todorov](https://avatars3.githubusercontent.com/u/330048?v=3&s=50)](https://github.com/vesln)\n[![Lucas Fernandes da Costa](https://avatars3.githubusercontent.com/u/6868147?v=3&s=50)](https://github.com/lucasfcosta)\n[![Grant Snodgrass](https://avatars3.githubusercontent.com/u/17260989?v=3&s=50)](https://github.com/meeber)\n"
+        }
+      ],
+      "config_files": [
+        "tsconfig.json",
+        "eslint.config.js"
+      ],
+      "stack_tags": [
+        "GitHub Actions"
+      ],
+      "workspace_units": [
+        {
+          "path": ".",
+          "name": "chai",
+          "kind": "workspace",
+          "manifest_path": "package.json",
+          "build_system": "package.json",
+          "file_count": 75,
+          "languages": [
+            {
+              "language": "JavaScript",
+              "files": 56,
+              "bytes": 772663
+            },
+            {
+              "language": "Markdown",
+              "files": 5,
+              "bytes": 86907
+            },
+            {
+              "language": "YAML",
+              "files": 4,
+              "bytes": 3986
+            },
+            {
+              "language": "JSON",
+              "files": 4,
+              "bytes": 3030
+            },
+            {
+              "language": "TypeScript",
+              "files": 1,
+              "bytes": 243
+            }
+          ],
+          "scripts": [
+            "build",
+            "clean",
+            "format",
+            "lint",
+            "lint:format",
+            "lint:js",
+            "lint:types",
+            "prebuild",
+            "pretest",
+            "test",
+            "test-chrome",
+            "test-node"
+          ],
+          "entrypoints": [
+            ".github/workflows/browsers.yml",
+            ".github/workflows/node.js.yml",
+            ".github/workflows/npm-publish.yml",
+            "README.md",
+            "package.json"
+          ],
+          "test_files": [],
+          "tags": [
+            "JavaScript",
+            "Markdown",
+            "YAML"
+          ]
+        }
+      ],
+      "qa_readiness": {
+        "score": 0,
+        "status": "missing",
+        "summary": "Repo does not expose enough local browser QA structure for a reliable Synthetic QA workflow yet.",
+        "signals": [
+          {
+            "id": "browser_runner",
+            "label": "Browser runner",
+            "status": "missing",
+            "detail": "No Playwright, Cypress, or browser runner config was found.",
+            "sources": []
+          },
+          {
+            "id": "user_flow_specs",
+            "label": "User-flow specs",
+            "status": "missing",
+            "detail": "No e2e/playwright/cypress spec files were found.",
+            "sources": []
+          },
+          {
+            "id": "local_app_command",
+            "label": "Local app command",
+            "status": "missing",
+            "detail": "No obvious package script for starting the app locally was found.",
+            "sources": []
+          },
+          {
+            "id": "qa_script",
+            "label": "QA script",
+            "status": "missing",
+            "detail": "No explicit QA/e2e/browser test script was found.",
+            "sources": []
+          },
+          {
+            "id": "artifact_trail",
+            "label": "Artifact trail",
+            "status": "missing",
+            "detail": "No browser QA artifacts or artifact-capable runner were found.",
+            "sources": []
+          },
+          {
+            "id": "targetable_routes",
+            "label": "Targetable surfaces",
+            "status": "missing",
+            "detail": "No obvious web entrypoint or route file was found.",
+            "sources": []
+          }
+        ],
+        "suggested_flows": []
+      },
+      "repo_graph": {
+        "schema_version": 2,
+        "nodes": [
+          {
+            "id": "file:github-workflows-browsers-yml",
+            "kind": "file",
+            "label": ".github/workflows/browsers.yml",
+            "path": ".github/workflows/browsers.yml",
+            "detail": "workspace entrypoint",
+            "sources": [
+              ".github/workflows/browsers.yml"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:github-workflows-node-js-yml",
+            "kind": "file",
+            "label": ".github/workflows/node.js.yml",
+            "path": ".github/workflows/node.js.yml",
+            "detail": "workspace entrypoint",
+            "sources": [
+              ".github/workflows/node.js.yml"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:github-workflows-npm-publish-yml",
+            "kind": "file",
+            "label": ".github/workflows/npm-publish.yml",
+            "path": ".github/workflows/npm-publish.yml",
+            "detail": "workspace entrypoint",
+            "sources": [
+              ".github/workflows/npm-publish.yml"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:code-of-conduct-md",
+            "kind": "file",
+            "label": "CODE_OF_CONDUCT.md",
+            "path": "CODE_OF_CONDUCT.md",
+            "detail": "source marker candidate",
+            "sources": [
+              "CODE_OF_CONDUCT.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:contributing-md",
+            "kind": "file",
+            "label": "CONTRIBUTING.md",
+            "path": "CONTRIBUTING.md",
+            "detail": "source marker candidate",
+            "sources": [
+              "CONTRIBUTING.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:history-md",
+            "kind": "file",
+            "label": "History.md",
+            "path": "History.md",
+            "detail": "source marker candidate",
+            "sources": [
+              "History.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:readme-md",
+            "kind": "file",
+            "label": "README.md",
+            "path": "README.md",
+            "detail": "workspace entrypoint",
+            "sources": [
+              "README.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:releasenotes-md",
+            "kind": "file",
+            "label": "ReleaseNotes.md",
+            "path": "ReleaseNotes.md",
+            "detail": "source marker candidate",
+            "sources": [
+              "ReleaseNotes.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:eslint-config-js",
+            "kind": "file",
+            "label": "eslint.config.js",
+            "path": "eslint.config.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "eslint.config.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:lib-chai-js",
+            "kind": "file",
+            "label": "lib/chai.js",
+            "path": "lib/chai.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "lib/chai.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:lib-chai-assertion-js",
+            "kind": "file",
+            "label": "lib/chai/assertion.js",
+            "path": "lib/chai/assertion.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "lib/chai/assertion.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:lib-chai-config-js",
+            "kind": "file",
+            "label": "lib/chai/config.js",
+            "path": "lib/chai/config.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "lib/chai/config.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:lib-chai-core-assertions-js",
+            "kind": "file",
+            "label": "lib/chai/core/assertions.js",
+            "path": "lib/chai/core/assertions.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "lib/chai/core/assertions.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:lib-chai-interface-assert-js",
+            "kind": "file",
+            "label": "lib/chai/interface/assert.js",
+            "path": "lib/chai/interface/assert.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "lib/chai/interface/assert.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:lib-chai-interface-expect-js",
+            "kind": "file",
+            "label": "lib/chai/interface/expect.js",
+            "path": "lib/chai/interface/expect.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "lib/chai/interface/expect.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:lib-chai-interface-should-js",
+            "kind": "file",
+            "label": "lib/chai/interface/should.js",
+            "path": "lib/chai/interface/should.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "lib/chai/interface/should.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:lib-chai-utils-addchainablemethod-js",
+            "kind": "file",
+            "label": "lib/chai/utils/addChainableMethod.js",
+            "path": "lib/chai/utils/addChainableMethod.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "lib/chai/utils/addChainableMethod.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:lib-chai-utils-addlengthguard-js",
+            "kind": "file",
+            "label": "lib/chai/utils/addLengthGuard.js",
+            "path": "lib/chai/utils/addLengthGuard.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "lib/chai/utils/addLengthGuard.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:lib-chai-utils-addmethod-js",
+            "kind": "file",
+            "label": "lib/chai/utils/addMethod.js",
+            "path": "lib/chai/utils/addMethod.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "lib/chai/utils/addMethod.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:lib-chai-utils-addproperty-js",
+            "kind": "file",
+            "label": "lib/chai/utils/addProperty.js",
+            "path": "lib/chai/utils/addProperty.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "lib/chai/utils/addProperty.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:lib-chai-utils-comparebyinspect-js",
+            "kind": "file",
+            "label": "lib/chai/utils/compareByInspect.js",
+            "path": "lib/chai/utils/compareByInspect.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "lib/chai/utils/compareByInspect.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:lib-chai-utils-events-js",
+            "kind": "file",
+            "label": "lib/chai/utils/events.js",
+            "path": "lib/chai/utils/events.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "lib/chai/utils/events.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:lib-chai-utils-expecttypes-js",
+            "kind": "file",
+            "label": "lib/chai/utils/expectTypes.js",
+            "path": "lib/chai/utils/expectTypes.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "lib/chai/utils/expectTypes.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:lib-chai-utils-flag-js",
+            "kind": "file",
+            "label": "lib/chai/utils/flag.js",
+            "path": "lib/chai/utils/flag.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "lib/chai/utils/flag.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:lib-chai-utils-getactual-js",
+            "kind": "file",
+            "label": "lib/chai/utils/getActual.js",
+            "path": "lib/chai/utils/getActual.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "lib/chai/utils/getActual.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:lib-chai-utils-getmessage-js",
+            "kind": "file",
+            "label": "lib/chai/utils/getMessage.js",
+            "path": "lib/chai/utils/getMessage.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "lib/chai/utils/getMessage.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:lib-chai-utils-getoperator-js",
+            "kind": "file",
+            "label": "lib/chai/utils/getOperator.js",
+            "path": "lib/chai/utils/getOperator.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "lib/chai/utils/getOperator.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:lib-chai-utils-getownenumerableproperties-js",
+            "kind": "file",
+            "label": "lib/chai/utils/getOwnEnumerableProperties.js",
+            "path": "lib/chai/utils/getOwnEnumerableProperties.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "lib/chai/utils/getOwnEnumerableProperties.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:lib-chai-utils-getownenumerablepropertysymbols-js",
+            "kind": "file",
+            "label": "lib/chai/utils/getOwnEnumerablePropertySymbols.js",
+            "path": "lib/chai/utils/getOwnEnumerablePropertySymbols.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "lib/chai/utils/getOwnEnumerablePropertySymbols.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:lib-chai-utils-getproperties-js",
+            "kind": "file",
+            "label": "lib/chai/utils/getProperties.js",
+            "path": "lib/chai/utils/getProperties.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "lib/chai/utils/getProperties.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:lib-chai-utils-index-js",
+            "kind": "file",
+            "label": "lib/chai/utils/index.js",
+            "path": "lib/chai/utils/index.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "lib/chai/utils/index.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:lib-chai-utils-inspect-js",
+            "kind": "file",
+            "label": "lib/chai/utils/inspect.js",
+            "path": "lib/chai/utils/inspect.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "lib/chai/utils/inspect.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:lib-chai-utils-isnan-js",
+            "kind": "file",
+            "label": "lib/chai/utils/isNaN.js",
+            "path": "lib/chai/utils/isNaN.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "lib/chai/utils/isNaN.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:lib-chai-utils-isproxyenabled-js",
+            "kind": "file",
+            "label": "lib/chai/utils/isProxyEnabled.js",
+            "path": "lib/chai/utils/isProxyEnabled.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "lib/chai/utils/isProxyEnabled.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:lib-chai-utils-objdisplay-js",
+            "kind": "file",
+            "label": "lib/chai/utils/objDisplay.js",
+            "path": "lib/chai/utils/objDisplay.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "lib/chai/utils/objDisplay.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:lib-chai-utils-overwritechainablemethod-js",
+            "kind": "file",
+            "label": "lib/chai/utils/overwriteChainableMethod.js",
+            "path": "lib/chai/utils/overwriteChainableMethod.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "lib/chai/utils/overwriteChainableMethod.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:lib-chai-utils-overwritemethod-js",
+            "kind": "file",
+            "label": "lib/chai/utils/overwriteMethod.js",
+            "path": "lib/chai/utils/overwriteMethod.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "lib/chai/utils/overwriteMethod.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:lib-chai-utils-overwriteproperty-js",
+            "kind": "file",
+            "label": "lib/chai/utils/overwriteProperty.js",
+            "path": "lib/chai/utils/overwriteProperty.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "lib/chai/utils/overwriteProperty.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:lib-chai-utils-proxify-js",
+            "kind": "file",
+            "label": "lib/chai/utils/proxify.js",
+            "path": "lib/chai/utils/proxify.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "lib/chai/utils/proxify.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:lib-chai-utils-test-js",
+            "kind": "file",
+            "label": "lib/chai/utils/test.js",
+            "path": "lib/chai/utils/test.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "lib/chai/utils/test.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:lib-chai-utils-transferflags-js",
+            "kind": "file",
+            "label": "lib/chai/utils/transferFlags.js",
+            "path": "lib/chai/utils/transferFlags.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "lib/chai/utils/transferFlags.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:lib-chai-utils-type-detect-js",
+            "kind": "file",
+            "label": "lib/chai/utils/type-detect.js",
+            "path": "lib/chai/utils/type-detect.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "lib/chai/utils/type-detect.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:package-json",
+            "kind": "file",
+            "label": "package.json",
+            "path": "package.json",
+            "detail": "workspace entrypoint",
+            "sources": [
+              "package.json"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:register-assert-js",
+            "kind": "file",
+            "label": "register-assert.js",
+            "path": "register-assert.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "register-assert.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:register-expect-js",
+            "kind": "file",
+            "label": "register-expect.js",
+            "path": "register-expect.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "register-expect.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:register-should-js",
+            "kind": "file",
+            "label": "register-should.js",
+            "path": "register-should.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "register-should.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:test-assert-js",
+            "kind": "file",
+            "label": "test/assert.js",
+            "path": "test/assert.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "test/assert.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:test-bootstrap-index-js",
+            "kind": "file",
+            "label": "test/bootstrap/index.js",
+            "path": "test/bootstrap/index.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "test/bootstrap/index.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:test-configuration-js",
+            "kind": "file",
+            "label": "test/configuration.js",
+            "path": "test/configuration.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "test/configuration.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:test-display-errors-js",
+            "kind": "file",
+            "label": "test/display/errors.js",
+            "path": "test/display/errors.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "test/display/errors.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:test-display-message-js",
+            "kind": "file",
+            "label": "test/display/message.js",
+            "path": "test/display/message.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "test/display/message.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:test-expect-js",
+            "kind": "file",
+            "label": "test/expect.js",
+            "path": "test/expect.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "test/expect.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:test-globalerr-js",
+            "kind": "file",
+            "label": "test/globalErr.js",
+            "path": "test/globalErr.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "test/globalErr.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:test-globalshould-js",
+            "kind": "file",
+            "label": "test/globalShould.js",
+            "path": "test/globalShould.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "test/globalShould.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:test-plugins-js",
+            "kind": "file",
+            "label": "test/plugins.js",
+            "path": "test/plugins.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "test/plugins.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:test-should-js",
+            "kind": "file",
+            "label": "test/should.js",
+            "path": "test/should.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "test/should.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:test-subset-js",
+            "kind": "file",
+            "label": "test/subset.js",
+            "path": "test/subset.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "test/subset.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:test-type-detect-deno-test-ts",
+            "kind": "file",
+            "label": "test/type-detect/deno-test.ts",
+            "path": "test/type-detect/deno-test.ts",
+            "detail": "source marker candidate",
+            "sources": [
+              "test/type-detect/deno-test.ts"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:test-type-detect-dom-js",
+            "kind": "file",
+            "label": "test/type-detect/dom.js",
+            "path": "test/type-detect/dom.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "test/type-detect/dom.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:test-type-detect-index-js",
+            "kind": "file",
+            "label": "test/type-detect/index.js",
+            "path": "test/type-detect/index.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "test/type-detect/index.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:test-type-detect-new-ecmascript-types-js",
+            "kind": "file",
+            "label": "test/type-detect/new-ecmascript-types.js",
+            "path": "test/type-detect/new-ecmascript-types.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "test/type-detect/new-ecmascript-types.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:test-type-detect-node-js",
+            "kind": "file",
+            "label": "test/type-detect/node.js",
+            "path": "test/type-detect/node.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "test/type-detect/node.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:test-type-detect-tostringtag-extras-js",
+            "kind": "file",
+            "label": "test/type-detect/tostringtag-extras.js",
+            "path": "test/type-detect/tostringtag-extras.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "test/type-detect/tostringtag-extras.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:test-utilities-js",
+            "kind": "file",
+            "label": "test/utilities.js",
+            "path": "test/utilities.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "test/utilities.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:test-virtual-machines-js",
+            "kind": "file",
+            "label": "test/virtual-machines.js",
+            "path": "test/virtual-machines.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "test/virtual-machines.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:web-test-runner-config-js",
+            "kind": "file",
+            "label": "web-test-runner.config.js",
+            "path": "web-test-runner.config.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "web-test-runner.config.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "package:package-json",
+            "kind": "package",
+            "label": "chai",
+            "path": "package.json",
+            "detail": "package.json manifest",
+            "sources": [
+              "package.json"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "script:package-json-build",
+            "kind": "script",
+            "label": "build",
+            "path": "package.json",
+            "detail": "package script",
+            "sources": [
+              "package.json"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "script:package-json-clean",
+            "kind": "script",
+            "label": "clean",
+            "path": "package.json",
+            "detail": "package script",
+            "sources": [
+              "package.json"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "script:package-json-format",
+            "kind": "script",
+            "label": "format",
+            "path": "package.json",
+            "detail": "package script",
+            "sources": [
+              "package.json"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "script:package-json-lint",
+            "kind": "script",
+            "label": "lint",
+            "path": "package.json",
+            "detail": "package script",
+            "sources": [
+              "package.json"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "script:package-json-lint-format",
+            "kind": "script",
+            "label": "lint:format",
+            "path": "package.json",
+            "detail": "package script",
+            "sources": [
+              "package.json"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "script:package-json-lint-js",
+            "kind": "script",
+            "label": "lint:js",
+            "path": "package.json",
+            "detail": "package script",
+            "sources": [
+              "package.json"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "script:package-json-lint-types",
+            "kind": "script",
+            "label": "lint:types",
+            "path": "package.json",
+            "detail": "package script",
+            "sources": [
+              "package.json"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "script:package-json-prebuild",
+            "kind": "script",
+            "label": "prebuild",
+            "path": "package.json",
+            "detail": "package script",
+            "sources": [
+              "package.json"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "script:package-json-pretest",
+            "kind": "script",
+            "label": "pretest",
+            "path": "package.json",
+            "detail": "package script",
+            "sources": [
+              "package.json"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "script:package-json-test",
+            "kind": "script",
+            "label": "test",
+            "path": "package.json",
+            "detail": "package script",
+            "sources": [
+              "package.json"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "script:package-json-test-chrome",
+            "kind": "script",
+            "label": "test-chrome",
+            "path": "package.json",
+            "detail": "package script",
+            "sources": [
+              "package.json"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "script:package-json-test-node",
+            "kind": "script",
+            "label": "test-node",
+            "path": "package.json",
+            "detail": "package script",
+            "sources": [
+              "package.json"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "workspace:",
+            "kind": "workspace_unit",
+            "label": "chai",
+            "path": null,
+            "detail": "workspace | 75 files | 56 JavaScript, 5 Markdown, 4 YAML",
+            "sources": [
+              ".github/workflows/browsers.yml",
+              ".github/workflows/node.js.yml",
+              "package.json"
+            ],
+            "source_location": null,
+            "community": null
+          }
+        ],
+        "edges": [
+          {
+            "from": "package:package-json",
+            "to": "script:package-json-build",
+            "kind": "defines",
+            "evidence": "package.json defines npm script `build`",
+            "sources": [
+              "package.json"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "package:package-json",
+            "to": "script:package-json-clean",
+            "kind": "defines",
+            "evidence": "package.json defines npm script `clean`",
+            "sources": [
+              "package.json"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "package:package-json",
+            "to": "script:package-json-format",
+            "kind": "defines",
+            "evidence": "package.json defines npm script `format`",
+            "sources": [
+              "package.json"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "package:package-json",
+            "to": "script:package-json-lint",
+            "kind": "defines",
+            "evidence": "package.json defines npm script `lint`",
+            "sources": [
+              "package.json"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "package:package-json",
+            "to": "script:package-json-lint-format",
+            "kind": "defines",
+            "evidence": "package.json defines npm script `lint:format`",
+            "sources": [
+              "package.json"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "package:package-json",
+            "to": "script:package-json-lint-js",
+            "kind": "defines",
+            "evidence": "package.json defines npm script `lint:js`",
+            "sources": [
+              "package.json"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "package:package-json",
+            "to": "script:package-json-lint-types",
+            "kind": "defines",
+            "evidence": "package.json defines npm script `lint:types`",
+            "sources": [
+              "package.json"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "package:package-json",
+            "to": "script:package-json-prebuild",
+            "kind": "defines",
+            "evidence": "package.json defines npm script `prebuild`",
+            "sources": [
+              "package.json"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "package:package-json",
+            "to": "script:package-json-pretest",
+            "kind": "defines",
+            "evidence": "package.json defines npm script `pretest`",
+            "sources": [
+              "package.json"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "package:package-json",
+            "to": "script:package-json-test",
+            "kind": "defines",
+            "evidence": "package.json defines npm script `test`",
+            "sources": [
+              "package.json"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "package:package-json",
+            "to": "script:package-json-test-chrome",
+            "kind": "defines",
+            "evidence": "package.json defines npm script `test-chrome`",
+            "sources": [
+              "package.json"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "package:package-json",
+            "to": "script:package-json-test-node",
+            "kind": "defines",
+            "evidence": "package.json defines npm script `test-node`",
+            "sources": [
+              "package.json"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "package:package-json",
+            "kind": "defines",
+            "evidence": "workspace unit owns this manifest",
+            "sources": [
+              "package.json"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "file:github-workflows-browsers-yml",
+            "kind": "entrypoint",
+            "evidence": "entrypoint belongs to this workspace unit",
+            "sources": [
+              ".github/workflows/browsers.yml"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "file:github-workflows-node-js-yml",
+            "kind": "entrypoint",
+            "evidence": "entrypoint belongs to this workspace unit",
+            "sources": [
+              ".github/workflows/node.js.yml"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "file:github-workflows-npm-publish-yml",
+            "kind": "entrypoint",
+            "evidence": "entrypoint belongs to this workspace unit",
+            "sources": [
+              ".github/workflows/npm-publish.yml"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "file:package-json",
+            "kind": "entrypoint",
+            "evidence": "entrypoint belongs to this workspace unit",
+            "sources": [
+              "package.json"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "file:readme-md",
+            "kind": "entrypoint",
+            "evidence": "entrypoint belongs to this workspace unit",
+            "sources": [
+              "README.md"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          }
+        ],
+        "truncated": false
+      },
+      "history_brief": {
+        "schema_version": 2,
+        "summary": "Local history brief captured 12 recent commits, 0 decision markers, 8 test hints, and 8 co-change clusters for Repo Unpacked. Treat commit subjects as leads and rely on cited files for durable constraints.",
+        "recent_commits": [
+          {
+            "sha": "d86de2a9519b",
+            "date": "2026-09-29",
+            "subject": "chore(deps): update dependency eslint-plugin-jsdoc to v65 (#1865)",
+            "files": [
+              "package.json"
+            ]
+          },
+          {
+            "sha": "3173a3dcb53c",
+            "date": "2026-09-29",
+            "subject": "build(deps-dev): bump ip-address from 10.4.0 to 10.7.2 (#1866)",
+            "files": []
+          },
+          {
+            "sha": "a735838123c2",
+            "date": "2026-09-28",
+            "subject": "chore(deps): update dependency prettier to v3.9.9 (#1864)",
+            "files": []
+          },
+          {
+            "sha": "8d42a17db4c0",
+            "date": "2026-09-23",
+            "subject": "fix: require callable iterators in iterable assertions (#1861)",
+            "files": [
+              "lib/chai/core/assertions.js",
+              "lib/chai/interface/assert.js",
+              "test/assert.js",
+              "test/expect.js",
+              "test/should.js"
+            ]
+          },
+          {
+            "sha": "89c5d8b3f7f4",
+            "date": "2026-09-21",
+            "subject": "chore(deps): update dependencies (#1862)",
+            "files": []
+          },
+          {
+            "sha": "2873f600f0df",
+            "date": "2026-09-15",
+            "subject": "fix: correct change JSDoc types & handle 0/empty string (#1860)",
+            "files": [
+              "lib/chai/core/assertions.js",
+              "test/assert.js",
+              "test/expect.js",
+              "test/should.js"
+            ]
+          },
+          {
+            "sha": "0bd771be58d1",
+            "date": "2026-09-15",
+            "subject": "feat: correct some more types (#1859)",
+            "files": [
+              "lib/chai.js",
+              "lib/chai/assertion.js",
+              "lib/chai/interface/expect.js",
+              "lib/chai/utils/addChainableMethod.js",
+              "lib/chai/utils/flag.js",
+              "lib/chai/utils/getActual.js",
+              "lib/chai/utils/getMessage.js",
+              "lib/chai/utils/getOperator.js"
+            ]
+          },
+          {
+            "sha": "812c57da8d6d",
+            "date": "2026-09-15",
+            "subject": "fix: preserve literal template tags in assertion values (#1853)",
+            "files": [
+              "lib/chai/utils/getMessage.js",
+              "test/expect.js",
+              "test/utilities.js"
+            ]
+          },
+          {
+            "sha": "964d9a421456",
+            "date": "2026-09-14",
+            "subject": "chore(deps): update dependencies (#1858)",
+            "files": []
+          },
+          {
+            "sha": "e8f56fcb7527",
+            "date": "2026-09-07",
+            "subject": "chore(deps): update dependencies (#1852)",
+            "files": []
+          },
+          {
+            "sha": "3a6a419a4404",
+            "date": "2026-09-03",
+            "subject": "build(deps-dev): bump @humanfs/node from 0.16.7 to 0.16.8 (#1851)",
+            "files": []
+          },
+          {
+            "sha": "f8a22cf07630",
+            "date": "2026-09-03",
+            "subject": "test: cover throws() when the thrown value is not an Error (#1847)",
+            "files": [
+              "package.json",
+              "test/assert.js",
+              "test/expect.js"
+            ]
+          }
+        ],
+        "decisions": [],
+        "test_hints": [
+          {
+            "path": "package.json",
+            "reason": "package script `lint` is a likely verification command"
+          },
+          {
+            "path": "package.json",
+            "reason": "package script `lint:format` is a likely verification command"
+          },
+          {
+            "path": "package.json",
+            "reason": "package script `lint:js` is a likely verification command"
+          },
+          {
+            "path": "package.json",
+            "reason": "package script `lint:types` is a likely verification command"
+          },
+          {
+            "path": "package.json",
+            "reason": "package script `pretest` is a likely verification command"
+          },
+          {
+            "path": "package.json",
+            "reason": "package script `test` is a likely verification command"
+          },
+          {
+            "path": "package.json",
+            "reason": "package script `test-chrome` is a likely verification command"
+          },
+          {
+            "path": "package.json",
+            "reason": "package script `test-node` is a likely verification command"
+          }
+        ],
+        "temporal_couplings": [
+          {
+            "files": [
+              ".github/workflows/browsers.yml",
+              ".github/workflows/node.js.yml"
+            ],
+            "commit_count": 4,
+            "last_commit": "5b5c0a81435d",
+            "reason": "These files changed together in 4 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              ".github/workflows/browsers.yml",
+              ".github/workflows/npm-publish.yml"
+            ],
+            "commit_count": 4,
+            "last_commit": "5b5c0a81435d",
+            "reason": "These files changed together in 4 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              ".github/workflows/node.js.yml",
+              ".github/workflows/npm-publish.yml"
+            ],
+            "commit_count": 4,
+            "last_commit": "5b5c0a81435d",
+            "reason": "These files changed together in 4 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              "lib/chai/core/assertions.js",
+              "test/expect.js"
+            ],
+            "commit_count": 3,
+            "last_commit": "8d42a17db4c0",
+            "reason": "These files changed together in 3 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              "test/assert.js",
+              "test/expect.js"
+            ],
+            "commit_count": 3,
+            "last_commit": "8d42a17db4c0",
+            "reason": "These files changed together in 3 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              "lib/chai/core/assertions.js",
+              "test/assert.js"
+            ],
+            "commit_count": 2,
+            "last_commit": "8d42a17db4c0",
+            "reason": "These files changed together in 2 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              "lib/chai/core/assertions.js",
+              "test/should.js"
+            ],
+            "commit_count": 2,
+            "last_commit": "8d42a17db4c0",
+            "reason": "These files changed together in 2 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              "lib/chai/utils/flag.js",
+              "lib/chai/utils/getActual.js"
+            ],
+            "commit_count": 2,
+            "last_commit": "0bd771be58d1",
+            "reason": "These files changed together in 2 recent commits; inspect both when either side moves."
+          }
+        ],
+        "graph": {
+          "schema_version": 2,
+          "nodes": [
+            {
+              "id": "commit:0bd771be58d1",
+              "kind": "commit",
+              "label": "feat: correct some more types (#1859)",
+              "path": null,
+              "detail": "2026-09-15",
+              "citations": [
+                "git:0bd771be58d1"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:2873f600f0df",
+              "kind": "commit",
+              "label": "fix: correct change JSDoc types & handle 0/empty string (#1860)",
+              "path": null,
+              "detail": "2026-09-15",
+              "citations": [
+                "git:2873f600f0df"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:3173a3dcb53c",
+              "kind": "commit",
+              "label": "build(deps-dev): bump ip-address from 10.4.0 to 10.7.2 (#1866)",
+              "path": null,
+              "detail": "2026-09-29",
+              "citations": [
+                "git:3173a3dcb53c"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:3a6a419a4404",
+              "kind": "commit",
+              "label": "build(deps-dev): bump @humanfs/node from 0.16.7 to 0.16.8 (#1851)",
+              "path": null,
+              "detail": "2026-09-03",
+              "citations": [
+                "git:3a6a419a4404"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:812c57da8d6d",
+              "kind": "commit",
+              "label": "fix: preserve literal template tags in assertion values (#1853)",
+              "path": null,
+              "detail": "2026-09-15",
+              "citations": [
+                "git:812c57da8d6d"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:89c5d8b3f7f4",
+              "kind": "commit",
+              "label": "chore(deps): update dependencies (#1862)",
+              "path": null,
+              "detail": "2026-09-21",
+              "citations": [
+                "git:89c5d8b3f7f4"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:8d42a17db4c0",
+              "kind": "commit",
+              "label": "fix: require callable iterators in iterable assertions (#1861)",
+              "path": null,
+              "detail": "2026-09-23",
+              "citations": [
+                "git:8d42a17db4c0"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:964d9a421456",
+              "kind": "commit",
+              "label": "chore(deps): update dependencies (#1858)",
+              "path": null,
+              "detail": "2026-09-14",
+              "citations": [
+                "git:964d9a421456"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:a735838123c2",
+              "kind": "commit",
+              "label": "chore(deps): update dependency prettier to v3.9.9 (#1864)",
+              "path": null,
+              "detail": "2026-09-28",
+              "citations": [
+                "git:a735838123c2"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:d86de2a9519b",
+              "kind": "commit",
+              "label": "chore(deps): update dependency eslint-plugin-jsdoc to v65 (#1865)",
+              "path": null,
+              "detail": "2026-09-29",
+              "citations": [
+                "git:d86de2a9519b"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:e8f56fcb7527",
+              "kind": "commit",
+              "label": "chore(deps): update dependencies (#1852)",
+              "path": null,
+              "detail": "2026-09-07",
+              "citations": [
+                "git:e8f56fcb7527"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:f8a22cf07630",
+              "kind": "commit",
+              "label": "test: cover throws() when the thrown value is not an Error (#1847)",
+              "path": null,
+              "detail": "2026-09-03",
+              "citations": [
+                "git:f8a22cf07630"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:-github-workflows-browsers-yml",
+              "kind": "file",
+              "label": ".github/workflows/browsers.yml",
+              "path": ".github/workflows/browsers.yml",
+              "detail": "Recent co-change lead",
+              "citations": [
+                ".github/workflows/browsers.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:-github-workflows-node-js-yml",
+              "kind": "file",
+              "label": ".github/workflows/node.js.yml",
+              "path": ".github/workflows/node.js.yml",
+              "detail": "Recent co-change lead",
+              "citations": [
+                ".github/workflows/node.js.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:-github-workflows-npm-publish-yml",
+              "kind": "file",
+              "label": ".github/workflows/npm-publish.yml",
+              "path": ".github/workflows/npm-publish.yml",
+              "detail": "Recent co-change lead",
+              "citations": [
+                ".github/workflows/npm-publish.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:lib-chai-assertion-js",
+              "kind": "file",
+              "label": "lib/chai/assertion.js",
+              "path": "lib/chai/assertion.js",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "lib/chai/assertion.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:lib-chai-core-assertions-js",
+              "kind": "file",
+              "label": "lib/chai/core/assertions.js",
+              "path": "lib/chai/core/assertions.js",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "lib/chai/core/assertions.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:lib-chai-interface-assert-js",
+              "kind": "file",
+              "label": "lib/chai/interface/assert.js",
+              "path": "lib/chai/interface/assert.js",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "lib/chai/interface/assert.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:lib-chai-interface-expect-js",
+              "kind": "file",
+              "label": "lib/chai/interface/expect.js",
+              "path": "lib/chai/interface/expect.js",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "lib/chai/interface/expect.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:lib-chai-js",
+              "kind": "file",
+              "label": "lib/chai.js",
+              "path": "lib/chai.js",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "lib/chai.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:lib-chai-utils-addchainablemethod-js",
+              "kind": "file",
+              "label": "lib/chai/utils/addChainableMethod.js",
+              "path": "lib/chai/utils/addChainableMethod.js",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "lib/chai/utils/addChainableMethod.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:lib-chai-utils-flag-js",
+              "kind": "file",
+              "label": "lib/chai/utils/flag.js",
+              "path": "lib/chai/utils/flag.js",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "lib/chai/utils/flag.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:lib-chai-utils-getactual-js",
+              "kind": "file",
+              "label": "lib/chai/utils/getActual.js",
+              "path": "lib/chai/utils/getActual.js",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "lib/chai/utils/getActual.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:lib-chai-utils-getmessage-js",
+              "kind": "file",
+              "label": "lib/chai/utils/getMessage.js",
+              "path": "lib/chai/utils/getMessage.js",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "lib/chai/utils/getMessage.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:lib-chai-utils-getoperator-js",
+              "kind": "file",
+              "label": "lib/chai/utils/getOperator.js",
+              "path": "lib/chai/utils/getOperator.js",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "lib/chai/utils/getOperator.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:package-json",
+              "kind": "file",
+              "label": "package.json",
+              "path": "package.json",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "package.json"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:test-assert-js",
+              "kind": "file",
+              "label": "test/assert.js",
+              "path": "test/assert.js",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "test/assert.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:test-expect-js",
+              "kind": "file",
+              "label": "test/expect.js",
+              "path": "test/expect.js",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "test/expect.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:test-should-js",
+              "kind": "file",
+              "label": "test/should.js",
+              "path": "test/should.js",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "test/should.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:test-utilities-js",
+              "kind": "file",
+              "label": "test/utilities.js",
+              "path": "test/utilities.js",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "test/utilities.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "test:package-json-package-script--lint--is-a-likely-verification-command",
+              "kind": "test",
+              "label": "package script `lint` is a likely verification command",
+              "path": "package.json",
+              "detail": "Likely verification lead",
+              "citations": [
+                "package.json"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "id": "test:package-json-package-script--lint-format--is-a-likely-verification-command",
+              "kind": "test",
+              "label": "package script `lint:format` is a likely verification command",
+              "path": "package.json",
+              "detail": "Likely verification lead",
+              "citations": [
+                "package.json"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "id": "test:package-json-package-script--lint-js--is-a-likely-verification-command",
+              "kind": "test",
+              "label": "package script `lint:js` is a likely verification command",
+              "path": "package.json",
+              "detail": "Likely verification lead",
+              "citations": [
+                "package.json"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "id": "test:package-json-package-script--lint-types--is-a-likely-verification-command",
+              "kind": "test",
+              "label": "package script `lint:types` is a likely verification command",
+              "path": "package.json",
+              "detail": "Likely verification lead",
+              "citations": [
+                "package.json"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "id": "test:package-json-package-script--pretest--is-a-likely-verification-command",
+              "kind": "test",
+              "label": "package script `pretest` is a likely verification command",
+              "path": "package.json",
+              "detail": "Likely verification lead",
+              "citations": [
+                "package.json"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "id": "test:package-json-package-script--test--is-a-likely-verification-command",
+              "kind": "test",
+              "label": "package script `test` is a likely verification command",
+              "path": "package.json",
+              "detail": "Likely verification lead",
+              "citations": [
+                "package.json"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "id": "test:package-json-package-script--test-chrome--is-a-likely-verification-command",
+              "kind": "test",
+              "label": "package script `test-chrome` is a likely verification command",
+              "path": "package.json",
+              "detail": "Likely verification lead",
+              "citations": [
+                "package.json"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "id": "test:package-json-package-script--test-node--is-a-likely-verification-command",
+              "kind": "test",
+              "label": "package script `test-node` is a likely verification command",
+              "path": "package.json",
+              "detail": "Likely verification lead",
+              "citations": [
+                "package.json"
+              ],
+              "trust": "navigation_lead"
+            }
+          ],
+          "edges": [
+            {
+              "from": "commit:0bd771be58d1",
+              "to": "file:lib-chai-assertion-js",
+              "kind": "changed",
+              "evidence": "0bd771be58d1 changed this file",
+              "citations": [
+                "git:0bd771be58d1",
+                "lib/chai/assertion.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:0bd771be58d1",
+              "to": "file:lib-chai-interface-expect-js",
+              "kind": "changed",
+              "evidence": "0bd771be58d1 changed this file",
+              "citations": [
+                "git:0bd771be58d1",
+                "lib/chai/interface/expect.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:0bd771be58d1",
+              "to": "file:lib-chai-js",
+              "kind": "changed",
+              "evidence": "0bd771be58d1 changed this file",
+              "citations": [
+                "git:0bd771be58d1",
+                "lib/chai.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:0bd771be58d1",
+              "to": "file:lib-chai-utils-addchainablemethod-js",
+              "kind": "changed",
+              "evidence": "0bd771be58d1 changed this file",
+              "citations": [
+                "git:0bd771be58d1",
+                "lib/chai/utils/addChainableMethod.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:0bd771be58d1",
+              "to": "file:lib-chai-utils-flag-js",
+              "kind": "changed",
+              "evidence": "0bd771be58d1 changed this file",
+              "citations": [
+                "git:0bd771be58d1",
+                "lib/chai/utils/flag.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:0bd771be58d1",
+              "to": "file:lib-chai-utils-getactual-js",
+              "kind": "changed",
+              "evidence": "0bd771be58d1 changed this file",
+              "citations": [
+                "git:0bd771be58d1",
+                "lib/chai/utils/getActual.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:0bd771be58d1",
+              "to": "file:lib-chai-utils-getmessage-js",
+              "kind": "changed",
+              "evidence": "0bd771be58d1 changed this file",
+              "citations": [
+                "git:0bd771be58d1",
+                "lib/chai/utils/getMessage.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:0bd771be58d1",
+              "to": "file:lib-chai-utils-getoperator-js",
+              "kind": "changed",
+              "evidence": "0bd771be58d1 changed this file",
+              "citations": [
+                "git:0bd771be58d1",
+                "lib/chai/utils/getOperator.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:2873f600f0df",
+              "to": "file:lib-chai-core-assertions-js",
+              "kind": "changed",
+              "evidence": "2873f600f0df changed this file",
+              "citations": [
+                "git:2873f600f0df",
+                "lib/chai/core/assertions.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:2873f600f0df",
+              "to": "file:test-assert-js",
+              "kind": "changed",
+              "evidence": "2873f600f0df changed this file",
+              "citations": [
+                "git:2873f600f0df",
+                "test/assert.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:2873f600f0df",
+              "to": "file:test-expect-js",
+              "kind": "changed",
+              "evidence": "2873f600f0df changed this file",
+              "citations": [
+                "git:2873f600f0df",
+                "test/expect.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:2873f600f0df",
+              "to": "file:test-should-js",
+              "kind": "changed",
+              "evidence": "2873f600f0df changed this file",
+              "citations": [
+                "git:2873f600f0df",
+                "test/should.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:812c57da8d6d",
+              "to": "file:lib-chai-utils-getmessage-js",
+              "kind": "changed",
+              "evidence": "812c57da8d6d changed this file",
+              "citations": [
+                "git:812c57da8d6d",
+                "lib/chai/utils/getMessage.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:812c57da8d6d",
+              "to": "file:test-expect-js",
+              "kind": "changed",
+              "evidence": "812c57da8d6d changed this file",
+              "citations": [
+                "git:812c57da8d6d",
+                "test/expect.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:812c57da8d6d",
+              "to": "file:test-utilities-js",
+              "kind": "changed",
+              "evidence": "812c57da8d6d changed this file",
+              "citations": [
+                "git:812c57da8d6d",
+                "test/utilities.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:8d42a17db4c0",
+              "to": "file:lib-chai-core-assertions-js",
+              "kind": "changed",
+              "evidence": "8d42a17db4c0 changed this file",
+              "citations": [
+                "git:8d42a17db4c0",
+                "lib/chai/core/assertions.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:8d42a17db4c0",
+              "to": "file:lib-chai-interface-assert-js",
+              "kind": "changed",
+              "evidence": "8d42a17db4c0 changed this file",
+              "citations": [
+                "git:8d42a17db4c0",
+                "lib/chai/interface/assert.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:8d42a17db4c0",
+              "to": "file:test-assert-js",
+              "kind": "changed",
+              "evidence": "8d42a17db4c0 changed this file",
+              "citations": [
+                "git:8d42a17db4c0",
+                "test/assert.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:8d42a17db4c0",
+              "to": "file:test-expect-js",
+              "kind": "changed",
+              "evidence": "8d42a17db4c0 changed this file",
+              "citations": [
+                "git:8d42a17db4c0",
+                "test/expect.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:8d42a17db4c0",
+              "to": "file:test-should-js",
+              "kind": "changed",
+              "evidence": "8d42a17db4c0 changed this file",
+              "citations": [
+                "git:8d42a17db4c0",
+                "test/should.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:d86de2a9519b",
+              "to": "file:package-json",
+              "kind": "changed",
+              "evidence": "d86de2a9519b changed this file",
+              "citations": [
+                "git:d86de2a9519b",
+                "package.json"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:f8a22cf07630",
+              "to": "file:package-json",
+              "kind": "changed",
+              "evidence": "f8a22cf07630 changed this file",
+              "citations": [
+                "git:f8a22cf07630",
+                "package.json"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:f8a22cf07630",
+              "to": "file:test-assert-js",
+              "kind": "changed",
+              "evidence": "f8a22cf07630 changed this file",
+              "citations": [
+                "git:f8a22cf07630",
+                "test/assert.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:f8a22cf07630",
+              "to": "file:test-expect-js",
+              "kind": "changed",
+              "evidence": "f8a22cf07630 changed this file",
+              "citations": [
+                "git:f8a22cf07630",
+                "test/expect.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "file:-github-workflows-browsers-yml",
+              "to": "file:-github-workflows-node-js-yml",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 4 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:5b5c0a81435d"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:-github-workflows-browsers-yml",
+              "to": "file:-github-workflows-npm-publish-yml",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 4 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:5b5c0a81435d"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:-github-workflows-node-js-yml",
+              "to": "file:-github-workflows-npm-publish-yml",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 4 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:5b5c0a81435d"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:lib-chai-core-assertions-js",
+              "to": "file:test-assert-js",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 2 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:8d42a17db4c0"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:lib-chai-core-assertions-js",
+              "to": "file:test-expect-js",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 3 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:8d42a17db4c0"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:lib-chai-core-assertions-js",
+              "to": "file:test-should-js",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 2 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:8d42a17db4c0"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:lib-chai-utils-flag-js",
+              "to": "file:lib-chai-utils-getactual-js",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 2 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:0bd771be58d1"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:package-json",
+              "to": "test:package-json-package-script--lint--is-a-likely-verification-command",
+              "kind": "verified_by",
+              "evidence": "package script `lint` is a likely verification command",
+              "citations": [
+                "package.json"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:package-json",
+              "to": "test:package-json-package-script--lint-format--is-a-likely-verification-command",
+              "kind": "verified_by",
+              "evidence": "package script `lint:format` is a likely verification command",
+              "citations": [
+                "package.json"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:package-json",
+              "to": "test:package-json-package-script--lint-js--is-a-likely-verification-command",
+              "kind": "verified_by",
+              "evidence": "package script `lint:js` is a likely verification command",
+              "citations": [
+                "package.json"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:package-json",
+              "to": "test:package-json-package-script--lint-types--is-a-likely-verification-command",
+              "kind": "verified_by",
+              "evidence": "package script `lint:types` is a likely verification command",
+              "citations": [
+                "package.json"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:package-json",
+              "to": "test:package-json-package-script--pretest--is-a-likely-verification-command",
+              "kind": "verified_by",
+              "evidence": "package script `pretest` is a likely verification command",
+              "citations": [
+                "package.json"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:package-json",
+              "to": "test:package-json-package-script--test--is-a-likely-verification-command",
+              "kind": "verified_by",
+              "evidence": "package script `test` is a likely verification command",
+              "citations": [
+                "package.json"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:package-json",
+              "to": "test:package-json-package-script--test-chrome--is-a-likely-verification-command",
+              "kind": "verified_by",
+              "evidence": "package script `test-chrome` is a likely verification command",
+              "citations": [
+                "package.json"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:package-json",
+              "to": "test:package-json-package-script--test-node--is-a-likely-verification-command",
+              "kind": "verified_by",
+              "evidence": "package script `test-node` is a likely verification command",
+              "citations": [
+                "package.json"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:test-assert-js",
+              "to": "file:test-expect-js",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 3 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:8d42a17db4c0"
+              ],
+              "trust": "navigation_lead"
+            }
+          ],
+          "truncated": false
+        },
+        "sources": [
+          "package.json",
+          ".github/workflows/browsers.yml",
+          ".github/workflows/node.js.yml",
+          ".github/workflows/npm-publish.yml",
+          "lib/chai/core/assertions.js",
+          "test/expect.js",
+          "test/assert.js",
+          "test/should.js",
+          "lib/chai/utils/flag.js",
+          "lib/chai/utils/getActual.js"
+        ],
+        "truncated": false
+      },
+      "repo_health": {
+        "schema_version": 1,
+        "summary": "Deterministic scan scored 57 source files across simple size, churn, structural, test-adjacency, and performance-risk signals. 6 hotspots surfaced; average score is 8.6/10. Treat these as review leads, not proof of a bug.",
+        "average_score": 8.6,
+        "hotspot_count": 6,
+        "files_analyzed": 57,
+        "files_with_test_signal": 0,
+        "top_files": [
+          {
+            "path": "test/utilities.js",
+            "score": 5,
+            "bucket": "hotspot",
+            "lines": 1599,
+            "bytes": 50930,
+            "churn": 1599,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "high",
+                "detail": "1599 lines in one source file; inspect whether the module hides multiple responsibilities.",
+                "sources": [
+                  "test/utilities.js"
+                ]
+              },
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 8; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "test/utilities.js"
+                ]
+              },
+              {
+                "id": "long_block",
+                "label": "Long function/block",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "A brace-delimited block spans roughly 508 lines; consider extracting a helper when touching it.",
+                "sources": [
+                  "test/utilities.js"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 1599 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "test/utilities.js"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "test/utilities.js"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow.",
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "test/expect.js",
+            "score": 5.5,
+            "bucket": "hotspot",
+            "lines": 2424,
+            "bytes": 143160,
+            "churn": 4071,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "high",
+                "detail": "2424 lines in one source file; inspect whether the module hides multiple responsibilities.",
+                "sources": [
+                  "test/expect.js"
+                ]
+              },
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "Maximum indentation depth is about 6; inspect branch-heavy paths before risky edits.",
+                "sources": [
+                  "test/expect.js"
+                ]
+              },
+              {
+                "id": "long_block",
+                "label": "Long function/block",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "A brace-delimited block spans roughly 2181 lines; consider extracting a helper when touching it.",
+                "sources": [
+                  "test/expect.js"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 4071 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "test/expect.js"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "test/expect.js"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow.",
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "test/assert.js",
+            "score": 5.5,
+            "bucket": "hotspot",
+            "lines": 2447,
+            "bytes": 100387,
+            "churn": 3068,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "high",
+                "detail": "2447 lines in one source file; inspect whether the module hides multiple responsibilities.",
+                "sources": [
+                  "test/assert.js"
+                ]
+              },
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "Maximum indentation depth is about 6; inspect branch-heavy paths before risky edits.",
+                "sources": [
+                  "test/assert.js"
+                ]
+              },
+              {
+                "id": "long_block",
+                "label": "Long function/block",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "A brace-delimited block spans roughly 399 lines; consider extracting a helper when touching it.",
+                "sources": [
+                  "test/assert.js"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 3068 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "test/assert.js"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "test/assert.js"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow.",
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "test/configuration.js",
+            "score": 6,
+            "bucket": "hotspot",
+            "lines": 804,
+            "bytes": 25815,
+            "churn": 804,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "804 lines in one source file; changes here may be harder to review.",
+                "sources": [
+                  "test/configuration.js"
+                ]
+              },
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "Maximum indentation depth is about 7; inspect branch-heavy paths before risky edits.",
+                "sources": [
+                  "test/configuration.js"
+                ]
+              },
+              {
+                "id": "long_block",
+                "label": "Long function/block",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "A brace-delimited block spans roughly 799 lines; consider extracting a helper when touching it.",
+                "sources": [
+                  "test/configuration.js"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 804 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "test/configuration.js"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "test/configuration.js"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow.",
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "lib/chai/core/assertions.js",
+            "score": 6.2,
+            "bucket": "hotspot",
+            "lines": 2627,
+            "bytes": 136908,
+            "churn": 4295,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "high",
+                "detail": "2627 lines in one source file; inspect whether the module hides multiple responsibilities.",
+                "sources": [
+                  "lib/chai/core/assertions.js"
+                ]
+              },
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "Maximum indentation depth is about 6; inspect branch-heavy paths before risky edits.",
+                "sources": [
+                  "lib/chai/core/assertions.js"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 4295 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "lib/chai/core/assertions.js"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "lib/chai/core/assertions.js"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow.",
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "test/should.js",
+            "score": 6.2,
+            "bucket": "hotspot",
+            "lines": 2428,
+            "bytes": 112038,
+            "churn": 3291,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "high",
+                "detail": "2428 lines in one source file; inspect whether the module hides multiple responsibilities.",
+                "sources": [
+                  "test/should.js"
+                ]
+              },
+              {
+                "id": "long_block",
+                "label": "Long function/block",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "A brace-delimited block spans roughly 1753 lines; consider extracting a helper when touching it.",
+                "sources": [
+                  "test/should.js"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 3291 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "test/should.js"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "test/should.js"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow."
+            ]
+          },
+          {
+            "path": "test/globalErr.js",
+            "score": 6.7,
+            "bucket": "watch",
+            "lines": 297,
+            "bytes": 8513,
+            "churn": 297,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "Maximum indentation depth is about 6; inspect branch-heavy paths before risky edits.",
+                "sources": [
+                  "test/globalErr.js"
+                ]
+              },
+              {
+                "id": "long_block",
+                "label": "Long function/block",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "A brace-delimited block spans roughly 294 lines; consider extracting a helper when touching it.",
+                "sources": [
+                  "test/globalErr.js"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 297 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "test/globalErr.js"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "test/globalErr.js"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow.",
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "test/type-detect/index.js",
+            "score": 6.7,
+            "bucket": "watch",
+            "lines": 279,
+            "bytes": 7607,
+            "churn": 279,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "Maximum indentation depth is about 6; inspect branch-heavy paths before risky edits.",
+                "sources": [
+                  "test/type-detect/index.js"
+                ]
+              },
+              {
+                "id": "long_block",
+                "label": "Long function/block",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "A brace-delimited block spans roughly 269 lines; consider extracting a helper when touching it.",
+                "sources": [
+                  "test/type-detect/index.js"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 279 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "test/type-detect/index.js"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "test/type-detect/index.js"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow.",
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "test/subset.js",
+            "score": 6.7,
+            "bucket": "watch",
+            "lines": 225,
+            "bytes": 5538,
+            "churn": 225,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "Maximum indentation depth is about 6; inspect branch-heavy paths before risky edits.",
+                "sources": [
+                  "test/subset.js"
+                ]
+              },
+              {
+                "id": "long_block",
+                "label": "Long function/block",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "A brace-delimited block spans roughly 223 lines; consider extracting a helper when touching it.",
+                "sources": [
+                  "test/subset.js"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 225 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "test/subset.js"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "test/subset.js"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow.",
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "lib/chai/interface/assert.js",
+            "score": 6.9,
+            "bucket": "watch",
+            "lines": 2911,
+            "bytes": 91037,
+            "churn": 3254,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "high",
+                "detail": "2911 lines in one source file; inspect whether the module hides multiple responsibilities.",
+                "sources": [
+                  "lib/chai/interface/assert.js"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 3254 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "lib/chai/interface/assert.js"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "lib/chai/interface/assert.js"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow."
+            ]
+          },
+          {
+            "path": "test/type-detect/dom.js",
+            "score": 7.4,
+            "bucket": "watch",
+            "lines": 339,
+            "bytes": 10865,
+            "churn": 339,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "long_block",
+                "label": "Long function/block",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "A brace-delimited block spans roughly 323 lines; consider extracting a helper when touching it.",
+                "sources": [
+                  "test/type-detect/dom.js"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 339 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "test/type-detect/dom.js"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "test/type-detect/dom.js"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow."
+            ]
+          },
+          {
+            "path": "lib/chai/interface/should.js",
+            "score": 7.4,
+            "bucket": "watch",
+            "lines": 227,
+            "bytes": 6039,
+            "churn": 227,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "long_block",
+                "label": "Long function/block",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "A brace-delimited block spans roughly 212 lines; consider extracting a helper when touching it.",
+                "sources": [
+                  "lib/chai/interface/should.js"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 227 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "lib/chai/interface/should.js"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "lib/chai/interface/should.js"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow."
+            ]
+          }
+        ],
+        "truncated": false
+      },
+      "all_files": [],
+      "ignored_dirs": [
+        ".git"
+      ],
+      "coverage": {
+        "schema_version": 1,
+        "strategy": "full_walk",
+        "sampled_files": 75,
+        "total_files": null,
+        "sample_percent": null,
+        "languages": [
+          {
+            "language": "JavaScript",
+            "files": 56,
+            "bytes": 772663
+          },
+          {
+            "language": "Markdown",
+            "files": 5,
+            "bytes": 86907
+          },
+          {
+            "language": "JSON",
+            "files": 4,
+            "bytes": 3030
+          },
+          {
+            "language": "YAML",
+            "files": 4,
+            "bytes": 3986
+          },
+          {
+            "language": "TypeScript",
+            "files": 1,
+            "bytes": 243
+          }
+        ],
+        "top_level_dirs": [
+          {
+            "path": "lib",
+            "file_count": 33,
+            "bytes": 294971
+          },
+          {
+            "path": "test",
+            "file_count": 20,
+            "bytes": 476589
+          },
+          {
+            "path": ".github",
+            "file_count": 5,
+            "bytes": 4287
+          }
+        ],
+        "notes": [
+          "Full local walk covered the repo within the scan cap."
+        ]
+      },
+      "all_files_capped": false,
+      "dir_tree_preview": {
+        "name": "",
+        "path": "",
+        "is_dir": true,
+        "file_count": 75,
+        "children": [
+          {
+            "name": ".github",
+            "path": ".github",
+            "is_dir": true,
+            "file_count": 5,
+            "children": [
+              {
+                "name": "workflows",
+                "path": ".github/workflows",
+                "is_dir": true,
+                "file_count": 3,
+                "children": [
+                  {
+                    "name": "browsers.yml",
+                    "path": ".github/workflows/browsers.yml",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "node.js.yml",
+                    "path": ".github/workflows/node.js.yml",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "npm-publish.yml",
+                    "path": ".github/workflows/npm-publish.yml",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "FUNDING.yml",
+                "path": ".github/FUNDING.yml",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "renovate.json",
+                "path": ".github/renovate.json",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "lib",
+            "path": "lib",
+            "is_dir": true,
+            "file_count": 33,
+            "children": [
+              {
+                "name": "chai",
+                "path": "lib/chai",
+                "is_dir": true,
+                "file_count": 32,
+                "children": [
+                  {
+                    "name": "core",
+                    "path": "lib/chai/core",
+                    "is_dir": true,
+                    "file_count": 1,
+                    "children": [
+                      {
+                        "name": "assertions.js",
+                        "path": "lib/chai/core/assertions.js",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": "interface",
+                    "path": "lib/chai/interface",
+                    "is_dir": true,
+                    "file_count": 3,
+                    "children": [
+                      {
+                        "name": "assert.js",
+                        "path": "lib/chai/interface/assert.js",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "expect.js",
+                        "path": "lib/chai/interface/expect.js",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "should.js",
+                        "path": "lib/chai/interface/should.js",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": "utils",
+                    "path": "lib/chai/utils",
+                    "is_dir": true,
+                    "file_count": 26,
+                    "children": [
+                      {
+                        "name": "addChainableMethod.js",
+                        "path": "lib/chai/utils/addChainableMethod.js",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "addLengthGuard.js",
+                        "path": "lib/chai/utils/addLengthGuard.js",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "addMethod.js",
+                        "path": "lib/chai/utils/addMethod.js",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "addProperty.js",
+                        "path": "lib/chai/utils/addProperty.js",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "compareByInspect.js",
+                        "path": "lib/chai/utils/compareByInspect.js",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "events.js",
+                        "path": "lib/chai/utils/events.js",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "expectTypes.js",
+                        "path": "lib/chai/utils/expectTypes.js",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "flag.js",
+                        "path": "lib/chai/utils/flag.js",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "getActual.js",
+                        "path": "lib/chai/utils/getActual.js",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "getMessage.js",
+                        "path": "lib/chai/utils/getMessage.js",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "getOperator.js",
+                        "path": "lib/chai/utils/getOperator.js",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "getOwnEnumerableProperties.js",
+                        "path": "lib/chai/utils/getOwnEnumerableProperties.js",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "getOwnEnumerablePropertySymbols.js",
+                        "path": "lib/chai/utils/getOwnEnumerablePropertySymbols.js",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "getProperties.js",
+                        "path": "lib/chai/utils/getProperties.js",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "index.js",
+                        "path": "lib/chai/utils/index.js",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "inspect.js",
+                        "path": "lib/chai/utils/inspect.js",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "isNaN.js",
+                        "path": "lib/chai/utils/isNaN.js",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "isProxyEnabled.js",
+                        "path": "lib/chai/utils/isProxyEnabled.js",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "objDisplay.js",
+                        "path": "lib/chai/utils/objDisplay.js",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "overwriteChainableMethod.js",
+                        "path": "lib/chai/utils/overwriteChainableMethod.js",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "overwriteMethod.js",
+                        "path": "lib/chai/utils/overwriteMethod.js",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "overwriteProperty.js",
+                        "path": "lib/chai/utils/overwriteProperty.js",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "proxify.js",
+                        "path": "lib/chai/utils/proxify.js",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "test.js",
+                        "path": "lib/chai/utils/test.js",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "transferFlags.js",
+                        "path": "lib/chai/utils/transferFlags.js",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "type-detect.js",
+                        "path": "lib/chai/utils/type-detect.js",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": "assertion.js",
+                    "path": "lib/chai/assertion.js",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "config.js",
+                    "path": "lib/chai/config.js",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "chai.js",
+                "path": "lib/chai.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "test",
+            "path": "test",
+            "is_dir": true,
+            "file_count": 20,
+            "children": [
+              {
+                "name": "auth",
+                "path": "test/auth",
+                "is_dir": true,
+                "file_count": 1,
+                "children": [
+                  {
+                    "name": ".gitkeep",
+                    "path": "test/auth/.gitkeep",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "bootstrap",
+                "path": "test/bootstrap",
+                "is_dir": true,
+                "file_count": 1,
+                "children": [
+                  {
+                    "name": "index.js",
+                    "path": "test/bootstrap/index.js",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "display",
+                "path": "test/display",
+                "is_dir": true,
+                "file_count": 2,
+                "children": [
+                  {
+                    "name": "errors.js",
+                    "path": "test/display/errors.js",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "message.js",
+                    "path": "test/display/message.js",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "type-detect",
+                "path": "test/type-detect",
+                "is_dir": true,
+                "file_count": 6,
+                "children": [
+                  {
+                    "name": "deno-test.ts",
+                    "path": "test/type-detect/deno-test.ts",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "dom.js",
+                    "path": "test/type-detect/dom.js",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "index.js",
+                    "path": "test/type-detect/index.js",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "new-ecmascript-types.js",
+                    "path": "test/type-detect/new-ecmascript-types.js",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "node.js",
+                    "path": "test/type-detect/node.js",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "tostringtag-extras.js",
+                    "path": "test/type-detect/tostringtag-extras.js",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "assert.js",
+                "path": "test/assert.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "configuration.js",
+                "path": "test/configuration.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "expect.js",
+                "path": "test/expect.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "globalErr.js",
+                "path": "test/globalErr.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "globalShould.js",
+                "path": "test/globalShould.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "plugins.js",
+                "path": "test/plugins.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "should.js",
+                "path": "test/should.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "subset.js",
+                "path": "test/subset.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "utilities.js",
+                "path": "test/utilities.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "virtual-machines.js",
+                "path": "test/virtual-machines.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": ".gitignore",
+            "path": ".gitignore",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": ".mailmap",
+            "path": ".mailmap",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": ".prettierrc.json",
+            "path": ".prettierrc.json",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "CODEOWNERS",
+            "path": "CODEOWNERS",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "CODE_OF_CONDUCT.md",
+            "path": "CODE_OF_CONDUCT.md",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "CONTRIBUTING.md",
+            "path": "CONTRIBUTING.md",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "History.md",
+            "path": "History.md",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "LICENSE",
+            "path": "LICENSE",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "README.md",
+            "path": "README.md",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "ReleaseNotes.md",
+            "path": "ReleaseNotes.md",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "eslint.config.js",
+            "path": "eslint.config.js",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "package.json",
+            "path": "package.json",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "register-assert.js",
+            "path": "register-assert.js",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "register-expect.js",
+            "path": "register-expect.js",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "register-should.js",
+            "path": "register-should.js",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "tsconfig.json",
+            "path": "tsconfig.json",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "web-test-runner.config.js",
+            "path": "web-test-runner.config.js",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          }
+        ]
+      }
+    },
+    "profiles": [
+      {
+        "stage": "full_scan",
+        "total_ms": 44104,
+        "peak_rss_bytes": 29687808,
+        "steps": [
+          {
+            "id": "git_metadata",
+            "label": "Git metadata",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "file_walk",
+            "label": "Parallel file walk",
+            "ms": 5,
+            "pct": 0.011336840195900599
+          },
+          {
+            "id": "languages",
+            "label": "Language breakdown",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "manifests",
+            "label": "Manifest parsing",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "docs",
+            "label": "Doc previews",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "aggregates",
+            "label": "Dirs, configs, stack tags",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "entrypoints",
+            "label": "Entrypoints, workspace units & QA readiness",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "source_previews",
+            "label": "Source preview cache",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "repo_graph",
+            "label": "Deterministic graph scan",
+            "ms": 2,
+            "pct": 0.0045347360783602395
+          },
+          {
+            "id": "history",
+            "label": "Git history & decision scan",
+            "ms": 13,
+            "pct": 0.02947578450934156
+          },
+          {
+            "id": "repo_health",
+            "label": "Deterministic health scoring",
+            "ms": 44080,
+            "pct": 99.94558316705968
+          },
+          {
+            "id": "dir_tree",
+            "label": "Directory tree preview",
+            "ms": 0,
+            "pct": 0
+          }
+        ]
+      },
+      {
+        "stage": "local_scan_persist",
+        "total_ms": 0,
+        "peak_rss_bytes": 30113792,
+        "steps": [
+          {
+            "id": "serialize",
+            "label": "JSON serialize (inventory → SQLite)",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "db_insert",
+            "label": "SQLite insert",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "touch_project",
+            "label": "Update repo project metadata",
+            "ms": 0,
+            "pct": 0
+          }
+        ]
+      }
+    ]
+  },
+  "report": {
+    "overview": "Chai is an ECMAScript-module assertion library for JavaScript tests in Node.js and browsers, offering expect, should, and assert interfaces over a shared assertion engine. Its distinctive implementation combines flag-carrying fluent chains, configurable failure diagnostics, proxy-based typo detection, and plugins that extend or overwrite assertions. At commit d86de2a9519bdd0d89aa64c9fbcc0e880513b153, the published entrypoint is an esbuild-generated bundle; this brief reflects bounded source inspection, with no repository code or tests executed.",
+    "agent_prompt": "You are onboarding to Chai at commit d86de2a9519bdd0d89aa64c9fbcc0e880513b153. Verify the checkout before relying on this brief. Chai is an ESM assertion library for Node.js and browsers, with expect, should, and assert interfaces sharing Assertion and the registrations in lib/chai/core/assertions.js. It is a library embedded in consumers’ test processes, not a service with a database or request router.\n\nStart with package.json, lib/chai.js, lib/chai/assertion.js, lib/chai/config.js, and the interface relevant to your task. The package main is index.js, generated by bundling lib/chai.js with esbuild; registration modules import that bundle and assign globals. The tracked source is under lib. package-lock.json records npm dependencies, including packages bundled into the distributed artifact despite being declared as development dependencies.\n\nUnderstand the chain machinery before changing behavior. Assertion stores object, message, ssfi, lockSsfi, and eql flags. addProperty, addMethod, and addChainableMethod normally create another Assertion and transfer flags when the implementation returns undefined. Explicit return values override that continuation. Proxy getters reject unknown string properties except configured exclusions. Preserve stack filtering, custom messages, negation, diff metadata, aliases, and modifier propagation.\n\nTrace the operation you change through the public interface, registration wrapper, core implementation, Assertion.assert, and diagnostic utilities. expect.equal uses strict equality unless deep is enabled; assert.equal uses coercive equality. property changes the chain target to the resolved property value. throw invokes its target synchronously and changes the target to the caught value. change, increase, and decrease execute callbacks and retain before/after values for by. There is no rollback of callback effects in these inspected paths.\n\nPlugins receive shared constructors, config, interfaces, and utilities through use(fn), which deduplicates successful installations by function identity. Extensions can add or overwrite methods, properties, and chainable methods. Registration events are exposed through util.events. Treat plugins, getters, predicates, and target callbacks as executable consumer code.\n\nRead the corresponding test/assert.js, test/expect.js, test/should.js, test/configuration.js, test/utilities.js, or test/subset.js sections. globalErr in test/bootstrap/index.js validates failure messages, metadata, and supported stack traces. The configured Node command uses Mocha with c8 and a 99% coverage threshold; browser tests use Web Test Runner with Playwright. Both selectors target top-level test/*.js, so nested display and type-detect files require separate consideration. Browser selection excludes virtual-machines.js.\n\nTests and CI were inspected, not executed for this brief. When execution is authorized, use existing scripts and the smallest relevant check first, ensuring the generated bundle reflects source edits. npm test invokes lint and both runtime suites; lint:types is separate. Avoid clean in restricted work because it deletes index.js and coverage. Keep changes focused, restore shared config and prototype mutations in tests, and distinguish source-based hypotheses from reproduced defects. Do not install, run, write, publish, or access credentials when continuing a read-only investigation.",
+    "system_map": {
+      "summary": "The runtime consists of a shared Assertion class, built-in registrations, three public interfaces, and utility functions. Module evaluation installs the core assertions, while consumers explicitly activate plugins or the should prototype accessor. State is held in assertion objects and module-level configuration and registries. Distribution is a generated ESM bundle with separate global-registration modules.",
+      "claims": [
+        {
+          "claim": "package.json declares ESM, Node >=18, main ./index.js, and a publish file list containing index.js and register-*.js.",
+          "sources": [
+            "package.json#L3-L15",
+            "package.json#L33-L35",
+            "package.json#L53-L55"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "lib/chai.js imports core/assertions.js for registration side effects and exports Assertion, AssertionError, config, util, expect, assert, should, and Should.",
+          "sources": [
+            "lib/chai.js#L7-L14",
+            "lib/chai.js#L68-L84"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Assertion owns per-chain __flags, initializes target/message/stack/comparator state, and returns a proxified instance.",
+          "sources": [
+            "lib/chai/assertion.js#L12-L14",
+            "lib/chai/assertion.js#L51-L59"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The utility facade delegates deep equality to deep-eql, nested lookup to pathval, error matching to check-error, and value inspection to loupe.",
+          "sources": [
+            "lib/chai/utils/index.js#L7-L8",
+            "lib/chai/utils/index.js#L38-L42",
+            "lib/chai/utils/index.js#L81-L82",
+            "lib/chai/utils/inspect.js#L4-L5"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The inspected state owners are in-memory: config is an exported object, use retains a used-plugin array, and events is a module-level EventTarget.",
+          "sources": [
+            "lib/chai/config.js#L1-L14",
+            "lib/chai.js#L33-L34",
+            "lib/chai.js#L60-L65",
+            "lib/chai/utils/events.js#L7-L8"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "build bundles lib/chai.js into index.js as ES2021 ESM with names preserved; prebuild runs clean, whose command deletes index.js and coverage/.",
+          "sources": [
+            "package.json#L34-L46"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Lint combines ESLint and Prettier checks over lib; lint:types separately invokes strict, no-emit JavaScript checking through TypeScript.",
+          "sources": [
+            "package.json#L42-L45",
+            "eslint.config.js#L7-L25",
+            "tsconfig.json#L2-L18",
+            ".prettierrc.json#L1-L10"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Release creation triggers a build/test job followed by a dependent npm publishing job that enables OIDC, applies github.ref_name as the version, and requests public publication with provenance.",
+          "sources": [
+            ".github/workflows/npm-publish.yml#L6-L8",
+            ".github/workflows/npm-publish.yml#L19-L31",
+            ".github/workflows/npm-publish.yml#L36-L48"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "feature_catalog": {
+      "summary": "Users choose fluent expect or should assertions, or named assert helpers. Built-ins cover scalar values, object structure, collections, numeric relationships, exceptions, predicates, and callback-driven changes. Modifiers alter comparison depth, property lookup, collection ordering, inclusion, and negation. Failure formatting and plugin installation are additional public capabilities.",
+      "claims": [
+        {
+          "claim": "expect(value, message) constructs an Assertion; should()/Should() installs an Object.prototype accessor; assert(expression, message) evaluates truthiness through Assertion.assert. Registration modules expose these styles globally.",
+          "sources": [
+            "lib/chai/interface/expect.js#L16-L20",
+            "lib/chai/interface/should.js#L13-L52",
+            "lib/chai/interface/assert.js#L26-L29",
+            "README.md#L79-L95"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Equality has deliberate interface differences: fluent equal/equals/eq uses === or delegates to eql when deep is set, whereas assert.equal uses == and assert.strictEqual delegates to fluent equal.",
+          "sources": [
+            "lib/chai/core/assertions.js#L1117-L1139",
+            "lib/chai/core/assertions.js#L1181-L1195",
+            "lib/chai/interface/assert.js#L124-L135",
+            "lib/chai/interface/assert.js#L178-L180"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Scalar and shape checks include a/an type matching, truthiness, strict booleans, null/undefined/NaN/existence, numeric Number-or-BigInt detection, callable checks, and extensible/sealed/frozen status.",
+          "sources": [
+            "lib/chai/core/assertions.js#L328-L352",
+            "lib/chai/core/assertions.js#L678-L757",
+            "lib/chai/interface/assert.js#L396-L541",
+            "lib/chai/core/assertions.js#L3934-L4034"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Object assertions support direct, own, nested, and deep property comparisons, descriptor inspection, key sets, and respondTo method checks; nested and own cannot be combined.",
+          "sources": [
+            "lib/chai/core/assertions.js#L1923-L2024",
+            "lib/chai/core/assertions.js#L2157-L2196",
+            "lib/chai/core/assertions.js#L2473-L2510",
+            "lib/chai/core/assertions.js#L2994-L3011"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Collection and text assertions provide include aliases, empty, length/lengthOf, iterable members with deep/ordered/inclusion modes, oneOf, regular-expression matching, and substring checks; deep inclusion explicitly rejects WeakSet.",
+          "sources": [
+            "lib/chai/core/assertions.js#L514-L641",
+            "lib/chai/core/assertions.js#L985-L1022",
+            "lib/chai/core/assertions.js#L2260-L2368",
+            "lib/chai/core/assertions.js#L3274-L3435"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Numeric APIs include above/least/below/most aliases, within bounds, closeTo/approximately tolerance checks, finite-number checks, and assert.operator's explicit comparison-operator switch.",
+          "sources": [
+            "lib/chai/core/assertions.js#L1239-L1304",
+            "lib/chai/core/assertions.js#L1668-L1710",
+            "lib/chai/core/assertions.js#L3126-L3166",
+            "lib/chai/interface/assert.js#L2059-L2099"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Behavior assertions synchronously check thrown values against error identity/constructor/message criteria, run satisfy predicates, and measure change/increase/decrease with optional by(delta) checks.",
+          "sources": [
+            "lib/chai/core/assertions.js#L2760-L2928",
+            "lib/chai/core/assertions.js#L3073-L3087",
+            "lib/chai/core/assertions.js#L3532-L3571",
+            "lib/chai/core/assertions.js#L3882-L3905"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "containSubset recursively matches object fields and array elements, compares Dates by timestamp, and accepts field validators; assert.containsSubset and doesNotContainSubset wrap it. Users can also configure diagnostics and install plugins through use.",
+          "sources": [
+            "lib/chai/core/assertions.js#L4101-L4149",
+            "lib/chai/interface/assert.js#L3201-L3224",
+            "lib/chai/config.js#L14-L111",
+            "lib/chai.js#L48-L65"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "data_flow": {
+      "summary": "Assertion input becomes a target reference plus metadata stored in flags. Chain getters and methods propagate those flags, while selected operations replace the target for subsequent assertions. Comparison results pass through a common negation and error-construction boundary. Outputs are continuing assertion objects, explicit return values, or thrown errors; inspected callback operations can also modify consumer-owned state.",
+      "claims": [
+        {
+          "claim": "expect forwards its value and optional message to Assertion; construction records object, message, ssfi, lockSsfi, and the current configured deep comparator.",
+          "sources": [
+            "lib/chai/interface/expect.js#L16-L18",
+            "lib/chai/assertion.js#L51-L58"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "flag reads or writes __flags according to argument count; transferFlags copies flag values and can exclude object, ssfi, lockSsfi, and message.",
+          "sources": [
+            "lib/chai/utils/flag.js#L58-L65",
+            "lib/chai/utils/transferFlags.js#L28-L51"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Property and method wrappers call the supplied implementation, preserve explicit results, and otherwise construct another Assertion populated with transferred flags.",
+          "sources": [
+            "lib/chai/utils/addProperty.js#L58-L69",
+            "lib/chai/utils/addMethod.js#L57-L66"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Chainable getters first run chainingBehavior, then create a callable wrapper that inherits assertion properties, copies flags, and is proxified; calling it runs the stored method.",
+          "sources": [
+            "lib/chai/utils/addChainableMethod.js#L110-L147",
+            "lib/chai/utils/addChainableMethod.js#L150-L177"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "assertProperty resolves nested paths through getPathInfo or reads obj[name], checks existence and optional equality, then replaces the object flag with the resolved value.",
+          "sources": [
+            "lib/chai/core/assertions.js#L1975-L2022",
+            "lib/chai/utils/index.js#L41-L42"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Assertion.assert sends the expression through util.test for negation, applies showDiff policy, derives message/actual/operator metadata, and throws AssertionError only on failure.",
+          "sources": [
+            "lib/chai/assertion.js#L157-L183",
+            "lib/chai/utils/test.js#L20-L24"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "getMessage selects positive or negative templates, evaluates function templates, replaces this/act/exp placeholders in one pass, and prefixes the custom message; display delegates to loupe and threshold-based summaries.",
+          "sources": [
+            "lib/chai/utils/getMessage.js#L34-L54",
+            "lib/chai/utils/objDisplay.js#L23-L49",
+            "lib/chai/utils/inspect.js#L23-L30"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "change reads a subject before and after invoking the target function, stores delta metadata in flags, and leaves the consumer's resulting state in place; by reads those stored values without invoking the callback again.",
+          "sources": [
+            "lib/chai/core/assertions.js#L3532-L3567",
+            "lib/chai/core/assertions.js#L3882-L3902"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "behavior_traces": {
+      "summary": "The inspected flows cover module initialization, ordinary and deep equality, property chaining, exception checks, callback changes, and plugin installation. All assertion traces describe source execution order rather than observed runs. The closest equivalent to a persistence flow is propagation of chain state and mutation of consumer-owned objects; these paths do not implement durable storage.",
+      "claims": [
+        {
+          "claim": "Startup: importing lib/chai.js evaluates its core/assertions.js dependency; that module registers language getters through Assertion.addProperty, which delegates to addProperty and defines getters on Assertion.prototype.",
+          "sources": [
+            "lib/chai.js#L7-L14",
+            "lib/chai/core/assertions.js#L46-L66",
+            "lib/chai/assertion.js#L97-L99",
+            "lib/chai/utils/addProperty.js#L38-L42"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Global should startup: register-should.js imports should from the bundle → calls loadShould → defines Object.prototype.should → assigns the returned helpers to globalThis.should; accessor reads unbox wrapper primitives before constructing Assertion.",
+          "sources": [
+            "register-should.js#L1-L3",
+            "lib/chai/interface/should.js#L13-L52",
+            "lib/chai/interface/should.js#L220-L227"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Strict equality failure: expect(actual) → Assertion → language getters → equal's methodWrapper → assertEqual's === comparison → Assertion.assert → getMessage → thrown AssertionError with actual/expected/diff metadata.",
+          "sources": [
+            "lib/chai/interface/expect.js#L16-L18",
+            "lib/chai/utils/addMethod.js#L44-L66",
+            "lib/chai/core/assertions.js#L1117-L1139",
+            "lib/chai/assertion.js#L157-L183"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Deep equality: .deep sets the deep flag → assertEqual locks ssfi → invokes eql → assertEql calls the comparator stored in the eql flag → common assertion evaluation; construction selected config.deepEqual or util.eql.",
+          "sources": [
+            "lib/chai/core/assertions.js#L132-L134",
+            "lib/chai/core/assertions.js#L1117-L1124",
+            "lib/chai/core/assertions.js#L1181-L1191",
+            "lib/chai/assertion.js#L51-L56"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Property continuation: assertProperty validates name/target and rejects nested+own → resolves path or key → checks existence/value → sets object to the property value → methodWrapper transfers that target to the next Assertion.",
+          "sources": [
+            "lib/chai/core/assertions.js#L1923-L1973",
+            "lib/chai/core/assertions.js#L1975-L2022",
+            "lib/chai/utils/addMethod.js#L61-L66"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Exception flow: assert.throws normalizes shorthand matchers → invokes fluent throw → assertThrows verifies a function and calls it inside try/catch → checks compatible error criteria → stores caughtErr as the target → assert.throws returns that target.",
+          "sources": [
+            "lib/chai/interface/assert.js#L1990-L2001",
+            "lib/chai/core/assertions.js#L2760-L2780",
+            "lib/chai/core/assertions.js#L2829-L2905",
+            "lib/chai/core/assertions.js#L2923-L2928"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "State-change flow: change validates fn and the subject/property → reads initial → calls fn → reads final → records delta flags → asserts inequality; .by then compares the absolute before/after difference with the requested delta.",
+          "sources": [
+            "lib/chai/core/assertions.js#L3532-L3567",
+            "lib/chai/core/assertions.js#L3882-L3905"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Plugin flow: use builds an exports object → checks used.indexOf(fn) → invokes a new plugin with exports/util → records it only after successful return → returns exports for chaining; addMethod extensions subsequently dispatch registration events.",
+          "sources": [
+            "lib/chai.js#L48-L65",
+            "lib/chai/utils/addMethod.js#L69-L75",
+            "test/plugins.js#L15-L45"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "testing_signals": {
+      "summary": "Tests and CI were inspected, not executed; no passing result or measured coverage is asserted. The configured suites use Mocha for Node and Web Test Runner with Playwright for browsers. Inspected tests exercise interface behavior, error diagnostics, plugin installation, utility registration, configuration, subsets, and cross-realm exceptions. File-selection rules leave some tracked nested tests outside the default suites, and the inventory is bounded rather than exhaustive.",
+      "claims": [
+        {
+          "claim": "The inspected scripts define npm test as Node plus browser suites with pretest lint; test-node uses c8 --99 --check-coverage and Mocha with test/bootstrap/index.js over test/*.js. These definitions were not executed.",
+          "sources": [
+            "package.json#L38-L45",
+            "test/bootstrap/index.js#L1-L30"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "globalErr executes a failure callback, optionally rejects Chai implementation stack frames when captureStackTrace is supported, and validates exact messages, regexes, or error-property subsets.",
+          "sources": [
+            "test/bootstrap/index.js#L3-L9",
+            "test/bootstrap/index.js#L30-L58"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The three interface suites contain successful assertions and failure checks; expect additionally verifies literal template tags and invalid-property diagnostics, while should installs its prototype interface.",
+          "sources": [
+            "test/assert.js#L4-L38",
+            "test/expect.js#L4-L20",
+            "test/expect.js#L64-L92",
+            "test/should.js#L4-L11"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Plugin tests cover basic, repeated, nested, chained, and detached use calls; utility tests cover target reassignment, selective flag transfer, and addMethod/addProperty/addChainableMethod events.",
+          "sources": [
+            "test/plugins.js#L15-L62",
+            "test/utilities.js#L13-L58",
+            "test/utilities.js#L1536-L1596"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Configuration tests back up and restore config per test and inspect proxy enablement, excluded keys, and a custom deepEqual comparator that accepts nearby numbers.",
+          "sources": [
+            "test/configuration.js#L10-L25",
+            "test/configuration.js#L735-L803"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Subset tests include nested objects, Date mismatch, circular actual objects with finite expected shapes, validator functions, and null/non-object inputs; those examples do not establish behavior for every cyclic expected graph.",
+          "sources": [
+            "test/subset.js#L34-L95",
+            "test/subset.js#L97-L140"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Both default selectors target top-level test/*.js, excluding nested display/type-detect files; browsers additionally exclude virtual-machines.js. That Node-only test uses vm.runInContext to check exceptions from another realm.",
+          "sources": [
+            "package.json#L40-L41",
+            "web-test-runner.config.js#L8-L11",
+            "test/virtual-machines.js#L1-L34",
+            "test/type-detect/index.js#L1-L25"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Inspected CI definitions build/test Node 20, 25, and latest, lint on Node 24, and run Chromium/Firefox browser jobs; none of these workflow steps invokes the separate lint:types script.",
+          "sources": [
+            ".github/workflows/node.js.yml#L21-L50",
+            ".github/workflows/browsers.yml#L19-L34",
+            ".github/workflows/npm-publish.yml#L19-L25",
+            "package.json#L42-L45"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "risk_map": {
+      "summary": "The principal observed boundaries are execution of consumer callbacks and getters, shared prototype/configuration mutation, and assertion-error disclosure. Plugins operate with the consumer process's capabilities. Source inspection also identifies recursive subset matching and exception-sensitive flag restoration as areas for targeted investigation. These are observations or explicitly labeled hypotheses, not confirmed vulnerabilities or runtime failures.",
+      "claims": [
+        {
+          "claim": "should intentionally modifies Object.prototype, while registration modules assign globalThis properties; these operations affect the embedding realm beyond a single assertion.",
+          "sources": [
+            "lib/chai/interface/should.js#L33-L52",
+            "register-assert.js#L1-L3",
+            "register-expect.js#L1-L3",
+            "register-should.js#L1-L3"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "use directly invokes plugins with shared constructors, utilities, and config; no sandbox or rollback surrounds installation, and the plugin is recorded only after it returns.",
+          "sources": [
+            "lib/chai.js#L48-L65",
+            "test/plugins.js#L35-L45"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "throw, change, satisfy, and subset field validators execute supplied functions synchronously; change retains callback side effects rather than restoring the subject.",
+          "sources": [
+            "lib/chai/core/assertions.js#L2773-L2780",
+            "lib/chai/core/assertions.js#L3539-L3553",
+            "lib/chai/core/assertions.js#L3073-L3083",
+            "lib/chai/core/assertions.js#L4134-L4147"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Type detection reads Symbol.toStringTag, property checks read obj[name], and subset comparison reads actual[key]; consumer getters or proxy traps can therefore execute during these reads.",
+          "sources": [
+            "lib/chai/utils/type-detect.js#L14-L20",
+            "lib/chai/core/assertions.js#L1975-L1979",
+            "lib/chai/core/assertions.js#L4134-L4136"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Failure output includes actual and expected references plus rendered values; truncateThreshold limits display text, but AssertionError metadata still receives the original values.",
+          "sources": [
+            "lib/chai/assertion.js#L163-L182",
+            "lib/chai/utils/getMessage.js#L44-L54",
+            "lib/chai/utils/inspect.js#L23-L30"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Hypothesis: distinct cyclic expected/actual graphs can exhaust recursion in compareSubset because recursive branches have no visited-pair tracking; the inspected circular tests use finite expected structures.",
+          "sources": [
+            "lib/chai/core/assertions.js#L4101-L4149",
+            "test/subset.js#L97-L116"
+          ],
+          "kind": "inference"
+        },
+        {
+          "claim": "Hypothesis: reusing an Assertion after catching an exception from a deep-equality or overwritten-method call can retain lockSsfi=true, because restoration occurs after the call without finally.",
+          "sources": [
+            "lib/chai/core/assertions.js#L1120-L1124",
+            "lib/chai/utils/overwriteMethod.js#L79-L82"
+          ],
+          "kind": "inference"
+        },
+        {
+          "claim": "Verification gaps are visible in configuration: default suites omit nested type-detect files, the Deno fixture imports ../index.ts absent from the tracked inventory, and Node CI's matrix does not directly exercise the advertised Node 18 floor.",
+          "sources": [
+            "package.json#L40-L41",
+            "package.json#L53-L55",
+            "test/type-detect/deno-test.ts#L1-L7",
+            ".github/workflows/node.js.yml#L32-L37"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "extension_points": {
+      "summary": "Extensions enter through use and Assertion's registration helpers rather than a router or service registry. New behavior can be implemented as properties, methods, or callable chain properties, with corresponding overwrite mechanisms. Flags carry custom state and registration events expose extension activity. Configuration supplies additional hooks for comparison and diagnostics.",
+      "claims": [
+        {
+          "claim": "use(fn) is the plugin entrypoint: callbacks receive the constructed Chai exports object and util, installations are deduplicated by function identity, and returned exports support chained use calls.",
+          "sources": [
+            "lib/chai.js#L29-L34",
+            "lib/chai.js#L48-L65"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Assertion.addProperty delegates to a configurable prototype getter; the getter can return a custom result or continue the assertion chain automatically.",
+          "sources": [
+            "lib/chai/assertion.js#L93-L99",
+            "lib/chai/utils/addProperty.js#L38-L72"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Assertion.addMethod wraps arbitrary methods with stack-marker management, continuation, length guards, and proxy diagnostics for uncalled methods.",
+          "sources": [
+            "lib/chai/assertion.js#L101-L107",
+            "lib/chai/utils/addMethod.js#L40-L75"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Assertion.addChainableMethod separates access-time chainingBehavior from call-time method behavior and stores both in ctx.__methods[name] for later replacement.",
+          "sources": [
+            "lib/chai/assertion.js#L109-L116",
+            "lib/chai/utils/addChainableMethod.js#L94-L112",
+            "lib/chai/utils/addChainableMethod.js#L118-L147"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Assertion exposes overwriteProperty, overwriteMethod, and overwriteChainableMethod; overwriteMethod passes the previous implementation to the replacement factory and temporarily locks stack markers.",
+          "sources": [
+            "lib/chai/assertion.js#L118-L141",
+            "lib/chai/utils/overwriteMethod.js#L47-L54",
+            "lib/chai/utils/overwriteMethod.js#L72-L90"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "util.flag, transferFlags, and Assertion._obj let plugins read/change targets and carry custom metadata; transferFlags can preserve extension flags while excluding four base flags.",
+          "sources": [
+            "lib/chai/utils/flag.js#L58-L65",
+            "lib/chai/utils/transferFlags.js#L39-L49",
+            "lib/chai/assertion.js#L191-L202",
+            "test/utilities.js#L38-L58"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "util.events is an EventTarget for registration notifications; method/property events carry name and fn, while chainable-method events also expose chainingBehavior.",
+          "sources": [
+            "lib/chai/utils/index.js#L99-L100",
+            "lib/chai/utils/events.js#L7-L20",
+            "lib/chai/utils/addChainableMethod.js#L182-L188",
+            "test/utilities.js#L1536-L1596"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "config.deepEqual supplies the comparator captured by new Assertions; useProxy and proxyExcludedKeys alter property diagnostics, while includeStack, showDiff, and truncateThreshold control failure presentation.",
+          "sources": [
+            "lib/chai/config.js#L14-L111",
+            "lib/chai/assertion.js#L51-L58",
+            "lib/chai/utils/proxify.js#L34-L46",
+            "lib/chai/utils/inspect.js#L23-L30"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_handoff": {
+      "summary": "Begin with the shared engine and the exact public interface involved in the task. Preserve chain continuation, modifier state, target changes, stack filtering, aliases, and diagnostic metadata when editing assertions. Tests and CI were inspected, not executed, so future validation must produce fresh results under explicit execution authorization. The inspected inventory is bounded, and older contribution examples should be reconciled with current scripts.",
+      "claims": [
+        {
+          "claim": "Read lib/chai.js, Assertion, the relevant interface, and the exact core registration before changing behavior: the public styles converge on the same engine but may differ in argument normalization or equality semantics.",
+          "sources": [
+            "lib/chai.js#L7-L14",
+            "lib/chai/interface/assert.js#L124-L135",
+            "lib/chai/interface/expect.js#L16-L18",
+            "lib/chai/core/assertions.js#L1117-L1139"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Edit tracked lib source with awareness that package consumers and inspected tests import generated index.js; build refreshes that artifact, and prebuild's clean deletes it first.",
+          "sources": [
+            "package.json#L33-L46",
+            "test/expect.js#L1-L2",
+            "register-expect.js#L1-L3"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Preserve wrapper contracts: undefined results continue via a new Assertion and transferred flags, while explicit results escape the chain; stack-marker changes respect lockSsfi.",
+          "sources": [
+            "lib/chai/utils/addMethod.js#L57-L66",
+            "lib/chai/utils/addProperty.js#L58-L67",
+            "lib/chai/utils/addChainableMethod.js#L134-L147"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Regression tests should account for target replacement after property, ownPropertyDescriptor, and throw, rather than assuming every chained assertion continues to inspect the initial value.",
+          "sources": [
+            "lib/chai/core/assertions.js#L2021-L2024",
+            "lib/chai/core/assertions.js#L2192-L2196",
+            "lib/chai/core/assertions.js#L2923-L2928"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Use globalErr when validating failure messages, error metadata, and supported stack filtering; inspect corresponding assert/expect/should tests for public-interface parity.",
+          "sources": [
+            "test/bootstrap/index.js#L30-L58",
+            "test/assert.js#L7-L18",
+            "test/expect.js#L12-L20",
+            "test/should.js#L7-L11"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Tests and CI were inspected, not executed. When authorized, use the existing Node or browser script for the affected behavior, then lint and broader checks as warranted; lint:types must be invoked separately from lint.",
+          "sources": [
+            "package.json#L38-L45",
+            ".github/workflows/node.js.yml#L48-L50",
+            ".github/workflows/browsers.yml#L31-L34"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Restore shared configuration, temporary prototype assertions, and event listeners in tests; existing fixtures demonstrate config restoration and prototype cleanup, but the event fixture's cleanup only removes addMethod/addProperty listeners.",
+          "sources": [
+            "test/configuration.js#L10-L25",
+            "test/expect.js#L58-L62",
+            "test/utilities.js#L1523-L1534",
+            "test/utilities.js#L1585-L1596"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Prefer plugins for new assertions as CONTRIBUTING recommends, and verify historical command examples against package.json: the guide references make clean and chai.js, while current scripts generate index.js. Do not infer passing tests or complete coverage from this bounded inspection.",
+          "sources": [
+            "CONTRIBUTING.md#L74-L94",
+            "CONTRIBUTING.md#L124-L130",
+            "package.json#L34-L46",
+            "web-test-runner.config.js#L8-L11"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    }
+  },
+  "analysis": {
+    "agent": "codex",
+    "model": "cli:codex",
+    "runtime_ms": 357935,
+    "cost_usd": null,
+    "collected_at": "2026-10-02T16:02:10.828244+00:00",
+    "source_commit_sha": "d86de2a9519bdd0d89aa64c9fbcc0e880513b153",
+    "citation_validation": {
+      "status": "passed",
+      "claim_count": 64,
+      "path_and_line_bounds": true,
+      "semantic_correctness_established": false
+    },
+    "runtime_verification": {
+      "tests_executed": false,
+      "upstream_code_executed": false
+    },
+    "source_review": {
+      "status": "reviewed_bounded",
+      "all_claim_text_screened": true,
+      "independently_source_checked_claim_count": 17,
+      "private_review_receipt_sha256": "e336a015aa742732e73d0f1372c86cd02ab29c1e2891728c7f6c13a6944b131a",
+      "full_semantic_correctness_established": false
+    }
+  },
+  "public_export": {
+    "private_original_record_sha256": "ad39c9aa033a4db24471afe3d621b8205ecf3dc40d4db72893b29fc83f7d2eea",
+    "omitted_local_fields": [
+      "scan.inventory.repo_path"
+    ],
+    "original_record_retained_privately": true,
+    "note": "Public corpus projection; embedded scan omits the local clone path. Hash identifies the original corpus record, not raw CLI stdout."
+  }
+}

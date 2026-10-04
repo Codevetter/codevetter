@@ -1,0 +1,779 @@
+{
+  "schema_version": "codevetter.unpack-expansion-checks/v1",
+  "observed_at": "2026-10-02T18:40:13.621800+00:00",
+  "prepared_repositories": 185,
+  "added_reports_checked": 100,
+  "final_checks_passed": true,
+  "tests_executed_upstream": false,
+  "foreground_automation_used": false,
+  "public_deployment_established": false,
+  "checks": [
+    {
+      "name": "citation-tests",
+      "argv": [
+        "node",
+        "--test",
+        "scripts/repo-unpack-corpus.test.mjs"
+      ],
+      "started_at": "2026-10-02T18:08:00.670536+00:00",
+      "finished_at": "2026-10-02T18:08:01.084988+00:00",
+      "runtime_ms": 414,
+      "exit_code": 0,
+      "streams": {
+        "stdout": {
+          "private_relative_path": "artifacts/unpack-expansion-2026-10-02/qualifications/citation-tests.stdout.log",
+          "sha256": "fe13487bb812cec619549f1f9ac5a3d6a167861e219d2b184a0f135abdadcf91",
+          "bytes": 454
+        },
+        "stderr": {
+          "private_relative_path": "artifacts/unpack-expansion-2026-10-02/qualifications/citation-tests.stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        }
+      }
+    },
+    {
+      "name": "biome",
+      "argv": [
+        "node_modules/.bin/biome",
+        "check",
+        "scripts/collect-unpack-repo.mjs",
+        "scripts/repo-unpack-corpus.mjs",
+        "scripts/repo-unpack-corpus.test.mjs",
+        "scripts/verify-unpack-claims.mjs",
+        "apps/landing-page-astro/src/data/agent-markdown.ts"
+      ],
+      "started_at": "2026-10-02T18:08:14.298341+00:00",
+      "finished_at": "2026-10-02T18:08:15.093792+00:00",
+      "runtime_ms": 795,
+      "exit_code": 0,
+      "streams": {
+        "stdout": {
+          "private_relative_path": "artifacts/unpack-expansion-2026-10-02/qualifications/biome.stdout.log",
+          "sha256": "17891e561648d8fd8c756e3443bb2596c4ae270a1bf6607bc5287bcbeff6b43d",
+          "bytes": 44
+        },
+        "stderr": {
+          "private_relative_path": "artifacts/unpack-expansion-2026-10-02/qualifications/biome.stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        }
+      }
+    },
+    {
+      "name": "complexity",
+      "argv": [
+        "node",
+        "scripts/check-changed-complexity.mjs"
+      ],
+      "started_at": "2026-10-02T18:08:14.300639+00:00",
+      "finished_at": "2026-10-02T18:08:14.927347+00:00",
+      "runtime_ms": 626,
+      "exit_code": 0,
+      "streams": {
+        "stdout": {
+          "private_relative_path": "artifacts/unpack-expansion-2026-10-02/qualifications/complexity.stdout.log",
+          "sha256": "ff69759e40eef761a02c9a985a41c766dadb033889e9d31025f3daa36553151b",
+          "bytes": 72
+        },
+        "stderr": {
+          "private_relative_path": "artifacts/unpack-expansion-2026-10-02/qualifications/complexity.stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        }
+      }
+    },
+    {
+      "name": "admission-audit",
+      "argv": [
+        "python3",
+        "artifacts/unpack-expansion-2026-10-02/audit.py",
+        "--require-complete"
+      ],
+      "working_directory": ".",
+      "started_at": "2026-10-02T18:30:07.147038+00:00",
+      "finished_at": "2026-10-02T18:30:07.485171+00:00",
+      "runtime_ms": 338,
+      "exit_code": 0,
+      "streams": {
+        "stdout": {
+          "private_relative_path": "artifacts/unpack-expansion-2026-10-02/qualifications/admission-audit.stdout.log",
+          "sha256": "2ed042e66f2559b0ed77e6a331dd3ba732e8e7b942d1ac2ad1840a216d23d1a4",
+          "bytes": 452
+        },
+        "stderr": {
+          "private_relative_path": "artifacts/unpack-expansion-2026-10-02/qualifications/admission-audit.stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        }
+      }
+    },
+    {
+      "name": "report-diffs",
+      "argv": [
+        "python3",
+        "artifacts/unpack-expansion-2026-10-02/report_diffs.py"
+      ],
+      "working_directory": ".",
+      "started_at": "2026-10-02T18:30:07.147066+00:00",
+      "finished_at": "2026-10-02T18:30:07.434600+00:00",
+      "runtime_ms": 287,
+      "exit_code": 0,
+      "streams": {
+        "stdout": {
+          "private_relative_path": "artifacts/unpack-expansion-2026-10-02/qualifications/report-diffs.stdout.log",
+          "sha256": "cf281c37b38c272875aab654059b433530b420c04cba52be20cf4dcd62ff732c",
+          "bytes": 185
+        },
+        "stderr": {
+          "private_relative_path": "artifacts/unpack-expansion-2026-10-02/qualifications/report-diffs.stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        }
+      }
+    },
+    {
+      "name": "captures",
+      "argv": [
+        "python3",
+        "artifacts/unpack-expansion-2026-10-02/capture_runs.py",
+        "--require-complete"
+      ],
+      "working_directory": ".",
+      "started_at": "2026-10-02T18:30:07.147819+00:00",
+      "finished_at": "2026-10-02T18:30:12.540672+00:00",
+      "runtime_ms": 5393,
+      "exit_code": 0,
+      "streams": {
+        "stdout": {
+          "private_relative_path": "artifacts/unpack-expansion-2026-10-02/qualifications/captures.stdout.log",
+          "sha256": "d0d07b692d9fdb930c26ee15bb611f1ab188377d88c995bc82cd4dd210609025",
+          "bytes": 99
+        },
+        "stderr": {
+          "private_relative_path": "artifacts/unpack-expansion-2026-10-02/qualifications/captures.stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        }
+      }
+    },
+    {
+      "name": "strict-citations",
+      "argv": [
+        "node",
+        "scripts/verify-unpack-claims.mjs",
+        "--clones",
+        "artifacts/unpack-expansion-2026-10-02/clones",
+        "--strict",
+        "--slug",
+        "hono",
+        "--slug",
+        "fastify",
+        "--slug",
+        "nest",
+        "--slug",
+        "react-router",
+        "--slug",
+        "astro",
+        "--slug",
+        "angular",
+        "--slug",
+        "solid",
+        "--slug",
+        "preact",
+        "--slug",
+        "qwik",
+        "--slug",
+        "nuxt",
+        "--slug",
+        "remix",
+        "--slug",
+        "redwood",
+        "--slug",
+        "blitz",
+        "--slug",
+        "core",
+        "--slug",
+        "elysia",
+        "--slug",
+        "koa",
+        "--slug",
+        "keystone",
+        "--slug",
+        "payload",
+        "--slug",
+        "strapi",
+        "--slug",
+        "meteor",
+        "--slug",
+        "rollup",
+        "--slug",
+        "parcel",
+        "--slug",
+        "rspack",
+        "--slug",
+        "rolldown",
+        "--slug",
+        "swc",
+        "--slug",
+        "oxc",
+        "--slug",
+        "eslint",
+        "--slug",
+        "stylelint",
+        "--slug",
+        "typescript-eslint",
+        "--slug",
+        "babel",
+        "--slug",
+        "postcss",
+        "--slug",
+        "pnpm",
+        "--slug",
+        "berry",
+        "--slug",
+        "cli",
+        "--slug",
+        "lerna",
+        "--slug",
+        "nx",
+        "--slug",
+        "turborepo",
+        "--slug",
+        "rushstack",
+        "--slug",
+        "changesets",
+        "--slug",
+        "semantic-release",
+        "--slug",
+        "vitest",
+        "--slug",
+        "playwright",
+        "--slug",
+        "cypress",
+        "--slug",
+        "jest",
+        "--slug",
+        "react-testing-library",
+        "--slug",
+        "dom-testing-library",
+        "--slug",
+        "msw",
+        "--slug",
+        "ava",
+        "--slug",
+        "mocha",
+        "--slug",
+        "jasmine",
+        "--slug",
+        "chai",
+        "--slug",
+        "puppeteer",
+        "--slug",
+        "webdriverio",
+        "--slug",
+        "storybook",
+        "--slug",
+        "chromatic-cli",
+        "--slug",
+        "pact-js",
+        "--slug",
+        "stryker-js",
+        "--slug",
+        "fast-check",
+        "--slug",
+        "nyc",
+        "--slug",
+        "gotestsum",
+        "--slug",
+        "query",
+        "--slug",
+        "router",
+        "--slug",
+        "table",
+        "--slug",
+        "redux",
+        "--slug",
+        "redux-toolkit",
+        "--slug",
+        "zustand",
+        "--slug",
+        "jotai",
+        "--slug",
+        "valtio",
+        "--slug",
+        "mobx",
+        "--slug",
+        "immer",
+        "--slug",
+        "rxjs",
+        "--slug",
+        "effect",
+        "--slug",
+        "fp-ts",
+        "--slug",
+        "date-fns",
+        "--slug",
+        "dayjs",
+        "--slug",
+        "luxon",
+        "--slug",
+        "motion",
+        "--slug",
+        "remeda",
+        "--slug",
+        "ofetch",
+        "--slug",
+        "got",
+        "--slug",
+        "pydantic",
+        "--slug",
+        "pydantic-settings",
+        "--slug",
+        "werkzeug",
+        "--slug",
+        "starlette",
+        "--slug",
+        "httpx",
+        "--slug",
+        "pytest",
+        "--slug",
+        "poetry",
+        "--slug",
+        "hatch",
+        "--slug",
+        "pip",
+        "--slug",
+        "virtualenv",
+        "--slug",
+        "sqlalchemy",
+        "--slug",
+        "diesel",
+        "--slug",
+        "sea-orm",
+        "--slug",
+        "tokio",
+        "--slug",
+        "axum",
+        "--slug",
+        "actix-web",
+        "--slug",
+        "gin",
+        "--slug",
+        "echo",
+        "--slug",
+        "fiber",
+        "--slug",
+        "cobra"
+      ],
+      "working_directory": ".",
+      "started_at": "2026-10-02T18:30:37.066435+00:00",
+      "finished_at": "2026-10-02T18:32:22.932058+00:00",
+      "runtime_ms": 105865,
+      "exit_code": 0,
+      "streams": {
+        "stdout": {
+          "private_relative_path": "artifacts/unpack-expansion-2026-10-02/qualifications/strict-citations.stdout.log",
+          "sha256": "fbcc23920a8a08086f2a20c119d298844a1ae63745d32b5d2ff9df99a36f51bc",
+          "bytes": 7174
+        },
+        "stderr": {
+          "private_relative_path": "artifacts/unpack-expansion-2026-10-02/qualifications/strict-citations.stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        }
+      }
+    },
+    {
+      "name": "command-inventory",
+      "argv": [
+        "python3",
+        "artifacts/unpack-expansion-2026-10-02/audit_commands.py",
+        "--require-complete"
+      ],
+      "working_directory": ".",
+      "started_at": "2026-10-02T18:30:37.049974+00:00",
+      "finished_at": "2026-10-02T18:30:37.557967+00:00",
+      "runtime_ms": 508,
+      "exit_code": 0,
+      "streams": {
+        "stdout": {
+          "private_relative_path": "artifacts/unpack-expansion-2026-10-02/qualifications/command-inventory.stdout.log",
+          "sha256": "f804b8bdf79a4d9e203091f6e47acdfd2386449b2e3d0956b353b4b6492119ec",
+          "bytes": 196
+        },
+        "stderr": {
+          "private_relative_path": "artifacts/unpack-expansion-2026-10-02/qualifications/command-inventory.stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        }
+      }
+    },
+    {
+      "name": "review-bounds-repaired",
+      "argv": [
+        "node",
+        "artifacts/unpack-expansion-2026-10-02/check_review_sources.mjs",
+        "--require-complete"
+      ],
+      "working_directory": ".",
+      "started_at": "2026-10-02T18:33:16.167296+00:00",
+      "finished_at": "2026-10-02T18:34:05.267125+00:00",
+      "runtime_ms": 49100,
+      "exit_code": 0,
+      "streams": {
+        "stdout": {
+          "private_relative_path": "artifacts/unpack-expansion-2026-10-02/qualifications/review-bounds-repaired.stdout.log",
+          "sha256": "59a39edca01220ca1620c22db4c2f176d3f1889b2e268c5769d5c8147459c6a1",
+          "bytes": 59
+        },
+        "stderr": {
+          "private_relative_path": "artifacts/unpack-expansion-2026-10-02/qualifications/review-bounds-repaired.stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        }
+      }
+    },
+    {
+      "name": "public-export",
+      "argv": [
+        "python3",
+        "artifacts/unpack-expansion-2026-10-02/prepare_public_export.py"
+      ],
+      "working_directory": ".",
+      "started_at": "2026-10-02T18:34:53.363570+00:00",
+      "finished_at": "2026-10-02T18:34:54.571459+00:00",
+      "runtime_ms": 1208,
+      "exit_code": 0,
+      "streams": {
+        "stdout": {
+          "private_relative_path": "artifacts/unpack-expansion-2026-10-02/qualifications/public-export.stdout.log",
+          "sha256": "762d4c7e3394f992d27c1e1097ce5bb7b8c37fdcba2535e909bdc9306c41a2ad",
+          "bytes": 71
+        },
+        "stderr": {
+          "private_relative_path": "artifacts/unpack-expansion-2026-10-02/qualifications/public-export.stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        }
+      }
+    },
+    {
+      "name": "export-audit",
+      "argv": [
+        "python3",
+        "artifacts/unpack-expansion-2026-10-02/audit.py",
+        "--require-complete"
+      ],
+      "working_directory": ".",
+      "started_at": "2026-10-02T18:34:54.711814+00:00",
+      "finished_at": "2026-10-02T18:34:55.056907+00:00",
+      "runtime_ms": 345,
+      "exit_code": 0,
+      "streams": {
+        "stdout": {
+          "private_relative_path": "artifacts/unpack-expansion-2026-10-02/qualifications/export-audit.stdout.log",
+          "sha256": "300e957c07607e5273d71c191bcf35f2352141ed3bb0379e3579f115bd2bdea0",
+          "bytes": 452
+        },
+        "stderr": {
+          "private_relative_path": "artifacts/unpack-expansion-2026-10-02/qualifications/export-audit.stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        }
+      }
+    },
+    {
+      "name": "site-projection",
+      "argv": [
+        "node",
+        "scripts/sync-unpack-pages.mjs"
+      ],
+      "working_directory": ".",
+      "started_at": "2026-10-02T18:34:55.194658+00:00",
+      "finished_at": "2026-10-02T18:34:55.540927+00:00",
+      "runtime_ms": 346,
+      "exit_code": 0,
+      "streams": {
+        "stdout": {
+          "private_relative_path": "artifacts/unpack-expansion-2026-10-02/qualifications/site-projection.stdout.log",
+          "sha256": "f5534839a4a78d74c1721e2e73e637b0e45f33c8afee8a5aeedb56002743975c",
+          "bytes": 54
+        },
+        "stderr": {
+          "private_relative_path": "artifacts/unpack-expansion-2026-10-02/qualifications/site-projection.stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        }
+      }
+    },
+    {
+      "name": "astro-build",
+      "argv": [
+        "apps/landing-page-astro/node_modules/.bin/astro",
+        "build",
+        "--root",
+        "apps/landing-page-astro"
+      ],
+      "working_directory": ".",
+      "started_at": "2026-10-02T18:34:55.690303+00:00",
+      "finished_at": "2026-10-02T18:35:00.074735+00:00",
+      "runtime_ms": 4384,
+      "exit_code": 0,
+      "streams": {
+        "stdout": {
+          "private_relative_path": "artifacts/unpack-expansion-2026-10-02/qualifications/astro-build.stdout.log",
+          "sha256": "bb5d3f8f3df3f05ee7aaee0139887f5ce5a6e659cc669ba6c669b589f44e1b79",
+          "bytes": 205819
+        },
+        "stderr": {
+          "private_relative_path": "artifacts/unpack-expansion-2026-10-02/qualifications/astro-build.stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        }
+      }
+    },
+    {
+      "name": "output-contracts",
+      "argv": [
+        "python3",
+        "artifacts/unpack-expansion-2026-10-02/check_public_contracts.py"
+      ],
+      "working_directory": ".",
+      "started_at": "2026-10-02T18:35:46.304884+00:00",
+      "finished_at": "2026-10-02T18:35:47.731880+00:00",
+      "runtime_ms": 1427,
+      "exit_code": 0,
+      "streams": {
+        "stdout": {
+          "private_relative_path": "artifacts/unpack-expansion-2026-10-02/qualifications/output-contracts.stdout.log",
+          "sha256": "11af193d0cc789a8a358da9512449211a97bd8e21a6eb71cb378372317fffc6c",
+          "bytes": 714
+        },
+        "stderr": {
+          "private_relative_path": "artifacts/unpack-expansion-2026-10-02/qualifications/output-contracts.stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        }
+      }
+    },
+    {
+      "name": "evidence-export-final",
+      "argv": [
+        "python3",
+        "artifacts/unpack-expansion-2026-10-02/write_evidence.py"
+      ],
+      "working_directory": ".",
+      "started_at": "2026-10-02T18:38:37.600546+00:00",
+      "finished_at": "2026-10-02T18:38:38.000279+00:00",
+      "runtime_ms": 400,
+      "exit_code": 0,
+      "streams": {
+        "stdout": {
+          "private_relative_path": "artifacts/unpack-expansion-2026-10-02/qualifications/evidence-export-final.stdout.log",
+          "sha256": "243b72796634a6731d3fa0a75422285d96e8a1687c06c6711684254ece764c15",
+          "bytes": 175
+        },
+        "stderr": {
+          "private_relative_path": "artifacts/unpack-expansion-2026-10-02/qualifications/evidence-export-final.stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        }
+      }
+    },
+    {
+      "name": "readable-report-final",
+      "argv": [
+        "python3",
+        "artifacts/unpack-expansion-2026-10-02/write_report.py"
+      ],
+      "working_directory": ".",
+      "started_at": "2026-10-02T18:38:38.128700+00:00",
+      "finished_at": "2026-10-02T18:38:38.168016+00:00",
+      "runtime_ms": 39,
+      "exit_code": 0,
+      "streams": {
+        "stdout": {
+          "private_relative_path": "artifacts/unpack-expansion-2026-10-02/qualifications/readable-report-final.stdout.log",
+          "sha256": "5cbdbd1e782767dfdefb0f88eb54953289fd901e012de179ab45f08791b2388e",
+          "bytes": 86
+        },
+        "stderr": {
+          "private_relative_path": "artifacts/unpack-expansion-2026-10-02/qualifications/readable-report-final.stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        }
+      }
+    },
+    {
+      "name": "docs",
+      "argv": [
+        "node",
+        "scripts/check-docs.mjs"
+      ],
+      "working_directory": ".",
+      "started_at": "2026-10-02T18:35:58.415362+00:00",
+      "finished_at": "2026-10-02T18:35:58.492796+00:00",
+      "runtime_ms": 77,
+      "exit_code": 0,
+      "streams": {
+        "stdout": {
+          "private_relative_path": "artifacts/unpack-expansion-2026-10-02/qualifications/docs.stdout.log",
+          "sha256": "5709b3ebe2afa05392a6d8050e45aaa01444d3beede98710b41259240abd2390",
+          "bytes": 39
+        },
+        "stderr": {
+          "private_relative_path": "artifacts/unpack-expansion-2026-10-02/qualifications/docs.stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        }
+      }
+    },
+    {
+      "name": "blume-build",
+      "argv": [
+        "./node_modules/.bin/blume",
+        "build"
+      ],
+      "working_directory": "docs-site",
+      "started_at": "2026-10-02T18:35:58.415435+00:00",
+      "finished_at": "2026-10-02T18:36:02.204412+00:00",
+      "runtime_ms": 3789,
+      "exit_code": 0,
+      "streams": {
+        "stdout": {
+          "private_relative_path": "artifacts/unpack-expansion-2026-10-02/qualifications/blume-build.stdout.log",
+          "sha256": "8b2f9cf09dbad9121fcecf39b2aae3822543d0766abbc3cfda71a7e59f57cf10",
+          "bytes": 18012
+        },
+        "stderr": {
+          "private_relative_path": "artifacts/unpack-expansion-2026-10-02/qualifications/blume-build.stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        }
+      }
+    },
+    {
+      "name": "merge-docs",
+      "argv": [
+        "node",
+        "scripts/merge-landing-docs.mjs"
+      ],
+      "working_directory": ".",
+      "started_at": "2026-10-02T18:36:59.625933+00:00",
+      "finished_at": "2026-10-02T18:36:59.917109+00:00",
+      "runtime_ms": 291,
+      "exit_code": 0,
+      "streams": {
+        "stdout": {
+          "private_relative_path": "artifacts/unpack-expansion-2026-10-02/qualifications/merge-docs.stdout.log",
+          "sha256": "8ceb104bc1e874ebe316ae25c0d11eb1c6b09d29855a031e5206d49603edf2bb",
+          "bytes": 145
+        },
+        "stderr": {
+          "private_relative_path": "artifacts/unpack-expansion-2026-10-02/qualifications/merge-docs.stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        }
+      }
+    },
+    {
+      "name": "agent-surfaces",
+      "argv": [
+        "node",
+        "apps/landing-page-astro/scripts/verify-agent-surfaces.mjs"
+      ],
+      "working_directory": ".",
+      "started_at": "2026-10-02T18:37:00.066213+00:00",
+      "finished_at": "2026-10-02T18:37:01.311412+00:00",
+      "runtime_ms": 1245,
+      "exit_code": 0,
+      "streams": {
+        "stdout": {
+          "private_relative_path": "artifacts/unpack-expansion-2026-10-02/qualifications/agent-surfaces.stdout.log",
+          "sha256": "4d964bdc397892e00c28025ba30a6a2aaeb1c1d6901c17bc07160e014673b712",
+          "bytes": 377
+        },
+        "stderr": {
+          "private_relative_path": "artifacts/unpack-expansion-2026-10-02/qualifications/agent-surfaces.stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        }
+      }
+    },
+    {
+      "name": "diff-check",
+      "argv": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "working_directory": ".",
+      "started_at": "2026-10-02T18:39:03.944648+00:00",
+      "finished_at": "2026-10-02T18:39:04.345886+00:00",
+      "runtime_ms": 401,
+      "exit_code": 0,
+      "streams": {
+        "stdout": {
+          "private_relative_path": "artifacts/unpack-expansion-2026-10-02/qualifications/diff-check.stdout.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        },
+        "stderr": {
+          "private_relative_path": "artifacts/unpack-expansion-2026-10-02/qualifications/diff-check.stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        }
+      }
+    }
+  ],
+  "repaired_failed_check": {
+    "original": {
+      "name": "review-bounds",
+      "argv": [
+        "node",
+        "artifacts/unpack-expansion-2026-10-02/check_review_sources.mjs",
+        "--require-complete"
+      ],
+      "working_directory": ".",
+      "started_at": "2026-10-02T18:30:07.147055+00:00",
+      "finished_at": "2026-10-02T18:30:55.291738+00:00",
+      "runtime_ms": 48144,
+      "exit_code": 1,
+      "streams": {
+        "stdout": {
+          "private_relative_path": "artifacts/unpack-expansion-2026-10-02/qualifications/review-bounds.stdout.log",
+          "sha256": "7d6c0d5c833e878b96439b85e406020dddb3950dc370dcc4be7d119577e68eee",
+          "bytes": 143
+        },
+        "stderr": {
+          "private_relative_path": "artifacts/unpack-expansion-2026-10-02/qualifications/review-bounds.stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        }
+      }
+    },
+    "resolved_by": "review-bounds-repaired",
+    "finding": "One Gin supplemental review anchor exceeded file bounds. Original receipt retained; corrected to binding/binding.go#L95-L120; report unchanged."
+  },
+  "qualified_source_sha256": {
+    "scripts/collect-unpack-repo.mjs": "8ad840d62e135927e6968eafdf41c81bd5409ee8d5f3ada8b0749eed33d7ad50",
+    "scripts/repo-unpack-corpus.mjs": "1bff92dab8244f4bf902b135d102aee49d926d096986ad6bd75abf9393054ae0",
+    "scripts/repo-unpack-corpus.test.mjs": "0e9826291cf6ad9fdc8bf50f4a5248d2a77bba3c2acb6f7820098b1d1e3d1daa",
+    "scripts/verify-unpack-claims.mjs": "826e5c85af34f3b3eef1ab3a6239276828fa196ae7ce5fc1c50304bf24fe027b",
+    "apps/landing-page-astro/src/data/agent-markdown.ts": "fee59ab20d046889a9b13febb7ac76a51c27447c0f229484ae2dd246888c8872",
+    "apps/landing-page-astro/src/pages/unpack/[slug].astro": "c3955cd3a0465b54502da7f67f64a2534aeb410bcba7a909c3b3fa5b0eb6aec6",
+    "apps/landing-page-astro/src/pages/unpack/[slug]/[section].astro": "5f1410e7856a0db1557dccedac660690698cfa651bb7e4eb23624bf4dc4d05bd",
+    "apps/landing-page-astro/src/pages/unpack/index.astro": "5cf4e37139097cfe613e4039806939b19ccbd9ed621d1d4392d1c5185d8203b7",
+    "docs/architecture/repo-unpacked.md": "72f8d136d90635b738ef5dc051690ee63c335e61e56917044992c3b4c273b3b7",
+    "apps/landing-page-astro/src/data/unpack-reports.json": "a9cff271bf9ae35ce99f1b55f9eff69271a1e110578b0c0e76a0aaadb4e0def1",
+    "apps/landing-page-astro/public/api-ai.json": "d2e721fc334cef8eb42686bd36811c7aeb0a905db15ab9c5dc8d093c075d682b",
+    "evidence/verification/repo-unpack-expansion-2026-10-02.json": "46d48fcf40c7c99ab4b22c7e5ad58e30d4fe32fa69ba56d9d14ef6e92e0d3577",
+    "evidence/verification/repo-unpack-expansion-2026-10-02.md": "fda15d9ffbe14589abf041c470c212b64ceeaedaa4d9d55c6585aa03a053bb5f"
+  },
+  "limits": [
+    "Checks qualify local corpus/export/build contracts; they do not establish full semantic correctness, upstream test results or agent time saved.",
+    "Source hashes identify final local bytes, not a committed or deployed Git revision.",
+    "Stored qualification output remains in private ignored scratch."
+  ]
+}

@@ -101,6 +101,7 @@ fn every_tool_is_explicitly_read_only_and_schema_bounded() {
             "prepare_review",
             "resolve_evidence_scope",
             "qa_workspace_inspect",
+            "invocation_list",
             "verification_get_receipt",
             "review_list_manifests",
             "archaeology_list_rules",
@@ -327,7 +328,7 @@ async fn protocol_lifecycle_is_scoped_structured_and_live_revocable() {
     });
     let client = TestClient.serve(client_transport).await.expect("client");
     let tools = client.list_tools(None).await.expect("tools");
-    assert_eq!(tools.tools.len(), 28);
+    assert_eq!(tools.tools.len(), 29);
     assert!(tools.tools.iter().all(|tool| tool.output_schema.is_some()));
     let templates = client
         .list_resource_templates(None)

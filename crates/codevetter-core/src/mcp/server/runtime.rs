@@ -3,7 +3,13 @@ use super::*;
 pub(super) fn build_envelope(repo_id: &str, outcome: CanonicalResponse) -> Result<Value, String> {
     let repository_uri = HistoryResourceUri::new(repo_id, "repository", "overview")?.to_string();
     let graph_uri = HistoryResourceUri::new(repo_id, "graph", "overview")?.to_string();
-    sanitize_response(json!({
+    let sanitize =
+        if outcome.data.get("operation").and_then(Value::as_str) == Some("invocation_list") {
+            crate::mcp::sanitize::sanitize_invocation_response
+        } else {
+            sanitize_response
+        };
+    sanitize(json!({
         "schemaVersion": 1,
         "repository": {"id": repo_id},
         "freshness": {

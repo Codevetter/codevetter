@@ -101,6 +101,11 @@ pub(crate) fn tool_definitions() -> Vec<Tool> {
             &[],
         ),
         (
+            "invocation_list",
+            "Read bounded skill invocations from a startup-bound local ledger; observations do not establish independent benefit",
+            &[],
+        ),
+        (
             "verification_get_receipt",
             "Read one canonical persisted local-check receipt in this authorized repository scope without executing verification",
             &["run_id"],
@@ -175,6 +180,10 @@ fn input_schema(name: &str, required: &[&str]) -> Arc<JsonObject> {
         "review_id",
         "run_id",
         "task",
+        "task_id",
+        "skill",
+        "state",
+        "assessment",
     ] {
         properties.insert(
             field.to_string(),
@@ -209,6 +218,10 @@ fn input_schema(name: &str, required: &[&str]) -> Arc<JsonObject> {
     properties.insert(
         "limit".to_string(),
         json!({"type": "integer", "minimum": 1, "maximum": MAX_PAGE_SIZE}),
+    );
+    properties.insert(
+        "offset".to_string(),
+        json!({"type": "integer", "minimum": 0, "maximum": 1000000}),
     );
     properties.insert(
         "depth".to_string(),
@@ -431,6 +444,7 @@ pub(crate) fn tool_fields(name: &str) -> Option<&'static [&'static str]> {
         "prepare_review" => &["task", "change"],
         "resolve_evidence_scope" => &["consumer", "scope_kind", "scope_value"],
         "qa_workspace_inspect" => &["fix_completed_at"],
+        "invocation_list" => &["task_id", "skill", "state", "assessment", "offset", "limit"],
         "verification_get_receipt" => &["run_id"],
         "review_list_manifests" => &["review_id", "limit", "cursor"],
         "archaeology_list_rules" => &["filter", "limit", "cursor"],
